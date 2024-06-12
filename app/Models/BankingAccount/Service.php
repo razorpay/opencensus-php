@@ -771,7 +771,7 @@ class Service extends Base\Service
                 // Only call ledger when "ledger_reverse_shadow" is enabled on the merchant.
                 if($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
                 {
-                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $ba->getPublicId());
+                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant, $ba->getPublicId());
                     if ((empty($ledgerResponse) === false) &&
                         (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
                         (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))

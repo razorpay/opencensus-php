@@ -1337,6 +1337,62 @@ class AdjustmentTest extends TestCase
         $this->assertNull($newAdjustments['transaction_id']);
     }
 
+    // this test case is for MY Merchant Positive Adjustment
+    public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowEnabledMYMerchant()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000,
+                'channel'        =>  'ocbc'
+            ]);
+
+
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+            'bank_identifier'       => 'VRYIAM0KXXX',
+            'channel'               => 'ocbc',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForPositiveAdjustmentCreationOnLiveModeMY'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
+
+        $this->assertNull($newAdjustments['transaction_id']);
+    }
+
     public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncFailureAndAsyncSuccess()
     {
         $this->app['config']->set('applications.ledger.enabled', true);

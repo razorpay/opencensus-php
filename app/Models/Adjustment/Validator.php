@@ -4,6 +4,7 @@ namespace RZP\Models\Adjustment;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -36,7 +37,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
         Entity::CHANNEL       => 'sometimes|string|max:32|custom',
-        Entity::CURRENCY      => 'required|in:INR,MYR',
+        Entity::CURRENCY      => 'required|custom',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
         Entity::SETTLEMENT_ID => 'sometimes|size:14',
         Entity::ENTITY_TYPE   => 'sometimes|string|custom'
@@ -76,11 +77,24 @@ class Validator extends Base\Validator
         DisputeEntity::PAYMENT_ID => 'required|string',
     ];
 
+    protected function validateCurrency($attribute, $currency)
+    {
+        $adjustment = $this->entity;
+        $merchantCurrency = Currency::INR;
+
+        if (isset($adjustment) === true && isset($adjustment->merchant) === true)
+        {
+            $merchantCurrency = $adjustment->merchant->getCurrency();
+        }
+
+        if ($currency !== $merchantCurrency)
+        {
+            throw new Exception\BadRequestValidationFailureException("Adjustment and Merchant's acceptance currency should be same, Adjustment's currency : " . $currency . ", Merchant's currency " . $merchantCurrency);
+        }
+    }
+
     public function validateAdjustmentCreateInput(array $input, Merchant\Entity $merchant)
     {
-        // Throw exception when input currency is not same as merchant currency
-        $this->validateCurrency($input, $merchant);
-
         // Presence of all three keys is not allowed
         if (isset($input[Entity::AMOUNT]) === true and
             isset($input[MerchantInvoice\Entity::TAX]) === true and
@@ -130,22 +144,6 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'Amount should be passed for reserve balance.');
             }
-        }
-    }
-
-    /**
-     * This validation if for checking currency while adding adjustment for a merchant.
-     *
-     * @param array $input
-     * @param Merchant\Entity $merchant
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    private function validateCurrency(array $input, Merchant\Entity $merchant)
-    {
-        if ($input[Entity::CURRENCY] != $merchant->getCurrency()) {
-            throw new Exception\BadRequestValidationFailureException(
-                'Currency should be same as merchant currency'
-            );
         }
     }
 

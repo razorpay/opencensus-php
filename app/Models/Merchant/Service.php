@@ -2412,7 +2412,7 @@ class Service extends Base\Service
 
                     $bankingAccount = $this->merchant->sharedBankingBalance->bankingAccount;
 
-                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccount->getPublicId());
+                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant, $bankingAccount->getPublicId());
 
                     if ((empty($ledgerResponse) === false) &&
                         (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&

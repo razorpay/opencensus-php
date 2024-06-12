@@ -508,7 +508,7 @@ class Entity extends Base\PublicEntity
                 $bankingAccount = (new BankingAccount\Repository)
                     ->findByMerchantAndAccountNumberPublic($this->merchant, $accountNumber);
 
-                $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $bankingAccount->getPublicId());
+                $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant, $bankingAccount->getPublicId());
                 if ((empty($ledgerResponse) === false) &&
                     (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
                     (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
@@ -533,7 +533,7 @@ class Entity extends Base\PublicEntity
             $bankingAccount = (new BankingAccount\Repository)
                 ->findByMerchantAndAccountNumberPublic($this->merchant, $accountNumber);
 
-            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $bankingAccount->getPublicId());
+            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant, $bankingAccount->getPublicId());
             if ((empty($ledgerResponse) === false) &&
                 (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
                 (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))

@@ -7,6 +7,7 @@ use Ramsey\Uuid\Uuid;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Jobs\LedgerStatus;
 use RZP\Models\Base\Core;
 use Razorpay\Trace\Logger as Trace;
@@ -42,6 +43,7 @@ class Base extends Core
     const ENTITY                 = 'entity';
     const IDEMPOTENCY_KEY        = 'idempotency_key';
     const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
+    const COUNTRY_CODE           = 'Country-Code';
     const BANKING_ACCOUNT_ID     = 'banking_account_id';
     const API_TRANSACTION_ID     = 'api_transaction_id';
     const IDENTIFIERS            = 'identifiers';
@@ -294,8 +296,11 @@ class Base extends Core
                 $iKey = Uuid::uuid1();
             }
 
+            $merchant = (new Merchant\Repository)->findOrFail($payload[self::MERCHANT_ID]);
+
             // create request headers
             $requestHeaders = [
+                self::COUNTRY_CODE              => $merchant->getCountry(),
                 self::LEDGER_TENANT_HEADER      => self::X,
                 self::IDEMPOTENCY_KEY_HEADER    => $iKey
             ];

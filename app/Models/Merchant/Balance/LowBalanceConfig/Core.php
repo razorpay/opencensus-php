@@ -635,7 +635,7 @@ class Core extends Base\Core
         $inputForAdjustment = [
             'amount'        => $lowBalanceConfigEntity->getAutoloadAmount(),
             'description'   => Entity::AUTOLOAD_BALANCE_ADJUSTMENT_DESCRIPTION,
-            'currency'      => 'INR',
+            'currency'      => $lowBalanceConfigEntity->merchant->getCurrency(),
             'type'          => 'banking',
         ];
 

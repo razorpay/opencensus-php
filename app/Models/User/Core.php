@@ -4440,7 +4440,7 @@ class Core extends Base\Core
         if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) &&
             ($accountType === Merchant\Balance\AccountType::SHARED))
         {
-            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccountId);
+            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchant, $bankingAccountId);
 
             if ((empty($ledgerResponse) === false) &&
                 (empty($ledgerResponse[LedgerCore::REWARD_BALANCE]) === false) &&

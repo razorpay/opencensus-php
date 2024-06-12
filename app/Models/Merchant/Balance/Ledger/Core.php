@@ -7,7 +7,6 @@ use App;
 use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
@@ -679,7 +678,7 @@ class Core extends Base\Core
      * @param string $bankingAccountId
      * @return array
      */
-    public function fetchBalanceFromLedger(string $merchantId, string $bankingAccountId, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0) :array {
+    public function fetchBalanceFromLedger(Merchant $merchant, string $bankingAccountId, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0) :array {
             $startTime = millitime();
             $ledgerResponse = [];
             $ledgerBalanceFetchTiDBEnabled = false;
@@ -688,19 +687,20 @@ class Core extends Base\Core
 
                 $request = [
                     self::TENANT             => self::X,
-                    self::MERCHANT_ID        => $merchantId,
+                    self::MERCHANT_ID        => $merchant->getId(),
                     self::BANKING_ACCOUNT_ID => $bankingAccountId,
                 ];
 
                 $requestHeaders = [
                     LedgerService::LEDGER_TENANT_HEADER => self::X,
+                    Ledger\Base::COUNTRY_CODE           => $merchant->getCountry()
                 ];
 
-                $ledgerBalanceFetchTiDBEnabled = $this->isBalanceFetchFromLedgerTiDBEnabled($merchantId, $this->mode);
+                $ledgerBalanceFetchTiDBEnabled = $this->isBalanceFetchFromLedgerTiDBEnabled($merchant->getId(), $this->mode);
 
                 if($ledgerBalanceFetchTiDBEnabled)
                 {
-                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId);
+                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchant->getId());
                 }
                 else
                 {
@@ -712,7 +712,7 @@ class Core extends Base\Core
                         if ($retryCount < $maxRetryCount)
                         {
                             $retryCount++;
-                            return $this->fetchBalanceFromLedger($merchantId, $bankingAccountId, $maxRetryCount, $retryCount);
+                            return $this->fetchBalanceFromLedger($merchant, $bankingAccountId, $maxRetryCount, $retryCount);
                         }
                         else
                         {
@@ -736,7 +736,7 @@ class Core extends Base\Core
                     Trace::ERROR,
                     TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_ERROR,
                     [
-                        self::MERCHANT_ID        => $merchantId,
+                        self::MERCHANT_ID        => $merchant->getId(),
                         self::BANKING_ACCOUNT_ID => $bankingAccountId
                     ]);
 
@@ -745,11 +745,11 @@ class Core extends Base\Core
                     // Calling Ledger TIDB here, only as fallback if ledger service returns an error.
                     $this->trace->info(TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB,
                         [
-                            self::MERCHANT_ID        => $merchantId,
+                            self::MERCHANT_ID        => $merchant->getId(),
                             self::BANKING_ACCOUNT_ID => $bankingAccountId
                         ]);
 
-                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId);
+                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchant->getId());
                 }
 
             }

@@ -109,7 +109,11 @@ class Core extends Base\Core
             $balance = $merchant->getBalanceByTypeOrFail($balanceType);
         }
 
-        $adj = (new Adjustment\Entity)->build($adjInput);
+        $adj = new Adjustment\Entity;
+
+        $adj->merchant()->associate($merchant);
+
+        $adj = $adj->build($adjInput);
 
         if ($balance !== null)
         {

@@ -75,8 +75,8 @@ class Service extends Base\Service
                     }
                 }
 
-                if (($adj->getBalanceType() === Balance\Type::RESERVE_PRIMARY) 
-                    and ($adj->getAmount()<0) 
+                if (($adj->getBalanceType() === Balance\Type::RESERVE_PRIMARY)
+                    and ($adj->getAmount()<0)
                     and ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 )
                 {

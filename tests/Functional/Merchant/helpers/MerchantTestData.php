@@ -8463,6 +8463,35 @@ return [
         ],
     ],
 
+    'testGetBalancesFromLedgerMY' => [
+        'request' => [
+            'url' => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'                => '100def000def00',
+                        'type'              => 'primary',
+                        'currency'          => 'MYR',
+                        'name'              => null,
+                        'balance'           => 100000,
+                    ],
+                    '1' => [
+                        'id'                => '100abc000abc00',
+                        'type'              => 'banking',
+                        'currency'          => 'MYR',
+                        'name'              => null,
+                        'balance'           => 190,
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetBalancesFromLedgerWithRetry' => [
         'request' => [
             'url' => '/balances',

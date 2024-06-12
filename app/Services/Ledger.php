@@ -131,6 +131,7 @@ class Ledger
     const X_REQUEST_ID                   = 'X-Request-ID';
     const TENANT                         = 'tenant';
     const LEDGER_TENANT_HEADER           = 'ledger-tenant';
+    const LEDGER_COUNTRY_HEADER           = 'Country-Code';
     const IDEMPOTENCY_KEY_HEADER         = 'idempotency-key';
     const LEDGER_INTEGRATION_MODE_HEADER = 'Ledger-Integration-Mode';
 
@@ -949,6 +950,12 @@ class Ledger
      */
     private function addHeaders(array $headers)
     {
+        // Add ledger-country header
+        if(isset($headers[self::LEDGER_COUNTRY_HEADER]) == true)
+        {
+            $this->headers[self::LEDGER_COUNTRY_HEADER] = $headers[self::LEDGER_COUNTRY_HEADER];
+        }
+
         // Add ledger-tenant header
         if(isset($headers[self::LEDGER_TENANT_HEADER]) === true)
         {

@@ -481,6 +481,28 @@ return [
         ]
     ],
 
+    'testLedgerSnsForPositiveAdjustmentCreationOnLiveModeMY' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '10000000000000',
+                'currency'      =>  'MYR',
+                'description'   =>  'Account: ABC123, Bank: Affin Bank Berhad'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 250000,
+                'currency'      => 'MYR',
+                'description'   => 'Account: ABC123, Bank: Affin Bank Berhad',
+            ],
+        ]
+    ],
+
     'testLedgerSnsForNegativeAdjustmentCreationOnLiveMode' => [
         'request' => [
             'url' => '/adjustments',
