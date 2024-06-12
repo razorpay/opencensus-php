@@ -137,7 +137,6 @@ class Core extends Base\Core
         array $reverseShadowResp = null): Entity
     {
         $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($payment->isInternational());
-
         $this->trace->info(
             TraceCode::DISPUTE_CREATE_REQUEST,
             [
@@ -2419,6 +2418,8 @@ class Core extends Base\Core
                 return $this->getRecoveryMethodForEmiDispute($dispute);
             case Method::PAYLATER:
                 return $this->getRecoveryMethodForPaylaterDispute($dispute);
+            case Method::CARDLESS_EMI:
+                return $this->getRecoveryMethodForCardlessEmiDispute($dispute);
         }
 
         return RecoveryMethod::RISK_OPS_REVIEW;
@@ -2483,6 +2484,11 @@ class Core extends Base\Core
         }
 
         return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForCardlessEmiDispute(Entity $dispute): string
+    {
+        return RecoveryMethod::REFUND;
     }
 
     protected function updateDeductionSourceTypeAndId(Entity $dispute, string $entityType, string $entityId)
