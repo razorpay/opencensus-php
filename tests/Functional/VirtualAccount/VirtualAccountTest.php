@@ -1097,7 +1097,7 @@ class VirtualAccountTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $closeBy = Carbon::now(Timezone::IST)->addSeconds(VirtualAccount\Validator::DEFAULT_CLOSE_BY_DIFF)->getTimestamp();
+        $closeBy = Carbon::now(Timezone::IST)->addSeconds(VirtualAccount\Validator::DEFAULT_CLOSE_BY_DIFF+100)->getTimestamp();
 
         $response = $this->createVirtualAccountForOrder($order, ['close_by' => $closeBy]);
 

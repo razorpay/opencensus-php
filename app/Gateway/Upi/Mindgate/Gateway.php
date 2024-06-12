@@ -1217,9 +1217,32 @@ class Gateway extends Base\Gateway
     {
         $key = $this->getEncryptionKey();
 
-        if (empty($this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET]) === false)
+        try
         {
-            $key = $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+            if (($this->terminal instanceof Terminal\Entity) === true)
+            {
+                $terminalArray = $this->terminal->toArrayWithPassword();
+
+                if (empty($terminalArray[Terminal\Entity::GATEWAY_SECURE_SECRET]) === false)
+                {
+                    $key = $terminalArray[Terminal\Entity::GATEWAY_SECURE_SECRET];
+                }
+            }
+            else
+            {
+                if (empty($this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET]) === false)
+                {
+                    $key = $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UNEXPECTED_UPI_PAYMENT_MINDGATE_CIPHER_ERROR
+            );
         }
 
         return new Crypto($key);
