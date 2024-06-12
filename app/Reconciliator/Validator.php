@@ -207,9 +207,9 @@ class Validator extends Base\Core
     ];
 
     const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [
-        RequestProcessor\Base::NETBANKING_SBI, 
-        RequestProcessor\Base::WALLET_BAJAJ, 
-        RequestProcessor\Base::UPI_HDFC, 
+        RequestProcessor\Base::NETBANKING_SBI,
+        RequestProcessor\Base::WALLET_BAJAJ,
+        RequestProcessor\Base::UPI_HDFC,
         RequestProcessor\Base::ISG,
         RequestProcessor\Base::NETBANKING_SCB,
         RequestProcessor\Base::NETBANKING_KVB,
@@ -320,7 +320,7 @@ class Validator extends Base\Core
         'card'                                             => 'required|array',
         'card.auth_code'                                   => 'required|string',
         'card.rrn'                                         => 'sometimes|string',
-        'card.arn'                                         => 'required|string',
+        'card.arn'                                         => 'sometimes|string',
         'card.gateway_fee'                                 => 'required|string',
         'card.gateway_service_tax'                         => 'required|string',
         'card.gateway_reference_id2'                       => 'sometimes|string',
