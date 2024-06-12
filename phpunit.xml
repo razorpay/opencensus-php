@@ -189,6 +189,7 @@
             <file>./tests/Unit/PayoutDetails/CoreTest.php</file>
             <file>./tests/Unit/Utility/IfscValidationTest.php</file>
             <file>./tests/Unit/PayoutSource/PayoutSourceTest.php</file>
+            <directory>./tests/Unit/Models/Payout/</directory>
         </testsuite>
         <testsuite name="Features-3-2 Test Suite">
             <directory>./tests/Functional/Order/</directory>

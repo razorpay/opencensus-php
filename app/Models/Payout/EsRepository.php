@@ -124,13 +124,15 @@ class EsRepository extends Base\EsRepository
         $this->addNegativeTermFilter($query, Entity::SOURCE_TYPE, $value);
     }
 
-    protected function buildQueryForUserId(array & $query, string $value)
+    public function buildQueryForUserId(array & $query, string $value)
     {
         if (empty($value) === true)
         {
             return;
         }
 
-        $this->addTermFilter($query, Entity::USER_ID, $value);
+        $filter = [Es::TERM => [Entity::USER_ID . '.keyword' => [Es::VALUE => $value]]];
+
+        $this->addFilter($query, $filter);
     }
 }
