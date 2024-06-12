@@ -70,7 +70,7 @@ import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import { matchFullPageView } from 'merchant/routes';
 import Content from 'merchant/routes/Content';
 import lazy from 'merchant/routes/LazyLoader';
-import { COUNTRY_CODE_LOCALE_MAP } from 'merchant/routes/constants';
+import { getLocaleFromCountryCode } from 'merchant/routes/constants';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { isPartnerPage } from 'merchant/utils/isPartnerPage';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
@@ -387,7 +387,7 @@ class App extends Component {
     ])
       .then((response) => {
         this.props.setI18nState({
-          locale: COUNTRY_CODE_LOCALE_MAP[response[0]?.merchant?.country_code],
+          locale: getLocaleFromCountryCode(response[0]?.merchant?.country_code),
         });
 
         if (response[0].showInstantActivation) {
