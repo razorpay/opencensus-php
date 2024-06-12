@@ -760,6 +760,15 @@ class Core extends Base\Core
 
             }
 
+            if ($isBulkJournal === true)
+            {
+                $this->dispatchToSettlementFromJournalIfApplicableForReversal($journal[0]);
+            }
+            else
+            {
+                $this->dispatchToSettlementFromJournalIfApplicableForReversal($journal);
+            }
+
             $txn = (new Reversal\Core)->createReversalTransaction($reversal, $journalId);
 
         }
@@ -1933,5 +1942,28 @@ class Core extends Base\Core
         [$commission, $tax] = (new ReverseShadow\Payments\Core())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
 
         return [$commission, $tax];
+    }
+
+    private function dispatchToSettlementFromJournalIfApplicableForReversal($journal)
+    {
+            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+
+            $reversal = $this->repo->reversal->findByPublicId($transactorPublicId);
+
+            $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($reversal->merchant);
+
+            if ($isExpEnabled === true)
+            {
+                $bucketCore = new Bucket\Core;
+
+                $virtualReversalTransaction = $this->transformJournalResponseToTransactionEntityForReversal($journal);
+
+                $status = $bucketCore->shouldProcessViaNewService($virtualReversalTransaction->getMerchantId());
+
+                if ($status === true)
+                {
+                    $bucketCore->publishForSettlement($virtualReversalTransaction);
+                }
+            }
     }
 }

@@ -1103,7 +1103,18 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        $this->dispatchForSettlementBucketing($txn);
+        $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($txn->merchant);
+
+        $shouldDispatchSettlementBucket = true;
+
+        // add any other checks if any
+        if ($isEarlyDispatchExpEnabled === true) {
+            $shouldDispatchSettlementBucket = false;
+        }
+
+        if ($shouldDispatchSettlementBucket === true){
+            $this->dispatchForSettlementBucketing($txn);
+        }
 
         return $txn;
     }

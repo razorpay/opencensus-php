@@ -9,11 +9,13 @@ use RZP\Jobs\Transfers\TransferReversalCreateTransaction;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund as Refund;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Settlement\Bucket;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
@@ -146,6 +148,8 @@ class Core extends Base\Core
             $this->dispatchForTransferReversalTransactionCreation($reversalAndRefundJournalIds);
         }));
 
+        $this->dispatchToSettlementFromJournalIfApplicable($reversalAndRefundJournalIds, $journals);
+
         return $reversalAndRefundJournalIds;
 
     }
@@ -194,6 +198,8 @@ class Core extends Base\Core
             $this->dispatchForTransferReversalTransactionCreation($reversalAndRefundJournalIds);
 
         }));
+
+        $this->dispatchToSettlementFromJournalIfApplicable($reversalAndRefundJournalIds, $journals);
 
         return $reversalAndRefundJournalIds;
     }
@@ -349,4 +355,146 @@ class Core extends Base\Core
             $this->trace->count(Metric::TRANSFER_REVERSAL_API_TXN_DISPATCH_TO_QUEUE_FAILURE);
         }
     }
+
+    private function dispatchToSettlementFromJournalIfApplicable($reversalAndRefundJournalIds, $journals)
+    {
+        try
+        {
+            $isRearchRefund = $reversalAndRefundJournalIds["is_rearch_refund"];
+
+            $reversals = $reversalAndRefundJournalIds["reversals"];
+
+            $customerRefundId =  $reversalAndRefundJournalIds["customer_refund_id"] ?? "";
+
+            if($customerRefundId !== "")
+            {
+                if($isRearchRefund)
+                {
+                    $customerRefund = (new Refund\Repository())->fetchExternalRefundById($customerRefundId, '', [], true);
+                }
+                else
+                {
+                    $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                        'method'       => 'createTransferReversalTransactions',
+                    ]);
+                    $customerRefund = $this->repo->refund->findOrFail($customerRefundId);
+                }
+
+                $customerRefundJournalId = $reversalAndRefundJournalIds["customer_refund_journal_id"];
+
+                $filteredCustomerRefundJournal = array_filter($journals, function ($item) use ($customerRefundJournalId)
+                {
+                    return $item['id'] === $customerRefundJournalId;
+                });
+
+                $customerRefundJournal = reset($filteredCustomerRefundJournal);
+
+                $isExpEnabledCustomerRefund = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($customerRefund->merchant);
+
+                if (empty($customerRefundJournal) === false and $isExpEnabledCustomerRefund === true)
+                {
+                    $this->dispatchToSettlementFromJournalForRefund($customerRefundJournal);
+                }
+            }
+
+
+            foreach ($reversals as $item)
+            {
+
+                $reversalId             = $item["transfer_reversal_id"];
+                $reversalJournalId      = $item["transfer_reversal_journal_id"];
+                $dummyRefundId          = $item["refund_id"];
+                $dummyRefundJournalId   = $item["refund_journal_id"];
+
+                $reversal = $this->repo->reversal->findOrFail($reversalId);
+
+                $filteredReversalJournal = array_filter($journals, function ($item) use ($reversalJournalId)
+                {
+                    return $item['id'] === $reversalJournalId;
+                });
+
+                $reversalJournal = reset($filteredReversalJournal);
+
+                $isExpEnabledReversal = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($reversal->merchant);
+
+                if (empty($reversalJournal) === false and $isExpEnabledReversal === true)
+                {
+                    $this->dispatchToSettlementFromJournalForReversal($reversalJournal);
+                }
+
+                if($isRearchRefund)
+                {
+                    $dummyRefund = (new Refund\Repository())->fetchExternalRefundById($dummyRefundId, '', [], true);
+                }
+                else
+                {
+                    $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                        'method'       => 'createTransferReversalTransactions',
+                    ]);
+                    $dummyRefund = $this->repo->refund->findOrFail($dummyRefundId);
+                }
+
+                $filteredRefundJournal = array_filter($journals, function ($item) use ($dummyRefundJournalId)
+                {
+                    return $item['id'] === $dummyRefundJournalId;
+                });
+
+                $dummyRefundJournal = reset($filteredRefundJournal);
+
+                $isExpEnabledDummyRefund = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($dummyRefund->merchant);
+
+                if (empty($dummyRefundJournal) === false and $isExpEnabledDummyRefund === true)
+                {
+                    $this->dispatchToSettlementFromJournalForRefund($dummyRefundJournal);
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::TRANSFER_REVERSAL_TXN_EARLY_DISPATCH_FAILURE,
+                [
+                    'message'                       => 'transfer reversal txn early dispatch failed',
+                    'reversalJournal'               => $journals,
+                    'reversalAndRefundJournalIds'   => $reversalAndRefundJournalIds,
+                    'mode'                          =>  $this->mode,
+                ]);
+        }
+    }
+
+    private function dispatchToSettlementFromJournalForRefund($refundJournal)
+    {
+        // early dispatch refund transaction
+        $virtualDummyRefundTransaction = $this->transformJournalResponseToTransactionEntityForRefund($refundJournal);
+
+        $bucketCore = new Bucket\Core;
+
+        $status = $bucketCore->shouldProcessViaNewService($virtualDummyRefundTransaction->getMerchantId());
+
+        if ($status === true)
+        {
+            $bucketCore->publishForSettlement($virtualDummyRefundTransaction);
+        }
+
+    }
+
+    private function dispatchToSettlementFromJournalForReversal($reversalJournal)
+    {
+        // early dispatch reversal transaction
+        $virtualReversalTransaction = $this->transformJournalResponseToTransactionEntityForReversal($reversalJournal);
+
+        $bucketCore = new Bucket\Core;
+
+        $status = $bucketCore->shouldProcessViaNewService($virtualReversalTransaction->getMerchantId());
+
+        if ($status === true)
+        {
+            $bucketCore->publishForSettlement($virtualReversalTransaction);
+        }
+
+    }
+
 }

@@ -157,7 +157,7 @@ trait ReverseShadowTrait
                 case Constants::MERCHANT_BALANCE:
                     $accountBalances[Constants::MERCHANT_BALANCE] = $account[Constants::BALANCE];
                     break;
-                    
+
                 case Constants::MERCHANT_REFUND_CREDITS:
                     $accountBalances[Constants::MERCHANT_REFUND_CREDITS] = $account[Constants::BALANCE];
                     break;
@@ -937,6 +937,32 @@ trait ReverseShadowTrait
         return $baseTransactionEntity;
     }
 
+    public function transformJournalResponseToTransactionEntityForReversal($journalResponse)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $baseTransactionEntity->setAttribute(TransactionEntity::BALANCE_UPDATED, null);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
+    public function transformJournalResponseToTransactionEntityForRefund($journalResponse)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $baseTransactionEntity->setAttribute(TransactionEntity::BALANCE_UPDATED, null);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
     public function getDisputeAdjustmentAsEntityIdFromDisputeId($disputeId, $merchantId)
     {
         $adjustments = $this->repo->adjustment->findAdjustmentByEntityIdAndEntityType($disputeId, E::DISPUTE, $merchantId);
@@ -1114,6 +1140,26 @@ trait ReverseShadowTrait
                 'merchant'               => $merchant->getId(),
                 'isExperimentEnabled'    => $isExperimentEnabled,
                 'type'                   => "adjustment"
+            ]);
+
+        return $isExperimentEnabled;
+    }
+
+    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_REVERSALS,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK,
+            [
+                'merchant'               => $merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+                'type'                   => "reversal"
             ]);
 
         return $isExperimentEnabled;
