@@ -9,6 +9,8 @@ final class RazorxTreatment
 
     const ENTITY_UPDATE_IN_TOKENS_SERVICE = 'entity_update_in_tokens_service';
 
+    const FETCH_ENTITY_ORIGIN_VIA_FALLBACK = 'fetch_entity_origin_via_fallback';
+
     const GIFU_CUSTOM = 'gifu_custom';
 
     const WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION         = 'WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION';
