@@ -141,4 +141,13 @@ class IinController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function enableMultipleIINFlows()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->enableMultipleIINFlows($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -865,7 +865,8 @@ return [
     'otpelf' => [
         'mock'    => env('OTPELF_MOCK', false),
         'url'     => env('OTPELF_BASE_URL'),
-        'api_key' => env('OTPELF_API_KEY'),
+        'key' => env('OTPELF_API_KEY'),
+        'secret' => env('OTPELF_API_SECRET')
     ],
 
     'beam' => [

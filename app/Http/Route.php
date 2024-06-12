@@ -4271,6 +4271,7 @@ class Route
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
         'cps_iin_flow_disable'                    => ['post',    'cardps/iins/disable',                                    'IinController@disableMultipleIINFlows'                         ],
+        'otpelf_iin_flow_enable'                  => ['post',    'otpelf/iins/enable',                                    'IinController@enableMultipleIINFlows'],
         'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
         'cps_card_entity_create'                  => ['post',    'cardps/entity/create/card',                              'CardPSController@CreateCardEntity'                             ],
 
@@ -5639,6 +5640,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'otpelf_iin_flow_enable',
         'missing_refund_transactions_create',
         'missing_transaction_create',
         'merchant_create_terminal_internal_app',
@@ -17581,6 +17583,11 @@ class Route
             'internal_token_create',
             'internal_transactions',
             'pricing_fetch_plan'
+        ],
+
+        'otpelf' => [
+            'otpelf_iin_flow_enable',
+            'cps_iin_flow_disable'
         ],
 
         'pcp_service' => [

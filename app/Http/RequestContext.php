@@ -15,6 +15,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\AuthCreds;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use RZP\Exception\BadRequestException;
+use RZP\Trace\TraceCode;
 
 /**
  * @deprecated ...in favor of RequestContextV2, would take around one year time though.
