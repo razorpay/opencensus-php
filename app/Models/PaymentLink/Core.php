@@ -2679,13 +2679,10 @@ class Core extends Base\Core
         return $this->processFileHandlingForImage($originalImage, $imagick);
     }
 
+
     protected function getUploadFileName(UploadedFile $file, Imagick $imagick): string
     {
-        $filenameWithoutExt = str_before($file->getClientOriginalName(), '.' . $file->getClientOriginalExtension());
-
-        $uploadName = $filenameWithoutExt ."_". UniqueIdEntity::generateUniqueId(). '.' . $imagick->getImageFormat();
-
-        return $uploadName;
+        return UniqueIdEntity::generateUniqueId(). '.' . $imagick->getImageFormat();
     }
 
     protected function processFileHandlingForImage(UploadedFile $originalImage, Imagick $imagick)
