@@ -2169,6 +2169,8 @@ class Constants
      */
     const VENDOR_ONBOARDING_ENABLED = 'vendor_onboarding_enabled';
 
+    const BUYER_PROTECT_SIGNED_UP = 'buyer_protect_signed_up';
+
     /**
      * this feature flag is to distinguish merchants on CollectX and create VAs for them
      * with balance type as banking compared to normal smart collect VAs with balance type primary
@@ -3006,6 +3008,7 @@ class Constants
         self::IN_PERSON_CARDS_ENABLE_LABEL_MAPPING   => true,
         self::IN_PERSON_CARDS_ENABLE_TERMINAL_ROUTING   => true,
         self::VENDOR_ONBOARDING_ENABLED              => true,
+        self::BUYER_PROTECT_SIGNED_UP                => true,
         self::COLLECTX_ENABLED                       => true,
     ];
 

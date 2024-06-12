@@ -287,6 +287,9 @@ class Constants
     const OtherPaymentGatewayConfigured = 'other_payment_gateway_configured';
 
     const VendorOnboardingEnabled = 'vendor_onboarding_enabled';
+
+    const BuyerProtectionSignedUp = 'buyer_protection_signed_up';
+
     public static $validDcsKeys = [];
 
     /**
@@ -861,6 +864,7 @@ class Constants
         self::DisableWfConfigDimensionsForS2p         => 'client',
         self::RblBankLmsDashboard                     => 'client',
         self::VendorOnboardingEnabled                 => 'client',
+        self::BuyerProtectionSignedUp                 => 'direct',
     ];
 
     /**
