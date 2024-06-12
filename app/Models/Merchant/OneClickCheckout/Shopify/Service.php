@@ -1701,9 +1701,15 @@ class Service extends Base\Service
                     'order_id'    => $order->toArrayPublic()['id']
                 ]
             );
+
+            $taxDetails = [
+                'total_tax'      => 0,
+                'taxes_included' => true,
+            ];
+
             return [
                 'evaluate_rates'     => false,
-                'tax_details'        => [],
+                'tax_details'        => $taxDetails,
                 'is_digital_product' => false,
             ];
         }

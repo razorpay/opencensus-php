@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\ShippingInfo;
 
+use RZP\Models\Merchant\OneClickCheckout\Constants as OneClickCheckoutConstants;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -44,12 +45,12 @@ class MagicCheckoutProvider extends Base\Core
         if ($platform === 'shopify')
         {
             $checkoutId = $order->toArrayPublic()['notes']['storefront_id'];
-
             // This fetaure flag is required to resolve the issue where Shopify storefront API is giving the
             // tax information as exclusive, even though the merchant store is configured as tax inclusive.
             // So using this flag we will be able to override tax_included field as inclusive and fetch the
             // right tax amount from calculate draft order API.
-            if ($this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_TAX_INCLUSION) === true)
+            $isTaxInclusionEnabled = $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_TAX_INCLUSION);
+            if ($isTaxInclusionEnabled === true)
             {
                 $checkoutResponse = (new Shopify\Service)->getTaxDetailsAndIfProductIsDigitalFromDraftOrder($order, $orderMetaArray, $address);
             }
@@ -57,12 +58,33 @@ class MagicCheckoutProvider extends Base\Core
             {
                 $checkoutResponse = (new Shopify\Service)->getTaxDetailsAndIfProductIsDigitalFromCheckout($checkoutId, $address);
             }
+
+            $taxDetailsInfo =  $checkoutResponse['tax_details'];
+
+            $couponEngineEnabled = $this->merchant->get1ccConfigFlagStatus(OneClickCheckoutConstants::ONE_CC_COUPON_ENGINE);
+            if ($couponEngineEnabled === true){
+                if ($isTaxInclusionEnabled === true){
+                    $checkoutResponseForTaxesFlag = (new Shopify\Service)->getTaxDetailsAndIfProductIsDigitalFromCheckout($checkoutId, $address);
+                    $taxDetailsFlag = $checkoutResponseForTaxesFlag['tax_details']["taxes_included"];
+                    $taxDetailsValue = $checkoutResponse['tax_details']["total_tax"];
+                } else {
+                    $checkoutResponseForTaxesValue = (new Shopify\Service)->getTaxDetailsAndIfProductIsDigitalFromDraftOrder($order, $orderMetaArray, $address);
+                    $taxDetailsValue = $checkoutResponseForTaxesValue['tax_details']["total_tax"];
+                    $taxDetailsFlag = $checkoutResponse['tax_details']["taxes_included"];
+                }
+
+                $taxDetailsInfo["total_tax"] = $taxDetailsValue;
+                $taxDetailsInfo["taxes_included"] = $taxDetailsFlag;
+            }
+
+
             $isDigitalProduct = $checkoutResponse['is_digital_product'];
             $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
             if ($isTaxExpEnabled)
             {
-                $taxDetails = $checkoutResponse['tax_details'];
+                $taxDetails = $taxDetailsInfo;
             }
+
             // evaluate_rates is false if any error is received by Shopify. If the error thrown is of type 'virtual_product_found'
             // it means all products are virtual so we must allow serviceability with fee as Re 0.
             // In other cases a non-recoverable failure has occured so we block shipping.
