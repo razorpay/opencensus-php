@@ -2064,6 +2064,7 @@ class BasicAuth
                 ($this->isChargeCollectionsApp() === true) or
                 ($this->isEzetapApiApp() === true) or
                 ($this->isReminderServiceAuth() === true) or
+                ($this->isXperienceApp() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user') or
                 (($this->isExpress() === true) and

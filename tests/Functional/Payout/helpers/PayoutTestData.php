@@ -2501,6 +2501,7 @@ return [
             'url'     => '/composite_payout_internal',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
                 'HTTP_X-Payout-Idempotency' => 'test_i_key',
             ],
             'content' => [
@@ -2546,6 +2547,7 @@ return [
                 'purpose'         => 'petty cash',
                 'status'          => 'processing',
                 'mode'            => 'UPI',
+                'user_id'         => '20000000000000',
                 'source_details'  => [
                     [
                         'source_id'     => 'HYKmlGHHyEhZuM',

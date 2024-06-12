@@ -7048,6 +7048,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateCompositePayoutPettyCash()
     {
+        $this->fixtures->user->createUserForMerchantONLiveAndTest('10000000000000', ['id'=> '20000000000000', 'email'=> 'random@gmail.com'], 'owner');
+
         $balance = $this->fixtures->create('balance', [
             'merchant_id'    => '10000000000000',
             'account_type'   => 'direct',
