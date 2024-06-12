@@ -1003,6 +1003,17 @@ class Route
         //pricing-sdk related routes
         'pricing_get_vas_price'                   =>  ['get',     'pricing/vas/fetch',                              'PricingController@calculateVASPrice'                               ],
 
+        // org_pricing routes
+        'create_org_pricing'                       => ['post',      'org_pricing',                                    'PricingController@createOrgPricing'                               ],
+        'update_org_pricing'                       => ['patch',     'org_pricing/{id}',                               'PricingController@updateOrgPricing'                               ],
+        'fetch_org_pricing'                        => ['get',       'org_pricing/fetch_multiple',                     'PricingController@fetchOrgPricing'                                ],
+
+        'create_org_pricing_access_control'        => ['post',      'org_pricing_access_control',                         'PricingController@createOrgPricingAccessControl'               ],
+        'fetch_org_pricing_access_control'         => ['get',       'org_pricing_access_control/fetch_multiple',          'PricingController@fetchOrgPricingAccessControl'                ],
+        'revoke_org_pricing_access_control'        => ['delete',    'org_pricing_access_control/revoke/{permission_id}',  'PricingController@revokeOrgPricingAccessControl'               ],
+        'revoke_all_org_pricing_access_control'    => ['delete',    'org_pricing_access_control/revoke_all/{admin_id}',   'PricingController@revokeAllOrgPricingAccessControl'            ],
+
+
         'schedule_create'                          => ['post',     'schedules',                                      'ScheduleController@postSchedule'                                   ],
         'schedule_fetch'                           => ['get',      'schedules/{id}',                                 'ScheduleController@getSchedule'                                    ],
         'schedule_fetch_multiple'                  => ['get',      'schedules',                                      'ScheduleController@getSchedules'                                   ],
@@ -9461,6 +9472,14 @@ class Route
         'create_merchant_da_payout_mode_config',
         'edit_merchant_da_payout_mode_config',
 
+        'create_org_pricing',
+        'update_org_pricing',
+        'fetch_org_pricing',
+        'create_org_pricing_access_control',
+        'fetch_org_pricing_access_control',
+        'revoke_org_pricing_access_control',
+        'revoke_all_org_pricing_access_control',
+
          //magic checkout
          '1cc_shopify_fetch_meta_fields',
          '1cc_shopify_update_meta_fields',
@@ -10003,6 +10022,14 @@ class Route
         'fetch_all_banking_configs'                => Permission::VIEW_BANKING_CONFIGS,
         'get_banking_config'                       => Permission::VIEW_BANKING_CONFIGS,
         'edit_banking_configs'                     => Permission::UPSERT_BANKING_CONFIGS,
+
+        'create_org_pricing'                       => Permission::MANAGE_ORG_PRICING,
+        'update_org_pricing'                       => Permission::MANAGE_ORG_PRICING,
+        'fetch_org_pricing'                        => Permission::MANAGE_ORG_PRICING,
+        'create_org_pricing_access_control'        => Permission::MODIFY_ORG_PRICING_ACCESS,
+        'fetch_org_pricing_access_control'         => Permission::MODIFY_ORG_PRICING_ACCESS,
+        'revoke_org_pricing_access_control'        => Permission::MODIFY_ORG_PRICING_ACCESS,
+        'revoke_all_org_pricing_access_control'    => Permission::MODIFY_ORG_PRICING_ACCESS,
 
         'sub_virtual_account_create'               => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
@@ -15279,6 +15306,15 @@ class Route
             'fetch_merchant_da_payout_mode_config',
             'create_merchant_da_payout_mode_config',
             'edit_merchant_da_payout_mode_config',
+
+
+            'create_org_pricing',
+            'update_org_pricing',
+            'fetch_org_pricing',
+            'create_org_pricing_access_control',
+            'fetch_org_pricing_access_control',
+            'revoke_org_pricing_access_control',
+            'revoke_all_org_pricing_access_control',
 
             'nca_store_create',
             'nca_store_list',

@@ -4,8 +4,10 @@ namespace RZP\Services;
 
 use App;
 use Request;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Http\RequestHeader;
@@ -51,11 +53,23 @@ class ChargeCollections
     const X_TASK_ID         = 'X-Task-Id';
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
     const TENANT            = 'tenant';
+    const X_DASHBOARD_USER_ID = 'X-Dashboard-User-id';
 
     const DEFAULT_REQUEST_TIMEOUT   = 60;
 
     // Charge Collections APIs
     const GetReceiptForInvoiceURL = 'v1/subscription/getReceiptForInvoice';
+    const OrgPricingURL = 'v1/org_pricing';
+    const FetchOrgPricingURL = 'v1/org_pricing/fetch_multiple';
+    const FetchOrgPricingAccessControl = 'v1/org_pricing_access_control/fetch_multiple';
+    const ApproveOrgPricing = 'v1/approve_org_pricing';
+    const CreateOrgPricingAccessControl = 'v1/org_pricing_access_control';
+    const RevokeOrgPricingAccessControl = 'v1/org_pricing_access_control/revoke';
+    const RevokeAllOrgPricingAccessControl = 'v1/org_pricing_access_control/revoke_all';
+    static $sensitiveFieldsForOrgPricing = ['category', 'sub_category', 'mcc', 'payment_method', 'method_type', 'payment_network', 'issuer_bank',
+                                            'payment_feature', 'amount_range_min', 'amount_range_max', 'international', 'fixed_rate', 'percent_rate',
+                                            'workflow_id', 'admin_id', 'active'];
+
 
     const CHARGE_PAYOUT_STATUS = 'v1/charge_payout_status';
 
@@ -211,6 +225,11 @@ class ChargeCollections
             }
         }
 
+        if (isset($headers[self::X_DASHBOARD_USER_ID]) === true)
+        {
+            $this->headers[self::X_DASHBOARD_USER_ID] = $headers[self::X_DASHBOARD_USER_ID];
+         }
+
         // Adds rzp-context-dev-serve header
         $this->headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
     }
@@ -243,8 +262,8 @@ class ChargeCollections
             {
                 $this->trace->info(TraceCode::CHARGE_COLLECTIONS_RESPONSE,
                     [
-                        "response" => $parsedResponse ?? [],
-                        "statusCode" => $response->status_code,
+                        'response' => $this->maskSensitiveFields($parsedResponse ?? [], self::$sensitiveFieldsForOrgPricing),
+                        'statusCode' => $response->status_code
                     ]);
             }
 
@@ -252,12 +271,18 @@ class ChargeCollections
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, $parsedResponse);
             }
-            else if ($response->status_code >= 400)
+
+            else if ($response->status_code === 401)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED, null, $parsedResponse);
+            }
+
+            else if ($response->status_code >= 402)
             {
                 throw new ServerErrorException(
                     TraceCode::CHARGE_COLLECTIONS_REQUEST_FAILURE,
                     ErrorCode::SERVER_ERROR,
-                    $parsedResponse
+                    $this->maskSensitiveFields($parsedResponse, self::$sensitiveFieldsForOrgPricing)
                 );
             }
         }
@@ -300,7 +325,52 @@ class ChargeCollections
 
             unset($traceRequest['headers'][self::X_PASSPORT_JWT_V1]);
 
+            $traceRequest = $this->maskSensitiveFields($traceRequest, self::$sensitiveFieldsForOrgPricing);
+
             $this->trace->info(TraceCode::CHARGE_COLLECTIONS_REQUEST, $traceRequest);
+        }
+    }
+
+    protected function maskSensitiveFields($data, array $sensitiveFields)
+    {
+        if (!is_array($data) and !is_object($data))
+        {
+            return $data;
+        }
+
+        foreach ($data as $key => $value)
+        {
+            // if the field is an array or object, recursively call the function to mask its elements
+            if (is_array($value) or is_object($value))
+            {
+                $data[$key] = $this->maskSensitiveFields($value, $sensitiveFields);
+            }
+            else if (in_array($key, $sensitiveFields) and $value !== null) // mask only sensitive fields with non-null value
+            {
+                $data[$key] = $this->maskField($key, $value);
+            }
+        }
+
+        return $data;
+    }
+
+    protected function maskField($key, $value)
+    {
+        if (is_int($value)) // replace with 0 for integer
+        {
+            return 0;
+        }
+        else if (is_bool($value)) // replace with false for boolean
+        {
+            return false;
+        }
+        else if (is_string($value)) // replace with 'x' for string
+        {
+            return str_repeat('x', strlen($value));
+        }
+        else
+        {
+            return $value;
         }
     }
 

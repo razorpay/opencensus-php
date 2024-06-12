@@ -398,7 +398,7 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    protected function getAdminFromEmail($orgId, $email)
+    public function getAdminFromEmail($orgId, $email)
     {
         $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
 

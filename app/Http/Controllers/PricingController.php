@@ -182,4 +182,95 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createOrgPricing()
+    {
+        $input = Request::all();
+
+        $passport = $this->ba->getPassport();
+
+        $adminId = $passport['consumer']['id'];
+
+        $data = $this->service()->createOrgPricing($input, $adminId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchOrgPricing()
+    {
+        $input = Request::all();
+
+        $passport = $this->ba->getPassport();
+
+        $adminId = $passport['consumer']['id'];
+
+        $data = $this->service()->fetchOrgPricing($input, $adminId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateOrgPricing(string $id)
+    {
+        $input = Request::all();
+        
+        $passport = $this->ba->getPassport();
+
+        $adminId = $passport['consumer']['id'];
+
+        $data = $this->service()->updateOrgPricing($input, $id, $adminId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createOrgPricingAccessControl()
+    {
+        $input = Request::all();
+
+        $passport = $this->ba->getPassport();
+
+        $adminOrgId = $passport['consumer']['meta']['org_id'];
+
+        $data = $this->service()->createOrgPricingAccessControl($input, $adminOrgId);
+
+        return ApiResponse::json($data);
+
+    }
+
+    public function fetchOrgPricingAccessControl()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchOrgPricingAccessControl($input);
+
+        return ApiResponse::json($data);
+
+    }
+
+    public function revokeOrgPricingAccessControl(string $permissionId)
+    {
+        $data = $this->service()->revokeOrgPricingAccessControl($permissionId);
+
+        return ApiResponse::json($data);
+
+    }
+
+    public function revokeAllOrgPricingAccessControl(string $adminId)
+    {
+        $data = $this->service()->revokeAllOrgPricingAccessControl($adminId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function approveOrgPricingWorkflow()
+    {
+        $input = Request::all();
+
+        $passport = $this->ba->getPassport();
+
+        $adminId = $passport['consumer']['id'];
+
+        $data = $this->service()->approveOrgPricingWorkflow($input, $adminId);
+
+        return ApiResponse::json($data);
+    }
+
 }

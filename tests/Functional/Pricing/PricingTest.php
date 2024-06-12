@@ -2,16 +2,22 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Hash;
 use Event;
 use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Transaction;
 use RZP\Error\PublicErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Services\RazorXClient;
+use RZP\Http\Request\Requests;
+use RZP\Tests\Functional\Fixtures;
+use RZP\Services\ChargeCollections;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Partner\Commission\Base\Setup;
@@ -22,6 +28,7 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Fixtures\Entity\Merchant;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -48,6 +55,15 @@ class PricingTest extends TestCase
         $this->app['config']->set('applications.smart_routing.mock', true);
 
         $this->ba->adminAuth();
+    }
+
+    protected function createAdmins()
+    {
+        $this->admin1 = $this->fixtures->create('admin',
+                                                [Admin\Entity::ID     => '19000000000011',
+                                                 Admin\Entity::ORG_ID => '100000razorpay',
+                                                 Admin\Entity::EMAIL  => 'xyz@rzp.com'])
+                                       ->getId();
     }
 
     /**
@@ -622,6 +638,149 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function mockChargeCollectionsGetAccessList(String $accessType)
+    {
+        $chargeCollectionsClient = $this->getMockBuilder( ChargeCollections::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('charge_collections', $chargeCollectionsClient);
+        $url = ChargeCollections::FetchOrgPricingAccessControl. '?admin_id=RzrpySprAdmnId';
+
+        $this->app['charge_collections']
+            ->method('sendRequest')
+            ->with($url, Requests::GET, [], [])
+            ->willReturn([
+                'org_pricing_access_control' => [
+                    [
+                        'id' => 'NtjYJSL3FZVu5W',
+                        'admin_id' => 'RzrpySprAdmnId',
+                        'org_id' => '100000razorpay',
+                        'access_type' => $accessType
+                    ],
+                ]
+            ]);
+    }
+
+    public function mockChargeCollectionsOrgPricingAPI(String $url, String $method, array $input, array $response, array $headers = [ChargeCollections::X_DASHBOARD_USER_ID => 'RzrpySprAdmnId']) {
+
+        $chargeCollectionsClient = $this->getMockBuilder( ChargeCollections::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('charge_collections', $chargeCollectionsClient);
+
+        $this->app['charge_collections']
+            ->method('sendRequest')
+            ->with($url, $method, $input, $headers)
+            ->willReturn($response);
+    }
+
+    public function testCreateOrgPricingWithoutPermission()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateOrgPricing()
+    {
+        $orgPricing = [
+            'org_id'=> '100000razorpay',
+            'org_name'=> 'Razorpay',
+            'merchant_id'=> '100000raxorpay',
+            'category'=> 'Finance',
+            'sub_category'=> 'Mutual Funds',
+            'mcc'=> '6211',
+            'payment_method'=> 'Debit Card',
+            'issuer_bank'=> 'Axis Bank',
+            'payment_feature'=> 'Description',
+            'percent_rate'=> 10.2,
+            'workflow_id'=> '100000razorpay',
+            'admin_id'=> 'RzrpySprAdmnId'
+        ];
+
+        $this->ba->adminAuthWithPermission(Name::MANAGE_ORG_PRICING);
+
+        $this->mockChargeCollectionsOrgPricingAPI(ChargeCollections::OrgPricingURL, Requests::POST,  $orgPricing, []);
+
+        $this->mockChargeCollectionsGetAccessList('CREATE_MAKER');
+
+        $this->startTest();
+    }
+
+    public function testCreateOrgPricingWithoutAccess()
+    {
+        $this->ba->adminAuthWithPermission(Name::MANAGE_ORG_PRICING );
+
+        $this->mockChargeCollectionsGetAccessList('GET');
+
+        $this->startTest();
+    }
+
+    public function testFetchOrgPricing()
+    {
+        $this->ba->adminAuthWithPermission(Name::MANAGE_ORG_PRICING);
+
+        $this->mockChargeCollectionsGetAccessList('GET');
+
+        $response = [
+            'org_pricing' => [
+                [
+                    'id' => 'OEEt8Cy5xN2sc1',
+                    'orgId' => '100000razorpay',
+                    'orgName' => 'Razorpay Software Private Ltd',
+                    'merchantId' => 'testmid1234123',
+                    'category' => 'ecommerce',
+                    'subCategory' => 'rental',
+                    'mcc' => '7394',
+                    'paymentMethod' => 'wallet',
+                    'methodType' => 'debit',
+                    'paymentNetwork' => '',
+                    'issuerBank' => 'ICIC',
+                    'paymentFeature' => 'test',
+                    'amountRangeMin' => 0,
+                    'amountRangeMax' => 1000000,
+                    'international' => false,
+                    'fixedRate' => 0,
+                    'percentRate' => 3,
+                    'workflowId' => 'OEEt82AG4F1CTH',
+                    'adminId' => 'IyZcbUNwvQiEib'
+                ]
+            ],
+        ];
+
+        $this->mockChargeCollectionsOrgPricingAPI(ChargeCollections::FetchOrgPricingURL.'?org_id=100000razorpay' , Requests::GET, [], $response);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrgPricingAccessControl()
+    {
+        $this->ba->adminAuthWithPermission(Name::MODIFY_ORG_PRICING_ACCESS );
+
+        $chargeCollectionsRequest = [
+            'admin_id' => 'RzrpySprAdmnId',
+            'org_id' => '100000razorpay',
+            'access_type' => 'GET'
+        ];
+
+        $response = [
+            'orgPricingAccessControl' => [
+                [
+                    'id' => 'NtjYJSL3FZVu5W',
+                    'admin_id' => 'NpMhDQOPSVD9wo',
+                    'org_id' => '100000razorpay',
+                    'access_type' => 'GET'
+                ]
+            ]
+        ];
+
+        $this->mockChargeCollectionsOrgPricingAPI(ChargeCollections::CreateOrgPricingAccessControl , Requests::POST, $chargeCollectionsRequest, $response, []);
+
+        $this->startTest();
     }
 
     public function testAddPricingRuleForChannelFailure()

@@ -4676,7 +4676,158 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testCreateOrgPricingWithoutPermission' => [
+        'request'  => [
+            'content' => [
+                    'organization_id'=> '100000razorpay',
+                    'org_name'=> 'Razorpay',
+                    'merchant_id'=> '1Ndi8daddpafdq',
+                    'merchant_name'=> 'tdst',
+                    'category'=> 'Finance',
+                    'sub_category'=> 'Mutual Funds',
+                    'mcc'=> '6211',
+                    'payment_method'=> 'Debit Card',
+                    'issuer_bank'=> 'Axis Bank',
+                    'payment_feature'=> 'Description',
+                    'international'=> false,
+                    'percent_rate'=> 10.2
+            ],
+            'url'     => '/org_pricing',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED
+        ],
+    ],
+    'testCreateOrgPricing' => [
+        'request'  => [
+            'content' => [
+                'organization_id'=> '100000razorpay',
+                'org_name'=> 'Razorpay',
+                'merchant_id'=> '1Ndi8daddpafdq',
+                'merchant_name'=> 'tdst',
+                'category'=> 'Finance',
+                'sub_category'=> 'Mutual Funds',
+                'mcc'=> '6211',
+                'payment_method'=> 'Debit Card',
+                'issuer_bank'=> 'Axis Bank',
+                'payment_feature'=> 'Description',
+                'international'=> false,
+                'percent_rate'=> 10.2
+            ],
+            'url'     => '/org_pricing',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
 
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testCreateOrgPricingWithoutAccess' => [
+        'request'  => [
+            'content' => [
+                'organization_id'=> '100000razorpay',
+                'org_name'=> 'Razorpay',
+                'merchant_id'=> '1Ndi8daddpafdq',
+                'merchant_name'=> 'tdst',
+                'category'=> 'Finance',
+                'sub_category'=> 'Mutual Funds',
+                'mcc'=> '6211',
+                'payment_method'=> 'Debit Card',
+                'issuer_bank'=> 'Axis Bank',
+                'payment_feature'=> 'Description',
+                'international'=> false,
+                'percent_rate'=> 10.2
+            ],
+            'url'     => '/org_pricing',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Admin doesn\'t has access to create org pricing workflow',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+    'testFetchOrgPricing' => [
+        'request'  => [
+            'content' => ['organization_id' => '100000razorpay'],
+            'url'     => '/org_pricing/fetch_multiple',
+            'method'  => 'GET'
+        ],
+        'response'  => [
+            'content'     => [
+                'count' => 1,
+                'items' =>   [
+                    [
+                        'id' => 'OEEt8Cy5xN2sc1',
+                        'orgId' => '100000razorpay',
+                        'orgName' => 'Razorpay Software Private Ltd',
+                        'merchantId' => 'testmid1234123',
+                        'category' => 'ecommerce',
+                        'subCategory' => 'rental',
+                        'mcc' => '7394',
+                        'paymentMethod' => 'wallet',
+                        'methodType' => 'debit',
+                        'paymentNetwork' => '',
+                        'issuerBank' => 'ICIC',
+                        'paymentFeature' => 'test',
+                        'amountRangeMin' => 0,
+                        'amountRangeMax' => 1000000,
+                        'international' => false,
+                        'fixedRate' => 0,
+                        'percentRate' => 3,
+                        'workflowId' => 'OEEt82AG4F1CTH',
+                        'adminId' => 'IyZcbUNwvQiEib'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testCreateOrgPricingAccessControl' => [
+        'request'  => [
+            'content' => [
+                'admin_email' => 'superadmin@razorpay.com',
+                'organization_id' => '100000razorpay',
+                'access_type' => 'GET'
+            ],
+            'url'     => '/org_pricing_access_control',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                    'orgPricingAccessControl' => [
+                        [
+                            'id' => 'NtjYJSL3FZVu5W',
+                            'admin_id' => 'NpMhDQOPSVD9wo',
+                            'org_id' => '100000razorpay',
+                            'access_type' => 'GET'
+                        ]
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+    ],
     'testAddDuplicatePricingPlanRulesForBankingProduct' => [
         'request'   => [
             'content' => [

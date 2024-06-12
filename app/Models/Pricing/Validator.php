@@ -89,6 +89,12 @@ class Validator extends Base\Validator
         Fetch::SKIP       => 'sometimes|integer|min:0',
     ];
 
+    protected static $createOrgPricingAccessControlRules = [
+        'admin_email'     => 'required|string',
+        'organization_id' => 'sometimes|string',
+        'access_type'     => 'required|string'
+    ];
+
     protected static $addPlanRuleValidators = [
         'addBuyPricingTypeRule',
         'addPlanRuleRate',

@@ -4,10 +4,14 @@ namespace RZP\Models\Pricing;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Admin\Admin;
+use RZP\Http\Request\Requests;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Partner\Commission\Calculator;
 use RZP\Models\Pricing;
@@ -20,10 +24,14 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Services\ChargeCollections;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Pricing\Constants as PricingConstants;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 
 class Service extends Base\Service
 {
@@ -861,6 +869,191 @@ class Service extends Base\Service
         ];
 
         return $networks;
+    }
+
+    public function createOrgPricing(array $input, string $adminId)
+    {
+        $this->modifyOrgIdInInput($input);
+
+        $input['admin_id'] = $adminId;
+
+        // Check if the admin has CREATE_MAKER access or ALL access
+        $adminHasCreateAccess = $this->hasCreateMakerOrAllAccess($adminId, $input['org_id']);
+
+        if ($adminHasCreateAccess === false)
+        {
+            throw new BadRequestValidationFailureException('Admin doesn\'t has access to create org pricing workflow');
+        }
+
+        $ORG_PRICING_APPROVE_CONTROLLER = 'RZP\Http\Controllers\PricingController@approveOrgPricingWorkflow';
+
+        try
+        {
+            $this->app['workflow']
+                ->setPermission('create_org_pricing_maker')
+                ->setEntityAndId('org_pricing', $input['org_id'])
+                ->setInput(['org_id' => $input['org_id']])
+                ->setController($ORG_PRICING_APPROVE_CONTROLLER)
+                ->handle([], ['org_id' => $input['org_id']]);
+
+            return [];
+        }
+
+        catch(Exception\EarlyWorkflowResponse $e)
+        {
+
+            $workflowActionData = json_decode($e->getMessage(), true);
+
+            $workflowActionId = Action\Entity::silentlyStripSign($workflowActionData['id']);
+
+            $input['workflow_id'] = $workflowActionId;
+
+            $endPoint = ChargeCollections::OrgPricingURL;
+            $headers = [
+                ChargeCollections::X_DASHBOARD_USER_ID => $input['admin_id']
+            ];
+            $this->app->charge_collections->sendRequest($endPoint, Requests::POST, $input, $headers );
+
+            throw $e;
+        }
+    }
+
+    public function hasCreateMakerOrAllAccess($adminId, $orgId) {
+
+        $adminAccessArray = $this->fetchOrgPricingAccessControl(['admin_id' => $adminId]);
+
+        foreach ($adminAccessArray as $adminAccess)
+        {
+            if ((($adminAccess['access_type'] === PricingConstants::CREATE_MAKER) and
+                 ($adminAccess['org_id'] === $orgId)) or ($adminAccess['access_type'] === PricingConstants::ALL))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function fetchOrgPricing(array $input, string $adminId)
+    {
+        $this->modifyOrgIdInInput($input);
+
+        $endPoint = ChargeCollections::FetchOrgPricingURL .'?'. http_build_query($input);
+        $headers = [
+            ChargeCollections::X_DASHBOARD_USER_ID => $adminId
+        ];
+
+        $chargeCollectionsResponse = $this->app->charge_collections->sendRequest($endPoint, Requests::GET, [], $headers );
+
+        if (isset($chargeCollectionsResponse['org_pricing']) === true)
+        {
+            return [
+                'count' => count($chargeCollectionsResponse['org_pricing']),
+                'items' => $chargeCollectionsResponse['org_pricing']
+            ];
+        }
+
+        return [
+            'count' => 0,
+            'items' => []
+        ];
+    }
+
+    public function updateOrgPricing(array $input, string $id, string $adminId)
+    {
+        $this->modifyOrgIdInInput($input);
+
+        $endPoint = ChargeCollections::OrgPricingURL .'/'.$id;
+        $headers = [
+            ChargeCollections::X_DASHBOARD_USER_ID => $adminId
+        ];
+
+        return $this->app->charge_collections->sendRequest($endPoint, Requests::PATCH, $input, $headers );
+    }
+
+    public function fetchOrgPricingAccessControl(array $input)
+    {
+        $this->modifyOrgIdInInput($input);
+
+        $endPoint = ChargeCollections::FetchOrgPricingAccessControl.'?'. http_build_query($input);
+
+        $response =  $this->app->charge_collections->sendRequest($endPoint, Requests::GET, [], [] );
+
+        foreach ($response['org_pricing_access_control'] as &$accessControl)
+        {
+            $adminId = $accessControl['admin_id'];
+
+            $adminEmail = $this->repo->admin->getAdminFromId($adminId)->getEmail();
+
+            $accessControl['admin_email'] = $adminEmail;
+        }
+
+        return $response['org_pricing_access_control'];
+    }
+
+    public function modifyOrgIdInInput(array &$input)
+    {
+        if (array_key_exists('organization_id', $input) === true)
+        {
+            $input['org_id'] = Org\Entity::silentlyStripSign($input['organization_id']);
+
+            unset($input['organization_id']);
+        }
+    }
+
+    public function createOrgPricingAccessControl(array $input, string $adminOrgId)
+    {
+        $validator = new Pricing\Validator;
+
+        $validator->validateInput('create_org_pricing_access_control', $input);
+
+        $this->modifyOrgIdInInput($input);
+
+        $adminEmail = $input['admin_email'];
+
+        $admin = (new Admin\Service())->getAdminFromEmail($adminOrgId, $adminEmail);
+
+        unset($input['admin_email']);
+
+        $input['admin_id'] = $admin['id'];
+
+        $endPoint = ChargeCollections::CreateOrgPricingAccessControl;
+
+        $response = $this->app->charge_collections->sendRequest($endPoint, Requests::POST, $input, [] );
+
+        $response['OrgPricingAccessControl']['admin_email'] = $adminEmail;
+
+        return $response;
+    }
+
+    public function revokeOrgPricingAccessControl(string $permissionId)
+    {
+        $endPoint = ChargeCollections::RevokeOrgPricingAccessControl . '/' . $permissionId;
+
+        return$this->app->charge_collections->sendRequest($endPoint, Requests::DELETE, [], [] );
+    }
+
+    public function revokeAllOrgPricingAccessControl(string $adminId)
+    {
+        $endPoint = ChargeCollections::RevokeAllOrgPricingAccessControl . '/' . $adminId;
+
+        return $this->app->charge_collections->sendRequest($endPoint, Requests::DELETE, [], [] );
+    }
+
+    public function approveOrgPricingWorkflow(array $input, string $adminId)
+    {
+        $workflowActions = ((new WorkFlowActionCore()))->fetchLastUpdatedWorkflowActionInPermissionList(
+            $input['org_id'], 'org_pricing' , ['create_org_pricing_maker']);
+
+
+        $workflowActionId = $workflowActions['id'];
+
+        $endPoint = ChargeCollections::ApproveOrgPricing . '/'. $workflowActionId ;
+
+        $headers = [
+            ChargeCollections::X_DASHBOARD_USER_ID => $adminId
+        ];
+
+        return $this->app->charge_collections->sendRequest($endPoint, Requests::POST, [], $headers );
     }
 
     /**
