@@ -42,6 +42,7 @@ export interface DiscountDetails {
   discountedItemsList: string[];
   discountedItemsDisplayList: DiscountedItemsList[];
   maxDiscountValue: number | string;
+  hasLimitedUseagePerOrder: boolean;
 }
 
 export interface UsageRestriction {

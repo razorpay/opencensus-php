@@ -1,10 +1,14 @@
 import React, { useContext, ChangeEvent, useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { getCurrencySymbol } from '@razorpay/i18nify-js/currency';
 
 // ui imports
 import Input from 'common/new-ui/Input';
 import { Accordion } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/common/Accordian';
 import AddCollectionProductComponent from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/AddProductCollection/AddProductCollectionComponent';
 import {
+  CheckboxLabelWithInfo,
+  DiscountDetailsMaxQuantityContainer,
   FormGroup,
   InputIcon,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
@@ -18,12 +22,14 @@ import { validateDiscountDetails } from 'merchant/views/MagicCheckout/CouponEngi
 import { onWheelPreventChange } from 'merchant/views/MagicCheckout/helper';
 import { classList } from 'common/utils/rzp-utils';
 import { DiscountTypes } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/constants';
-
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { CurrencyCodeType } from '@razorpay/i18nify-js';
 interface AccordionBodyProps {
   couponName: string;
+  merchantCurrency: CurrencyCodeType;
 }
 
-const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName }) => {
+const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName, merchantCurrency }) => {
   const { widgetsData, setWidgetsData, setErrorStates, errorStates } = useContext(ModalContext);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>, name: string) => {
@@ -155,7 +161,47 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName }) => {
         </div>
       </FormGroup>
       {couponName !== 'amount_off_order' && (
-        <AddCollectionProductComponent stateObject="discountDetails" couponName={couponName} />
+        <>
+          <AddCollectionProductComponent stateObject="discountDetails" couponName={couponName} />
+          {widgetsData.discountDetails.discountType !== 'percentageDiscount' && (
+            <DiscountDetailsMaxQuantityContainer>
+              <div className="form-label">Usage Limit</div>
+              <div className="form-input">
+                <div className="display-flex">
+                  <Input.Check
+                    checked={widgetsData.discountDetails.hasLimitedUseagePerOrder}
+                    type="checkbox"
+                    name="isUnlimitedUsage"
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setWidgetsData({
+                        ...widgetsData,
+                        discountDetails: {
+                          ...widgetsData.discountDetails,
+                          hasLimitedUseagePerOrder: e.target.checked,
+                        },
+                      });
+                    }}
+                    autoRender
+                  />
+                  <CheckboxLabelWithInfo>
+                    <span>Only apply discount once per order</span>
+                    <i className="i i-info-outline">
+                      <Popover theme="dark">
+                        <PopoverBody>
+                          <div>
+                            If not selected, {getCurrencySymbol(merchantCurrency)}
+                            {widgetsData.discountDetails.discountValue} will be taken off each
+                            eligible item in an order.
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </i>
+                  </CheckboxLabelWithInfo>
+                </div>
+              </div>
+            </DiscountDetailsMaxQuantityContainer>
+          )}
+        </>
       )}
     </div>
   );
@@ -171,9 +217,13 @@ const AccordianFooter: React.FC<AccordianFooterProps> = ({ couponName }) => {
 
 interface DiscountDetailsWidgetProps {
   couponName: string;
+  merchantCurrency: CurrencyCodeType;
 }
 
-const DiscountDetailsWidget: React.FC<DiscountDetailsWidgetProps> = ({ couponName }) => {
+const DiscountDetailsWidget: React.FC<DiscountDetailsWidgetProps> = ({
+  couponName,
+  merchantCurrency,
+}) => {
   const { errorStates } = useContext(ModalContext);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -192,11 +242,15 @@ const DiscountDetailsWidget: React.FC<DiscountDetailsWidgetProps> = ({ couponNam
       <Accordion
         open={isOpen}
         header={<div>Discount Details</div>}
-        body={<AccordionBody couponName={couponName} />}
+        body={<AccordionBody couponName={couponName} merchantCurrency={merchantCurrency} />}
         footer={<AccordianFooter couponName={couponName} />}
       />
     </div>
   );
 };
 
-export default DiscountDetailsWidget;
+export const mapStateToProps = (state) => ({
+  merchantCurrency: state.session.user.merchant.currency,
+});
+
+export default connect(mapStateToProps)(DiscountDetailsWidget);

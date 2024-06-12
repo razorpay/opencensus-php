@@ -31,6 +31,7 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     discountedItemsList: [],
     discountedItemsDisplayList: [],
     maxDiscountValue: '',
+    hasLimitedUseagePerOrder: false,
   },
   usageRestriction: {
     isLimitedUsage: false,

@@ -95,6 +95,10 @@ export function createProductDiscountPayload({
       max_unit_discount: 0,
     },
     max_discount: Number(discountDetails.maxDiscountValue) * 100,
+    max_discounted_qty:
+      discountDetails.discountType === 'fixedAmount' && discountDetails.hasLimitedUseagePerOrder
+        ? 1
+        : 0,
   };
 
   if (discountDetails.discountApplicableTo === 'products') {
@@ -169,7 +173,9 @@ export function createProductDiscountPayload({
     },
     customer_whitelist,
     disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
-    force_display: couponDetails.display && Boolean(couponDetails.couponDiscoveryEnabled),
+    flags: {
+      force_display: couponDetails.display && Boolean(couponDetails.couponDiscoveryEnabled),
+    },
     combined_coupons: [
       {
         type: combineCoupons.shouldCombineFreeShippingCoupon ? COUPON_KEYS.free_shipping : null,

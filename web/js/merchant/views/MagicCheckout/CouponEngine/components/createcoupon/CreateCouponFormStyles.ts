@@ -141,6 +141,28 @@ export const FormGroup = styled.div`
   }
 `;
 
+export const DiscountDetailsMaxQuantityContainer = styled.div`
+  margin-top: 32px;
+  margin-bottom: 32px;
+
+  display: flex;
+  .Input {
+    margin: 0;
+  }
+
+  .form-label {
+    font-weight: 600;
+  }
+
+  .form-input {
+    flex-grow: 1;
+    max-width: 350px;
+  }
+
+  span {
+    font-weight: 600;
+  }
+`;
 export const CheckboxGroup = styled.div`
   display: flex;
   margin-top: 16px;
