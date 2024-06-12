@@ -80,6 +80,8 @@ class Core extends Base\Core
 
                 $feeRecoveryEntity->entity()->associate($entity);
 
+                $feeRecoveryEntity->setIgnoreRelations();
+
                 if ($skipDedupe === false)
                 {
                     [$skipCreation, $existingFeeRecoveryEntity] = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);

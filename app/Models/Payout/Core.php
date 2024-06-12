@@ -155,6 +155,8 @@ class Core extends Base\Core
 
     const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
 
+    const PS_CA_PAYOUT_MUTEX_LOCK_TIMEOUT = 30;
+
     const FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD = 21600; // In Seconds
 
     const FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD = 1000000; // In Paisa
@@ -9198,6 +9200,42 @@ class Core extends Base\Core
         (new Validator)->validateInput(Validator::PAYOUT_SERVICE_DUAL_WRITE_INPUT, $input);
 
         $payoutId = $input[Entity::PAYOUT_ID];
+
+        $this->mutex->acquireAndRelease(
+            'payout_service_fee_recovery_ca_merchant' . $payoutId,
+            function() use ($payoutId)
+            {
+                $this->repo->transaction(function() use ($payoutId)
+                {
+                    $payout = (new DualWrite\Payout)->getAPIPayoutFromPayoutService($payoutId);
+
+                    if($payout->isBalanceAccountTypeDirect() === true)
+                    {
+                        $status = $payout->getStatus();
+                        $this->trace->info(
+                            TraceCode::PAYOUT_SERVICE_FEE_RECOVERY_FOR_CA_PAYOUT_REQUEST,[
+                            "payout_entity" => $payout->toArray(),
+                            "payout_id" => $payoutId,
+                        ]);
+                        if ($status === Status::PROCESSED || $status === Status::INITIATED || $status === Status::FAILED || $status === Status::REVERSED)
+                        {
+                            // We need to create a fee_recovery entity for every CA payout in PS when there is either initiated or processed or reversed ot failed state.
+                            // We will check fee recovery table whether the fee recovery is already done or not for that Payout ID.
+
+                            $this->trace->info(
+                                TraceCode::PAYOUT_SERVICE_FEE_RECOVERY_FOR_CA_PAYOUT,[
+                                    "payout_entity" => $payout->toArray(),
+                                    "payout_id" => $payoutId,
+                                ]);
+
+                            (new DualWrite\Processor)->feeRecoveryForPSCAPayout($payout);
+                        }
+                    }
+                });
+            },
+            self::PS_CA_PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
 
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 

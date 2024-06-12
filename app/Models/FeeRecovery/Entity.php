@@ -200,6 +200,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Payout\Entity::class);
     }
 
+    public function setIgnoreRelations()
+    {
+        $this->ignoredRelations = [self::ENTITY];
+    }
+
     // --------------- End Relations ---------------
 
 }

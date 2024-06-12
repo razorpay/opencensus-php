@@ -11,6 +11,7 @@ use Config;
 use Mockery;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\EsSync;
+use RZP\Models\FeeRecovery;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
 use RZP\Error\PublicErrorCode;
@@ -1460,6 +1461,74 @@ class PayoutTest extends OAuthTestCase
 
         Queue::assertPushed(EsSync::class, 1);
     }
+
+    public function testDualWriteForPayoutServiceCAPayoutFeeRecovery()
+    {
+        /** @var Balance\Entity $secondBankingBalance */
+        $secondBankingBalance = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 1000,
+                'account_type'     => "direct",
+                'channel'          => 'rbl',
+            ]);
+        $id = $secondBankingBalance->getId();
+
+        $payoutData = [
+            'id' => "randomid111112",
+            'merchant_id' => "10000000000000",
+            'fund_account_id' => "100000000000fa",
+            'method' => "fund_transfer",
+            'reference_id' => null,
+            'balance_id' => $id ,
+            'user_id' => "random_user123",
+            'batch_id' => null,
+            'idempotency_key' => "random_key",
+            'purpose' => "refund",
+            'narration' => "Batman",
+            'purpose_type' => "refund",
+            'amount' => 2000000,
+            'currency' => "INR",
+            'notes' => "{}",
+            'fees' => 10,
+            'tax' => 33,
+            'status' => "initiated",
+            'fts_transfer_id' => 60,
+            'transaction_id' => "KHTaWqqBKwrVTM",
+            'channel' => "yesbank",
+            'utr' => "933815383814",
+            'failure_reason' => null,
+            'remarks' => "Check the status by calling getStatus API.",
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'scheduled_at' => null,
+            'queued_at' => null,
+            'mode' => "IMPS",
+            'fee_type' => "free_payout",
+            'workflow_feature' => null,
+            'origin' => 1,
+            'status_code' => null,
+            'cancellation_user_id' => null,
+            'registered_name' => "SUSANTA BHUYAN",
+            'queued_reason' => "beneficiary_bank_down",
+            'on_hold_at' => 1663092113,
+            'created_at' => 1000000000,
+            'updated_at' => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+        $this->ba->payoutInternalAppAuth('live');
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        /** @var FeeRecovery\Entity $feeRecovery */
+        $feeRecovery = $this->getDbLastEntity('fee_recovery','live')->toArray();
+        $this->assertEquals($feeRecovery['entity_id'], $payout['id']);
+    }
+
 
     public function testDualWriteForPayoutServicePayoutWithApiIdempotencyKeyNotPresent()
     {

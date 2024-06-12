@@ -118,50 +118,59 @@ class Processor
      */
     function makeFeeRecoveryIfApplicableForPSCAPayout(string $payoutId, mixed $previousStatus): void
     {
-        /** @var Entity $apiPayout */
-        $apiPayout = $this->repo->payout->find($payoutId);
+        try {
+            /** @var Entity $apiPayout */
+            $apiPayout = $this->repo->payout->find($payoutId);
 
-        if ( $apiPayout->isBalanceAccountTypeDirect() === true and $previousStatus !== null)
+            if ($apiPayout->isBalanceAccountTypeDirect() === true and $previousStatus !== null)
+            {
+                $status = $apiPayout->getStatus();
+                if ($previousStatus === $status)
+                {
+                    return;
+                }
+
+                switch ($status)
+                {
+                    case Status::PROCESSED:
+                        (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout);
+                        break;
+
+                    case Status::REVERSED:
+                        $reversal = $this->repo->reversal->findReversalForPayout($payoutId);
+                        (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout, $previousStatus, $reversal);
+                        break;
+
+                    case Status::FAILED:
+                        (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout, $previousStatus);
+                        break;
+                }
+
+            }
+        }
+        catch (\Throwable $e)
         {
-            $status = $apiPayout->getStatus();
-            if ($previousStatus === $status)
-            {
-                return;
-            }
-            // We need to create a fee_recovery entity for every payout when it goes from created to initiated state.
-            // Keeping this code here because this status change is allowed only once and there is no chance of this
-            // getting triggered twice
-            $this->feeRecoveryForPSCAPayout($apiPayout, $previousStatus);
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PS_CA_PAYOUT_STATUS_FAILED,
+                [
+                    'entity_id' => $payoutId,
+                    'entity_type' => EntityConstant::PAYOUT,
+                    'status'=> $status
+                ]
+            );
 
-            switch ($status)
-            {
-                case Status::PROCESSED:
-                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout);
-                    break;
-
-                case Status::REVERSED:
-                    $reversal = $this->repo->reversal->findReversalForPayout($payoutId);
-                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout, $previousStatus, $reversal);
-                    break;
-
-                case Status::FAILED:
-                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($apiPayout, $previousStatus);
-                    break;
-            }
-
+            throw $e;
         }
     }
 
 
-    public function feeRecoveryForPSCAPayout(Entity $payout, $previous)
+    public function feeRecoveryForPSCAPayout(Entity $payout)
     {
-        $status = $payout->getStatus();
-
         try
         {
-            if (($previous === Status::CREATED) and
-                ($status === Status::INITIATED) and
-                ($payout->isBalanceAccountTypeDirect() === true) and
+            if (($payout->isBalanceAccountTypeDirect() === true) and
                 ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE))
             {
                 $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($payout->merchant);

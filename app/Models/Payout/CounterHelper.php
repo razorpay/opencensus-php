@@ -4,10 +4,13 @@ namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Counter;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
@@ -44,6 +47,16 @@ class CounterHelper extends Base\Core
             ($balance->getAccountType() === Balance\AccountType::SHARED)))
         {
             return null;
+        }
+        if (($balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true) and ($balance->getAccountType() === AccountType::DIRECT))
+        {
+
+            $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+
+            if ($variant === 'on') {
+                return null;
+            }
         }
 
         // This is to ensure that this method is called from within a transaction only as we are updating entities here

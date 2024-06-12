@@ -22632,6 +22632,21 @@ return [
             ]
         ]
     ],
+    'testDualWriteForPayoutServiceCAPayoutFeeRecovery' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'payout_id' => 'randomid111112',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
 
     'testPayoutUpdatePostBasRecon' => [
         'request' => [
