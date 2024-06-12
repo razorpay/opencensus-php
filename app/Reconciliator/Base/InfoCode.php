@@ -10,6 +10,8 @@ class InfoCode
 
     const RECON_FAILED                                  = 'RECON_FAILED';
 
+    const PRINT_RECON_DETAILS_TO_CATCH                  = 'PRINT_RECON_DETAILS_TO_CATCH';
+
     const RECON_UNPROCESSED_SUCCESS                     = 'RECON_UNPROCESSED_SUCCESS';
 
     const AMOUNT_MISMATCH                               = 'AMOUNT_MISMATCH';

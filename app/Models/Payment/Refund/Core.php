@@ -142,14 +142,26 @@ class Core extends Base\Core
         // we are doing this so that we can send this data to scrooge service in order to update
         // reference1 of refund
         $refundsData = [];
-
+        
         foreach ($refunds as $refund)
         {
             $scroogeInputObject = (object)[];
 
             $paymentReference1 = $refund->payment->getReference1();
 
-            $refundReference1  = $refund->getReference1();
+            if ($refund !== null){
+                $refundReference1  = $refund->getReference1();
+            }
+            else{
+                $this->trace->info(TraceCode::RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK,
+                    [
+                        'info_code'     => InfoCode::PRINT_RECON_DETAILS_TO_CATCH,
+                        'refund_id'     => $refund->getId(),
+                        'payment_id'    => $refund->payment->getId(),
+                        'gateway'       => $refund->payment->getGateway()
+            ]);
+            }
+            // $refundReference1  = $refund->getReference1();
 
             if (empty($refundReference1) === false)
             {
