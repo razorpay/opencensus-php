@@ -4,6 +4,8 @@ namespace RZP\Models\LedgerOutbox;
 
 use App;
 use DB;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Partitions;

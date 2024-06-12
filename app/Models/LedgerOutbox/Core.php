@@ -1906,4 +1906,32 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function updatePaymentJournalPayloadAndPushToOutbox($transactorPublicId, $transactorEvent)
+    {
+        $ledgerService = $this->app['ledger'];
+
+        $payment = $this->repo->payment->findByPublicId($transactorPublicId);
+
+        $journal = $this->getJournalByTransactorInfo($transactorPublicId, $transactorEvent, $ledgerService);
+
+        // return if journal exists
+        if($journal !== null)
+        {
+            $this->trace->info(TraceCode::JOURNAL_ALREADY_EXISTS, [
+                LedgerConstants::PAYMENT_ID       =>  $payment->getId(),
+                LedgerConstants::JOURNALS         =>  $journal,
+            ]);
+        }
+
+        //soft delete older outbox entry
+        $this->softDelete($transactorPublicId, $transactorEvent);
+
+        $discount = $this->getDiscountIfApplicableForLedger($payment);
+
+        // create new outbox entry
+        [$commission, $tax] = (new ReverseShadow\Payments\Core())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+
+        return [$commission, $tax];
+    }
 }

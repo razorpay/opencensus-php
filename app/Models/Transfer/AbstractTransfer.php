@@ -282,9 +282,35 @@ abstract class AbstractTransfer
             $processViaReverseShadow = true;
         }
 
-        if ((( $reverseShadowEnabledForParent === true ) and ( $reverseShadowEnabledForLinkedAccount === false)) or
-            (( $reverseShadowEnabledForParent === false ) and ( $reverseShadowEnabledForLinkedAccount === true))
-        )
+        if (( $reverseShadowEnabledForParent === true ) and ($reverseShadowEnabledForLinkedAccount === false))
+        {
+            //onboard linked account mid if parent mid on reverse shadow
+            $input = [
+                "merchant_ids" => [$subMerchant->getId()],
+            ];
+
+            try
+            {
+                (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(
+                    TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH,
+                    [
+                        'transfer_id'                            => $transfer->getId(),
+                        'parent_merchant_id'                     => $transfer->merchant->getId(),
+                        'reverseShadowEnabledForParent'          => $reverseShadowEnabledForParent,
+                        'linked_account_merchant_id'             => $subMerchant->getId(),
+                        'reverseShadowEnabledForLinkedAccount'   => $reverseShadowEnabledForLinkedAccount,
+                    ]
+                );
+
+                (new Metric())->pushTransferMerchantsOnboardingMismatchMetrics($reverseShadowEnabledForParent,$reverseShadowEnabledForLinkedAccount);
+            }
+        }
+
+        if (( $reverseShadowEnabledForParent === false ) and ($reverseShadowEnabledForLinkedAccount === true))
         {
             $this->trace->info(
                 TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH,

@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\LedgerOutbox;
 use RZP\Models\Ledger\ReverseShadow;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use function RZP\Console\Commands\laravelPatternToEdgeRoute;
 
 
@@ -128,17 +129,25 @@ class Service extends Base\Service
     {
         $response = new Base\Collection();
 
-        $createdAtLessThanMinutes = (int) ($input['less_than'] ?? 60);
-        $endDateTimestamp = Carbon::now(Timezone::IST)->subMinutes($createdAtLessThanMinutes)->getTimestamp();
+        if (isset($input['transactor_ids']) === true)
+        {
+            $createdAtLessThanMinutes = (int) ($input['less_than'] ?? 60);
+            $endDateTimestamp = Carbon::now(Timezone::IST)->subMinutes($createdAtLessThanMinutes)->getTimestamp();
 
-        $createdAtGreaterThanMinutes = (int) ($input['greater_than'] ?? 24*60);
-        $startDateTimestamp = Carbon::now(Timezone::IST)->subMinutes($createdAtGreaterThanMinutes)->getTimestamp();
+            $createdAtGreaterThanMinutes = (int) ($input['greater_than'] ?? 24*60);
+            $startDateTimestamp = Carbon::now(Timezone::IST)->subMinutes($createdAtGreaterThanMinutes)->getTimestamp();
 
-        $txnResponse = $this->core->createMissingAdjustmentTransactions($startDateTimestamp, $endDateTimestamp, $input["transactor_ids"] );
+            $txnResponse = $this->core->createMissingAdjustmentTransactions($startDateTimestamp, $endDateTimestamp, $input["transactor_ids"] );
 
-        $response->push([
-            "response" => $txnResponse,
-        ]);
+            $response->push([
+                "response" => $txnResponse,
+            ]);
+        }
+
+        if (isset($input['retry_payment_journal']) === true)
+        {
+            $response = $this->updatePaymentJournalPayloadInOutbox($input);
+        }
 
         return $response;
     }
@@ -184,5 +193,53 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updatePaymentJournalPayloadInOutbox(array $input)
+    {
+        $response = new Base\Collection();
+        $failureIds = [];
+        $successIds = [];
+
+        if (isset($input['']) === true) {
+            $paymentsArrString = $input['payment_public_ids'];
+
+            $paymentsArr = explode(',', $paymentsArrString);
+
+            for ($i = 0; $i < count($paymentsArr); $i++) {
+
+                $currentPaymentPublicId = $paymentsArr[$i];
+
+                try {
+                    [$commission, $tax] = $this->core->updatePaymentJournalPayloadAndPushToOutbox($currentPaymentPublicId, LedgerConstants::MERCHANT_CAPTURED);
+
+                    $this->trace->info(TraceCode::PAYMENT_UPDATE_JOURNAL_PAYLOAD_IN_OUTBOX_SUCCESSFUL, [
+                        LedgerConstants::PAYMENT_ID => $currentPaymentPublicId,
+                        LedgerConstants::COMMISSION => $commission,
+                        LedgerConstants::TAX => $tax,
+                    ]);
+
+                    array_push($successIds, $currentPaymentPublicId);
+
+                } catch (\Exception $e) {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::PAYMENT_UPDATE_JOURNAL_FAILED,
+                        [
+                            LedgerConstants::PAYMENT_ID => $currentPaymentPublicId,
+                        ]
+                    );
+
+                    array_push($failureIds, [$paymentsArr[$i] => $e->getMessage()]);
+                }
+            }
+
+            $response->push([
+                "failures" => $failureIds,
+                "success" => $successIds
+            ]);
+
+            return $response;
+        }
+    }
 }
 
