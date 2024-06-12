@@ -67,7 +67,7 @@ class Repository extends Base\Repository
         $oeResponse = $this->fetchAllActiveNonSubscriptionOffersFromOE($merchantId);
 
         // if response is empty fallback to API query
-        if (count($oeResponse) > 0)
+        if (($oeResponse !== null) and (count($oeResponse) > 0))
         {
             return $oeResponse;
         }
@@ -121,7 +121,7 @@ class Repository extends Base\Repository
         $oeResponse =  $this->fetchOffersSubscriptionFromOE($paymentMethods, $offerId, $merchantId);
 
         // if response is empty fallback to API query
-        if (count($oeResponse) > 0)
+        if (($oeResponse !== null) and (count($oeResponse) > 0))
         {
             return $oeResponse ;
         }
