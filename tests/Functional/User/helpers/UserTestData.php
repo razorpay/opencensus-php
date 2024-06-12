@@ -6974,6 +6974,81 @@ return [
         ]
     ],
 
+    'testEzetapMerchantPartnerAgentMerchantRegister' => [
+        'request' => [
+            'url'     => '/register/merchant/otp/verify',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'signup_campaign'       => 'assisted_onboarding'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'            =>'8877665544',
+                'signup_via_email'          => 0,
+                'confirmed'                 => false,
+                'email_verified'            => false,
+                'contact_mobile_verified'   => true,
+                'signup_campaign'           => 'assisted_onboarding'
+            ]
+        ]
+    ],
+
+    'testNonPartnerAgentMerchantRegister' => [
+        'request'  => [
+            'url'     => '/register/merchant/otp/verify',
+            'method'  => 'POST',
+            'content' => [],
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testNonEzetapMerchantPartnerAgentMerchantRegister' => [
+        'request' => [
+            'url'     => '/register/merchant/otp/verify',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'signup_campaign'       => 'assisted_onboarding'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'            =>'8877665544',
+                'signup_via_email'          => 0,
+                'confirmed'                 => false,
+                'email_verified'            => false,
+                'contact_mobile_verified'   => true,
+                'signup_campaign'           => 'assisted_onboarding'
+            ]
+        ]
+    ],
+
+
     'testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff' => [
         'request' => [
             'url'     => '/users/register/otp/verify',

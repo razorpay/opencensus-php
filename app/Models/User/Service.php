@@ -789,6 +789,20 @@ class Service extends Base\Service
                     (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                 }
 
+                $loggedInMerchant=  $this->app['basicauth']->getMerchant();
+
+                $ezetapMerchantId= $this->app['config']->get('app.ezetap_merchant_id');
+
+                if ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING and $loggedInMerchant->getId()==$ezetapMerchantId) {
+                    $userMerchantMappingInputData = [
+                        'action' => 'attach',
+                        'role' => Role::RAZORPAY_SALES,
+                        'merchant_id' => $merchantData['id'],
+                    ];
+                    $loggedInUser = $this->app['basicauth']->getUser();
+                    $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
+                }
+
                 $data = $this->get($user['id']);
 
                 if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false)
@@ -889,6 +903,11 @@ class Service extends Base\Service
             }
         }
 
+        // TODO Phantom Onboarding should also go to PGOS
+        if ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING)
+        {
+            $shouldOnboardViaPGOS = true;
+        }
         if ($signupCampaign === DeviceDetail\Constants::I18N_MY_SIGNUP)
         {
             $shouldOnboardViaPGOS = true;
@@ -2058,7 +2077,7 @@ class Service extends Base\Service
         // dashboard_guest is blocked as temp solution for SIBB-161
         if ($this->auth->isAdminAuth() === true or
             ($this->auth->isPrivilegeAuth() === true and
-             $allowGuestAppIDOR === true))
+             $allowGuestAppIDOR === true) or ($this->auth->getInternalApp() === 'merchant_dashboard' and $this->auth->getUserRole()==Role::PARTNER_AGENT))
         {
             $user = $this->repo->user->findOrFailPublic($id);
         }

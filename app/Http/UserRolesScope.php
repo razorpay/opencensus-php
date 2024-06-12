@@ -32,9 +32,10 @@ class UserRolesScope
     public function setRouteUserRoleMap()
     {
         $this->routeUserRoleMap = [
-            'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
-            'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
-            'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
+            'register_merchant_verify_otp'                         => [Role::PARTNER_AGENT],
+            'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
 
             'fetch_device_config'                                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'pos_create_order'                                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],

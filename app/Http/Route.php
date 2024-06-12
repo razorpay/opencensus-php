@@ -37,6 +37,7 @@ class Route
 
 
     protected static $apiRoutes = [
+        'register_merchant_verify_otp'                      => ['post',     'register/merchant/otp/verify',                         'UserController@verifySignupOtpAndRegisterUser'                     ],
         'payments_rearch_backfill'                          => ['post',     'payments/backfill',                                    'PaymentController@callCpsForBackfilling'                           ],
         'merchant_nc_revamp_eligibility_admin'              => ['get',      'merchant/activation/{id}/clarifications/eligibility',  'MerchantController@getMerchantNcRevampEligibility'                 ],
         'merchant_nc_revamp_eligibility'                    => ['get',      'merchant/activation/clarifications/eligibility',       'MerchantController@getMerchantNcRevampEligibility'                 ],
@@ -6848,6 +6849,7 @@ class Route
     //
 
     public static $proxy = [
+        'register_merchant_verify_otp',
         'merchant_fetch_customer_eligibility',
         'payouts_merchant_smart_routing_summary',
         'merchant_vkyc_submit',
@@ -9514,6 +9516,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'register_merchant_verify_otp'                    => Permission::EDIT_MERCHANT,
         'barricade_set_config' => Permission::BARRICADE_DCS_CONFIG_SET,
         'barricade_get_config' => Permission::BARRICADE_DCS_CONFIG_GET,
         'dispute_ingestion'                             => Permission::BULK_DISPUTE_INGESTION_FOR_BANK,
@@ -12215,6 +12218,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'register_merchant_verify_otp',
             'merchant_fetch_customer_eligibility',
             'fetch_payment_notes_keys_columns',
             'upsert_payment_notes_keys_columns',

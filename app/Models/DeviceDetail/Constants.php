@@ -5,6 +5,7 @@ namespace RZP\Models\DeviceDetail;
 class Constants
 {
     // onboarding source
+    const ASSISTED_ONBOARDING       = 'assisted_onboarding';
     const EASY_ONBOARDING       = 'easy_onboarding';
     const PHANTOM_ONBOARDING    = 'phantom_onboarding';
     const UNBOUNCE              = 'unbounce';

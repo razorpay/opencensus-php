@@ -13,6 +13,7 @@ use RZP\Exception\BadRequestException;
 class Role
 {
     const RAZORPAY_SALES        = 'razorpay_sales';
+    const POS_SALES_ADMIN       = 'pos_sales_admin';
     const MANAGER               = 'manager';
     const OPERATIONS            = 'operations';
     const FINANCE               = 'finance';
@@ -93,6 +94,11 @@ class Role
         self::OPERATIONS,
         self::ADMIN,
     ];
+    const POS_SALES = [
+        self::RAZORPAY_SALES,
+        self::PARTNER_AGENT,
+        self::POS_SALES_ADMIN,
+    ];
 
     const READER_ROLES = [
         self::OWNER,
@@ -154,7 +160,7 @@ class Role
 
     public static function getPrimaryRoles(): array
     {
-        return array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES);
+        return array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES,self::POS_SALES);
     }
 
     public static function getBillingRoles(): array

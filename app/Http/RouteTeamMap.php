@@ -20,6 +20,7 @@ class RouteTeamMap
     const TEAM_PAYMENTS_CROSS_BORDER    = 'payments-cross-border';
     // cmma : sop and disputes team
     const TEAM_CMMA                    = 'cmma';
+    const TEAM_OMNI_ACQUISITION         = 'omni_acquisition';
 
     /**
      * @return string comma separated list of team names for the particular route
@@ -36,6 +37,7 @@ class RouteTeamMap
     }
 
     protected static $routeTeamMap = [
+        'register_merchant_verify_otp'             =>[self::TEAM_OMNI_ACQUISITION],
         'workflow_action_get_multiple'             => [self::TEAM_PAYMENTS_CARE],
         'merchant_submit_support_call_request'     => [self::TEAM_PAYMENTS_CARE],
         'fd_reserve_balance_ticket'                => [self::TEAM_PAYMENTS_CARE],
