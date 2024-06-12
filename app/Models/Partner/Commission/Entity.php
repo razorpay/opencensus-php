@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Partner\Config as PartnerConfig;
 
 class Entity extends Base\PublicEntity
@@ -191,6 +192,11 @@ class Entity extends Base\PublicEntity
         return $this->getStatus() === Status::CAPTURED;
     }
 
+    public function getMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "merchant", 'getPartnerId');
+    }
+
     public function isRecordOnly(): bool
     {
         return ($this->getAttribute(self::RECORD_ONLY) === true);
@@ -229,6 +235,11 @@ class Entity extends Base\PublicEntity
     public function getModel(): string
     {
         return $this->getAttribute(self::MODEL);
+    }
+
+    public function getPartnerId(): string
+    {
+        return $this->getAttribute(self::PARTNER_ID);
     }
 
     public function getRecordOnly(): string

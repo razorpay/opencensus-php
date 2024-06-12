@@ -215,9 +215,9 @@ class PublicController extends Controller
     protected function getHDFCCheckout2Meta($params)
     {
         $meta =
-        [
-            'type' => 'hdfcvas'
-        ];
+            [
+                'type' => 'hdfcvas'
+            ];
         try
         {
             $mode = $params['checkout']['notes']['mode'] ?? Mode::LIVE;

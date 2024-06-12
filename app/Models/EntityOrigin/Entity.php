@@ -4,7 +4,9 @@ namespace RZP\Models\EntityOrigin;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Constants\Entity as E;
 use Illuminate\Database\Eloquent\Relations;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
@@ -76,5 +78,14 @@ class Entity extends Base\PublicEntity
     public function getOriginType()
     {
         return $this->getAttribute(self::ORIGIN_TYPE);
+    }
+
+    public function getOriginAttribute()
+    {
+        if ($this->getOriginType() === E::MERCHANT)
+        {
+            return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'origin', 'getOriginId');
+        }
+        return $this->origin()->first();
     }
 }
