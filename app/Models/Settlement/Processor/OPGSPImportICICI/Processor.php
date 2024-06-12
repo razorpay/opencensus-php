@@ -341,6 +341,10 @@ class Processor extends Base\Core
                     $row->BuyerName = $name;
                     $row->BuyerAddress = $consolidatedAddress;
                     $row->Mode = $disputePayment['method'];
+                    if(!empty($disputePayment['notes']))
+                    {
+                        $row->InvoiceNumber =  $disputePayment['notes']['invoice_number'];
+                    }
                     if (abs($netAmountValue) <= 1) { // amount in Rs
                         $shouldSkipRow = true;
                     }
