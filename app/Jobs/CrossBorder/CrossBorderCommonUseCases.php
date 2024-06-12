@@ -9,7 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\Job;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+use RZP\Models\Payment\Constant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
