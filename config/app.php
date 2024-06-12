@@ -352,6 +352,10 @@ return array(
         'secret' => env('PAYMENT_HANDLE_AMOUNT_SECRET')
     ],
 
+    'cross_border_handle' => [
+        'aes_encryption_key' => env('CROSS_BORDER_AES_ENCRYPTION_KEY')
+    ],
+
     'apps_default_sender_email_address' => env('APPS_DEFAULT_SENDER_EMAIL_ADDRESS'),
 
     'amount_difference_allowed_authorized' => ['EQ8AzfZip2meDu', 'FBYspBmKlWefX9'],

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Order\OrderMeta;
 
+use RZP\Base\ConnectionType;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -33,6 +34,15 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::ORDER_ID, '=', $orderId, 'AND', Entity::TYPE, '=', $type)
             ->first();
+    }
+
+    public function fetchByOrderIdsAndTypeFromTiDB(array $orderIds, string $type)
+    {
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        return $this->newQueryWithConnection($connectionType)
+            ->where(Entity::TYPE, '=', $type)
+            ->whereIn(Entity::ORDER_ID, $orderIds)
+            ->get();
     }
 
     // Get order meta based on type from orders fetched from PG router

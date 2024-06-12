@@ -33,7 +33,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\GenericDocument;
 use RZP\Mail\Base\Constants as MailConstants;
-use function Termwind\ValueObjects\append;
+use RZP\Models\Order\OrderMeta;
 
 
 class Processor extends Base\Core
@@ -79,6 +79,7 @@ class Processor extends Base\Core
 
             $country = Country::getCountryNameByCode($countryCode);
             $bankAccountCountry = Country::getCountryNameByCode($merchantAccount['beneficiary_country']);
+            $encryptionKey = $this->app['config']['app']['cross_border_handle']['aes_encryption_key'];
 
             $miiNotes = (new MIIService())->getMerchantHsCodeAndCurrency($merchantId);
 
@@ -178,19 +179,25 @@ class Processor extends Base\Core
                     {
                         $payments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds,Constants::PAYMENT_BATCH_SIZE);
 
+                        $orderIds = $this->getOrderIdForPayment($payments);
+
+                        $orderMetas = $this->repo->order_meta->fetchByOrderIdsAndTypeFromTiDB($orderIds, OrderMeta\Type::CART_INFO);
+
+                        $orderIdToOrderMetaMap = $this->getOrderIdToOrderMetaMap($orderMetas);
+
                         foreach ($payments as $payment)
                         {
-                            if($payment->hasOrder() === false)
-                            {
+                            if (!isset($payment['order_id'])) {
                                 continue;
                             }
 
-                            if($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
-                            {
+                            $orderMeta = $orderIdToOrderMetaMap[$payment['order_id']] ?? null;
+
+                            if (!$orderMeta) {
                                 continue;
                             }
 
-                            $cartInfo = $payment->order->getCartInfoOrderMeta();
+                            $cartInfo =$orderMeta['value'];
 
                             if (!isset($cartInfo) || !isset($cartInfo['customer_details'])) {
                                 continue;
@@ -201,6 +208,13 @@ class Processor extends Base\Core
                             if ($shippingAddress !== null) {
                                 // updating name field inside shipping address from customer details
                                 $shippingAddress['name'] = $cartInfo['customer_details']['name'];
+
+                                foreach (Constants::FIELDSTODECRYPT as $field) {
+                                    if (isset($shippingAddress[$field])) {
+                                        $shippingAddress[$field] = $this->decryptValue($shippingAddress[$field], $encryptionKey);
+                                    }
+                                }
+
                                 $addressMap[$payment->getId()] = $shippingAddress;
                             } else {
                                 $this->trace->info(TraceCode::OPGSP_IMPORT_SHIPPING_ADDRESS_MISSING_IN_ORDER,
@@ -589,6 +603,30 @@ class Processor extends Base\Core
         return [$ids, $paymentIdMap];
     }
 
+    protected function getOrderIdForPayment($data)
+    {
+        $orderIds = [];
+
+        foreach ($data as $datum)
+        {
+            array_push($orderIds, $datum['order_id']);
+        }
+
+        return $orderIds;
+    }
+
+    protected function getOrderIdToOrderMetaMap($data)
+    {
+        $orderIdToOrderMetaMap = array();
+
+        foreach ($data as $datum)
+        {
+            $orderIdToOrderMetaMap[$datum['order_id']] = $datum;
+        }
+
+        return $orderIdToOrderMetaMap;
+    }
+
     protected function getIdMapFromArray($data)
     {
         $idMap = array();
@@ -817,5 +855,22 @@ class Processor extends Base\Core
         $bucketType = Bucket::getBucketConfigName(FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE, $this->env);
 
         return $config[$bucketType];
+    }
+
+    protected function decryptValue(string $decryptedValue, string $key)
+    {
+        $nonceLength = 12;
+        $tagLength = 16;
+
+        // Convert hexadecimal string to binary
+        $binaryData = hex2bin($decryptedValue);
+
+        // Extract nonce, tag, and ciphertext
+        $nonce = substr($binaryData, 0, $nonceLength);
+        $tag = substr($binaryData, -$tagLength);
+        $ciphertext = substr($binaryData, $nonceLength, -$tagLength);
+
+        // Decrypt the ciphertext
+        return openssl_decrypt($ciphertext, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag);
     }
 }
