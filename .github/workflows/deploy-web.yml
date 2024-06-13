@@ -23,8 +23,10 @@ jobs:
         with:
           node-version: 18.12.1
 
-      - name: Setup pnpm
-        run: npm install -g pnpm@~9.0
+      - name: Setup pnpm and yarn
+        run: |
+          npm install -g pnpm@~9.0
+          npm install -g yarn
 
       # Set AWS creds and download Artifacts
       - name: Configure AWS credentials - Actions Cache
