@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import { withI18Service } from 'common/i18';
 
 import Banner from 'common/ui/Banner';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -41,8 +42,35 @@ class TestModeBanner extends Component {
     window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
   };
 
+  handleActivationUrlClick = (isNewNC, isSignupWithEasyOnboarding, tracking) => {
+    if (isNewNC) {
+      this.redirectToNewNC();
+    }
+
+    trackLinkClick('Go To - Activation Form');
+    tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.form_fill'));
+
+    if (isSignupWithEasyOnboarding) {
+      analyticsTrack({
+        objectName: 'redirect to easy-dashboard CTA',
+        actionName: 'Redirect',
+        screen: 'home page',
+        properties: {
+          'CTA Label': 'Activate your account',
+        },
+      });
+      redirectToEasyAfter1sec();
+    }
+  };
+
   render() {
-    const { user, mode, tracking, isNcEligibile } = this.props;
+    const {
+      user,
+      mode,
+      tracking,
+      isNcEligibile,
+      i18: { isConfigTagEnabled },
+    } = this.props;
 
     if (mode === 'live') {
       return null;
@@ -71,35 +99,21 @@ class TestModeBanner extends Component {
                 Boolean(user?.isAllowedEdit) && user.isAllowedEdit('activation')
               }
             >
-              <span>
-                {' '}
-                <Link
-                  to={activationFormUrl}
-                  onClick={() => {
-                    if (isNewNC) {
-                      this.redirectToNewNC();
-                    }
-
-                    trackLinkClick('Go To - Activation Form');
-                    tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.form_fill'));
-
-                    if (isSignupWithEasyOnboarding) {
-                      analyticsTrack({
-                        objectName: 'redirect to easy-dashboard CTA',
-                        actionName: 'Redirect',
-                        screen: 'home page',
-                        properties: {
-                          'CTA Label': 'Activate your account',
-                        },
-                      });
-                      redirectToEasyAfter1sec();
-                    }
-                  }}
-                >
-                  Activate your account
-                </Link>{' '}
-                to start making live transactions.
-              </span>
+              {isConfigTagEnabled('onboarding.onboarding') ? (
+                <span>Activate your account to start making live transactions.</span>
+              ) : (
+                <span>
+                  <Link
+                    to={activationFormUrl}
+                    onClick={() => {
+                      this.handleActivationUrlClick(isNewNC, isSignupWithEasyOnboarding, tracking);
+                    }}
+                  >
+                    Activate your account
+                  </Link>{' '}
+                  to start making live transactions.
+                </span>
+              )}
             </ShowWhen>
           )}
         </Banner>
@@ -114,4 +128,4 @@ const mapStateToProps = (state) => ({
   isNcEligibile: state.home.isNcEligibile,
 });
 
-export default connect(mapStateToProps, null)(TestModeBanner);
+export default connect(mapStateToProps, null)(withI18Service(TestModeBanner));
