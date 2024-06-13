@@ -1177,7 +1177,19 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? AccountConstants::FETCH_PAYMENTS_DEFAULT_COUNT;
 
-        return $this->core->fetchPaymentsByCustomerContact($customer, $skip, $count);
+        $filters = [];
+
+        if (!empty($input['payment_status'])) {
+            $filters['payment_status'] = $input['payment_status'];
+        }
+        if (!empty($input['claim_status'])) {
+            $filters['claim_status'] = $input['claim_status'];
+        }
+        if (!empty($input['insurance_status'])) {
+            $filters['insurance_status'] = $input['insurance_status'];
+        }
+
+        return $this->core->fetchPaymentsByCustomerContact($customer, $skip, $count, $filters);
     }
 
     public function createGlobalAddress(array $input, string $customerId = '')

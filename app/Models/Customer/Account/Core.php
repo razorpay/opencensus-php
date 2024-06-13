@@ -1842,7 +1842,7 @@ class Core extends Base\Core
         return (new CustomerConsent1cc\Core())->recordCustomerConsent1cc($input, $customer, $this->merchant);
     }
 
-    public function fetchPaymentsByCustomerContact(Customer\Entity $customer, int $skip, int $count): array
+    public function fetchPaymentsByCustomerContact(Customer\Entity $customer, int $skip, int $count, array $filters = []): array
     {
         $contacts = $this->getCustomerContactWithAndWithoutCountryCode($customer);
 
@@ -1851,7 +1851,12 @@ class Core extends Base\Core
         $this->repo->payment->setMerchantIdRequiredForMultipleFetch(false);
         $this->repo->refund->setMerchantIdRequiredForMultipleFetch(false);
 
-        $payments = $this->repo->payment->fetchPaymentsByContactsExcludingRoutePayments($contacts, $skip, $count);
+
+        if ($this->shouldRouteSupportDashboardPaymentQueryToTiDB($customer)) {
+            $payments = $this->repo->payment->fetchPaymentsByContactsExcludingRoutePaymentsWithFilters($contacts, $skip, $count, $filters);
+        } else {
+            $payments = $this->repo->payment->fetchPaymentsByContactsExcludingRoutePayments($contacts, $skip, $count);
+        }
 
         $paymentsDetails = [];
 
@@ -1915,10 +1920,20 @@ class Core extends Base\Core
         $formattedPaymentDetails['refunds'] = $paymentDetails['payments'][0]['refunds'] ?? [];
         $formattedPaymentDetails['payment']['method'] = $payment->getMethod();
         $formattedPaymentDetails['payment']['status'] = $payment->getStatus();
-        $formattedPaymentDetails['business_support_details'] = $paymentDetails['business_support_details'];
+        $formattedPaymentDetails['business_support_details'] = $paymentDetails['business_support_details'] ?? null;
         $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
         $formattedPaymentDetails['payment']['gateway'] = $payment->getGateway();
         $formattedPaymentDetails['payment']['optimizer_payment'] = $payment->terminal->isOptimizer();
+
+        $formattedPaymentDetails['insurance'] = [];
+        if (!empty($payment['insurance_status']))
+        {
+            $formattedPaymentDetails['insurance']['status'] = $payment['insurance_status'];
+        }
+        if (!empty($payment['insurance_claim_status']))
+        {
+            $formattedPaymentDetails['insurance']['claim_status'] = $payment['insurance_claim_status'];
+        }
 
         if ($payment->merchant->isLRSFlowEnabled() === true)
         {
@@ -1950,4 +1965,26 @@ class Core extends Base\Core
             $this->getSharedAccount());
     }
 
+    public function shouldRouteSupportDashboardPaymentQueryToTiDB(Customer\Entity $customer): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $customer->getId(),
+                'experiment_id' => $this->app['config']->get('app.support_dashboard_tidb_splitz_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variantName = $response['response']['variant']['name'] ?? '';
+
+            return  $variantName === 'variant_on';
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::SUPPORT_DASHBOARD_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
 }

@@ -108,6 +108,9 @@ class Validator extends Base\Validator
         'skip'                    => 'sometimes|integer',
         'count'                   => 'sometimes|integer|max:100',
         'mode'                    => 'sometimes|in:test,live',
+        'insurance_status'        => 'sometimes|string|in:created,pending,insured,canceled',
+        'payment_status'          => 'sometimes|string|in:created,pending,captured,refunded,failed,authorized,authenticated',
+        'claim_status'            => 'sometimes|string|in:opened,approved,rejected',
     ];
 
     protected static $walletAppCreateRules = [

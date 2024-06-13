@@ -34,6 +34,7 @@ use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+use RZP\Models\Insurance;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -5314,6 +5315,96 @@ EOT;
             ->take($count)
             ->latest()
             ->get();
+    }
+
+    /*
+     * Query -
+     * SELECT
+     *   `payments`.*,
+     *   `insurance`.`status` as `insurance_status`,
+     *   `insurance`.`claim_status` as `insurance_claim_status`
+     * FROM
+     *   `payments`
+     *   LEFT JOIN `insurance` ON (
+     *     `payments`.`id` = `insurance`.`insured_entity_id`
+     *     AND `insurance`.`insured_entity_type` = 'payment'
+     *   )
+     *   OR (
+     *     `payments`.`order_id` = `insurance`.`insured_entity_id`
+     *     AND `insurance`.`insured_entity_type` = 'order'
+     *   )
+     * WHERE
+     *   `payments`.`contact` IN ('+919999999999', '9999999999')
+     *   AND `payments`.`created_at` >= 1701860079
+     *   AND `payments`.`method` NOT IN ('transfer')
+     *   AND `payments`.`transfer_id` IS NULL
+     * ORDER BY
+     *   `payments`.`created_at` DESC
+     * LIMIT
+     *   5 OFFSET 0
+     */
+    public function fetchPaymentsByContactsExcludingRoutePaymentsWithFilters(array $contacts, int $skip, int $count, array $filters) : Base\PublicCollection
+    {
+        $insuranceRepo = $this->repo->insurance;
+        $paymentRepo = $this->repo->payment;
+
+        $insuranceTable = $insuranceRepo->getTableName();
+        $insuranceInsuredEntityIdColumn = $insuranceRepo->dbColumn(Insurance\Entity::INSURED_ENTITY_ID);
+        $insuranceInsuredEntityTypeColumn = $insuranceRepo->dbColumn(Insurance\Entity::INSURED_ENTITY_TYPE);
+
+        $insuranceStatusColumn = $insuranceRepo->dbColumn(Insurance\Entity::STATUS);
+        $insuranceClaimStatusColumn = $insuranceRepo->dbColumn(Insurance\Entity::CLAIM_STATUS);
+
+        $paymentIdColumn = $paymentRepo->dbColumn(Payment\Entity::ID);
+        $paymentOrderIdColumn = $paymentRepo->dbColumn(Payment\Entity::ORDER_ID);
+        $paymentStatusColumn = $paymentRepo->dbColumn(Payment\Entity::STATUS);
+        $paymentCreatedAtColumn = $paymentRepo->dbColumn(Payment\Entity::CREATED_AT);
+        $paymentContactColumn = $paymentRepo->dbColumn(Payment\Entity::CONTACT);
+        $paymentMethodColumn = $paymentRepo->dbColumn(Payment\Entity::METHOD);
+        $paymentTransferIdColumn = $paymentRepo->dbColumn(Payment\Entity::TRANSFER_ID);
+
+
+        $nowMinus6Months = Carbon::now()->subMonths(6)->getTimestamp();
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->select($paymentRepo->dbColumn('*'))
+            ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::STATUS) . ' as insurance_status')
+            ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_STATUS) . ' as insurance_claim_status')
+            ->leftJoin(
+                $insuranceTable,
+                function ($join)
+                use ($paymentIdColumn, $paymentOrderIdColumn, $insuranceInsuredEntityIdColumn, $insuranceInsuredEntityTypeColumn)
+                {
+                    $join->where(function($query) use ($paymentIdColumn, $insuranceInsuredEntityIdColumn, $insuranceInsuredEntityTypeColumn) {
+                        $query->on($paymentIdColumn, '=', $insuranceInsuredEntityIdColumn)
+                            ->where($insuranceInsuredEntityTypeColumn, '=', 'payment');
+                        })
+                        ->orWhere(function($query) use ($paymentOrderIdColumn, $insuranceInsuredEntityIdColumn, $insuranceInsuredEntityTypeColumn) {
+                            $query->orOn($paymentOrderIdColumn, '=', $insuranceInsuredEntityIdColumn)
+                                ->where($insuranceInsuredEntityTypeColumn, '=', 'order');
+                        });
+                })
+            ->whereIn($paymentContactColumn, $contacts)
+            ->where($paymentCreatedAtColumn, '>=', $nowMinus6Months)
+            ->whereNotIn($paymentMethodColumn, [Method::TRANSFER])
+            ->whereNull($paymentTransferIdColumn)
+            ->with(['merchant', 'refunds'])
+            ->skip($skip)
+            ->take($count)
+            ->latest($paymentCreatedAtColumn);
+
+        if (!empty($filters['payment_status'])) {
+            $query->where($paymentStatusColumn, $filters['payment_status']);
+        }
+
+        if (!empty($filters['insurance_status'])) {
+            $query->where($insuranceStatusColumn, $filters['insurance_status']);
+        }
+
+        if (!empty($filters['claim_status'])) {
+            $query->where($insuranceClaimStatusColumn, $filters['claim_status']);
+        }
+
+        return $query->get();
     }
 
     public function fetchDebitEmiPaymentsWithRelationsBetween($from, $to, $bank,$gateway)

@@ -2399,5 +2399,11 @@ final class FactoryData
             'unique_identifier' => $faker->uniqueid,
             'auth_mode'         => 'adfs'
         ]);
+
+        $factory(Models\Insurance\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'status'            => 'insured',
+        ]);
     }
 }

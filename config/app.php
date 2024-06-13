@@ -909,4 +909,6 @@ return array(
     'x_data_privacy_splitz_experiment_id' => env('X_DATA_PRIVACY_SPLITZ_EXPERIMENT_ID'),
 
     'recurring_customer_contact_reuse' => env('RECURRING_CUSTOMER_CONTACT_REUSE_EXP_ID'),
+
+    'support_dashboard_tidb_splitz_experiment_id' => env('SUPPORT_DASHBOARD_TIDB_SPLITZ_EXPERIMENT_ID'),
 );

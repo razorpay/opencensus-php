@@ -11594,6 +11594,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ORDER_ASSOCIATIONS_FETCH_FAILED                       = 'ORDER_ASSOCIATIONS_FETCH_FAILED';
 
+    const SUPPORT_DASHBOARD_SPLITZ_ERROR                        =  'SUPPORT_DASHBOARD_SPLITZ_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

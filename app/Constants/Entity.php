@@ -810,6 +810,8 @@ class Entity
 
     const TRANSFER_PAYMENT = 'transfer_payment';
 
+    const INSURANCE = 'insurance';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes

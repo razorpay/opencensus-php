@@ -484,6 +484,8 @@ class Table
 
     const REWARD_POINTS                 = 'reward_points';
 
+    const INSURANCE                     = 'insurance';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,
