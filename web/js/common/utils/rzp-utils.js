@@ -1770,9 +1770,9 @@ export const openTicketModal = (data = {}) => {
   window.rzpTicketSystem?.openModal(id, data);
 };
 
+// eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+const SUPPORTED_COUNTRIES = ['MY', 'SG', 'UK', 'US', 'ID', 'TH'];
 export function isConfigTagAPISupported(merchantCountryCode) {
-  const SUPPORTED_COUNTRIES = ['MY', 'SG'];
-
   return SUPPORTED_COUNTRIES.find((countryCode) => countryCode === merchantCountryCode);
 }
 export const isExperimentActive = (experimentHashKey) =>

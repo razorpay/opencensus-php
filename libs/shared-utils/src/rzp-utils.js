@@ -1751,7 +1751,8 @@ export const openTicketModal = (data = {}) => {
 export const isPosEnabled = (experimenets) =>
   experimenets?.pos_onboarding?.variables.result === 'on';
 
-const SUPPORTED_COUNTRIES = ['MY', 'SG'];
+// eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+const SUPPORTED_COUNTRIES = ['MY', 'SG', 'UK', 'US', 'ID', 'TH'];
 export function isConfigTagAPISupported(merchantCountryCode) {
   return SUPPORTED_COUNTRIES.find((countryCode) => countryCode === merchantCountryCode);
 }
