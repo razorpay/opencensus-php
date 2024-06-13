@@ -839,11 +839,26 @@ class Selector extends Base\Core
                 $paymentData['emi'] = $this->getPaymentEmiArray($payment);
             }
 
-            if ($payment->isUpiRecurring() === true)
+            try
             {
-                $upiMandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
+                if ($payment->isUpiRecurring() === true)
+                {
+                    $upiMandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
 
-                $paymentData['mandate']['frequency'] = $upiMandate->getFrequency();
+                    $paymentData['mandate']['frequency'] = $upiMandate->getFrequency();
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(
+                    TraceCode::UPI_MANDATE_ENTITY_FETCH_FAILED,
+                    [
+                        'error'             => $e->getMessage(),
+                        'payment_id'        => $payment->getId(),
+                        'token_id'          => $payment->getTokenId(),
+                    ]);
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TOKEN);
             }
 
             if (isset($paymentData['vpa']) === true)
