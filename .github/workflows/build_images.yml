@@ -23,6 +23,14 @@ jobs:
     needs: [cancel]
     continue-on-error: false
     steps:
+      - uses: razorpay/create-github-app-token@v1
+        name: Generate Github Token
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
+          repositories: "opencensus-php"
+
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Login to Dockerhub
@@ -38,5 +46,6 @@ jobs:
           repository: ${{ github.repository }}
           tags: ${{ github.sha }}
           dockerfile: Dockerfile.rzp
-          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+          secrets: GIT_TOKEN=${{ steps.app-token.outputs.token }}
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_USERNAME=rzp
 
