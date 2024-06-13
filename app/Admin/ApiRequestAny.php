@@ -1160,7 +1160,7 @@ class ApiRequestAny
     {
         if (($method === 'GET') and
             (empty($input) === false) and
-            ($this->shouldTransformToQueryParams($path) === true))
+            (($this->shouldTransformToQueryParams($path) === true) or ($this->shouldTransformToQueryParamsRefundFetchRoutes($path) === true)))
         {
             $query = http_build_query($input);
 
@@ -1176,6 +1176,26 @@ class ApiRequestAny
             self::WHITELISTED_QUERY_PARAMS_ROUTE_PREFIXES,
             fn($prefix) => str_starts_with($path, $prefix)
         );
+    }
+
+    protected function shouldTransformToQueryParamsRefundFetchRoutes(string $path): bool
+    {
+        $idPattern = '([a-zA-Z-_]+_)?[a-zA-Z0-9]{14}';
+
+        $patterns = [
+            '/^refunds$/',
+            "/^refunds\/$idPattern$/",
+            "/^payments\/$idPattern\/refunds$/",
+            "/^payments\/$idPattern\/refunds\/$idPattern$/"
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $path)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

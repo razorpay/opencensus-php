@@ -108,6 +108,51 @@ class ApiRequestAnyTest extends BaseTestCase
                 ],
                 'expected' => 'vendor-payments/meta/summary'
             ],
+            [
+                'path'  => 'refunds',
+                'method' => 'GET',
+                'input' => [
+                    'count' => 10,
+                    'text' => 'testing'
+                ],
+                'expected' => 'refunds?count=10&text=testing'
+            ],
+            [
+                'path'  => 'refunds',
+                'method' => 'POST',
+                'input' => [
+                    'count' => 10,
+                    'text' => 'testing'
+                ],
+                'expected' => 'refunds'
+            ],
+            [
+                'path'  => 'refunds/rfnd_OLY6pXytPx3nVC',
+                'method' => 'GET',
+                'input' => [
+                    'count' => 10,
+                    'text' => 'testing'
+                ],
+                'expected' => 'refunds/rfnd_OLY6pXytPx3nVC?count=10&text=testing'
+            ],
+            [
+                'path'  => 'payments/pay_OLY0H4ibyLkmV0/refunds',
+                'method' => 'GET',
+                'input' => [
+                    'count' => 10,
+                    'text' => 'testing'
+                ],
+                'expected' => 'payments/pay_OLY0H4ibyLkmV0/refunds?count=10&text=testing'
+            ],
+            [
+                'path'  => 'payments/pay_OLY0H4ibyLkmV0/refunds',
+                'method' => 'POST',
+                'input' => [
+                    'count' => 10,
+                    'text' => 'testing'
+                ],
+                'expected' => 'payments/pay_OLY0H4ibyLkmV0/refunds'
+            ],
         ];
 
         $ins  = new ApiRequestAny();
