@@ -15,13 +15,28 @@ trait LazyLoadingRelationFetch
     {
         $relationFetchFromSlaveEnv = getenv('RELATION_FETCH_FROM_SLAVE');
 
-        if ((in_array($key, EntityConstants::getLazyLoadRelationEntitiesFromSlave(), true) === true) and ($relationFetchFromSlaveEnv == true))
+        $testCaseExecution = App::getFacadeRoot()['config']['applications.test_case.execution'] ?? false;
+        
+        if ((in_array($key, EntityConstants::getLazyLoadRelationEntitiesFromSlave(), true) === true) and
+            (App::getFacadeRoot()->runningUnitTests() === false) and ($testCaseExecution === false))
         {
             $originalConnectionName = $this->getConnectionName();
 
-            $mode = App::getFacadeRoot()['rzp.mode'];
+            try
+            {
+                $mode = App::getFacadeRoot()['rzp.mode'];
+            }
+            catch(\Throwable $e)
+            {
+                return parent::getRelationValue($key);
+            }
 
-            $this->setConnection(($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE);
+            if ($mode === Mode::TEST)
+            {
+                return parent::getRelationValue($key);
+            }
+
+            $this->setConnection(Connection::SLAVE_LIVE);
 
             $relation = parent::getRelationValue($key);
 

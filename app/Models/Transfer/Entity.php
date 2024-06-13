@@ -759,20 +759,6 @@ class Entity extends Base\PublicEntity
 
         if ($this->getSourceType() === Constant::ORDER)
         {
-            $source = $this->source()->with('offers')->first();
-        }
-        else if ($this->getSourceId() !== null)
-        {
-            $source = $this->source()->first();
-        }
-
-        if (empty($source) === false)
-        {
-            return $source;
-        }
-
-        if ($this->getSourceType() === Constant::ORDER)
-        {
             $order = (new OrderRepository())->findOrFailPublic($this->getSourceId());
 
             $this->source()->associate($order);
@@ -787,6 +773,16 @@ class Entity extends Base\PublicEntity
             $this->source()->associate($payment);
 
             return $payment;
+        }
+
+        if ($this->getSourceId() !== null)
+        {
+            $source = $this->source()->first();
+        }
+
+        if (empty($source) === false)
+        {
+            return $source;
         }
 
         return null;

@@ -206,20 +206,6 @@ class Entity extends Base\PublicEntity
 
         if ($this->getEntityType() === Constants::ORDER)
         {
-            $source = $this->source()->with('offers')->first();
-        }
-        else if ($this->getEntityId() !== null)
-        {
-            $source = $this->source()->first();
-        }
-
-        if (empty($source) === false)
-        {
-            return $source;
-        }
-
-        if ($this->getEntityType() === Constants::ORDER)
-        {
             $order = (new OrderRepository())->findOrFailPublic($this->getEntityId());
 
             $this->source()->associate($order);
@@ -234,6 +220,16 @@ class Entity extends Base\PublicEntity
             $this->source()->associate($checkoutOrder);
 
             return $checkoutOrder;
+        }
+
+        if ($this->getEntityId() !== null)
+        {
+            $source = $this->source()->first();
+        }
+
+        if (empty($source) === false)
+        {
+            return $source;
         }
 
         return null;

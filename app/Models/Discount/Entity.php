@@ -136,19 +136,12 @@ class Entity extends Base\PublicEntity
             return $order;
         }
 
-        $order = $this->order()->with('offers')->first();
-
-        if (empty($order) === false)
-        {
-            return $order;
-        }
-
         if (empty($this[self::ORDER_ID]) === true)
         {
             return null;
         }
 
-        $order = (new Order\Repository)->findOrFailPublic('order_'.$this[self::ORDER_ID]);
+        $order = (new Order\Repository)->findOrFailPublic($this[self::ORDER_ID]);
 
         $this->order()->associate($order);
 

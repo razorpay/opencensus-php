@@ -471,9 +471,14 @@ class Entity extends Base\PublicEntity
 
         if ($this->getEntityType() === Constants::ORDER)
         {
-            $entity = $this->entity()->with('offers')->first();
+            $order = (new OrderRepository())->findOrFailPublic($this->getEntityId());
+
+            $this->entity()->associate($order);
+
+            return $order;
         }
-        else if ($this->getEntityId() !== null)
+
+        if ($this->getEntityId() !== null)
         {
             $entity = $this->entity()->first();
         }
@@ -481,15 +486,6 @@ class Entity extends Base\PublicEntity
         if (empty($entity) === false)
         {
             return $entity;
-        }
-
-        if ($this->getEntityType() === Constants::ORDER)
-        {
-            $order = (new OrderRepository())->findOrFailPublic($this->getEntityId());
-
-            $this->entity()->associate($order);
-
-            return $order;
         }
 
         return null;

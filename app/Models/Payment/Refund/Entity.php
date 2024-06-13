@@ -675,11 +675,6 @@ class Entity extends Base\PublicEntity
             return $this->getRelation('payment');
         }
 
-        if (empty($this->payment()->first()) === false)
-        {
-            return $this->payment()->first();
-        }
-
         $payment = (new Payment\Repository)->findOrFailPublic($this->getPaymentId());
 
         $this->payment()->associate($payment);

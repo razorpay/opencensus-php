@@ -39,11 +39,11 @@ trait ExternalOrderRepo
 
         try
         {
-            return parent::findByPublicId($id, $connectionType);
+            return $this->findByPublicIdArchived($id);
         }
-        catch (\Throwable $e) {}
+        catch (\Throwable $ex) {}
 
-        return $this->findByPublicIdArchived($id);
+        return parent::findByPublicId($id, $connectionType);
     }
 
     public function findByPublicIdAndMerchant(
@@ -69,7 +69,7 @@ trait ExternalOrderRepo
 
         try
         {
-            $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+            $entity =  $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
 
             $class = Entity::getExternalRepoSingleton($this->entity);
 
@@ -79,7 +79,7 @@ trait ExternalOrderRepo
         }
         catch (\Throwable $e) {}
 
-        $entity =  $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
+        $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
 
         $class = Entity::getExternalRepoSingleton($this->entity);
 
@@ -111,11 +111,11 @@ trait ExternalOrderRepo
 
         try
         {
-            return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+            return  $this->findByIdAndMerchantArchived($id, $merchant, $params);
         }
         catch (\Throwable $e) {}
 
-        return  $this->findByIdAndMerchantArchived($id, $merchant, $params);
+        return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 
     public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
@@ -137,11 +137,11 @@ trait ExternalOrderRepo
 
         try
         {
-            return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+            return $this->findByIdAndMerchantIdArchived($id, $merchantId);
         }
         catch (\Throwable $e) {}
 
-        return $this->findByIdAndMerchantIdArchived($id, $merchantId);
+        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
     }
 
     public function findOrFailByPublicIdWithParams($id, array $params, string $connectionType = null): PublicEntity
@@ -163,11 +163,11 @@ trait ExternalOrderRepo
 
         try
         {
-            return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+            return $this->findOrFailByPublicIdWithParamsArchived($id, $params);
         }
         catch (\Throwable $e) {}
 
-        return $this->findOrFailByPublicIdWithParamsArchived($id, $params);
+        return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
     }
 
     public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
@@ -189,11 +189,11 @@ trait ExternalOrderRepo
 
         try
         {
-            return parent::findOrFailPublic($id, $columns, $connectionType);
+            return $this->findOrFailPublicArchived($id, $columns);
         }
         catch (\Throwable $e) {}
 
-        return $this->findOrFailPublicArchived($id, $columns);
+        return parent::findOrFailPublic($id, $columns, $connectionType);
     }
 
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
@@ -215,11 +215,11 @@ trait ExternalOrderRepo
 
         try
         {
-            return parent::findOrFail($id, $columns, $connectionType);
+            return $this->findOrFailOnlyArchived($id, $columns);
         }
         catch (\Throwable $e) {}
 
-        return $this->findOrFailOnlyArchived($id, $columns);
+        return parent::findOrFail($id, $columns, $connectionType);
     }
 
     private function validateExternalFetchEnabled()

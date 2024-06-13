@@ -310,6 +310,11 @@ trait ArchivedCore
             return false;
         }
 
+        if ((app()->runningUnitTests() === true) and ($entityName === Entity::ORDER))
+        {
+            return false;
+        }
+
         // Use this post archival and gaining confidence of all flows working fine
         // Else use this flow via ENV key for easier reverts
         if (Entity::archivedEntityDbFallbackEnabled($entityName) === true)
