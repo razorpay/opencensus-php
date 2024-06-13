@@ -7,4 +7,9 @@ module.exports = {
   // re-setting it to undefined to avoid running globalSetup
   globalSetup: undefined,
   projects: getProjects({ projectType: 'Self Serve' }),
+  use: {
+    ...playwrightBaseConfig.use,
+    actionTimeout: 30 * 1000,
+    permissions: ['clipboard-read', 'clipboard-write', 'accessibility-events'],
+  },
 };

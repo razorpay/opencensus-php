@@ -4,58 +4,6 @@ import { expect } from 'utils/base';
 import { PAYMENT_PAGES_TYPES } from './constants';
 import { SELECTORS, BATCH_PP_SELECTORS } from './selectors';
 
-export const createPaymentPage = async ({ page, productData, type }) => {
-  try {
-    const createButton = await page.waitForSelector('span:has-text("Create Payment Page")');
-    if (createButton) {
-      await createButton.click();
-    }
-  } catch (e) {
-    // continue regardless of error
-  }
-  if (type === PAYMENT_PAGES_TYPES.storefront) {
-    await page.getByRole('button', { name: 'Select Storefront page' }).click();
-
-    // Store title
-    await page.getByAltText('edit').click();
-    await page.locator(SELECTORS.pageTitle).fill(productData.title);
-    await page.getByTestId('page-title-save').click();
-
-    // Business details
-    await page.getByText('More options').click();
-    // expect(page.getByText('Contact details')).toBeTruthy();
-    await page.locator(SELECTORS.email).fill(productData.support_email);
-    await page.locator(SELECTORS.phone).fill(productData.support_contact);
-    await page.getByText('Save contact details').click();
-
-    // Add products
-    // try {
-    //   await page.getByText('Add your first product').click();
-    // } catch (error) {
-    //   createProduct({ page, product: productData.products[0] });
-    //   // productData.products.forEach(async (product) => {
-    //   // });
-    // }
-    // Add existing product to store
-    try {
-      await page.getByText('Add products to this page').click();
-      await page
-        .locator(
-          `[data-testid=select-checkbox-container] >> text=${productData.products[0].product_name}`,
-        )
-        .click();
-      await page.getByRole('button', { name: 'Add 1 product' }).click();
-    } catch (error) {
-      // continue regardless of error
-      console.log(error, 'error');
-    }
-
-    await page.getByRole('button', { name: 'Publish page' }).click();
-
-    await expect(page.getByText('Storefront created successfully')).toBeVisible();
-  }
-};
-
 export const createProduct = async ({ page, product }) => {
   await page.locator(SELECTORS.productName).fill(product.product_name);
   await page.locator(SELECTORS.amount).fill(product.amount);
@@ -67,7 +15,63 @@ export const createProduct = async ({ page, product }) => {
     .locator('div')
     .filter({ hasText: 'CancelAdd product' })
     .getByRole('button', { name: 'Add product' })
+    .first()
     .click();
+};
+
+export const createPaymentPage = async ({ page, productData, type }) => {
+  try {
+    const createButton = await page.locator('span span span:has-text("Create Payment Page")', {
+      timeout: 7000,
+    });
+    if (createButton) {
+      await createButton.click();
+    }
+  } catch (e) {
+    // continue regardless of error
+  }
+  if (type === PAYMENT_PAGES_TYPES.storefront) {
+    await page.getByRole('button', { name: 'Select Storefront page' }).click();
+
+    // Store title
+    // not able to edit as there is no selector to uniquely identify edit button
+    // await page.getByAltText('edit').click();
+    // await page.locator(SELECTORS.pageTitle).fill(productData.title);
+    // await page.getByTestId('page-title-save').click();
+
+    // Business details
+    await page.getByText('More options').click();
+    // expect(page.getByText('Contact details')).toBeTruthy();
+    await page.locator(SELECTORS.email).fill(productData.support_email);
+    await page.locator(SELECTORS.phone).fill(productData.support_contact);
+    await page.getByText('Save contact details').click();
+
+    // Add products
+    try {
+      await page.getByRole('button', { name: 'Add product' }).first().click();
+      await page.getByRole('button', { name: 'Add a new product' }).click();
+      await createProduct({ page, product: productData.products[0] });
+    } catch (error) {
+      console.log('error in creating product', error);
+    }
+    // Add existing product to store
+    // try {
+    //   await page.getByText('Add products to this page').click();
+    //   await page
+    //     .locator(
+    //       `[data-testid=select-checkbox-container] >> text=${productData.products[0].product_name}`,
+    //     )
+    //     .click();
+    //   await page.getByRole('button', { name: 'Add 1 product' }).click();
+    // } catch (error) {
+    //   // continue regardless of error
+    //   console.log(error, 'error');
+    // }
+
+    await page.getByRole('button', { name: 'Publish page' }).click();
+
+    await expect(page.getByText('Storefront created successfully')).toBeVisible();
+  }
 };
 
 export const validateBatchPaymentPageDetails = async ({ page, productData }) => {
@@ -134,21 +138,4 @@ export const createBatchPaymentPageWithLateFee = async ({ page, productData }) =
       '1 : Please add at least 1 Price field with ‘Make it Optional Item’ not selected.',
     ),
   ).toBeVisible();
-};
-
-export const clickSkipAndStartBtn = async ({ page }) => {
-  try {
-    const skipAndStartedButton = await page.waitForSelector(
-      'button:has-text("Skip And Get Started")',
-    );
-
-    await skipAndStartedButton.click();
-    await page.waitForTimeout(1000);
-    await expect(page.getByText('Select page of your choice')).toBeVisible();
-    const choiceCloseButton = await page.waitForSelector('span.close-icon');
-    await choiceCloseButton.click();
-    await page.waitForTimeout(1000);
-  } catch (e) {
-    // continue as skip & mandatory will not be visible always
-  }
 };

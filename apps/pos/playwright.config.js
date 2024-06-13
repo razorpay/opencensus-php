@@ -7,4 +7,8 @@ module.exports = {
   // re-setting it to undefined to avoid running globalSetup
   globalSetup: undefined,
   projects: getProjects({ projectType: 'POS' }),
+  use: {
+    ...playwrightBaseConfig.use,
+    actionTimeout: 30 * 1000,
+  },
 };

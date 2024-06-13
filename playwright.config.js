@@ -25,6 +25,7 @@ module.exports = {
     trace: 'retain-on-failure',
     video: 'on-first-retry',
     actionTimeout: 30 * 1000,
+    permissions: ['clipboard-read', 'clipboard-write', 'accessibility-events'],
   },
   projects: getProjects({ projectType: 'Login' }),
 };

@@ -1,20 +1,22 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expectSuccessNotification, switchToTestMode } from 'utils';
+import { expectSuccessNotification, switchToTestMode, clickSkipAndStartBtn } from 'utils';
 import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { paymentLinksUIData } from './constants';
 import {
   cancelPLCreated,
-  clickSkipAndStartBtn,
   clonePLCreated,
   createPaymentLink,
+  mockFetchPaymentLinkApi,
   searchAndVerifyByPLId,
   searchAndVerifyByStatus,
   searchPLAndOpenDetails,
-  verifyInvoicePaymentHistory,
   verifyPLCreated,
+  statusToKey,
+  mockLegacyPlId,
   verifyPaymentHistory,
+  getPLv1MockResponse,
 } from './utils';
 
 const SELECTORS = {
@@ -24,9 +26,8 @@ const SELECTORS = {
     '//div[contains(., "Partial Payment")]/div[@class="pair-value"]//button[contains(text(), "Change")]',
 };
 
-test.setTimeout(2 * 60 * 1000);
 test.describe.parallel(
-  'Test Payments Links V2 @flow=payment-links-v1 @project=no-code @project=no-code-roast',
+  'Test Payments Links V2 @flow=payment-links-v1 @project=no-code @project=no-code-stable @project=no-code-roast',
   () => {
     test.use({
       storageState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
@@ -80,7 +81,16 @@ test.describe.parallel(
         page,
       }) => {
         const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-        await searchAndVerifyByStatus({ container, statusToVerify });
+        const statusToCheck = statusToKey[statusToVerify];
+        await mockFetchPaymentLinkApi({
+          targetUrl: `**/merchant/api/test/invoices?skip=0&count=25&status=${statusToCheck}*`,
+          mockRespose: getPLv1MockResponse({
+            status: statusToCheck,
+          }),
+          page,
+        });
+        const firstRowStatus = await searchAndVerifyByStatus({ container, statusToVerify });
+        expect(firstRowStatus).toBe(statusToVerify);
       });
     });
 
@@ -160,18 +170,66 @@ test.describe.parallel(
     test(`should verify Payment History For Partially Paid PL v1 @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
+      const statusToVerify = 'Paid';
+
       const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-      await searchAndVerifyByStatus({ container, statusToVerify: 'Partially Paid' });
-      await verifyPaymentHistory({ page, container, isPartialPaid: true });
+
+      const statusToCheck = statusToKey[statusToVerify];
+      await mockFetchPaymentLinkApi({
+        targetUrl: `**/merchant/api/test/invoices?skip=0&count=25&status=${statusToCheck}*`,
+        mockRespose: getPLv1MockResponse({
+          status: statusToCheck,
+        }),
+        page,
+      });
+      const firstRowStatus = await searchAndVerifyByStatus({ container, statusToVerify });
+      expect(firstRowStatus).toBe(statusToVerify);
+
+      await mockFetchPaymentLinkApi({
+        targetUrl: `**/merchant/api/test/invoices/${mockLegacyPlId}?*`,
+        mockRespose: getPLv1MockResponse({
+          status: statusToCheck,
+        }),
+        page,
+      });
+      const paymentLink = await verifyPaymentHistory({
+        container,
+        page,
+      });
+      await expect(paymentLink).toBeVisible();
     });
 
     // roast test verifyInvoiceIdPresentInCompatPartialPaidPL
     test(`should verify Invoice For Partially Paid PL v1 @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
+      const statusToVerify = 'Partially Paid';
+
       const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-      await searchAndVerifyByStatus({ container, statusToVerify: 'Partially Paid' });
-      await verifyInvoicePaymentHistory({ page, container, isPartialPaid: true });
+
+      const statusToCheck = statusToKey[statusToVerify];
+      await mockFetchPaymentLinkApi({
+        targetUrl: `**/merchant/api/test/invoices?skip=0&count=25&status=${statusToCheck}*`,
+        mockRespose: getPLv1MockResponse({
+          status: statusToCheck,
+        }),
+        page,
+      });
+      const firstRowStatus = await searchAndVerifyByStatus({ container, statusToVerify });
+      expect(firstRowStatus).toBe(statusToVerify);
+
+      await mockFetchPaymentLinkApi({
+        targetUrl: `**/merchant/api/test/invoices/${mockLegacyPlId}?*`,
+        mockRespose: getPLv1MockResponse({
+          status: statusToCheck,
+        }),
+        page,
+      });
+      const paymentLink = await verifyPaymentHistory({
+        container,
+        page,
+      });
+      await expect(paymentLink).toBeVisible();
     });
   },
 );

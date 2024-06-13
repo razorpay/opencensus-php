@@ -68,6 +68,12 @@ function getDependencies(depCommits) {
       };
     }
 
+    if (depName === 'payment-links') {
+      dependency.chart_values = {
+        run_es_in_sync: '1',
+      };
+    }
+
     return dependency;
   });
 

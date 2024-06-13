@@ -57,6 +57,15 @@ export const getRandomCustomerData = () => {
   };
 };
 
+export const getRandomItemData = () => {
+  const name = generateRandomName();
+  const amount = '100';
+  return {
+    name,
+    amount,
+  };
+};
+
 export const expectSuccessNotification = async ({ page, notificationText }) => {
   await expect(
     await page.locator(COMMON_SELECTORS.successNotification, {
@@ -227,6 +236,21 @@ export const fillExpiry = async ({ page, isLegacyLink }) => {
   await page.waitForSelector('.rc-calendar-table', { state: 'hidden' });
 };
 
+export const clickSkipAndStartBtn = async ({ page }) => {
+  let skipAndStartedButton;
+  try {
+    skipAndStartedButton = await page.waitForSelector('button:has-text("Skip And Get Started")');
+  } catch (error) {
+    // Element not found within the specified timeout
+    // Handle the error or perform alternative actions
+  }
+
+  if (skipAndStartedButton) {
+    await skipAndStartedButton.click();
+    await page.waitForTimeout(5000);
+  }
+};
+
 module.exports = {
   generateRandomText,
   generateRandomPhoneNumber,
@@ -244,4 +268,6 @@ module.exports = {
   hideSearchFTUXBannerByLocalStorage,
   getNextDate,
   fillExpiry,
+  clickSkipAndStartBtn,
+  getRandomItemData,
 };

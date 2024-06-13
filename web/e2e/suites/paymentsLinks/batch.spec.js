@@ -1,16 +1,16 @@
+import { test, expect } from 'utils/base';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { switchToTestMode } from 'utils';
-import { expect, test } from 'utils/base';
+import { switchToTestMode, clickSkipAndStartBtn } from 'utils';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
-import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
+import { searchAndVerifyByPLId } from './utils';
 
 [
   {
     loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     testDescription: 'Test V2 PL Batch Uploads @flow=payment-links-v2',
     plType: 'V2',
-    isTestMode: true,
+    isTestMode: false,
   },
   {
     loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
@@ -19,14 +19,14 @@ import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
     isTestMode: false,
   },
   {
-    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
     testDescription: 'Test classic PL Batch Uploads @flow=payment-links-v1',
     plType: 'v1',
-    isTestMode: true,
+    isTestMode: false,
   },
 ].forEach((context) => {
   test.describe.parallel(
-    `${context.testDescription} @project=no-code @project=no-code-roast`,
+    `${context.testDescription} @project=no-code @project=no-code-roast @project=no-code-stable`,
     () => {
       test.use({
         storageState: context.loginState,
@@ -40,7 +40,7 @@ import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
       });
 
       // roast test verifyv2BatchStatus verifyUPILinkBatchStatus verifyCompatBatchStatus
-      test.skip(`should verify status for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
+      test(`should verify status for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
         page,
       }) => {
         let isTableEmpty;
@@ -58,7 +58,7 @@ import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
       });
 
       // roast test downloadReportInv2Batch downloadReportInUPIBatch downloadReportInCompatBatch
-      test.skip(`should verify report download for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
+      test(`should verify report download for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
         page,
       }) => {
         const firstRow = await page.locator('tbody tr').first();
@@ -78,7 +78,7 @@ import { clickSkipAndStartBtn, searchAndVerifyByPLId } from './utils';
       });
 
       // roast test searchByBatchID
-      test.skip(`should search and verify by batch Id for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
+      test(`should search and verify by batch Id for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
         page,
       }) => {
         const container = await page.locator(COMMON_SELECTORS.tabbedContainer);

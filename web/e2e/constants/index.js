@@ -40,6 +40,11 @@ const routes = {
   CUSTOMER_SUPPORT_DETAILS: '/app/business-settings/customer-support',
   BUSINESS_DETAILS: '/app/business-settings/business',
   PAYMENT_LINKS: '/app/paymentlinks',
+  ROUTE_PAYMENTS: '/app/route/payments',
+  TRANSACTIONS_PAYMENTS: '/app/payments',
+  ITEMS: '/app/items',
+  INVOICES: '/app/invoices',
+  PAYMENT_BUTTONS: '/app/paymentbuttons',
   PAYMENTS: 'app/payments',
   DISPUTES: 'app/disputes',
   FAILED_PAYMENTS: 'app/failed-payments',
@@ -80,6 +85,7 @@ const routes = {
   RISK_AND_FRAUD: '/app/risk-and-fraud',
   RECON_DASHBOARD: '/app/reconciliations/dashboard',
   ASSISTED_FINANCING: '/app/assisted-financing',
+  SMART_COLLECT: '/app/smartcollect/virtualaccounts',
   NAW_REGISTRATION_LINKS: '/app/registration_links/new',
 };
 

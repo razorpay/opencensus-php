@@ -1,11 +1,11 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { test, expect } from 'utils/base';
+import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { upiLinksData } from './constants';
+import { clickSkipAndStartBtn } from 'utils';
 import {
   cancelPLCreated,
-  clickSkipAndStartBtn,
   clonePLCreated,
   createPaymentLink,
   searchAndVerifyByPLId,
@@ -18,9 +18,8 @@ const SELECTORS = {
     '//div[contains(., "Reference Id")]/div[@class="pair-value"]//button[contains(text(), "Change")]',
 };
 
-test.setTimeout(2 * 60 * 1000);
 test.describe.parallel(
-  'Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-roast',
+  'Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-stable @project=no-code-roast',
   () => {
     test.use({
       storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
@@ -41,6 +40,7 @@ test.describe.parallel(
         productData,
         type: 'UPI',
       });
+      console.log('referenceId', referenceId);
       await searchPLAndOpenDetails({ page, referenceId });
       await verifyPLCreated({ page, productData, referenceId });
     });

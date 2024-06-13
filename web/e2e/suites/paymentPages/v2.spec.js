@@ -1,12 +1,10 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { clickSkipAndStartBtn } from 'utils';
 import { test } from 'utils/base';
 
 import { PAYMENT_PAGES_TYPES, paymentPagesEcommerceData } from './constants';
 import { createPaymentPage } from './utils';
 import { switchToTestMode } from '../../utils';
-import { clickSkipAndStartBtn } from '../paymentsLinks/utils';
-
-test.setTimeout(2 * 60 * 1000);
 
 test.describe.parallel('Test Payments Pages V2 @flow=payment-pages-v2 @project=no-code', () => {
   test.use({
@@ -14,7 +12,6 @@ test.describe.parallel('Test Payments Pages V2 @flow=payment-pages-v2 @project=n
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(routes.PAYMENT_PAGES);
     await switchToTestMode({ page });
     await page.goto(routes.PAYMENT_PAGES);
     await clickSkipAndStartBtn({ page });

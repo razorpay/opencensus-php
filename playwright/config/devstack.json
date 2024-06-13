@@ -1,6 +1,6 @@
 {
   "api": "",
-  "payment-links": "",
+  "payment-links": "4ae7e3f7d81ca42e6eb36ae0282cc96589506514",
   "gimli": "",
   "reminders": "",
   "pg-router": "",
@@ -9,5 +9,7 @@
   "payments-card": "",
   "pgos": "",
   "settlements": "",
-  "rize-service": ""
+  "rize-service": "",
+  "subscriptions": "",
+  "no-code-apps": ""
 }

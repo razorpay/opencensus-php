@@ -206,8 +206,24 @@ export const fillExpiry = async ({ page, isLegacyLink }) => {
   const dateToSelect = await getNextDate({
     page,
   });
+  console.log('dateToSelect', dateToSelect);
   await page.locator(`td[title="${dateToSelect}"]`).click();
   await page.waitForSelector('.rc-calendar-table', { state: 'hidden' });
+};
+
+export const clickSkipAndStartBtn = async ({ page }) => {
+  let skipAndStartedButton;
+  try {
+    skipAndStartedButton = await page.waitForSelector('button:has-text("Skip And Get Started")');
+  } catch (error) {
+    // Element not found within the specified timeout
+    // Handle the error or perform alternative actions
+  }
+
+  if (skipAndStartedButton) {
+    await skipAndStartedButton.click();
+    await page.waitForTimeout(5000);
+  }
 };
 
 module.exports = {
@@ -225,4 +241,5 @@ module.exports = {
   hideSearchFTUXBannerByClick,
   getNextDate,
   fillExpiry,
+  clickSkipAndStartBtn,
 };

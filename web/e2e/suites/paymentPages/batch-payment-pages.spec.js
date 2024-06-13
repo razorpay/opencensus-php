@@ -6,36 +6,33 @@ import {
   validateBatchPaymentPageDetails,
   validateDownloadSampleFile,
   createBatchPaymentPageWithLateFee,
-  clickSkipAndStartBtn,
 } from './utils';
 import { switchToTestMode } from '../../utils';
-import { navigateTo } from '../../utils/common';
+import { clickSkipAndStartBtn } from 'utils';
 
-test.setTimeout(2 * 60 * 1000);
 test.describe.parallel(
-  'Test Batch Payments Pages @flow=batch-payment-pages @project=no-code',
+  'Test Batch Payments Pages @flow=batch-payment-pages @project=no-code-stable',
   () => {
     test.use({
       storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
     });
+
     test.beforeEach(async ({ page }) => {
-      await navigateTo(page, routes.DASHBOARD);
       await switchToTestMode({ page });
       await page.goto(routes.PAYMENT_PAGES);
       await clickSkipAndStartBtn({ page });
+      await page.waitForTimeout(1000);
       await page.goto(routes.BATCH_PAYMENT_PAGES);
     });
 
-    test.skip('should validate batch PP details page', async ({ page }) => {
+    test('should validate batch PP details page', async ({ page }) => {
       await validateBatchPaymentPageDetails({
         page,
         productData: batchPaymentPageData,
       });
     });
 
-    test.skip('should validate download sample file on the batch details page', async ({
-      page,
-    }) => {
+    test('should validate download sample file on the batch details page', async ({ page }) => {
       await validateDownloadSampleFile({
         page,
         productData: batchPaymentPageData,
