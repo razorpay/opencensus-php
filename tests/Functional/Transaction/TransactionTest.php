@@ -25,6 +25,7 @@ use RZP\Models\Transaction\Ledger\Core as LedgerCore;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Pricing\Calculator\Tax\SG\Calculator as SGcalculator;
 
 class TransactionTest extends TestCase
 {
@@ -559,6 +560,32 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
 
         return $payment;
+    }
+
+    public function testCalculateTaxSingaporeMerchant()
+    {
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment = $this->createPaymentEntity($merchant);
+
+        $res = (new SGcalculator($payment,1000))->calculateTax(1000);
+
+        $expectedOutput = ["tax", 900, 90];
+
+        $this->assertEquals($expectedOutput, $res);
+    }
+
+    public function testGetTaxCalculatorForEntityWithoutCountryCode()
+    {
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment = $this->createPaymentEntity($merchant);
+
+        $payment->merchant->country_code  = null;
+
+        $response = Base::getTaxCalculator($payment, 1000);
+
+        $this->assertEquals(get_class($response), "RZP\Models\Pricing\Calculator\Tax\IN\Calculator");
     }
 
     public function testFetchAuthPaymentTransaction()
