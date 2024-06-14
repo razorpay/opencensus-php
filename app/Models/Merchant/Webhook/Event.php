@@ -40,6 +40,8 @@ class Event
     const SUBSCRIPTION_UPDATED              = 'subscription.updated';
     const SUBSCRIPTION_PAUSED               = 'subscription.paused';
     const SUBSCRIPTION_RESUMED              = 'subscription.resumed';
+    const SUBSCRIPTION_CYCLE_STARTED        = 'subscription.cycle.started';
+    const SUBSCRIPTION_CYCLE_ENDED          = 'subscription.cycle.ended';
     const TOKEN_CONFIRMED                   = 'token.confirmed';
     const TOKEN_REJECTED                    = 'token.rejected';
     const TOKEN_PAUSED                      = 'token.paused';
@@ -214,6 +216,8 @@ class Event
         self::SUBSCRIPTION_RESUMED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_CHARGED,
+        self::SUBSCRIPTION_CYCLE_STARTED,
+        self::SUBSCRIPTION_CYCLE_ENDED,
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
         self::SUBSCRIPTION_CANCELLED,
@@ -392,6 +396,8 @@ class Event
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
         self::SUBSCRIPTION_CHARGED,
+        self::SUBSCRIPTION_CYCLE_STARTED,
+        self::SUBSCRIPTION_CYCLE_ENDED,
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
         self::SUBSCRIPTION_UPDATED,
@@ -682,7 +688,10 @@ class Event
         self::ORDER_NOTIFICATION_FAILED                   => 64,
 
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_MCC_PENDING => 65,
-        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING => 66
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_MCC_PENDING => 66,
+
+        self::SUBSCRIPTION_CYCLE_STARTED                  => 67,
+        self::SUBSCRIPTION_CYCLE_ENDED                    => 68,
     ];
 
     /**
@@ -709,6 +718,8 @@ class Event
         self::SUBSCRIPTION_PENDING              => [Product::PRIMARY],
         self::SUBSCRIPTION_HALTED               => [Product::PRIMARY],
         self::SUBSCRIPTION_CHARGED              => [Product::PRIMARY],
+        self::SUBSCRIPTION_CYCLE_STARTED        => [Product::PRIMARY],
+        self::SUBSCRIPTION_CYCLE_ENDED          => [Product::PRIMARY],
         self::SUBSCRIPTION_CANCELLED            => [Product::PRIMARY],
         self::SUBSCRIPTION_COMPLETED            => [Product::PRIMARY],
         self::SUBSCRIPTION_UPDATED              => [Product::PRIMARY],
@@ -890,6 +901,8 @@ class Event
         self::SUBSCRIPTION_CANCELLED            => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_COMPLETED            => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_UPDATED              => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_CYCLE_STARTED        => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_CYCLE_ENDED          => Entity::SUBSCRIPTION,
         self::TOKEN_CONFIRMED                   => Entity::TOKEN,
         self::TOKEN_REJECTED                    => Entity::TOKEN,
         self::TOKEN_PAUSED                      => Entity::TOKEN,
@@ -999,6 +1012,8 @@ class Event
         self::SUBSCRIPTION_CANCELLED            => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_COMPLETED            => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_UPDATED              => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CYCLE_STARTED        => Feature\Constants::SUBSCRIPTION_V2_EVENTS,
+        self::SUBSCRIPTION_CYCLE_ENDED          => Feature\Constants::SUBSCRIPTION_V2_EVENTS,
         self::TOKEN_CONFIRMED                   => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_PAUSED                      => Feature\Constants::CHARGE_AT_WILL,

@@ -53,6 +53,7 @@ class Constants
     const EMAIL_OPTIONAL                  = 'email_optional';
     const CONTACT_OPTIONAL                = 'contact_optional';
     const SUBSCRIPTIONS                   = 'subscriptions';
+    const SUBSCRIPTION_V2_EVENTS          = 'subscription_v2_events';
     const ZOHO                            = 'zoho';
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
@@ -2335,6 +2336,7 @@ class Constants
         self::EMAIL_OPTIONAL                               => true,
         self::CONTACT_OPTIONAL                             => true,
         self::SUBSCRIPTIONS                                => true,
+        self::SUBSCRIPTION_V2_EVENTS                       => true,
         self::ZOHO                                         => true,
         self::EXPOSE_DOWNTIMES                             => true,
         self::PAYMENT_FAILURE_EMAIL                        => true,

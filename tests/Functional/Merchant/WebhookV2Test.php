@@ -498,6 +498,18 @@ class WebhookV2Test extends TestCase
         );
     }
 
+    public function testGetWebhookEventsForSubscriptionV2()
+    {
+        $this->fixtures->merchant->addFeatures(['subscription_v2_events']);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => 'MerchantUser01']);
+
+        $response = $this->startTest();
+
+        $this->assertContains('subscription.cycle.started', $response);
+        $this->assertContains('subscription.cycle.ended', $response);
+    }
+
     public function testGetP2pWebhookEvents()
     {
         $this->fixtures->merchant->addFeatures(['p2p_upi']);

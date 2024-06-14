@@ -1364,6 +1364,29 @@ return [
         ],
     ],
 
+    'testGetWebhookEventsForSubscriptionV2' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'order.notification.delivered',
+                'order.notification.failed',
+                'invoice.paid',
+                'invoice.partially_paid',
+                'invoice.expired',
+                'subscription.cycle.started',
+                'subscription.cycle.ended',
+            ],
+        ],
+    ],
+
     'testCreateOnboardingWebhook' => [
         'request' => [
             'url' => '/accounts/{account_id}/webhooks',
