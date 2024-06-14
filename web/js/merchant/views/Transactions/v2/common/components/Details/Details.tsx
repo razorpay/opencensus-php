@@ -11,6 +11,7 @@ import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constant
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
 
 import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 
 export const handleDetailsClick = ({
   navigate,
@@ -20,6 +21,7 @@ export const handleDetailsClick = ({
   prevPath,
   prevSearch,
   isButton,
+  rowData,
 }: HandleDetailsClickParams & Pick<RouterParams, 'navigate'>): void => {
   const { hash, search } = window.location;
   const { method } = qs.parse(search);
@@ -29,6 +31,10 @@ export const handleDetailsClick = ({
   if (hash) {
     url += hash;
   }
+  if (rowData?.sourceChannel === POS_TRANSACTION_CHANNEL && rowData?.receiverType === 'qr_code') {
+    url += '&dashboard_flag=qr_device_detail';
+  }
+
   track({
     objectName: `Transaction Details ${isButton ? 'Button' : 'Row'}`,
     properties: {

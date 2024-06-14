@@ -77,3 +77,4 @@ export enum SearchQueryParam {
 
 export const MOBILE_CALENDAR_NUMBER_OF_MONTHS = 1;
 export const DESKTOP_CALENDAR_NUMBER_OF_MONTHS = 2;
+export const POS_TRANSACTION_CHANNEL = 'in_person';

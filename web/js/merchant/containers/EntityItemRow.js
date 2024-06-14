@@ -2,7 +2,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-class EnityItemRow extends Component {
+class EntityItemRow extends Component {
   render() {
     const {
       id,
@@ -14,9 +14,16 @@ class EnityItemRow extends Component {
       item,
       isDisabled,
     } = this.props;
+    const receiverType = item?.receiver_type || '';
+    const sourceChannel = item?.source_channel || '';
     return (
       <tr
-        onClick={() => onRowClick?.(id)}
+        onClick={() => {
+          onRowClick?.({
+            id,
+            rowData: { receiverType, sourceChannel },
+          });
+        }}
         className={`${luminateRowId === id ? 'luminate' : ''}${
           activeEntityId === id || activeSecEntityId === id ? ' active' : ''
         }${rowClasses ?? ''}${isDisabled?.(item) ? ' disabled' : ''}`}
@@ -32,4 +39,4 @@ const mapStateToProps = (state) => {
   return state.app;
 };
 
-export default connect(mapStateToProps, null)(EnityItemRow);
+export default connect(mapStateToProps, null)(EntityItemRow);

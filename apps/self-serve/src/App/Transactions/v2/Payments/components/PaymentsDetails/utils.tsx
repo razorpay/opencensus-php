@@ -22,6 +22,7 @@ import CapturedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payme
 import CreatedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Created';
 import FailedAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Failed';
 import RefundAnimationData from 'apps/self-serve/src/App/Transactions/v2/Payments/lottie/Refund';
+import { POS_TRANSACTION_CHANNEL } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -485,4 +486,9 @@ export const getDisputesOverviewDetails = (paymentDetails: any, viewDisputeCallb
       </Text>
     );
   }
+};
+
+export const isPosTransaction = (source_channel?: string) => {
+  if (source_channel === POS_TRANSACTION_CHANNEL) return true;
+  return false;
 };

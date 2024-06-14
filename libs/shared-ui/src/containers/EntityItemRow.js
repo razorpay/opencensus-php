@@ -12,10 +12,16 @@ class EntityItemRow extends Component {
       item,
       isDisabled,
     } = this.props;
-
+    const receiverType = item?.receiver_type || '';
+    const sourceChannel = item?.source_channel || '';
     return (
       <tr
-        onClick={() => onRowClick?.(id)}
+        onClick={() => {
+          onRowClick?.({
+            id,
+            rowData: { receiverType, sourceChannel },
+          });
+        }}
         className={`${luminateRowId === id ? 'luminate' : ''}${
           activeEntityId === id || activeSecEntityId === id ? ' active' : ''
         }${rowClasses ?? ''}${isDisabled?.(item) ? ' disabled' : ''}`}

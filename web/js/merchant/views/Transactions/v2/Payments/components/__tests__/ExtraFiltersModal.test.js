@@ -1,3 +1,4 @@
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import ExtraFiltersModal from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/ExtraFiltersModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { render, screen, userEvent } from 'test-utils';
@@ -80,7 +81,7 @@ describe('ExtraFiltersModal', () => {
 
     expect(mockHandleSearch).toHaveBeenCalledWith({
       method: 'card',
-      source_channel: 'in_person',
+      source_channel: POS_TRANSACTION_CHANNEL,
     });
   });
 

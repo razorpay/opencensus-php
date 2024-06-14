@@ -3,9 +3,11 @@ import { formatPhoneNumber } from '@razorpay/i18nify-js';
 
 import '@testing-library/jest-dom/extend-expect';
 import { useMobile } from 'common/hooks/useMobile';
+import store from 'merchant/store';
 import PaymentDetailsSection from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsSection';
 import { happyFlowProps } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsSection';
 import { render, screen, fireEvent, waitFor } from 'test-utils';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 
 jest.mock('common/hooks/useMobile', () => ({
   ...jest.requireActual('common/hooks/useMobile'),
@@ -86,6 +88,36 @@ describe('Payment Details Section component', () => {
     test('should render Payment Transfers', () => {
       render(<App props={happyFlowProps} />);
       expect(screen.getByText('Payment Transfers')).toBeInTheDocument();
+    });
+
+    test('should render Payment Transfers', () => {
+      render(<App props={happyFlowProps} />);
+      expect(screen.getByText('Payment Transfers')).toBeInTheDocument();
+    });
+
+    test('should render Pos Specific Details', () => {
+      const globalState = store.getState();
+      const user = globalState.session.user;
+      jest.spyOn(user, 'isOmniEnabledMerchant', 'get').mockReturnValue(true);
+      render(
+        <App
+          props={{
+            ...happyFlowProps,
+            paymentDetails: {
+              ...happyFlowProps.paymentDetails,
+              source_channel: POS_TRANSACTION_CHANNEL,
+            },
+          }}
+        />,
+      );
+      expect(screen.getByText('Payment Gateway ID')).toBeInTheDocument();
+      expect(
+        screen.getByText(`${happyFlowProps.paymentDetails.gateway_merchant_id}`),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Device details')).toBeInTheDocument();
+      expect(
+        screen.getByText(`TID: ${happyFlowProps.paymentDetails.gateway_terminal_id}`),
+      ).toBeInTheDocument();
     });
   });
 

@@ -8,7 +8,10 @@ import ShowWhen from 'shell/components/ShowWhen';
 import PaymentDownloadSwiftCopy from 'shell/Transactions/v1/DownloadSwiftCopy';
 import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
 import { paymentMethodOptionsMap } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter/constants';
-import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
+import {
+  mobileBreakoints,
+  POS_TRANSACTION_CHANNEL,
+} from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { track } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 
 export const handleDetailsClick = ({
@@ -18,6 +21,7 @@ export const handleDetailsClick = ({
   initiatePage,
   prevPath,
   isButton,
+  rowData,
 }: HandleDetailsClickParams & Pick<RouterParams, 'navigate'>): void => {
   const { hash, search } = window.location;
   const { method } = qs.parse(search);
@@ -27,6 +31,10 @@ export const handleDetailsClick = ({
   if (hash) {
     url += hash;
   }
+  if (rowData?.sourceChannel === POS_TRANSACTION_CHANNEL && rowData?.receiverType === 'qr_code') {
+    url += '&dashboard_flag=qr_device_detail';
+  }
+
   track({
     objectName: `Transaction Details ${isButton ? 'Button' : 'Row'}`,
     properties: {

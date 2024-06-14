@@ -1,6 +1,7 @@
 import React from 'react';
 import ExtraFiltersModal from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter/ExtraFiltersModal';
 import { render, screen, userEvent } from 'apps/self-serve/src/services/test/test-utils';
+import { POS_TRANSACTION_CHANNEL } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 
 export const mockCloseModal = jest.fn();
 
@@ -84,7 +85,7 @@ describe('ExtraFiltersModal', () => {
 
     expect(mockHandleSearch).toHaveBeenCalledWith({
       method: 'card',
-      source_channel: 'in_person',
+      source_channel: POS_TRANSACTION_CHANNEL,
     });
   });
 

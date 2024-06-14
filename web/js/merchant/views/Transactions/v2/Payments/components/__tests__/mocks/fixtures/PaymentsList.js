@@ -31,7 +31,7 @@ jest.mock(
           Payments Table
           <button
             type="button"
-            onClick={() => !isDisabled({ status: 'captured' }) && onRowClick('id_1234')}
+            onClick={() => !isDisabled({ status: 'captured' }) && onRowClick({ id: 'id_1234' })}
           >
             Table Row
           </button>

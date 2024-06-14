@@ -18,7 +18,7 @@ import { bindActionCreators, compose } from 'redux';
 import ErrorLoadingImage from 'assets/transactions/error-loading.svg';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
-import { getErrorMessageFromResponse, deepClone } from 'common/utils/rzp-utils';
+import { getErrorMessageFromResponse, deepClone, getURLQueryParams } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
   fetchPaymentIdDetails,
@@ -80,6 +80,8 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     breakpoints: theme.breakpoints,
   });
   const isDesktop = ['xl', 'l'].includes(matchedBreakpoint as string);
+  const queryParams = getURLQueryParams(location.search);
+  const dashboardFlag = queryParams?.dashboard_flag;
 
   const fetchDetails = async () => {
     setError(null);
@@ -92,7 +94,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
       if (isPaymentsRoute) {
         // payments route - api call flow
         const responses = await Promise.all([
-          fetchPaymentIdDetails(id),
+          fetchPaymentIdDetails(id, dashboardFlag),
           fetchPaymentIdRefundDetails(id),
         ]);
 
@@ -116,7 +118,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
         const refundResponseDetails = await fetchRefundIdDetails(id);
         const paymentId = refundResponseDetails.data.payment_id;
         const responses = await Promise.all([
-          fetchPaymentIdDetails(paymentId),
+          fetchPaymentIdDetails(paymentId, dashboardFlag),
           fetchPaymentIdRefundDetails(paymentId),
         ]);
         setPaymentIdDetails(responses[0].data);
@@ -138,7 +140,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   const reFetchPageDetails = async (id: string): Promise<void> => {
     try {
       const responses = await Promise.all([
-        fetchPaymentIdDetails(id),
+        fetchPaymentIdDetails(id, dashboardFlag),
         fetchPaymentIdRefundDetails(id),
       ]);
       setPaymentIdDetails(responses[0].data);

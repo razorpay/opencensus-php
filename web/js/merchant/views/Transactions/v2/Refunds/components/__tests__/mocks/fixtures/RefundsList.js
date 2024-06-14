@@ -30,7 +30,7 @@ jest.mock(
       ) : (
         <div>
           Refunds Table
-          <button type="button" onClick={() => onRowClick('id_1234')}>
+          <button type="button" onClick={() => onRowClick({ id: 'id_1234' })}>
             Table Row
           </button>
         </div>

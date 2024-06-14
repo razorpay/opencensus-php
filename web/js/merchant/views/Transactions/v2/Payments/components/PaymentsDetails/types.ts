@@ -171,6 +171,12 @@ export interface IPaymentDetails {
     authentication_channel: string;
   };
   optimizer_provider: string;
+  gateway_terminal_id?: string;
+  gateway_merchant_id?: string;
+  device_id?: string;
+  source_channel?: string;
+  payee_vpa?: string;
+  device_detail?: string;
 }
 
 export interface IPaymentIdRefundDetail {

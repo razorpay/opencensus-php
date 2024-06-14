@@ -137,7 +137,7 @@ class PaymentsList extends ListContainer {
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
           isOmniView={isOmniView}
-          onRowClick={(id) =>
+          onRowClick={({ id, rowData }) =>
             handleDetailsClick({
               navigate,
               itemId: id,
@@ -145,6 +145,7 @@ class PaymentsList extends ListContainer {
               initiatePage: TransactionsPagesMap[pathname],
               prevPath: pathname,
               prevSearch: search,
+              rowData,
             })
           }
           {...this.props}

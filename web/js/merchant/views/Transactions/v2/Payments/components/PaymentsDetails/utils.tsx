@@ -38,6 +38,7 @@ import {
   DisputeStatus,
   IQuestionDetails,
 } from './types';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -646,4 +647,9 @@ export const getStatusText = (
     }`;
   }
   return titleCase(status);
+};
+
+export const isPosTransaction = (source_channel?: string) => {
+  if (source_channel === POS_TRANSACTION_CHANNEL) return true;
+  return false;
 };

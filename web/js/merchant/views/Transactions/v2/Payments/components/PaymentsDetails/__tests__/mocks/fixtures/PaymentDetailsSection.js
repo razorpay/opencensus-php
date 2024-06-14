@@ -86,6 +86,9 @@ export const happyFlowProps = {
     instant_refund_support: false,
     gateway_refund_support: true,
     direct_settlement_refund: false,
+    gateway_terminal_id: '80001501',
+    gateway_merchant_id: '150000000001501',
+    device_id: '1491701832',
   },
   applicationDetails: {
     name: 'WhatsApp',

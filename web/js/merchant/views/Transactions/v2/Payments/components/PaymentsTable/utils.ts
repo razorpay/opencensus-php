@@ -1,4 +1,5 @@
 import { humanize } from 'common/utils/rzp-utils';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import { Item } from 'merchant/views/Transactions/v2/Payments/types';
 
 export const getPaymentMethod = ({ method, card, wallet }: Item): string => {
@@ -45,6 +46,6 @@ export const getPaymentMethod = ({ method, card, wallet }: Item): string => {
 
 export const getSourceChannelType = (source_channel: string | null) => {
   if (source_channel === 'online') return 'Online';
-  else if (source_channel === 'in_person') return 'In Person';
+  else if (source_channel === POS_TRANSACTION_CHANNEL) return 'In Person';
   else return null;
 };

@@ -2,6 +2,7 @@ import { render } from 'test-utils';
 import PaymentsTable from 'merchant/views/Transactions/v2/Payments/components/PaymentsTable';
 import * as useMobile from 'common/hooks/useMobile/useMobile';
 import 'jest-location-mock';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 
 const generatePayment = ({ method, status = 'authorized', cardType = 'debit' }) => {
   const id = `payment_id_${Math.floor(Math.random() * 100)}`;
@@ -16,7 +17,7 @@ const generatePayment = ({ method, status = 'authorized', cardType = 'debit' }) 
   } else if (random === 2) {
     rrn = `rrn_${Math.floor(Math.random() * 100)}`;
   }
-  const source_channel = Math.random() < 0.5 ? 'online' : 'in_person';
+  const source_channel = Math.random() < 0.5 ? 'online' : POS_TRANSACTION_CHANNEL;
 
   return {
     id,

@@ -23,6 +23,7 @@ import { User } from '@dashboard/shared-utils/typings';
 import { openModal } from '@dashboard/shared-utils/reducers/modals';
 import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
 import { useStore } from 'shell/commonStore';
+import { noop } from '@dashboard/shared-utils/rzp-utils';
 import { fetchEncodedPaymentReceipt } from '../PaymentsList/model';
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
@@ -37,7 +38,7 @@ import {
 } from './styled';
 import Tooltip from './Tooltip';
 import { ApplicationDetails, IPaymentDetails } from './types';
-import { onCopy } from './utils';
+import { isPosTransaction, onCopy } from './utils';
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 
 const PaymentReceipt = lazy(
@@ -53,6 +54,39 @@ interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   user: User;
 }
 
+interface DetailRowProps {
+  label: string;
+  value: React.ReactNode;
+  tooltip?: boolean;
+  copyable?: boolean;
+  onCopyAction?: () => void;
+}
+
+const DetailRow: React.FC<DetailRowProps> = ({
+  label,
+  value,
+  tooltip = false,
+  copyable = false,
+  onCopyAction,
+}) => (
+  <RowWrapper>
+    <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
+      {label} {tooltip ? <Tooltip size="small" /> : null}
+    </Text>
+    {copyable && value !== '--' ? (
+      <CopyWrapper onClick={onCopyAction || noop}>
+        <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
+          {value}
+        </Text>
+      </CopyWrapper>
+    ) : (
+      <Text variant="body" size="medium" weight="regular" color="surface.text.gray.normal">
+        {value}
+      </Text>
+    )}
+  </RowWrapper>
+);
+
 function PaymentDetailsSection({
   paymentDetails,
   applicationDetails,
@@ -64,11 +98,10 @@ function PaymentDetailsSection({
   user,
 }: IPaymentDetailsSection): React.ReactElement {
   const [isOpen, setIsOpen] = useState<boolean>(true);
-  const toggleAccordian = () => {
-    setIsOpen((prevState) => !prevState);
-  };
-  const isMobile = useMobile();
   const isStorefront = location.hash === '#storefront';
+
+  const toggleAccordion = () => setIsOpen((prevState) => !prevState);
+  const isMobile = useMobile();
 
   useEffect(() => {
     // if device type changes to desktop, ensure isOpen is reset to true
@@ -76,6 +109,7 @@ function PaymentDetailsSection({
       setIsOpen(true);
     }
   }, [isMobile]);
+
   const {
     id,
     acquirer_data = {},
@@ -92,15 +126,21 @@ function PaymentDetailsSection({
     vpa,
     wallet,
     invoice_id,
+    gateway_terminal_id,
+    gateway_merchant_id,
+    device_id,
+    source_channel,
+    payee_vpa,
+    device_detail,
   } = paymentDetails;
   const showNotification = useStore((state) => state.showNotification);
 
   const isOmniChannelMerchant =
-    user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant);
+    isPosTransaction(source_channel) &&
+    (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
 
   const onDownloadClick = async (e) => {
     e.stopPropagation();
-
     try {
       const response = await fetchEncodedPaymentReceipt(id);
       const link = document.createElement('a');
@@ -126,6 +166,9 @@ function PaymentDetailsSection({
       ),
     });
   };
+
+  const posGatewayId = gateway_terminal_id || payee_vpa;
+  const posDeviceSerialNumber = device_id || device_detail;
   return (
     <Box testID="payment-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
@@ -133,7 +176,7 @@ function PaymentDetailsSection({
           Details
         </Text>
         {isMobile ? (
-          <CollapsibleContainer onClick={toggleAccordian} data-testid="collapsible-container">
+          <CollapsibleContainer onClick={toggleAccordion} data-testid="collapsible-container">
             <Text size="medium" weight="semibold" color="surface.text.gray.subtle">
               {!isOpen ? (
                 <ChevronDownIcon
@@ -157,347 +200,208 @@ function PaymentDetailsSection({
           <Card padding="spacing.5" elevation="none">
             <CardBody>
               <RowsWrapper>
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Payment ID <Tooltip size="small" />
-                  </Text>
-                  <CopyWrapper
-                    onClick={onCopy('Payment ID', { transactionIDActual, paymentId: id }).bind(
-                      null,
-                      id,
-                    )}
-                  >
-                    <Text
-                      variant="body"
-                      size="medium"
-                      weight="semibold"
-                      color="surface.text.gray.normal"
-                    >
-                      {id}
-                    </Text>
-                  </CopyWrapper>
-                </RowWrapper>
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Bank RRN <Tooltip size="small" />
-                  </Text>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.normal"
-                  >
-                    {acquirer_data.rrn || '--'}
-                  </Text>
-                </RowWrapper>
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Order ID <Tooltip size="small" />
-                  </Text>
-                  {order_id ? (
-                    <CopyWrapper
-                      onClick={onCopy('Order ID', { transactionIDActual, orderId: order_id }).bind(
-                        null,
-                        order_id,
-                      )}
-                    >
-                      <Text
-                        variant="body"
-                        size="medium"
-                        weight="semibold"
-                        color="surface.text.gray.normal"
-                      >
-                        {order_id}
-                      </Text>
-                    </CopyWrapper>
-                  ) : (
-                    <Text
-                      variant="body"
-                      size="medium"
-                      weight="semibold"
-                      color="surface.text.gray.normal"
-                    >
-                      --
-                    </Text>
+                <DetailRow
+                  label="Payment ID"
+                  value={id}
+                  tooltip
+                  copyable
+                  onCopyAction={onCopy('Payment ID', { transactionIDActual, paymentId: id }).bind(
+                    null,
+                    id,
                   )}
-                </RowWrapper>
+                />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Invoice ID
-                  </Text>
-                  {invoice_id ? (
-                    <CopyWrapper onClick={copyToClipboard.bind(null, invoice_id)}>
-                      <Text
-                        variant="body"
-                        size="medium"
-                        weight="semibold"
-                        color="surface.text.gray.normal"
-                      >
-                        {invoice_id}
-                      </Text>
-                    </CopyWrapper>
-                  ) : (
-                    <Text
-                      variant="body"
-                      size="medium"
-                      weight="semibold"
-                      color="surface.text.gray.normal"
-                    >
-                      --
-                    </Text>
+                <DetailRow label="Bank RRN" value={acquirer_data.rrn || '--'} tooltip />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                <DetailRow
+                  label="Order ID"
+                  value={order_id || '--'}
+                  tooltip
+                  copyable
+                  onCopyAction={onCopy('Order ID', { transactionIDActual, orderId: order_id }).bind(
+                    null,
+                    order_id,
                   )}
-                </RowWrapper>
+                />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Payment method
-                  </Text>
-                  <PaymentMethod
-                    payment={paymentDetails}
-                    method={method}
-                    card={card}
-                    bank={bank}
-                    vpa={vpa}
-                    wallet={wallet}
-                  />
-                </RowWrapper>
+                <DetailRow
+                  label="Invoice ID"
+                  value={invoice_id || '--'}
+                  copyable
+                  onCopyAction={copyToClipboard.bind(null, invoice_id)}
+                />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Customer details
-                  </Text>
-                  <Box display="flex" flexDirection="column" gap="spacing.2">
-                    {notes.name ? (
-                      <Text
-                        variant="body"
-                        size="medium"
-                        weight="regular"
-                        color="surface.text.gray.normal"
-                      >
-                        {notes.name}
-                      </Text>
-                    ) : null}
-                    {contact ? (
-                      <Box display="inline-flex" gap="spacing.3" alignItems="center">
-                        <PhoneIcon size="medium" color="interactive.icon.gray.subtle" />
+                <DetailRow
+                  label="Payment method"
+                  value={
+                    <PaymentMethod
+                      payment={paymentDetails}
+                      method={method}
+                      card={card}
+                      bank={bank}
+                      vpa={vpa}
+                      wallet={wallet}
+                    />
+                  }
+                />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                <DetailRow
+                  label="Customer details"
+                  value={
+                    <Box display="flex" flexDirection="column" gap="spacing.2">
+                      {notes.name ? (
                         <Text
                           variant="body"
                           size="medium"
                           weight="regular"
                           color="surface.text.gray.normal"
                         >
-                          {getI18FormattedPhoneNumber(contact)}
+                          {notes.name}
                         </Text>
-                      </Box>
-                    ) : null}
-                    {email ? (
-                      <Box display="inline-flex" gap="spacing.3" alignItems="center">
-                        <MailIcon size="medium" color="interactive.icon.gray.subtle" />
-                        <Text
-                          variant="body"
-                          size="medium"
-                          weight="regular"
-                          color="surface.text.gray.normal"
-                        >
-                          {email}
-                        </Text>
-                      </Box>
-                    ) : null}
-                    {/* if nothing exists, show -- */}
-                    {!notes.name && !contact && !email ? (
-                      <Text
-                        variant="body"
-                        size="medium"
-                        weight="regular"
-                        color="surface.text.gray.normal"
-                      >
-                        --
-                      </Text>
-                    ) : null}
-                  </Box>
-                </RowWrapper>
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Fee bearer
-                  </Text>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.normal"
-                  >
-                    {fee_bearer === 'platform'
-                      ? 'You pay the Razorpay platform fee'
-                      : 'The customer has paid the fees for this payment'}
-                  </Text>
-                </RowWrapper>
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    App Name
-                  </Text>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.normal"
-                  >
-                    {applicationDetails?.name || `--`}
-                  </Text>
-                </RowWrapper>
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    App ID
-                  </Text>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.normal"
-                  >
-                    {applicationDetails?.id || `--`}
-                  </Text>
-                </RowWrapper>
-                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Description
-                  </Text>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.normal"
-                  >
-                    {description || `--`}
-                  </Text>
-                </RowWrapper>
-                {isOmniChannelMerchant ? (
-                  <>
-                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                    <RowWrapper>
-                      <Text
-                        variant="body"
-                        size="medium"
-                        weight="regular"
-                        color="surface.text.gray.subtle"
-                      >
-                        Charge Slip
-                      </Text>
-                      <div
-                        onClick={openChargeSlip}
-                        onKeyDown={openChargeSlip}
-                        role="button"
-                        tabIndex={0}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <Box display="flex" flexDirection="row" alignItems="center">
+                      ) : null}
+                      {contact ? (
+                        <Box display="inline-flex" gap="spacing.3" alignItems="center">
+                          <PhoneIcon size="medium" color="interactive.icon.gray.subtle" />
                           <Text
                             variant="body"
                             size="medium"
                             weight="regular"
-                            color="surface.text.primary.normal"
+                            color="surface.text.gray.normal"
                           >
-                            {id}.png
+                            {getI18FormattedPhoneNumber(contact)}
                           </Text>
-                          <IconButton
-                            icon={() => (
-                              <DownloadIcon
-                                marginLeft="spacing.3"
-                                size="medium"
-                                color="interactive.icon.primary.normal"
-                              />
-                            )}
-                            size="medium"
-                            accessibilityLabel="download"
-                            onClick={onDownloadClick}
-                          />
                         </Box>
-                      </div>
-                    </RowWrapper>
+                      ) : null}
+                      {email ? (
+                        <Box display="inline-flex" gap="spacing.3" alignItems="center">
+                          <MailIcon size="medium" color="interactive.icon.gray.subtle" />
+                          <Text
+                            variant="body"
+                            size="medium"
+                            weight="regular"
+                            color="surface.text.gray.normal"
+                          >
+                            {email}
+                          </Text>
+                        </Box>
+                      ) : null}
+                      {!notes.name && !contact && !email ? (
+                        <Text
+                          variant="body"
+                          size="medium"
+                          weight="regular"
+                          color="surface.text.gray.normal"
+                        >
+                          --
+                        </Text>
+                      ) : null}
+                    </Box>
+                  }
+                />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                <DetailRow
+                  label="Fee bearer"
+                  value={
+                    fee_bearer === 'platform'
+                      ? 'You pay the Razorpay platform fee'
+                      : 'The customer has paid the fees for this payment'
+                  }
+                />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                <DetailRow label="App Name" value={applicationDetails?.name || '--'} />
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                <DetailRow label="App ID" value={applicationDetails?.id || '--'} />
+
+                <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                <DetailRow label="Description" value={description || '--'} />
+                {isOmniChannelMerchant ? (
+                  <>
+                    {gateway_merchant_id ? (
+                      <>
+                        <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                        <DetailRow label="Payment Gateway ID" value={gateway_merchant_id} />
+                      </>
+                    ) : null}
+                    {posGatewayId ? (
+                      <>
+                        <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                        <DetailRow
+                          label="Device details"
+                          value={
+                            <Box display="flex" flexDirection="column">
+                              <CopyWrapper onClick={copyToClipboard.bind(null, posGatewayId)}>
+                                <Text
+                                  variant="body"
+                                  size="medium"
+                                  weight="regular"
+                                  color="surface.text.gray.normal"
+                                >
+                                  {gateway_terminal_id ? 'TID' : 'VPA'}: {posGatewayId}
+                                </Text>
+                              </CopyWrapper>
+                              {posDeviceSerialNumber ? (
+                                <Text
+                                  variant="body"
+                                  size="medium"
+                                  weight="regular"
+                                  color="surface.text.gray.normal"
+                                >
+                                  DSN: {posDeviceSerialNumber}
+                                </Text>
+                              ) : null}
+                            </Box>
+                          }
+                        />
+                      </>
+                    ) : null}
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Charge Slip"
+                      value={
+                        <div
+                          onClick={openChargeSlip}
+                          onKeyDown={openChargeSlip}
+                          role="button"
+                          tabIndex={0}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <Box display="flex" flexDirection="row" alignItems="center">
+                            <Text
+                              variant="body"
+                              size="medium"
+                              weight="regular"
+                              color="surface.text.primary.normal"
+                            >
+                              {id}.png
+                            </Text>
+                            <IconButton
+                              icon={() => (
+                                <DownloadIcon
+                                  marginLeft="spacing.3"
+                                  size="medium"
+                                  color="interactive.icon.primary.normal"
+                                />
+                              )}
+                              size="medium"
+                              accessibilityLabel="download"
+                              onClick={onDownloadClick}
+                            />
+                          </Box>
+                        </div>
+                      }
+                    />
                   </>
                 ) : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <RowWrapper>
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.subtle"
-                  >
-                    Notes
-                  </Text>
-                  {getNotes({ notes, isStorefront })}
-                </RowWrapper>
-                <PaymentTransfers paymentDetails={paymentDetails} />
-                {/* Show only if dispute is raised */}
-                {disputes.items.length > 0 ? (
-                  <>
-                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                    <RowWrapper>
-                      <Text
-                        variant="body"
-                        size="medium"
-                        weight="regular"
-                        color="surface.text.gray.subtle"
-                      >
-                        Dispute ID
-                      </Text>
+                <DetailRow label="Notes" value={getNotes({ notes, isStorefront })} />
+              </RowsWrapper>
+              <PaymentTransfers paymentDetails={paymentDetails} />
+              {disputes.items.length > 0 ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <DetailRow
+                    label="Dispute ID"
+                    value={
                       <Box display="flex" flexDirection="column" gap="spacing.2">
                         {disputes.items.map((item) => (
                           <Link key={item.id} onClick={() => history.push(`/disputes/${item.id}`)}>
@@ -505,10 +409,10 @@ function PaymentDetailsSection({
                           </Link>
                         ))}
                       </Box>
-                    </RowWrapper>
-                  </>
-                ) : null}
-              </RowsWrapper>
+                    }
+                  />
+                </>
+              ) : null}
             </CardBody>
           </Card>
         </CardWrapper>

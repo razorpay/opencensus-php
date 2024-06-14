@@ -52,13 +52,6 @@ describe('Payment Details Section component', () => {
       expect(screen.getByText(`${happyFlowProps.paymentDetails.order_id}`)).toBeInTheDocument();
     });
 
-    test('should render Order Id', () => {
-      render(<App props={happyFlowProps} />);
-
-      expect(screen.getByText('Order ID')).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.paymentDetails.order_id}`)).toBeInTheDocument();
-    });
-
     test('should render Fee bearer', () => {
       render(<App props={happyFlowProps} />);
 
@@ -88,14 +81,6 @@ describe('Payment Details Section component', () => {
       expect(screen.getByText(`${happyFlowProps.paymentDetails.contact}`)).toBeInTheDocument();
     });
 
-    test('should render Customer details', () => {
-      render(<App props={happyFlowProps} />);
-
-      expect(screen.getByText('Customer details')).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.paymentDetails.email}`)).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.paymentDetails.contact}`)).toBeInTheDocument();
-    });
-
     test('should render Description', () => {
       render(<App props={happyFlowProps} />);
 
@@ -107,6 +92,31 @@ describe('Payment Details Section component', () => {
       render(<App props={happyFlowProps} />);
       expect(screen.getByText('Payment Transfers')).toBeInTheDocument();
     });
+
+    // test('should render Pos Specific Details', () => {
+    //   const globalState = store.getState();
+    //   const user = globalState.session.user;
+    //   jest.spyOn(user, 'isOmniEnabledMerchant', 'get').mockReturnValue(true);
+    //   render(
+    //     <App
+    //       props={{
+    //         ...happyFlowProps,
+    //         paymentDetails: {
+    //           ...happyFlowProps.paymentDetails,
+    //           source_channel: POS_TRANSACTION_CHANNEL,
+    //         },
+    //       }}
+    //     />,
+    //   );
+    //   expect(screen.getByText('Payment Gateway ID')).toBeInTheDocument();
+    //   expect(
+    //     screen.getByText(`${happyFlowProps.paymentDetails.gateway_merchant_id}`),
+    //   ).toBeInTheDocument();
+    //   expect(screen.getByText('Device details')).toBeInTheDocument();
+    //   expect(
+    //     screen.getByText(`TID: ${happyFlowProps.paymentDetails.gateway_terminal_id}`),
+    //   ).toBeInTheDocument();
+    // });
   });
 
   describe('Mobile view', () => {

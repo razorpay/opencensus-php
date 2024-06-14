@@ -40,7 +40,7 @@ class RefundsList extends ListContainer {
           skip={skip}
           paginate={onPaginate(this.paginate)}
           isOmniView={isOmniView}
-          onRowClick={(id) =>
+          onRowClick={({ id }) =>
             handleDetailsClick({
               navigate,
               itemId: id,
