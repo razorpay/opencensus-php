@@ -10251,6 +10251,11 @@ class Core extends Base\Core
 
             $merchantDetail = $this->merchant->merchantDetail;
 
+            if ($merchantDetail == null && $this->app['basicauth']->isAppAuth())
+            {
+                $merchantDetail = $merchant->merchantDetail;
+            }
+
             $merchantDetail->setWebsite($newUrl);
 
             $this->repo->merchant_detail->saveOrFail($merchantDetail);
@@ -13017,6 +13022,27 @@ class Core extends Base\Core
         ]);
 
         (new Detail\Entity())->flushCache(strtolower($entityName) . '_' . $merchantId);
+    }
+
+    /**
+     * @param string $entityId
+     * @param string $entity
+     * @param string $permissionName
+     * @param string $comment
+     *
+     * @return void
+     */
+    public function postCommentsInWorkflow(string $entityId, string $entity, string $permissionName, string $comment): void
+    {
+        $workFlowAction = (new ActionCore())->fetchOpenActionOnEntityOperation($entityId, $entity, $permissionName)->first();
+
+        $businessDetailsCommentEntity = (new CommentCore())->create([
+            CommentEntity::COMMENT => $comment,
+        ]);
+
+        $businessDetailsCommentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($businessDetailsCommentEntity);
     }
 }
 

@@ -8,6 +8,7 @@ use DateTime;
 use DOMDocument;
 use RZP\Http\RequestHeader;
 use RZP\lib\TemplateEngine;
+use Illuminate\Support\Str;
 use RZP\Constants\Environment;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
@@ -5313,6 +5314,218 @@ class Service extends Base\Service
                     $vcipEntityStatus
                 ]
         ];
+
+        return $response;
+    }
+
+    /**
+     * This method will update merchant website via internal API. Needs to be called only after website validation is
+     * done. We are not introducing any additional logic, we are simply reusing an existing method.
+     *
+     * @param string $merchantId
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function internalUpdateWebsiteDetails(string $merchantId, array $input): array
+    {
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $this->putBusinessWebsiteUpdatePostWorkflow($input, $this->merchant);
+
+        return [DEConstants::SUCCESS => true];
+    }
+
+    /**
+     * This method will create workflow and based on input after workflow creation comments will be added.
+     * We are not introducing any addition logic to workflows, we are reusing the existing workflow service and
+     * exposing an API
+     *
+     * Disclaimer: Dashboard team does not own workflow, we are simply exposing an internal API so that we can create
+     * workflow by making API calls.
+     *
+     * @param string $merchantId
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function internalCreateWorkFlow(string $merchantId, array $input): array
+    {
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $this->validator->validateInput("internal_create_workflow", $input);
+
+        $this->updateWorkflowParams($input);
+
+        $workflowActionData = [];
+
+        try
+        {
+            $this->app['workflow']->handle();
+        }
+        catch (Exception\EarlyWorkflowResponse $e)
+        {
+            $workflowActionData = json_decode($e->getMessage(), true);
+        }
+
+        if (empty($workflowActionData) === true)
+        {
+            return [
+                DEConstants::SUCCESS    => false,
+            ];
+        }
+
+        // post workflow comments
+        $comments = $this->postCommentsInWorkflow($input);
+
+        return [
+            DEConstants::SUCCESS    => true,
+            DEConstants::WORFLOW    => $workflowActionData,
+            DEConstants::COMMENTS   => $comments,
+        ];
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     */
+    protected function updateWorkflowParams(array $input): void
+    {
+        if (array_get($input, DetailConstants::WORKFLOW_MAKER_TYPE) === MakerType::MERCHANT)
+        {
+            $this->app['workflow']
+                ->setWorkflowMakerType(MakerType::MERCHANT)
+                ->setWorkflowMaker($this->merchant);
+        }
+
+        if (array_get($input, DetailConstants::WORKFLOW_MAKER_TYPE) === MakerType::ADMIN)
+        {
+            $maker = $this->repo->admin->findByOrgIdAndEmail($input[DetailConstants::ORG_ID], $input[DetailConstants::ADMIN_EMAIL]);
+
+            $this->app['workflow']
+                ->setWorkflowMakerType(MakerType::ADMIN)
+                ->setWorkflowMaker($maker);
+        }
+
+        if (array_get($input, DetailConstants::PERMISSION) !== null)
+        {
+            $this->app['workflow']->setPermission($input[DetailConstants::PERMISSION]);
+        }
+
+        if (array_get($input, DetailConstants::ROUTE_NAME) !== null)
+        {
+            $this->app['workflow']->setRouteName($input[DetailConstants::ROUTE_NAME]);
+        }
+
+        if (array_get($input, DetailConstants::CONTROLLER) !== null)
+        {
+            $this->app['workflow']->setController($input[DetailConstants::CONTROLLER]);
+        }
+
+        if (array_get($input, DetailConstants::IMITATE_PROXY_AUTH) !== null)
+        {
+            $this->app['workflow']->setImitateProxyAuth($input[DetailConstants::IMITATE_PROXY_AUTH]);
+        }
+
+        if (array_get($input, DetailConstants::MAKER_FROM_AUTH) !== null)
+        {
+            $this->app['workflow']->setMakerFromAuth($input[DetailConstants::MAKER_FROM_AUTH]);
+        }
+
+        if (array_get($input, DetailConstants::TAGS) !== null)
+        {
+            $this->app['workflow']->setTags($input[DetailConstants::TAGS]);
+        }
+
+        if (array_get($input, DetailConstants::ROUTE_PARAMS) !== null)
+        {
+            $this->app['workflow']->setRouteParams($input[DetailConstants::ROUTE_PARAMS]);
+        }
+
+        if (array_get($input, DetailConstants::INPUT) !== null)
+        {
+            $this->app['workflow']->setInput($input[DetailConstants::INPUT]);
+        }
+
+        if (array_get($input, DetailConstants::ENTITY) !== null)
+        {
+            $this->app['workflow']->setEntity($input[DetailConstants::ENTITY]);
+        }
+
+        if (array_get($input, DetailConstants::ENTITY_ID) !== null)
+        {
+            $this->app['workflow']->setEntityId($input[DetailConstants::ENTITY_ID]);
+        }
+
+        if (array_get($input, DetailConstants::URI) !== null)
+        {
+            $this->app['workflow']->setUri($input[DetailConstants::URI]);
+        }
+
+        if (array_get($input, DetailConstants::METHOD) !== null)
+        {
+            $this->app['workflow']->setMethod($input[DetailConstants::METHOD]);
+        }
+
+        if (array_get($input, DetailConstants::ORIGINAL) !== null)
+        {
+            $this->app['workflow']->setOriginal($input[DetailConstants::ORIGINAL]);
+        }
+
+        if (array_get($input, DetailConstants::DIRTY) !== null)
+        {
+            $this->app['workflow']->setDirty($input[DetailConstants::DIRTY]);
+        }
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    protected function postCommentsInWorkflow(array $input): array
+    {
+        $response = [];
+
+        $comments = array_get($input, DetailConstants::COMMENTS, []);
+
+        if (empty($comments) === true)
+        {
+            return $response;
+        }
+
+        foreach ($comments as $commentInput)
+        {
+            $commentResponse = [
+                DetailConstants::SUCCESS    => true,
+                DetailConstants::IDENTIFIER => array_get($commentInput,DetailConstants::IDENTIFIER),
+            ];
+
+            try
+            {
+                $this->core->postCommentsInWorkflow(
+                    $commentInput[DetailConstants::ENTITY_ID],
+                    $commentInput[DetailConstants::ENTITY],
+                    $commentInput[DetailConstants::PERMISSION],
+                    $commentInput[DetailConstants::COMMENT]
+                );
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::POST_WORKFLOW_COMMENT_FAILURE);
+
+                $commentResponse[DetailConstants::ERROR]    = $e->getMessage();
+
+                $commentResponse[DetailConstants::SUCCESS]  = false;
+            }
+
+            $response[] = $commentResponse;
+        }
 
         return $response;
     }

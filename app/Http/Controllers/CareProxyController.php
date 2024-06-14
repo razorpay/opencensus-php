@@ -186,6 +186,10 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_LATEST_ANALYSIS_GRAPH_BY_TYPE =  'twirp/rzp.care.sav.v1.AutomationService/FetchLatestAnalysisGraph';
 
+    const DASHBOARD_WEBSITE_UPDATE = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/UpdateMerchantWebsite';
+
+    const DASHBOARD_WEBSITE_STATUS_FETCH = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsiteVerificationStatus';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -291,6 +295,8 @@ class CareProxyController extends Controller
         self::DASHBOARD_HOME_PAGE_MERCHANT_KEY_UPDATE,
         self::DASHBOARD_HOME_PAGE_MERCHANT_SETTLEMENT_OVERVIEW,
         self::DASHBOARD_HOME_PAGE_MERCHANT_PAYMENT_YEARLY_RECAP,
+        self::DASHBOARD_WEBSITE_UPDATE,
+        self::DASHBOARD_WEBSITE_STATUS_FETCH,
     ];
 
     const MERCHANT_GET_ROUTES = [

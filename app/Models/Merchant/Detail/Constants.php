@@ -840,5 +840,33 @@ class Constants
     const UPLOAD_MIQ_ROUTES = [
             'merchant_upload_miq_admin',
     ];
+
+    const PERMISSION                = "permission";
+    const INVALID_PERMISSION        = "Invalid permission";
+    const ROUTE_NAME                = "route_name";
+    const INVALID_ROUTE_NAME        = "Invalid route name";
+    const CONTROLLER                = "controller";
+    const INVALID_CONTROLLER        = "Invalid controller";
+    const WORKFLOW_MAKER            = "workflow_maker";
+    const WORKFLOW_MAKER_TYPE       = "workflow_maker_type";
+
+    const TAGS          = "tags";
+    const ROUTE_PARAMS  = "route_params";
+    const ENTITY        = "entity";
+    const URI           = "uri";
+    const ORIGINAL      = "original";
+    const DIRTY         = "dirty";
+    const ADMIN_EMAIL   = "admin_email";
+    const ORG_ID        = "org_id";
+
+    const INVALID_WORKFLOW_MAKER_TYPE   = "Invalid workflow maker type";
+    const IMITATE_PROXY_AUTH            = "imitate_proxy_auth";
+    const MAKER_FROM_AUTH               = "maker_from_auth";
+    const INVALID_BOOL                  = "Invalid boolean value";
+    const WEBSITE_UPDATE                = "website_update";
+    const IDENTIFIER                    = "identifier";
+    const ERROR                         = "error";
+    const INVALID_COMMENT               = "Invalid comment";
+    const WORFLOW                       = "workflow";
 }
 

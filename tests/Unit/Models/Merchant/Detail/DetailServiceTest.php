@@ -8,7 +8,13 @@ use Carbon\Carbon;
 use RZP\Models\Feature;
 use Tests\Unit\TestCase;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Admin\Permission\Name;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\EarlyWorkflowResponse;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Merchant\Detail\Service as MerchantService;
+use RZP\Models\Merchant\Detail\Constants as DC;
+use RZP\Models\Merchant\Detail\Entity;
 
 class DetailServiceTest extends TestCase
 {
@@ -959,6 +965,220 @@ class DetailServiceTest extends TestCase
 
             self::assertEquals($expected_output, $output);
         }
+    }
+
+    public function testPostCommentsInWorkflowSuccess()
+    {
+        $this->merchantService = $this->assignProtectedVariableThroughReflection($this->merchantService, 'merchant', $this->merchantEntityMock);
+
+        $input = [
+            DC::INPUT => [DC::API_VERSION => DC::WEBSITE_VERSION_V2],
+            DC::PERMISSION => Name::UPDATE_MERCHANT_WEBSITE,
+            DC::COMMENTS => [
+                [
+                    DC::IDENTIFIER  => DC::WEBSITE_UPDATE,
+                    DC::ENTITY      => "merchant_details",
+                    DC::ENTITY_ID   => "10000000000000",
+                    DC::PERMISSION  => Name::UPDATE_MERCHANT_WEBSITE,
+                    DC::COMMENT     => "test comment",
+                ]
+            ],
+        ];
+
+        $this->coreMock->shouldReceive('postCommentsInWorkflow')->andReturn();
+
+        $result = $this->callProtectedMethod($this->merchantService, 'postCommentsInWorkflow', [$input]);
+
+        $this->assertTrue($result[0][DC::SUCCESS]);
+    }
+
+    public function testPostCommentsInWorkflowCommentingError()
+    {
+        $this->merchantService = $this->assignProtectedVariableThroughReflection($this->merchantService, 'merchant', $this->merchantEntityMock);
+
+        $input = [
+            DC::INPUT => [DC::API_VERSION => DC::WEBSITE_VERSION_V2],
+            DC::PERMISSION => Name::UPDATE_MERCHANT_WEBSITE,
+            DC::COMMENTS => [
+                [
+                    DC::IDENTIFIER  => DC::WEBSITE_UPDATE,
+                    DC::ENTITY      => "merchant_details",
+                    DC::ENTITY_ID   => "10000000000000",
+                    DC::PERMISSION  => Name::UPDATE_MERCHANT_WEBSITE,
+                    DC::COMMENT     => "test comment",
+                ]
+            ],
+        ];
+
+        $this->coreMock->shouldReceive('postCommentsInWorkflow')->andThrow(new \Exception());
+
+        $result = $this->callProtectedMethod($this->merchantService, 'postCommentsInWorkflow', [$input]);
+
+        $this->assertFalse($result[0][DC::SUCCESS]);
+    }
+
+    public function testPostCommentsInWorkflowEmptyComments()
+    {
+        $this->merchantService = $this->assignProtectedVariableThroughReflection($this->merchantService, 'merchant', $this->merchantEntityMock);
+
+        $input = [
+            DC::INPUT => [DC::API_VERSION => DC::WEBSITE_VERSION_V2],
+            DC::PERMISSION => Name::UPDATE_MERCHANT_WEBSITE,
+        ];
+
+        $this->coreMock->shouldReceive('postCommentsInWorkflow')->andThrow(new \Exception());
+
+        $result = $this->callProtectedMethod($this->merchantService, 'postCommentsInWorkflow', [$input]);
+
+        $this->assertTrue(empty($result));
+    }
+
+    public function testupdateWorkflowParamsMakerTypeMerchant()
+    {
+        $input = [DC::WORKFLOW_MAKER_TYPE => MakerType::MERCHANT];
+
+        $workflowService = Mockery::mock('RZP\Services\Workflow\Service');
+
+        $workflowService->shouldReceive('setWorkflowMakerType')->with($input[DC::WORKFLOW_MAKER_TYPE])->andReturn($workflowService);
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+
+        $workflowService->shouldReceive('setWorkflowMaker')->with($this->merchantEntityMock)->andReturn($workflowService);
+
+        $this->merchantService = $this->assignProtectedVariableThroughReflection($this->merchantService, 'merchant', $this->merchantEntityMock);
+
+        $this->app->instance('workflow', $workflowService);
+
+        $result = $this->callProtectedMethod($this->merchantService, 'updateWorkflowParams', [$input]);
+
+        $this->assertNull($result);
+    }
+
+    public function testupdateWorkflowParamsMakerTypeAdmin()
+    {
+        $input = [
+            DC::WORKFLOW_MAKER_TYPE => MakerType::ADMIN,
+            DC::ADMIN_EMAIL => "admin@razorpay.com",
+            DC::ORG_ID      => "100000razorpay"
+        ];
+
+        $workflowService = Mockery::mock('RZP\Services\Workflow\Service');
+
+        $workflowService->shouldReceive('setWorkflowMakerType')->with($input[DC::WORKFLOW_MAKER_TYPE])->andReturn($workflowService);
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+        $this->merchantService = $this->assignProtectedVariableThroughReflection($this->merchantService, 'merchant', $this->merchantEntityMock);
+
+        $this->app->instance('workflow', $workflowService);
+
+        $adminRepoMock = Mockery::mock('RZP\Models\Admin\Admin\Repository');
+
+        $adminRepoMock->shouldReceive('findByOrgIdAndEmail')->with($input[DC::ORG_ID], $input[DC::ADMIN_EMAIL])->andReturn($this->adminEntityMock);
+
+        $workflowService->shouldReceive('setWorkflowMaker')->with($this->adminEntityMock)->andReturn($workflowService);
+
+        $this->repoMock->shouldReceive('driver')->with('admin')->andReturn($adminRepoMock);
+
+        $result = $this->callProtectedMethod($this->merchantService, 'updateWorkflowParams', [$input]);
+
+        $this->assertNull($result);
+    }
+
+    public function testupdateWorkflowParamsSet()
+    {
+        $input = [
+            DC::PERMISSION           => Name::UPDATE_MERCHANT_WEBSITE,
+            DC::ROUTE_NAME           => "internal_post_website_update",
+            DC::CONTROLLER           => "RZP\Http\Controllers\MerchantController@internalUpdateWebsite",
+            DC::IMITATE_PROXY_AUTH   => true,
+            DC::MAKER_FROM_AUTH      => false,
+            DC::TAGS                 => ["tag1"],
+            DC::ROUTE_PARAMS         => ["id" => "10000000000000"],
+            DC::ENTITY               => "merchant_details",
+            DC::ENTITY_ID            => "10000000000000",
+            DC::URI                  => "/v1/api/merchants/10000000000000/details",
+            DC::METHOD               => "POST",
+            DC::ORIGINAL             => [Entity::BUSINESS_WEBSITE => "https://razorpay.com"],
+            DC::DIRTY                => [Entity::BUSINESS_WEBSITE => "https://razorpay.in"],
+            DC::INPUT                => [DC::API_VERSION => DC::WEBSITE_VERSION_V2],
+        ];
+
+        $workflowService = Mockery::mock('RZP\Services\Workflow\Service');
+
+        $workflowService->shouldReceive('setPermission')->with($input[DC::PERMISSION])->andReturn($workflowService);
+        $workflowService->shouldReceive('setRouteName')->with($input[DC::ROUTE_NAME])->andReturn($workflowService);
+        $workflowService->shouldReceive('setController')->with($input[DC::CONTROLLER])->andReturn($workflowService);
+        $workflowService->shouldReceive('setImitateProxyAuth')->with($input[DC::IMITATE_PROXY_AUTH])->andReturn($workflowService);
+        $workflowService->shouldReceive('setMakerFromAuth')->with($input[DC::MAKER_FROM_AUTH])->andReturn($workflowService);
+        $workflowService->shouldReceive('setTags')->with($input[DC::TAGS])->andReturn($workflowService);
+        $workflowService->shouldReceive('setRouteParams')->with($input[DC::ROUTE_PARAMS])->andReturn($workflowService);
+        $workflowService->shouldReceive('setInput')->with($input[DC::INPUT])->andReturn($workflowService);
+        $workflowService->shouldReceive('setEntity')->with($input[DC::ENTITY])->andReturn($workflowService);
+        $workflowService->shouldReceive('setEntityId')->with($input[DC::ENTITY_ID])->andReturn($workflowService);
+        $workflowService->shouldReceive('setUri')->with($input[DC::URI])->andReturn($workflowService);
+        $workflowService->shouldReceive('setMethod')->with($input[DC::METHOD])->andReturn($workflowService);
+        $workflowService->shouldReceive('setOriginal')->with($input[DC::ORIGINAL])->andReturn($workflowService);
+        $workflowService->shouldReceive('setDirty')->with($input[DC::DIRTY])->andReturn($workflowService);
+
+        $this->app->instance('workflow', $workflowService);
+
+        $result = $this->callProtectedMethod($this->merchantService, 'updateWorkflowParams', [$input]);
+
+        $this->assertNull($result);
+    }
+
+    public function testInternalCreateWorkFlowSuccess()
+    {
+        $workflowService = Mockery::mock('RZP\Services\Workflow\Service');
+
+        $workflowService->shouldReceive("handle")->with()->andThrow(
+            new EarlyWorkflowResponse(
+            200,
+            "{\"id\":\"w_action_OM6PuVRySxurUC\",\"entity_id\":\"OLvgQs0ZwGN5mm\",\"entity_name\":\"merchant_detail\",\"workflow_id\":\"workflow_DnKLKiMo2GrPCw\",\"workflow\":{\"id\":\"workflow_DnKLKiMo2GrPCw\",\"name\":\"update_website\",\"created_at\":1575286834,\"updated_at\":1575286834,\"merchant_id\":null},\"permission_id\":\"perm_DnKJoC50IJbOtI\",\"permission\":{\"id\":\"perm_DnKJoC50IJbOtI\",\"name\":\"edit_merchant_website_detail\",\"description\":\"Toggle merchant website \",\"category\":\"merchant_details\",\"assignable\":false},\"state\":\"open\",\"maker_id\":\"OLvgQs0ZwGN5mm\",\"maker_type\":\"merchant\",\"maker\":{\"id\":\"OLvgQs0ZwGN5mm\",\"entity\":\"merchant\",\"name\":\"CHIZRINZ INFOWAY PRIVATE LIMITED\",\"email\":null,\"activated\":false,\"activated_at\":null,\"live\":false,\"hold_funds\":false,\"pricing_plan_id\":\"1In3Yh5Mluj605\",\"parent_id\":null,\"website\":null,\"category\":\"5651\",\"category2\":\"ecommerce\",\"international\":false,\"linked_account_kyc\":false,\"has_key_access\":false,\"fee_bearer\":\"platform\",\"fee_model\":\"prepaid\",\"refund_source\":\"balance\",\"billing_label\":\"CHIZRINZ INFOWAY PRIVATE LIMITED\",\"receipt_email_enabled\":true,\"receipt_email_trigger_event\":\"authorized\",\"transaction_report_email\":[],\"invoice_label_field\":null,\"channel\":\"axis2\",\"convert_currency\":false,\"max_payment_amount\":50000000,\"max_international_payment_amount\":50000000,\"auto_refund_delay\":null,\"auto_capture_late_auth\":false,\"brand_color\":null,\"handle\":null,\"risk_rating\":3,\"risk_threshold\":8,\"partner_type\":null,\"created_at\":1718212761,\"updated_at\":1718213123,\"suspended_at\":null,\"archived_at\":null,\"icon_url\":null,\"logo_url\":null,\"org_id\":\"100000razorpay\",\"notes\":[],\"whitelisted_ips_live\":[],\"whitelisted_ips_test\":[],\"whitelisted_domains\":[],\"fee_credits_threshold\":null,\"amount_credits_threshold\":null,\"refund_credits_threshold\":null,\"balance_threshold\":null,\"display_name\":null,\"activation_source\":\"primary\",\"business_banking\":false,\"second_factor_auth\":false,\"restricted\":false,\"default_refund_speed\":\"normal\",\"partnership_url\":null,\"external_id\":null,\"product_international\":\"0000000000\",\"signup_source\":\"primary\",\"purpose_code\":null,\"signup_via_email\":0,\"country_code\":\"IN\",\"currency\":\"INR\"},\"org_id\":\"org_100000razorpay\",\"approved\":false,\"current_level\":1,\"created_at\":1718250560,\"updated_at\":1718250560}",
+            null,
+            ['Content-Type' => 'application/json']
+        ));
+
+        $this->app->instance('workflow', $workflowService);
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantRepoMock->shouldReceive('findOrFail')->andReturn($this->merchantEntityMock);
+
+        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+
+        $this->merchantService = $this->assignProtectedVariableThroughReflection($this->merchantService, 'merchant', $this->merchantEntityMock);
+
+        $this->basicAuthMock->shouldReceive('setMerchant')->with($this->merchantEntityMock)->andReturn();
+        $this->app->instance('basicauth', $this->basicAuthMock);
+
+        $this->merchantDetailValidator->shouldReceive('validateInput')->andReturn();
+
+        $result = $this->merchantService->internalCreateWorkFlow("10000000000000", []);
+
+        $this->assertTrue($result[DC::SUCCESS]);
+        $this->assertNotEmpty($result[DC::WORFLOW]);
+        $this->assertEquals("w_action_OM6PuVRySxurUC", $result[DC::WORFLOW]["id"] );
+    }
+
+    private function callProtectedMethod($instance, $method, array $args)
+    {
+        $class  = new \ReflectionClass(get_class($instance));
+        $method = $class->getMethod($method);
+
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($instance, $args);
+    }
+
+    protected function assignProtectedVariableThroughReflection($instance, $variableName, $value): mixed
+    {
+        $reflector = new \ReflectionClass($instance);
+        $property = $reflector->getProperty($variableName);
+        $property->setAccessible( true );
+        $property->setValue($instance, $value);
+
+        return $instance;
     }
 
     private function createTestforMidBelongsToMswipe()

@@ -5,7 +5,9 @@ namespace RZP\Models\Merchant\Detail;
 use App;
 
 use RZP\Base;
+use RZP\Http\Route;
 use RZP\Constants\Country;
+use Illuminate\Support\Str;
 use RZP\Constants\MalaysianStates;
 use RZP\Exception;
 use Lib\PhoneBook;
@@ -14,10 +16,12 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\IndianStates;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
 use libphonenumber\NumberParseException;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
@@ -650,6 +654,171 @@ class Validator extends Base\Validator
         Constants::MERCHANT_ID              => 'required|string|max:14',
         Constants::NAME                     => 'sometimes|string|max:255'
     ];
+
+    protected static $internalCreateWorkflowRules = [
+        Constants::PERMISSION   => "sometimes|nullable|string|custom",
+        Constants::ROUTE_NAME   => "sometimes|nullable|string|custom",
+        Constants::CONTROLLER   => "sometimes|nullable|string|custom",
+
+        Constants::WORKFLOW_MAKER_TYPE  => "sometimes|nullable|string|custom",
+        Constants::IMITATE_PROXY_AUTH   => "sometimes|nullable|boolean|custom",
+        Constants::MAKER_FROM_AUTH      => "sometimes|nullable|boolean|custom",
+        Constants::TAGS                 => "sometimes|nullable|array",
+        Constants::TAGS . ".*"          => "sometimes|nullable|string",
+        Constants::ROUTE_PARAMS         => "sometimes|nullable|associative_array",
+        Constants::ENTITY               => "sometimes|nullable|string|min:3",
+        Constants::ENTITY_ID            => "sometimes|nullable|unsigned_id",
+        Constants::URI                  => "sometimes|nullable|string",
+        Constants::METHOD               => "sometimes|nullable|string",
+        Constants::ORIGINAL             => "sometimes|nullable|associative_array",
+        Constants::DIRTY                => "sometimes|nullable|associative_array",
+        Constants::ADMIN_EMAIL          => "required_if:".Constants::WORKFLOW_MAKER_TYPE.",".MakerType::ADMIN."|nullable|email",
+        Constants::ORG_ID               => "required_if:".Constants::WORKFLOW_MAKER_TYPE.",".MakerType::ADMIN."|nullable|unsigned_id",
+        Constants::COMMENTS             => "sometimes|nullable|array|custom",
+        Constants::INPUT                => "sometimes|nullable|associative_array",
+    ];
+
+    protected static $workflowCommentRules = [
+        Constants::IDENTIFIER   => "sometimes|string|min:3",
+        Constants::ENTITY       => "required|string|min:3",
+        Constants::ENTITY_ID    => "required|string|unsigned_id",
+        Constants::PERMISSION   => "required|string|custom",
+        Constants::COMMENT      => "required|string|min:4",
+    ];
+
+    /**
+     * @param $attribute
+     * @param $comments
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateComments($attribute, $comments): void
+    {
+        if (! is_array($comments)) {
+            return;
+        }
+
+        foreach ($comments as $comment)
+        {
+            if (! is_array($comment)) {
+                throw new BadRequestValidationFailureException(Constants::INVALID_COMMENT);
+            }
+
+            $this->validateInput("workflow_comment", $comment);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validatePermission($attribute, $value): void
+    {
+        $reflection = new \ReflectionClass('RZP\Models\Admin\Permission\Name');
+
+        $constants = $reflection->getConstants();
+
+        if (! in_array($value, $constants))
+        {
+            throw new BadRequestValidationFailureException(Constants::INVALID_PERMISSION);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateRouteName($attribute, $value): void
+    {
+        $routes = Route::getApiRoutes();
+
+        if (empty(array_get($routes, $value, [])) === true)
+        {
+            throw new BadRequestValidationFailureException(Constants::INVALID_ROUTE_NAME);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateController($attribute, $value): void
+    {
+        // Split the string by '@'
+        $parts = explode('@', $value);
+
+        // Ensure we have exactly two parts
+        if (count($parts) !== 2) {
+            throw new BadRequestValidationFailureException(Constants::INVALID_CONTROLLER);
+        }
+
+        [$class, $method] = $parts;
+
+        // Check if the class exists and the method is callable
+        if (! class_exists($class) || ! method_exists($class, $method)) {
+            throw new BadRequestValidationFailureException(Constants::INVALID_CONTROLLER);
+        }
+
+        // Check if the method is callable
+        $instance = new $class();
+
+        if (! is_callable([$instance, $method]))
+        {
+            throw new BadRequestValidationFailureException(Constants::INVALID_CONTROLLER);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateWorkflowMakerType($attribute, $value): void
+    {
+        if (! MakerType::exists($value))
+        {
+            throw new BadRequestValidationFailureException(Constants::INVALID_WORKFLOW_MAKER_TYPE);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateImitateProxyAuth($attribute, $value): void
+    {
+        if (! is_bool($value))
+        {
+            throw new BadRequestValidationFailureException(Constants::INVALID_BOOL);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateMakerFromAuth($attribute, $value): void
+    {
+        $this->validateImitateProxyAuth($attribute, $value);
+    }
 
     /**
      * @param $input

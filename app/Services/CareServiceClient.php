@@ -42,12 +42,19 @@ class CareServiceClient
 
     const FETCH_WORKFLOWS = 'MerchantWorkflows';
 
+    const DASHBOARD_WEBSITE_UPDATE = 'DashboardWebsiteUpdate';
+
+    const DASHBOARD_WEBSITE_STATUS_FETCH = 'DashboardWebsiteStatusFetch';
+
+
     const ROUTES_URL_MAP  = [
         self::MERCHANT_POPULAR_PRODUCTS_CRON => 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/PostMerchantPopularProducts',   // 5mins
         self::MERCHANT_NOTIFY_CSM_CHANGED_CRON => 'twirp/rzp.care.csm.v1.CsmService/NotifyMerchantsWithCsmChange',
         self::FETCH_WORKFLOWS => 'twirp/rzp.care.sav.v1.SavService/FetchWorkflows',
         self::SAV_FETCH_TICKET_ANALYSIS => 'twirp/rzp.care.sav.v1.TicketAnalysisService/FetchTicketAnalysis',
-        self::SAV_FETCH_TICKET_FOR_ANALYSIS => 'twirp/rzp.care.sav.v1.TicketAnalysisService/FetchTicketIdsForAnalysis'
+        self::SAV_FETCH_TICKET_FOR_ANALYSIS => 'twirp/rzp.care.sav.v1.TicketAnalysisService/FetchTicketIdsForAnalysis',
+        self::DASHBOARD_WEBSITE_UPDATE => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/UpdateMerchantWebsite',
+        self::DASHBOARD_WEBSITE_STATUS_FETCH => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsiteVerificationStatus',
     ];
 
     const PATH_TIMEOUT_MAP  = [
@@ -58,6 +65,8 @@ class CareServiceClient
         self::TRANSACTION_SUMMARY_WHATSAPP_NOTIFICATION => 300,
         self::SAV_FETCH_TICKET_ANALYSIS => 300,
         self::SAV_FETCH_TICKET_FOR_ANALYSIS => 300,
+        self::DASHBOARD_WEBSITE_UPDATE => 300,
+        self::DASHBOARD_WEBSITE_STATUS_FETCH => 300,
     ];
 
     public function __construct($app = null)

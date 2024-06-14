@@ -4968,6 +4968,12 @@ class Route
         // mozart audit logs
         'get_mozart_audit_logs_by_params'           => ['get', 'mozart/audit', 'EdgeProxyController@proxy'],
         'get_mozart_audit_logs'                     => ['get', 'mozart/audit/{source_id}', 'EdgeProxyController@proxy'],
+
+        // internal API for workflow
+        'internal_workflow_create'      => ['post', 'internal/workflows/merchants/{id}', 'MerchantController@internalCreateWorkFlow'],
+
+        // internal API for business website update
+        'internal_post_website_update'  => ['post', 'internal/website/update/merchants/{id}', 'MerchantController@internalUpdateWebsite'],
     ];
 
     public static $public = [
@@ -5640,6 +5646,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_workflow_create',
+        'internal_post_website_update',
         'otpelf_iin_flow_enable',
         'missing_refund_transactions_create',
         'missing_transaction_create',
@@ -17065,7 +17073,9 @@ class Route
             'merchant_analytics',
             'user_all_roles',
             'merchant_features_fetch',
-            'merchant_razorx_bulk_evaluate'
+            'merchant_razorx_bulk_evaluate',
+            'internal_workflow_create',
+            'internal_post_website_update',
         ],
 
         'mandate_hq' => [
@@ -17724,6 +17734,8 @@ class Route
         ],
 
         'care' => [
+            'internal_workflow_create',
+            'internal_post_website_update',
             'internal_merchant_fetch',
             'fd_insert_into_db',
             'merchant_ids_fetch_for_user_contact',
@@ -17731,7 +17743,6 @@ class Route
             'internal_workflow_action_get_multiple',
             'payment_fetch_multiple',
             'payment_fetch_multiple_internal',
-            'internal_merchant_fetch',
             'internal_merchant_submission_date',
             'internal_merchant_get_rejection_reasons',
             'myoperator_v1_proxy_get',
@@ -18024,6 +18035,8 @@ class Route
             'third_party_authenticate'
         ],
         'razorassist' => [
+            'internal_workflow_create',
+            'internal_post_website_update',
             'fetch_merchant_sr',
             'setl_merchant_dashboard_config_get',
             'merchant_fetch_internal',

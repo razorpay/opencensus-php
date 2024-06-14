@@ -3148,7 +3148,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_ALERT                                           = 'RECON_ALERT';
     const RECON_EMAIL_VALIDATION_FAILED                         = 'RECON_EMAIL_VALIDATION_FAILED';
     const RECON_FILE_SKIP                                       = 'RECON_FILE_SKIP';
-    const RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK                  ='RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK';    
+    const RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK                  ='RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK';
     const RECON_MISMATCH                                        = 'RECON_MISMATCH';
     const RECON_INFO                                            = 'RECON_INFO';
     const RECON_PARSE_ERROR                                     = 'RECON_PARSE_ERROR';
@@ -11596,6 +11596,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORDER_ASSOCIATIONS_FETCH_FAILED                       = 'ORDER_ASSOCIATIONS_FETCH_FAILED';
 
     const SUPPORT_DASHBOARD_SPLITZ_ERROR                        =  'SUPPORT_DASHBOARD_SPLITZ_ERROR';
+
+    const POST_WORKFLOW_COMMENT_FAILURE                         = "POST_WORKFLOW_COMMENT_FAILURE";
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

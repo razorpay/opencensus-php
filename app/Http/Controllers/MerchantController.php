@@ -4435,4 +4435,43 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * This method will create workflow and based on input after workflow creation comments will be added.
+     * We are not introducing any addition logic to workflows, we are reusing the existing workflow service and
+     * exposing an API
+     *
+     * Disclaimer: Dashboard team does not own workflow, we are simply exposing an internal API so that we can
+     * create workflow by making API calls.
+     *
+     *
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function internalCreateWorkFlow(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->internalCreateWorkFlow($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * This method will update merchant website via internal API. Needs to be called only after website validation is
+     * done. We are not introducing any additional logic, we are simply reusing an existing method.
+     *
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function internalUpdateWebsite(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->internalUpdateWebsiteDetails($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
 }
