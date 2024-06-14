@@ -5,6 +5,6 @@ import App from 'apps/pos/src/app/App';
 describe('App', () => {
   test('should render POS App on screen', () => {
     render(<App />);
-    expect(screen.getByText('Assisted Onboarding')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });
 });

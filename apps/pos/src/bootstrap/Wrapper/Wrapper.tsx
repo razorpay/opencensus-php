@@ -1,8 +1,11 @@
-import React from 'react';
+import * as React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { bladeTheme } from '@razorpay/blade/tokens';
 
 import App from '../../app';
+
+export const queryClient = new QueryClient();
 
 const Wrapper = (): JSX.Element => {
   React.useEffect(() => {
@@ -16,7 +19,9 @@ const Wrapper = (): JSX.Element => {
   }, []);
   return (
     <BladeProvider themeTokens={bladeTheme}>
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </BladeProvider>
   );
 };
