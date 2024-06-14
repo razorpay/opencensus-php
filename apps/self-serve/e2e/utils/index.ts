@@ -20,10 +20,13 @@ export const searchTransactionById = async ({ page, id }) => {
   await expect(page.getByRole('cell', { name: id })).toBeVisible();
 };
 
-export const gotoTransactionDetailsPageById = async ({ page, id, listSelector }) => {
-  const listPage = page.getByTestId(listSelector);
+export const waitForListingLoader = async ({ page }) => {
   await page.waitForSelector('.PlaceholderLoader', { state: 'visible', strict: false });
   await page.waitForSelector('.PlaceholderLoader', { state: 'hidden', strict: false });
+};
+
+export const gotoTransactionDetailsPageById = async ({ page, id, listSelector }) => {
+  const listPage = page.getByTestId(listSelector);
   await searchTransactionById({ page: listPage, id });
   await listPage
     .getByTestId(`entity-item-row-${id}`)
@@ -73,7 +76,7 @@ export const assertRefundDetails = async ({ page, id, amount }) => {
 
 export const assertColumnsVisibility = async (page, columns) => {
   for await (const column of columns) {
-    await expect(page.getByRole('cell', { name: column })).toBeVisible();
+    await expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
   }
 };
 

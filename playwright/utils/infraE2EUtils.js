@@ -63,9 +63,53 @@ function getDependencies(depCommits) {
     // TODO: Make this changes dyamic from depCommits payload;
     if (depName === 'api') {
       dependency.chart_values = {
-        replicas: 2,
+        replicas: 3,
         enable_edge_base: true,
       };
+    }
+    if (depName === 'splitz') {
+      // dependency.chart_values = {
+      // splitz_replicas: 1,
+      // splitz_worker_replicas: 1,
+      // };
+    }
+    if (depName === 'terminals') {
+      // dependency.chart_values = {
+      // terminals_live_replicas: 1,
+      // terminals_test_replicas: 1,
+      // };
+    }
+    if (depName === 'settlements') {
+      // dependency.chart_values = {
+      // settlements_live_replicas: 2,
+      // settlements_test_replicas: 2,
+      // settlements_create_test_worker_replicas: 2,
+      // settlements_create_live_worker_replicas: 2,
+      // transactions_recorder_live_worker_replicas: 2,
+      // transactions_recorder_live_dlq_worker_replicas: 2,
+      // transactions_recorder_test_worker_replicas: 2,
+      // transactions_recorder_test_dlq_worker_replicas: 2,
+      // transactions_update_live_worker_replicas: 2,
+      // transactions_update_test_worker_replicas: 2,
+      // settlements_initiate_live_worker_replicas: 2,
+      // settlements_initiate_test_worker_replicas: 2,
+      // settlements_retry_live_worker_replicas: 2,
+      // settlements_retry_test_worker_replicas: 2,
+      // settlements_status_update_live_replicas: 2,
+      // settlements_status_update_test_replicas: 2,
+      // settlements_trigger_live_worker_replicas: 2,
+      // settlements_trigger_test_worker_replicas: 2,
+      // execution_verify_live_worker_replicas: 2,
+      // execution_verify_test_worker_replicas: 2,
+      // settlements_report_notification_live_worker_replica: 2,
+      // settlements_report_notification_test_worker_replica: 2,
+      // settlements_pagination_live_worker_replica: 2,
+      // settlements_pagination_test_worker_replica: 2,
+      // settlements_ledger_live_worker_replica: 0,
+      // settlements_ledger_test_worker_replica: 2,
+      // settlements_entity_alert_live_worker_replica: 2,
+      // settlements_entity_alert_test_worker_replica: 2,
+      // };
     }
 
     if (depName === 'payment-links') {

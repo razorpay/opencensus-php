@@ -10,6 +10,7 @@ import {
   assertCollapsibleRefundProcessedTimeline,
   assertIssueRefundButton,
   assertCollapsibleSettlementRetryTimeline,
+  waitForListingLoader,
   // getI18FormattedPhoneNumber,
 } from '../../utils';
 
@@ -22,6 +23,7 @@ test.describe
   test.describe.parallel('Transactions Landing screen Overview section', () => {
     test('should allow navigate to Refunds, Disputes and Failed Payments ', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       await expect(page.getByText('Overview')).toBeVisible();
       await page.getByLabel('view-Refunds-details').click();
       await expect(page).toHaveURL(routes.REFUNDS);
@@ -43,6 +45,7 @@ test.describe
   test.describe.parallel('Transactions Landing screen Listing section', () => {
     test('should allow filters & search operations', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const paymentsList = page.getByTestId('payments-list');
       await expect(paymentsList.getByRole('button', { name: 'Last 7 days' })).toBeVisible();
       await expect(paymentsList.getByRole('button', { name: 'Status: All' })).toBeVisible();
@@ -72,6 +75,7 @@ test.describe
 
     test('should show all fields & allow to click on Details link', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const columns = [
         'Payment ID',
         'Bank RRN',
@@ -82,7 +86,7 @@ test.describe
         'Actions',
       ];
       for await (const column of columns) {
-        expect(page.getByRole('cell', { name: column })).toBeVisible();
+        expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
       }
       const id = payments.paymentId.authorized.netbanking;
       const paymentsFilter = page.getByTestId('payments-filter');
@@ -101,6 +105,7 @@ test.describe
   test.describe.parallel('Payments details', () => {
     test('should show "created" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const id = payments.paymentId.created.netbanking;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       // await expect(page.getByText('Net amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
@@ -117,6 +122,7 @@ test.describe
 
     test('should show "authorized" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const id = payments.paymentId.authorized.intlbanktransfer;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       // await expect(page.getByText('Net amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
@@ -139,6 +145,7 @@ test.describe
 
     test('should show "refunded" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const id = payments.paymentId.refunded.netbanking;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       await expect(page.getByText('Details', { exact: true })).toBeVisible();
@@ -154,6 +161,7 @@ test.describe
 
     test('should show "captured" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const id = payments.paymentId.captured.card;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       // await expect(page.getByText('Gross amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
@@ -175,6 +183,7 @@ test.describe
 
     test('should show "failed" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const id = payments.paymentId.failed.netbanking;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       // await expect(page.getByText('Gross amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
@@ -201,6 +210,7 @@ test.describe
     // if this test case is failing please reach out to settlement_dev to create new data for this test case.
     test('should show transaction timeline details', async ({ page }) => {
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       const id = payments.paymentId.captured.card;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       await expect(page.getByText('Details', { exact: true })).toBeVisible();

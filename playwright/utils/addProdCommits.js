@@ -13,7 +13,9 @@ const prodCommitIdFetchURLMap = {
   // 'master-onboarding': 'https://master-onboarding.dev.razorpay.in/commit.txt',
   // 'banking-account': 'https://banking-account.dev.razorpay.in/commit.txt',
   pgos: 'https://pgos.concierge.razorpay.com/commit.txt',
+  splitz: 'https://splitz.dev.razorpay.in/commit.txt',
   subscriptions: 'https://subscriptions.razorpay.com/commit.txt',
+  // razorx: 'https://razorx.dev.razorpay.in/commit.txt', // not updated with prod
 };
 
 const fetcher = async (url, method = 'GET') => {

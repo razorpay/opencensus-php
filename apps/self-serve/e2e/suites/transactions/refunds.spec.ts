@@ -9,6 +9,7 @@ import {
   assertRefundDetails,
   assertCollapsibleRefundProcessedTimeline,
   assertIssueRefundButton,
+  waitForListingLoader,
 } from '../../utils';
 
 test.describe
@@ -21,6 +22,7 @@ test.describe
     test('should allow filters & search operations', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
+      await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const refundsList = page.getByTestId('refunds-list');
       await expect(
@@ -53,11 +55,12 @@ test.describe
     test('should show all fields & allow to click on Details link', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
+      await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const refundsList = page.getByTestId('refunds-list');
       const columns = ['Refund ID', 'Payment ID', 'Created on', 'Amount', 'Status', 'Actions'];
       for await (const column of columns) {
-        expect(refundsList.getByRole('cell', { name: column })).toBeVisible();
+        expect(refundsList.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
       }
       const id = refunds.refundId.fullRefund.processed;
       await searchTransactionById({ page: refundsList, id });
@@ -74,6 +77,7 @@ test.describe
     test('should show "full refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
+      await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.fullRefund.processed;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
@@ -91,6 +95,7 @@ test.describe
     test('should show "partial refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
+      await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.partialRefund.processed;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
@@ -112,6 +117,7 @@ test.describe
     test('should show "multi-partial refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
+      await waitForListingLoader({ page });
       await expect(page.getByRole('link', { name: 'Refunds', exact: true })).toBeVisible();
       const id = refunds.refundId.partialRefund.multiPartialRefundProcessed;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'refunds-list' });
