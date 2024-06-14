@@ -123,6 +123,14 @@ export const shouldShowFIRCSection = (user: User, extraConfig: ExtraConfig): boo
   );
 };
 
+export const isExporterRewardsEnabled = (user: User): boolean => {
+  return user.isFeatureEnabled('intl_exporter_rewards');
+};
+
+export const exporterRewardsOnboardingStatus = (user: User): boolean => {
+  return !user.isFeatureEnabled('intl_exporter_rewards_tnc');
+};
+
 export const accountAccessHoverDescription = (user: User): boolean => {
   if (user?.has_key_access) {
     return user?.isOrgCurlec

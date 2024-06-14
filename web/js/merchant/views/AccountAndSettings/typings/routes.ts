@@ -45,6 +45,7 @@ export enum ROUTES_INFO {
   MEAL_CARD = '/payment-methods/meal-card',
   FIRS = '/international-settings/firs',
   INTERNATIONAL_PAYMENTS_CODES = '/international-settings/international-payment-codes',
+  EXPORTER_REWARDS = '/international-settings/exporter-rewards',
   WHATSAPP_ACCOUNT_SETUP = '/payments-and-refunds-settings/whatsapp-account-setup',
 }
 

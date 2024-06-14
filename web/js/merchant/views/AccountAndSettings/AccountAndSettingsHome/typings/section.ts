@@ -81,6 +81,7 @@ export enum BankAccountSettlementFields {
 export enum InternationalSettingsFields {
   FIRS = 'firs',
   INTERNATIONAL_PAYMENTS_CODES = 'international_payments_code',
+  EXPORTER_REWARDS = 'exporter_rewards',
 }
 
 export const PaymentMethodsTitles: Record<PaymentMethodsFields, string> = {
@@ -150,6 +151,7 @@ export const PricingTitles: Record<PricingFields, string> = {
 export const InternationalSettingsTitles: Record<InternationalSettingsFields, string> = {
   [InternationalSettingsFields.FIRS]: 'Foreign Inward Remittance Statement',
   [InternationalSettingsFields.INTERNATIONAL_PAYMENTS_CODES]: 'International Payments Codes',
+  [InternationalSettingsFields.EXPORTER_REWARDS]: 'Exporter rewards',
 };
 
 type ACCOUNT_N_SETTINGS_TITLES =

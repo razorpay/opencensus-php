@@ -20,7 +20,10 @@ import {
   StyledTabContainer,
 } from 'merchant/views/AccountAndSettings/styled';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { shouldShowFIRCSection } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import {
+  shouldShowFIRCSection,
+  isExporterRewardsEnabled,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 const Firs = lazy(() => import(/* webpackChunkName: "FIRS" */ './Tabs/FIRS'));
 const InternationalPaymentsCodes = lazy(
@@ -29,12 +32,19 @@ const InternationalPaymentsCodes = lazy(
       /* webpackChunkName: "PurposeCode" */ 'merchant/views/Account/Profile/components/FIRC/FIRCSection'
     ),
 );
+const ExporterRewards = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "ExporterRewards" */ 'merchant/views/AccountAndSettings/InternationalSettings/ExporterRewards'
+    ),
+);
 
 const InternationalSettings = ({ user, location: { pathname } }): JSX.Element | null => {
   if (!user.isAccountAndSettingsRevampEnabled) {
     switch (pathname) {
       case ROUTES_INFO.FIRS:
       case ROUTES_INFO.INTERNATIONAL_PAYMENTS_CODES:
+      case ROUTES_INFO.EXPORTER_REWARDS:
         return <Navigate to="/profile" replace />;
       default:
         return <Navigate to="/dashboard" replace />;
@@ -66,32 +76,45 @@ const InternationalSettings = ({ user, location: { pathname } }): JSX.Element | 
             <NavLink to={ROUTES_INFO.INTERNATIONAL_PAYMENTS_CODES}>
               International payments codes
             </NavLink>
+            <ShowWhen additionalCondition={isExporterRewardsEnabled}>
+              <NavLink to={ROUTES_INFO.EXPORTER_REWARDS}>Exporter rewards</NavLink>
+            </ShowWhen>
           </ShowWhen>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps team={Teams.CROSS_BORDER}>
           <Suspense fallback={<Loader />}>
             <StyledDivider>
-              <StyledTabContentContainer className="content">
-                <Routes>
-                  <Route
-                    path={getRefRoute(ROUTES_INFO.FIRS)}
-                    element={
-                      <RouteGuard additionalCondition={shouldShowFIRCSection}>
+              <Routes>
+                <Route
+                  path={getRefRoute(ROUTES_INFO.FIRS)}
+                  element={
+                    <RouteGuard additionalCondition={shouldShowFIRCSection}>
+                      <StyledTabContentContainer className="content">
                         <Firs />
-                      </RouteGuard>
-                    }
-                  />
-                  <Route
-                    path={getRefRoute(ROUTES_INFO.INTERNATIONAL_PAYMENTS_CODES)}
-                    element={
-                      <RouteGuard additionalCondition={shouldShowFIRCSection}>
+                      </StyledTabContentContainer>
+                    </RouteGuard>
+                  }
+                />
+                <Route
+                  path={getRefRoute(ROUTES_INFO.INTERNATIONAL_PAYMENTS_CODES)}
+                  element={
+                    <RouteGuard additionalCondition={shouldShowFIRCSection}>
+                      <StyledTabContentContainer className="content">
                         <InternationalPaymentsCodes />
-                      </RouteGuard>
-                    }
-                  />
-                </Routes>
-              </StyledTabContentContainer>
+                      </StyledTabContentContainer>
+                    </RouteGuard>
+                  }
+                />
+                <Route
+                  path={getRefRoute(ROUTES_INFO.EXPORTER_REWARDS)}
+                  element={
+                    <RouteGuard additionalCondition={isExporterRewardsEnabled}>
+                      <ExporterRewards />
+                    </RouteGuard>
+                  }
+                />
+              </Routes>
             </StyledDivider>
           </Suspense>
         </ErrorBoundary>

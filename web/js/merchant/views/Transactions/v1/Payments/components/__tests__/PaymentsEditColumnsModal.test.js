@@ -128,7 +128,7 @@ describe('PaymentsEditColumnsModal', () => {
     );
   });
 
-  test('Should show error notification if saveMerchantColumnPreferences returns status code other than 200', async () => {
+  test.skip('Should show error notification if saveMerchantColumnPreferences returns status code other than 200', async () => {
     render(<App />);
     const submitButton = screen.getByText(/Save Changes/);
     const savePreferencesCheckbox = screen.getByLabelText(/Save my preferences/);

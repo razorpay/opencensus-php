@@ -59,6 +59,7 @@ import {
   shouldShowTeamInvitations,
   isWhatsAppAccountSetupEnabled,
   isCustomerSupportDetailsEnabled,
+  isExporterRewardsEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -608,6 +609,16 @@ export const Sections: SectionCardInterface[] = [
         title:
           InternationalSettingsTitles[InternationalSettingsFields.INTERNATIONAL_PAYMENTS_CODES],
         href: ROUTES_INFO.INTERNATIONAL_PAYMENTS_CODES,
+      },
+      {
+        id: InternationalSettingsFields.EXPORTER_REWARDS,
+        title: InternationalSettingsTitles[InternationalSettingsFields.EXPORTER_REWARDS],
+        href: ROUTES_INFO.EXPORTER_REWARDS,
+        isNew: true,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isExporterRewardsEnabled(user),
       },
     ],
   },

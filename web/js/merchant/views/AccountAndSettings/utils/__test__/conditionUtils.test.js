@@ -381,6 +381,15 @@ describe('Condition Utils', () => {
     extraTestMessage: 'on passing opgsp_import_flow tag',
   });
 
+  testUtilWhichUsesSingleUserFunc('isExporterRewardsEnabled', 'isFeatureEnabled', {
+    extraTestMessage: 'on passing intl_exporter_rewards feature',
+  });
+
+  testUtilWhichUsesSingleUserFunc('exporterRewardsOnboardingStatus', 'isFeatureEnabled', {
+    reverse: true,
+    extraTestMessage: 'on passing intl_exporter_rewards_tnc feature',
+  });
+
   describe('Different hovering text of account access, based on org and user access', () => {
     test('user has access and org is non-i18n', () => {
       const userInfo = {
