@@ -1025,7 +1025,23 @@ class Payment extends Base
 
                     if ($pricing->getId() != Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID){
 
-                        $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId(Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID);
+                        $defaultFallbackPlanId = Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID;
+
+                        if ($merchant->getCountry() === 'SG' && app()->isEnvironmentProduction() === true) {
+                            $defaultFallbackPlanId = Pricing\DefaultPlan::SG_NO_RULE_FALLBACK_PLAN_ID;
+                        }
+
+                        try {
+                            $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($defaultFallbackPlanId);
+                        } catch (\Exception $e) {
+                            $this->trace->info("Pricing plan not fetched from repo",
+                                [
+                                    "planId" => $defaultFallbackPlanId,
+                                    "error" => $e->getMessage(),
+                                ]);
+                            $defaultFallbackPlanId = Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID;
+                            $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($defaultFallbackPlanId);
+                        }
                         $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
 
                         try {

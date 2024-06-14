@@ -31,6 +31,8 @@ class DefaultPlan
     */
     const NO_RULE_FALLBACK_PLAN_ID                      = '1In3Yh5Mluj605';
 
+    const SG_NO_RULE_FALLBACK_PLAN_ID                   = 'OJmVrBserKuiGY';
+
     const PARTNER_COMMISSION_PLAN_ID_KEY                = 'PARTNER_COMMISSION_PLAN_ID';
     const SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY = 'SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS';
 
