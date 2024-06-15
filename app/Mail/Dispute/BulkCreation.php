@@ -132,7 +132,7 @@ class BulkCreation extends Base
             case Phase::PRE_ARBITRATION:
                 return sprintf('Razorpay | Pre-Arbitration Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::ARBITRATION:
-                return sprintf('Razorpay | Arbritration Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+                return sprintf('Razorpay | Arbitration Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::FRAUD:
                 return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
         }
