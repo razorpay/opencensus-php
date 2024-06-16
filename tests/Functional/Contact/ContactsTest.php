@@ -612,6 +612,41 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactWithTypeVendorAndPOCsAndProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn([
+                'id'                   => '1',
+                'contact_id'           => 'cont_xyz',
+                'payment_terms'        => 10,
+                'tds_category'         => 1,
+                'expense_id'           => '1',
+                'gstin'                => '22AAAAA0000A1Z5',
+                'pan'                  => 'test_pan',
+                'poc_emails'           => ['test1@gmail.com', 'test2@gmail.com'],
+                'vendor_portal_status' => 'INVITED'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorAndInvalidPOCEmailAndProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateContactWithTypeVendorExternalServiceFailure()
     {
         $this->ba->proxyAuth();

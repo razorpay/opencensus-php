@@ -720,6 +720,11 @@ class Core extends Base\Core
                 $createParams[Entity::PAN] = $input[Entity::PAN];
             }
 
+            if (isset($input[Entity::POC_EMAILS]))
+            {
+                $createParams[Entity::POC_EMAILS] = $input[Entity::POC_EMAILS];
+            }
+
             if (empty($createParams))
             {
                 return $contact;
@@ -769,6 +774,11 @@ class Core extends Base\Core
             if (isset($input[Entity::PAN]))
             {
                 $updateParams[Entity::PAN] = $input[Entity::PAN];
+            }
+
+            if (isset($input[Entity::POC_EMAILS]))
+            {
+                $updateParams[Entity::POC_EMAILS] = $input[Entity::POC_EMAILS];
             }
 
             if (empty($updateParams))

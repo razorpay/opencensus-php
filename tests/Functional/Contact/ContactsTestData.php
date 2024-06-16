@@ -761,6 +761,90 @@ return [
         ],
     ],
 
+    'testCreateContactWithTypeVendorAndPOCsAndProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'gstin'        => '22AAAAA0000A1Z5',
+                'pan'          => 'ABCD',
+                'poc_emails'   => ['test1@gmail.com', 'test2@gmail.com'],
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'vendor'        => [
+                    'payment_terms'        => 10,
+                    'tds_category'         => 1,
+                    'gstin'                => '22AAAAA0000A1Z5',
+                    'expense_id'           => '1',
+                    'pan'                  => 'test_pan',
+                    'vendor_portal_status' => 'INVITED',
+                    'id'                   => '1',
+                    'contact_id'           => 'cont_xyz',
+                    'poc_emails'           => ['test1@gmail.com', 'test2@gmail.com'],
+                ],
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithTypeVendorAndInvalidPOCEmailAndProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'gstin'        => '22AAAAA0000A1Z5',
+                'pan'          => 'ABCD',
+                'poc_emails'   => ['test1@gmail', 'test2@gmail.com'],
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid poc email provided',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateContactWithTypeVendorExternalServiceFailure' => [
         'request'  => [
             'content' => [

@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
     const IDEMPOTENCY_KEY = 'idempotency_key';
     const PAYMENT_TERMS   = 'payment_terms';
     const TDS_CATEGORY    = 'tds_category';
+    const POC_EMAILS      = 'poc_emails';
     const VENDOR          = 'vendor';
     const PAN             = 'pan';
     const GST_IN          = 'gstin';
@@ -66,6 +67,7 @@ class Entity extends Base\PublicEntity
     const CONTACT_NUMBER_PARTIAL_SEARCH = 'contact.partial_search';
 
     const IS_COMPOSITE = 'isComposite';
+
     const CONTACT_ENTITY = 'contact_entity';
 
     protected $generateIdOnCreate = true;

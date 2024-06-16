@@ -34,6 +34,7 @@ class Validator extends Base\Validator
         Entity::IDEMPOTENCY_KEY         => 'sometimes|nullable|string',
         Entity::PAYMENT_TERMS           => 'sometimes|numeric|integer|min:0',
         Entity::TDS_CATEGORY            => 'sometimes|numeric|integer|min:0',
+        Entity::POC_EMAILS              => 'sometimes|array|custom',
         Entity::PAN                     => 'sometimes|string|min:0|max:40',
         Entity::EXPENSE_ID              => 'sometimes|string|max:40',
         Entity::GST_IN                  => 'sometimes|string|max:40|custom',
@@ -54,6 +55,7 @@ class Validator extends Base\Validator
         Entity::EXPENSE_ID    => 'sometimes|string|max:40',
         Entity::GST_IN        => 'sometimes|string|max:40|custom',
         Entity::PAN           => 'sometimes|string|min:0|max:40',
+        Entity::POC_EMAILS    => 'sometimes|array|custom',
     ];
 
     protected static $createTypeRules = [
@@ -81,6 +83,19 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The gstin field is invalid.',
                 Entity::GST_IN);
+        }
+    }
+
+    protected function validatePocEmails($attribute, $emails)
+    {
+        foreach ($emails as $email)
+        {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid poc email provided',
+                    Entity::POC_EMAILS);
+            }
         }
     }
 }
