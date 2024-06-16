@@ -66,7 +66,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             {
                 $verificationFields = [
                     'gateway' => self::ICICI_DEBIT_EMI,
-                    'gateway_transaction_id' => $rows[$curr][ReconciliationFields::TrackId]
+                    'gateway_transaction_id' => $rows[$curr][ReconciliationFields::TrackId],
+                    'action' => 'loan_booking'
                 ];
 
                 $response = App::getFacadeRoot()['card.payments']->fetchPaymentIdFromEmiGatewayReferenceIds($verificationFields);
