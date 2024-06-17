@@ -470,7 +470,7 @@ class Service extends Base\Service
         }
 
 
-        if ((isset($input['payment']['emi_plan']) === true) and 
+        if ((isset($input['payment']['emi_plan']) === true) and
         (isset($input['payment']['source_channel']) === true))
         {
             $emiPlan = (new Emi\Entity)->forceFill($input['payment']['emi_plan']);
@@ -638,6 +638,7 @@ class Service extends Base\Service
         {
             $payments = $this->repo->payment->fetchCapturedRearchPaymentsTxnNull($input['cps_routes'], $input['start_time_offset'], $input['end_time_offset']);
         }
+
 
         foreach ($payments as $payment)
         {

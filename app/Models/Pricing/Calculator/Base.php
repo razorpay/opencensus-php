@@ -25,6 +25,9 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Pricing\Calculator\Tax\Base as TaxBase;
@@ -252,6 +255,23 @@ abstract class Base extends BaseModel\Core
     {
         $balanceType = Balance\Type::getTypeForProduct($this->product);
 
+        $merchantId = $this->entity->merchant->getId();
+
+        $variant =  $this->app->razorx->getTreatment($merchantId, Merchant\RazorxTreatment::FETCH_MERCHANT_CREDITS_NEW_FLOW, 'live');
+
+        $this->trace->info(
+            TraceCode::FETCH_MERCHANT_CREDITS_NEW_FLOW_RAXORX_VARIANT,
+            [
+                'merchant_id'           => $merchantId,
+                'feature_flag'          => Merchant\RazorxTreatment::FETCH_MERCHANT_CREDITS_NEW_FLOW,
+                'merchant_ramp_variant' => $variant,
+            ]);
+
+        if ((strtolower($variant) === 'on') === true)
+        {
+            return $this->getMerchantCredits($merchantId);
+        }
+
         $merchantBalance = $this->entity->merchant->getBalanceByType($balanceType);
 
         $amountCredits = $merchantBalance->getAmountCredits();
@@ -279,6 +299,34 @@ abstract class Base extends BaseModel\Core
         $this->getAddOnPricingRule($pricing, $features, $entityName);
 
         $this->traceAllRules($this->pricingRules);
+    }
+
+    /** getMerchantCredits returns credits for reverse shadow and non reverse shadow MID
+     * @param $merchantId
+     * @return array
+     */
+    public function getMerchantCredits($merchantId): array
+    {
+        if ($this->entity->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $ledgerService = $this->app['ledger'];
+
+            $ledgerOutboxCore = new LedgerOutboxCore();
+
+            $merchantBalance = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchantId);
+
+            $amountCredits = $merchantBalance[LedgerConstants::MERCHANT_AMOUNT_CREDITS] ?? 0;
+
+            $feeCredits = $merchantBalance[LedgerConstants::MERCHANT_FEE_CREDITS] ?? 0;
+
+            return [$amountCredits, $feeCredits];
+        }
+
+        $amountCredits  = $this->repo->credits->getMerchantCreditsOfType($merchantId, LedgerConstants::AMOUNT);
+
+        $feeCredits     = $this->repo->credits->getMerchantCreditsOfType($merchantId, LedgerConstants::FEE);
+
+        return [$amountCredits, $feeCredits];
     }
 
     /**

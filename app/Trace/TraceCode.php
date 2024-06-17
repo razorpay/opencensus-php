@@ -11601,6 +11601,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const POST_WORKFLOW_COMMENT_FAILURE                         = "POST_WORKFLOW_COMMENT_FAILURE";
 
+    const FETCH_MERCHANT_CREDITS_NEW_FLOW_RAXORX_VARIANT        = 'FETCH_MERCHANT_CREDITS_NEW_FLOW_RAXORX_VARIANT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

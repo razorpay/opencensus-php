@@ -1157,4 +1157,9 @@ final class RazorxTreatment
      * Razorx for reverse shadow
      */
     const  TRANSFER_REVERSALS_VIA_REVERSE_SHADOW= 'transfer_reversals_via_reverse_shadow';
+
+    /**
+     * Razorx for credit fetch for reverse and non-reverse shadow
+     */
+    const FETCH_MERCHANT_CREDITS_NEW_FLOW = 'fetch_merchant_credits_new_flow';
 }

@@ -208,6 +208,7 @@ class Constants
     const GATEWAY                                           = 'gateway';
     const JOURNALS                                          = 'journals';
     const SOURCE                                            = "source";
+    const FEE                                               = "fee";
 
     const REGISTER_EVENT_FOR_LEDGER_TRANSACTION                 = 'register_event_for_ledger_transaction';
     const REGISTER_EVENT_FOR_MULTI_MERCHANT_LEDGER_TRANSACTION  = 'register_event_for_multi_merchant_ledger_transaction';
