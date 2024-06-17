@@ -51,6 +51,12 @@ trait Verify
             ];
         }
 
+        if ($payment->getGateway() === 'netbanking_ibk' AND $this->app['request.ctx']->getRoute() === 'payment_nbplus_authorize_failed')
+        {
+            
+            $gatewayData["bank_transaction_id"]=$payment["reference1"];
+
+        }
         if (isset($gatewayData) === true)
         {
             $data['gateway_data'] = $gatewayData;
