@@ -1847,4 +1847,20 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         return 'query_cache_live';
     }
+
+    public function getEsAttributes()
+    {
+        return [
+            self::MERCHANT_ID => $this->getAttribute(self::MERCHANT_ID),
+            self::STEPS_FINISHED => $this->getAttribute(self::STEPS_FINISHED),
+            self::ACTIVATION_PROGRESS => $this->getAttribute(self::ACTIVATION_PROGRESS),
+            self::ACTIVATION_STATUS => $this->getAttribute(self::ACTIVATION_STATUS),
+            self::ARCHIVED_AT => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUBMITTED_AT => $this->getAttribute(self::SUBMITTED_AT),
+            self::UPDATED_AT => $this->getAttribute(self::UPDATED_AT),
+            self::REVIEWER_ID => $this->getAttribute(self::REVIEWER_ID),
+            self::BUSINESS_TYPE => $this->getAttribute(self::BUSINESS_TYPE),
+            self::ACTIVATION_FLOW => $this->getAttribute(self::ACTIVATION_FLOW),
+        ];
+    }
 }

@@ -1407,6 +1407,40 @@ class Repository extends Base\Repository
         return $serialized;
     }
 
+    public function serializeForIndexingForAsv(Base\PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        //
+        // The serialized merchant document in ES contains following
+        // additional values:
+        // - List of tag names
+        // - List of admins who have access to this merchant,
+        // - List of groups which this merchant belongs to as well as their
+        //   recursive parents hierarchy.
+        // - Few additional attributes consumed by clients.
+        // - Unsettled balance to merchant
+        // - Two fields from merchant_business_details.
+
+        $serialized[Entity::TAG_LIST]        = $entity->tagNames();
+        $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail ? $entity->merchantDetail->getEsAttributes() : [];
+        $serialized[Entity::MERCHANT_BUSINESS_DETAIL] = $entity->merchantDetail ? $entity->merchantDetail->getBusinessAttributes() : [];
+        $serialized[Entity::ADMINS]          = $entity->admins->pluck(Common::ID)->all();
+
+        $groups = $this->repo->group->getParentsRecursively($entity->groups, true);
+
+        $serialized[Entity::GROUPS]         = $groups->pluck(Common::ID)->all();
+        $serialized[Entity::IS_MARKETPLACE] = $entity->isMarketplace();
+
+        $firstAdmin = $entity->admins->first();
+
+        $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
+
+        $serialized[Entity::BALANCE] = optional($entity->primaryBalance)->getBalance() ?: 0;
+
+        return $serialized;
+    }
+
     protected function postProcessForHydration(Base\PublicEntity $model, array & $item)
     {
         $attributes = $item[Entity::MERCHANT_DETAIL];

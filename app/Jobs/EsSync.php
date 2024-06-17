@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 /**
  * Es sync job class.
@@ -123,6 +124,11 @@ class EsSync extends Job
                     return $this->syncRearchEntities();
                 }
 
+                if($this->entity === "merchant" && (new AsvRouter())->shouldRouteFilterToAsv('MerchantEsSync'))
+                {
+                    return $this->syncMerchantEntities();
+                }
+
                 $this->syncApiEntities();
 
                 break;
@@ -139,6 +145,17 @@ class EsSync extends Job
             default:
 
                 throw new LogicException('EsSync: Invalid action.');
+        }
+    }
+
+    private function syncMerchantEntities()
+    {
+        foreach ($this->ids as $id)
+        {
+            $entity = $this->repo->findOrFail($id);
+            $documents = $this->repo->serializeForIndexingForAsv($entity);
+            $response = $this->esRepo->bulkUpdate([$documents]);
+            $this->traceErrorResponse($response);
         }
     }
 
