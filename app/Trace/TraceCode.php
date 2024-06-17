@@ -365,6 +365,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTION_ALREADY_LINKED_WITH_REVERSAL              = 'TRANSACTION_ALREADY_LINKED_WITH_REVERSAL';
     const BAS_NOT_FOUND_FOR_DEBIT_MAPPING                       = 'BAS_NOT_FOUND_FOR_DEBIT_MAPPING';
     const BAS_NOT_FOUND_FOR_CREDIT_MAPPING                      = 'BAS_NOT_FOUND_FOR_CREDIT_MAPPING';
+    const PS_BAS_FOUND_FOR_CREDIT_MAPPING                       = 'PS_BAS_FOUND_FOR_CREDIT_MAPPING';
+    const PS_BAS_FOUND_FOR_STATEMENT_LINKING                    = 'PS_BAS_FOUND_FOR_STATEMENT_LINKING';
 
     const PAYMENT_PAYOUT_REQUEST                                = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                                  = 'PAYMENT_AUTO_CAPTURE';

@@ -2117,6 +2117,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::TRANSACTION_ID, $txnId);
     }
 
+    public function setTransactionType(string $txnType)
+    {
+        return $this->setAttribute(self::TRANSACTION_TYPE, $txnType);
+    }
+
     public function setMerchantId($merchantId)
     {
         return $this->setAttribute(self::MERCHANT_ID, $merchantId);

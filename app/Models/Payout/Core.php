@@ -4236,6 +4236,18 @@ class Core extends Base\Core
             }
         }
 
+        if ($bas->getTransactionId() == $bas->getId())
+        {
+            $this->trace->info(
+                TraceCode::PS_BAS_FOUND_FOR_STATEMENT_LINKING,
+                [
+                    'payout_id' => $payout->getId(),
+                    'bas_id' => $bas->getId(),
+                ]);
+
+            return null;
+        }
+
         $transaction = $bas->transaction;
 
         if ($transaction === null)
@@ -4327,6 +4339,7 @@ class Core extends Base\Core
             return [null, null];
         }
 
+        /** @var BASEntity $bas */
         $bas = $credit_bas;
 
         if ($bas === null)
@@ -4346,6 +4359,18 @@ class Core extends Base\Core
 
                 return [null, $bankAccStmtForPayout];
             }
+        }
+
+        if ($bas->getTransactionId() == $bas->getId())
+        {
+            $this->trace->info(
+                TraceCode::PS_BAS_FOUND_FOR_CREDIT_MAPPING,
+                [
+                    'reversal_id' => $reversal->getId(),
+                    'bas_id' => $bas->getId(),
+                ]);
+
+            return [null, null];
         }
 
         $transaction = $bas->transaction;
@@ -8788,6 +8813,7 @@ class Core extends Base\Core
             if ($type == 'payout')
             {
                 $payout->setTransactionId($basId);
+                $payout->setTransactionType(Entity::TRANSACTION);
 
                 $payout->saveOrFail();
 
