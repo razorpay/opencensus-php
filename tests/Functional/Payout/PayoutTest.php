@@ -16861,6 +16861,47 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
     }
 
+    public function testCreateFreePayoutForNEFTModeDirectAccountPrivateAuthSkipFreePayout()
+    {
+        $testData                                = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountPrivateAuthSkipFreePayout'];
+        $testData['request']['url']              = '/payouts';
+
+        $this->setupDirectAccount();
+        $this->setMockRazorxTreatment(['enable_ca_flow_via_payouts_service' => 'on']);
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'merchant_id'  => "10000000000000",
+                'account_type' => 'direct',
+                'channel'      => 'rbl'
+            ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->privateAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+       // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertNotEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'direct',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+    }
+
     public function testCreateFreePayoutForNEFTModeDirectAccountProxyAuth()
     {
         $testData                                = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];

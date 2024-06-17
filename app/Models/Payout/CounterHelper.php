@@ -48,10 +48,11 @@ class CounterHelper extends Base\Core
         {
             return null;
         }
-        if (($balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true) and ($balance->getAccountType() === AccountType::DIRECT))
+        if (($balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true) and
+            ($balance->getAccountType() === AccountType::DIRECT))
         {
 
-            $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
+            $variant = $this->app['razorx']->getTreatment($balance->getMerchantId(),
                 RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
 
             if ($variant === 'on') {
