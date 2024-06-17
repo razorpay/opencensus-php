@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Exception as defaultException;
 
+use RZP\Constants\Environment;
 use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
 use RZP\Exception;
@@ -4540,6 +4541,10 @@ trait Refund
      */
     public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
     {
+        if ($this->app['env'] === Environment::PRODUCTION){
+            return true;
+        }
+
         $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
             Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
             $this->mode);
@@ -4580,6 +4585,10 @@ trait Refund
 
     public function isBatchRefundRequestV1_1(Payment\Entity $payment): bool
     {
+        if ($this->app['env'] === Environment::PRODUCTION){
+            return true;
+        }
+
         $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
             Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
             $this->mode);
@@ -4619,6 +4628,10 @@ trait Refund
 
     public function isNonMerchantRefundRequestV1_1(Payment\Entity $payment): bool
     {
+        if ($this->app['env'] === Environment::PRODUCTION){
+            return true;
+        }
+
         $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
             Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
             $this->mode);
@@ -4658,6 +4671,10 @@ trait Refund
 
     public function isTransferCustomerRefundRequestV1_1(Payment\Entity $payment): bool
     {
+        if ($this->app['env'] === Environment::PRODUCTION){
+            return true;
+        }
+
         $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
             Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
             $this->mode);
