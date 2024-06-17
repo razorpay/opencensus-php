@@ -18,8 +18,10 @@ class RouteTeamMap
     // cmma : sop and disputes team
     const TEAM_CMMA                     = 'cmma';
     const TEAM_DEFAULT                  = self::TEAM_PAYMENTS_DASHBOARD;
-
     const TEAM_PAYMENTS_CORE            = 'payments_core';
+    const TEAM_SCROOGE                  = 'scrooge_devs';
+    const TEAM_CAPITAL_LOC              = 'capital-loc';
+    const TEAM_UPI_QR_CODE              = 'upi_qr';
 
     /**
      * Team Slack Handle mapping
@@ -31,7 +33,10 @@ class RouteTeamMap
         self::TEAM_PAYMENTS_CARE            => '<!subteam^S03SHBX9MNU>',
         self::TEAM_PAYMENTS_SETTLEMENTS     => '<!subteam^S018FSZK2TC>',
         self::TEAM_CMMA                     => '<!subteam^S03BJ8BP0BH>',
-        self::TEAM_PAYMENTS_CORE            => '<!subteam^SP8Q9CNF9>'
+        self::TEAM_PAYMENTS_CORE            => '<!subteam^SP8Q9CNF9>',
+        self::TEAM_SCROOGE                  => '<!subteam^SSXQFHE2W>',
+        self::TEAM_CAPITAL_LOC              => '<!subteam^S06BW9W0CUR>',
+        self::TEAM_UPI_QR_CODE              => '<!subteam^S04L2JD3VR8>'
     ];
 
     protected static $routeTeamMap = [
@@ -283,13 +288,14 @@ class RouteTeamMap
         'bulk_regenerate_api_keys'                 => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_workflow_clarification'          => [self::TEAM_PAYMENTS_DASHBOARD],
         'workflow_needs_merchant_clarification'    => [self::TEAM_PAYMENTS_DASHBOARD],
+        'merchant_fetch_payment_failure_analysis'  => [self::TEAM_PAYMENTS_DASHBOARD],
 
-        'merchant_activation_clarifications_save_admin'        => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_clarifications_save_admin'   => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_clarifications_fetch_admin'  => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_nc_revamp_eligibility'                  => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_clarifications_save'         => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_nc_revamp_eligibility_admin'            => [self::TEAM_PAYMENTS_GROWTH],
-        'merchant_activation_clarifications_fetch'              => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_clarifications_fetch'        => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_store_add'                              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_store_fetch'                            => [self::TEAM_PAYMENTS_GROWTH],
         'm2m_referral_link_get'                           => [self::TEAM_PAYMENTS_GROWTH],
@@ -411,6 +417,7 @@ class RouteTeamMap
         'merchant_bmc_response_fetch_admin'               => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_bmc_response_save'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_get_l2_dynamic_configs'                 => [self::TEAM_PAYMENTS_GROWTH],
+        'pos_fetch_latest_order'                          => [self::TEAM_PAYMENTS_GROWTH],
 
         // Risk team
         'shield_rules_get_multiple'                       => [self::TEAM_PAYMENTS_RISK],
@@ -551,16 +558,29 @@ class RouteTeamMap
         'setl_bulk_reminder_es_registration'              => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_trigger_es_multiple'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_set_dcs_object'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+
         //downtime manager route
         'downtime_auto_resolve_cron'                      => [self::TEAM_PAYMENTS_DOWNTIME],
+
+        //cmma route
         'dispute_ingestion'                               => [self::TEAM_CMMA],
         'dispute_bulk_create_internal'                    => [self::TEAM_CMMA],
         'dispute_dcs_config_add'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_get'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_update'                       => [self::TEAM_CMMA],
-        'merchant_fetch_payment_failure_analysis'         => [self::TEAM_PAYMENTS_DASHBOARD],
-        'pos_fetch_latest_order'                          => [self::TEAM_PAYMENTS_GROWTH],
+
+        //payments core route
         'balance_fetch'                                   => [self::TEAM_PAYMENTS_CORE],
+        'payment_fetch_multiple'                          => [self::TEAM_PAYMENTS_CORE],
+
+        //scrooge route
+        'refund_fetch_multiple'                           => [self::TEAM_SCROOGE],
+
+        //capital loc route
+        'loc_service'                                     => [self::TEAM_CAPITAL_LOC],
+
+        //qr_code route
+        'qr_code_create'                                  => [self::TEAM_UPI_QR_CODE]
     ];
 
     /**
