@@ -81,9 +81,9 @@ class Processor extends Base\Core
             $bankAccountCountry = Country::getCountryNameByCode($merchantAccount['beneficiary_country']);
             $encryptionKey = $this->app['config']['app']['cross_border_handle']['aes_encryption_key'];
 
-            $miiNotes = (new MIIService())->getMerchantHsCodeAndCurrency($merchantId);
+            $miiNotes = (new MIIService())->getMerchantHsCodeAndCurrencyForOpgspImport($merchantId);
 
-            if(isset($miiNotes) === false)
+            if(!isset($miiNotes['hs_code']) || !isset($miiNotes['settlement_currency']))
             {
                 $this->trace->info(TraceCode::OPGSP_IMPORT_INTEGRATION_NOTES_MISSING_FOR_MERCHANT, [
                     'input'           => $input,
@@ -101,7 +101,7 @@ class Processor extends Base\Core
 
             $currency = $miiNotes['settlement_currency'];
 
-            if(!isset($currency) or empty($currency) or !Currency::isSupportedCurrency($currency)) {
+            if(empty($currency) or !Currency::isSupportedCurrency($currency)) {
                 (new Metrics())->pushErrorMetrics(Metrics::CROSS_BORDER_COMMON_WORKER_JOB_FAILED, [
                     Metrics::ACTION => CrossBorderCommonUseCases::OPGSP_IMPORT_GENERATE_SETTLEMENT_FILE,
                     Metrics::IS_DELETED => true

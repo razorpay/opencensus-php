@@ -703,21 +703,23 @@ class Service extends Base\Service
         return $mii_notes;
     }
 
-    public function getMerchantHsCodeAndCurrency($merchantId)
+    public function getMerchantHsCodeAndCurrencyForOpgspImport($merchantId)
     {
-        $merchant = $this->merchant;
-
-        if($merchant !== null){
-            $mid = $this->merchant->getId();
-        }else{
-            $mid = $merchantId;
-            $this->merchant = $this->repo->merchant->fetchMerchantFromId($mid);
-        }
-
         $mii_notes = [];
 
+        $merchant = $this->repo->merchant->fetchMerchantFromId($merchantId);
+
+        // default assignment ti opgsp_import
+        $integrationEntity = Constant::INTEGRATION_ENTITY_OPGSP_IMPORT;
+
+        // overwrite if merchant is on jpmc flow
+        if ($merchant->isJpmcImportFlowEnabled())
+        {
+            $integrationEntity = Constant::INTEGRATION_ENTITY_JPMC_IMPORT_FLOW;
+        }
+
         $mii = $this->repo->merchant_international_integrations
-            ->getByMerchantIdAndIntegrationEntity($mid, $this->getIntegrationEntityFromFeatureFlag());
+            ->getByMerchantIdAndIntegrationEntity($merchantId, $integrationEntity);
 
         if(isset($mii))
         {
