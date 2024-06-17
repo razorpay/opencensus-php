@@ -537,6 +537,17 @@ class Service extends Base\Service
 
         if (isset($pgRouterPublicResponse))
         {
+            //Sort offers in both responses for parity
+            if (isset($pgRouterPublicResponse['offers']) === true)
+            {
+                sort($pgRouterPublicResponse['offers']);
+            }
+
+            if (isset($apiResp['offers']) === true)
+            {
+                sort($apiResp['offers']);
+            }
+
             $responseParity = $apiResp == $pgRouterPublicResponse;
             $responseParityWithTripleCheck = $apiResp === $pgRouterPublicResponse;
 
