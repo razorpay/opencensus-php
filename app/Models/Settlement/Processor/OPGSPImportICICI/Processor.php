@@ -701,7 +701,7 @@ class Processor extends Base\Core
 
         if($this->app->environment() === Environment::PRODUCTION)
         {
-            $this->pushFileToBeam($this->jobNameProd,FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE, $ufhResponse);
+            $this->pushFileToBeam($this->jobNameProd,FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE, $ufhResponse, $response['location']);
         }
 
         $this->trace->info(TraceCode::OPGSP_IMPORT_FILE_SENT, [
