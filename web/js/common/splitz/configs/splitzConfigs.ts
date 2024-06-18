@@ -1342,5 +1342,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/payment-methods/international-payments'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'userApiDecomp',
+          experimentId: {
+            beta: 'OJSKkoQ7EjryIh',
+            production: 'OM9gNNXJobDkla',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

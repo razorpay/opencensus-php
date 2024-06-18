@@ -90,9 +90,10 @@ const International = ({
   const [productStatus, setProductStatus] = useState<MerchantICProductStatus | null>(null);
   const [isLoading, setLoading] = useState(true);
   const listItemRef = useRef<HTMLDivElement>(null);
-  const { abExperiments: { showIntlMethodEnablement } = {} } = useSplitzService();
+  const { abExperiments: { showIntlMethodEnablement, userApiDecomp } = {} } = useSplitzService();
 
   const isIntlMethodExpEnabled = isExperimentActive(showIntlMethodEnablement);
+  const isUserApiDecompEnabled = isExperimentActive(userApiDecomp);
 
   const getProductStatus = () =>
     merchantFetch({
@@ -109,8 +110,14 @@ const International = ({
       });
 
   const retrieveProductsInfo = () => {
-    // fetchUser is added to make sure value of international is always latest when user opens this tab
-    Promise.allSettled([getProductStatus(), fetchWorkflowStatus(), fetchUser()]).finally(() => {
+    const productInfoApi = [getProductStatus(), fetchWorkflowStatus()];
+
+    if (!isUserApiDecompEnabled) {
+      // fetchUser is added to make sure value of international is always latest when user opens this tab
+      productInfoApi.push(fetchUser());
+    }
+
+    Promise.allSettled(productInfoApi).finally(() => {
       setLoading(false);
     });
   };

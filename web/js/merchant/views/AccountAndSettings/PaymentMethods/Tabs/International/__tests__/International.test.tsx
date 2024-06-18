@@ -2,6 +2,7 @@ import React from 'react';
 
 import { useSplitzService } from 'common/splitz';
 import { initialState as instrumentRequestInitialState } from 'merchant/reducers/instrumentRequests';
+import * as sessionApi from 'merchant/reducers/session';
 import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import International from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International';
 import {
@@ -213,5 +214,41 @@ describe('International', () => {
         showMoreInternationalMethods: true,
       }),
     );
+  });
+
+  test('Should call fetchUser if userApiDecomp is disabled', () => {
+    const fetchUserSpy = jest.spyOn(sessionApi, 'fetchUser');
+    // eslint-disable-next-line
+    // @ts-ignore
+    useSplitzService.mockImplementation(() => ({
+      abExperiments: {
+        userApiDecomp: {
+          variables: {
+            result: 'off',
+          },
+        },
+      },
+    }));
+
+    renderApp();
+    expect(fetchUserSpy).toHaveBeenCalled();
+  });
+
+  test('Should not call fetchUser if userApiDecomp is enabled', () => {
+    const fetchUserSpy = jest.spyOn(sessionApi, 'fetchUser');
+    // eslint-disable-next-line
+    // @ts-ignore
+    useSplitzService.mockImplementation(() => ({
+      abExperiments: {
+        userApiDecomp: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    }));
+
+    renderApp();
+    expect(fetchUserSpy).not.toHaveBeenCalled();
   });
 });
