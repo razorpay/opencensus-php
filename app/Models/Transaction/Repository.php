@@ -230,14 +230,7 @@ class Repository extends Base\Repository
                    AND `transactions`.`merchant_id` = ?
             LIMIT  1
          */
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-        }
-
-        $query = $this->newQueryWithConnection($connectionType)
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
             ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
@@ -277,14 +270,7 @@ class Repository extends Base\Repository
 
         $setlIds = $setls->modelKeys();
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::SETTLEMENT_TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-        }
-
-        $query = $this->newQueryWithConnection($connectionType);
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
 
         $txns = $query->merchantId($merchantId)
                       ->where(function($query) use ($from, $to, $setlIds)
@@ -319,39 +305,21 @@ class Repository extends Base\Repository
 
         $setlIds = $setls->modelKeys();
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-        if ($this->isExperimentEnabledForId(self::SETTLEMENT_TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        $index = "transactions_settlement_id_foreign";
 
-            $index = "transactions_settlement_id_foreign";
+        $query = $this->newQueryWithConnection($connectionType);
 
-            $query = $this->newQueryWithConnection($connectionType);
-
-            $txns = $query
-                ->from(\DB::raw("`transactions` USE INDEX ($index)"))
-                ->merchantId($merchantId)
-                ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
-                ->take($count)
-                ->skip($skip)
-                ->latest()
-                ->orderBy(Common::ID, 'desc')
-                ->get();
-
-        } else {
-
-            $query = $this->newQueryWithConnection($connectionType);
-
-            $txns = $query
-                ->merchantId($merchantId)
-                ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
-                ->take($count)
-                ->skip($skip)
-                ->latest()
-                ->orderBy(Common::ID, 'desc')
-                ->get();
-        }
+        $txns = $query
+            ->from(\DB::raw("`transactions` USE INDEX ($index)"))
+            ->merchantId($merchantId)
+            ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
+            ->take($count)
+            ->skip($skip)
+            ->latest()
+            ->orderBy(Common::ID, 'desc')
+            ->get();
 
         $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
 
@@ -963,11 +931,9 @@ class Repository extends Base\Repository
         return $txns;
     }
 
-    public function fetchBySettlementFromTiDB($setl, $txnToRelationFetchMap, $connectionType=ConnectionType::DATA_WAREHOUSE_MERCHANT)
+    public function fetchBySettlementFromTiDB($setl, $txnToRelationFetchMap)
     {
-        $connection = $this->getDataWarehouseConnection($connectionType);
-
-        $txns = $this->newQueryWithConnection($connection)
+        $txns = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
             ->with('merchant', 'settlement')
             ->get();
@@ -1229,14 +1195,7 @@ class Repository extends Base\Repository
         $transactionsTypeColumn             = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn                  = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-        }
-
-        return $this->newQueryWithConnection($connectionType)
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])
@@ -1256,14 +1215,7 @@ class Repository extends Base\Repository
         $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-        }
-
-        return $this->newQueryWithConnection($connectionType)
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])
@@ -1871,10 +1823,18 @@ class Repository extends Base\Repository
         return $unreconciledEntities;
     }
 
+    // only one route is using this and it's not being used actively.
+    // it didn't get called in last 30 days so assuming that it's orphan route and moving ahead with moving query to TIDB
     public function fetchMultipleTransactionsFromIds(array $transactionIds)
     {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $transactionIds)
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $query->whereIn(Entity::ID, $transactionIds)
                     ->get();
     }
 
@@ -2875,6 +2835,12 @@ class Repository extends Base\Repository
             {
                 $query = $this->newQueryWithConnection($connection);
             }
+
+            if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+            {
+                $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+
             return $query
                 ->where(Entity::SETTLEMENT_ID, $settlementId)
                 ->whereIn(Entity::TYPE, $types)
@@ -2890,8 +2856,14 @@ class Repository extends Base\Repository
 
     public function getBySettlementIdAndTypesWithOffset($settlementId, $types, $offset =0, $limit = 10000)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->where(Entity::SETTLEMENT_ID, $settlementId)
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $query->where(Entity::SETTLEMENT_ID, $settlementId)
             ->whereIn(Entity::TYPE, $types)
             ->offset($offset)
             ->limit($limit)
@@ -2900,16 +2872,28 @@ class Repository extends Base\Repository
 
     public function getCountBySettlementIdAndTypes($settlementId, $types)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->where(Entity::SETTLEMENT_ID, $settlementId)
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $query->where(Entity::SETTLEMENT_ID, $settlementId)
             ->whereIn(Entity::TYPE, $types)
             ->count();
     }
 
     public function getCountAndAmountByMerchantAndOnholdAndTypes($merchantId, $onhold, $types, $start, $end)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->selectRaw('COUNT(' . $this->dbColumn(Entity::ID) . ') AS count, SUM(' . $this->dbColumn(Entity::CREDIT) . ') AS total_credit')
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $query->selectRaw('COUNT(' . $this->dbColumn(Entity::ID) . ') AS count, SUM(' . $this->dbColumn(Entity::CREDIT) . ') AS total_credit')
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::ON_HOLD, $onhold)
             ->whereIn(Entity::TYPE, $types)
@@ -2921,8 +2905,14 @@ class Repository extends Base\Repository
     public function getTransactionsByMerchantAndOnholdAndTypes(
         $merchantId, $onhold, $types, $start, $end, $limit = 1000)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->where(Entity::MERCHANT_ID, $merchantId)
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $query->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::ON_HOLD, $onhold)
             ->whereIn(Entity::TYPE, $types)
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end])
@@ -2932,10 +2922,17 @@ class Repository extends Base\Repository
 
     public function getDisputesBySettlementId($settlementId, $connection = null)
     {
-        try {
+        try
+        {
             $query = $this->newQueryOnSlave();
-            if (isset($connection)) {
+            if (isset($connection))
+            {
                 $query = $this->newQueryWithConnection($connection);
+            }
+
+            if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+            {
+                $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
             }
 
             $transactionSettlementIdCol = $this->repo->transaction->dbColumn(Entity::SETTLEMENT_ID);
@@ -2950,7 +2947,9 @@ class Repository extends Base\Repository
                 ->where($transactionSettlementIdCol, $settlementId)
                 ->where($adjustmentTypeCol, Type::DISPUTE)
                 ->get();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             $this->trace->error(Tracecode::ERROR_EXCEPTION, [
                 "error" => $e
             ]);

@@ -1034,16 +1034,9 @@ class Service extends Base\Service
         if ($this->auth->isOptimiserDashboardRequest() === false)
         {
             // Exp check
-            if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
-                $txns = $this->repo
+            $txns = $this->repo
                     ->transaction
                     ->fetchBySettlementIdAndSourceFromTiDB($id, $sourceType, $skip, $limit, $sourceId);
-            }
-            else {
-                $txns = $this->repo
-                    ->transaction
-                    ->fetchBySettlementIdAndSource($id, $sourceType, $skip, $limit, $sourceId);
-            }
         }
         else
         {
@@ -1176,12 +1169,7 @@ class Service extends Base\Service
         $start = microtime(true);
 
         // Exp check
-        if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
-            $txns = $this->repo->transaction->fetchBySettlementFromTiDB($setl, $txnToRelationFetchMap);
-        }
-        else {
-            $txns = $this->repo->transaction->fetchBySettlement($setl, $txnToRelationFetchMap);
-        }
+        $txns = $this->repo->transaction->fetchBySettlementFromTiDB($setl, $txnToRelationFetchMap);
 
         $timeTaken = get_diff_in_millisecond($start);
 
@@ -1344,17 +1332,7 @@ class Service extends Base\Service
         $source = $input['source_type'];
 
         // Exp check
-        if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
-            $txns = $this->repo->transaction
-                ->fetchTxnsForGetSettlementSourceDetailsFromTiDB($input['ids'], $source, $txnToRelationFetchMap);
-        }
-        else {
-            $transactions = $this->repo->transaction->findMany($input['ids']);
-
-            $txns = $this->repo->transaction
-                ->fetchAssociatedRelationsWithLoadedEntities(
-                    $transactions,'source', $txnToRelationFetchMap[$source]);
-        }
+        $txns = $this->repo->transaction->fetchTxnsForGetSettlementSourceDetailsFromTiDB($input['ids'], $source, $txnToRelationFetchMap);
 
         $timeTaken = get_diff_in_millisecond($start);
 
@@ -1520,16 +1498,7 @@ class Service extends Base\Service
         $source = $input['source_type'];
 
         // Exp check
-        if($this->isSettlementTransactionReadMigrationExpEnabled(__FUNCTION__)){
-            $txn = $this->repo->transaction->fetchTxnForSettlementTimelineFromTiDB($transactionId, $source, $txnToRelationFetchMap);
-        }
-        else {
-            $transaction = $this->repo->transaction->findById($transactionId);
-
-            $txn = $this->repo->transaction
-                ->fetchAssociatedRelationsWithLoadedEntities(
-                    $transaction,'source', $txnToRelationFetchMap[$source]);
-        }
+       $txn = $this->repo->transaction->fetchTxnForSettlementTimelineFromTiDB($transactionId, $source, $txnToRelationFetchMap);
 
         $this->trace->info(
             TraceCode::TRANSACTION_ENTITY_FETCH,

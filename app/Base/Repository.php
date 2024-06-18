@@ -72,6 +72,8 @@ class Repository extends \Razorpay\Spine\Repository
     const PAYMENT_FETCH_QUERIES_TIDB_MIGRATION = 'payment_fetch_queries_tidb_migration';
     const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
 
+    const TRANSACTION_READ_MIGRATION = 'transaction_read_migration';
+
     const ADMIN_TIDB_EXPERIMENT_REFUNDS = 'admin_tidb_experiment_refunds';
 
     const WDA_MIGRATION_ADMIN = 'wda_migration_admin';
