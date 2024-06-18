@@ -932,6 +932,8 @@ final class RazorxTreatment
     //Experiment to change debit retries time gap for merchant
     const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP = 'upi_autopay_increase_debit_retries_time_gap';
 
+    const UPI_AUTOPAY_PAYMENT_REMARK            = "upi_autopay_payment_remark";
+
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
     const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS = 'qrv2_static_qr_unrecognised_payment_process';

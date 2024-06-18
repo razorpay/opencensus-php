@@ -177,6 +177,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function updateStatus(string $status)
+    {
+        Status::validateUpiMandateStatus($status);
+
+        $this->setAttribute(self::STATUS, $status);
+    }
+
     public function setLateConfirmed(bool $value)
     {
         return $this->setAttribute(self::LATE_CONFIRMED, $value);

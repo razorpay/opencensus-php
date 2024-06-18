@@ -451,7 +451,7 @@ trait UpiRecurring
 
     public function mandateResume($input, $upiMandate)
     {
-        $upiMandate->setStatus(UpiMandate\Status::CONFIRMED);
+        $upiMandate->updateStatus(UpiMandate\Status::CONFIRMED);
 
         (new UpiMandate\Core)->update($upiMandate);
 

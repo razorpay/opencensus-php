@@ -171,7 +171,22 @@ trait RecurringTrait
 
         if ($this->getAction() === Action::AUTHENTICATE)
         {
-            $input[Constants::UPI][Entity::REMARK] = $this->getPaymentRemark($input);
+            $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'],
+                RazorxTreatment::UPI_AUTOPAY_PAYMENT_REMARK, $this->mode, 3);
+
+            $description = "";
+            if(strtolower($variant) === 'on')
+            {
+                $paymentDescription = $input['payment']['description'] ?? '';
+                $description = Payment\Entity::getFilteredDescription($paymentDescription);
+                $description =  ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+            }
+            else
+            {
+                $description = $this->getPaymentRemark($input);
+            }
+
+            $input[Constants::UPI][Entity::REMARK] = $description;
         }
     }
 
