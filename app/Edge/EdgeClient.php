@@ -119,15 +119,15 @@ class EdgeClient
      * @return void
      */
     public function reissueToken(string $merchant_id, GenericUser $user) {
+
+        $access_token = Cookie::get(Constants::RZP_ACCESS_TOKEN);
+        $refresh_token = Cookie::get(Constants::RZP_REFRESH_TOKEN);
+
         // delete token at edge only if experiment is enabled
         if (! $this->getRazorxExperimentResult(self::REISSUE_TOKEN_FEATURE_FLAG)) {
             return;
         }
 
-
-        // skip token reissue if rzp_access_token cookie is not set in the request
-        $access_token = Cookie::get(Constants::RZP_ACCESS_TOKEN);
-        $refresh_token = Cookie::get(Constants::RZP_REFRESH_TOKEN);
         if (!$access_token || !$refresh_token) {
             // TODO: throw exceptions when we move out of shadow mode
 //            throw new ServerErrorException(
@@ -139,8 +139,7 @@ class EdgeClient
 
         $params = [
             'merchant_id' => $merchant_id,
-            'access_token' => $access_token,
-            'refresh_token' => $refresh_token,
+            'token' => $access_token,
             'role' => $this->getMerchantRoleById($user, $merchant_id),
             'is_verified' => $user->contact_mobile_verified or $user->confirmed
         ];
