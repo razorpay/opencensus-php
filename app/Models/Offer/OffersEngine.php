@@ -836,7 +836,9 @@ class OffersEngine extends Base\Core
                 if ($availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT] !== null) {
                     $offer->setAttribute(Entity::MAX_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT]);
                 } else {
-                    $offer->setAttribute(Entity::MAX_CASHBACK, null);
+                    // set max cashback to 0 if not present
+                    // there are no active offers with max_cashback nil and creation os such offers is not allowed for percent discount.
+                    $offer->setAttribute(Entity::MAX_CASHBACK, 0);
                 }
             }
         }
