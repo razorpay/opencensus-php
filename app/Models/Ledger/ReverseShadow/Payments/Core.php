@@ -3,6 +3,7 @@
 namespace RZP\Models\Ledger\ReverseShadow\Payments;
 
 use Ramsey\Uuid\Uuid;
+use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -14,7 +15,9 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Transaction\Entity;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 
 class Core extends Base\Core
@@ -693,5 +696,47 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function fetchLedgerJournalForPaymentMerchantCapture($payment)
+    {
+        $requestHeaders = [
+            Ledger\Base::LEDGER_TENANT_HEADER => 'PG',
+        ];
+
+        $ledgerInput = [
+            Ledger\Base::TRANSACTOR_ID    => $payment->getPublicId(),
+            Ledger\Base::MERCHANT_ID      => $payment->merchant->getId(),
+            Ledger\Base::TRANSACTOR_EVENT => LedgerConstants::MERCHANT_CAPTURED
+        ];
+
+        try
+        {
+            $response = $this->app['ledger']->fetchByTransactor($ledgerInput, $requestHeaders, true);
+        }
+        catch (\RZP\Exception\BaseException $ex)
+        {
+            $exceptionData = $ex->getData();
+
+            // If no journal found
+            if (str_contains($exceptionData['response_body']['msg'], 'record_not_found'))
+            {
+                return null;
+            }
+            else
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::FETCH_JOURNAL_FAILED,
+                    [
+                        'payment_id'  => $payment->getId(),
+                    ]);
+
+                return null;
+            }
+        }
+
+        return $response['body'];
     }
 }

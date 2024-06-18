@@ -7,12 +7,14 @@ use Exception;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer\Core;
 use RZP\Models\Transfer\Metric;
 use RZP\Models\Transfer\Utility;
 use RZP\Models\Transfer\Constant;
+use RZP\Models\Ledger\ReverseShadow;
 use RZP\Exception\LogicException;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
@@ -176,6 +178,26 @@ class TransferProcess extends Job
 
     private function checkProcessingDelay($payment)
     {
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
+        {
+            $journal = (new ReverseShadow\Payments\Core())->fetchLedgerJournalForPaymentMerchantCapture($payment);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_PROCESS_PAYMENT_JOURNAL_INFO,
+                [
+                    'payment_id'   => $this->payment->getId(),
+                    'journal'      => $journal,
+                ]
+            );
+
+            if ($journal === null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         $transaction =  $payment->transaction;
 
         if ((empty($transaction) === true) or

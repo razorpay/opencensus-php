@@ -512,18 +512,6 @@ class Core extends Base\Core
 
         $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if ($transfer->getSourceType() === Transfer\Constant::PAYMENT)
-        {
-            $paymentTxn = $transfer->source->transaction;
-
-            // Setting current timestamp to transfer settled_at when $paymentTxn->getSettledAt() is null to support async_txn_fill_details feature
-            // Slack ref - https://razorpay.slack.com/archives/CNXC0JHQF/p1649241605237939?thread_ts=1648804095.677009&cid=CNXC0JHQF
-            if ($paymentTxn->isSettled() === false && $paymentTxn->getSettledAt() !== null)
-            {
-                $settledAt = $paymentTxn->getSettledAt();
-            }
-        }
-
         $commissionLedgerEntry = $this->getCommissionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
 
         $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journal,Constants::PAYABLE, Constants::RZP_GST);

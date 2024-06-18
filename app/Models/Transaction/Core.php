@@ -1067,8 +1067,7 @@ class Core extends Base\Core
 
         $amount = $reversal->getAmount();
 
-        // Compute the `settled_at` timestamp
-        $settleTimestamp = $this->getTransferReversalSettledAtTimestamp($reversal);
+        $settleTimestamp = Carbon::now()->getTimestamp();
 
         $data = [
             Transaction\Entity::DEBIT           => 0,

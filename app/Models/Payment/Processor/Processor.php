@@ -6787,15 +6787,6 @@ class Processor
     {
         $isCustomerWalletTransfer = array_key_exists(TransferToType::CUSTOMER, $input);
 
-        $transaction = $payment->transaction;
-
-        $txnAndBalanceUpdated = true;
-
-        if ((empty($transaction) === true) or ($transaction->isBalanceUpdated() === false))
-        {
-            $txnAndBalanceUpdated = false;
-        }
-
         if ($this->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
             $variant = App::getFacadeRoot()->razorx->getTreatment(
@@ -6806,20 +6797,35 @@ class Processor
 
             $isExperimentEnabled = ($variant === 'on');
 
+            $journal = (new ReverseShadowPaymentsCore())->fetchLedgerJournalForPaymentMerchantCapture($payment);
+
+            $isJournalCreated = !(($journal === null));
+
             $this->trace->info(TraceCode::PAYMENT_TRANSFER_LEDGER_OUTBOX_PUSH_CHECK,
                 [
-                    'merchant'               => $this->merchant->getId(),
-                    'isExperimentEnabled'    => $isExperimentEnabled,
-                    'txnAndBalanceUpdated'   => $txnAndBalanceUpdated,
-                    'customerWalletTransfer' => $isCustomerWalletTransfer,
+                    'merchant'                => $this->merchant->getId(),
+                    'isExperimentEnabled'     => $isExperimentEnabled,
+                    'isPaymentJournalCreated' => $isJournalCreated,
+                    'customerWalletTransfer'  => $isCustomerWalletTransfer,
                 ]);
 
             if (($isExperimentEnabled === true)
                 and ($isCustomerWalletTransfer === false)
-                and ($txnAndBalanceUpdated === true))
+                and ($isJournalCreated === true))
             {
                 return [$isExperimentEnabled, true];
             }
+
+            return [$isExperimentEnabled, false];
+        }
+
+        $transaction = $payment->transaction;
+
+        $txnAndBalanceUpdated = true;
+
+        if ((empty($transaction) === true) or ($transaction->isBalanceUpdated() === false))
+        {
+            $txnAndBalanceUpdated = false;
         }
 
         $transfersCount = count($input);
