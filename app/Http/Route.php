@@ -17937,6 +17937,8 @@ class Route
             'cc_create_transaction',
             'internal_payment_pricing',
             'payout_create_on_internal_contact',
+            'fund_account_create_internal',
+            'contact_create_internal',
         ],
 
         'affordability' => [
