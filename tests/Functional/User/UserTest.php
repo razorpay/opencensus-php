@@ -12923,6 +12923,8 @@ class UserTest extends TestCase
 
         $this->assertEquals($merchantUserMapping[1]->role, 'owner');
 
+        $this->assertEquals("pgos", $userDeviceDetails["metadata"]["service"]);
+
         $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
 
         $this->assertEquals($userDeviceDetails['merchant_id'], $response['merchants'][0]['id']);
@@ -12994,7 +12996,7 @@ class UserTest extends TestCase
         $response = $this->startTest();
 
         Queue::assertPushed(NotifyRas::class);
-        
+
         $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $response['merchants'][0]['id'])->get();
 
         $user1 = $this->getDbEntityById('user', $merchantUser['id']);
@@ -13006,6 +13008,8 @@ class UserTest extends TestCase
         $this->assertEquals($merchantUserMapping[0]->role, 'owner');
 
         $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
+
+        $this->assertEquals("pgos", $userDeviceDetails["metadata"]["service"]);
 
         $this->assertEquals($user1['contact_mobile'], '9891817372');
 

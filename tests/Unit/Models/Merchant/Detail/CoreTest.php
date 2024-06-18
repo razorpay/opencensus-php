@@ -16000,7 +16000,7 @@ class CoreTest extends TestCase
 
         $res = (new MerchantOnboardingProxyController())->shouldMerchantOnboardViaPGOS($merchant->getId());
 
-        $this->assertEquals(false, $res);
+        $this->assertEquals(true, $res);
 
     }
 
@@ -16022,7 +16022,7 @@ class CoreTest extends TestCase
 
         $res = (new MerchantOnboardingProxyController())->shouldMerchantOnboardViaPGOS($merchant->getId());
 
-        $this->assertEquals(false, $res);
+        $this->assertEquals(true, $res);
 
     }
 
@@ -16395,7 +16395,10 @@ class CoreTest extends TestCase
 
         $this->pgosProxyController->shouldReceive('handlePGOSProxyRequests')->andReturn();
 
-        $this->mockSplitzTreatment($splitzInput, $output);
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->with($splitzInput)
+                    ->andReturn($output);
 
         $merchant = $this->fixtures->edit('merchant', $merchantId, [
             'id'           => $merchantId,

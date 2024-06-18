@@ -7,6 +7,7 @@ use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Country;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Admin\Permission\Name;
@@ -19,6 +20,10 @@ use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstants;
 use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
+use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\User\Entity as UserEntity;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 
 class MerchantOnboardingProxyController extends BaseProxyController
 {
@@ -27,7 +32,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_ACTIVATION_SAVE       = 'merchant_activation_save';
 
     const GET_MERCHANT_ACTIVATION_DETAILS = 'get_merchant_activation_details';
-    const MERCHANT_SIGN_UP               = 'merchant_sign_up';
+    const MERCHANT_SIGN_UP                  = 'merchant_sign_up';
+    const SALES_ASSISTED_MERCHANT_SIGN_UP   = 'sales_assisted_merchant_sign_up';
     const MERCHANT_WEBSITE_POLICY_VERIFY = 'merchant_website_policy_verify';
     const MERCHANT_DOCUMENT_UPLOAD       = 'merchant_document_upload';
     const MERCHANT_DOCUMENT_DELETE       = 'merchant_document_delete';
@@ -159,6 +165,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_ROUTES = [
         self::MERCHANT_ACTIVATION_SAVE,
         self::MERCHANT_SIGN_UP,
+        self::SALES_ASSISTED_MERCHANT_SIGN_UP,
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
 
@@ -260,6 +267,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::PGOS_FETCH_PGOS_ACTIVATION_STATUS             => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetPosActivationStatus',
         self::PGOS_BULK_FETCH_PGOS_ACTIVATION_STATUS        => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetBulkPosActivationStatus',
         self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdatePosActivationStatus',
+        self::SALES_ASSISTED_MERCHANT_SIGN_UP               => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/CreateWorkflow',
         self::UPDATE_ACTION_STATE                           => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateState',
         self::FETCH_ACTION_STATE_COUNT                      => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
         self::MERCHANT_POS_STATE_LOGS                       => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
@@ -276,6 +284,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::ONBOARDING_SAVE                           => 15,
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
+        self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
         self::MERCHANT_DOCUMENT_UPLOAD                  => 15,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
@@ -317,7 +326,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE,
         self::MERCHANT_RM_FETCH,
         self::MERCHANT_RM_CREATE,
-        self::MERCHANT_RM_UPDATE
+        self::MERCHANT_RM_UPDATE,
+        self::MERCHANT_SIGN_UP,
+        self::SALES_ASSISTED_MERCHANT_SIGN_UP
     ];
 
     public function __construct()
@@ -351,7 +362,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             self::MERCHANT_ACTIVATION_SAVE => [
               "success" => true,
             ],
-            self::MERCHANT_SIGN_UP => [
+            self::MERCHANT_SIGN_UP, self::SALES_ASSISTED_MERCHANT_SIGN_UP => [
                 "workflow_id" => "test_workflow"
             ],
             self::FETCH_MERCHANT_DOCUMENT_DETAILS => [
@@ -454,6 +465,18 @@ class MerchantOnboardingProxyController extends BaseProxyController
         }
 
         return null;
+    }
+    public function handleMerchantSignup($payload, $merchant)
+    {
+        $merchantId = $merchant->getMerchantId();
+
+        $routeKey = self::MERCHANT_SIGN_UP;
+        if ($payload[DeviceDetailEntity::SIGNUP_CAMPAIGN] === DeviceDetailConstants::ASSISTED_ONBOARDING)
+        {
+            $routeKey = self::SALES_ASSISTED_MERCHANT_SIGN_UP;
+        }
+        return $this->handlePGOSProxyRequests($routeKey,$payload,$merchant,true);
+
     }
 
     //We are not passing $path here as done in BaseProxyController since we are getting path from request itself.
@@ -642,38 +665,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
                 if (empty($merchantOnboardedViaService) === false)
                 {
-                    if ($merchant->isSignupViaEmail() === true &&
-                        $merchantCountryCode === 'IN' &&
-                        $userDeviceDetail->getSignupCampaign() == DeviceDetailConstants::EASY_ONBOARDING &&
-                        $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS)
+                    if ($merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS)
                     {
                         return true;
-                    }
-                }
-            }
-
-            // Check for PGOS merchants whitelisted via experiment
-            if ($this->isPGOSExperimentEnabledForMerchant($merchantId, self::PGOS_LIVE_MODE_EXPERIMENT_ID,
-                                                          self::ENABLE) === true or $merchantCountryCode === 'MY')
-            {
-                $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
-                    'merchantId' => $merchantId,
-                    'userDeviceDetails' => $userDeviceDetail,
-                ]);
-
-                if (empty($userDeviceDetail) === false)
-                {
-                    $merchantOnboardedViaService = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::SERVICE);
-
-                    if (empty($merchantOnboardedViaService) === false)
-                    {
-                        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
-                            'merchantId' => $merchantId,
-                            'service' => $merchantOnboardedViaService,
-                            'shouldOnboardViaPGOS' => $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS,
-                        ]);
-
-                        return $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS;
                     }
                 }
             }
@@ -908,4 +902,5 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 return;
         }
     }
+
 }

@@ -167,6 +167,7 @@ class UserTest extends TestCase
         $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
 
         $pgosProxyController->shouldReceive('handlePGOSProxyRequests');
+        $pgosProxyController->shouldReceive('handleMerchantSignup');
 
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
 

@@ -840,7 +840,6 @@ class Service extends Base\Service
 
         return $response;
     }
-
     private function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
     {
         $shouldOnboardViaPGOS = false;
@@ -912,7 +911,6 @@ class Service extends Base\Service
         {
             $shouldOnboardViaPGOS = true;
         }
-
         if ($workflowType === DeviceDetail\Constants::MODULAR_ONBOARDING)
         {
             $shouldOnboardViaPGOS = true;
@@ -945,8 +943,7 @@ class Service extends Base\Service
             ];
 
             // sign up response is not driven by PGOS
-            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_sign_up', $createWorkflowRequestBody, $merchant, true);
-
+            $response = $this->pgosProxyController->handleMerchantSignup($createWorkflowRequestBody, $merchant);
             $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
                 'merchant_id' => $merchant->getId(),
                 'response'    => $response,
@@ -1056,7 +1053,10 @@ class Service extends Base\Service
         //All merchants who onboard via OAuth and FE sends signup campaign as EASY_ONBOARDING, needs to be onboarded via PGOS
         if (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
             and (new Merchant\Core)->isRegularMerchant($merchant) === true
-            and $countryCode === 'IN') || ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING))
+                and $countryCode === 'IN') ||
+            ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
+             $signupCampaign === DeviceDetailConstants::ASSISTED_ONBOARDING))
+
         {
             $shouldOnboardViaPGOS = true;
         }
@@ -1086,7 +1086,7 @@ class Service extends Base\Service
             ];
 
             // sign up response is not driven by PGOS
-            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_sign_up', $createWorkflowRequestBody, $merchant, true);
+            $response = $this->pgosProxyController->handleMerchantSignup($createWorkflowRequestBody, $merchant);
 
             $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
                 'merchant_id' => $merchant->getId(),
