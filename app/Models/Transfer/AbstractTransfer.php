@@ -289,20 +289,33 @@ abstract class AbstractTransfer
                 "merchant_ids" => [$subMerchant->getId()],
             ];
 
+            $this->trace->info(
+                TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH,
+                [
+                    'transfer_id'                            => $transfer->getId(),
+                    'parent_merchant_id'                     => $transfer->merchant->getId(),
+                    'reverse_shadow_enabled_for_parent'      => $reverseShadowEnabledForParent,
+                    'linked_account_merchant_id'             => $subMerchant->getId(),
+                    'reverse_shadow_enabled_for_linked_account' => $reverseShadowEnabledForLinkedAccount,
+                ]
+            );
+
             try
             {
                 (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
             }
             catch (\Exception $e)
             {
-                $this->trace->info(
-                    TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH,
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_AUTO_ONBOARD_FAILURE,
                     [
                         'transfer_id'                            => $transfer->getId(),
                         'parent_merchant_id'                     => $transfer->merchant->getId(),
-                        'reverseShadowEnabledForParent'          => $reverseShadowEnabledForParent,
+                        'reverse_shadow_enabled_for_parent'          => $reverseShadowEnabledForParent,
                         'linked_account_merchant_id'             => $subMerchant->getId(),
-                        'reverseShadowEnabledForLinkedAccount'   => $reverseShadowEnabledForLinkedAccount,
+                        'reverse_shadow_enabled_for_linked_account'   => $reverseShadowEnabledForLinkedAccount,
                     ]
                 );
 
@@ -317,9 +330,9 @@ abstract class AbstractTransfer
                 [
                     'transfer_id'                            => $transfer->getId(),
                     'parent_merchant_id'                     => $transfer->merchant->getId(),
-                    'reverseShadowEnabledForParent'          => $reverseShadowEnabledForParent,
+                    'reverse_shadow_enabled_for_parent'          => $reverseShadowEnabledForParent,
                     'linked_account_merchant_id'             => $subMerchant->getId(),
-                    'reverseShadowEnabledForLinkedAccount'   => $reverseShadowEnabledForLinkedAccount,
+                    'reverse_shadow_enabled_for_linked_account'   => $reverseShadowEnabledForLinkedAccount,
                 ]
             );
 

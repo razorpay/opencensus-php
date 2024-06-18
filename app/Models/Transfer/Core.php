@@ -2605,10 +2605,59 @@ class Core extends Base\Core
 
         $paymentMerchant = $transferPayment->merchant;
 
-        if (($transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
-            or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
+        $reverseShadowEnabledForTransferDebitMid = $transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+        $reverseShadowEnabledForLinkedAccount = $paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+        if (( $reverseShadowEnabledForTransferDebitMid === false) or ( $reverseShadowEnabledForLinkedAccount === false))
         {
-            return;
+            $this->trace->info(
+                TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH,
+                [
+                    'transfer_id'                                   => $transfer->getId(),
+                    'parent_merchant_id'                            => $transferMerchant->getId(),
+                    'reverse_shadow_enabled_for_transfer_debit_mid' => $reverseShadowEnabledForTransferDebitMid,
+                    'linked_account_merchant_id'                    => $paymentMerchant->getId(),
+                    'reverse_shadow_enabled_for_linked_account'     => $reverseShadowEnabledForLinkedAccount,
+                ]
+            );
+
+            if (( $reverseShadowEnabledForTransferDebitMid === true) and ( $reverseShadowEnabledForLinkedAccount === false))
+            {
+                //onboard linked account mid if transfer debit mid on reverse shadow
+                $input = [
+                    "merchant_ids" => [$paymentMerchant->getId()],
+                ];
+
+                try
+                {
+                    (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_AUTO_ONBOARD_FAILURE,
+                        [
+                            'transfer_id'                                   => $transfer->getId(),
+                            'parent_merchant_id'                            => $transfer->merchant->getId(),
+                            'reverse_shadow_enabled_for_transfer_debit_mid' => $reverseShadowEnabledForTransferDebitMid,
+                            'linked_account_merchant_id'                    => $paymentMerchant->getId(),
+                            'reverse_shadow_enabled_for_linked_account'     => $reverseShadowEnabledForLinkedAccount,
+                        ]
+                    );
+
+                    (new Metric())->pushTransferMerchantsOnboardingMismatchMetrics($reverseShadowEnabledForTransferDebitMid,$reverseShadowEnabledForLinkedAccount);
+
+                    return;
+                }
+            }
+            else
+            {
+                (new Metric())->pushTransferMerchantsOnboardingMismatchMetrics($reverseShadowEnabledForTransferDebitMid,$reverseShadowEnabledForLinkedAccount);
+
+                return;
+            }
         }
 
         [$fee, $tax] = (new ReverseShadowTransfersCore())->createLedgerEntriesForTransferReverseShadowInSync($transfer, $transferPayment);
