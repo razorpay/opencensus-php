@@ -36,6 +36,16 @@ jest.mock('merchant/views/Transactions/v2/Payments/components/Timeline', () => (
   },
 }));
 
+const mockIsConfigTagEnabled = jest.fn();
+jest.mock('common/i18', () => ({
+  __esModule: true,
+  withI18Service: (Component) => (props) =>
+    <Component i18={{ isConfigTagEnabled: jest.fn() }} {...props} />,
+  useI18Service: () => ({
+    isConfigTagEnabled: mockIsConfigTagEnabled,
+  }),
+}));
+
 describe('Payment Timeline parent component', () => {
   const openModalSpy = jest.spyOn(ModalActions, 'openModal');
   const fetchBankTransferSpy = jest.spyOn(PaymentFetchFunctions, 'fetchBankTransfer');
@@ -89,6 +99,32 @@ describe('Payment Timeline parent component', () => {
       await waitFor(() => {
         expect(openModalSpy).toHaveBeenCalledTimes(1);
       });
+    });
+  });
+
+  describe(`Show/Hide Issue refund button`, () => {
+    test(`Hide issue refund on isConfigTagEnabled return true`, () => {
+      mockPaymentIdTimelineDetails('captured');
+
+      mockIsConfigTagEnabled.mockReturnValue(true);
+
+      render(<App props={happyFlowProps} />, { initialState });
+
+      expect(screen.queryByText('Issue refund')).not.toBeInTheDocument();
+
+      mockIsConfigTagEnabled.mockReset();
+    });
+
+    test(`Show issue refund on isConfigTagEnabled return false`, () => {
+      mockPaymentIdTimelineDetails('captured');
+
+      mockIsConfigTagEnabled.mockReturnValue(false);
+
+      render(<App props={happyFlowProps} />, { initialState });
+
+      expect(screen.queryByText('Issue refund')).toBeInTheDocument();
+
+      mockIsConfigTagEnabled.mockReset();
     });
   });
 

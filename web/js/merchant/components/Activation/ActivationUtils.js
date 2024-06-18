@@ -808,6 +808,7 @@ const isEligibleForFtux = ({ user = {}, abExperiments = {} } = {}) => {
 
   let isFtuxEnabled =
     user.isOrgRZP &&
+    user.isINCountry &&
     user.isFtuxEnabled &&
     !user.isSubMerchant &&
     !user.isPartner() &&

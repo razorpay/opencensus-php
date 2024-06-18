@@ -37,6 +37,7 @@ import { PaymentsTimeline } from 'merchant/views/Transactions/v2/Payments/types'
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
 import { isSettlementRetryTimelineEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { useI18Service } from 'common/i18';
 
 import { IBankTransfer, IPaymentDetails, IPaymentIdRefundDetail } from './types';
 import {
@@ -74,6 +75,7 @@ function PaymentDetailsTimeline({
   const [timelineData, settimelineData] = useState<TimelineJourneyPoint[]>([]);
   const [bankTransfer, setbankTransfer] = useState<IBankTransfer | null>(null);
   const splitz = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
 
   /**
    * If Splitz experiment is enabled
@@ -237,7 +239,7 @@ function PaymentDetailsTimeline({
             <Spinner accessibilityLabel="timeline-loader" />
           </Box>
         )}
-        {!isIssueRefundDisabled(paymentIdDetails, user) ? (
+        {!isIssueRefundDisabled(paymentIdDetails, user) && !isConfigTagEnabled('refunds.refund') ? (
           <>
             <Divider dividerStyle="dashed" />
             <Box display="flex" flexDirection="row" padding="12px" marginLeft="-16px" width="100%">

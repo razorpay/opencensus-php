@@ -1,9 +1,10 @@
 import React from 'react';
 
+import { POLICY_LINKS } from 'merchant/constants/urls';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { render, screen } from 'test-utils';
 
-import FooterLine, { LEGAL_DOCS_NAMES } from '..';
+import FooterLine, { LEGAL_DOCS_NAMES, getURLsByCountry } from '..';
 
 const mockIsConfigTagEnabled = jest.fn();
 
@@ -13,11 +14,7 @@ jest.mock('common/i18', () => ({
   }),
 }));
 
-const mockUser = {
-  orgCustomCode: ORG_CUSTOM_CODE_MAP.CURLEC,
-};
-
-const renderApp = (user = mockUser) => render(<FooterLine user={user} />);
+const renderApp = (user) => render(<FooterLine user={user} />);
 
 describe('FooterLine Component', () => {
   beforeEach(() => {
@@ -28,7 +25,12 @@ describe('FooterLine Component', () => {
     it('shows all legal links when isConfigTagEnabled returns false', () => {
       mockIsConfigTagEnabled.mockReturnValue(false);
 
-      renderApp();
+      renderApp({
+        merchant: {
+          country_code: 'SG',
+        },
+        orgCustomCode: ORG_CUSTOM_CODE_MAP.RAZORPAY,
+      });
 
       expect(screen.queryByText(LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT)).toBeInTheDocument();
       expect(screen.queryByText(LEGAL_DOCS_NAMES.PRIVACY_POLICY)).toBeInTheDocument();
@@ -38,7 +40,12 @@ describe('FooterLine Component', () => {
     it('hides all legal links when isConfigTagEnabled returns true', () => {
       mockIsConfigTagEnabled.mockReturnValue(true);
 
-      renderApp();
+      renderApp({
+        merchant: {
+          country_code: 'SG',
+        },
+        orgCustomCode: ORG_CUSTOM_CODE_MAP.RAZORPAY,
+      });
 
       expect(screen.queryByText(LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT)).not.toBeInTheDocument();
       expect(screen.queryByText(LEGAL_DOCS_NAMES.PRIVACY_POLICY)).not.toBeInTheDocument();
@@ -51,7 +58,12 @@ describe('FooterLine Component', () => {
           return key === 'merchant_agreements.merchant_agreement';
         });
 
-        renderApp();
+        renderApp({
+          merchant: {
+            country_code: 'SG',
+          },
+          orgCustomCode: ORG_CUSTOM_CODE_MAP.RAZORPAY,
+        });
 
         expect(screen.queryByText(LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT)).not.toBeInTheDocument();
         expect(screen.queryByText(LEGAL_DOCS_NAMES.PRIVACY_POLICY)).toBeInTheDocument();
@@ -65,6 +77,9 @@ describe('FooterLine Component', () => {
 
         renderApp({
           orgCustomCode: ORG_CUSTOM_CODE_MAP.RAZORPAY,
+          merchant: {
+            country_code: 'IN',
+          },
         });
 
         expect(screen.queryByText(LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT)).not.toBeInTheDocument();
@@ -77,12 +92,101 @@ describe('FooterLine Component', () => {
 
         renderApp({
           orgCustomCode: ORG_CUSTOM_CODE_MAP.CURLEC,
+          merchant: {
+            country_code: 'MY',
+          },
         });
 
         expect(screen.queryByText(LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT)).toBeInTheDocument();
         expect(screen.queryByText(LEGAL_DOCS_NAMES.PRIVACY_POLICY)).toBeInTheDocument();
         expect(screen.queryByText(LEGAL_DOCS_NAMES.TERMS_OF_USE)).toBeInTheDocument();
       });
+    });
+  });
+});
+
+describe('getURLsByCountry', () => {
+  const urlTests = [
+    {
+      countryCode: 'US',
+      expectedOutput: [
+        {
+          label: LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT,
+          link: `https://razorpay.com/us/agreement/`,
+          key: 'merchant_agreement',
+        },
+        {
+          label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
+          link: `https://razorpay.com/us/terms/`,
+          key: 'terms_of_use',
+        },
+        {
+          label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
+          link: `https://razorpay.com/us/privacy/`,
+          key: 'privacy_policy',
+        },
+      ],
+    },
+    {
+      countryCode: 'SG',
+      expectedOutput: [
+        {
+          label: LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT,
+          link: `https://razorpay.com/sg/agreement/`,
+          key: 'merchant_agreement',
+        },
+        {
+          label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
+          link: `https://razorpay.com/sg/terms/`,
+          key: 'terms_of_use',
+        },
+        {
+          label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
+          link: `https://razorpay.com/sg/privacy/`,
+          key: 'privacy_policy',
+        },
+      ],
+    },
+    {
+      countryCode: 'IN',
+      expectedOutput: [
+        {
+          label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
+          link: POLICY_LINKS.TERMS_OF_USE,
+          key: 'terms_of_use',
+        },
+        {
+          label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
+          link: POLICY_LINKS.PRIVACY_POLICY,
+          key: 'privacy_policy',
+        },
+      ],
+    },
+    {
+      countryCode: 'MY',
+      expectedOutput: [
+        {
+          label: LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT,
+          link: POLICY_LINKS.MERCHANT_AGGREMENT_CURLEC,
+          key: 'merchant_agreement',
+        },
+        {
+          label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
+          link: POLICY_LINKS.TERMS_OF_USE_CURLEC,
+          key: 'terms_of_use',
+        },
+        {
+          label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
+          link: POLICY_LINKS.PRIVACY_POLICY_CURLEC,
+          key: 'privacy_policy',
+        },
+      ],
+    },
+  ];
+
+  describe.each(urlTests)('for country code $countryCode', ({ countryCode, expectedOutput }) => {
+    it(`should return the correct URLs for country code ${countryCode}`, () => {
+      expect(getURLsByCountry(countryCode)).toEqual(expectedOutput);
     });
   });
 });

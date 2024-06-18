@@ -1,11 +1,13 @@
 import React from 'react';
-import { trackLinkClick } from './ga';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { getCustomURL } from 'merchant/components/DocsLink';
-import { isOrgFeatureExist, ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
-import { POLICY_LINKS } from 'merchant/constants/urls';
+
 import { useI18Service } from 'common/i18';
+import { getCustomURL } from 'merchant/components/DocsLink';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { POLICY_LINKS } from 'merchant/constants/urls';
+import { isOrgFeatureExist } from 'merchant/models/User';
+
+import { trackLinkClick } from './ga';
 
 export const LEGAL_DOCS_NAMES = {
   TERMS_OF_USE: 'Terms of Use',
@@ -44,17 +46,43 @@ export const MALAYSIAN_FOOTER_LINKS = [
   },
 ];
 
-const ORG_BASED_FOOTER_LINKS = {
-  [ORG_CUSTOM_CODE_MAP.CURLEC]: MALAYSIAN_FOOTER_LINKS,
-  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: FOOTER_LINKS,
+/*
+  Return the legal footer links "Merchant Agreement, Terms, and Privacy Policy—based" on the country code. For India, or when the merchant country code is unavailable (e.g., in some cases on the Admin dashboard), the default footer links will be provided.
+*/
+export const getURLsByCountry = (_countryCode) => {
+  // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+  if (_countryCode === 'IN' || !_countryCode) return FOOTER_LINKS;
+
+  // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+  if (_countryCode === 'MY') {
+    return MALAYSIAN_FOOTER_LINKS;
+  }
+
+  const countryCode = _countryCode.toLowerCase();
+  return [
+    {
+      label: LEGAL_DOCS_NAMES.MERCHANT_AGREEMENT,
+      link: `https://razorpay.com/${countryCode}/agreement/`,
+      key: 'merchant_agreement',
+    },
+    {
+      label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
+      link: `https://razorpay.com/${countryCode}/terms/`,
+      key: 'terms_of_use',
+    },
+    {
+      label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
+      link: `https://razorpay.com/${countryCode}/privacy/`,
+      key: 'privacy_policy',
+    },
+  ];
 };
 
 const FooterLine = ({ user }) => {
   const currentYear = new Date().getFullYear();
   const { isConfigTagEnabled } = useI18Service();
 
-  const FooterLinks = ORG_BASED_FOOTER_LINKS[user.orgCustomCode?.toLowerCase()] || FOOTER_LINKS;
-
+  const footerLinks = getURLsByCountry(user.merchant.country_code);
   return (
     <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_razorpay_text_link')}>
       <footer className="pagefooter">
@@ -74,7 +102,7 @@ const FooterLine = ({ user }) => {
         >
           {' '}
           ·{' '}
-          {FooterLinks.map((link_obj) =>
+          {footerLinks.map((link_obj) =>
             !isConfigTagEnabled(`merchant_agreements.${link_obj.key}`) ? (
               <React.Fragment key={link_obj.label}>
                 <u>

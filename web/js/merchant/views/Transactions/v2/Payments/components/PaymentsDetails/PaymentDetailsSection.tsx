@@ -13,17 +13,24 @@ import {
   PhoneIcon,
   Text,
 } from '@razorpay/blade/components';
-import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-import { User } from 'common/typings';
-
 import { useMobile } from 'common/hooks/useMobile';
+import { useI18Service } from 'common/i18';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { withSplitzService } from 'common/splitz';
+import { SpiltzContextState } from 'common/splitz/types';
+import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
-
+import fileDownload from 'common/utils/file-download';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
+import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
+import { openModal } from 'merchant_common/reducers/modals';
+import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
+import PaymentTransfers from './PaymentTransfers';
 import Tooltip from './Tooltip';
 import {
   CardWrapper,
@@ -34,16 +41,8 @@ import {
   SectionHeader,
 } from './styled';
 import { IPaymentDetails, ApplicationDetails } from './types';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
-import PaymentTransfers from './PaymentTransfers';
-import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { openModal } from 'merchant_common/reducers/modals';
-import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
-import { withSplitzService } from 'common/splitz';
-import { SpiltzContextState } from 'common/splitz/types';
-import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
-import fileDownload from 'common/utils/file-download';
 import { noop } from 'common/utils/rzp-utils';
 
 const PaymentReceipt = lazy(
@@ -142,7 +141,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
     payee_vpa,
     device_detail,
   } = paymentDetails;
-
+  const { isConfigTagEnabled } = useI18Service();
   const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
   const isOmniChannelMerchant =
     isPosTransaction(source_channel) &&
@@ -401,7 +400,9 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Notes" value={getNotes({ notes, isStorefront })} />
               </RowsWrapper>
-              <PaymentTransfers paymentDetails={paymentDetails} />
+              {!isConfigTagEnabled('payment_transfer.transfers') && (
+                <PaymentTransfers paymentDetails={paymentDetails} />
+              )}
               {disputes.items.length > 0 && (
                 <>
                   <Divider dividerStyle="solid" thickness="thick" variant="muted" />

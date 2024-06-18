@@ -1,7 +1,8 @@
 import React from 'react';
 import { Box } from '@razorpay/blade/components';
 
-import { BottomOverviewProps } from 'merchant/views/Transactions/v2/Analytics/types';
+import { useI18Service } from 'common/i18';
+import { BottomOverviewProps, PaymentTypes } from 'merchant/views/Transactions/v2/Analytics/types';
 import { getBottomSectionData } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { ScrollableContainer } from 'merchant/views/Transactions/v2/common/styled';
 
@@ -14,7 +15,21 @@ const BottomAnalyticsOverview = ({
   durationOption,
 }: BottomOverviewProps): JSX.Element => {
   const { disputes, refund } = data;
-  const bottomCardsData = getBottomSectionData({ data, mode });
+  const { isConfigTagEnabled } = useI18Service();
+
+  let bottomCardsData = getBottomSectionData({ data, mode });
+
+  // Filtering the bottomCardsData for i18n, to show/hide the products based on the country config key.
+  bottomCardsData = bottomCardsData.filter((data) => {
+    if (isConfigTagEnabled('refunds.refund') && data.name === PaymentTypes.Refunds) {
+      return false;
+    } else if (isConfigTagEnabled('disputes.disputes') && data.name === PaymentTypes.Disputes) {
+      return false;
+    }
+
+    return true;
+  });
+
   return (
     <ScrollableContainer>
       <Box

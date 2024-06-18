@@ -11,13 +11,14 @@ import {
   Button,
 } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
+import ErrorLoadingImage from 'assets/transactions/error-loading.svg';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
-import ErrorLoadingImage from 'assets/transactions/error-loading.svg';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
+import { useI18Service } from 'common/i18';
 import { getErrorMessageFromResponse, deepClone, getURLQueryParams } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
@@ -67,6 +68,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     location,
     showNotification,
   } = props;
+  const { isConfigTagEnabled } = useI18Service();
 
   const [isLoading, setIsLoading] = useState(true);
   const [paymentIdDetails, setPaymentIdDetails] = useState<IPaymentDetails | null>(null);
@@ -237,7 +239,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
               paymentIdRefundDetails={paymentIdRefundDetails}
               applicationDetails={applicationDetails}
             />
-            {!isDesktop ? (
+            {!isDesktop && !isConfigTagEnabled('refunds.refund') ? (
               <Box>
                 <Button
                   isFullWidth
@@ -260,11 +262,13 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
               paymentDetails={paymentIdDetails}
               applicationDetails={applicationDetails}
             />
-            <PaymentRefundDetails
-              paymentDetails={paymentIdDetails}
-              paymentIdRefundDetails={paymentIdRefundDetails}
-              reFetchPageDetails={reFetchPageDetails}
-            />
+            {!isConfigTagEnabled('refunds.refund') && (
+              <PaymentRefundDetails
+                paymentDetails={paymentIdDetails}
+                paymentIdRefundDetails={paymentIdRefundDetails}
+                reFetchPageDetails={reFetchPageDetails}
+              />
+            )}
           </Box>
           <Box flex="1">
             {isDesktop && (

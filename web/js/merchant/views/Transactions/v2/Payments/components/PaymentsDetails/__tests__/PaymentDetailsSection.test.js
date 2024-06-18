@@ -19,6 +19,16 @@ jest.mock(
   () => () => <div>Payment Transfers</div>,
 );
 
+const mockIsConfigTagEnabled = jest.fn();
+jest.mock('common/i18', () => ({
+  __esModule: true,
+  withI18Service: (Component) => (props) =>
+    <Component i18={{ isConfigTagEnabled: jest.fn() }} {...props} />,
+  useI18Service: () => ({
+    isConfigTagEnabled: mockIsConfigTagEnabled,
+  }),
+}));
+
 describe('Payment Details Section component', () => {
   const App = ({ props }) => {
     return <PaymentDetailsSection {...props} />;
@@ -88,6 +98,13 @@ describe('Payment Details Section component', () => {
     test('should render Payment Transfers', () => {
       render(<App props={happyFlowProps} />);
       expect(screen.getByText('Payment Transfers')).toBeInTheDocument();
+    });
+
+    test(`should hide Payment Transfers on "IsConfigTagEnabled return true"`, () => {
+      mockIsConfigTagEnabled.mockReturnValue(true);
+      render(<App props={happyFlowProps} />);
+      expect(screen.queryByText('Transfers')).not.toBeInTheDocument();
+      mockIsConfigTagEnabled.mockReset();
     });
 
     test('should render Payment Transfers', () => {

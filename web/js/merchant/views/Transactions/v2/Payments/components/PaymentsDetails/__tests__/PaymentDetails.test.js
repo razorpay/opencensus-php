@@ -19,6 +19,8 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { render, screen, waitForElementToBeRemoved, userEvent, waitFor } from 'test-utils';
 
+window.scroll = jest.fn();
+
 jest.mock('merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils.tsx', () => ({
   __esModule: true,
   isIssueRefundDisabled: (_) => {
@@ -84,6 +86,16 @@ jest.mock(
   }),
 );
 
+const mockIsConfigTagEnabled = jest.fn();
+jest.mock('common/i18', () => ({
+  __esModule: true,
+  withI18Service: (Component) => (props) =>
+    <Component i18={{ isConfigTagEnabled: jest.fn() }} {...props} />,
+  useI18Service: () => ({
+    isConfigTagEnabled: mockIsConfigTagEnabled,
+  }),
+}));
+
 describe('Payment Details component', () => {
   const App = ({ props }) => {
     mockLocation = props.location;
@@ -143,6 +155,18 @@ describe('Payment Details component', () => {
       render(<App props={paymentPageProps} />, { initialState });
       await waitForElementToBeRemoved(() => screen.getByRole('progressbar'));
       expect(screen.getByText('Payment Refund Details')).toBeInTheDocument();
+    });
+
+    test('should hide Payment Refund Details on isConfigTagEnabled return true', async () => {
+      mockIsConfigTagEnabled.mockReturnValue(true);
+
+      render(<App props={paymentPageProps} />, { initialState });
+      await waitForElementToBeRemoved(() => screen.getByRole('progressbar'));
+
+      expect(screen.queryByText('Issue refund')).not.toBeInTheDocument();
+      expect(screen.queryByText('Payment Refund Details')).not.toBeInTheDocument();
+
+      mockIsConfigTagEnabled.mockReset();
     });
 
     test('should render Payment Timeline component', async () => {

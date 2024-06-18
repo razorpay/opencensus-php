@@ -12,6 +12,7 @@ import {
 } from 'merchant/views/Transactions/v2/common/styled';
 import { track, trackTransactionsTabClick } from 'merchant/views/Transactions/v2/common/tracking';
 import { Page } from 'merchant/views/Transactions/v2/common/types';
+import { useI18Service } from 'common/i18';
 
 const { ORDERS } = Page;
 const {
@@ -23,6 +24,8 @@ const {
 } = TransactionsEntityRoute;
 
 export const LandingContainer = ({ children }) => {
+  const { isConfigTagEnabled } = useI18Service();
+
   useEffect(() => {
     track({
       objectName: 'Transactions Page',
@@ -62,7 +65,11 @@ export const LandingContainer = ({ children }) => {
         </ShowWhen>
 
         <ShowWhen
-          additionalCondition={(user) => user.international && user.isAllowedView('b2b_payments')}
+          additionalCondition={(user) =>
+            user.international &&
+            user.isAllowedView('b2b_payments') &&
+            !isConfigTagEnabled('transactions.upload_invoices')
+          }
         >
           <StyledTabItem to={UPLOAD_INVOICES} onClick={trackTransactionsTabClick(UPLOAD_INVOICES)}>
             Upload Invoices
@@ -71,7 +78,9 @@ export const LandingContainer = ({ children }) => {
 
         <ShowWhen
           featureEnabled={['opgsp_import_flow', 'enable_jpmc_import_flow']}
-          additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
+          additionalCondition={(usr) =>
+            usr.isAllowedView('b2b_payments') && !isConfigTagEnabled('settings.international')
+          }
         >
           <StyledTabItem to={INVOICES} onClick={trackTransactionsTabClick(INVOICES)}>
             Invoices
