@@ -307,8 +307,8 @@ class Mailgun extends Base
         self::AIRTEL => [
             [
                 "from" => "noreply@airtelbank.com",
-                "subject_pattern" => "/^(?i)ecom_merch_txn_report/",
-                "filename_pattern" => "/(?i)ecom_merch_txn_report/",
+                "subject_pattern" => "/^(?i)ecom_merch_txn_report_1012257321/",
+                "filename_pattern" => "/(?i)ecom_merch_txn_report_1012257321/",
                 "destination" => "recon/input/netbanking_airtel/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
