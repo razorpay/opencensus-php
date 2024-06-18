@@ -405,6 +405,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const SODEXO = 'sodexo';
 
+    const GatewayMerchantId = 'gateway_merchant_id';
+    const GatewayTerminalId = 'gateway_terminal_id';
+    const DeviceId          = 'device_id';
+
     protected $fillable = [
         self::ID,
         self::AMOUNT,
@@ -2347,6 +2351,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getOnHoldUntil()
     {
         return $this->getAttribute(self::ON_HOLD_UNTIL);
+    }
+
+    public function getGatewayMerchantId()
+    {
+        return $this->getAttribute(self::GatewayMerchantId);
+    }
+
+    public function getGatewayTerminalId()
+    {
+        return $this->getAttribute(self::GatewayTerminalId);
+    }
+
+    public function getDeviceId()
+    {
+        return $this->getAttribute(self::DeviceId);
     }
 
     public function getAuthenticatedAt()
@@ -6460,6 +6479,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->merchant->isOmniEnabled() === true)
         {
             $data[Payment\Constant::SOURCE_CHANNEL] = $this->getSourceChannel();
+            $this->setDeviceAttributesForDashboard($data);
         }
 
         if($this->isB2BExportCurrencyCloudPayment() === true){
@@ -6544,6 +6564,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->merchant->isOmniEnabled() === true)
         {
             $data[Payment\Constant::SOURCE_CHANNEL] = $this->getSourceChannel();
+            $this->setDeviceAttributesForDashboard($data);
         }
 
         if($this->isB2BExportCurrencyCloudPayment() === true){
@@ -6646,6 +6667,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['customer_fee'] = $this->getConvenienceFee();
 
             $data['customer_fee_gst'] = $this->getConvenienceFeeGst();
+        }
+    }
+
+    public function setDeviceAttributesForDashboard(array & $data)
+    {
+        $app = \App::getFacadeRoot();
+
+        if( ($app['basicauth']->isAdminAuth() === true or
+                $app['basicauth']->isProxyAuth() === true))
+        {
+            $data[self::GatewayTerminalId] = $this->getGatewayTerminalId();
+            $data[self::GatewayMerchantId] = $this->getGatewayMerchantId();
+            $data[self::DeviceId] = $this->getDeviceId();
         }
     }
 
