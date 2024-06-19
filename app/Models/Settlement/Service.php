@@ -10,6 +10,7 @@ use phpseclib\Net\SFTP;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
@@ -302,6 +303,40 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
+
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        // shadow mode experiment
+        $shadow = $this->app->razorx->getTreatment($experimentVariable,
+            Settlement\Constants::RAZORX_SETL_FETCH_BY_ID_FROM_NSS_SHADOW,
+            $this->mode
+        );
+
+        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
+        {
+            $nssResponse = app('settlements_dashboard')->settlementFetchById($id);
+
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            // shadow mode experiment
+            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
+                Settlement\Constants::RAZORX_SETL_FETCH_BY_ID_FROM_NSS_REVERSE_SHADOW,
+                $this->mode
+            );
+
+            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+            {
+                return $nssResponse;
+            }
+            $apiResponse = $this->fetchOld($id);
+            $this->compareSettlementEntityAndLogDifference($apiResponse, $nssResponse, false, ['method_name' => __FUNCTION__]);
+
+            return $apiResponse;
+        }
+
+        return $this->fetchOld($id);
+    }
+
+    public function fetchOld($id)
+    {
         if ($this->auth->isOptimiserDashboardRequest()) {
             try {
                 $fetchInput = $this->createFetchInput($id);
@@ -383,6 +418,40 @@ class Service extends Base\Service
     }
 
     public function fetchMultiple($input)
+    {
+
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        // shadow mode experiment
+        $shadow = $this->app->razorx->getTreatment($experimentVariable,
+            Settlement\Constants::RAZORX_SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW,
+            $this->mode
+        );
+
+        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON && $this->includeDsSettlementTransactions() === false)
+        {
+            $nssResponse = app('settlements_dashboard')->settlementFetchMultiple($input);
+
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            // shadow mode experiment
+            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
+                Settlement\Constants::RAZORX_SETL_FETCH_MULTIPLE_FROM_NSS_REVERSE_SHADOW,
+                $this->mode
+            );
+
+            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+            {
+                return $nssResponse;
+            }
+            $apiResponse = $this->fetchMultipleOld($input);
+            $this->compareSettlementsAndLogDifference($apiResponse['items'], $nssResponse['items'], ['method_name' => __FUNCTION__]);
+
+            return $apiResponse;
+        }
+
+        return $this->fetchMultipleOld($input);
+    }
+
+    public function fetchMultipleOld($input)
     {
         // Status is not indexed so keeping the time interval as 30days by default in case date filter is not passed from UI
         if ((isset($input['status']) === true) and
@@ -2874,5 +2943,148 @@ class Service extends Base\Service
             ]);
 
         return (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON);
+    }
+
+    public function compareSettlementsAndLogDifference(array $apiData, array $nssData, array $extraTrace = [])
+    {
+        // Compare nss and api response
+        $inconsistentParams = [];
+
+        try
+        {
+            if (count($apiData) !== count($nssData))
+            {
+                $inconsistentParams['api_settlement_collection_length'] = count($apiData);
+                $inconsistentParams['nss_settlement_collection_length'] = count($nssData);
+            }
+
+            foreach ($apiData as $apiSettlementData)
+            {
+                $idx = 0;
+
+                foreach ($nssData as $nssSettlementArray)
+                {
+                    $nssSettlementId = $nssSettlementArray[Settlement\Entity::ID] ?? '';
+
+                    if ($apiSettlementData[Settlement\Entity::ID] === $nssSettlementId)
+                    {
+                        $diff = $this->differenceKeysOfSettlement($apiSettlementData, $nssSettlementArray);
+
+                        if (empty($diff) === false)
+                        {
+                            $inconsistentParams[$apiSettlementData[Settlement\Entity::ID]] = $diff;
+                        }
+
+                        break;
+                    }
+
+                    $idx += 1;
+                }
+
+                // null value here means that the refund is not present in nss but is present in the API monolith
+                if ($idx === count($nssData))
+                {
+                    $inconsistentParams[$apiSettlementData[Settlement\Entity::ID]] = null;
+                }
+            }
+
+            if (empty($inconsistentParams) === false)
+            {
+                $this->trace->info(TraceCode::NSS_AND_API_SETTLEMENT_INCONSISTENCY, [
+                    'diff'        => $inconsistentParams,
+                    'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                    'extra_trace' => $extraTrace,
+                ]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::COMPARE_SETTLEMENT_ERROR,
+                [
+                    'api' => $apiData,
+                    'nss' => $nssData,
+
+                ]);
+
+        }
+    }
+
+    public function differenceKeysOfSettlement($apiSettlementArray, $nssSettlementArray) : array
+    {
+        $responseDiff = [];
+
+        foreach ($apiSettlementArray as $key => $value)
+        {
+            if (is_array($value) === true)
+            {
+                if ($nssSettlementArray[$key] != $value)
+                {
+                    $responseDiff[$key]["nss"] = $nssSettlementArray[$key];
+                    $responseDiff[$key]["api"] = $value;
+                }
+
+                continue;
+            }
+
+            if (empty($nssSettlementArray[$key]) && empty($value)){
+                continue;
+            }
+
+            if ((isset($nssSettlementArray[$key]) === true) and ($nssSettlementArray[$key] !== $value))
+            {
+                $responseDiff[$key]["nss"] = $nssSettlementArray[$key];
+                $responseDiff[$key]["api"] = $value;
+            }
+        }
+
+        return $responseDiff;
+    }
+
+    public function compareSettlementEntityAndLogDifference(array $apiSettlement, array $nssSettlement,bool $nssChecked,array $extraTrace = [])
+    {
+        foreach ($apiSettlement as $attribute => $value) {
+            if (empty($nssSettlementArray[$attribute]) && empty($value)){
+                continue;
+            }
+
+            if (is_array($value) === true)
+            {
+                if ($nssSettlement[$attribute] != $value)
+                {
+                    $differences[$attribute] = [
+                        'api_refund' => $apiSettlement->$value,
+                        'nss_refund' => $nssSettlement[$attribute],
+                    ];
+                }
+
+                continue;
+            }
+
+            if ($value !== $nssSettlement[$attribute]) {
+                $differences[$attribute] = [
+                    'api_refund' => $value,
+                    'nss_refund' => $nssSettlement[$attribute],
+                ];
+            }
+
+        }
+
+        if($nssChecked === false)
+        {
+            $differences = $this->compareSettlementEntityAndLogDifference($nssSettlement,$apiSettlement,true,$extraTrace);
+        }
+
+        if (empty($differences) === false)
+        {
+            $this->trace->info(TraceCode::NSS_AND_API_SETTLEMENT_INCONSISTENCY, [
+                'diff'        => $differences,
+                'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                'extra_trace' => $extraTrace,
+            ]);
+        }
+        return $differences;
     }
 }

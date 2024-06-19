@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Settlements;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use \WpOrg\Requests\Response;
 use RZP\Constants\Mode;
@@ -122,7 +123,7 @@ class Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function makeRequest(string $endpoint, array $data, string $service, string $mode = null): array
+    public function makeRequest(string $endpoint, array $data, string $service, string $mode = null, $method = Requests::POST): array
     {
         if ($mode === null)
         {
@@ -140,14 +141,22 @@ class Base
 
         $request = [
             'url'       => $url,
-            'method'    => Requests::POST,
+            'method'    => $method,
             'headers'   => $this->headers,
             'options'   => $options,
+        ];
+
+        if ($method === Requests::POST)
+        {
             // here we will be making call to proto endpoints which are POST, we can route a GET request
             // from API as POST request to settlement service with empty body i.e {}, for requests which
             // do not need a request body but have to be made POST because of protobuf.
-            'content'   => (empty($data) === false) ? json_encode($data) : json_encode(new \stdClass())
-        ];
+            $request['content'] = (empty($data) === false) ? json_encode($data) : json_encode(new \stdClass());
+        }
+        else if ($method === Requests::GET)
+        {
+            $request['content'] = $data;
+        }
 
         $this->traceRequest($request);
 
@@ -284,6 +293,23 @@ class Base
     {
         $code = $response[self::CODE];
         $body = $response[self::BODY];
+
+        if ($code !== 200 && isset($body['error']['code']))
+        {
+            $errorCode = $body['error']['code'];
+            $description = $body['error']['description'];
+
+            $publicError = str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $errorCode))));
+            if ($publicError != ErrorCode::SERVER_ERROR)
+            {
+                $publicError = str_replace('Error', '', $publicError);
+            }
+
+            $class = 'RZP\Exception' . '\\' . $publicError . 'Exception';
+            $args = [constant(ErrorCode::class . '::' . $errorCode), null, null, $description];
+
+            throw new $class(...$args);
+        }
 
         if (in_array($code, [200, 400, 401, 404, 500], true) === false)
         {

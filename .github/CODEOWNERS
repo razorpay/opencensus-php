@@ -206,6 +206,13 @@ app/Services/Scrooge.php                            @razorpay/scrooge
 app/Models/Base/Traits/ExternalScroogeRepo.php      @razorpay/scrooge
 
 
+# Blocking PR merge on settlement files since they are being moved to settlements service
+# Any update in these files will require explicit approval from settlements team
+app/Models/Settlement                               @razorpay/TechSettlements
+app/Http/Controllers/SettlementController.php       @razorpay/TechSettlements
+app/Services/Settlements                            @razorpay/TechSettlements
+
+
 #
 # Nocode Entities
 #

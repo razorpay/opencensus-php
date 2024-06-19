@@ -2897,6 +2897,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_TIMELINE_REQ                               = 'SETTLEMENT_TIMELINE_REQ';
     const SETTLEMENT_TIMELINE_MODAL_FAILED                      = 'SETTLEMENT_TIMELINE_MODAL_FAILED';
 
+    const NSS_AND_API_SETTLEMENT_INCONSISTENCY                  = 'NSS_AND_API_SETTLEMENT_INCONSISTENCY';
+    const COMPARE_SETTLEMENT_ERROR                              = 'COMPARE_SETTLEMENT_ERROR';
+
     // New Basic auth flow for app auth using passport
     const APP_AUTHENTICATION_FROM_JWT_PASSED                    = 'APP_AUTHENTICATION_FROM_JWT_PASSED';
     const NO_PASSPORT_FOUND                                     = 'NO_PASSPORT_FOUND';

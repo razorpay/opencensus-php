@@ -43,4 +43,12 @@ class Constants {
             self::ORG_NAME => 'Razorpay'
         ]
     ];
+
+    const RAZORX_SETL_FETCH_BY_ID_FROM_NSS_SHADOW = 'setl_fetch_by_id_from_nss_shadow';
+    const RAZORX_SETL_FETCH_BY_ID_FROM_NSS_REVERSE_SHADOW = 'setl_fetch_by_id_from_nss_reverse_shadow';
+
+    const RAZORX_SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW = 'setl_fetch_multiple_from_nss_shadow';
+    const RAZORX_SETL_FETCH_MULTIPLE_FROM_NSS_REVERSE_SHADOW = 'setl_fetch_multiple_from_nss_reverse_shadow';
+
+    const RAZORX_VARIANT_ON = 'on';
 }

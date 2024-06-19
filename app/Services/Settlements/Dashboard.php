@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Settlements;
 
+use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Type;
 use RZP\Exception\RuntimeException;
@@ -71,6 +72,10 @@ class Dashboard extends Base
     const STATUS = 'status';
     const AGGREGATE_SETTLEMENT_PARENT = 'aggregate_settlement_parent';
     const DAILY_SETTLEMENT ='daily_settlement';
+
+    const SETTLEMENTS_FETCH = '/v1/settlements';
+    const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+    const PASSPORT_AUD = 'settlements';
 
     public function __construct($app)
     {
@@ -622,5 +627,35 @@ class Dashboard extends Base
     public function settlementsInitiate(array $input) : array
     {
         return $this->makeRequest(self::SETTLEMENT_INITIATE, $input, self::SERVICE_DASHBOARD);
+    }
+
+    protected function setCustomHeaders(array $customHeaders = [])
+    {
+        $this->headers = $this->headers + $customHeaders;
+    }
+
+    protected function addPassportToken()
+    {
+        $passportHeader = (empty($this->auth->getPassportFromJob()) === false) ? $this->auth->getPassportFromJob() : $this->auth->getPassportJwt(self::PASSPORT_AUD);
+
+        $customHeader = [
+            self::X_PASSPORT_JWT_V1 => $passportHeader,
+        ];
+
+        // set custom headers
+        $this->setCustomHeaders($customHeader);
+    }
+
+    public function settlementFetchById($id)
+    {
+        $url = self::SETTLEMENTS_FETCH . "/" . $id;
+        $this->addPassportToken();
+        return $this->makeRequest($url, [], self::SERVICE_DASHBOARD, null, Requests::GET);
+    }
+
+    public function settlementFetchMultiple(array $input)
+    {
+        $this->addPassportToken();
+        return $this->makeRequest(self::SETTLEMENTS_FETCH, $input, self::SERVICE_DASHBOARD, null, Requests::GET);
     }
 }
