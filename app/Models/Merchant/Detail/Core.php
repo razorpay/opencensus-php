@@ -2538,6 +2538,11 @@ class Core extends Base\Core
             $workflowActionData = json_decode($e->getMessage(), true);
             $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
         }
+        catch (\Throwable $ex)
+        {
+            $this->trace->count(DetailMetric::DEDUPE_WORKFLOW_FAILURE);
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::DEDUPE_WORKFLOW_FAILURE);
+        }
     }
 
     /**

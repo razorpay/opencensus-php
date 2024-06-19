@@ -3385,6 +3385,46 @@ class CoreTest extends TestCase
 
         (new DetailCore())->updatePosActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
     }
+    
+    public function testHandleRiskWorkFlowCreationErrors()
+    {
+        
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'services',
+            'business_subcategory'      => 'ad_and_marketing',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+        
+        $merchantDetailCore = new DetailCore();
+        $workflowServiceMock = \Mockery::mock(\RZP\Services\Workflow\Service::class)->makePartial();
+        
+        $workflowServiceMock->shouldReceive('handle')
+                            ->once()
+                            ->andThrow(new BadRequestValidationFailureException("hi",null,null,[]));
+        
+        $this->app->instance('workflow', $workflowServiceMock);
+        
+        // Create a ReflectionClass object to inspect the DetailCore class
+        $reflection = new ReflectionClass($merchantDetailCore);
+       
+        // Get a reference to the protected method 'isSubCategoryExcluded'
+        $method = $reflection->getMethod('triggerWorkflowFlowForImpersonatedMerchant');
+        
+        // Allow access to the protected method by setting it to be accessible
+        $method->setAccessible(true);
+        
+        // Call the protected method 'isSubCategoryExcluded' and store the result
+        $result = $method->invoke($merchantDetailCore, $merchantDetails->merchant, $merchantDetails, "100000razorpay");
+        
+        $this->assertEquals(null, $result);
+        
+    }
     public function testRejectedWorkflowCreationInUpdatePosActivationStatus()
     {
 

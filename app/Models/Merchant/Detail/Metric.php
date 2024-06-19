@@ -47,6 +47,7 @@ final class Metric
     const BVS_PROBE_API_FAILURE              = 'bvs_probe_api_failure';
     const COMPANY_SEARCH_EXHAUSTED           = 'company_search_exhausted';
     const REWARD_VALIDATION_EXHAUSTED        = 'reward_validation_exhausted';
+    const DEDUPE_WORKFLOW_FAILURE            = 'dedupe_workflow_failure';
 
     const BVS_CREATE_DOCUMENT_RECORD_REQUEST_TOTAL      = 'bvs_create_document_record_request_total';
     const BVS_CREATE_DOCUMENT_RECORD_RESPONSE_TOTAL     = 'bvs_create_document_record_response_total';
