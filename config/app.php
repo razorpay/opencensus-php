@@ -465,6 +465,8 @@ return array(
 
     'risk_tags_check_experiment_id' => env('RISK_TAGS_CHECK_EXPERIMENT_ID'),
 
+    'override_deactivate_experiment_id' => env('OVERRIDE_DEACTIVATE_EXPERIMENT_ID'),
+
     'wda_migration_acquisition_splitz_exp_id' => env('WDA_MIGRATION_ACQUISITION_SPLITZ_EXP_ID'),
 
     'hybrid_data_querying_splitz_experiment_id'=> env('HYBRID_DATA_QUERYING_SPLITZ_EXPERIMENT_ID'),
