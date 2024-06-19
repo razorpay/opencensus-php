@@ -1676,6 +1676,9 @@ class Core extends Base\Core
         $giftCardAmount = 0;
         $promotionCouponAmount = 0;
         $couponCode = null;
+        $isflitsCoinApplied = false;
+        $flitsAmountApplied = 0;
+        $flitsCouponCode = '';
 
         if (empty($rzpOrder['promotions']) === false)
         {
@@ -1688,17 +1691,25 @@ class Core extends Base\Core
 
             foreach ($promotions as $key=>$value)
             {
-                if (isset($value['type']) && $value['type'] === 'gift_card')
-                {
-                    $giftCardAmount = $giftCardAmount + $value['value'];
-                }
-                else if(!isset($value['type']) || $value['type']!=='nector_coins')
-                {
-                    $couponCode = $value['code'];
-
-                    $couponAmount = $value['value'];
-
-                    $promotionCouponAmount = $value['value'];
+                $type = $value['type'] ?? '';
+                switch ($type) {
+                    case 'gift_card':
+                        $giftCardAmount += $value['value'];
+                        break;
+                    case 'flits_coins':
+                        $flitsCouponCode = $value['code'];
+                        $flitsAmountApplied = $value['value'];
+                        $isflitsCoinApplied = true;
+                        break;
+                    case 'nector_coins':
+                        // Nector Coins we are already getting in params and being considered
+                        // so we need to ignore the nector coins here
+                        break;
+                    default:
+                        $couponCode = $value['code'];
+                        $couponAmount = $value['value'];
+                        $promotionCouponAmount = $value['value'];
+                        break;
                 }
             }
         }
@@ -1843,8 +1854,8 @@ class Core extends Base\Core
 
         if($promotionCouponAmount > 0)
         {
-            $couponAmount = $couponAmount + $nectorCoinsApplicable;
-            $promotionCouponAmount = $promotionCouponAmount + $nectorCoinsApplicable;
+            $couponAmount = $couponAmount + $nectorCoinsApplicable + $flitsAmountApplied;
+            $promotionCouponAmount = $promotionCouponAmount + $nectorCoinsApplicable + $flitsAmountApplied;
         }
 
         if(isset($scriptDiscountTitle))
@@ -1856,8 +1867,8 @@ class Core extends Base\Core
             }
             else
             {
-                $rzpOffers = $discountAmountPaise - $nectorCoinsApplicable;
-                $discountAmountPaise = $couponAmount + $rzpOffers + $nectorCoinsApplicable;
+                $rzpOffers = $discountAmountPaise - $nectorCoinsApplicable - $flitsAmountApplied;
+                $discountAmountPaise = $couponAmount + $rzpOffers + $nectorCoinsApplicable + $flitsAmountApplied;
             }
         }
         else
@@ -1868,7 +1879,7 @@ class Core extends Base\Core
             }
             else
             {
-                $rzpOffers = $discountAmountPaise - $nectorCoinsApplicable;
+                $rzpOffers = $discountAmountPaise - $nectorCoinsApplicable - $flitsAmountApplied;
             }
         }
 
@@ -1876,6 +1887,16 @@ class Core extends Base\Core
 
         $discountAmountRupee = round($discountAmountPaise/100,2);
 
+        $flitsAmountRupee = round($flitsAmountApplied/100, 2);
+        if ($isflitsCoinApplied === true) {
+            if (isset($couponCode)){
+                $couponCode .= ' + flits(' . $flitsAmountRupee . ')';
+            }
+            else
+            {
+                $couponCode = 'flits(' . $flitsAmountRupee . ')';
+            }
+        }
         if(isset($couponCode))
         {
             if($rzpOffersRupee > 0)
@@ -1913,7 +1934,20 @@ class Core extends Base\Core
                 }
             }
         }
-
+        if ($isflitsCoinApplied === true) {
+            $body['note_attributes'][] = [
+                'name' => 'FLITS_DISCOUNT_CODE',
+                'value' => $flitsCouponCode
+            ];
+            $body['note_attributes'][] = [
+                'name' => 'FLITS_USED_CREDITS',
+                'value' => $flitsAmountRupee
+            ];
+            $body['note_attributes'][] = [
+                'name' => 'GATEWAY',
+                'value' => 'FLITS_FASTCHECKOUT_RAZORPAY_MAGIC'
+            ];
+        }
         $body['current_total_discounts'] = $discountAmountRupee;
 
         $defaultPendingStatus = false;
@@ -1986,6 +2020,9 @@ class Core extends Base\Core
             $body['tags'] = $body['tags'].', Additional Notes';
         }
 
+        if ($isflitsCoinApplied) {
+            $body['tags'] .= ', FLITS_INTEGRATION_FASTCHECKOUT, FLITS_FASTCHECKOUT_RAZORPAY_MAGIC';
+        }
         if(empty($orderMeta) === false && strtolower($rzpPayment['method']) === 'cod')
         {
             $value = $orderMeta->getValue();

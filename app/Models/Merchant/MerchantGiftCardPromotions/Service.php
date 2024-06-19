@@ -28,7 +28,7 @@ class Service extends Base\Service
     public function __construct()
     {
         parent::__construct();
-
+        $this->commonUtils = new CommonUtils();
         $this->mutex = $this->app['api.mutex'];
     }
 
@@ -90,13 +90,19 @@ class Service extends Base\Service
 
                 if (count($promotions) > 0) {
                     if ($couponRestriction === true) {
-                        $promotions = (new CommonUtils())->removeCouponsFromPromotions($promotions);
 
-                        $nectorPromotions = (new CommonUtils())->getNectorCoinsFromPromotions($promotions);
+                        $nectorPromotions = $this->commonUtils->getNectorCoinsFromPromotions($promotions);
+                        $flitsPromotions = $this->commonUtils->getFlitsCoinsFromPromotions($promotions);
+                        $promotions = $this->commonUtils->removeCouponsFromPromotions($promotions);
 
                         if(count($nectorPromotions)>0)
                         {
-                            array_push($promotions,$nectorPromotions);
+                            $promotions[] = $nectorPromotions[0];
+                        }
+
+                        if(count($flitsPromotions)>0)
+                        {
+                            $promotions[] = $flitsPromotions[0];
                         }
                     }
 

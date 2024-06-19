@@ -364,6 +364,7 @@ class Constants
     const NECTOR_COINS_APPLIED     = 'nector_coins_applied';
 
     const NECTOR_COINS             = 'nector_coins';
+    const FLITS_COINS              = 'flits_coins';
 
     const ORDER_STATUS_REFUNDED = 'refunded';
 

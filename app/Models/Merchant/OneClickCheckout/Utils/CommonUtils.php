@@ -86,9 +86,15 @@ class CommonUtils extends Base\Core
         }));
     }
 
-    public function getNectorCoinsFromPromotions(array $promotions) {
+    public function getNectorCoinsFromPromotions(array $promotions): array {
         return array_values(array_filter($promotions, function($coin){
             return (isset($coin[OrderOneCCFields::PROMOTIONS_TYPE]) === true &&  $coin[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::NECTOR_COINS);
+        }));
+    }
+
+    public function getFlitsCoinsFromPromotions(array $promotions): array {
+        return array_values(array_filter($promotions, static function($coin) {
+            return (isset($coin[OrderOneCCFields::PROMOTIONS_TYPE]) === true &&  $coin[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::FLITS_COINS);
         }));
     }
 

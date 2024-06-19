@@ -2008,6 +2008,7 @@ class Constants
     const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
     const ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION = 'disable_pre_magic_order_ingestion';
     const ONE_CC_ENABLE_NECTOR_COINS = 'one_cc_enable_nector_coin';
+    CONST ONE_CC_ENABLE_FLITS_COINS = 'one_cc_enable_flits_coins';
     const ONE_CC_OPT_SHIPPING_TAX = 'one_cc_opt_shipping_tax';
     const ONE_CC_TAX_INCLUSION = 'one_cc_tax_inclusion';
     /**
@@ -2238,6 +2239,7 @@ class Constants
         self::WALLET_PAYTM_AUTO_DEBIT,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
         self::ONE_CC_ENABLE_NECTOR_COINS,
+        self::ONE_CC_ENABLE_FLITS_COINS,
         self::ONE_CC_OPT_SHIPPING_TAX,
         self::ONE_CC_TAX_INCLUSION,
         self::REMOVE_RAZORPAY_BRANDING,
@@ -2272,6 +2274,7 @@ class Constants
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER,
         self::ONE_CC_ENABLE_NECTOR_COINS,
+        self::ONE_CC_ENABLE_FLITS_COINS,
         self::ONE_CC_OPT_SHIPPING_TAX,
         self::ONE_CC_TAX_INCLUSION
     ];
@@ -3012,6 +3015,7 @@ class Constants
         self::VENDOR_ONBOARDING_ENABLED              => true,
         self::BUYER_PROTECT_SIGNED_UP                => true,
         self::COLLECTX_ENABLED                       => true,
+        self::ONE_CC_ENABLE_FLITS_COINS => true,
     ];
 
     // Entity type constants
