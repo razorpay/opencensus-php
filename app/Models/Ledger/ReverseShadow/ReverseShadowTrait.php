@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Status;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\RefundSource;
@@ -1123,6 +1124,30 @@ trait ReverseShadowTrait
             ]);
 
         return $isExperimentEnabled;
+    }
+
+    /** getAPITxnIDForReverseShadowPayments returns the transaction Id
+     * for reverse shadow payment
+     * @param PaymentEntity $payment
+     * @return mixed|void|null
+     */
+    public function getAPITxnIDForReverseShadowPayments(PaymentEntity $payment)
+    {
+        if ($payment->getStatus() === Status::CAPTURED)
+        {
+           $ledgerService = $this->app['ledger'];
+
+            $journal = $this->getJournalByTransactorInfo($payment->getPublicId(), Constants::MERCHANT_CAPTURED, $ledgerService);
+
+            if ($journal === null)
+            {
+                return null;
+            }
+
+            return $journal['id'];
+        }
+
+        return null;
     }
 
     public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($merchant): bool

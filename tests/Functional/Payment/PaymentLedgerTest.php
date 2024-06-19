@@ -63,7 +63,7 @@ class PaymentLedgerTest extends TestCase
 
         $this->payment = $this->getDefaultPaymentArray();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
         $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->merchant->enableEmandate();
@@ -5387,6 +5387,45 @@ class PaymentLedgerTest extends TestCase
         ];
     }
 
+    private function getJournalResponse($transactorId): array
+    {
+        return [
+            "id"=> "LLJMDzXXytv87X",
+            "created_at"=> 1717935787,
+            "updated_at"=> 1717935787,
+            "amount"=> "100",
+            "base_amount"=> "100",
+            "currency"=> "INR",
+            "tenant"=> "PG",
+            "transactor_id"=> $transactorId,
+            "transactor_event"=> "payment_merchant_capture",
+            "transaction_date"=> 1717935787,
+            "ledger_entry"=> [
+                [
+                    "id"=> "LLJMDzXXyjC93B",
+                    "created_at"=> 1717935787,
+                    "updated_at"=> 1717935787,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLJMDzXXytv87X",
+                    "account_id"=> "Jk3pWyD5WaSSPP",
+                    "amount"=> "100",
+                    "base_amount"=> "100",
+                    "type"=> "credit",
+                    "currency"=> "INR",
+                    "balance"=> "100.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "receivable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_balance"
+                        ]
+                    ]
+                ],
+            ]
+        ];
+    }
     public function testKafkaNonRetryableValidationFailures()
     {
         $data = $this->testData[__FUNCTION__];
@@ -6037,6 +6076,43 @@ class PaymentLedgerTest extends TestCase
         $this->assertNotNull($response);
         $this->assertCount(0,$response["failures"]);
         $this->assertCount(1,$response["success"]);
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($txn);
+    }
+
+    public function testInternalTxnCronInReverseShadowSuccess()
+    {
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+        $payment = $this->createPaymentInReverseShadow();
+        $payment['status'] = 'captured';
+        $payment['cps_route'] = 7;
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->andReturn([
+                    "body" =>  $this->getJournalResponse($payment['id'])
+                ]
+            );
+
+        $request = [
+            'url' => '/internal/transactions/cron',
+            'method' => 'POST',
+            'content' =>  ['cps_routes' => [7],
+                'start_time_offset' => 10000,
+                'end_time_offset' =>30,
+                'create_api_transaction' => 1]
+
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response);
+        $this->assertCount(0,$response["failures"]);
+        $this->assertCount(0,$response["success"]);
         $txn = $this->getDbLastEntity('transaction');
         $this->assertNotNull($txn);
     }

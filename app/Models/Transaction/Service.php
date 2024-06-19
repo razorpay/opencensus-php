@@ -29,6 +29,7 @@ use RZP\Jobs\Settlement\LedgerReconJob2;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Report\Types\BasicEntityReport;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Transaction\FeeBreakup\Repository as FeesBreakupRepo;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -551,6 +552,58 @@ class Service extends Base\Service
     {
         $failureIds = [];
         $successIds = [];
+
+        if (empty($input['cps_routes']) === false and
+            empty($input['start_time_offset']) === false and
+            empty($input['end_time_offset']) === false and
+            isset($input['create_api_transaction']) === true and
+            $input['create_api_transaction'] === true)
+        {
+            $payments = $this->repo->payment->fetchCapturedRearchPaymentsTxnNull($input['cps_routes'], $input['start_time_offset'], $input['end_time_offset']);
+
+            foreach ($payments as $payment)
+            {
+                try
+                {
+                    $rearchPayment = $this->repo->payment->findByPublicId($payment->getId());
+
+                    $rearchPayment->setExternal(true);
+
+                    $merchant = $this->repo->merchant->findByPublicId($payment->getMerchantId());
+
+                    $payment->merchant()->associate($merchant);
+
+                    if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+                    {
+                        array_push($failureIds, [$payment->getId() => "Transaction creation blocked for non reverse shadow mode"]);
+
+                        continue;
+                    }
+
+                    $ledgerOutboxCore = new LedgerOutboxCore();
+
+                    $txnId = $ledgerOutboxCore->getAPITxnIDForReverseShadowPayments($payment);
+
+                    if ($txnId === null)
+                    {
+                        array_push($failureIds, [$payment->getId() => "No journal exists"]);
+
+                        continue;
+                    }
+
+                    $txn = (new Transaction\Core)->createUpdateLedgerTransaction($rearchPayment, $txnId);
+
+                    array_push($successIds, $payment->getId());
+                }
+                catch (\Exception $e)
+                {
+                    array_push($failureIds, [$rearchPayment->getId() => $e->getMessage()]);
+                }
+            }
+
+            return ["failures" => $failureIds,
+                "success" => $successIds];
+        }
 
         if (isset($input['payments_arr']) === true)
         {
