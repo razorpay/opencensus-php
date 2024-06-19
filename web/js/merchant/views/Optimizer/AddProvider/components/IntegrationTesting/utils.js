@@ -4,7 +4,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 import { METHODS_MAP } from 'merchant/views/Navigator/constants';
 import { BANKS_LIST } from 'merchant/views/Optimizer/AddProvider/bankList';
 
-import { CARD_TYPES, CARD_NETWORKS, WALLETS_MAP } from './constants';
+import { CARD_TYPES, CARD_NETWORKS, WALLETS_MAP, GATEWAY_NAMES } from './constants';
 
 // To-do: Implement getTabsList
 export const getInstrumentCoverageTabsList = () => {
@@ -77,7 +77,7 @@ export const getCardCoverageColumns = (gateway) => {
       value: (item) => <CoverageBadge status={item.razorpayCoverage ? 'positive' : 'negative'} />,
     },
     {
-      label: `On ${gateway}`,
+      label: `On ${GATEWAY_NAMES[gateway]}`,
       value: (item) => <CoverageBadge status={item.gatewayCoverage ? 'positive' : 'negative'} />,
     },
   ];
@@ -113,7 +113,7 @@ export const getUPICoverageColumns = (gateway) => {
       value: (item) => <CoverageBadge status={item?.razorpayCoverage ? 'positive' : 'negative'} />,
     },
     {
-      label: `On ${gateway}`,
+      label: `On ${GATEWAY_NAMES[gateway]}`,
       value: (item) => <CoverageBadge status={item?.gatewayCoverage ? 'positive' : 'negative'} />,
     },
   ];
@@ -153,7 +153,7 @@ export const getNetbankingCoverageColumns = (gateway) => {
       value: (item) => <CoverageBadge status={item?.razorpayCoverage ? 'positive' : 'negative'} />,
     },
     {
-      label: `On ${gateway}`,
+      label: `On ${GATEWAY_NAMES[gateway]}`,
       value: (item) => <CoverageBadge status={item?.gatewayCoverage ? 'positive' : 'negative'} />,
     },
   ];
@@ -189,7 +189,7 @@ export const getWalletCoverageColumns = (gateway) => {
       value: (item) => <CoverageBadge status={item?.razorpayCoverage ? 'positive' : 'negative'} />,
     },
     {
-      label: `On ${gateway}`,
+      label: `On ${GATEWAY_NAMES[gateway]}`,
       value: (item) => <CoverageBadge status={item?.gatewayCoverage ? 'positive' : 'negative'} />,
     },
   ];
@@ -225,7 +225,7 @@ export const getOtherMethodsCoverageColumns = (gateway) => {
       value: (item) => <CoverageBadge status={item?.razorpayCoverage ? 'positive' : 'negative'} />,
     },
     {
-      label: `On ${gateway}`,
+      label: `On ${GATEWAY_NAMES[gateway]}`,
       value: (item) => <CoverageBadge status={item?.gatewayCoverage ? 'positive' : 'negative'} />,
     },
   ];

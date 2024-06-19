@@ -186,6 +186,7 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary', () => {
   it('should render the instrument coverage summary', async () => {
     render(<App {...mockProps} />);
     expect(screen.getByText('Instrument coverage')).toBeInTheDocument();
+    expect(screen.queryAllByText('On PayU')).toHaveLength(5);
     expect(screen.getByText('Cards')).toBeInTheDocument();
     expect(screen.getAllByText('Visa Cards')).toHaveLength(2);
     expect(screen.getAllByText('Mastercard')).toHaveLength(2);

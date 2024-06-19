@@ -100,3 +100,9 @@ export const AUDIT_TYPES = {
   payment: 'payment',
   refund: 'refund',
 };
+
+export const GATEWAY_NAMES = {
+  payu: 'PayU',
+  cashfree: 'Cashfree',
+  paytm: 'Paytm',
+};
