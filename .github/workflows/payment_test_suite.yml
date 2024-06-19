@@ -84,14 +84,14 @@ jobs:
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
         with:
           args: s3 sync s3://rzp-actions-cache/_docs/${{ env.REPO }}/ ./_docs/
-      - name: Push Newly generated api details file to s3
-        uses: docker://amazon/aws-cli:2.2.25
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-        with:
-          args: s3 cp _docs/payment_test_suite.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/payment_test_suite.json
+#      - name: Push Newly generated api details file to s3
+#        uses: docker://amazon/aws-cli:2.2.25
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+#        with:
+#          args: s3 cp _docs/payment_test_suite.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/payment_test_suite.json
       - name: Combine all temporary files and generate final file
         run: |
           php artisan AutoGenerateApiDocs:CombineApiDetailsFile

@@ -65,7 +65,7 @@ build: clean
 	@echo "Installing necessary composer packages"
 	$(COMPOSER) install
 	@echo "Building docker containers"
-	BUILDKIT_PROGRESS=plain $(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --build 
+	BUILDKIT_PROGRESS=plain $(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --build
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
 	@echo "Seeding elasticsearch indexes"
 	@echo "===================="
