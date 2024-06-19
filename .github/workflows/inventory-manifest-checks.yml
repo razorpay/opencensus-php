@@ -8,7 +8,9 @@ on:
 
 jobs:
   run-script:
-    runs-on: ubuntu-latest
+    runs-on:
+      - api-public
+      - X64
 
     steps:
       - name: Checkout code

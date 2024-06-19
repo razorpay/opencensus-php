@@ -1,33 +1,16 @@
 on: [ push ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 env:
   BUILDX_NO_DEFAULT_ATTESTATIONS: 1
 jobs:
-  cancel:
-    runs-on:
-      - api-micro-arm
-    name: Cancel Previous Runs
-    if: always()
-    timeout-minutes: 3
-    steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
-        if: github.ref != 'refs/heads/master'
-        name: cancel old workflows
-        id: cancel
-        with:
-          all_but_latest: true
-          workflow_id: "build_images.yml"
-          access_token: ${{ github.token }}
-      - if: github.ref == 'refs/heads/master'
-        name: Don't cancel old workflows
-        id: dont_cancel
-        run: |
-          echo "Don't cancel old workflow"
-
   validate-php-syntax-app:
     runs-on:
       - api-public
       - X64
-    needs: [ cancel ]
     container:
       image: c.rzp.io/razorpay/onggi:php-8.1
       options: "--entrypoint /bin/bash"
@@ -56,7 +39,6 @@ jobs:
     runs-on:
       - api-public
       - X64
-    needs: [ cancel ]
     container:
       image: c.rzp.io/razorpay/onggi:php-8.1
       options: "--entrypoint /bin/bash"
@@ -92,7 +74,6 @@ jobs:
     runs-on:
       - api-public
       - ${{ matrix.platform }}
-    needs: [ cancel ]
     continue-on-error: false
     name: Build Credstash Native
     steps:
@@ -155,7 +136,6 @@ jobs:
     runs-on:
       - api-public
       - ${{ matrix.platform }}
-    needs: [ cancel ]
     continue-on-error: false
     name: Build Web Native
     steps:
@@ -222,7 +202,6 @@ jobs:
     runs-on:
       - api-public
       - ${{ matrix.platform }}
-    needs: [ cancel ]
     continue-on-error: false
     name: Build Worker Native
     steps:
@@ -287,7 +266,6 @@ jobs:
     runs-on:
       - api-public
       - ${{ matrix.platform }}
-    needs: [ cancel ]
     continue-on-error: false
     name: Build Checkout Native
     steps:

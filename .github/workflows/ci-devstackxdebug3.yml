@@ -1,37 +1,19 @@
 name: CI-devstack
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 on:
   push:
     branches:
       - master
 
 jobs:
-  cancel:
-    runs-on:
-      - api-micro-arm
-    name: Cancel Previous Runs
-    if: always()
-    timeout-minutes: 3
-    steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
-        if: github.ref != 'refs/heads/master'
-        name: cancel old workflows
-        id: cancel
-        with:
-          all_but_latest: true
-          workflow_id: "build_images.yml"
-          access_token: ${{ github.token }}
-      - if: github.ref == 'refs/heads/master'
-        name: Don't cancel old workflows
-        id: dont_cancel
-        run: |
-          echo "Don't cancel old workflow"
-
   build-docker-image:
     runs-on:
       - api-public
       - X64
-    needs: [ cancel ]
     continue-on-error: false
     name: Build Devstack xdebug3 Web Harbor
     steps:

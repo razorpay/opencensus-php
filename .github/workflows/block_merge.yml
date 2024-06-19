@@ -4,7 +4,9 @@ on: [push]
 
 jobs:
   block_merging:
-    runs-on: ubuntu-latest
+    runs-on:
+      - api-public
+      - X64
     if: contains(github.ref, 'hotfix') == false && contains(github.ref, 'revert') == false
     steps:
       - name: Checkout code

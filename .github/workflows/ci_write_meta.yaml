@@ -1,25 +1,10 @@
 on: [ push ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
-  cancel:
-    runs-on:
-      - api-micro-arm
-    name: Cancel Previous Runs
-    if: always()
-    timeout-minutes: 3
-    steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
-        if: github.ref != 'refs/heads/master'
-        name: cancel old workflows
-        id: cancel
-        with:
-          all_but_latest: true
-          workflow_id: "ci_write_meta.yaml"
-          access_token: ${{ github.token }}
-      - if: github.ref == 'refs/heads/master'
-        name: Don't cancel old workflows
-        id: dont_cancel
-        run: |
-          echo "Don't cancel old workflow"
   write_routes_meta:
     runs-on:
       - api-public
@@ -31,7 +16,6 @@ jobs:
       AWS_S3_ROLE: arn:aws:iam::101860328116:role/gha-stage-edge-tools-api-meta-action
       AWS_S3_BUCKET_NAME: rzp-1018-nonprod-edge-tools
       AWS_DEFAULT_REGION: ap-south-1
-    needs: [ cancel ]
     container:
       image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
