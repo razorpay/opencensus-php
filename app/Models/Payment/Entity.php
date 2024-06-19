@@ -5330,7 +5330,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 // based on INR instead of user card currency
                 // this case is valid in case of hitachi where the terminal has to be in the currency of the merchant
                 // valid in case of international payments dcc payments and dcc over mcc payments.
-                $data['merchant_currency'] =  $this->isDCC() ? Currency\Currency::INR : "";
                 $data['merchant_pay_amount'] = $this->getAmount(); // amount to be settled to merchant in his home currency
             }
 
