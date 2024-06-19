@@ -107,6 +107,7 @@ class Service extends Base\Service
      */
     private function createReversalResponseFromRefund($refund): array
     {
+        $refund->loadMissing('reversal');
         $result = $refund->toArrayPublic();
 
         $reversalData = $result[Refund\Entity::REVERSAL];
