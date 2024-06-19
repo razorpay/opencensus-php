@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
     const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
     const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
+    const DEVICE_ID                     = 'device_id';
+    const LABEL                         = 'label';
 
     const MC_MPAN                       = 'mc_mpan';
     const VISA_MPAN                     = 'visa_mpan';
