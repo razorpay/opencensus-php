@@ -210,6 +210,12 @@ class Core extends Base\Core
         {
             $payment->card->setProviderReferenceId($providerReferenceId);
 
+            // unset message type before saving
+            if ($payment->card['network'] == "RuPay" && isset($payment->card['message_type']) === true)
+            {
+                unset($payment->card['message_type']);
+            }
+
             $this->repo->saveOrFail($payment->card);
         }
 
@@ -244,6 +250,11 @@ class Core extends Base\Core
                 $tokenisedCard->setTokenExpiryYear($expiry_token[0]);
                 $tokenisedCard->setTokenExpiryMonth($expiry_token[1]);
             }
+            if ($tokenisedCard['network'] == "RuPay" && isset($tokenisedCard['message_type']) === true)
+            {
+                unset($tokenisedCard['message_type']);
+            }
+
             $this->repo->saveOrFail($tokenisedCard);
         }
 
