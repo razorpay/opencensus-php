@@ -277,7 +277,7 @@ trait ScroogeRepo
             $reversal = $this->repo->reversal->newQuery()
                 ->select($reversalColumns)
                 ->where($reversalEntityId, $refund->getReversalId())
-                ->get();
+                ->firstOrFailPublic();
 
             $refund->setRelation(Entity::REVERSAL, $reversal);
 
