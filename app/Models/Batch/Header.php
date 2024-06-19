@@ -1709,9 +1709,37 @@ class Header
     const VENDOR_ONBOARDING_FUND_ACCOUNT_IFSC = "IFSC Code (Optional) 11 digit code of the beneficiary's bank account. Eg. HDFC0004277";
     const VENDOR_ONBOARDING_FUND_ACCOUNT_NUMBER = "Vendor Account Number (Optional) Typically 9-18 digits.";
     const VENDOR_ONBOARDING_FUND_ACCOUNT_VPA = "Vendor VPA (Optional) Vendor's virtual payment address. For example gauravkumar@exampleupi.";
-    const VENDOR_ONBOARDING_FUND_ACCOUNT_PROVIDER = "Vendor Fund Account Provider (Optional) Applicable only for fund account type bank_account. For example HDFC Bank";
+    const VENDOR_ONBOARDING_FUND_ACCOUNT_PROVIDER = "Vendor Fund Account Provider (Optional) Applicable only for fund account type wallet. For example Amazon wallet . Not required for bank_account";
     const VENDOR_ONBOARDING_CONTACT_REFERENCE_ID = "Contact Reference Id (Optional) Contact ID in RazorpayX. Do not fill unless the contact already exists in Razorpay";
     const VENDOR_ONBOARDING_NOTES = "Notes";
+
+    const VENDOR_ONBOARDING_COMPANY_REGISTERED_NAME = "Company Registered Name (Optional) Please enter the company registered name as per the government records. For example: ABC Private Limited ";
+
+    const VENDOR_ONBOARDING_COMPANY_POC_NAME = "Company POC Name (Optional) Please enter a company POC name. For example: John Doe ";
+
+    const VENDOR_ONBOARDING_COMPANY_BUSINESS_TYPE = "Company Business Type (Optional) Please enter the business type. For example: Private Limited";
+
+    const VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS = "Company Registered Address  (Optional) Please enter company registered full address. For example: ABC Towers，Floor 2，Koramangala，Bangalore，Karnataka 560030";
+
+    const VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS_STATE = "Company Registered Address State (Optional) Please enter the state in which the company is registered. For example: Karnataka";
+
+    const VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS_COUNTRY = "Company Registered Address Country (Optional) Please enter the country in which the company is registered. For example: India";
+
+    const VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS_PINCODE = "Company Registered Address Pincode (Optional) Please enter a valid pincode in which the company is registered. For example: 560103";
+
+    const VENDOR_ONBOARDING_ALTERNATE_PHONE = "Alternate Phone Number (Optional) Please enter an alternate phone number for your vendor. For example: please enter 7092837461 rather than +91 7092837461";
+
+    const VENDOR_ONBOARDING_ALTERNATE_EMAIL = "Alternate Email ID (Optional) Please enter an alternate email ID for your vendor. For example: john.doe@gmail.com ";
+
+    const VENDOR_ONBOARDING_VENDOR_CONTACT_POC_NAME = "Vendor Contact POC Name (Optional) Please enter a vendor POC name. For example: John Doe";
+
+    const VENDOR_ONBOARDING_VENDOR_CONTACT_POC_PHONE = "Vendor Contact POC Phone number (Optional) Please enter an vendor POC phone number. For example: please enter 7092837461 rather than +91 7092837461";
+
+    const VENDOR_ONBOARDING_VENDOR_CONTACT_POC_EMAIL = "Vendor Contact POC Email ID (Optional) Please enter an vendor POC email ID for your vendor. For example: john.doe@gmail.com ";
+
+    const VENDOR_ONBOARDING_INTERNAL_POC_EMAIL_CC = "Internal POC Email ID Please enter an email ID of an internal POC if you want them in CC for all vendor-related communications. If multiple email IDs，please use comma separators.";
+
+    const VENDOR_ONBOARDING_CUSTOM_FIELDS = "Custom Fields (Optional) Please enter any custom fields you want to add as part of this vendor. Enter in format Title:Value with multiple fields in new line in the SAME cell. For example: date of incorporation:10/09/2000";
 
 
     // mandatory headers for wallet account batch
@@ -4887,20 +4915,34 @@ class Header
                 self::VENDOR_ONBOARDING_PHONE,
                 self::VENDOR_ONBOARDING_VERIFICATION_MODE,
                 self::VENDOR_ONBOARDING_PORTAL_ACCESS,
-                self::VENDOR_ONBOARDING_CIN,
-                self::VENDOR_ONBOARDING_MSME,
+                self::VENDOR_ONBOARDING_COMPANY_REGISTERED_NAME,
+                self::VENDOR_ONBOARDING_COMPANY_BUSINESS_TYPE,
+                self::VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS,
+                self::VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS_COUNTRY,
+                self::VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS_STATE,
+                self::VENDOR_ONBOARDING_COMPANY_REGISTERED_ADDRESS_PINCODE,
+                self::VENDOR_ONBOARDING_COMPANY_POC_NAME,
+                self::VENDOR_ONBOARDING_ALTERNATE_PHONE,
+                self::VENDOR_ONBOARDING_ALTERNATE_EMAIL,
+                self::VENDOR_ONBOARDING_VENDOR_CONTACT_POC_NAME,
+                self::VENDOR_ONBOARDING_VENDOR_CONTACT_POC_PHONE,
+                self::VENDOR_ONBOARDING_VENDOR_CONTACT_POC_EMAIL,
+                self::VENDOR_ONBOARDING_INTERNAL_POC_EMAIL_CC,
                 self::VENDOR_ONBOARDING_GST,
                 self::VENDOR_ONBOARDING_PAN,
-                self::VENDOR_ONBOARDING_TAN,
                 self::VENDOR_ONBOARDING_TDS_CATEGORY,
+                self::VENDOR_ONBOARDING_TAN,
+                self::VENDOR_ONBOARDING_CIN,
+                self::VENDOR_ONBOARDING_MSME,
                 self::VENDOR_ONBOARDING_FUND_ACCOUNT_TYPE,
-                self::VENDOR_ONBOARDING_FUND_ACCOUNT_NAME,
-                self::VENDOR_ONBOARDING_FUND_ACCOUNT_IFSC,
                 self::VENDOR_ONBOARDING_FUND_ACCOUNT_NUMBER,
-                self::VENDOR_ONBOARDING_FUND_ACCOUNT_VPA,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_IFSC,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_NAME,
                 self::VENDOR_ONBOARDING_FUND_ACCOUNT_PROVIDER,
+                self::VENDOR_ONBOARDING_FUND_ACCOUNT_VPA,
                 self::VENDOR_ONBOARDING_CONTACT_REFERENCE_ID,
                 self::VENDOR_ONBOARDING_NOTES,
+                self::VENDOR_ONBOARDING_CUSTOM_FIELDS,
             ],
             self::OUTPUT => [
                 self::VENDOR_ONBOARDING_NAME,
