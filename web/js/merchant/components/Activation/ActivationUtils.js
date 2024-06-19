@@ -799,7 +799,10 @@ const redirectToEasyAfter1sec = () => {
   }, 1000);
 };
 
-const isEligibleForFtux = ({ user = {}, abExperiments = {} } = {}) => {
+const isEligibleForFtux = ({ user = {}, abExperiments = {}, isAdmin = false } = {}) => {
+  if (isAdmin) {
+    return false;
+  }
   const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
 
   const isPOSMerchant = isExperimentEnabled(abExperiments?.omniChannelGtm) && !!physical_store;

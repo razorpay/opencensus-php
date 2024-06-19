@@ -109,6 +109,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { withSplitzService } from 'common/splitz';
 
+import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
+
 /*
  *             Main-form        LA-form
  * Submited      E F ~S        ~E ~F ~S
@@ -138,6 +140,7 @@ const WEBSITE_COMPLIANCE_URLS = ['appstore_url', 'playstore_url', 'business_webs
   (state) => ({
     session: state.session,
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+    isAdminAsMerchant: state.profile.isAdminAsMerchant,
   }),
   {
     showNotification,
@@ -151,6 +154,7 @@ const WEBSITE_COMPLIANCE_URLS = ['appstore_url', 'playstore_url', 'business_webs
     showKYCStatusModal,
     setCurrentTab,
     trackEventsAction,
+    fetchIsAdminAsMerchant,
   },
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -576,6 +580,11 @@ class ActivationWizard extends React.Component {
           submerchant_id: this.props.submerchantId,
         },
       });
+    }
+
+    const { isAdminAsMerchant: { loading } = {} } = this.props;
+    if (loading) {
+      this.props.fetchIsAdminAsMerchant();
     }
   }
 
@@ -1538,7 +1547,12 @@ class ActivationWizard extends React.Component {
     needsClarificationFields.forEach((item) => {
       if (WEBSITE_COMPLIANCE_URLS.includes(item.name)) isWebsiteCompliance = true;
     });
-    const { user, websiteSectionDetailsData, splitz } = this.props;
+    const {
+      user,
+      websiteSectionDetailsData,
+      splitz,
+      isAdminAsMerchant: { data: isAdmin = false } = {},
+    } = this.props;
     if (
       isWebsiteCompliance &&
       user.isWebsiteComplianceFlowEnabled &&
@@ -1604,7 +1618,7 @@ class ActivationWizard extends React.Component {
 
       const { abExperiments } = splitz ?? {};
 
-      const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+      const isFtuxEnabled = isEligibleForFtux({ user, abExperiments, isAdmin });
 
       if (response.data.activation_status === 'needs_clarification') {
         const poi_verification_status = response.data.poi_verification_status;

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import { useSplitzService } from 'common/splitz';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
+import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 
 import { isEligibleForFtux } from '../Activation/ActivationUtils';
 
 const EasyOnboardingWrapper = (props) => {
-  const { user, children } = props;
+  const { user, children, fetchIsAdminAsMerchant, isAdminAsMerchant } = props;
   const [isRoutingToEasy, setIsRoutingToEasy] = useState(true);
 
   const isEasyMerchant =
@@ -24,7 +26,9 @@ const EasyOnboardingWrapper = (props) => {
 
   const { abExperiments } = useSplitzService();
 
-  const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+  const { loading, data: isAdmin } = isAdminAsMerchant;
+
+  const isFtuxEnabled = isEligibleForFtux({ user, abExperiments, isAdmin });
 
   const getShouldRouteToEasy = async () => {
     if (isSourceRX) {
@@ -67,8 +71,12 @@ const EasyOnboardingWrapper = (props) => {
   };
 
   useEffect(() => {
-    routeToEasyOnboarding();
-  }, []);
+    if (loading) {
+      fetchIsAdminAsMerchant();
+    } else {
+      routeToEasyOnboarding();
+    }
+  }, [loading]);
 
   if (isRoutingToEasy && !isSourceRX) {
     return null;
@@ -77,10 +85,13 @@ const EasyOnboardingWrapper = (props) => {
   return <>{children}</>;
 };
 
+const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchIsAdminAsMerchant }, dispatch);
+
 export default connect(
   (state) => ({
     user: state.session.user,
     isNcEligibile: state.home.isNcEligibile,
+    isAdminAsMerchant: state.profile.isAdminAsMerchant,
   }),
-  null,
+  mapDispatchToProps,
 )(EasyOnboardingWrapper);
