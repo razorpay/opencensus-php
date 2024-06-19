@@ -17698,6 +17698,7 @@ class Route
             'transfer_reversal_transactions_create',
             'internal_order_associations_fetch',
             'post_force_authorize_payments',
+            'feature_get_all_internal'
         ],
 
         'freshdesk_webhook' => [

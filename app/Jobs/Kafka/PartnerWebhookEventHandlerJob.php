@@ -225,7 +225,9 @@ class PartnerWebhookEventHandlerJob extends Job
     }
 
     private function getEntityOriginFromPublicKey(array $input, string $partnerId){
-        $result = $this->app['razorx']->getTreatment(
+        $app = App::getFacadeRoot();
+
+        $result = $app['razorx']->getTreatment(
             UniqueIdEntity::generateUniqueId(),
             RazorxTreatment::FETCH_ENTITY_ORIGIN_VIA_FALLBACK,
             'live');
