@@ -88,6 +88,8 @@ class BasicAuth
 
     const ADMIN_TOKEN_HEADER      = 'X-Admin-Token';
 
+    const RZP_MERCHANT_ID_HEADER = 'X-RZP-Merchant-ID';
+
     /**
      * Callback key in the partner token flow looks like this:
      * rzp_test_1DP5mmOlF5G5ag-rzp_partner_ACIg2tb8NySnuh
@@ -1571,7 +1573,7 @@ class BasicAuth
      * validates if the passport is correct for app auth use case
      * @return bool
      */
-    protected function isValidPassportForAppAuth()
+    public function isValidPassportForAppAuth()
     {
         // No passport attached to request
         if (!$this->reqCtx->hasPassportJwt) {

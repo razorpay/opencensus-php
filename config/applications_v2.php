@@ -1598,5 +1598,26 @@ return [
                 ]
             ]
         ]
-    ]
+    ],
+    env('APP_V2_ID_CAPITAL_LENDER') => [
+        "name"        => "capital_lender",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_CAPITAL_LENDER'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CAPITAL_LENDER'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.capital_lender"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_CAPITAL_LENDER'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CAPITAL_LENDER'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.capital_lender"
+                ]
+            ]
+        ]
+    ],
 ];

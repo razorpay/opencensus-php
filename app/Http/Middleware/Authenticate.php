@@ -15,6 +15,7 @@ use RZP\Http\Edge\Metric;
 use RZP\Http\Edge\PassportUtil;
 use Illuminate\Foundation\Application;
 use RZP\Http\RequestContextV2;
+use RZP\Models\Merchant\Entity;
 use Symfony\Component\HttpFoundation\Response;
 
 use ApiResponse;
@@ -518,7 +519,7 @@ class Authenticate
 
         // ideally no business logic should need key entity, will be set only for merchant auth
         // TODO: remove setting key entity object
-        if (! $this->isPartnerAuth) {
+        if ((! $this->isPartnerAuth) and ($this->ba->isValidPassportForAppAuth() === false)) {
             $error = $this->ba->setKeyEntityFromKeyId(false);
             if ($error !== null) {
                 return $error;
@@ -529,7 +530,16 @@ class Authenticate
 
         $this->setAccountIdFromPassport();
 
-        $this->ba->setMerchantById($this->passport->consumer->id);
+        $mid = $this->passport->consumer->id;
+
+        $headerMID = $this->app['request']->headers?->get(BasicAuth::RZP_MERCHANT_ID_HEADER);
+        if (($this->passport->consumer->type === BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION) and
+            (empty($headerMID) === false) and (Entity::verifyUniqueId($headerMID, false) === true))
+        {
+            $mid = $headerMID;
+        }
+
+        $this->ba->setMerchantById($mid);
 
         // do not check merchant activated status of parent merchant for partner auth
         // since partner's access to live mode doesn't matter while accessing sub merchant resources.
