@@ -55,6 +55,10 @@ class PaymentCreateController extends Controller
 
         $ret = $this->createPayment();
 
+        $this->trace->info(TraceCode::POST_CREATE_PAYMENT_LOG, [
+            'checkout_callback_view' => is_array($ret) and (isset($ret['request']) === false)
+        ]);
+
         if ((is_array($ret)) and
             (isset($ret['request']) === false))
         {
