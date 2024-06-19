@@ -869,5 +869,11 @@ class Constants
     const ERROR                         = "error";
     const INVALID_COMMENT               = "Invalid comment";
     const WORFLOW                       = "workflow";
+    const ENCRYPT                       = "encrypt";
+    const ENCRYPT_DATA_FORMAT_TYPE      = "type";
+    const ENCRYPT_DATA_FORMAT_WEBSITE   = "website";
+    const ENCRYPT_DATA_FORMAT_APP       = "app";
+    const USERNAME                      = "username";
+    const PASSWORD                      = "password";
 }
 

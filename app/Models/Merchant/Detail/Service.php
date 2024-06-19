@@ -5512,7 +5512,8 @@ class Service extends Base\Service
                     $commentInput[DetailConstants::ENTITY_ID],
                     $commentInput[DetailConstants::ENTITY],
                     $commentInput[DetailConstants::PERMISSION],
-                    $commentInput[DetailConstants::COMMENT]
+                    $commentInput[DetailConstants::COMMENT],
+                    array_get($commentInput, DetailConstants::ENCRYPT, [])
                 );
             }
             catch (\Throwable $e)

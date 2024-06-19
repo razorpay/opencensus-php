@@ -13,9 +13,11 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use Mockery\MockInterface;
 use Mockery\Matcher\AnyArgs;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Tests\Functional\Fixtures\Entity\Workflow;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Services\Stork;
 use RZP\Error\ErrorCode;
@@ -17773,5 +17775,186 @@ class CoreTest extends TestCase
         $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
 
         $this->assertEquals('activated_mcc_pending', $merchantDetailData['activation_status']);
+    }
+
+    public function testPostCommentsInWorkflow()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+        $mockedCore->shouldAllowMockingMethod("postEncryptedComment");
+
+        $actionCore = \Mockery::mock('RZP\Models\Workflow\Action\Core');
+        $actionEntity = \Mockery::mock('RZP\Models\Workflow\Action\Entity');
+        $commentCore = \Mockery::mock('RZP\Models\Comment\Core');
+        $commentEntity = \Mockery::mock('RZP\Models\Comment\Entity');
+
+        $mockMorph = \Mockery::mock(MorphTo::class)->makePartial();
+        $mockMorph->shouldAllowMockingProtectedMethods();
+
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+
+        $mockMorph->shouldReceive("associate")->with($actionEntity)->andReturn();
+        $mockedCore->shouldReceive("postEncryptedComment")->andReturn();
+        $actionCore->shouldReceive("fetchOpenActionOnEntityOperation")->andReturn(collect([$actionEntity]));
+        $commentEntity->shouldReceive("entity")->andReturn($mockMorph);
+        $commentCore->shouldReceive("create")->andReturn($commentEntity);
+
+        $repoMock->shouldReceive("saveOrFail")->with($commentEntity)->andReturn();
+        $mockedCore->shouldReceive("getActionCore")->andReturn($actionCore);
+        $mockedCore->shouldReceive("getCommentCore")->andReturn($commentCore);
+
+        $this->assignValueThroughReflection($mockedCore, $repoMock, 'repo');
+
+        $this->assertEmpty($mockedCore->postCommentsInWorkflow(
+            "10000000000000",
+            "merchant_detail",
+            Name::UPDATE_MERCHANT_WEBSITE,
+            "some comment",
+            []
+        ));
+    }
+
+    public function testPostEncryptedCommentWebsite()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $actionEntity = \Mockery::mock('RZP\Models\Workflow\Action\Entity');
+        $commentCore = \Mockery::mock('RZP\Models\Comment\Core');
+        $commentEntity = \Mockery::mock('RZP\Models\Comment\Entity');
+        $mockMorph = \Mockery::mock(MorphTo::class);
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+
+        $mockMorph->shouldReceive("associate")->with($actionEntity)->andReturn();
+        $commentEntity->shouldReceive("entity")->andReturn($mockMorph);
+        $commentCore->shouldReceive("create")->andReturn($commentEntity);
+        $repoMock->shouldReceive("saveOrFail")->with($commentEntity)->andReturn();
+        $mockedCore->shouldReceive("getCommentCore")->andReturn($commentCore);
+
+        $this->assignValueThroughReflection($mockedCore, $repoMock, 'repo');
+
+        $input = [
+            DetailConstant::ENCRYPT_DATA_FORMAT_TYPE => DetailConstant::ENCRYPT_DATA_FORMAT_WEBSITE,
+            DetailConstant::USERNAME => "USERNAME",
+            DetailConstant::PASSWORD => "PASSWORD",
+        ];
+
+        $this->assertEmpty($this->callProtectedMethod($mockedCore, "postEncryptedComment", [$actionEntity, $input]));
+    }
+
+    public function testPostEncryptedCommentApp()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $actionEntity = \Mockery::mock('RZP\Models\Workflow\Action\Entity');
+        $commentCore = \Mockery::mock('RZP\Models\Comment\Core');
+        $commentEntity = \Mockery::mock('RZP\Models\Comment\Entity');
+        $mockMorph = \Mockery::mock(MorphTo::class);
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+
+        $mockMorph->shouldReceive("associate")->with($actionEntity)->andReturn();
+        $commentEntity->shouldReceive("entity")->andReturn($mockMorph);
+        $commentCore->shouldReceive("create")->andReturn($commentEntity);
+        $repoMock->shouldReceive("saveOrFail")->with($commentEntity)->andReturn();
+        $mockedCore->shouldReceive("getCommentCore")->andReturn($commentCore);
+
+        $this->assignValueThroughReflection($mockedCore, $repoMock, 'repo');
+
+        $input = [
+            DetailConstant::ENCRYPT_DATA_FORMAT_TYPE => DetailConstant::ENCRYPT_DATA_FORMAT_APP,
+            DetailConstant::USERNAME => "USERNAME",
+            DetailConstant::PASSWORD => "PASSWORD",
+        ];
+
+        $this->assertEmpty($this->callProtectedMethod($mockedCore, "postEncryptedComment", [$actionEntity, $input]));
+    }
+
+    public function testPostEncryptedCommentInvalidType()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $actionEntity = \Mockery::mock('RZP\Models\Workflow\Action\Entity');
+
+        $input = [
+            DetailConstant::ENCRYPT_DATA_FORMAT_TYPE => "RANDOM",
+            DetailConstant::USERNAME => "USERNAME",
+            DetailConstant::PASSWORD => "PASSWORD",
+        ];
+
+        $this->assertEmpty($this->callProtectedMethod($mockedCore, "postEncryptedComment", [$actionEntity, $input]));
+    }
+
+
+    public function testPostEncryptedCommentInvalidTypeEmptyPassword()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $actionEntity = \Mockery::mock('RZP\Models\Workflow\Action\Entity');
+
+        $input = [
+            DetailConstant::ENCRYPT_DATA_FORMAT_TYPE => "RANDOM",
+            DetailConstant::USERNAME => "USERNAME",
+        ];
+
+        $this->assertEmpty($this->callProtectedMethod($mockedCore, "postEncryptedComment", [$actionEntity, $input]));
+    }
+
+    public function testPostEncryptedCommentInvalidTypeEmptyUsername()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $actionEntity = \Mockery::mock('RZP\Models\Workflow\Action\Entity');
+
+        $input = [
+            DetailConstant::ENCRYPT_DATA_FORMAT_TYPE => "RANDOM",
+        ];
+
+        $this->assertEmpty($this->callProtectedMethod($mockedCore, "postEncryptedComment", [$actionEntity, $input]));
+    }
+
+    public function testPostEncryptedCommentInvalidTypeEmptyInput()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $actionEntity = \Mockery::mock('RZP\Models\Workflow\Action\Entity');
+
+        $input = [];
+
+        $this->assertEmpty($this->callProtectedMethod($mockedCore, "postEncryptedComment", [$actionEntity, $input]));
+    }
+
+    public function testPostEncryptedCommentInvalidTypeNullWorkflowAction()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $input = [];
+
+        $this->assertEmpty($this->callProtectedMethod($mockedCore, "postEncryptedComment", [null, $input]));
+    }
+
+    private function callProtectedMethod($instance, $method, array $args)
+    {
+        $class  = new \ReflectionClass(get_class($instance));
+        $method = $class->getMethod($method);
+
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($instance, $args);
+    }
+
+    protected function assignProtectedVariableThroughReflection($instance, $variableName, $value): mixed
+    {
+        $reflector = new \ReflectionClass($instance);
+        $property = $reflector->getProperty($variableName);
+        $property->setAccessible( true );
+        $property->setValue($instance, $value);
+
+        return $instance;
     }
 }

@@ -13116,24 +13116,109 @@ class Core extends Base\Core
     }
 
     /**
-     * @param string $entityId
+     * @param string      $entityId
      * @param string $entity
      * @param string $permissionName
      * @param string $comment
+     * @param array  $encryptComment
      *
      * @return void
      */
-    public function postCommentsInWorkflow(string $entityId, string $entity, string $permissionName, string $comment): void
+    public function postCommentsInWorkflow(string $entityId, string $entity, string $permissionName, string $comment, array $encryptComment = []): void
     {
-        $workFlowAction = (new ActionCore())->fetchOpenActionOnEntityOperation($entityId, $entity, $permissionName)->first();
+        $workFlowAction = $this->getActionCore()->fetchOpenActionOnEntityOperation($entityId, $entity, $permissionName)->first();
 
-        $businessDetailsCommentEntity = (new CommentCore())->create([
+        $businessDetailsCommentEntity = $this->getCommentCore()->create([
             CommentEntity::COMMENT => $comment,
         ]);
 
         $businessDetailsCommentEntity->entity()->associate($workFlowAction);
 
         $this->repo->saveOrFail($businessDetailsCommentEntity);
+
+        $this->postEncryptedComment($workFlowAction, $encryptComment);
+    }
+
+    /**
+     * @param       $workFlowAction
+     * @param array $encryptComment
+     *
+     * @return void
+     */
+    protected function postEncryptedComment($workFlowAction, array $encryptComment = []): void
+    {
+        if ($workFlowAction === null
+            || empty($encryptComment) === true
+            || empty(array_get($encryptComment, DetailConstants::ENCRYPT_DATA_FORMAT_TYPE)) === true
+            || empty(array_get($encryptComment, DetailConstants::PASSWORD)) === true
+            || empty(array_get($encryptComment, DetailConstants::USERNAME)) === true
+        )
+        {
+            return;
+        }
+
+        [$type, $format] = $this->getEncryptTypeAndFormat($encryptComment);
+
+        if ($type === "" || $format === "")
+        {
+            return;
+        }
+
+        $testCredentialComment = sprintf($format,
+            $encryptComment[DetailConstants::USERNAME],
+            $encryptComment[DetailConstants::PASSWORD]
+        );
+
+        $encryptedComment = $type . encrypt($testCredentialComment);
+
+        $testCredentialCommentEntity = $this->getCommentCore()->create([
+            CommentEntity::COMMENT => $encryptedComment,
+        ]);
+
+        $testCredentialCommentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($testCredentialCommentEntity);
+    }
+
+    /**
+     * @return \RZP\Models\Workflow\Action\Core
+     */
+    protected function getActionCore()
+    {
+        return new ActionCore();
+    }
+
+    /**
+     * @return \RZP\Models\Comment\Core
+     */
+    protected function getCommentCore()
+    {
+        return new CommentCore();
+    }
+
+    /**
+     * @param array $encryptComment
+     *
+     * @return array
+     */
+    private function getEncryptTypeAndFormat(array $encryptComment = []): array
+    {
+        $type = "";
+        $format = "";
+
+        if ($encryptComment[DetailConstants::ENCRYPT_DATA_FORMAT_TYPE] === DetailConstants::ENCRYPT_DATA_FORMAT_WEBSITE)
+        {
+            $type = DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER;
+            $format = DetailConstants::MERCHANT_WEBSITE_TEST_CREDENTIAL_COMMENT;
+        }
+
+        if ($encryptComment[DetailConstants::ENCRYPT_DATA_FORMAT_TYPE] === DetailConstants::ENCRYPT_DATA_FORMAT_APP)
+        {
+            $type = DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER;
+            $format = DetailConstants::MERCHANT_APP_TEST_CREDENTIAL_COMMENT;
+        }
+
+        return [$type, $format];
     }
 }
 

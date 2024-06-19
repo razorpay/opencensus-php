@@ -684,6 +684,7 @@ class Validator extends Base\Validator
         Constants::ENTITY_ID    => "required|string|unsigned_id",
         Constants::PERMISSION   => "required|string|custom",
         Constants::COMMENT      => "required|string|min:4",
+        Constants::ENCRYPT      => "sometimes|nullable|associative_array",
     ];
 
     /**
