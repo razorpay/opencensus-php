@@ -520,6 +520,14 @@ class OffersEngine extends Base\Core
             $issuerKey = 'PaymentInstrument.Issuer';
 
             switch ($offer->getPaymentMethod()) {
+                case Payment\METHOD::CARD:
+                case Payment\METHOD::EMI:
+                    // set coBranding partner for issuer if iin is not set and issuer is set
+                    if ($offer->getIins() === null)
+                    {
+                        array_push($availConditionWhenArray, 'PaymentInstrument.CardCobrandingPartner == "NA"');
+                    }
+                    break;
                 case Payment\METHOD::WALLET:
                     $issuerKey = 'PaymentInstrument.Wallet';
                     break;
@@ -898,6 +906,9 @@ class OffersEngine extends Base\Core
                     }
                     $offer->setAttribute(Entity::IINS, $iins);
                     break;
+                case 'PaymentInstrument.IsCardInternational':
+                    $offer->setAttribute(Entity::INTERNATIONAL, $value);
+                    break;
                 case 'Subscription.RedemptionType':
                     $subscriptionFields[SubscriptionOfferEntity::REDEMPTION_TYPE] =
                         Constants::SUBSCRIPTION_TYPE_ENUM_TO_VALUE_MAP[$value];
@@ -927,7 +938,7 @@ class OffersEngine extends Base\Core
 
         // Define an array of fields to compare
         // note - fields not compared are id, percent_rate(variable in UTs), description, terms,
-        // international(not present in OE), active, checkout_display(not present in OE),
+        // active, checkout_display(not present in OE),
         // linked_offer_ids(feature na), payment_count(not needed in OE), processing_time(not present in OE),
         // display_text, error_message, current_offer_usage, product_type
         $fieldsToCompare = [
@@ -935,7 +946,7 @@ class OffersEngine extends Base\Core
             Entity::IINS, Entity::BLOCK, Entity::TYPE, Entity::MIN_AMOUNT, Entity::MAX_CASHBACK,
             Entity::FLAT_CASHBACK, Entity::EMI_SUBVENTION, Entity::EMI_DURATIONS,
             Entity::STARTS_AT, Entity::ENDS_AT, Entity::PAYMENT_NETWORK, Entity::ISSUER,
-            Entity::MAX_OFFER_USAGE, Entity::DEFAULT_OFFER, Entity::MAX_ORDER_AMOUNT,
+            Entity::MAX_OFFER_USAGE, Entity::DEFAULT_OFFER, Entity::MAX_ORDER_AMOUNT, Entity::INTERNATIONAL,
         ];
 
         // if offer is not a no cost emi, compare percent_rate too
@@ -1154,12 +1165,20 @@ class OffersEngine extends Base\Core
 
         if ($this->payment->isMethodCardOrEmi() === true)
         {
+            $iinEntity = $this->repo->iin->find($cardIin);
+            $coBrandingPartner =  $iinEntity->getCobrandingPartner();
+            if($coBrandingPartner === null)
+            {
+                $coBrandingPartner = "NA";
+            }
+
             $instrumentFact = [
                 Constants::CARD_TYPE => strtolower($this->payment->card->getType()),
                 Constants::CARD_NETWORK => $this->payment->card->getNetworkCode(),
                 Constants::IIN => $cardIin,
                 Constants::ISSUER => $this->payment->card->getIssuer(),
                 Constants::IS_CARD_INTERNATIONAL => $this->payment->card->isInternational(),
+                Constants::CARD_COBRANDING_PARTNER => $coBrandingPartner,
             ];
         }
 

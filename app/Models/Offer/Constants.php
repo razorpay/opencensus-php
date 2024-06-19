@@ -185,6 +185,8 @@ final class Constants
 
     const CARD_NUMBER = 'card_number'; // has card PAR value
 
+    const CARD_COBRANDING_PARTNER = 'card_cobranding_partner';
+
     const MOBILE_NUMBER = 'mobile_number';
 
     const EMAIL = 'email';

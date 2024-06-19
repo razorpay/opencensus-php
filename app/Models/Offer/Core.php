@@ -1277,63 +1277,43 @@ class Core extends Base\Core
     public function validateOnOffersEngine(bool $shouldValidateOnOffersEngine,
                                            Payment\Entity $payment, Order\Entity $order, Entity $offer, bool $isDummyPayment)
     {
-        if ($shouldValidateOnOffersEngine === true)
+        if ($shouldValidateOnOffersEngine === false)
         {
-            $oeValidateCall = true;
-
-            $iin = '';
-
-            // perform checks if we can call offers engine
-            if ($payment->isMethodCardOrEmi() === true)
-            {
-                $iin = $this->fetchCardIIN($payment);
-
-                if ($this->isOneCardPayment($iin) === true)
-                {
-                    $oeValidateCall = false;
-                }
-
-            }
-            if ($oeValidateCall)
-            {
-                try
-                {
-                    $oeResp = $this->offersEngine->validateOffer(
-                        $payment->getMerchantId(),
-                        $offer,
-                        $payment,
-                        $order,
-                        $isDummyPayment,
-                        $iin);
-
-                    return [
-                        Constants::VALIDATE_OFFER_RESPONSE => $oeResp,
-                        Constants::VALIDATE_OFFER_CALLED => true,
-                    ];
-                }
-                catch (\Throwable $e)
-                {
-                    // do nothing
-                    return [
-                        Constants::VALIDATE_OFFER_CALLED => true,
-                    ];
-                }
-            }
-            else
-            {
-                $this->trace->info(
-                    TraceCode::OFFERS_ENGINE_VALIDATE_CHECK_SKIPPED,
-                    [
-                        'offer_id' => $offer->getPublicId(),
-                        'payment_id' => $payment->getId(),
-                    ]
-                );
-            }
+            return [
+                Constants::VALIDATE_OFFER_CALLED => false,
+            ];
         }
 
-        return [
-            Constants::VALIDATE_OFFER_CALLED => false,
-        ];
+        $iin = '';
+
+        // perform checks if we can call offers engine
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $iin = $this->fetchCardIIN($payment);
+        }
+
+        try
+        {
+            $oeResp = $this->offersEngine->validateOffer(
+                $payment->getMerchantId(),
+                $offer,
+                $payment,
+                $order,
+                $isDummyPayment,
+                $iin);
+
+            return [
+                Constants::VALIDATE_OFFER_RESPONSE => $oeResp,
+                Constants::VALIDATE_OFFER_CALLED => true,
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            // do nothing
+            return [
+                Constants::VALIDATE_OFFER_CALLED => true,
+            ];
+        }
     }
 
     public function compareValidateOfferResponse($apiResp, $oeResp, Entity $offer)
@@ -1373,21 +1353,5 @@ class Core extends Base\Core
                 'OE_RESPONSE' => $oeResp
             ]);
         }
-    }
-
-    // check for co-branding partner of card payment
-    // if it is one card then do not call Offers Engine Validate
-    private function isOneCardPayment(string $iin): bool
-    {
-        $iinEntity = $this->repo->iin->find($iin);
-
-        $coBrandingPartner = $iinEntity->getCobrandingPartner();
-
-        if ($coBrandingPartner === CobrandingPartner::ONECARD)
-        {
-            return true;
-        }
-
-        return false;
     }
 }
