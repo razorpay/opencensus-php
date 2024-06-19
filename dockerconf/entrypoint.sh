@@ -82,6 +82,7 @@ chown -R nginx:nginx /app/storage/logs
 
 # /tmp needs to writable by all processes.
 chmod 777 /tmp
+chmod 777 /app/storage/logs
 
 /usr/sbin/php-fpm81
 

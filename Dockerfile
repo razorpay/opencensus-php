@@ -1,12 +1,7 @@
-ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi_testing:php81-fpm-nginxphp-8.1-nginx
-
-FROM c.rzp.io/razorpay/onggi:php-8.1-api-web as opencensus-ext
-
-
-FROM $ONGGI_IMAGE as opencensus-ext
+FROM c.rzp.io/razorpay/onggi-multi-arch:rzp-golden-image-nginx-php-8.1-fpm as opencensus-ext
 
 WORKDIR /
-ARG OPENCENSUS_VERSION_TAG=v0.8.0-beta
+ARG OPENCENSUS_VERSION_TAG=v1.0.0
 RUN set -eux && \
     wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar zx --strip=1
 RUN cd /ext && phpize81 && ./configure --enable-opencensus --with-php-config=/usr/bin/php-config81 && make install
