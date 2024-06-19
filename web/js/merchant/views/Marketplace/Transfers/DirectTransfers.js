@@ -358,7 +358,7 @@ function amountValidator(balance) {
       return 'Invalid Amount';
     }
 
-    if (value > balance) {
+    if (value > parseFloat(balance)) {
       return 'Billing amount cannot exceed current balance';
     }
   };
