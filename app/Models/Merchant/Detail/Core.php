@@ -12,6 +12,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\User;
 use RZP\Constants\Mode;
 use RZP\Base\ConnectionType;
@@ -8893,6 +8894,24 @@ class Core extends Base\Core
         try
         {
             $merchantDetail = $this->merchant->merchantDetail;
+            //get merchant activation status
+            $activation_status = $merchantDetail->getActivationStatus();
+            $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+                [
+                    'id'            => $merchantDetail->getMerchantId(),
+                    'experiment_id' => $this->app['config']->get('app.get_pan_list_for_activated_merchants_experiment_id'),
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => $merchantDetail->getMerchantId(),
+                        ]),
+                ]
+            );
+
+            if($expResult['variant'] === Constants::VARIANT && $activation_status === Constants::ACTIVATED)
+            {
+                $gstDetails = $this->getGSTDetailsListForActivatedMerchant($merchantDetail, $includePersonalPan);
+                return [Constant::RESULTS => $gstDetails];
+            }
 
             $keys = [
                 ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT
@@ -8971,6 +8990,78 @@ class Core extends Base\Core
         }
 
         return [Constant::RESULTS => $gstDetails];
+    }
+
+    public function getGSTDetailsListForActivatedMerchant($merchantDetail, bool $includePersonalPan=true): array
+    {
+        $gstDetails = [];
+        $gstDetailsForPersonalPan = [];
+        $gstDetailsForCompanyPan  = [];
+        $bvsRunForPan = false;
+        $keys = [
+            ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS
+        ];
+
+        $data = (new StoreCore())->fetchValuesFromStore($this->merchant->getId(),
+            ConfigKey::POST_ONBOARDING_NAMESPACE,
+            $keys,
+            Merchant\Store\Constants::INTERNAL);
+
+        $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS_POST_ONBOARDING, ['data' => $data]);
+
+        $bvsCore = new AutoKyc\Bvs\Core();
+
+        //rate limiting per merchant
+        $getGstDetailsAttempts = $data[ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS] ?? 0;
+
+        if ($getGstDetailsAttempts > DetailConstants::GET_GST_DETAILS_MAX_ATTEMPT_ACTIVATED_MERCHANT)
+        {
+            $this->trace->count(DetailMetric::GET_GST_DETAILS_EXHAUSTED_ACTIVATED_MERCHANTS);
+
+            $this->trace->info(TraceCode::GET_GST_DETAILS_EXHAUSTED_ACTIVATED_MERCHANTS);
+
+            return [Constant::RESULTS => $gstDetails];
+        }
+
+        $pan = $merchantDetail->getPan();
+
+        if (empty($pan) == false)
+        {
+            $bvsRunForPan = true;
+            $gstDetailsForCompanyPan =
+                $bvsCore->artefactCuratorProbeGetGstDetails($pan,"Active");
+        }
+
+        if ($includePersonalPan)
+        {
+            //get personal pan associated gstin
+            $pan = $merchantDetail->getPromoterPan();
+
+            if (empty($pan) == false)
+            {
+                $bvsRunForPan = true;
+                $gstDetailsForPersonalPan =
+                    $bvsCore->artefactCuratorProbeGetGstDetails($pan,"Active");
+            }
+        }
+
+        //merge both with company pan associated gstin given more priority
+        $gstDetails = array_unique(array_merge($gstDetailsForCompanyPan, $gstDetailsForPersonalPan));
+
+        if($bvsRunForPan === false)
+        {
+            return $gstDetails;
+        }
+
+        $data = [
+            Merchant\Store\Constants::NAMESPACE               => ConfigKey::POST_ONBOARDING_NAMESPACE,
+            ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS => $getGstDetailsAttempts + 1
+        ];
+
+        $data = (new StoreCore())->updateMerchantStore($this->merchant->getId(), $data, Merchant\Store\Constants::INTERNAL);
+        $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS_POST_ONBOARDING, ['data' => $data]);
+
+        return $gstDetails;
     }
 
 

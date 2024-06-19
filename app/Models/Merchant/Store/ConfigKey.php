@@ -10,6 +10,7 @@ class ConfigKey
      * Namespaces defined here (part of prefix for redis-store
      */
     const ONBOARDING_NAMESPACE = 'onboarding';
+    const POST_ONBOARDING_NAMESPACE = 'post_onboarding';
 
     /*
      * Keys are defined here
@@ -40,6 +41,7 @@ class ConfigKey
 
     const GST_DETAILS_FROM_PAN                    = 'gst_details_from_pan';
     const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT  = 'get_gst_details_from_bvs_attempt_count';
+    const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS  = 'get_gst_details_from_bvs_attempt_count_activated_merchants';
     const BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT = 'bank_account_verification_attempt_count';
 
     const GET_PROMOTER_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT = 'get_promoter_pan_details_from_bvs_attempt_count';
@@ -207,6 +209,14 @@ class ConfigKey
                 Constants::WRITE => [Constants::INTERNAL],
                 Constants::TTL   => Constants::SIGNUP_SOURCE_TTL_IN_SECONDS
             ],
+        ],
+        self::POST_ONBOARDING_NAMESPACE => [
+            self::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_TTL_IN_SECONDS
+            ]
         ]
     ];
 

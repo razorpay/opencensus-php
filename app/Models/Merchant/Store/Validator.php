@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         ConfigKey::REFEREE_ID                                      => 'sometimes|array',
         ConfigKey::GST_DETAILS_FROM_PAN                            => 'filled|json',
         ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT          => 'filled|integer',
+        ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS          => 'filled|integer',
         ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT         => 'filled|integer',
         ConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP                 => 'filled|bool',
         ConfigKey::NO_DOC_ONBOARDING_INFO                          => 'filled|array',

@@ -22,6 +22,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Tests\Traits\MocksSplitz;
 
 class GetGstDetailsTest extends TestCase
 {
@@ -29,6 +30,7 @@ class GetGstDetailsTest extends TestCase
     use RazorxTrait;
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -147,6 +149,107 @@ class GetGstDetailsTest extends TestCase
         Config::set('services.bvs.response', Constant::FAILURE);
 
         $this->startTest();
+    }
+
+    public function testGetGstDetailsActivatedMerchantNoPan()
+    {
+        // Mock merchant details data without PANs
+        $merchantDetailsData = [
+            'activation_status'       => 'activated',
+            'business_type'           => 1,
+            'poi_verification_status' => 'pending',
+        ];
+
+        // Create a merchant detail record
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
+
+        // Create a user associated with the merchant
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        // Set up proxy authentication
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'variant',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.get_pan_list_for_activated_merchants_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        // Set mock configurations for the BVS service
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', Constant::SUCCESS);
+
+        // Start the test process
+        $this->startTest();
+
+        $keys = [
+            ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS
+        ];
+        $data = (new StoreCore())->fetchValuesFromStore($merchantDetail['merchant_id'],
+            ConfigKey::POST_ONBOARDING_NAMESPACE,
+            $keys,
+            Constants::INTERNAL);
+
+        $this->assertNull($data[ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS]);
+    }
+
+    private function testGetGstDetailsWithCompanyPan()
+    {
+        // Mock merchant details data with company PAN
+        $merchantDetailsData = [
+            'activation_status'       => 'activated',
+            'business_type'           => 1,
+            'poi_verification_status' => 'pending',
+            'promoter_pan'            => 'BRRPK8070K',
+        ];
+
+        // Create a merchant detail record
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
+
+        // Create a user associated with the merchant
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        // Set up proxy authentication
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'variant',
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.get_pan_list_for_activated_merchants_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+
+        // Set mock configurations for the BVS service
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', Constant::SUCCESS);
+
+        // Start the test process
+        $this->startTest();
+
+        $keys = [
+            ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS
+        ];
+        $data = (new StoreCore())->fetchValuesFromStore($merchantDetail['merchant_id'],
+            ConfigKey::POST_ONBOARDING_NAMESPACE,
+            $keys,
+            Constants::INTERNAL);
+
+        $this->assertNotNull($data[ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS]);
+        $this->assertEquals(2, $data[ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_ACTIVATED_MERCHANTS]);
     }
 
     public function testGetGstDetailsRateLimitExhausted()

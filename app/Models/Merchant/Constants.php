@@ -332,6 +332,8 @@ final class Constants
     // Constant for total lead score
     const TOTAL_LEAD_SCORE = 'total_lead_score';
 
+    const ACTIVATED = 'activated';
+
 
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,

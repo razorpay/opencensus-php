@@ -439,6 +439,7 @@ class Constants
     const COMPANY_SEARCH_MAX_ATTEMPT                    = 30;
 
     const GET_GST_DETAILS_MAX_ATTEMPT                    = 30;
+    const GET_GST_DETAILS_MAX_ATTEMPT_ACTIVATED_MERCHANT = 30;
     const GET_PROMOTER_PAN_DETAILS_MAX_ATTEMPT           = 5;
     const GET_COMPANY_PAN_DETAILS_MAX_ATTEMPT            = 5;
 

@@ -911,4 +911,6 @@ return array(
     'recurring_customer_contact_reuse' => env('RECURRING_CUSTOMER_CONTACT_REUSE_EXP_ID'),
 
     'support_dashboard_tidb_splitz_experiment_id' => env('SUPPORT_DASHBOARD_TIDB_SPLITZ_EXPERIMENT_ID'),
+
+    'get_pan_list_for_activated_merchants_experiment_id' => env('GET_PAN_LIST_FOR_ACTIVATED_MERCHANTS_EXPERIMENT_ID'),
 );
