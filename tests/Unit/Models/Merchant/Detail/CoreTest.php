@@ -5953,7 +5953,7 @@ class CoreTest extends TestCase
         $this->assertEquals($error_codes, $expectedOutput);
     }
 
-    public function testFetchVerificationErrorCodesInactiveGstin()
+    public function testFetchVerificationErrorCodesInactiveGstinAndGstinPresent()
     {
         // when records are found and error description is matched and validation status is failed
         $core = new DetailCore();
@@ -5968,8 +5968,32 @@ class CoreTest extends TestCase
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
+        $merchantDetail->setAttribute(Entity::GSTIN, '01AADCB1234M1ZX');
+        $merchantDetail->save();
         $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         $expectedOutput = [Entity::GSTIN_VERIFICATION_STATUS => 'INACTIVE_GSTIN'];
+        $this->assertEquals($error_codes, $expectedOutput);
+    }
+
+    public function testFetchVerificationErrorCodesInactiveGstinAndGstinAbsent()
+    {
+        // when records are found and error description is matched and validation status is failed
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::GSTIN,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::IDENTIFIER,
+            BVSEntity::VALIDATION_STATUS    => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE           => 'RULE_EXECUTION_FAILED',
+            BVSEntity::ERROR_DESCRIPTION    => 'inactive_gstin'
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $merchantDetail->setAttribute(Entity::GSTIN, '');
+        $merchantDetail->save();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
+        $expectedOutput = [];
         $this->assertEquals($error_codes, $expectedOutput);
     }
 

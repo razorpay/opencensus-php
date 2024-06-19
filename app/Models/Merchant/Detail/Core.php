@@ -10850,6 +10850,12 @@ class Core extends Base\Core
 
             $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
+            if ($artefactType === Entity::GSTIN and empty($merchantDetails->getGstin()) === true)
+            {
+                // since there is no Gstin present, skip the processing
+                continue;
+            }
+
             $document = null;
 
             if ($validationUnit === BvsValidationConstants::PROOF)
