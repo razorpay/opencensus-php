@@ -225,38 +225,18 @@ class AnalyticsDesktop extends Component {
   renderL1ActivationModals = () => {
     const {
       user,
-      transactionAmount,
       // from parent component
       canShowL1ActivationModals,
     } = this.props;
-    const recommendationModalShown = LocalStorageService.getItem(
-      `product_recommendation_modal_shown-${user.current}`,
-    );
 
     if (!canShowL1ActivationModals) return;
 
     const isWebsitePolicyVerified = user?.website_policy_verification_status === 'verified';
-    if (
-      // experiments
-      user.isProductRecommendationEnabled &&
-      // zero payments
-      transactionAmount === 0 &&
-      !recommendationModalShown
-    ) {
-      this.renderProductRecommendationPrompt();
-    }
+
     // if website policy verification status is verified don't show modal
-    else if (user.isWebsiteComplianceFlowEnabled && !isWebsitePolicyVerified) {
+    if (user.isWebsiteComplianceFlowEnabled && !isWebsitePolicyVerified) {
       this.renderWebsiteCompliancePrompt();
     }
-  };
-
-  renderProductRecommendationPrompt = () => {
-    const { user } = this.props;
-    this.props.showKYCStatusModal({
-      modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
-    });
-    LocalStorageService.setItem(`product_recommendation_modal_shown-${user.current}`, true);
   };
 
   renderWebsiteCompliancePrompt = () => {

@@ -1253,24 +1253,26 @@ class HomeContainer extends Component {
               activationDuration={kycStatusActivationDuration}
             />
           )}
-          {showKYCStatus && !this.props.user.isInstantActivationEnabled && (
-            <KYCStatusModalOld
-              onClose={() => {
-                iaActivations.trackClose(activation_flow);
-                this.props.hideKYCStatusModal();
-                if (isMobile && user.isOnboardingV2Enabled) {
-                  window.location.reload();
-                }
-              }}
-              onGoToDashboard={() => {
-                iaActivations.trackClose(activation_flow);
-                this.onInstantActivationSuccess();
-              }}
-              user={user}
-              modalType={kycStatusModalType}
-              activationDuration={kycStatusActivationDuration}
-            />
-          )}
+          {showKYCStatus &&
+            !!this.props.user.submitted &&
+            !this.props.user.isInstantActivationEnabled && (
+              <KYCStatusModalOld
+                onClose={() => {
+                  iaActivations.trackClose(activation_flow);
+                  this.props.hideKYCStatusModal();
+                  if (isMobile && user.isOnboardingV2Enabled) {
+                    window.location.reload();
+                  }
+                }}
+                onGoToDashboard={() => {
+                  iaActivations.trackClose(activation_flow);
+                  this.onInstantActivationSuccess();
+                }}
+                user={user}
+                modalType={kycStatusModalType}
+                activationDuration={kycStatusActivationDuration}
+              />
+            )}
           {showPANStatus && (
             <PANVerificationStatusModal
               onClose={() => {
