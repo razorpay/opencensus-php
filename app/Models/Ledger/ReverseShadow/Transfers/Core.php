@@ -42,11 +42,16 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccountBalances, $fee, $tax): array
+    public function createBulkTransactionMessageForTransfer($transfer, $transferPaymentMerchant, $merchantAccountBalances, $fee, $tax, $transferPayment = null): array
     {
+
         $transferDebitJournal = $this->createTransactionMessageForDebitJournal($transfer, $merchantAccountBalances, $fee, $tax);
 
-        $transferCreditJournal = $this->createTransactionMessageForCreditJournal($transfer, $transferPaymentMerchant);
+        if($transferPayment === null ) {
+            $transferPayment = $this->generatePaymentEntity();
+        }
+
+        $transferCreditJournal = $this->createTransactionMessageForCreditJournal($transfer, $transferPaymentMerchant,$transferPayment);
 
         $bulkJournals = [$transferDebitJournal, $transferCreditJournal];
 
@@ -62,6 +67,14 @@ class Core extends Base\Core
         ];
 
     }
+
+    public function generatePaymentEntity(): Payment\Entity
+    {
+        $payment = new Payment\Entity;
+        $payment->generateId();
+        return $payment;
+    }
+
 
     public function createTransactionMessageForDebitJournal($transfer, $merchantAccountBalances, $fee, $tax): array
     {
@@ -159,7 +172,7 @@ class Core extends Base\Core
         return $rule;
     }
 
-    public function createTransactionMessageForCreditJournal(Transfer\Entity $transfer, Merchant\Entity $transferPaymentMerchant): array
+    public function createTransactionMessageForCreditJournal(Transfer\Entity $transfer, Merchant\Entity $transferPaymentMerchant, $transferPayment = null): array
     {
         $moneyParams = $this->generateMoneyParamsForTransferCredit($transfer);
 
@@ -168,7 +181,9 @@ class Core extends Base\Core
             Constants::CURRENCY                  => $transferPaymentMerchant->getCurrency(),
             Constants::TRANSACTION_DATE          => $transfer->getUpdatedAt(),
         ];
-
+        if($transferPayment !== null) {
+            $transactionMessage[LedgerConstants::NOTES] =  [LedgerConstants::PAYMENT_ID => $transferPayment->getPublicId()];
+        }
         $transactionMessage[LedgerConstants::MONEY_PARAMS]           = $moneyParams;
         $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS]      = [ LedgerConstants::ENTRY_TYPE => LedgerConstants::ENTRY_TYPE_CREDIT ];
 
@@ -218,7 +233,7 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
 
-        $journalPayload = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment->merchant, $merchantAccountBalances, $fee, $tax);
+        $journalPayload = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment->merchant, $merchantAccountBalances, $fee, $tax,$transferPayment);
 
         $journalResponse = $this->createJournalInLedger($journalPayload, true);
 

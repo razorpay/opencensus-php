@@ -1008,7 +1008,9 @@ class Core extends Base\Core
 
                             if($transfer->getStatus() === Transfer\Status::PENDING)
                             {
-                                $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment);
+                                $transferPaymentId = $this->findTransferPaymentFromNotes($journal);
+
+                                $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment,$transferPaymentId);
 
                                 $transfer->setProcessed();
 
@@ -1965,5 +1967,29 @@ class Core extends Base\Core
                     $bucketCore->publishForSettlement($virtualReversalTransaction);
                 }
             }
+    }
+
+    private function findTransferPaymentFromNotes(array $journal)
+    {
+        $creditJournals = array_filter($journal, function($item)  {
+            return $this->filterByFundAccountTypeAndEntryType($item, 'merchant_balance', 'credit');
+        });
+        $paymentID = null;
+
+        if (!empty($creditJournals)) {
+            $firstCreditJournal = reset($creditJournals);
+
+            if (!empty($firstCreditJournal[LedgerConstants::LEDGER_ENTRY])) {
+                $firstLedgerEntry = reset($firstCreditJournal[LedgerConstants::LEDGER_ENTRY]);
+
+                if (!empty($firstLedgerEntry[LedgerConstants::NOTES][LedgerConstants::PAYMENT_ID])) {
+                    $paymentID = $firstLedgerEntry[LedgerConstants::NOTES][LedgerConstants::PAYMENT_ID];
+                    $paymentID = substr($paymentID, 4);
+                }
+            }
+        }
+
+        return $paymentID;
+
     }
 }

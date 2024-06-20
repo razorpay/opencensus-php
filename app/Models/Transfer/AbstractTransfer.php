@@ -502,7 +502,7 @@ abstract class AbstractTransfer
         return $transfer;
     }
 
-    public function createTransferredEntity($transfer, $payment)
+    public function createTransferredEntity($transfer, $payment, $transferPaymentId = null)
     {
         if ($transfer->isBalanceTransfer() === true)
         {
@@ -521,9 +521,9 @@ abstract class AbstractTransfer
         }
         else
         {
-            return Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment'], function() use ($transfer, $payment)
+            return Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment'], function() use ($transfer, $payment , $transferPaymentId)
             {
-                $transferPayment = $this->createTransferredPayment($transfer, $payment);
+                $transferPayment = $this->createTransferredPayment($transfer, $payment, $transferPaymentId);
 
                 if (($transfer->getOnHold() === true) and ($transferPayment->getOnHold() === false))
                 {
@@ -542,7 +542,7 @@ abstract class AbstractTransfer
     /**
      * @throws BadRequestException
      */
-    protected function createTransferredPayment($transfer, $payment): Payment\Entity
+    protected function createTransferredPayment($transfer, $payment, $transferPaymentID = null): Payment\Entity
     {
         try
         {
@@ -576,6 +576,10 @@ abstract class AbstractTransfer
         $to = $this->repo->account->findByIdAndMerchant($transfer->getToId(), $parentMerchant);
 
         $input = $this->getTransferData($transfer);
+
+        if ($transferPaymentID !== null ){
+            $input[Entity::ID] = $transferPaymentID;
+        }
 
         $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment, $transfer);
 

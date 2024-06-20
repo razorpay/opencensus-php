@@ -8739,7 +8739,7 @@ class Processor
         return false;
     }
 
-    protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
+    protected function createPaymentEntity(array $input, Payment\Entity $payment = null, string $transferPaymentId = null): Payment\Entity
     {
         $this->tracePaymentNewRequest($input);
 
@@ -8756,7 +8756,7 @@ class Processor
 
         if ($payment == null)
         {
-            $payment = $this->buildPaymentEntity($input);
+            $payment = $this->buildPaymentEntity($input, $transferPaymentId);
         }
 
         $this->validateDisableS2SIfApplicable($payment, $input);
@@ -9020,7 +9020,7 @@ class Processor
         $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
-    protected function buildPaymentEntity(array $input): Payment\Entity
+    protected function buildPaymentEntity(array $input, $transferPaymentId = null): Payment\Entity
     {
         //
         //For simpl provider if $input['payment'] is not empty than we return the same payment
@@ -9036,6 +9036,10 @@ class Processor
         // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
         if ($this->merchant->isFeatureEnabled(Feature::RAAS) === true) {
             $this->setPaymentIdForOptimizer($payment);
+        }
+
+        if($transferPaymentId !== null ){
+            $payment->setAttribute(Entity::ID , $transferPaymentId);
         }
 
         // fallback if payment_id empty

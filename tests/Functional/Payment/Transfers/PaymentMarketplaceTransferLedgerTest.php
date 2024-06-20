@@ -305,6 +305,15 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->testFullPaymentTransferReverseShadowOutboxPush();
     }
 
+    public function testTransferPaymentIdForTransferReverseShadowSyncOutboxPush()
+    {
+        $this->testFullPaymentTransferReverseShadowOutboxPush();
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+        $this->assertNotNull($actualLedgerOutboxEntry['journals'][1]['notes']['payment_id']);
+    }
+
     public function testPartialPaymentTransferReverseShadowOutboxPush()
     {
         $this->assertNotNull($this->payment);
@@ -1327,6 +1336,11 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                                 "fund_account_type" => [
                                     "merchant_balance"
                                 ]
+                            ],
+                            "notes" => [
+                                "ledger_config_id"	=> "LJaX3wRdGtrNqc",
+                                "payment_id"	=> "pay_ONnhOfz1UPaAXf"
+
                             ]
                         ],
                         [
@@ -1715,7 +1729,6 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertNotNull($transferPayment['transaction_id'], 'transfer txn and transfer_payment txn should not be created');
         $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
         $this->assertEquals($creditJID, $transferPayment['transaction_id'], 'transfer_payment txn_id not equal to credit journal_id');
-
         // fetch transfer txn
         $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
         $this->assertNotNull($transferTxn, 'transfer_txn not found');
@@ -1748,6 +1761,17 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertEquals($oldDestnMarketBalance + $transfer->getAmount(), $newDestnMarketBalance, 'destn balance not deeducted');
 
         return $transferId;
+    }
+    public function testPaymentIdFromJournalInFullPaymentTransferReverseShadowKafkaAckSuccess()
+    {
+        $transferPaymentId = 'ONnhOfz1UPaAXf';
+        $transferId = $this->testFullPaymentTransferReverseShadowKafkaAckSuccess();
+        $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
+        $this->assertNotNull($transferPayment, 'dummy payment entity does not exist');
+        $this->assertEquals('transfer', $transferPayment['method']);
+        $this->assertNotNull($transferPayment['transaction_id'], 'transfer txn and transfer_payment txn should not be created');
+        $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
+        $this->assertEquals($transferPayment['id'],$transferPaymentId,'transfer_payment id not equal to payment id in credit journal');
     }
 
     public function testGetFeeTaxFromTransferJournal()

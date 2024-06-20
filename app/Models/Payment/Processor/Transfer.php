@@ -57,9 +57,11 @@ trait Transfer
         {
             $paymentData = $this->getTransferPaymentData($input, $originPayment);
 
-            $transferPayment = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_payment'], function() use ($paymentData)
+            $transferPaymentId =  $input['id'];
+
+            $transferPayment = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_payment'], function() use ($paymentData,$transferPaymentId)
             {
-                return $this->createPaymentEntity($paymentData);
+                return $this->createPaymentEntity($paymentData,null ,$transferPaymentId);
             });
 
             $inputTrace = $input;
