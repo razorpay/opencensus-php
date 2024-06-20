@@ -20,6 +20,8 @@ class DowntimeManagerService
     const FETCH_ONGOING_PAYMENT_DOWNTIMES_FOR_MERCHANT = 'v2/payments/downtimes/ongoing';
     const FETCH_PAYMENT_DOWNTIME_BY_ID = 'v2/payments/downtimes/';
 
+    const FETCH_RESOLVED_DOWNTIMES_FOR_MERCHANT = 'v2/payments/downtime/resolved';
+
     private $srConfig;
     private $srBasePath;
     private $srHost;
@@ -55,6 +57,21 @@ class DowntimeManagerService
 
         unset($response["status_code"]);
 
+        return $response;
+    }
+
+
+    public function fetchOngoingDowntimesForMerchantDashboard() : array {
+        $path = self::FETCH_ONGOING_PAYMENT_DOWNTIMES_FOR_MERCHANT;
+        $response = $this->sendMerchantDashboardRequest($path, DowntimeManagerController::GET, null, "payment_downtimes");
+        unset($response["status_code"]);
+        return $response;
+    }
+
+    public function fetchResolvedDowntimesForMerchantDashboard($params) : array {
+        $path = self::FETCH_RESOLVED_DOWNTIMES_FOR_MERCHANT;
+        $response = $this->sendMerchantDashboardRequest($path, DowntimeManagerController::GET, $params, "payment_downtimes");
+        unset($response["status_code"]);
         return $response;
     }
 
@@ -172,6 +189,67 @@ class DowntimeManagerService
         return $decodedResponse;
     }
 
+    public function sendMerchantDashboardRequest($url, $method, $data = null, $service = null)
+    {
+        $baseUrl = $this->getBaseUrl($service);
+        $url = $baseUrl . '/' . $url;
+
+        if ($data === null)
+        {
+            $data = '';
+        }
+
+        if ($service === 'SR' || $service === 'payment_downtimes') {
+            $merchant   = $this->app['basicauth']->getMerchant();
+            $headers['merchant_id'] = $merchant->getMerchantId();
+        }
+
+        if ($service === 'payment_downtimes') {
+            $headers['channel'] = 'MERCHANT_DASHBOARD';
+        }
+
+        $headers['Content-Type'] = 'application/json';
+
+        $options = array(
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth'    => $this->getRequestAuth($service),
+        );
+
+        $request = array(
+            'url'     => $url,
+            'method'  => $method,
+            'headers' => $headers,
+            'options' => $options,
+            'content' => $data
+        );
+
+        $response = $this->sendDowntimeManagerRequest($request);
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_RESPONSE, [
+            'response' => $response->body
+        ]);
+
+        if(empty($response->body) === false)
+        {
+            $decodedResponse = json_decode($response->body, true);
+        }
+
+        $decodedResponse = $decodedResponse ?? [];
+        $decodedResponse['status_code'] = $response->status_code;
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_RESPONSE, $decodedResponse);
+
+        //check if $response is a valid json
+        if (json_last_error() !== JSON_ERROR_NONE)
+        {
+            throw new Exception\RuntimeException(
+                'External Operation Failed');
+        }
+
+        $this->checkErrors($decodedResponse);
+
+        return $decodedResponse;
+    }
 
     protected function sendDowntimeManagerRequest($request)
     {

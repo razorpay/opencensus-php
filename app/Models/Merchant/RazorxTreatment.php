@@ -1164,4 +1164,10 @@ final class RazorxTreatment
      * Razorx for credit fetch for reverse and non-reverse shadow
      */
     const FETCH_MERCHANT_CREDITS_NEW_FLOW = 'fetch_merchant_credits_new_flow';
+
+
+    /**
+     * Razorx flag to route calls to downtime manager to fetch ongoing and resolved downtimes
+     */
+    const DOWNTIME_MANAGER_ROUTING_EXPERIMENT= 'downtime_manager_routing_experiment';
 }

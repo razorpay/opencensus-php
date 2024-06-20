@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Gateway\Upi\Base\ProviderPsp;
 use RZP\Models\Base;
 use RZP\Mail\Downtime;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -80,16 +81,45 @@ class Service extends Base\Service
     public function fetchOngoingDowntimes(): array
     {
         $this->trace->info(TraceCode::FETCH_ONGOING_PLATFORM_LEVEL_DOWNTIMES, ["merchantId" => $this->merchant->getId()]);
+        $properties = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.' . Merchant\RazorxTreatment::DOWNTIME_MANAGER_ROUTING_EXPERIMENT),
+            'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
+        ];
+        $isExperimentEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'variables');
 
-        return $this->core()->fetchOngoingDowntimes();
+        if ($isExperimentEnabled) {
+            $isEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentVariableEnabled($properties, 'variant');
+            if ($isEnabled) {
+                return (new DowntimeManagerService($this->app))->fetchOngoingDowntimesForMerchantDashboard();
+            }else{
+                return $this->core()->fetchOngoingDowntimes() ?? [] ;
+            }
+        }
+        return $this->core()->fetchOngoingDowntimes() ?? [];
     }
 
     public function fetchResolvedDowntimes($params): array
     {
         $this->trace->info(TraceCode::FETCH_RESOLVED_PLATFORM_LEVEL_DOWNTIMES,
-                           ["merchantId" => $this->merchant->getId(), "filters" => $params]);
+            ["merchantId" => $this->merchant->getId(), "filters" => $params]);
         $this->validateRequestParams($params);
 
+        $properties = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.' . Merchant\RazorxTreatment::DOWNTIME_MANAGER_ROUTING_EXPERIMENT),
+            'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
+        ];
+        $isExperimentEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'variables');
+
+        if ($isExperimentEnabled) {
+            $isEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentVariableEnabled($properties, 'variant');
+            if ($isEnabled) {
+                return (new DowntimeManagerService($this->app))->fetchResolvedDowntimesForMerchantDashboard($params);
+            }else{
+                return $this->core()->fetchResolvedDowntimes($params);
+            }
+        }
         return $this->core()->fetchResolvedDowntimes($params);
     }
 
