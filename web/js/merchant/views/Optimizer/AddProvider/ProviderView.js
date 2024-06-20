@@ -137,7 +137,7 @@ const ProviderView = (props) => {
     // Fetch payments to check if there are any payments made
     fetchPayments({
       count: 5,
-      notes: provider?.Terminal_id,
+      notes: selectedProviderId,
     }).then((response) => {
       if (response?.success) {
         if (response?.data?.items?.length > 0) {
@@ -157,7 +157,7 @@ const ProviderView = (props) => {
 
     if (gatewayCoverage?.length <= 0) {
       // Fetch gateway coverage
-      fetchGatewayEnabledMethods(provider?.Terminal_id).then((response) => {
+      fetchGatewayEnabledMethods(selectedProviderId).then((response) => {
         if (response?.success) {
           dispatch({ type: 'set_gateway_coverage', payload: response?.data?.methods });
         }

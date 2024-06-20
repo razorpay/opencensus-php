@@ -78,22 +78,25 @@ const IntegrationTesting = ({
   useEffect(() => {
     if (isPaymentDone && isPaymentSuccessfull && !isWebhookFailure) {
       setIsPaymentsTableLoading(true);
-      fetchPayments({ count: 20, notes: providerId })
-        .then((res) => {
-          const capturedPayments = res.data.items?.filter((item) => item.status === 'captured');
-          setPayments(capturedPayments?.slice(0, 5));
-        })
-        .catch((err) => {
-          setPayments([]);
-          showNotification({
-            type: 'error',
-            message: err?.errors?.[0],
-            closeTimeout: 3000,
+      // 1 sec delay requierd to fetch payments to get correct status of payment recently done on payment testing screen
+      setTimeout(() => {
+        fetchPayments({ count: 20, notes: providerId })
+          .then((res) => {
+            const capturedPayments = res.data.items?.filter((item) => item.status === 'captured');
+            setPayments(capturedPayments?.slice(0, 5));
+          })
+          .catch((err) => {
+            setPayments([]);
+            showNotification({
+              type: 'error',
+              message: err?.errors?.[0],
+              closeTimeout: 3000,
+            });
+          })
+          .finally(() => {
+            setIsPaymentsTableLoading(false);
           });
-        })
-        .finally(() => {
-          setIsPaymentsTableLoading(false);
-        });
+      }, 1000);
     }
   }, [isPaymentDone, isPaymentSuccessfull, isWebhookFailure]);
 
