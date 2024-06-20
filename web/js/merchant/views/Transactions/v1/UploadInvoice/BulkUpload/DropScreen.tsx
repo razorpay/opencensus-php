@@ -7,7 +7,7 @@ import Input from 'common/new-ui/Input';
 //types
 import { ModalContextType, DropScreenProps } from './types';
 import { transfromDroppedFiles } from './utils';
-import { UPLOAD_CONFIG } from './constants';
+import { TABS, TAB_DETAILS, UPLOAD_CONFIG } from './constants';
 
 //skeleton content
 const invoiceContent = () => (
@@ -28,16 +28,12 @@ const awbContent = () => (
     <li>In case of duplicates, only the first file will be considered</li>
     <li>The number of files should not exceed 500</li>
     <li>
-      The file name of the airway bill should be the following format:{' '}
-      <b>AWBNumber_InvoiceNumber</b>
+      The file name of the airway bill should be in the following format: <b>InvoiceNumber</b>.pdf
     </li>
     <ol type="a">
       <li>
-        <b>AWBNumber</b> is the the AWB Number of the export for the respective payment id and
-        invoice number.
-      </li>
-      <li>
-        <b>InvoiceNumber</b> is the Invoice Number of the respective payment id.
+        <b>InvoiceNumber</b> is the InvoiceNumber linked to the respective airway bill and payment
+        id.
       </li>
     </ol>
   </ol>
@@ -55,7 +51,7 @@ const DropScreen: React.FC<DropScreenProps> = ({ showNotification }) => {
       return;
     }
     if (isDropped) {
-      const { transformedFiles, clientErrors } = transfromDroppedFiles(files);
+      const { transformedFiles, clientErrors } = transfromDroppedFiles(files, currentTab);
       setFiles(transformedFiles);
       setClientErrors(clientErrors);
     } else {
@@ -75,7 +71,7 @@ const DropScreen: React.FC<DropScreenProps> = ({ showNotification }) => {
       </h3>
       <Input.File
         maxSize={1048600} // 1MB
-        _accept={['jpeg', 'png', 'pdf']}
+        _accept={TAB_DETAILS[TABS[currentTab]].acceptedTypes}
         multi
         handleMultiUpload={onChange}
       />

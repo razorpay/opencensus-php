@@ -41,6 +41,7 @@ export type PaymentItem = {
     invoice_number?: string;
   };
   opgsp_invoice_doc?: string;
+  opgsp_awb_doc?: string;
 };
 
 export type TrackAnalyticsType = {

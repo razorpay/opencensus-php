@@ -10,10 +10,10 @@ import { BulkUploadModalProps } from './types';
 //styles
 import './BulkUpload.styl';
 
-const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ refreshList }) => {
+const BulkUploadModal: React.FC<BulkUploadModalProps> = (props) => {
   return (
     <ModalProvider>
-      <ModalContainer refreshList={refreshList} />
+      <ModalContainer {...props} />
     </ModalProvider>
   );
 };

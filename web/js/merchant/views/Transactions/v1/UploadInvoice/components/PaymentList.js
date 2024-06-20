@@ -83,7 +83,7 @@ class PaymentsListContainer extends ListContainer {
     this.paginate({});
   };
 
-  onUploadInvoice = async (id, file) => {
+  onUploadInvoice = async (id, type, file) => {
     const {
       uploadInvoicePending,
       uploadInvoiceSuccess,
@@ -91,18 +91,17 @@ class PaymentsListContainer extends ListContainer {
       showNotification,
       user,
     } = this.props;
-    uploadInvoicePending({ id });
+    const purpose = user.tags?.some((tag) => tag.toLowerCase() === JPMC_FEATURE_FLAG)
+      ? UPLOAD_INVOICES_TYPE.JPMC
+      : type;
+    uploadInvoicePending({ id: `${id}-${purpose}` });
     trackInvoiceUploadClick({
       paymentId: id,
       version: this.getVersion(),
     });
     try {
-      const purpose = user.tags?.some((tag) => tag.toLowerCase() === JPMC_FEATURE_FLAG)
-        ? UPLOAD_INVOICES_TYPE.JPMC
-        : UPLOAD_INVOICES_TYPE.OPGSP;
-
       await uploadInvoice(id, file, purpose);
-      uploadInvoiceSuccess({ id });
+      uploadInvoiceSuccess({ id: `${id}-${purpose}` });
       this.refreshList();
       showNotification({
         type: 'success',
@@ -114,7 +113,7 @@ class PaymentsListContainer extends ListContainer {
         version: this.getVersion(),
       });
     } catch (err) {
-      uploadInvoiceError({ id });
+      uploadInvoiceError({ id: `${id}-${purpose}` });
       showNotification({
         type: 'error',
         message: err?.message || 'Failed to upload file. Please try again!',
@@ -171,7 +170,7 @@ class PaymentsListContainer extends ListContainer {
     openModal({
       component: (
         <SuspenseWithLoader>
-          <BulkUploadModal refreshList={this.refreshList} />
+          <BulkUploadModal refreshList={this.refreshList} purposeCode={this.props.purposeCode} />
         </SuspenseWithLoader>
       ),
       overlayStyles: { display: 'flex', justifyContent: 'center', alignItems: 'center' },
@@ -179,6 +178,10 @@ class PaymentsListContainer extends ListContainer {
   };
 
   componentDidMount() {
+    const { purposeCode, fetchPurposeCode } = this.props;
+    if (!purposeCode) {
+      fetchPurposeCode();
+    }
     trackShown({
       version: this.getVersion(),
     });
@@ -225,6 +228,7 @@ class PaymentsListContainer extends ListContainer {
             EmptyComponent={EmptyComponent}
             uploadState={invoiceUploading}
             invoiceFetching={invoiceFetching}
+            purposeCode={this.props.purposeCode}
             paginate={this.paginate}
             onView={this.onView}
             onUpload={this.onUploadInvoice}

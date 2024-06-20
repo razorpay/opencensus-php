@@ -1,10 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import lazy from 'merchant/routes/LazyLoader';
 
 //constants
-import { TABS } from './constants';
 import { ModalContextType, ModalContainerProps } from './types';
 
 //context
@@ -17,6 +16,7 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Button from 'common/new-ui/Button';
+import { getTabs } from './utils';
 
 const DropScreen = lazy(() => import(/* webpackChunkName: 'DropScreen' */ './DropScreen'));
 const UploadResult = lazy(() => import(/* webpackChunkName: 'UploadResult' */ './UploadResult'));
@@ -25,6 +25,7 @@ const ExitConfirmation = lazy(
 );
 
 const ModalContainer: React.FC<ModalContainerProps> = ({
+  purposeCode,
   closeModal,
   showNotification,
   refreshList,
@@ -41,17 +42,19 @@ const ModalContainer: React.FC<ModalContainerProps> = ({
     setShouldShowExitPrompt,
   } = useContext(modalContext) as ModalContextType;
 
-  const onTabClick = ({ target }) => {
-    const tabIndex = parseInt(target.dataset.index, 10);
-    if (tabIndex !== currentTab) {
-      setCurrentTab(tabIndex);
-      setFiles([]);
-    }
-  };
+  const TABS = useMemo(() => getTabs(purposeCode), [purposeCode]);
 
   const onReUpload = () => {
     setFiles([]);
     setClientErrors([]);
+  };
+
+  const onTabClick = ({ target }) => {
+    const tabIndex = parseInt(target.dataset.index, 10);
+    if (tabIndex !== currentTab) {
+      setCurrentTab(tabIndex);
+      onReUpload();
+    }
   };
 
   const onClose = () => {

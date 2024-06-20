@@ -1,11 +1,9 @@
 import { User } from 'common/typings';
-import React from 'react';
 
 export type UploadConfigType = {
   batchSize: number;
   retries: number;
   maxFiles: number;
-  acceptedTypes: Array<string>;
 };
 
 export type ModalContextType = {
@@ -53,6 +51,7 @@ export interface UploadTabProps {
 
 export interface BulkUploadModalProps {
   refreshList: () => void;
+  purposeCode: string;
 }
 export interface DropScreenProps {
   showNotification: React.Dispatch<React.SetStateAction<unknown>>;
@@ -64,6 +63,7 @@ export interface UploadResultProps {
 }
 
 export interface ModalContainerProps {
+  purposeCode: string;
   closeModal: React.Dispatch<React.SetStateAction<void>>;
   showNotification: React.Dispatch<React.SetStateAction<unknown>>;
   refreshList: () => void;

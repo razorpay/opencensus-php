@@ -12,6 +12,7 @@ import {
   viewInvoiceSuccess,
 } from 'merchant/reducers/paymentUploadInvoice';
 import { fetchFA, resetFA } from 'merchant/reducers/payments/details';
+import { fetchPurposeCode } from 'merchant/reducers/profile';
 import PaymentListContainer from 'merchant/views/Transactions/v1/UploadInvoice/components/PaymentList';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -21,6 +22,7 @@ const mapStatesToProps = (state) => ({
   ...state.payments,
   ...state.paymentUploadInvoice,
   user: state.session.user,
+  purposeCode: state.profile.fircDetails?.data?.purpose_code,
 });
 
 const mapDispatchToProps = (dispatch) => {
@@ -37,6 +39,7 @@ const mapDispatchToProps = (dispatch) => {
       viewInvoicePending,
       viewInvoiceError,
       viewInvoiceSuccess,
+      fetchPurposeCode,
     },
     dispatch,
   );

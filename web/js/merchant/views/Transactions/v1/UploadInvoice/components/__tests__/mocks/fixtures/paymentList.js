@@ -44,3 +44,4 @@ export const MOCK_USER = {
 };
 
 export const MOCK_PNG_FILE = new File(['hello'], 'testImage.png', { type: 'image/png' });
+export const MOCK_PDF_FILE = new File(['hello'], 'testDoc.pdf', { type: 'application/pdf' });

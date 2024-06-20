@@ -1,11 +1,25 @@
 import { RefObject } from 'react';
-import { BatchError, BulkUploadResponse, TransfromDroppedFilesType } from './types';
+
+import {
+  JPMC_FEATURE_FLAG,
+  UPLOAD_INVOICES_TYPE,
+} from 'merchant/views/Transactions/v1/UploadInvoice/components/constants';
+
+import {
+  AWB_PURPOSE_CODES,
+  TABS,
+  TAB_DETAILS,
+  UPLOAD_AIRWAY_BILL,
+  UPLOAD_CONFIG,
+  UPLOAD_INVOICE_BILL,
+} from './constants';
 import { saveInvoice } from './services';
-import { UPLOAD_CONFIG } from './constants';
+import { BatchError, BulkUploadResponse, TransfromDroppedFilesType } from './types';
 
-const { batchSize, acceptedTypes } = UPLOAD_CONFIG;
+const { batchSize } = UPLOAD_CONFIG;
 
-export const transfromDroppedFiles = (data: DataTransfer): TransfromDroppedFilesType => {
+export const transfromDroppedFiles = (data: DataTransfer, tabIndex): TransfromDroppedFilesType => {
+  const acceptedTypes = TAB_DETAILS[TABS[tabIndex]].fileTypes;
   const transformedFiles: Array<File> = [];
   const clientErrors: Array<BatchError> = [];
   Object.keys(data).forEach((key) => {
@@ -96,4 +110,23 @@ export const uploadFiles = async (
     });
   }
   return batchFails;
+};
+
+export const getPurpose = (tags, tab) => {
+  const isJpmcMerchant = tags?.some((tag) => tag.toLowerCase() === JPMC_FEATURE_FLAG);
+  if (isJpmcMerchant) {
+    return UPLOAD_INVOICES_TYPE.JPMC;
+  }
+  if (tab === 0) {
+    return UPLOAD_INVOICES_TYPE.OPGSP_INVOICE;
+  }
+  return UPLOAD_INVOICES_TYPE.OPGSP_AWB;
+};
+
+export const getTabs = (purposeCode) => {
+  const tabs = [UPLOAD_INVOICE_BILL];
+  if (AWB_PURPOSE_CODES.includes(purposeCode)) {
+    tabs.push(UPLOAD_AIRWAY_BILL);
+  }
+  return tabs;
 };
