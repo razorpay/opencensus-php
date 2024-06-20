@@ -565,6 +565,10 @@ EOT;
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
+        $tokenIin = $this->repo->card->dbColumn(Card\Entity::TOKEN_IIN);
+
+        $vaultToken = $this->repo->card->dbColumn(Card\Entity::VAULT_TOKEN);
+
         if($this->repo->terminal->isTerminalsTidbReadMigrationEnabled(__FUNCTION__) === true)
         {
             return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
@@ -578,7 +582,7 @@ EOT;
                 ->whereRaw('JSON_CONTAINS( ' . Terminal\Constants::TS_METHODS . ', \'["' . Payment\Method::EMI . '"]\')'.'= false')
                 ->whereNull(Terminal\Constants::TS_DELETED_AT)
                 ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
-                ->select($paymentData)
+                ->select([$paymentData, $tokenIin, $vaultToken])
                 ->get();
 
         }
@@ -595,7 +599,7 @@ EOT;
                     ->where($cardType, '=' ,$type)
                     ->where($terminalEmi, '=', false)
                     ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
-                    ->select($paymentData)
+                    ->select([$paymentData, $tokenIin, $vaultToken])
                     ->get();
     }
 

@@ -19,12 +19,12 @@ use RZP\Services\Beam\Service;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
 
-class Axis extends Base
+class AxisCiti extends Base
 {
     const BANK_CODE   = IFSC::UTIB;
     const EXTENSION   = FileStore\Format::CSV;
     const FILE_TYPE   = FileStore\Type::AXIS_EMI_FILE;
-    const FILE_NAME   = 'Axis_Emi_File';
+    const FILE_NAME   = 'Citi_Emi_File';
     const DATE_FORMAT = 'd-m-Y';
     const BEAM_FILE_TYPE = 'emi';
     const COMPRESSION_REQUIRED     = false;
@@ -46,7 +46,7 @@ class Axis extends Base
 
             $isCitiBin = in_array($cardActualIin, self::CITI_BINS);
 
-            if($isCitiBin)
+            if(!$isCitiBin)
             {
                 return true;
             }
@@ -83,13 +83,13 @@ class Axis extends Base
                 'Rate of Interest'             => number_format($rateofinterest, 2, '.', ''),
                 'Source'                       => 'Razorpay',
                 'EMI ID'                       => $emiPayment->getId(), // Non Mandatory, filling with our payment id
-                'Identifier'                   => 'Axis',
+                'Identifier'                   => 'Citi',
             ];
 
             $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
                 [
                     'payment_id' => $emiPayment->getId(),
-                    'bank'       => static::BANK_CODE,
+                    'bank'       => 'Axis Citi',
                 ]
             );
         }

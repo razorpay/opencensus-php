@@ -8,6 +8,7 @@ class Constants
 {
     const HDFC             = 'hdfc';
     const AXIS             = 'axis';
+    const AXIS_CITI        = 'axis_citi';
     const ICICI            = 'icici';
     const KOTAK            = 'kotak';
     const FEDERAL          = 'federal';
@@ -147,6 +148,7 @@ class Constants
             self::SBI_NCE,
             self::FEDERAL,
             self::IDFC,
+            self::AXIS_CITI,
         ],
         Type::COMBINED => [
             self::KOTAK,
