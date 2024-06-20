@@ -214,6 +214,11 @@ class Entity extends Base\PublicEntity
         return $this->supports(Flow::TOKENISATION_BLACKLISTED);
     }
 
+    public function isHeadlessForbidden(): bool
+    {
+        return $this->supports(Flow::HEADLESS_FORBIDDEN);
+    }
+
     public function isTokenised()
     {
         return $this->getAttribute(self::TOKENISED);

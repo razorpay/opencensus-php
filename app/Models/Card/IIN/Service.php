@@ -13,6 +13,7 @@ use RZP\Models\Card\IIN;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Payment\Processor\HeadlessOtp;
 use RZP\Services\BinService;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -37,6 +38,13 @@ class Service extends Base\Service
     public function editIin($id, $input)
     {
         $iin = $this->repo->iin->findOrFailAPIEntity($id);
+
+        if(($iin['flows'] > 511 && $iin['flows'] < 1024) && $input['flows']['headless_otp'] === "1"){
+            $this->trace->info(TraceCode::FORBIDDEN_HEADLESS_BIN, [
+                'headless_forbidden_enabled'     =>  $input['flows']['headless_otp'],
+            ]);
+            return [];
+        }
 
         $this->formatEditInput($iin, $input);
 
