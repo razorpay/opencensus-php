@@ -199,7 +199,7 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
 
                     <Route
                       path={getRefRoute(ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS)}
-                      element={<BusinessWebsiteDetails />}
+                      element={<BusinessWebsiteDetails isAccountAndSettingsRevampFlow={true} />}
                     />
 
                     <Route

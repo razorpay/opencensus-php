@@ -1,16 +1,23 @@
 import { useContext } from 'react';
+
 import ModalHeader from 'common/ui/ModalHeader';
-import UpdateWebsiteDetails from './UpdateWebsiteDetails';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
 import { FLOWS } from './Constants';
+import UpdateWebsiteDetails from './UpdateWebsiteDetails';
 
 function InitiateWebsiteChange(props) {
   const context = useContext(TwoFactorVerificaionContext);
 
   const onContactVerified = () => {
     const { user } = props;
+
+    if (props.openNewModal && typeof props.openNewModal === 'function') {
+      props.openNewModal();
+      return;
+    }
 
     props.openModal({
       size: 'small',

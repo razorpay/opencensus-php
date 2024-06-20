@@ -92,7 +92,7 @@ const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
             RR_ADD_ADDITIONAL_WEBSITE,
           ]}
         >
-          <BusinessWebsiteDetails isFlowRevamped={false} />
+          <BusinessWebsiteDetails isFlowRevamped={false} isAccountAndSettingsRevampFlow={false} />
         </IntoView>
       )}
 

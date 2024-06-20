@@ -22,6 +22,7 @@ import { PageLayoutContainer } from './styled';
 import { AccountAndSettingsHomePropInterface, SectionCardInterface } from './typings';
 import { getSectionCards } from './utils/sectionCard';
 import { isApplicationEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { trackAccountAndSettingsLoad } from './tracking';
 
 const feature = 'allow_cfb_international';
 
@@ -64,6 +65,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     const { data } = featureStatusConfig;
     setLoading();
     fetchAllInstruments();
+    trackAccountAndSettingsLoad();
 
     if (isApplicationEnabled(user)) {
       if (user.isRevokeApplicationEnabled) {

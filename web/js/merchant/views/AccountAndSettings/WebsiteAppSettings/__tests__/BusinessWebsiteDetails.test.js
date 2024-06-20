@@ -1,17 +1,24 @@
 import React from 'react';
+
 import BusinessWebsiteDetails from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails';
-import { userEvent, render, screen, server } from 'test-utils';
-import * as ModalActions from 'merchant_common/reducers/modals';
+import { useBusinessWebsiteRevamp } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils';
 import {
   user,
   initialState,
   initialStateForWorkflows,
 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/__tests__/mocks/fixtures/BusinessWebsiteDetails';
-import { useBusinessWebsiteRevamp } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils';
 import {
   fetchWebsiteAutomationStatus,
   fetchWorkflowStatus,
 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/__tests__/mocks/handlers';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { userEvent, render, screen, server } from 'test-utils';
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
 
 jest.mock(
   'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils',

@@ -1137,6 +1137,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'business_website_v2_automation',
+          experimentId: {
+            beta: 'OAjeLeTYDObyns',
+            production: 'OAjgnAslLpwJXb',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

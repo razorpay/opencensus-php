@@ -76,10 +76,14 @@ type Getters = {
   isOmniChannelMerchant: boolean;
   isOmniEnabledMerchant: boolean;
   isRazorxAnnouncementEnabled: boolean;
+  isActivated: boolean;
   isHideMonthlyInvoiceEnabled: boolean;
   isINCountry: boolean;
   isSGCountry: boolean;
   isVasTestingMerchant: boolean;
+  isAdminOrOwner: boolean;
+  isOwner: boolean;
+  isAdditionalDomainWhitelistSelfServeOn: boolean;
 };
 
 type Merchant = {
@@ -94,6 +98,8 @@ type UserProperties = {
   international: boolean;
   business_website: string;
   activation_status: string;
+  additional_websites: [];
+  appstore_url: string;
   international_activation_flow: string;
   current: string;
   email: string;
@@ -142,6 +148,8 @@ type UserProperties = {
   is_pgos_merchant: boolean;
   configTags: any;
   logo_url?: string;
+  playstore_url: string;
+  has_key_access: boolean;
 };
 
 // as user properties are not available initially
