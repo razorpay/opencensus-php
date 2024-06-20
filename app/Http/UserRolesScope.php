@@ -43,6 +43,7 @@ class UserRolesScope
             'pos_fetch_device_order'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'pos_fetch_all_device_orders'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'pos_fetch_latest_order'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'fetch_sales_assisted_merchants'                       => [Role::POS_SALES_ADMIN, Role::PARTNER_AGENT],
 
             'onboarding_get'                                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER,Role::RAZORPAY_SALES],
             'onboarding_save'                                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER,Role::RAZORPAY_SALES],
@@ -52,8 +53,7 @@ class UserRolesScope
 
             'merchant_get_l2_dynamic_configs'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER,Role::RAZORPAY_SALES],
             'merchant_policy_section_publish_v2'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
-            'merchant_website_policy_verify'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
-
+            'merchant_website_policy_verify'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
             'pgos_send_sms_otp'                                    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'pgos_verify_otp'                                      => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 

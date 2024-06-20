@@ -117,6 +117,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const FETCH_ACTION_STATE_COUNT               = 'fetch_action_state_count';
     const MERCHANT_POS_STATE_LOGS                = 'merchant_pos_state_logs';
     const POST_MERCHANT_CONFIG                   = 'pos_merchant_config';
+    const FETCH_SALES_ASSISTED_MERCHANTS         = 'fetch_sales_assisted_merchants';
 
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
@@ -272,6 +273,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_ACTION_STATE_COUNT                      => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
         self::MERCHANT_POS_STATE_LOGS                       => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
         self::POST_MERCHANT_CONFIG                          => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Onboard',
+        self::FETCH_SALES_ASSISTED_MERCHANTS                => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchants'
     ];
 
     // timeout in seconds

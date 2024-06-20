@@ -1476,33 +1476,30 @@ class Route
         //OCR
         'ocr_admin_proxy'                          => ['get',      'ocr/admin/{path?}',                              'OcrAdminProxyController@handleAdminRequests'                       ],
 
-        //PGOS Proxy Routes
-        'merchant_bmc_response_fetch'              => ['get',      'pg/onboarding/get_merchant_bmc_response',        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'merchant_bmc_response_fetch_admin'        => ['get',      'pg/onboarding/{id}/get_merchant_bmc_response',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'merchant_bmc_response_save'               => ['post',     'pg/onboarding/save_merchant_bmc_response',       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'onboarding_get'                           => ['get',      'onboarding/workflow/merchant/{id}',              'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'onboarding_save'                          => ['post',     'onboarding/workflow/merchant/{id}',              'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'merchant_document_save'                   => ['put',      'pg/onboarding/{id}/save_merchant_document',      'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'onboarding_order_create'                  => ['post',     'pg/onboarding/payment_order_create',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'onboarding_order_verify'                  => ['post',     'pg/onboarding/payment_order_verify',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'onboarding_payment_webhook'               => ['post',     'pg/onboarding/payment_order_webhook',            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'merchant_activation_business_categories_v3'       => ['get',      'pg/onboarding/fetch_merchant_categories',        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'merchant_activation_business_categories_admin_v3' => ['get',      'pg/onboarding/fetch_merchant_categories_admin',  'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'merchant_activation_business_categories_adminV3'  => ['get',      'pg/onboarding/{id}/fetch_merchant_categories_admin',  'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'fetch_onboarding_payment_details'                 => ['get',      'pg/onboarding/fetch_onboarding_payment_details/{paymentType}    ',  'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'pgos_send_sms_otp'                        => ['post',     'pg/onboarding/send_sms_otp',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'pgos_verify_otp'                          => ['post',     'pg/onboarding/verify_otp',                       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-
-
-        'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',    'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-        'merchant_policy_section_publish_v2'       => ['post',    'pg/onboarding/merchant_policy_section_publish_v2', 'MerchantOnboardingProxyController@handleDashboardProxyRequests'   ],
-        'merchant_website_policy_verify'           => ['put',     'merchant/website/policy/verify',                   'MerchantController@verifyMerchantWebsitePolicy' ],
-        'rize_marketplace_dashboard'               => ['post',       'rize/dashboard/{path?}', 'RizeMarketplaceProxyController@handleDashboardProxyRequest' ],
-
-
+        // PGOS Proxy Routes
+        'merchant_bmc_response_fetch'                       => ['get',      'pg/onboarding/get_merchant_bmc_response',                      'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_bmc_response_fetch_admin'                 => ['get',      'pg/onboarding/{id}/get_merchant_bmc_response',                 'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_bmc_response_save'                        => ['post',     'pg/onboarding/save_merchant_bmc_response',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_document_save'                            => ['put',      'pg/onboarding/{id}/save_merchant_document',                    'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_get'                                    => ['get',      'onboarding/workflow/merchant/{id}',                            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_save'                                   => ['post',     'onboarding/workflow/merchant/{id}',                            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_order_create'                           => ['post',     'pg/onboarding/payment_order_create',                           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_order_verify'                           => ['post',     'pg/onboarding/payment_order_verify',                           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_payment_webhook'                        => ['post',     'pg/onboarding/payment_order_webhook',                          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_activation_business_categories_v3'        => ['get',      'pg/onboarding/fetch_merchant_categories',                      'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_activation_business_categories_admin_v3'  => ['get',      'pg/onboarding/fetch_merchant_categories_admin',                'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_activation_business_categories_adminV3'   => ['get',      'pg/onboarding/{id}/fetch_merchant_categories_admin',           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'fetch_onboarding_payment_details'                  => ['get',      'pg/onboarding/fetch_onboarding_payment_details/{paymentType}', 'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'pgos_send_sms_otp'                                 => ['post',     'pg/onboarding/send_sms_otp',                                   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'pgos_verify_otp'                                   => ['post',     'pg/onboarding/verify_otp',                                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_get_l2_dynamic_configs'                   => ['get',      'pg/onboarding/merchant_get_l2_dynamic_configs',                'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_policy_section_publish_v2'                => ['post',     'pg/onboarding/merchant_policy_section_publish_v2',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         // pending status code and success true return from pgos to api
-        'merchant_website_section_page_load_v2'    => ['get',      'pg/onboarding/merchant_policy_preview',          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_website_section_page_load_v2'             => ['get',      'pg/onboarding/merchant_policy_preview',                        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'fetch_sales_assisted_merchants'                    => ['get',      'pg/onboarding/fetch_sales_assisted_merchants',                 'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_website_policy_verify'                    => ['put',      'merchant/website/policy/verify',                               'MerchantController@verifyMerchantWebsitePolicy'                    ],
 
+        'rize_marketplace_dashboard'               => ['post',       'rize/dashboard/{path?}',                       'RizeMarketplaceProxyController@handleDashboardProxyRequest'        ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -6887,6 +6884,7 @@ class Route
         'merchant_bmc_response_save',
         'onboarding_order_create',
         'onboarding_order_verify',
+        'fetch_sales_assisted_merchants',
         'merchant_consents_save',
         'rize_marketplace_dashboard',
         'payment_links_custom_field_config_get',
@@ -9589,6 +9587,7 @@ class Route
         'pgos_send_sms_otp'                               => Permission::EDIT_MERCHANT,
         'pgos_verify_otp'                                 => Permission::EDIT_MERCHANT,
         'onboarding_order_create'                         => Permission::EDIT_MERCHANT,
+        'fetch_sales_assisted_merchants'                  => Permission::VIEW_MERCHANT,
         'onboarding_order_verify'                         => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
@@ -12267,6 +12266,7 @@ class Route
             'merchants_risk_direct',
             'onboarding_order_create',
             'onboarding_order_verify',
+            'fetch_sales_assisted_merchants',
             'merchant_consents_save',
             'payment_links_custom_field_config_get',
             'payment_links_custom_field_config_upsert',
@@ -17815,6 +17815,7 @@ class Route
             'merchant_submit_internal',
             'merchant_assign_pricing_internal',
             'check_user_exists',
+            'user_fetch'
         ],
 
         'disputes' => [
