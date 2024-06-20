@@ -176,6 +176,22 @@ class Core extends Base\Core
             }
         }
 
+        // this is for PDN and payment creation decoupling
+        if ($payment->getApiOrderId() !== null)
+        {
+            $cardMandateNotification = $this->repo->card_mandate_notification->findByOrderId($payment->getApiOrderId());
+
+            if ($cardMandateNotification !== null)
+            {
+                $cardMandateNotification->payment()->associate($payment);
+                $cardMandateNotification->saveOrFail();
+
+                $namespace = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
+                (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $payment->getId(), []);
+                return $cardMandateNotification;
+            }
+        }
+
         $ex = null;
 
         $cardMandateNotification = null;

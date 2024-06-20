@@ -3156,7 +3156,7 @@ class Processor
         }
     }
 
-    protected function validateCardRecurringAutoPayment($input)
+    public function validateCardRecurringAutoPayment($input)
     {
         if ((isset($input[Payment\Entity::METHOD])) and
             ($input[Payment\Entity::METHOD] === Payment\Method::CARD))
@@ -9473,6 +9473,10 @@ class Processor
                 $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::NOTIFICATION_ID]);
         }
 
+        if (strpos(Request::getUri(), "/payments/create/recurring") !== false)
+        {
+            (new CardMandateNotification\Core)->validateCardDebitDecoupledFlow($payment, $input);
+        }
     }
 
     protected function validateDisableS2SIfApplicable(Payment\Entity $payment, array $input)

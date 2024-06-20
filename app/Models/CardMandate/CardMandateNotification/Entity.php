@@ -37,6 +37,9 @@ class Entity extends Base\PublicEntity
     const AMOUNT           = 'amount';
     const NOTES            = 'notes';
     const PURPOSE          = 'purpose';
+    const ORDER_ID         = 'order_id';
+    const PAYMENT_AFTER    = 'payment_after';
+    const TOKEN_ID         = 'token_id';
 
     protected $entity = 'card_mandate_notification';
 
@@ -45,6 +48,11 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'cardmn';
 
     protected $fillable = [
+        self::TOKEN_ID,
+        self::ORDER_ID,
+        self::PAYMENT_AFTER,
+        self::CARD_MANDATE_ID,
+        self::MERCHANT_ID,
     ];
 
     protected $public = [
@@ -52,6 +60,9 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTIFIED_AT,
         self::CREATED_AT,
+        self::ORDER_ID,
+        self::PAYMENT_AFTER,
+        self::TOKEN_ID,
     ];
 
     protected $visible = [
@@ -72,6 +83,9 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::ORDER_ID,
+        self::PAYMENT_AFTER,
+        self::TOKEN_ID,
     ];
 
     protected $defaults = [
@@ -149,6 +163,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERIFIED_AT, $timestamp);
     }
 
+    public function setOrderId($orderId)
+    {
+        $this->setAttribute(self::ORDER_ID, $orderId);
+    }
+
+    public function setTokenId($tokenId)
+    {
+        $this->setAttribute(self::TOKEN_ID, $tokenId);
+    }
+
+    public function setPaymentAfter($paymentAfter)
+    {
+        $this->setAttribute(self::PAYMENT_AFTER, $paymentAfter);
+    }
+
     public function isAfaRequired()
     {
         return $this->getAttribute(self::AFA_REQUIRED);
@@ -224,6 +253,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMINDER_ID);
     }
 
+    public function getOrderId()
+    {
+        return $this->getAttribute(self::ORDER_ID);
+    }
+
+    public function getTokenId()
+    {
+        return $this->getAttribute(self::TOKEN_ID);
+    }
+
+    public function getPaymentAfter()
+    {
+        return $this->getAttribute(self::PAYMENT_AFTER);
+    }
+
     // Relations
     public function merchant()
     {
@@ -238,5 +282,16 @@ class Entity extends Base\PublicEntity
     public function payment()
     {
         return $this->belongsTo(Payment\Entity::class);
+    }
+
+    public function toNotificationArray()
+    {
+        return [
+            'id'            => 'notification_'.$this->getId(),
+            'token_id'      => 'token_'.$this->getTokenId(),
+            'payment_after' => $this->getPaymentAfter(),
+            'status'        => Status::$pdnDecouplingStatusMap[$this->getStatus()],
+            'delivered_at'  => $this->getNotifiedAt(),
+        ];
     }
 }

@@ -4,8 +4,14 @@ namespace RZP\Models\CardMandate\CardMandateNotification;
 
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Timezone;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
+use RZP\Models\Notification;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -13,11 +19,13 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reminders;
 use RZP\Models\CardMandate;
+use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Card\IIN\MandateHub;
 use RZP\Models\CardMandate\MandateHubs;
+use RZP\Jobs\CardRecurringNotificationProcess;
 
 class Core extends Base\Core
 {
@@ -192,6 +200,93 @@ class Core extends Base\Core
         return $cardMandateNotification;
     }
 
+    public function validateCardDebitDecoupledFlow(Payment\Entity $payment, $input)
+    {
+        if (isset($input['order_id']) === false)
+        {
+            return null;
+        }
+
+        $orderId = Order\Entity::verifyIdAndSilentlyStripSign($input['order_id']);
+
+        $cardMandateNotification = $this->repo->card_mandate_notification->findByOrderId($orderId);
+
+        $order = $payment->order;
+
+        if($cardMandateNotification === null)
+        {
+            return null;
+        }
+
+        $errorCode = null;
+
+        if($order->getAttempts() >= Constants::PDN_DECOUPLING_ORDER_RETRY_ATTEMPTS)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_ATTEMPTS_EXCEEDED;
+        }
+
+        if ($cardMandateNotification->getAmount() !== $payment->getAmount())
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_NOTIFICATION_PAYMENT_AMOUNT_MISMATCH;
+        }
+
+        $paymentCurrency = empty($payment->getCurrency()) ? Currency::INR : $payment->getCurrency();
+
+        if ($cardMandateNotification->getCurrency() !== $paymentCurrency)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_NOTIFICATION_PAYMENT_CURRENCY_MISMATCH;
+        }
+
+        $cardMandate = $cardMandateNotification->cardMandate;
+
+        if ($cardMandate->isActive() === false)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE;
+        }
+
+        if (!$cardMandateNotification->isAfaRequired() and
+            $cardMandateNotification->getStatus() !== Status::NOTIFIED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_NOTIFIED;
+        }
+
+        if (!$cardMandateNotification->isAfaRequired() and
+            $cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_OPTED_OUT_OF_PAYMENT;
+        }
+
+        if (empty($errorCode) === false)
+        {
+            throw new Exception\BadRequestException($errorCode, null, [
+                Payment\Entity::METHOD => Payment\Method::CARD,
+            ]);
+        }
+
+        $this->validateCardMandateNotification($cardMandateNotification);
+    }
+
+    public function validateCardMandateNotification(Entity $notification)
+    {
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $notificationDeliveredTime = Carbon::createFromTimestamp($notification->getNotifiedAt(), Timezone::IST);
+
+        $paymentAfterTime = Carbon::createFromTimestamp($notification->getPaymentAfter(), Timezone::IST);
+
+        if($currentTime->diffInHours($notificationDeliveredTime) < Constants::MINIMUM_TIME_DIFFERENCE_IN_PDN_AND_DEBIT_PAYMENT)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Debit can be attempted 36 hours after sending the pre-debit notification');
+        }
+
+        //debit should not be attempted before payment_after
+        if($currentTime < $paymentAfterTime)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MANDATE_PROMISED_DEBIT_DATE_NOT_HONOURED);
+        }
+    }
+
     public function verifyNotification(Payment\Entity $payment): Entity
     {
         $this->trace->info(TraceCode::CARD_MANDATE_VERIFY_NOTIFICATION_REQUEST, [
@@ -337,7 +432,15 @@ class Core extends Base\Core
 
                     if ($cardMandateNotification->getStatus() === Status::NOTIFIED)
                     {
-                        $cardMandateNotification->setNotifiedAt($notification->getNotifiedAt());
+                        if (($cardMandateNotification->getOrderId() !== null) and
+                            (empty($notification->getNotifiedAt()) === true))
+                        {
+                            $cardMandateNotification->setNotifiedAt(Carbon::now()->getTimestamp());
+                        }
+                        else
+                        {
+                            $cardMandateNotification->setNotifiedAt($notification->getNotifiedAt());
+                        }
 
                         $isNotified = true;
                     }
@@ -359,6 +462,12 @@ class Core extends Base\Core
 
                 $cardMandateNotification->saveOrFail();
             });
+
+        // This is to block the AFA request for mandate HQ
+        if ($cardMandateNotification->getOrderId() !== null)
+        {
+            return $cardMandateNotification;
+        }
 
         $payment = $cardMandateNotification->payment;
 
@@ -498,5 +607,349 @@ class Core extends Base\Core
             default:
                 throw new LogicException('Should not have reached here. Status: ' . $status);
         }
+    }
+
+    public function validateCardMandateNotificationData($input, $merchant, $token)
+    {
+        $tokenId = $input['notification']['token_id'];
+
+        $this->validateToken($token);
+
+        $this->validatePaymentMethod($input);
+
+        $this->validatePaymentAfter($input);
+
+        $processor = new Payment\Processor\Processor($merchant);
+        $validationInput = [
+            'method' => 'card',
+            'token' => $tokenId,
+            'customer_id' => 'cust_'. $token->getCustomerId(),
+        ];
+        $processor->validateCardRecurringAutoPayment($validationInput);
+    }
+
+    protected function validateToken($token)
+    {
+        if(($token === null) or ($token->getRecurringStatus() !== 'confirmed'))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "token is not in confirmed status");
+        }
+
+        if($token->getMethod() !== 'card')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid card token');
+        }
+
+        if($token->getCardMandateId() === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a card mandate token');
+        }
+    }
+
+    protected function validatePaymentMethod($input)
+    {
+        if((isset($input['method']) === true) and ($input['method'] !== 'card'))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Notification is not supported for other methods');
+        }
+    }
+
+    protected function validatePaymentAfter($input)
+    {
+        $paymentAfter = $input['notification']['payment_after'];
+
+        $validPaymentAfter = Carbon::now(Timezone::IST)->addHours(36)->addMinutes(5)->getTimestamp();
+
+        if(($paymentAfter !== null) and
+            ($paymentAfter < $validPaymentAfter))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Debit can be attempted 36 hours after sending the pre-debit notification');
+        }
+    }
+
+    public function createNotificationUsingOrder(array $input, $order, $token)
+    {
+        $notification = $this->createNotification($input, $order, $token);
+
+        // pushing event to queue for pre-debit notification and delaying it for 60 sec
+        try
+        {
+            CardRecurringNotificationProcess::dispatch($this->mode, $notification->getId())->delay(60);
+        }
+        catch (\Throwable $e)
+        {
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CARD_RECURRING_NOTIFICATION_PUSH_FAILED);
+
+            throw $e;
+        }
+
+        return [
+            "token_id"          => 'token_'.$notification->getTokenId(),
+            "payment_after"     => $notification->getPaymentAfter(),
+            "id"                => 'notification_'.$notification->getId(),
+        ];
+    }
+
+    public function createNotification(array $input, $order, $token)
+    {
+        $inputParams = $input['notification'];
+        $inputParams[Entity::ORDER_ID] = $order->getId();
+        $inputParams[Entity::MERCHANT_ID] = $this->merchant->getMerchantId();
+        $inputParams[Entity::TOKEN_ID] = Entity::stripDefaultSign($inputParams['token_id']);
+        $inputParams[Entity::CARD_MANDATE_ID] = $token->getCardMandateId();
+
+        return $this->createNotificationForDecoupling($inputParams, $order);
+    }
+
+    public function createNotificationForDecoupling(array $input, Order\Entity $order)
+    {
+        $this->trace->info(
+            TraceCode::CARD_RECURRING_NOTIFICATION_CREATE_REQUEST,
+            [
+                'input'        => $input,
+            ]
+        );
+
+        $this->addDefaultsForNotificationInput($input);
+
+        $notification = (new Entity)->build($input);
+
+        $notification->merchant()->associate($this->merchant);
+
+        $this->repo->saveOrFail($notification);
+
+        $this->trace->info(
+            TraceCode::CARD_RECURRING_NOTIFICATION_CREATED,
+            [
+                'merchant_id'       => $this->merchant->getPublicId(),
+                'order_id'          => $order->getPublicId(),
+                'token_id'          => $input['token_id'],
+                'notification_id'   => $notification->getPublicId(),
+            ]
+        );
+        return $notification;
+    }
+
+    protected function addDefaultsForNotificationInput(array & $input)
+    {
+        if (isset($input['payment_after']) === false)
+        {
+            $input['payment_after'] = Carbon::now(Timezone::IST)->addHours(36)->addMinutes(5)->getTimestamp();
+        }
+    }
+
+    public function processNotification(Entity $cardMandateNotification, $order)
+    {
+        $this->merchant = $this->repo->merchant->findOrFail($cardMandateNotification->getMerchantId());
+
+        $token = $this->repo->token->findByIdAndMerchant($cardMandateNotification->getTokenId(), $this->merchant);
+
+        $cardMandate = $token->cardMandate;
+
+        $cardMandateNotification->merchant()->associate($cardMandate->merchant);
+
+        $cardMandateNotification->cardMandate()->associate($cardMandate);
+
+        $mandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
+
+        $input[Entity::DEBIT_AT] = $cardMandateNotification->getPaymentAfter();
+
+        $input[Entity::AMOUNT] = $order->getAmount();
+
+        $paymentInput = $this->createPaymentInputForPDN($token, $cardMandate, $cardMandateNotification, $order);
+
+        $payment = new Payment\Entity;
+        $payment->merchant()->associate($cardMandate->merchant);
+        $payment->build($paymentInput);
+
+        // here we are using order id as payment id
+        $payment['id'] = $cardMandateNotification->getOrderId();
+
+        $terminal = $this->repo->terminal->findOrFail($token->getTerminalId());
+        $payment->terminal()->associate($terminal);
+
+        $card = $this->repo->card->findOrFail($token->getCardId());
+        $payment->card()->associate($card);
+
+        $payment->token()->associate($token);
+
+        $payment->order()->associate($order);
+
+        $payment['recurring_type'] = 'auto';
+
+        try
+        {
+            $notification = $mandateHub->CreatePreDebitNotification($cardMandate, $payment, $input);
+
+            (new CardMandate\Metric())->generateMetric(CardMandate\Metric::CARD_MANDATE_CREATE_PDN,
+                ['mandate_hub' => $cardMandate->getMandateHub()]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CARD_RECURRING_NOTIFICATION_PROCESS_FAILED,
+                [
+                    'mode' => $this->mode,
+                    'notification_id' => $cardMandateNotification->getId(),
+                    'step' => 'failed during CreatePreDebitNotification() step'
+                ]
+            );
+
+            throw $e;
+        }
+
+        $cardMandateNotification->setNotificationId($notification->getId());
+
+        $cardMandateNotification->setAmount($input[Entity::AMOUNT]);
+
+        $currency = empty($input[Entity::CURRENCY]) ? Currency::INR : $input[Entity::CURRENCY];
+        $cardMandateNotification->setCurrency($currency);
+
+        if (empty($input[Entity::PURPOSE]) === false)
+        {
+            $cardMandateNotification->setPurpose($input[Entity::PURPOSE]);
+        }
+
+        if (empty($input[Entity::NOTES]) === false)
+        {
+            $cardMandateNotification->setNotes($input[Entity::NOTES]);
+        }
+
+        $status = $this->getStatusFromNotificationStatus($notification->getStatus());
+
+        if ($status === Status::NOTIFIED)
+        {
+            if(empty($notification->getNotifiedAt())===false)
+            {
+                $cardMandateNotification->setNotifiedAt($notification->getNotifiedAt());
+            }
+            else
+            {
+                $cardMandateNotification->setNotifiedAt(Carbon::now()->getTimestamp());
+            }
+        }
+
+        $cardMandateNotification->setAfaRequired($notification->getAfaRequired());
+
+        if ($cardMandateNotification->isAfaRequired()) {
+            $cardMandateNotification->setAfaStatus($notification->getAfaStatus());
+            $cardMandateNotification->setAfaCompletedAt($notification->getAfaCompletedAt());
+        }
+
+        $cardMandateNotification->setDebitAt($input[Entity::DEBIT_AT]);
+
+        $cardMandateNotification->saveOrFail();
+
+        if ((!$cardMandateNotification->isAfaRequired() and
+                ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
+                    $status === Status::FAILED)) or
+            ($cardMandateNotification->isAfaRequired() and
+                ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
+                    $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED)))
+        {
+            $this->processNotificationFailure($cardMandateNotification);
+        }
+        else
+        {
+            $this->processNotificationSuccess($cardMandateNotification);
+        }
+    }
+
+    public function createPaymentInputForPDN($token, CardMandate\Entity $cardMandate, CardMandate\CardMandateNotification\Entity $cardMandateNotification, $order)
+    {
+        $input = [
+            'amount' => $order->getAmount(),
+            'currency' => 'INR',
+            'method' => 'card',
+            'order_id' => $cardMandateNotification->getOrderId(),
+            'customer_id' => 'cust_'.$token->getCustomerId(),
+            'recurring' => '1',
+            'token' => $token->getId(),
+            'email' => $token->customer->getEmail(),
+            'contact' => $token->customer->getContact(),
+        ];
+
+        return $input;
+    }
+
+    public function processNotificationFailure($notification)
+    {
+        $notification->setStatus(Status::FAILED);
+
+        $this->repo->saveOrFail($notification);
+
+        $this->eventOrderNotificationFailed($notification);
+    }
+
+    public function eventOrderNotificationFailed(CardMandate\CardMandateNotification\Entity $notification)
+    {
+        if($notification->getStatus() !== Status::FAILED)
+        {
+            return;
+        }
+
+        $input = [
+            'order_id' => $notification->getOrderId(),
+            'token_id' => $notification->getTokenId(),
+            'merchant_id' => $notification->getMerchantId(),
+            'payment_after' => $notification->getPaymentAfter(),
+        ];
+        $notificationEntity = (new Notification\Entity)->build($input);
+
+        $notificationEntity['id'] = $notification->getId();
+        $notificationEntity['delivered_at'] = null;
+        $notificationEntity['status'] = 'failed';
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $notificationEntity
+        ];
+
+        $this->app['events']->dispatch('api.order.notification.failed', $eventPayload);
+    }
+
+    protected function processNotificationSuccess($notification)
+    {
+        $notification->setStatus(Status::NOTIFIED);
+
+        $this->repo->saveOrFail($notification);
+
+        $this->eventOrderNotificationDelivered($notification);
+    }
+
+    public function eventOrderNotificationDelivered(CardMandate\CardMandateNotification\Entity $notification)
+    {
+        if($notification->getStatus() !== Status::NOTIFIED)
+        {
+            return;
+        }
+
+        $input = [
+            'order_id' => $notification->getOrderId(),
+            'token_id' => $notification->getTokenId(),
+            'merchant_id' => $notification->getMerchantId(),
+            'payment_after' => $notification->getPaymentAfter(),
+        ];
+        $notificationEntity = (new Notification\Entity)->build($input);
+
+        $notificationEntity['id'] = $notification->getId();
+        $notificationEntity['delivered_at'] = $notification->getNotifiedAt();
+        $notificationEntity['status'] = 'delivered';
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $notificationEntity
+        ];
+
+        $this->app['events']->dispatch('api.order.notification.delivered', $eventPayload);
     }
 }

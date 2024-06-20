@@ -718,6 +718,11 @@ return [
         'live'       => env('AWS_UPI_AUTOPAY_NOTIFICATION_LIVE_QUEUE'),
     ],
 
+    'card_recurring_notification' => [
+        'test'       => env('AWS_CARD_RECURRING_NOTIFICATION_TEST_QUEUE'),
+        'live'       => env('AWS_CARD_RECURRING_NOTIFICATION_LIVE_QUEUE'),
+    ],
+
     'art_recon_entity_update'  => [
         'test'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),
         'live'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),

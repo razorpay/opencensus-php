@@ -23,6 +23,13 @@ class Status
         self::FAILED => [],
     ];
 
+    static $pdnDecouplingStatusMap = [
+        self::CREATED => 'created',
+        self::NOTIFIED => 'delivered',
+        self::FAILED => 'failed',
+        self::PENDING => 'pending',
+    ];
+
     public static function isValid(string $status): bool
     {
         $key = __CLASS__ . '::' . strtoupper($status);

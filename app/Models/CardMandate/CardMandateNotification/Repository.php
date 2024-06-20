@@ -14,4 +14,18 @@ class Repository extends Base\Repository
                     ->where(Entity::NOTIFICATION_ID, '=', $id)
                     ->first();
     }
+
+    public function findById($id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, '=', $id)
+            ->first();
+    }
+
+    public function findByOrderId($id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ORDER_ID, '=', $id)
+            ->first();
+    }
 }

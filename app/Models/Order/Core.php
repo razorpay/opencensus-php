@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -16,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Services\PGRouter;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\CardMandate;
 use RZP\Models\Notification;
 use RZP\Constants\Entity as E;
 use RZP\Models\Bank\BankCodes;
@@ -955,10 +957,27 @@ class Core extends Base\Core
 
         if(empty($input['notification']) === false)
         {
-            (new Notification\Core())->validateNotificationData($input, $merchant);
+            $tokenId = $input['notification']['token_id'];
 
-            // create notification
-            $notification = (new Notification\Core())->createNotificationUsingOrder($input, $order);
+            $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $merchant);
+
+            if (($token !== null) and
+                ($token->getMethod() === 'card') and
+                (strtolower($this->app->razorx->getTreatment($merchant->getMerchantId(), RazorxTreatment::CARD_RECURRING_ENABLE_PDN_DECOUPLING, $this->mode ?? 'live')) === 'on'))
+            {
+                $cardMandateNotificationCore = (new CardMandate\CardMandateNotification\Core);
+                $cardMandateNotificationCore->validateCardMandateNotificationData($input, $merchant, $token);
+
+                // create notification
+                $notification = $cardMandateNotificationCore->createNotificationUsingOrder($input, $order, $token);
+            }
+            else
+            {
+                (new Notification\Core())->validateNotificationData($input, $merchant, $token);
+
+                // create notification
+                $notification = (new Notification\Core())->createNotificationUsingOrder($input, $order);
+            }
 
             $data['notification'] = $notification;
         }

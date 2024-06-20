@@ -24,6 +24,7 @@ use RZP\Models\Order\Metric;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 
 class PGRouter
@@ -829,6 +830,8 @@ class PGRouter
 
             $order = (new Order\Entity())->forceFill($response['body']);
 
+            $this->setNotificationInOrder($response, $order);
+
             $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($order->getId(), 'offer');
 
             if (isset($response['body']['order_metas']) === true)
@@ -1444,5 +1447,47 @@ class PGRouter
         $output = $this->sendRequest($url, Requests::POST, $input, true, 90);
 
         return $output['body'];
+    }
+
+    public function setNotificationInOrder($response,  Order\Entity $order)
+    {
+        if(isset($response['body']['notification']) === true)
+        {
+            $order->setAttribute('notification_data', $response['body']['notification']);
+        }
+        else if((isset($response['body']['order_relationships'])) and
+            (count($response['body']['order_relationships']) > 0))
+        {
+            foreach ($response['body']['order_relationships'] as $relationship) {
+
+                $entityType = $relationship['entity_type'];
+
+                if($entityType === 'notification')
+                {
+                    try
+                    {
+                        $notificationRepo = new CardMandateNotification\Repository();
+
+                        $notificationData = $notificationRepo->findByOrderId($relationship['order_id']);
+
+                        if ($notificationData !== null)
+                        {
+                            $notificationDataArray = $notificationData->toNotificationArray();
+                            
+                            $order->setAttribute('notification', $notificationDataArray);
+
+                            $order->setAttribute('notification_data', $notificationDataArray);
+                        }
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::CARD_RECURRING_NOTIFICATION_ENTITY_FETCH_FAILED);
+                    }
+                }
+            }
+        }
     }
 }

@@ -103,12 +103,8 @@ class Core extends Base\Core
         ];
     }
 
-    public function validateNotificationData($input, $merchant)
+    public function validateNotificationData($input, $merchant, $token)
     {
-        $tokenId = $input['notification']['token_id'];
-
-        $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $merchant);
-
         $this->validateToken($token);
 
         $this->validatePaymentMethod($input, $token);
