@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     const CONTACT        = 'contact';
     const MERCHANT_ID    = 'merchant_id';
     const STATUS         = 'status';
-
+    const CONSENT_JSON   = 'consent_json';
 
     protected $entity = 'customer_consent_1cc';
 
@@ -29,18 +29,28 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::MERCHANT_ID,
         self::STATUS,
+        self::CONSENT_JSON,
     ];
 
     protected $public = [
         self::CONTACT,
         self::MERCHANT_ID,
-        self::STATUS
+        self::STATUS,
+        self::CONSENT_JSON,
     ];
 
     protected $dates = [
         self::CREATED_AT,
         self::DELETED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $casts              = [
+        self::CONSENT_JSON  => 'array',
+    ];
+
+    protected $defaults           = [
+        self::CONSENT_JSON  => [],
     ];
 
     public function getContact()
@@ -58,6 +68,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getConsentJson()
+    {
+        return $this->getAttribute(self::CONSENT_JSON);
+    }
+
     public function setMerchantId(string $merchantId)
     {
         $this->setAttribute(self::MERCHANT_ID, $merchantId);
@@ -71,6 +86,11 @@ class Entity extends Base\PublicEntity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setConsentJson($json)
+    {
+        $this->setAttribute(self::CONSENT_JSON, $json);
     }
 
     public function merchant(): BelongsTo

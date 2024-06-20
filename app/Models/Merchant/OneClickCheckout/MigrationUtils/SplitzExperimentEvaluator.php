@@ -131,6 +131,13 @@ class SplitzExperimentEvaluator extends Base\Core
         return $result['variant'] === 'enable';
     }
 
+    public function useTripleConsentForMerchant(string $merchantId): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.one_cc_triple_consent_experiment_id', $merchantId);
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enabled';
+    }
+
     public function useMCSForShopifyApplyCouponDecomposition(): bool
     {
         $input = $this->merchantIdBasedPayload('app.magic_shopify_apply_coupon_decomp_experiment_id');

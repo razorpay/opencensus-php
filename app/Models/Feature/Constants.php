@@ -2010,7 +2010,14 @@ class Constants
     const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
     const ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION = 'disable_pre_magic_order_ingestion';
     const ONE_CC_ENABLE_NECTOR_COINS = 'one_cc_enable_nector_coin';
+
+    const ONE_CC_EMAIL_CUSTOMER_CONSENT = 'one_cc_email_consent';
+    const ONE_CC_WHATSAPP_CUSTOMER_CONSENT = 'one_cc_whatsapp_consent';
+    const ONE_CC_SMS_CUSTOMER_CONSENT = 'one_cc_sms_consent';
+
+
     CONST ONE_CC_ENABLE_FLITS_COINS = 'one_cc_enable_flits_coins';
+
     const ONE_CC_OPT_SHIPPING_TAX = 'one_cc_opt_shipping_tax';
     const ONE_CC_TAX_INCLUSION = 'one_cc_tax_inclusion';
     /**
@@ -2256,6 +2263,9 @@ class Constants
         self::LRSNonStandardCheckout,
         DcsConstants::LRSImportFeeBreakup,
         self::CustomMessageForCFB,
+        self::ONE_CC_EMAIL_CUSTOMER_CONSENT,
+        self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT,
+        self::ONE_CC_SMS_CUSTOMER_CONSENT,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2283,7 +2293,10 @@ class Constants
         self::ONE_CC_ENABLE_NECTOR_COINS,
         self::ONE_CC_ENABLE_FLITS_COINS,
         self::ONE_CC_OPT_SHIPPING_TAX,
-        self::ONE_CC_TAX_INCLUSION
+        self::ONE_CC_TAX_INCLUSION,
+        self::ONE_CC_EMAIL_CUSTOMER_CONSENT,
+        self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT,
+        self::ONE_CC_SMS_CUSTOMER_CONSENT,
     ];
 
     const TRUECALLER_FEATURES = [
@@ -3023,6 +3036,11 @@ class Constants
         self::VENDOR_ONBOARDING_ENABLED              => true,
         self::BUYER_PROTECT_SIGNED_UP                => true,
         self::COLLECTX_ENABLED                       => true,
+
+        self::ONE_CC_EMAIL_CUSTOMER_CONSENT          => true,
+        self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT       => true,
+        self::ONE_CC_SMS_CUSTOMER_CONSENT            => true,
+
         self::ONE_CC_ENABLE_FLITS_COINS => true,
         self::PAYROLL_SAV                            => true,
     ];

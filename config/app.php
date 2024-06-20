@@ -852,6 +852,8 @@ return array(
 
     'one_cc_customer_gstin_experiment_id' => env('ONE_CC_CUSTOMER_GSTIN_EXPERIMENT_ID'),
 
+    'one_cc_triple_consent_experiment_id' => env('ONE_CC_TRIPLE_CONSENT_EXPERIMENT_ID'),
+
     'magic_complete_checkout_async_decomp_experiment_id' => env('MAGIC_COMPLETE_CHECKOUT_ASYNC_DECOMP_EXP_ID'),
 
     'magic_update_shipping_address_experiment_id' => env('MAGIC_UPDATE_SHIPPING_ADDRESS_EXP_ID'),

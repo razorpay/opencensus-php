@@ -1817,6 +1817,27 @@ class Core extends Base\Core
         return 0;
     }
 
+    public function fetchTripleConsentFor1CC($contact, $merchantId): array
+    {
+        $consents = [
+            'status' => 0,
+            'one_cc_email_customer_consent' => 0,
+            'one_cc_whatsapp_customer_consent' => 0,
+        ];
+
+        $customerConsent = (new CustomerConsent1cc\Core())->fetchCustomerConsent1cc($contact, $merchantId);
+        if (!empty($customerConsent)) {
+            $consents['status'] = ($customerConsent['status'] ?? false) ? 1 : 0;
+            if (!empty($customerConsent['consent_json']))
+            {
+                $consents['one_cc_email_customer_consent'] = ($customerConsent['consent_json']['one_cc_email_customer_consent'] ?? false) ? 1 : 0;
+                $consents['one_cc_whatsapp_customer_consent'] = ($customerConsent['consent_json']['one_cc_whatsapp_customer_consent'] ?? false) ? 1 : 0;
+            }
+        }
+
+        return $consents;
+    }
+
     /**
      * @throws Exception\BadRequestException
      */

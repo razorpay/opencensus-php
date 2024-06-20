@@ -18,6 +18,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer\Account\Metrics\Metric;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Payout;
 use RZP\Models\Address;
@@ -233,10 +234,21 @@ class Service extends Base\Service
             $response['one_cc_address_sort_by'] = $addressSortType;
             $response['one_cc_addresses'] = $addresses;
             $response['one_cc_consent_banner_views'] = $this->core->fetchAddressConsentViewsFor1CC($customer);
-            $response['one_cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC(
-                $customer->getContact(),
-                $this->merchant->getId(),
-            );
+
+            if ((new SplitzExperimentEvaluator())->useTripleConsentForMerchant($this->merchant->getId()))
+            {
+                $oneCCTripleConsent= $this->core->fetchTripleConsentFor1CC($customer->getContact(), $this->merchant->getId());
+                $response['one_cc_email_customer_consent'] = $oneCCTripleConsent['one_cc_email_customer_consent'];
+                $response['one_cc_whatsapp_customer_consent'] = $oneCCTripleConsent['one_cc_whatsapp_customer_consent'];
+                $response['one_cc_customer_consent'] = $oneCCTripleConsent['status'];
+            }
+            else
+            {
+                $response['one_cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC(
+                    $customer->getContact(),
+                    $this->merchant->getId(),
+                );
+            }
         }
 
         return $response;
@@ -366,6 +378,16 @@ class Service extends Base\Service
             }
 
             $customerData['1cc_consent_banner_views'] = $addressConsentView;
+
+            $shouldUseTripleConsent = (new SplitzExperimentEvaluator())->useTripleConsentForMerchant($this->merchant->getId());
+            if ($shouldUseTripleConsent) {
+                $oneCCTripleConsent = $this->core->fetchTripleConsentFor1CC($customer->getContact(), $this->merchant->getId());
+                $customerData['one_cc_email_customer_consent'] = $oneCCTripleConsent['one_cc_email_customer_consent'];
+                $customerData['one_cc_whatsapp_customer_consent'] = $oneCCTripleConsent['one_cc_whatsapp_customer_consent'];
+                $customerData['1cc_customer_consent'] = $oneCCTripleConsent['status'];
+
+                return $customerData;
+            }
 
             $customerData['1cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC(
                 $customer->getContact(),
@@ -1667,7 +1689,10 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PRESENT);
         }
-
+        if ((new SplitzExperimentEvaluator())->useTripleConsentForMerchant($this->merchant->getId()))
+        {
+            return $this->core->fetchTripleConsentFor1CC($contact, $merchantID);
+        }
         $customerConsent = $this->core->fetchCustomerConsentFor1CC($contact, $merchantID);
         $result['status'] = $customerConsent;
 
