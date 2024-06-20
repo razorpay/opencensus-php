@@ -9486,6 +9486,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const XPAYROLL_PAYOUT_REQUEST                             = 'XPAYROLL_PAYOUT_REQUEST';
     const XPAYROLL_PAYOUT_REQUEST_ERROR                       = 'XPAYROLL_PAYOUT_REQUEST_ERROR';
     const XPAYROLL_PAYOUT_REQUEST_RESPONSE                    = 'XPAYROLL_PAYOUT_REQUEST_RESPONSE';
+    const XPAYROLL_TPV_REQUEST                                = 'XPAYROLL_TPV_REQUEST';
+    const XPAYROLL_TPV_REQUEST_ERROR                          = 'XPAYROLL_TPV_REQUEST_ERROR';
+    const XPAYROLL_TPV_REQUEST_RESPONSE                       = 'XPAYROLL_TPV_REQUEST_RESPONSE';
+    const XPAYROLL_TPV_INVALID_RESPONSE                       = 'XPAYROLL_TPV_INVALID_RESPONSE';
+    const XPAYROLL_TPV_TEST_MODE_UNSUPPORTED                  = 'XPAYROLL_TPV_TEST_MODE_UNSUPPORTED';
 
     # Ledger
     const LEDGER_RESPONSE                                       = 'LEDGER_RESPONSE';

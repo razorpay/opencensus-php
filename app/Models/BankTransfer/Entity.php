@@ -548,6 +548,11 @@ class Entity extends Base\PublicEntity
         return optional($transaction)->getTax();
     }
 
+    public function getTransactionTime()
+    {
+        return $this->getAttribute(self::TIME);
+    }
+
     public function getNarration()
     {
         return $this->getAttribute(self::NARRATION);

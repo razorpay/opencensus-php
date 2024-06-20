@@ -899,11 +899,30 @@ class Processor extends VirtualAccount\Processor
                 ]
             );
 
+            $payrollValidationViaX = $this->virtualAccount->merchant->isFeatureEnabled(Constants::PAYROLL_SAV);
+
+            if ($payrollValidationViaX === true && $disableTpvFeature === false)
+            {
+                $isValid = $this->handlePayrollTpv($bankTransfer, $merchantId, $balanceId, $isValidationFlow);
+
+                if ($isValidationFlow)
+                {
+                    return $isValid;
+                }
+
+                if ($isValidationFlow === false and $isValid === false)
+                {
+                    $this->handleNonTpvAccount($bankTransfer, $merchantId, $balanceId);
+
+                    return false;
+                }
+            }
+
             /* This checks if tpv is not disabled via the disable feature flag, tpv checks are applied on the bank
                transfer.
                We only check for tpv in live mode as in test mode this check shouldn't exist.
              */
-            if (($disableTpvFeature === false) and
+            else if (($disableTpvFeature === false) and
                 ($this->isLiveMode() === true)) {
                 $payerAccountNumber = $payerDetails[BankAccount\Entity::ACCOUNT_NUMBER];
 
@@ -941,60 +960,7 @@ class Processor extends VirtualAccount\Processor
                         return false;
                     }
 
-                    //
-                    // NOTE: After the function `dissociateExpectedRelationsForBankTransfer`, we associate the
-                    // bank_transfer to the shared razorpay virtual account. We are saving the original merchant
-                    // that the transfer was meant to go to so that we can send that merchant an email regarding
-                    // their failed fund loading attempt
-                    //
-                    $actualMerchantId = $bankTransfer->getMerchantId();
-
-                    $this->dissociateExpectedRelationsForBankTransfer($bankTransfer);
-
-                    $this->setParamsToEnsurePaymentIsNotCaptured($bankTransfer);
-
-                    $nonTpvRefundsViaX = $this->app['razorx']->getTreatment($actualMerchantId,
-                        RazorxTreatment::NON_TPV_REFUNDS_VIA_X,
-                        $this->mode,
-                        3);
-
-                    $this->trace->info(
-                        TraceCode::RAZORX_RESPONSE_FOR_NON_TPV_REFUND_VIA_X,
-                        [
-                            'razorx_response_for_non_tpv_refunds_via_x' => $nonTpvRefundsViaX,
-                            'actual_merchant_id' => $actualMerchantId
-                        ]
-                    );
-
-                    // If the refund is supposed to happen via RX entities, then we simply take that as a
-                    // successful fund load on a RX common merchant and later create a payout from there.
-                    // The SharedBankingVirtualAccount belongs to that common merchant.
-                    if ($nonTpvRefundsViaX === "on") {
-                        $this->virtualAccount = (new VirtualAccount\Core)->fetchSharedBankingVirtualAccount();
-
-                        $bankTransfer->setExpected(false);
-                    } else {
-                        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
-                    }
-
-                    $this->merchant = $this->virtualAccount->merchant;
-
-                    $this->associateExpectedRelationsForBankTransfer($bankTransfer);
-
-                    // SaveOrFail needs to be done before the send mail, because id is created when entity is saved.
-                    $this->repo->saveOrFail($bankTransfer);
-
-                    // Logs to get the bank transfer id as well
-                    $this->trace->info(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_BANK_TRANSFER_CREATED,
-                        [
-                            'disable_tpv_feature' => $disableTpvFeature,
-                            'merchant_id' => $merchantId,
-                            'balance_id' => $balanceId,
-                            'bank_transfer_id' => $bankTransfer->getId(),
-                        ]
-                    );
-
-                    $this->sendFundLoadingFailedEmail($bankTransfer->getId(), $actualMerchantId);
+                    $this->handleNonTpvAccount($bankTransfer, $merchantId, $balanceId);
 
                     return false;
                 }
@@ -1007,6 +973,98 @@ class Processor extends VirtualAccount\Processor
         }
 
         return true;
+    }
+
+    //
+    // NOTE: After the function `dissociateExpectedRelationsForBankTransfer`, we associate the
+    // bank_transfer to the shared razorpay virtual account. We are saving the original merchant
+    // that the transfer was meant to go to so that we can send that merchant an email regarding
+    // their failed fund loading attempt
+    //
+    public function handleNonTpvAccount($bankTransfer, $merchantId, $balanceId)
+    {
+        $actualMerchantId = $bankTransfer->getMerchantId();
+
+        $this->dissociateExpectedRelationsForBankTransfer($bankTransfer);
+
+        $this->setParamsToEnsurePaymentIsNotCaptured($bankTransfer);
+
+        $nonTpvRefundsViaX = $this->app['razorx']->getTreatment($actualMerchantId,
+            RazorxTreatment::NON_TPV_REFUNDS_VIA_X,
+            $this->mode,
+            3);
+
+        $this->trace->info(
+            TraceCode::RAZORX_RESPONSE_FOR_NON_TPV_REFUND_VIA_X,
+            [
+                'razorx_response_for_non_tpv_refunds_via_x' => $nonTpvRefundsViaX,
+                'actual_merchant_id' => $actualMerchantId
+            ]
+        );
+
+        // If the refund is supposed to happen via RX entities, then we simply take that as a
+        // successful fund load on a RX common merchant and later create a payout from there.
+        // The SharedBankingVirtualAccount belongs to that common merchant.
+        if ($nonTpvRefundsViaX === "on") {
+            $this->virtualAccount = (new VirtualAccount\Core)->fetchSharedBankingVirtualAccount();
+
+            $bankTransfer->setExpected(false);
+        } else {
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+        }
+
+        $this->merchant = $this->virtualAccount->merchant;
+
+        $this->associateExpectedRelationsForBankTransfer($bankTransfer);
+
+        // SaveOrFail needs to be done before the send mail, because id is created when entity is saved.
+        $this->repo->saveOrFail($bankTransfer);
+
+        // Logs to get the bank transfer id as well
+        $this->trace->info(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_BANK_TRANSFER_CREATED,
+            [
+                'disable_tpv_feature' => false,
+                'merchant_id' => $merchantId,
+                'balance_id' => $balanceId,
+                'bank_transfer_id' => $bankTransfer->getId(),
+            ]
+        );
+
+        $this->sendFundLoadingFailedEmail($bankTransfer->getId(), $actualMerchantId);
+    }
+
+    public function handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow): bool
+    {
+        $xPayrollService = $this->app['xpayroll'];
+
+        $response = $xPayrollService->sendPayrollTpvRequestAndGetResponse($bankTransfer, $this->mode);
+
+        if (empty($response) === false && $response['is_valid'] === true)
+        {
+            $this->trace->info(TraceCode::TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
+                [
+                    'disable_tpv_feature' => false,
+                    'merchant_id' => $merchantID,
+                    'balance_id' => $balanceID,
+                    'validation_flow' => $isValidationFlow
+                ]
+            );
+
+            return true;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
+                [
+                    'disable_tpv_feature' => false,
+                    'merchant_id' => $merchantID,
+                    'balance_id' => $balanceID,
+                    'validation_flow' => $isValidationFlow
+                ]
+            );
+
+            return false;
+        }
     }
 
     /*

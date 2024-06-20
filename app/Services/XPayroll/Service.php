@@ -12,6 +12,8 @@ use RZP\Http\Request\Requests;
 use RZP\Http\Response\StatusCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\BankTransfer\PayerBankAccount;
+use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 
 /**
@@ -22,6 +24,8 @@ class Service
 {
     // All routes
     const ROUTE_STATUS_UPDATE = '/v2/api/merchant-payout-status';
+
+    const ROUTE_TPV_VALIDATION = '/v2/api/validate-source-account';
 
     // All methods
     const METHOD_POST = 'POST';
@@ -204,5 +208,120 @@ class Service
         }
 
         return $statusDetailsArray;
+    }
+
+
+    public function sendPayrollTpvRequestAndGetResponse(BankTransferEntity $bankTransfer, string $mode, $retryLimit = 3)
+    {
+        $data = [
+            'payee_account'     => $bankTransfer->getPayeeAccount(),
+            'payee_ifsc'        => $bankTransfer->getPayeeIfsc(),
+            'payer_name'        => $bankTransfer->getPayerName(),
+            'payer_account'     => PayerBankAccount::getPayerAccount($bankTransfer),
+            'payer_ifsc'        => $bankTransfer->getPayerIfsc(),
+            'mode'              => $bankTransfer->getMode(),
+            'utr'               => $bankTransfer->getUtr(),
+            'time'              => $bankTransfer->getTransactionTime(),
+            'amount'            => $bankTransfer->getAmount(),
+            'description'       => $bankTransfer->getDescription(),
+            'narration'         => $bankTransfer->getNarration()
+        ];
+
+        return $this->makePayrollValidationRequest(
+            self::ROUTE_TPV_VALIDATION,
+            static::METHOD_POST,
+            $data,
+            $retryLimit,
+            $mode);
+    }
+
+    public function makePayrollValidationRequest(
+        string $endpoint,
+        string $method,
+        array $data,
+        $retryLimit,
+        $mode = MODE::LIVE,
+        array $headers = [])
+    {
+        // XPayroll does not support Test mode
+        if (($this->app->environment() === Environment::PRODUCTION) && ($mode !== Mode::LIVE))
+        {
+            $this->trace->info(TraceCode::XPAYROLL_TPV_TEST_MODE_UNSUPPORTED, []);
+
+            return [];
+        }
+
+        $headers = array_merge($headers, [
+            'secret'       => $this->secret,
+            'Accept'       => 'application/json',
+            'Content-Type' => 'application/json'
+        ]);
+
+        $headers['X-Task-ID'] = $this->app['request']->getId() ?? null;
+
+        $url = rtrim($this->baseUrl, '/') . '/' . ltrim($endpoint, "/");
+
+        $this->trace->info(
+            TraceCode::XPAYROLL_TPV_REQUEST, [
+            'url'  => $url,
+            'data' => $data,
+        ]);
+
+        $retryCount = 0;
+        $options = [];
+        $response = '';
+
+        while ($retryCount < $retryLimit)
+        {
+            try
+            {
+                $response = Requests::$method(
+                    $url,
+                    $headers,
+                    json_encode($data, JSON_FORCE_OBJECT),
+                    $options);
+
+                break;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::XPAYROLL_TPV_REQUEST_ERROR,
+                    [
+                        'message'     => $e->getMessage(),
+                        'retry count' => $retryCount,
+                        'url'         => $url,
+                        'data'        => $data,
+                        'hasSecret'   => empty($this->secret) ? 'NO' : 'YES',
+                        'X-Task-Id'   => $headers['X-Task-ID']
+                    ]
+                );
+
+                $retryCount++;
+            }
+        }
+
+        $responseBody = json_decode($response->body, true);
+
+        $this->trace->info(TraceCode::XPAYROLL_TPV_REQUEST_RESPONSE, [
+            'response' => $response->body,
+            'json'     => $responseBody
+        ]);
+
+        if ((empty($responseBody) === true) or ($response->status_code !== StatusCode::SUCCESS))
+        {
+            $this->trace->info(TraceCode::XPAYROLL_TPV_INVALID_RESPONSE, [
+                'response' => $response->body,
+            ]);
+
+            // if there is no positive response from payroll after maximum retry, we return validation as false
+            return [
+                'is_valid' => false
+            ];
+        }
+
+        return $responseBody;
     }
 }

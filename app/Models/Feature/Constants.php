@@ -2111,6 +2111,11 @@ class Constants
      */
     const PENNILESS_VALIDATION = 'penniless_validation';
 
+    /**
+     * Feature flag to enable payroll fundloading validation
+     */
+    const PAYROLL_SAV = 'payroll_sav';
+
     /*
      * Feature flag to enabled merchant on FAV Microservice
      */
@@ -3016,6 +3021,7 @@ class Constants
         self::BUYER_PROTECT_SIGNED_UP                => true,
         self::COLLECTX_ENABLED                       => true,
         self::ONE_CC_ENABLE_FLITS_COINS => true,
+        self::PAYROLL_SAV                            => true,
     ];
 
     // Entity type constants
@@ -4340,6 +4346,11 @@ class Constants
             'feature'       => self::SHOW_INVOICE_REPORT,
             'display_name'  => 'merchant level Feature to show monthly invoice report',
             'documentation' => ''
+        ],
+        self::PAYROLL_SAV =>  [
+            'feature'       => self::PAYROLL_SAV,
+            'display_name'  => 'PAYROLL SAV',
+            'documentation' => 'feature to enable payroll fundloading source account validation'
         ],
     ];
 
