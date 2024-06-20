@@ -24,6 +24,9 @@ class PlinkController extends Controller
 
     const PUBLIC_KEY = 'public_key';
 
+    const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+    const X_PASSPORT_USABLE = 'X-Passport-Usable';
+
     /**
      * @var string
      */
@@ -290,6 +293,9 @@ class PlinkController extends Controller
         {
             $headers['X-Razorpay-Partner-Merchant-Id'] = $partnerMerchantId;
         }
+
+        $headers[self::X_PASSPORT_JWT_V1] = $request->header(self::X_PASSPORT_JWT_V1);
+        $headers[self::X_PASSPORT_USABLE] = $request->header(self::X_PASSPORT_USABLE);
 
         return $headers;
     }
