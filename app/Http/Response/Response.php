@@ -620,17 +620,17 @@ class Response
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
         }
 
-        $flashCreditSupportedRoutes = [
+        $instantEmiSupportedRoutes = [
             'otp_post',
         ];
 
         $origin = $this->request->headers->get('origin');
-        if (($origin === $this->app['config']->get('app.razorpay_flashcredit_url')) and
-            (in_array($route, $flashCreditSupportedRoutes, true) === true))
+        if (($origin === $this->app['config']->get('app.razorpay_instant_emi_url')) and
+            (in_array($route, $instantEmiSupportedRoutes, true) === true))
         {
             $response->headers->set(
                 Header::ACCESS_CONTROL_ALLOW_ORIGIN,
-                $this->app['config']->get('app.razorpay_flashcredit_url')
+                $this->app['config']->get('app.razorpay_instant_emi_url')
             );
         }
     }

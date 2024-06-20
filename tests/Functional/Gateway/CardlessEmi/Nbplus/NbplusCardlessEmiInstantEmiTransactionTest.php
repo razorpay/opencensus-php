@@ -8,21 +8,21 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Payment\NbplusPaymentServiceCardlessEmiTest;
 
-class NbplusCardlessEmiFlashCreditTransactionTest extends NbplusPaymentServiceCardlessEmiTest
+class NbplusCardlessEmiInstantEmiTransactionTest extends NbplusPaymentServiceCardlessEmiTest
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->provider = 'flashcredit';
+        $this->provider = 'instant_emi';
 
         $this->payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
 
-        $this->terminal = $this->fixtures->create('terminal:sharedCardlessEmiFlashCreditTerminal');
+        $this->terminal = $this->fixtures->create('terminal:sharedCardlessEmiInstant_EmiTerminal');
 
     }
 
-    public function testFlashCreditTransaction()
+    public function testInstantEmiTransaction()
     {
         $this->doAuthAndCapturePayment($this->payment);
 

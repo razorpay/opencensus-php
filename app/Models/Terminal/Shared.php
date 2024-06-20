@@ -144,7 +144,7 @@ class Shared
     const CARDLESS_EMI_ZESTMONEY_TERMINAL    = '30CrdlesEmiTml';
     const CARDLESS_EMI_WALNUT369_TERMINAL    = '40CrdlesEmiTml';
     const CARDLESS_EMI_LIQUILOANS_TERMINAL   = '60CrdlesEmiTml';
-    const CARDLESS_EMI_FLASHCREDIT_TERMINAL  = '80CrdlesEmiTml';
+    const CARDLESS_EMI_INSTANT_EMI_TERMINAL  = '80CrdlesEmiTml';
     const CARDLESS_EMI_SEZZLE_TERMINAL       = '50CrdlesEmiTml';
     const PAYLATER_EPAYLATER_TERMINAL        = '10PayLaterTrml';
     const PAYLATER_ICICI_TERMINAL            = '10PLaterIciTml';

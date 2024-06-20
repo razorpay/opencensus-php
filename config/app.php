@@ -279,7 +279,7 @@ return array(
 
     'razorpay_support_page_url'           => env('RAZORPAY_SUPPORT_PAGE_WEBSITE_URL'),
 
-    'razorpay_flashcredit_url'            => env('RAZORPAY_FLASHCREDIT_URL'),
+    'razorpay_instant_emi_url'            => env('RAZORPAY_INSTANT_EMI_URL'),
 
     'cdn_v1_url'                          => env('CDN_V1_URL'),
 

@@ -233,8 +233,8 @@ class Raven extends Base\Core
             CASE 'save_card_v9':
                 return 'sms.checkout.save_card_otp_v9';
 
-            case 'flashcredit_login':
-                return 'sms.capital_bnpl.flashcredit_login';
+            case 'instant_emi_login':
+                return 'sms.capital_bnpl.instant_emi_login';
 
             default:
                 return 'sms.otp';
@@ -273,7 +273,7 @@ class Raven extends Base\Core
             'access_address_v9',
             'save_address_v9',
             'save_card_v9',
-            'flashcredit_login',
+            'instant_emi_login',
         ]);
     }
 }

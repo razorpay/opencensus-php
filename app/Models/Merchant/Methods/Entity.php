@@ -505,7 +505,7 @@ class Entity extends Base\PublicEntity
             CardlessEmiProvider::CSHE,
             CardlessEmiProvider::TVSC,
             CardlessEmiProvider::LIQUILOANS,
-            CardlessEmiProvider::FLASHCREDIT,
+            CardlessEmiProvider::INSTANT_EMI,
         ],
         self::PAYLATER => [
             Paylaterprovider::GETSIMPL,

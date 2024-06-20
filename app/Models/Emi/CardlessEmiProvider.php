@@ -25,7 +25,7 @@ class CardlessEmiProvider
     const CSHE = 'cshe';
     const TVSC = 'tvsc';
     const LIQUILOANS = 'liquiloans';
-    const FLASHCREDIT = 'flashcredit';
+    const INSTANT_EMI = 'instant_emi';
 
     protected static $providers = [
         self::ZESTMONEY,
@@ -42,7 +42,7 @@ class CardlessEmiProvider
         self::CSHE,
         self::TVSC,
         self::LIQUILOANS,
-        self::FLASHCREDIT,
+        self::INSTANT_EMI,
     ];
 
     public static $disabledInstruments = [

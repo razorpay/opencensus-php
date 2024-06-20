@@ -2817,12 +2817,12 @@ class DatabaseSeeder extends Seeder
             'updated_at'                 => time()
         ]);
         DB::table(Table::TERMINAL)->insert([
-            'id'                         => Terminal\Shared::CARDLESS_EMI_FLASHCREDIT_TERMINAL,
+            'id'                         => Terminal\Shared::CARDLESS_EMI_INSTANT_EMI_TERMINAL,
             'merchant_id'                => Account::TEST_ACCOUNT,
             'category'                   => 123,
             'gateway'                    => Gateway::CARDLESS_EMI,
             'gateway_merchant_id'        => 'gateway_merchant_id',
-            'gateway_acquirer'           => 'flashcredit',
+            'gateway_acquirer'           => 'instant_emi',
             'cardless_emi'               => 1,
             'mode'                       => 3,
             'created_at'                 => time(),
