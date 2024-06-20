@@ -2562,6 +2562,18 @@ return [
         ],
     ],
 
+    'testUpdateAttachmentsPettyCash' => [
+        'request'   => [
+            'url'       => '/payouts_internal/attachments',
+            'method'    => 'PATCH',
+            'content'   => []
+        ],
+        'response'  => [
+            'content'   => [
+                'status' => 'SUCCESS'
+            ]
+        ]
+    ],
 
     'testApprovePayoutWithBearerAuth' => [
         'request'  => [

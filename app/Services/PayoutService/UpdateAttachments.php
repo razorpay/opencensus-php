@@ -31,9 +31,11 @@ class UpdateAttachments extends Base
         return $this->sendRequestAndGetContent($input, $url);
     }
 
-    protected function sendRequestAndGetContent(array $input, $url)
+    protected function sendRequestAndGetContent(array $input, $url, $inputHeaders = [])
     {
         $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+
+        $headers = array_merge($headers, $inputHeaders);
 
         $response = $this->makeRequestAndGetContent(
             $input,
@@ -60,6 +62,9 @@ class UpdateAttachments extends Base
 
         $url = self::BULK_UPDATE_ATTACHMENTS_URI;
 
-        return $this->sendRequestAndGetContent($input, $url);
+        // this is done to resolve merchantID correctly from passport on Payouts service
+        $headers = $this->getHeadersWithJwt();
+
+        return $this->sendRequestAndGetContent($input, $url, $headers);
     }
 }

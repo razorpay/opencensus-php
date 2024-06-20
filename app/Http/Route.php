@@ -2047,6 +2047,7 @@ class Route
         'xps_get_pettycash_balance'                 => ['get',      'xperience/petty-cash-balance',                         'XperienceController@getPettyCashBalance'],
         'xps_update_pettycash_balance'              => ['patch',    'xperience/petty-cash-balance',                         'XperienceController@updatePettyCashBalance'],
         'xps_create_pettycash'                      => ['post',     'xperience/petty-cash',                                 'XperienceController@createPettyCash'],
+        'xps_update_petty_cash'                     => ['patch',    'xperience/petty-cash/{id}',                            'XperienceController@updatePettyCash'],
         'xps_list_pettycash_self'                   => ['get',      'xperience/petty-cash-self',                            'XperienceController@listPettyCashSelf'],
         'xps_get_pettycash'                         => ['get',      'xperience/petty-cash/{id}',                            'XperienceController@getPettyCash'],
         'xps_list_pettycash'                        => ['get',      'xperience/petty-cash',                                 'XperienceController@listPettyCash'],
@@ -8034,6 +8035,7 @@ class Route
         'xps_get_pettycash_balance',
         'xps_update_pettycash_balance',
         'xps_create_pettycash',
+        'xps_update_petty_cash',
         'xps_list_pettycash_self',
         'xps_get_pettycash',
         'xps_list_pettycash',
@@ -11771,6 +11773,7 @@ class Route
         'xps_get_pettycash_balance'                 => Permission::VIEW_BUDGET,
         'xps_update_pettycash_balance'              => Permission::CREATE_BUDGET,
         'xps_create_pettycash'                      => Permission::CREATE_PETTY_CASH,
+        'xps_update_petty_cash'                     => Permission::CREATE_PETTY_CASH,
         'xps_list_pettycash_self'                   => Permission::VIEW_PETTY_CASH,
         'xps_get_pettycash'                         => Permission::VIEW_PETTY_CASH,
         'xps_list_pettycash'                        => Permission::VIEW_PETTY_CASH,
@@ -12127,6 +12130,7 @@ class Route
             'xperience_invite_delete',
             'settings_fetch_by_key_internal',
             'composite_payout_internal',
+            'payout_bulk_update_attachments'
         ],
 
         'vendor_experience' => [
@@ -13850,6 +13854,7 @@ class Route
             'xps_get_pettycash_balance',
             'xps_update_pettycash_balance',
             'xps_create_pettycash',
+            'xps_update_petty_cash',
             'xps_list_pettycash_self',
             'xps_get_pettycash',
             'xps_list_pettycash',
@@ -19222,6 +19227,7 @@ class Route
         'xps_get_pettycash_balance',
         'xps_update_pettycash_balance',
         'xps_create_pettycash',
+        'xps_update_petty_cash',
         'xps_list_pettycash_self',
         'xps_get_pettycash',
         'xps_list_pettycash',

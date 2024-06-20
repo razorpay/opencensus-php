@@ -5442,13 +5442,19 @@ class Service extends Base\Service
 
         $payoutsSourceCore = new PayoutSourceCore();
 
+        $allowedPayoutSources = [
+            PayoutSourceEntity::PAYOUT_LINK,
+            PayoutSourceEntity::PETTY_CASH
+        ];
+
         foreach ($payoutIds as $payoutId)
         {
             try
             {
                 $payoutSource = $payoutsSourceCore->getPayoutSource($payoutId);
 
-                if ($payoutSource === null or $payoutSource->getSourceType() !== PayoutSourceEntity::PAYOUT_LINK)
+                if (($payoutSource === null) or
+                    (!in_array($payoutSource->getSourceType(), $allowedPayoutSources, true)))
                 {
                     throw new BadRequestValidationFailureException(
                         ErrorCode::BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE,

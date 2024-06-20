@@ -93,6 +93,7 @@ class Xperience
     const LIST_PETTY_CASH_PATH               = 'v1/petty-cash';
     const LIST_PETTY_CASH_ALL_PATH           = 'v1/petty-cash-all';
     const GET_PETTY_CASH_ALL_PATH            = 'v1/petty-cash-all/%s';
+    const UPDATE_PETTY_CASH_PATH             = 'v1/petty-cash/%s';
     const CREATE_EXPENSE_CATEGORY_PATH       = 'v1/expense-categories';
     const LIST_EXPENSE_CATEGORIES_PATH       = 'v1/expense-categories';
     const UPDATE_EXPENSE_CATEGORY_PATH       = 'v1/expense-categories/%s';
@@ -849,6 +850,13 @@ class Xperience
         $input[self::USER_DETAILS] = $this->getUserDetails();
 
         return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function updatePettyCash(string $id, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::UPDATE_PETTY_CASH_PATH, $id));
+
+        return $this->makeRequest($url, $input, [], self::PATCH);
     }
 
     public function pettyCashStatusCallback(array $input)

@@ -7157,6 +7157,62 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(9, $payout['workflow_feature']);
     }
 
+    public function testUpdateAttachmentsPettyCash()
+    {
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $payout = $this->fixtures->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $this->fixtures->create('payout_source', [
+            'payout_id'   => $payout->getId(),
+            'source_id'   => 'JLYYnaOtQ0Xgzr',
+            'source_type' => 'petty_cash',
+            'priority'    => 1
+        ]);
+
+        $this->ba->xperienceServiceAppAuth();
+
+        $dataToReplace = [
+            'request'   => [
+                'content'   => [
+                    'payout_ids'     => [$payout->getId()],
+                    'update_request' => [
+                        'attachments' => [
+                            [
+                                'file_id'   => 'file_JLYYnaOtQ0Xgzt',
+                                'file_name' => 'new file.pdf'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $payoutDetails = (new \RZP\Models\PayoutsDetails\Repository())->getPayoutDetailsByPayoutId($payout->getId());
+
+        $this->assertEquals([
+                [
+                    'file_id'   => 'file_JLYYnaOtQ0Xgzt',
+                    'file_name' => 'new file.pdf',
+                ]
+            ]
+        , $payoutDetails->first()->getAdditionalInfo()['attachments']);
+    }
+
     public function testCreateCompositePayoutWithOtpAndWithoutOtpInput()
     {
         $this->ba->proxyAuth();
