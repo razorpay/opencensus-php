@@ -7,7 +7,7 @@ export type TabDataType = {
   value: number;
   value_type: string;
   currency: string;
-  change: number;
+  change: string;
   sub_text: string;
   chart_data: ChartDataType;
   change_type: ChangeType;

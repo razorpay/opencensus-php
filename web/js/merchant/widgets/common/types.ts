@@ -19,7 +19,7 @@ export interface CommonInputProps {
 
 export type PointType = {
   x: string;
-  y: number;
+  y: string;
 };
 
 export type ChartDatasetType = {

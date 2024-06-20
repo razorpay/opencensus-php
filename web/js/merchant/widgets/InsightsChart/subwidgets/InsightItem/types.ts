@@ -4,7 +4,7 @@ import { CommonWidgetProps } from 'merchant/widgets/types';
 
 export type PointType = {
   x: string;
-  y: number;
+  y: string;
 };
 
 export type ChartDatasetType = {
@@ -36,7 +36,7 @@ export type ChartDataType = {
 type Value = number;
 type ValueType = 'percentage' | 'number' | 'amount';
 
-export type Change = number;
+export type Change = string;
 export type ChangeType = 'percentage' | 'number';
 
 export interface InsightItemProps extends CommonWidgetProps {

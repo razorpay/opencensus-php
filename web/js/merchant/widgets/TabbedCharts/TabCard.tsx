@@ -4,14 +4,15 @@ import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 
 import { useMobile } from 'common/hooks/useMobile';
 import { Change } from 'merchant/widgets/common/Change';
+import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
+import { convertToNumber } from 'merchant/widgets/common/utils';
 
 import { TabCardProps } from './types';
-import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
 
 const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) => {
   const isMobile = useMobile();
   const title = tabData.title ?? '';
-  const change = tabData.data.change ?? 0;
+  const change = convertToNumber(tabData.data.change);
   const changeType = tabData.data.change_type;
   const currency = tabData.data.currency ?? 'INR';
   const value = parseInt(`${tabData.data.value}`, 10) ?? 0;

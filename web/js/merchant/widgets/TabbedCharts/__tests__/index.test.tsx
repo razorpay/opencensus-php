@@ -3,6 +3,7 @@ import React from 'react';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { TabbedCharts } from 'merchant/widgets/TabbedCharts/index';
 import { render, screen, userEvent } from 'test-utils';
+
 import { TABBED_CHARTS_MOCKED_RESPONSE } from './mocks';
 
 describe('TabbedCharts', () => {

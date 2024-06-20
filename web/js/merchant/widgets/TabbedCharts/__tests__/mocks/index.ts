@@ -30,7 +30,7 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
         value: 3900032,
         value_type: 'amount',
         currency: 'INR',
-        change: -14,
+        change: '-14',
         change_type: 'percentage' as const,
         sub_text: '₹7,180 above than usual',
         chart_data: {
@@ -52,31 +52,31 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
               points: [
                 {
                   x: '1697599800000',
-                  y: 5000,
+                  y: '5000',
                 },
                 {
                   x: '1697686200000',
-                  y: 7000,
+                  y: '7000',
                 },
                 {
                   x: '1697772600000',
-                  y: 4000,
+                  y: '4000',
                 },
                 {
                   x: '1697859000000',
-                  y: 2500,
+                  y: '2500',
                 },
                 {
                   x: '1697945400000',
-                  y: 3900,
+                  y: '3900',
                 },
                 {
                   x: '1698031800000',
-                  y: 5700,
+                  y: '5700',
                 },
                 {
                   x: '1698118200000',
-                  y: 7900,
+                  y: '7900',
                 },
               ],
             },
@@ -85,31 +85,31 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
               points: [
                 {
                   x: '1697599800000',
-                  y: 2000,
+                  y: '2000',
                 },
                 {
                   x: '1697686200000',
-                  y: 3500,
+                  y: '3500',
                 },
                 {
                   x: '1697772600000',
-                  y: 4500,
+                  y: '4500',
                 },
                 {
                   x: '1697859000000',
-                  y: 4000,
+                  y: '4000',
                 },
                 {
                   x: '1697945400000',
-                  y: 2900,
+                  y: '2900',
                 },
                 {
                   x: '1698031800000',
-                  y: 3700,
+                  y: '3700',
                 },
                 {
                   x: '1698118200000',
-                  y: 4500,
+                  y: '4500',
                 },
               ],
             },
@@ -137,7 +137,7 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
         value: 3900032,
         value_type: 'amount',
         currency: 'INR',
-        change: -14,
+        change: '-14',
         change_type: 'percentage' as const,
         sub_text: '₹580 below than usual',
         chart_data: {
@@ -159,31 +159,31 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
               points: [
                 {
                   x: '1694995200',
-                  y: 4000,
+                  y: '4000',
                 },
                 {
                   x: '1695081600',
-                  y: 5500,
+                  y: '5500',
                 },
                 {
                   x: '1695168000',
-                  y: 5000,
+                  y: '5000',
                 },
                 {
                   x: '1695254400',
-                  y: 4500,
+                  y: '4500',
                 },
                 {
                   x: '1695340800',
-                  y: 4900,
+                  y: '4900',
                 },
                 {
                   x: '1695427200',
-                  y: 5700,
+                  y: '5700',
                 },
                 {
                   x: '1695513600',
-                  y: 6900,
+                  y: '6900',
                 },
               ],
             },
@@ -192,31 +192,31 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
               points: [
                 {
                   x: '1694995200',
-                  y: 2000,
+                  y: '2000',
                 },
                 {
                   x: '1695081600',
-                  y: 3500,
+                  y: '3500',
                 },
                 {
                   x: '1695168000',
-                  y: 4500,
+                  y: '4500',
                 },
                 {
                   x: '1695254400',
-                  y: 4000,
+                  y: '4000',
                 },
                 {
                   x: '1695340800',
-                  y: 2900,
+                  y: '2900',
                 },
                 {
                   x: '1695427200',
-                  y: 3700,
+                  y: '3700',
                 },
                 {
                   x: '1695513600',
-                  y: 4500,
+                  y: '4500',
                 },
               ],
             },
@@ -244,7 +244,7 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
         value: 3900032,
         value_type: 'amount',
         currency: 'INR',
-        change: -14,
+        change: '-14',
         change_type: 'percentage' as const,
         sub_text: '₹580 below than usual',
         chart_data: {
@@ -266,31 +266,31 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
               points: [
                 {
                   x: '1694995200',
-                  y: 4000,
+                  y: '4000',
                 },
                 {
                   x: '1695081600',
-                  y: 5500,
+                  y: '5500',
                 },
                 {
                   x: '1695168000',
-                  y: 5000,
+                  y: '5000',
                 },
                 {
                   x: '1695254400',
-                  y: 4500,
+                  y: '4500',
                 },
                 {
                   x: '1695340800',
-                  y: 4900,
+                  y: '4900',
                 },
                 {
                   x: '1695427200',
-                  y: 5700,
+                  y: '5700',
                 },
                 {
                   x: '1695513600',
-                  y: 6900,
+                  y: '6900',
                 },
               ],
             },
@@ -299,31 +299,31 @@ export const TABBED_CHARTS_MOCKED_RESPONSE = {
               points: [
                 {
                   x: '1694995200',
-                  y: 2000,
+                  y: '2000',
                 },
                 {
                   x: '1695081600',
-                  y: 3500,
+                  y: '3500',
                 },
                 {
                   x: '1695168000',
-                  y: 4500,
+                  y: '4500',
                 },
                 {
                   x: '1695254400',
-                  y: 4000,
+                  y: '4000',
                 },
                 {
                   x: '1695340800',
-                  y: 2900,
+                  y: '2900',
                 },
                 {
                   x: '1695427200',
-                  y: 3700,
+                  y: '3700',
                 },
                 {
                   x: '1695513600',
-                  y: 4500,
+                  y: '4500',
                 },
               ],
             },

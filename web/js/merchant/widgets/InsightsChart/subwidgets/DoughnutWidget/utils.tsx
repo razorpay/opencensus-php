@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChartComponentProps, Doughnut } from 'react-chartjs-2';
-import { ChartDataType } from '../InsightItem/types';
+
+import { ChartDataType } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/types';
 import { TOOLTIP_CHART_CONFIG } from 'merchant/widgets/common/utils';
 
 export const getOptions = (): ChartComponentProps['options'] => {
@@ -68,7 +69,7 @@ export const emptyChartTableData: ChartDataType = {
       points: [
         {
           x: '--',
-          y: 0,
+          y: '0',
         },
       ],
     },

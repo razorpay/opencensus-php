@@ -1,19 +1,20 @@
-import { Amount, Box, Divider } from '@razorpay/blade/components';
 import React, { Fragment } from 'react';
+import { Amount, Box, Divider } from '@razorpay/blade/components';
+
+import { titleCase } from 'common/utils/rzp-utils';
+import { doughnutColors } from 'merchant/containers/Home/RTUX/colors';
+import { ColorBox } from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/styled';
 import {
   ChartDataType,
   ChartSchemaType,
 } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/types';
-import { ColorBox } from 'merchant/widgets/InsightsChart/subwidgets/DoughnutWidget/styled';
 import { formatYAxis } from 'merchant/widgets/common/utils';
-import { doughnutColors } from 'merchant/containers/Home/RTUX/colors';
-import { titleCase } from 'common/utils/rzp-utils';
 
 function ChartTable({ chartData }: { chartData: ChartDataType }) {
   const { data, schema } = chartData;
   const length = data[0].points.length;
 
-  const getYValue = (point: number, schema: ChartSchemaType['y']) => {
+  const getYValue = (point: string, schema: ChartSchemaType['y']) => {
     const formattedValue = formatYAxis(point, schema);
     if (schema.type !== 'amount') {
       return formattedValue;

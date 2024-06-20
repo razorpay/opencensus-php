@@ -1,17 +1,20 @@
-import { Box, Text } from '@razorpay/blade/components';
-import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
 import React, { useEffect } from 'react';
-import { InsightItemProps } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/types';
-import { useRetryWidget } from 'merchant/widgets/hooks';
+import { Box, Text } from '@razorpay/blade/components';
+
 import { SubwidgetSkeleton } from 'merchant/widgets/InsightsChart/Loader';
-import { ErrorState } from 'merchant/widgets/common/ErrorState';
-import LineChart from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/LineChart';
-import { Change } from 'merchant/widgets/common/Change';
-import { durationOptionsSubtextMap } from 'merchant/widgets/InsightsChart/utils';
+import { InsightItemChartWrapper } from 'merchant/widgets/InsightsChart/styled';
 import { CTAText } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/CTAText';
-import { EmptyLineChart } from './utils';
+import LineChart from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/LineChart';
+import { InsightItemProps } from 'merchant/widgets/InsightsChart/subwidgets/InsightItem/types';
+import { durationOptionsSubtextMap } from 'merchant/widgets/InsightsChart/utils';
+import { Change } from 'merchant/widgets/common/Change';
+import { ErrorState } from 'merchant/widgets/common/ErrorState';
+import { TooltipWidget } from 'merchant/widgets/common/Tooltip';
+import { convertToNumber } from 'merchant/widgets/common/utils';
+import { useRetryWidget } from 'merchant/widgets/hooks';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
-import { InsightItemChartWrapper } from '../../styled';
+
+import { EmptyLineChart } from './utils';
 
 const InsightItem: React.FC<InsightItemProps> = ({
   id,
@@ -89,10 +92,10 @@ const InsightItem: React.FC<InsightItemProps> = ({
     sub_text,
     chart_data,
   } = data;
-
+  const changeValue = convertToNumber(change);
   const isChartData = chart_data && chart_data.data && chart_data.data.length > 0;
 
-  const variant = change > 0 ? 'increase' : 'decrease';
+  const variant = changeValue > 0 ? 'increase' : 'decrease';
   const finalVariant = isChangeBehaviourInverted
     ? variant === 'increase'
       ? 'decrease'
@@ -124,7 +127,7 @@ const InsightItem: React.FC<InsightItemProps> = ({
           {value > 0 ? (
             <Change
               text={sub_text}
-              variant={change > 0 ? 'increase' : 'decrease'}
+              variant={changeValue > 0 ? 'increase' : 'decrease'}
               type={change_type}
               isInverted={isChangeBehaviourInverted}
             />

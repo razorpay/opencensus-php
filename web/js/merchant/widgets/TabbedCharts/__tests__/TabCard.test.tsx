@@ -1,8 +1,9 @@
 import React from 'react';
 
+import TabCard from 'merchant/widgets/TabbedCharts/TabCard';
 import { render, screen } from 'test-utils';
+
 import { TABBED_CHARTS_MOCKED_RESPONSE } from './mocks';
-import TabCard from '../TabCard';
 
 describe('widgets->TabbedCharts->TabCard', () => {
   it('should display amount as 0 if tab position is zero', () => {

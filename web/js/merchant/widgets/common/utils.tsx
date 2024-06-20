@@ -1,23 +1,30 @@
 import { ArrowRightIcon, LinkProps } from '@razorpay/blade/components';
 import { CurrencyCodeType, convertToMajorUnit } from '@razorpay/i18nify-js';
+import moment from 'moment';
+
+import { currencySymbols } from 'common/utils/rzp-utils';
+import { BASE_ROUTES } from 'merchant/components/Sidebar';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { renderWidgetProps } from 'merchant/widgets/types';
 import {
   commonWidgetKeyToComponentMapping,
   inputKeyToComponentMapping,
 } from 'merchant/widgets/common/mapping';
+import { renderWidgetProps } from 'merchant/widgets/types';
 import { renderWidget } from 'merchant/widgets/utils';
-import { ChartDataType, ChartSchemaType, PointType, Dataset } from './types';
-import { currencySymbols } from 'common/utils/rzp-utils';
-import moment from 'moment';
+
 import { DateRangeValues } from './Select/types';
-import { BASE_ROUTES } from 'merchant/components/Sidebar';
+import { ChartDataType, ChartSchemaType, PointType, Dataset } from './types';
 
 export const getLinkWidgetIcon = (type: string): LinkProps['icon'] => {
   if (type === 'arrow_right') {
     return ArrowRightIcon;
   }
   return undefined;
+};
+
+export const convertToNumber = (value: string): number => {
+  const number = Number(value);
+  return isNaN(number) ? 0 : number;
 };
 
 export const makeLink = (key: string, params: Record<string, any> = {}) => {
@@ -103,13 +110,16 @@ export function formatXAxis(
 }
 
 export function formatYAxis(point: PointType['y'], schema: ChartSchemaType['y']) {
+  const pointNumber = convertToNumber(point);
   switch (schema.type) {
     case 'amount':
-      return convertToMajorUnit(point, { currency: schema.unit as CurrencyCodeType });
+      return convertToMajorUnit(pointNumber, {
+        currency: schema.unit as CurrencyCodeType,
+      });
     case 'number':
-      return point;
+      return pointNumber;
     default:
-      return point;
+      return pointNumber;
   }
 }
 
