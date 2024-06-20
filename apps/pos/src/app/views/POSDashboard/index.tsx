@@ -1,26 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Text,
-  Heading,
-  Divider,
-  LoaderIcon,
-  Button,
-  PlusIcon,
-} from '@razorpay/blade/components';
-import { useNavigate } from 'react-router-dom';
+import { Box, Text, Heading, Divider, LoaderIcon } from '@razorpay/blade/components';
 
 import { fetchMerchantsKYC } from '../../utils/apis';
 import useAPI from '../../hooks/useAPI';
 import { All, FilterStateType, SearchBy, TableItem } from '../../types';
 import DashboardTable from '../../components/DashboardTable';
 import Filter from '../../components/Filter';
-import { module_routes } from '../../utils/constants';
 import { getAllMerchantsStatus } from '../../utils/helpers';
 import DatePicker from '../../components/DatePicker';
+import AddMerchant from '../SalesAssistedOnboarding/SalesDashboard/AddMerchant';
 
 const POSDashboard: React.FC = () => {
-  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [isLoading, merchantsKyc, setMerchantsKyc] = useAPI<TableItem[], FilterStateType>(
     [],
@@ -29,10 +19,6 @@ const POSDashboard: React.FC = () => {
 
   const onFilterSearchClick = (filterState: FilterStateType): void => {
     setMerchantsKyc(filterState);
-  };
-
-  const onAddMerchantClick = () => {
-    navigate(module_routes.devices.root);
   };
 
   useEffect(() => {
@@ -52,7 +38,10 @@ const POSDashboard: React.FC = () => {
         <Heading color="surface.text.gray.subtle" size="large">
           Dashboard
         </Heading>
-        <DatePicker currentDate={currentDate} setCurrentDate={setCurrentDate} />
+        <Box>
+          <DatePicker currentDate={currentDate} setCurrentDate={setCurrentDate} />
+          <AddMerchant />
+        </Box>
       </Box>
       <Box
         display="flex"
@@ -65,9 +54,6 @@ const POSDashboard: React.FC = () => {
           <Heading color="surface.text.gray.subtle" size="small">
             All merchants
           </Heading>
-          <Button variant="primary" icon={PlusIcon} onClick={onAddMerchantClick}>
-            Add Merchant
-          </Button>
         </Box>
         <Box
           display="flex"
