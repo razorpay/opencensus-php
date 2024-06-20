@@ -7879,9 +7879,10 @@ class Service extends Base\Service
                     'payment_id'    => $id,
                     'mode'          => $this->mode ?? Mode::LIVE,
                 ];
-
-                CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
-
+                if ($documentType == GenericDocumentConstants::OPGSP_AWB)
+                {
+                    CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
+                }
                 return true;
             },
             20,
@@ -7993,7 +7994,10 @@ class Service extends Base\Service
                     'mode'          => $this->mode ?? Mode::LIVE,
                 ];
 
-                CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
+                if ($paymentDocument[InvoiceEntity::TYPE] == GenericDocumentConstants::OPGSP_AWB)
+                {
+                    CrossBorderCommonUseCases::dispatch($data)->delay(rand(60, 1000) % 601);
+                }
 
                 return true;
 
