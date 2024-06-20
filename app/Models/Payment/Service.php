@@ -256,6 +256,11 @@ class Service extends Base\Service
         return $this->getNewProcessor()->processAndReturnFees($input);
     }
 
+    public function processAndReturnCardlessConvenienceFees(array & $input)
+    {
+        return $this->getNewProcessor()->processAndReturnCardlessConvenienceFees($input);
+    }
+
     /**
      * Resend OTP
      *

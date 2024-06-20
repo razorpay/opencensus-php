@@ -903,6 +903,11 @@ class Entity extends Base\PublicEntity
                 ($this->isFeeBearerCustomer() === true));
     }
 
+    public function IsCardlessEmiConvenienceFeeEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::CARDLESS_CONVENIENCE_FEE) === true);
+    }
+
     public function isPrepaid()
     {
         return $this->getAttribute(self::FEE_MODEL) === FeeModel::PREPAID;
@@ -4128,18 +4133,18 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
-    
+
     public function isSignupCampaignAnyOfFromMaster(array $signupCampaigns): bool
     {
         $app = App::getFacadeRoot();
-        
+
         $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($this->getId());
-        
+
         if (in_array(optional($deviceDetail)->getSignupCampaign(), $signupCampaigns, true))
         {
             return true;
         }
-        
+
         return false;
     }
 

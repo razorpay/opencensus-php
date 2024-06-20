@@ -185,6 +185,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_DCC_PROCESSED                                 = 'PAYMENT_DCC_PROCESSED';
+    const CONVENIENCE_FEE_PROCESSED                             = 'CONVENIENCE_FEE_PROCESSED';
     const PAYMENTS_UPDATE_REFUND_AT                             = 'PAYMENTS_UPDATE_REFUND_AT';
     const PAYMENT_VERIFY_RESPONSE                               = 'PAYMENT_VERIFY_RESPONSE';
     const ART_PAYMENT_FORCE_AUTHORIZE_FAILED                    = 'ART_PAYMENT_FORCE_AUTHORIZE_FAILED';

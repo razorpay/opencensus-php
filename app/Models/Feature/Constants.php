@@ -2000,6 +2000,8 @@ class Constants
 
     const DISABLE_UPI_NUM_CHECKOUT = 'disable_upi_num_checkout';
     const WIDGET_ELIGIBILITY_ENABLED = 'eligibility_on_widget';
+    const CARDLESS_CONVENIENCE_FEE = 'cardless_convenience_fee';
+
     const DISABLE_UPI_NUM_ON_L0 = 'disable_upi_num_on_l0';
     const DISABLE_UPI_NUM_ON_L1 = 'disable_upi_num_on_l1';
     const CLOSE_QR_ON_DEMAND    = 'close_qr_on_demand';
@@ -2983,6 +2985,7 @@ class Constants
         self::CustomMessageForCFB                    => true,
         self::SKIP_APPROVAL_FOR_CREATOR              => true,
         self::WIDGET_ELIGIBILITY_ENABLED             => true,
+        self::CARDLESS_CONVENIENCE_FEE               => true,
         self::DISABLE_WORKFLOW_CONFIG_DIMENSIONS_S2P => true,
         self::BANKING_PLUS_CORE                      => true,
         self::BANKING_PLUS_PRO                       => true,
@@ -4156,6 +4159,11 @@ class Constants
             'feature'       => self::WIDGET_ELIGIBILITY_ENABLED,
             'display_name'  => 'Feature to enable Eligibility api on affordability Widget',
             'documentation' => 'Feature to enable Eligibility api on affordability Widget',
+        ],
+        self::CARDLESS_CONVENIENCE_FEE => [
+            'feature'       => self::CARDLESS_CONVENIENCE_FEE,
+            'display_name'  => 'Feature to enable convenience fee on cardless emi',
+            'documentation' => 'Feature to enable convenience fee on cardless emi',
         ],
         self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED => [
             'feature'       => self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED,

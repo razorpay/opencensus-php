@@ -198,6 +198,8 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
+        $this->preProcessCardlessInputs($input, $payment);
+
         $this->preProcessDCCInputs($input, $payment);
 
         $this->preProcessLRSInputs($input, $payment);
@@ -5045,6 +5047,54 @@ trait Authorize
         }
     }
 
+    protected function preProcessCardlessInputs(array $input, Payment\Entity $payment)
+    {
+        if ($payment->getMethod() !== Payment\Method::CARDLESS_EMI or $payment->merchant->IsCardlessEmiConvenienceFeeEnabled() === false)
+        {
+            return;
+        }
+
+        // Validate input fee with payment amount
+        $convenience_fee = $input['amount'] * self::CARDLESS_CONVENIENCE_FEE_PERCENTAGE_MULTIPLIER;
+        $gst = $convenience_fee * self::CARDLESS_CONVENIENCE_FEE_GST_MULTIPLIER;
+
+        if (isset($input['fee']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Input fee is required');
+        }
+
+        $calculatedFee = $convenience_fee + $gst;
+        $feeDifference = $input['fee'] - $calculatedFee;
+        if (abs($feeDifference))
+        {
+            throw new Exception\BadRequestValidationFailureException('Payment failed because fees was tampered',
+                Payment\Entity::FEE, [
+                    'checkout_fee'      => $input['fee'],
+                    'calculated_fee'    => $calculatedFee,
+                ]);
+        }
+
+        $paymentMetaInput = [
+            'gateway_amount'            => $input['amount'] + $input['fee'],
+            'payment_id'                => $payment->getId(),
+        ];
+
+        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
+        if(empty($paymentMeta))
+        {
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
+        }
+        else
+        {
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->edit($paymentMeta, $paymentMetaInput);
+        }
+
+        $this->trace->info(TraceCode::CONVENIENCE_FEE_PROCESSED, $paymentMetaInput);
+    }
+
     protected function preProcessDCCForRecurringAutoOnDirect(array $input, Payment\Entity $payment)
     {
         if ($this->checkDCCForRecurringAutoOnLibraryDirect($input,$payment) === false)
@@ -7872,7 +7922,8 @@ trait Authorize
 
         if($paymentMeta !== null &&
             ($app['api.route']->getCurrentRouteName() === 'payment_redirect_to_authenticate_post'
-            || $app['api.route']->getCurrentRouteName() === 'payment_update_and_redirect'))
+            || $app['api.route']->getCurrentRouteName() === 'payment_update_and_redirect' || ($payment->getMethod() ===
+                    Payment\Method::CARDLESS_EMI and $payment->merchant->IsCardlessEmiConvenienceFeeEnabled() === true)))
         {
             $gatewayAmount = $paymentMeta->getGatewayAmount();
             $gatewayCurrency = $paymentMeta->getGatewayCurrency();

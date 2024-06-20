@@ -19,6 +19,7 @@ class Constants
     const EligibilityEnabled                         = 'eligibility_enabled';
     const EligibilityCheckDecline                    = 'eligibility_check_decline';
     const WidgetEligibilityEnabled                   = 'widget_eligibility_enabled';
+    const CardlessConvenienceFee                     = 'cardless_emi_convenience_fee_enabled';
     const CreditRiskBandEnabled                      = 'credit_risk_band_enabled';
     const AffWidgetCheckoutEnabled                   = 'affordability_widget_checkout_enabled';
     const AffWidgetV3DesignDisabled                  = 'affordability_widget_v3_design_disabled';
@@ -822,6 +823,7 @@ class Constants
         self::EligibilityEnabled                      => 'client',
         self::EligibilityCheckDecline                 => 'client',
         self::WidgetEligibilityEnabled                => 'client',
+        self::CardlessConvenienceFee                  => 'direct',
         self::CreditRiskBandEnabled                   => 'client',
         self::AffWidgetDiscountWhispererEnabled       => 'client',
         self::AffWidgetCheckoutEnabled                => 'client',
@@ -917,6 +919,7 @@ class Constants
             "skip_approval_if_creator_is_checker"             => "client",
             "disable_wf_config_dimensions_for_s2p"            => "client",
             "widget_eligibility_enabled"                      => "client",
+            "cardless_emi_convenience_fee_enabled"            => "direct",
             "affordability_widget_discount_whisperer_enabled" => 'client',
             "affordability_widget_checkout_enabled"           => 'client',
             "affordability_widget_v3_design_disabled"         => 'client',

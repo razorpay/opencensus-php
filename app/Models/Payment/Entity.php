@@ -5390,6 +5390,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['amount_refunded'] = $this->getBaseAmountRefunded();
         }
 
+        if ($this->getMethod() === Method::CARDLESS_EMI and $this->merchant->IsCardlessEmiConvenienceFeeEnabled() === true) {
+            $data['amount'] = $this->getGatewayAmount();
+        }
+
         return $data;
     }
 

@@ -653,7 +653,23 @@ class PaymentCreateController extends Controller
 
         $this->addDummyCardIfApplicable($input);
 
-        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+        // If both fee bearer and convenience fee for cardless is enabled, return
+        if($merchant->isFeeBearerCustomerOrDynamic() === true and $merchant->IsCardlessEmiConvenienceFeeEnabled() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $data = [];
+
+        if($input['method'] === Payment\Method::CARDLESS_EMI and $merchant->IsCardlessEmiConvenienceFeeEnabled() === true)
+        {
+            $data = $this->service(E::PAYMENT)->processAndReturnCardlessConvenienceFees($input);
+        }
+        else
+        {
+            $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+        }
 
         // Converts all the amounts to rupees
 

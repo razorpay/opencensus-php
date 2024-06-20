@@ -566,6 +566,9 @@ class Processor
         Payment\Gateway::FULCRUM,
     ];
 
+    const CARDLESS_CONVENIENCE_FEE_PERCENTAGE_MULTIPLIER = 0.02;
+    const CARDLESS_CONVENIENCE_FEE_GST_MULTIPLIER = 0.18;
+
     /**
      * @var Merchant\Entity
      */
@@ -4344,6 +4347,11 @@ class Processor
             return;
         }
 
+        if ($payment->getMethod() === Payment\Method::CARDLESS_EMI and $payment->merchant->IsCardlessEmiConvenienceFeeEnabled() === true)
+        {
+            $input['amount'] = $input['amount'] + $input['fee'];
+        }
+
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
         $merchant = $payment->merchant;
@@ -5003,6 +5011,20 @@ class Processor
             $data['customer_fee_gst'] = $customerFeeTax;
             $data['amount'] = $payment->getAmount() + $customerFee + $customerFeeTax;
         }
+
+        return $data;
+    }
+
+    public function processAndReturnCardlessConvenienceFees(array & $input)
+    {
+        $data = [];
+
+        $data['customer_fee'] = $input['amount'] * self::CARDLESS_CONVENIENCE_FEE_PERCENTAGE_MULTIPLIER;
+        $data['customer_fee_gst'] = $data['customer_fee'] * self::CARDLESS_CONVENIENCE_FEE_GST_MULTIPLIER;
+        $data['currency'] = $input['currency'];
+        $data['originalAmount']  = $input['amount'];
+        $data['original_amount']  = $input['amount'];
+        $data['amount'] = $input['amount'] + $data['customer_fee'] + $data['customer_fee_gst'];
 
         return $data;
     }
