@@ -625,6 +625,10 @@ class Core extends Base\Core
         if (($this->mode === Mode::TEST) and ($this->app->runningUnitTests() === false))
         {
             $recurringData['upi'] = true;
+            $recurringData['upi_autopay'] = [
+                UpiType::COLLECT => true,
+                UpiType::INTENT => true,
+            ];
         }
 
         $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchant->getId());
