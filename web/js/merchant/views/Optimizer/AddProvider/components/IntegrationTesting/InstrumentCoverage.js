@@ -31,20 +31,23 @@ export const InstrumentCoverage = ({ tabs, razorpayCoverage, gateway, gatewayCov
   const TableContent = ({ method }) => {
     let data = [];
     let columns = [];
+    let gridTemplateColumns = 'repeat(3, minmax(100px, 1fr))';
     if (method === 'card') {
       data = getCardCoverageData(gatewayCoverage, razorpayCoverage);
       columns = getCardCoverageColumns(gateway);
+      gridTemplateColumns = '20% 30% 25% 25%';
     } else if (method === 'upi') {
       data = getUPICoverageData(gatewayCoverage, razorpayCoverage);
       columns = getUPICoverageColumns(gateway);
     } else if (method === 'netbanking') {
       data = getNetbankingCoverageData(gatewayCoverage, razorpayCoverage);
       columns = getNetbankingCoverageColumns(gateway);
+      gridTemplateColumns = '50% 25% 25%';
     } else if (method === 'wallet') {
       data = getWalletCoverageData(gatewayCoverage, razorpayCoverage);
       columns = getWalletCoverageColumns(gateway);
     } else if (method === 'others') {
-      data = getOtherMethodsCoverageData(gatewayCoverage, razorpayCoverage);
+      data = getOtherMethodsCoverageData(gatewayCoverage, razorpayCoverage, tabs?.otherMethods);
       columns = getOtherMethodsCoverageColumns(gateway);
     }
     return (
@@ -53,6 +56,7 @@ export const InstrumentCoverage = ({ tabs, razorpayCoverage, gateway, gatewayCov
           data={{
             nodes: data,
           }}
+          gridTemplateColumns={gridTemplateColumns}
         >
           {(items) => {
             return (
@@ -84,7 +88,7 @@ export const InstrumentCoverage = ({ tabs, razorpayCoverage, gateway, gatewayCov
   return (
     <Tabs variant="bordered" orientation="horizontal">
       <TabList>
-        {tabs?.map(({ label, value }) => (
+        {tabs?.tabsList?.map(({ label, value }) => (
           <TabItem key={value} value={value}>
             {label}
           </TabItem>

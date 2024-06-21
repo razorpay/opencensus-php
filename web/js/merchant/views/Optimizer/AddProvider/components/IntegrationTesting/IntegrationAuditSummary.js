@@ -78,7 +78,7 @@ export const IntegrationAuditSummary = ({
         <Accordion>
           <AccordionItem title={<Text>Instrument coverage</Text>}>
             <InstrumentCoverage
-              tabs={getInstrumentCoverageTabsList()}
+              tabs={getInstrumentCoverageTabsList(razorpayCoverage, gatewayCoverage)}
               razorpayCoverage={razorpayCoverage}
               gateway={gateway}
               gatewayCoverage={gatewayCoverage}

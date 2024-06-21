@@ -6,6 +6,8 @@ import userEvent from '@testing-library/user-event';
 
 import { IntegrationAuditSummary } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/IntegrationAuditSummary';
 
+import { RAZORPAY_COVERAGE, GATEWAY_COVERAGE } from './mocks';
+
 describe('Optimizer IntegrationTesting IntegrationAuditSummary', () => {
   const mockProps = {
     currency: 'INR',
@@ -16,102 +18,8 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary', () => {
     isPaymentSuccessfull: true,
     isWebhookFailure: false,
     refundResult: { refund_success: true },
-    razorpayCoverage: [
-      {
-        method: 'card',
-        enabled: true,
-        card: {
-          debitType: {
-            network: ['MC', 'MAES', 'RUPAY', 'VISA'],
-          },
-          creditType: {
-            network: ['VISA', 'MC', 'RUPAY', 'DICL'],
-          },
-        },
-      },
-      {
-        method: 'upi',
-        enabled: true,
-        upi: {
-          intent: true,
-          collect: true,
-        },
-      },
-      {
-        method: 'netbanking',
-        enabled: true,
-        netbanking: {
-          banks: ['HDFC', 'SBIN', 'ICIC'],
-        },
-      },
-      {
-        method: 'wallet',
-        enabled: true,
-        wallets: {
-          phonepe: true,
-          jiomoney: true,
-          olamoney: true,
-        },
-      },
-      {
-        method: 'emi',
-        enabled: true,
-      },
-      {
-        method: 'e-mandate',
-        enabled: true,
-      },
-    ],
-    gatewayCoverage: [
-      {
-        method: 'card',
-        enabled: true,
-        card: {
-          debitType: {
-            network: ['MC', 'MAES', 'RUPAY', 'VISA'],
-          },
-          creditType: {
-            network: ['VISA', 'MC', 'RUPAY', 'DICL'],
-          },
-        },
-      },
-      {
-        method: 'upi',
-        enabled: true,
-        upi: {
-          intent: true,
-          collect: true,
-        },
-      },
-      {
-        method: 'netbanking',
-        enabled: true,
-        netbanking: {
-          banks: ['HDFC', 'SBIN', 'ICIC'],
-        },
-      },
-      {
-        method: 'wallet',
-        enabled: true,
-        wallets: {
-          phonepe: true,
-          jiomoney: true,
-          olamoney: true,
-        },
-      },
-      {
-        method: 'emi',
-        enabled: true,
-      },
-      {
-        method: 'e-mandate',
-        enabled: true,
-      },
-      {
-        method: 'sodexo',
-        enabled: true,
-      },
-    ],
+    razorpayCoverage: RAZORPAY_COVERAGE,
+    gatewayCoverage: GATEWAY_COVERAGE,
   };
 
   const App = (props) => {
@@ -202,6 +110,7 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary', () => {
     expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
     expect(screen.getByText('State Bank of India')).toBeInTheDocument();
     expect(screen.getByText('ICICI Bank')).toBeInTheDocument();
+    expect(screen.getByText('Punjab National Bank - Retail Banking')).toBeInTheDocument();
 
     expect(screen.getByText('Wallets')).toBeInTheDocument();
     await userEvent.click(screen.getByText('Wallets'));

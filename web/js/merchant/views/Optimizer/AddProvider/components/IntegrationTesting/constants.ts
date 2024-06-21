@@ -94,6 +94,13 @@ export const CARD_NETWORKS = {
   MAES: 'Maestro Cards',
   AMEX: 'American Express Cards',
   DICL: 'Diners Club Cards',
+  JCB: 'Japan Credit Bureau Cards',
+  BAJAJ: 'Bajaj Finserv Cards',
+};
+
+export const BANK_TYPES = {
+  R: 'Retail Banking',
+  C: 'Corporate Banking',
 };
 
 export const AUDIT_TYPES = {
