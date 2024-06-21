@@ -270,7 +270,7 @@ const IntegrationTesting = ({
     const OPTIONS = {
       key: merchantKey,
       force_terminal_id: `term_${providerId}`,
-      amount: Number(amount) * 100,
+      amount: parseInt(Number(amount) * 100),
       config: {
         display: {
           blocks: {

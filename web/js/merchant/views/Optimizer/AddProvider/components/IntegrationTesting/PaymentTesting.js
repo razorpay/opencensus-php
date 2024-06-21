@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Heading,
@@ -41,6 +41,9 @@ export const PaymentTesting = ({
   setIsPaymentDetailsFetched,
   providerId,
 }) => {
+  const [isValidAmount, setIsValidAmount] = useState(true);
+  const [amountErrorText, setAmountErrorText] = useState('');
+
   useEffect(() => {
     loadCheckoutScript();
     merchantFetch({
@@ -52,6 +55,16 @@ export const PaymentTesting = ({
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (amount < 1 || Number.isNaN(Number(amount))) {
+      setIsValidAmount(false);
+      setAmountErrorText('Amount should be greater or equal than 1');
+    } else {
+      setIsValidAmount(true);
+      setAmountErrorText('');
+    }
+  }, [amount]);
 
   useEffect(() => {
     if (isPaymentDone && paymentId) {
@@ -156,6 +169,10 @@ export const PaymentTesting = ({
             value={amount}
             onChange={({ value }) => setAmount(String(value))}
             marginTop="spacing.7"
+            necessityIndicator="required"
+            isRequired={true}
+            validationState={isValidAmount ? 'none' : 'error'}
+            errorText={amountErrorText}
           />
         </Box>
       )}

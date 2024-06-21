@@ -96,4 +96,13 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
     expect(screen.getByText('Webhook issue detected')).toBeInTheDocument();
     expect(screen.getByText('Know more')).toBeInTheDocument();
   });
+
+  it('should render the amount error text when amount is not valid', async () => {
+    const props = {
+      ...mockProps,
+      amount: '0',
+    };
+    await act(() => render(<App {...props} />));
+    expect(screen.getByText('Amount should be greater or equal than 1')).toBeInTheDocument();
+  });
 });
