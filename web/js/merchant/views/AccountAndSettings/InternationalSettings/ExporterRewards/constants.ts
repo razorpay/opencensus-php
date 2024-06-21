@@ -24,3 +24,21 @@ export const ONBOARDING_CARDS = [
     desc: 'Get tips and suggestions around boosting your GMV and hence maximize your rewards',
   },
 ];
+
+export const REWARD_HISTORY_STALE_TIME = 15 * 60 * 1000; // Data remains fresh for 15 minutes
+export const TABLE_PAGE_SIZE = 10;
+
+export const REWARD_HISTORY_STATUS = {
+  pending: {
+    text: 'Processing',
+    color: 'notice',
+  },
+  processed: {
+    text: 'Credited',
+    color: 'positive',
+  },
+  rejected: {
+    text: 'Rejected',
+    color: 'negative',
+  },
+};
