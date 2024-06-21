@@ -185,13 +185,35 @@ class TransferProcess extends Job
             $this->trace->info(
                 TraceCode::TRANSFER_PROCESS_PAYMENT_JOURNAL_INFO,
                 [
-                    'payment_id'   => $this->payment->getId(),
-                    'journal'      => $journal,
+                    'payment_id'              => $this->payment->getId(),
+                    'is_journal_created'      => (empty($journal) === false),
                 ]
             );
 
             if ($journal === null)
             {
+                // fallback to fetch from payment fetch replica, this handles cases where transfer is created
+                // for a payment which was created before the merchant was onboarded to reverse shadow
+                $app = App::getFacadeRoot();
+
+                $repo = $app['repo'];
+
+                $txn = $repo->transaction->fetchPaymentTransactionFromPaymentFetchReplica($payment);
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_PROCESS_PAYMENT_JOURNAL_INFO,
+                    [
+                        'payment_id'             => $this->payment->getId(),
+                        'txn_created'            => (empty($txn) === false),
+                        'balance_updated'        => $txn->isBalanceUpdated() ?? false,
+                    ]
+                );
+
+                if ((empty($txn) === false) && ($txn->isBalanceUpdated() === true))
+                {
+                    return false;
+                }
+
                 return true;
             }
 

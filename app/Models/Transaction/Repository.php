@@ -3049,4 +3049,15 @@ class Repository extends Base\Repository
                     ->pluck(Entity::ENTITY_ID)
                     ->toArray();
     }
+
+    public function fetchPaymentTransactionFromPaymentFetchReplica($payment)
+    {
+        $connectionType = $this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA);
+
+        return $this->newQueryWithConnection($connectionType)
+            ->where(Entity::TYPE, ConstantEntity::PAYMENT)
+            ->where(Entity::MERCHANT_ID, $payment->merchant->getId())
+            ->where(Entity::ENTITY_ID, $payment->getId())
+            ->first();
+    }
 }
