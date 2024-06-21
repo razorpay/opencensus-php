@@ -190,10 +190,15 @@ class Validator extends Base\Validator
     {
         $freqArray = array(ENTITY::WEEKLY, ENTITY::MONTHLY, ENTITY::YEARLY, ENTITY::AS_PRESENTED);
 
-        $frequency = $input[Entity::FREQUENCY] ?? ENTITY::AS_PRESENTED;
+        $frequency = $input[Entity::FREQUENCY] ?? null;
         $maxAmount = $input[Entity::MAX_AMOUNT] ?? null;
 
-       if (!in_array($frequency, $freqArray)) {
+        if($frequency === null){
+            throw new BadRequestValidationFailureException(
+                'frequency cannot be empty.',
+                Entity::FREQUENCY
+            );
+        } elseif (!in_array($frequency, $freqArray)) {
             throw new BadRequestValidationFailureException(
                 'The selected frequency is invalid',
                 Entity::FREQUENCY
