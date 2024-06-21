@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Heading, Accordion, AccordionItem, Text } from '@razorpay/blade/components';
+import { Box, Heading, Accordion, AccordionItem, Text, Spinner } from '@razorpay/blade/components';
 import isEmpty from 'lodash/isEmpty';
 
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
@@ -24,6 +24,9 @@ export const IntegrationAuditSummary = ({
   refundResult,
   razorpayCoverage,
   gatewayCoverage,
+  shouldFetchSummary,
+  isPaymentFetchedSuccessfully,
+  isRefundFetchedSuccessfully,
 }) => {
   useEffect(() => {
     trackOptimizerEvents({
@@ -47,34 +50,46 @@ export const IntegrationAuditSummary = ({
       <Box width="44rem">
         <Accordion marginTop="spacing.4">
           <AccordionItem title={<Text>Payment testing</Text>}>
-            <TestingResult
-              type="payment"
-              currency={currency}
-              amount={amount}
-              success={isPaymentSuccessfull && !isWebhookFailure}
-              webhookFailure={isWebhookFailure}
-            />
-            {isWebhookFailure && <PaymentWebhookFailureAlert gateway={gateway} />}
-            {!isPaymentSuccessfull && !isWebhookFailure && (
-              <PaymentFailureAlert paymentError={paymentError} />
+            {shouldFetchSummary && !isPaymentFetchedSuccessfully ? (
+              <Spinner size="large" />
+            ) : (
+              <>
+                <TestingResult
+                  type="payment"
+                  currency={currency}
+                  amount={amount}
+                  success={isPaymentSuccessfull && !isWebhookFailure}
+                  webhookFailure={isWebhookFailure}
+                />
+                {isWebhookFailure && <PaymentWebhookFailureAlert gateway={gateway} />}
+                {!isPaymentSuccessfull && !isWebhookFailure && (
+                  <PaymentFailureAlert paymentError={paymentError} />
+                )}
+              </>
             )}
           </AccordionItem>
         </Accordion>
-        {!isEmpty(refundResult) && (
-          <Accordion>
-            <AccordionItem title={<Text>Refund testing</Text>}>
-              <TestingResult
-                type="refund"
-                currency={currency}
-                amount={amount}
-                success={refundResult?.refund_success}
-              />
-              {!refundResult?.refund_success && (
-                <RefundFailureAlert gateway={gateway} integrationType={integrationType} />
-              )}
-            </AccordionItem>
-          </Accordion>
-        )}
+        <Accordion>
+          <AccordionItem title={<Text>Refund testing</Text>}>
+            {shouldFetchSummary && !isRefundFetchedSuccessfully ? (
+              <Spinner size="large" />
+            ) : !isEmpty(refundResult) ? (
+              <>
+                <TestingResult
+                  type="refund"
+                  currency={currency}
+                  amount={amount}
+                  success={refundResult?.refund_success}
+                />
+                {!refundResult?.refund_success && (
+                  <RefundFailureAlert gateway={gateway} integrationType={integrationType} />
+                )}
+              </>
+            ) : (
+              <Text>Refund testing has not been completed.</Text>
+            )}
+          </AccordionItem>
+        </Accordion>
         <Accordion>
           <AccordionItem title={<Text>Instrument coverage</Text>}>
             <InstrumentCoverage

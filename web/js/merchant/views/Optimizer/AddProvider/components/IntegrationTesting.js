@@ -69,6 +69,10 @@ const IntegrationTesting = ({
   const [isRefundDetialsFetched, setIsRefundDetialsFetched] = useState(false);
   const [refundResult, setRefundResult] = useState({});
 
+  // Integration audit summary screen
+  const [isPaymentFetchedSuccessfully, setIsPaymentFetchedSuccessfully] = useState(false);
+  const [isRefundFetchedSuccessfully, setIsRefundFetchedSuccessfully] = useState(false);
+
   // Provider settings screen
   const [defaultMethods, setDefaultMethods] = useState({});
   const [methods, setMethods] = useState({});
@@ -209,6 +213,7 @@ const IntegrationTesting = ({
               setIsWebhookFailure(true);
             }
             setAmount(payment.amount / 100);
+            setIsPaymentFetchedSuccessfully(true);
 
             const paymentsListForRefund = items?.filter((item) => item.status === 'refunded');
 
@@ -220,27 +225,31 @@ const IntegrationTesting = ({
                   }
                   return null;
                 }),
-              ).then((refundResponse) => {
-                let refundSuccess = false;
-                for (let i = 0; i < 5; i++) {
-                  if (refundResponse[i]?.success) {
-                    const item = refundResponse[i].data?.items?.[0];
-                    if (item.gateway_data?.code === 'GATEWAY_ERROR_TRANSACTION_PENDING') {
-                      setRefundResult({
-                        transactionId: item.payment_id,
-                        refund_success: true,
-                      });
-                      refundSuccess = true;
-                      break;
+              )
+                .then((refundResponse) => {
+                  let refundSuccess = false;
+                  for (let i = 0; i < 5; i++) {
+                    if (refundResponse[i]?.success) {
+                      const item = refundResponse[i].data?.items?.[0];
+                      if (item.gateway_data?.code === 'GATEWAY_ERROR_TRANSACTION_PENDING') {
+                        setRefundResult({
+                          transactionId: item.payment_id,
+                          refund_success: true,
+                        });
+                        refundSuccess = true;
+                        break;
+                      }
                     }
                   }
-                }
-                if (!refundSuccess) {
-                  setRefundResult({
-                    refund_success: false,
-                  });
-                }
-              });
+                  if (!refundSuccess) {
+                    setRefundResult({
+                      refund_success: false,
+                    });
+                  }
+                })
+                .finally(() => {
+                  setIsRefundFetchedSuccessfully(true);
+                });
             }
           }
         }
@@ -552,6 +561,9 @@ const IntegrationTesting = ({
                 refundResult={refundResult}
                 razorpayCoverage={razorpayCoverage}
                 gatewayCoverage={gatewayCoverage}
+                shouldFetchSummary={shouldFetchSummary}
+                isPaymentFetchedSuccessfully={isPaymentFetchedSuccessfully}
+                isRefundFetchedSuccessfully={isRefundFetchedSuccessfully}
               />
             )}
             {currentStep === 'provider_settings' && (
