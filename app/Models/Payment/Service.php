@@ -5439,6 +5439,8 @@ class Service extends Base\Service
             $payment = (new Payment\Entity)->forceFill($rearchPayment);
         }
 
+        $payment->setExternal(true);
+
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 
         $payment->merchant()->associate($merchant);

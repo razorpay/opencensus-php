@@ -2990,7 +2990,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return null;
         }
 
-        if ($this->hasMetadata(UpiMetadata\Entity::UPI_METADATA))
+        if ($this->hasMetadata(UpiMetadata\Entity::UPI_METADATA) === true)
         {
             return $this->getMetadata(UpiMetadata\Entity::UPI_METADATA);
         }
@@ -5663,6 +5663,51 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getUpiMetadata()
     {
         return $this->upiMetadata;
+    }
+
+    /**
+     * fetches the upi metadata associated with payments
+     * @return UpiMetadata\Entity
+     */
+    public function getUpiMetadataAttribute()
+    {
+        // return if metadata is already present
+        if ($this->hasMetadata(UpiMetadata\Entity::UPI_METADATA) === true)
+        {
+            return $this->getMetadata(UpiMetadata\Entity::UPI_METADATA);
+        }
+
+        $upiMetadata = null;
+
+        if ($this->relationLoaded('upi_metadata') === true)
+        {
+            $upiMetadata = $this->getRelation('upi_metadata');
+        }
+
+        if (isset($upiMetadata) === true)
+        {
+            return $upiMetadata;
+        }
+
+        // upi_metadata for re-arch payments will not be present in API DB
+        if ($this->isExternal() === true)
+        {
+            return null;
+        }
+
+        $upiMetadata = (new UpiMetadata\Repository())->fetchByPaymentId($this->getId());
+
+        if (isset($upiMetadata) === false)
+        {
+            return null;
+        }
+
+        $upiMetadata->payment()->associate($this);
+
+        // set upi_metadata in metadata key
+        $this->metadata[UpiMetadata\Entity::UPI_METADATA] = $upiMetadata;
+
+        return $upiMetadata;
     }
 
 

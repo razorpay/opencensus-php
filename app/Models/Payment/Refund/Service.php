@@ -45,6 +45,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Jobs\ScroogeRefundUpdate;
+use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
@@ -937,7 +938,7 @@ class Service extends Base\Service
                             {
                                 try
                                 {
-                                    $upiMetadataEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
+                                    $upiMetadataEntity = $payment->getUpiMetadata();
 
                                     if (empty($upiMetadataEntity) === false)
                                     {

@@ -4110,7 +4110,14 @@ trait Refund
             ($payment->isGatewayCaptured() === true) and
             (Payment\Gateway::isUpiOtmSupportedGateway($payment->getGateway()) === true))
         {
-            $upiMetadataEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
+            $upiMetadataEntity = $payment->getUpiMetadata();
+
+            // if metadata is not present then otm is not set in the entity and hence
+            // it is not a UPI OTM payment
+            if (isset($upiMetadataEntity) === false)
+            {
+                return false;
+            }
 
             if ($upiMetadataEntity[UpiMetadata\Entity::TYPE] === UpiMetadata\Type::OTM)
             {
