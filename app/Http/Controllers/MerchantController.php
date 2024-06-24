@@ -800,19 +800,19 @@ class MerchantController extends Controller
 
                 if (isset($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]) === true)
                 {
-                    $data[Balance\Entity::BALANCE] = $accountBalanceMap[LedgerConstants::MERCHANT_BALANCE];
+                    $data[Balance\Entity::BALANCE] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]);
                 }
                 if (isset($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]) === true)
                 {
-                    $data[Balance\Entity::AMOUNT_CREDITS] = $accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS];
+                    $data[Balance\Entity::AMOUNT_CREDITS] =floatval($accountBalanceMap[LedgerConstants::MERCHANT_AMOUNT_CREDITS]);
                 }
                 if (isset($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]) === true)
                 {
-                    $data[Balance\Entity::FEE_CREDITS] = $accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS];
+                    $data[Balance\Entity::FEE_CREDITS] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_FEE_CREDITS]);
                 }
                 if (isset($accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS]) === true)
                 {
-                    $data[Balance\Entity::REFUND_CREDITS] = $accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS];
+                    $data[Balance\Entity::REFUND_CREDITS] = floatval($accountBalanceMap[LedgerConstants::MERCHANT_REFUND_CREDITS]);
                 }
             }
         }
@@ -3084,13 +3084,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-    
+
     public function verifyMerchantWebsitePolicy()
     {
         $input = Request::all();
-        
+
         $response = $this->service(E::MERCHANT_WEBSITE)->verifyMerchantWebsitePolicy($input);
-        
+
         return ApiResponse::json($response);
     }
     public function getMerchantWebsiteSection()
