@@ -24,6 +24,8 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
+        (new Utility())->overrideDeactivateIfApplicable($entity);
+
         if ($this->entityShouldSync($entity) === false)
         {
             return parent::saveOrFail($entity, $options);

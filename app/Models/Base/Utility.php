@@ -5,9 +5,14 @@ namespace RZP\Models\Base;
 use Carbon\Carbon;
 use InvalidArgumentException;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Currency;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Trace\TraceCode;
 
 class Utility
 {
@@ -134,5 +139,116 @@ class Utility
             $result = $tmp;
         }
         return $result;
+    }
+
+    // note: this is a temporary fix to solve the following issue: https://razorpay.slack.com/archives/C027FDDSZ0F/p1716188016901139
+    // context: only for the race condition pattern we are observing all 3 columns: activated_at, activated, live to get unset.
+    // hence to handle the race condition, we will override this behaviour behind an experiment after log verification.
+    // during regular deactivate: only activated, live are unset.
+    public function overrideDeactivateIfApplicable($entity)
+    {
+        try {
+            if ($entity->getEntityName() !== ConstantEntity::MERCHANT) {
+                return;
+            }
+
+            $dirtyChanges = $entity->getDirty();
+
+            $originalData = $entity->getOriginal();
+
+            if ((count($dirtyChanges) > 0)
+                and array_key_exists(MerchantEntity::ACTIVATED_AT, $dirtyChanges) === true
+                and array_key_exists(MerchantEntity::ACTIVATED_AT, $originalData) === true
+                and array_key_exists(MerchantEntity::ACTIVATED, $dirtyChanges) === true
+                and array_key_exists(MerchantEntity::ACTIVATED, $originalData) === true
+                and array_key_exists(MerchantEntity::LIVE, $dirtyChanges) === true
+                and array_key_exists(MerchantEntity::LIVE, $originalData) === true
+                and $originalData[MerchantEntity::ACTIVATED_AT] !== null
+                and $dirtyChanges[MerchantEntity::ACTIVATED_AT] === null
+                and $originalData[MerchantEntity::ACTIVATED] === true
+                and $dirtyChanges[MerchantEntity::ACTIVATED] === 0
+                and $originalData[MerchantEntity::LIVE] === true
+                and $dirtyChanges[MerchantEntity::LIVE] === 0
+            ) {
+                app('trace')->info(TraceCode::ACTIVATION_FIELDS_UNSET, [
+                    'dirty_changes' => $dirtyChanges,
+                    'merchant_id' => $entity->getId(),
+                    'original_data' => $originalData,
+                ]);
+
+                $this->getDebugBackTrace();
+
+                if ((new Merchant\Core)->isSplitzExperimentEnable(
+                        [
+                            'id' => app('request')->getTaskId(),
+                            'experiment_id' => app('config')->get('app.override_deactivate_experiment_id'),
+                        ],
+                        'enable'
+                    ) === false) {
+                    return;
+                }
+
+                $entity->setAttribute(MerchantEntity::ACTIVATED_AT, $originalData[MerchantEntity::ACTIVATED_AT]);
+                $entity->setAttribute(MerchantEntity::ACTIVATED, $originalData[MerchantEntity::ACTIVATED]);
+                $entity->setAttribute(MerchantEntity::LIVE, $originalData[MerchantEntity::LIVE]);
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            app('trace')->traceException($exception, Trace::ERROR, TraceCode::ACTIVATION_FIELDS_UNSET_ERROR);
+        }
+    }
+
+    public function getDebugBackTrace(): void
+    {
+        try {
+            $route = $this->getRouteOrJobName();
+
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+
+            $traceInfo = [];
+
+            foreach ($backtrace as $trace) {
+                if (isset($trace['file']) && !str_contains($trace['file'], 'vendor/')) {
+                    $traceInfo[] = [
+                        'line' => $trace['line'],
+                        'function' => $trace['function'] ?? 'N/A',
+                        'class' => $trace['class'] ?? 'N/A',
+                    ];
+                }
+            }
+
+            app('trace')->info(TraceCode::ACTIVATION_FIELDS_UNSET_DEBUG, [
+                "trace" => $traceInfo,
+                "route" => $route
+            ]);
+        } catch (\Exception $e) {
+            app('trace')->traceException($e,
+                null,
+                TraceCode::ACS_ROUTE_QUERY_LOGS_EXCEPTION
+            );
+        }
+    }
+
+    public function getRouteOrJobName()
+    {
+        try {
+            $runningInQueue = app()->runningInQueue();
+            if ($runningInQueue === true) {
+                $flow = app('worker.ctx')->getJobName();
+            } else {
+                $flow = app('request.ctx')->getRoute();
+            }
+
+            if ($flow === null or $flow === "") {
+                return "none";
+            }
+
+            return $flow;
+
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_ROLLBACK_GET_ROUTE_OR_WORKER_NAME_EXCEPTION);
+            return "none";
+        }
     }
 }
