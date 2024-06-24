@@ -76,7 +76,7 @@ class Constants
 
     const NIUM_PROD_JOB_NAME = 'nium_prod';
 
-    const ICICI_OPGSP_PROD_JOB_NAME = 'icici_opgsp_prod';
+    const ICICI_OPGSP_IMPORT_PROD_JOB_NAME = 'icici_opgsp_import_prod';
 
     const ICICI_OPGSP_INVOICES_PROD_JOB_NAME = 'icici_opgsp_invoices_prod';
 
@@ -93,4 +93,5 @@ class Constants
     const CANARA_NETBANKING_COMBINED_PUSH = "canara_netbanking_combined_push";
 
     const AXIS_CC_EMI_FILE_JOB_NAME      = 'axis_cc_emi_push';
+
 }

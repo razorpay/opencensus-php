@@ -39,7 +39,7 @@ use RZP\Models\Order\OrderMeta;
 class Processor extends Base\Core
 {
 
-    protected $jobNameProd = BeamConstants::ICICI_OPGSP_PROD_JOB_NAME;
+    protected $jobNameProd = BeamConstants::ICICI_OPGSP_IMPORT_PROD_JOB_NAME;
 
     protected $invoicesJobNameProd = BeamConstants::ICICI_OPGSP_INVOICES_PROD_JOB_NAME;
 
@@ -58,6 +58,10 @@ class Processor extends Base\Core
             $sendFile = $input['send_file'];
             $from = $input['from'] ?? Carbon::yesterday(Timezone::IST)->getTimestamp();
             $to = $input['to'] ?? Carbon::today(Timezone::IST)->getTimestamp();
+
+            $this->trace->info(TraceCode::OPGSP_IMPORT_SETTLEMENT_FILE_GENERATION_INPUT, [
+               'file_generation_input' => $input
+            ]);
 
             $settlements = $this->repo->settlement
                 ->getProcessedSettlementsForTimePeriodForMid($merchantId, $from, $to, null);
