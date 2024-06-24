@@ -110,6 +110,8 @@ class PGRouter
 
     const PGRouterValidateAndCreatePaymentRecurring = 'v1/payments/create/recurring';
 
+    const PGRouterInvalidateCache = 'v1/invalidate-cache/merchant/bulk';
+
     const PG_ROUTER_REQUEST_FAILURE = "pg_router_request_failure";
 
     // Headers
@@ -1473,7 +1475,7 @@ class PGRouter
                         if ($notificationData !== null)
                         {
                             $notificationDataArray = $notificationData->toNotificationArray();
-                            
+
                             $order->setAttribute('notification', $notificationDataArray);
 
                             $order->setAttribute('notification_data', $notificationDataArray);
@@ -1490,4 +1492,16 @@ class PGRouter
             }
         }
     }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function invalidatePGRouterCache(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::PGRouterInvalidateCache, Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
 }

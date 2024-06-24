@@ -2601,14 +2601,14 @@ class Core extends Base\Core
             return;
         }
 
-        $transferMerchant = $transfer->merchant;
+        $transferMerchant = $this->repo->merchant->findOrFail($transfer->merchant->getId());
 
-        $paymentMerchant = $transferPayment->merchant;
+        $paymentMerchant = $this->repo->merchant->findOrFail($transferPayment->merchant->getId());
 
         $reverseShadowEnabledForTransferDebitMid = $transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
         $reverseShadowEnabledForLinkedAccount = $paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
 
-        if (( $reverseShadowEnabledForTransferDebitMid === false) or ( $reverseShadowEnabledForLinkedAccount === false))
+        if (( $reverseShadowEnabledForTransferDebitMid === false) ^ ( $reverseShadowEnabledForLinkedAccount === false))
         {
             $this->trace->info(
                 TraceCode::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH,
