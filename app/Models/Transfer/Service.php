@@ -23,6 +23,7 @@ use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Ledger\ReverseShadow;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Exception\SettlementIdUpdateException;
 use RZP\Models\Settlement\Entity as Settlement;
@@ -718,7 +719,15 @@ class Service extends Base\Service
 
                 if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
-                    continue;
+                    $core = new ReverseShadow\Transfers\Core();
+
+                    $shouldProcess = $core->shouldProcessPaymentTransfersForReverseShadow(
+                        $payment->getId(), $payment->merchant);
+
+                    if ($shouldProcess === false)
+                    {
+                        continue;
+                    }
                 }
 
                 $this->trace->info(
@@ -756,12 +765,11 @@ class Service extends Base\Service
         {
             try
             {
-
-
                 $payment = $this->repo->payment->findOrFail($paymentId);
 
                 if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
+                    // Skip for sync mode, async mode is not skipped
                     continue;
                 }
 
@@ -901,23 +909,28 @@ class Service extends Base\Service
 
             if ($payment === null)
             {
-                $this->core->fetchTransfersAndIncrementAttempts($order);
+                foreach ($allPayments as $singlePayment)
+                {
+                    if ($singlePayment->getStatus() === Payment\Status::REFUNDED)
+                    {
+                        $payment = $singlePayment;
 
-                continue;
+                        break;
+                    }
+                }
             }
 
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
-                $this->core->fetchTransfersAndIncrementAttempts($order);
+                $core = new ReverseShadow\Transfers\Core();
 
-                continue;
-            }
+                $shouldProcess = $core->shouldProcessOrderTransfersForReverseShadow(
+                    Constant::ORDER, $orderId, $order->merchant);
 
-            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false)
-            {
-                $this->core->fetchTransfersAndIncrementAttempts($order);
-
-                continue;
+                if ($shouldProcess === false)
+                {
+                    continue;
+                }
             }
 
             if ($syncProcessing === true)

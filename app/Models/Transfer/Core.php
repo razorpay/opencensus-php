@@ -59,6 +59,7 @@ use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
 use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransfersCore;
 
+
 use Throwable;
 
 class Core extends Base\Core
@@ -1592,6 +1593,12 @@ class Core extends Base\Core
             $config = [];
         }
 
+        if (in_array($merchant->getId(), $config[Constant::DEDICATED_QUEUE_ONE] ?? []) === true)
+        {
+            TransferProcessDedicatedQueueOne::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
+
+            return;
+        }
         if (in_array($merchant->getId(), $config[Constant::DEDICATED_QUEUE_TWO] ?? []) === true)
         {
             TransferProcessDedicatedQueueTwo::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
@@ -1627,13 +1634,6 @@ class Core extends Base\Core
         else if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
         {
             TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
-
-            return;
-        }
-        else if (($merchant->isCapitalFloatRouteMerchant() === true) and
-            ($this->isLiveMode() === true))
-        {
-            TransferProcessDedicatedQueueOne::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
             return;
         }

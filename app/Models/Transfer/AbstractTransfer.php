@@ -109,19 +109,12 @@ abstract class AbstractTransfer
         {
             $core = new Core();
 
-            $isFailTransfersExpEnabled = $core->checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($payment->merchant);
-
-            if ($isFailTransfersExpEnabled === true)
+            foreach ($transfers as $transfer)
             {
-                foreach ($transfers as $transfer)
+                if ($transfer->getStatus() === Status::CREATED || $transfer->getStatus() === Status::PENDING)
                 {
-                    if ($transfer->getStatus() === Status::CREATED || $transfer->getStatus() === Status::PENDING)
-                    {
-                        $core->failTransferIfSourcePaymentIsRefunded($transfer, $payment);
-                    }
+                    $core->failTransferIfSourcePaymentIsRefunded($transfer, $payment);
                 }
-
-                return [$transfers, []];
             }
         }
 
@@ -376,17 +369,17 @@ abstract class AbstractTransfer
 
                 if ($processViaReverseShadow === true)
                 {
-                    // Attempt to update amount transferred value without saving to perform validation
-                    $this->updatePaymentAmountTransferred($payment, $transfer->getAmount(), false);
-
-                   $this->validateParentMerchant($transfer, $payment);
-
                     $payloadName = $this->getPayloadName($transfer->getPublicId(), LedgerConstants::TRANSFER);
 
                     $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
 
                     if (count($outboxEntries) === 0)
                     {
+                        // Attempt to update amount transferred value without saving to perform validation
+                        $this->updatePaymentAmountTransferred($payment, $transfer->getAmount(), false);
+
+                        $this->validateParentMerchant($transfer, $payment);
+
                         $transfer = $core->createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $subMerchant);
                     }
                 }

@@ -341,6 +341,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::SOURCE_TYPE, $sourceType)
                     ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::STATUS, Status::CREATED)
                     ->update([Entity::STATUS => $status]);
     }
 

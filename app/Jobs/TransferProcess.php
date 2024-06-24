@@ -200,16 +200,23 @@ class TransferProcess extends Job
 
                 $txn = $repo->transaction->fetchPaymentTransactionFromPaymentFetchReplica($payment);
 
+                $isBalanceUpdated = false;
+
+                if ((empty($txn) === false) && ($txn->isBalanceUpdated() === true))
+                {
+                    $isBalanceUpdated = true;
+                }
+
                 $this->trace->info(
                     TraceCode::TRANSFER_PROCESS_PAYMENT_JOURNAL_INFO,
                     [
                         'payment_id'             => $this->payment->getId(),
                         'txn_created'            => (empty($txn) === false),
-                        'balance_updated'        => $txn->isBalanceUpdated() ?? false,
+                        'balance_updated'        => $isBalanceUpdated,
                     ]
                 );
 
-                if ((empty($txn) === false) && ($txn->isBalanceUpdated() === true))
+                if ($isBalanceUpdated === true)
                 {
                     return false;
                 }

@@ -649,4 +649,96 @@ class Core extends Base\Core
 
         return $txn;
     }
+
+    public function shouldProcessPaymentTransfersForReverseShadow($paymentId, $merchant)
+    {
+        $transfers = $this->repo
+            ->transfer
+            ->fetchBySourceTypeAndIdAndMerchant(
+                Transfer\Constant::PAYMENT,  $paymentId, $merchant , [Transfer\Status::PENDING]);
+
+        foreach ($transfers as $transfer)
+        {
+            $payloadName = $this->getPayloadName($transfer->getPublicId(), LedgerConstants::TRANSFER);
+
+            $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
+
+            if (count($outboxEntries) === 0)
+            {
+                [, $debitJournalId] = (new Transfer\Core())->fetchJournalIdFromLedgerForTransfer($transfer, $transfer->getMerchantId());
+
+                $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_RETRY,
+                    [
+                        'payment_id'              => $paymentId,
+                        'transfer_id'             => $transfer->getId(),
+                        'outbox_entry_found'      => false,
+                        'journal_found'           => empty($debitJournalId) === false,
+                    ]);
+
+                if (empty($debitJournalId) === false)
+                {
+                    // Journal exists, so transfer shouldn't be re-processed
+                    return false;
+                }
+
+                // No outbox and journal present
+                return true;
+            }
+
+            $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_RETRY,
+                [
+                    'payment_id'            => $paymentId,
+                    'transfer_id'           => $transfer->getId(),
+                    'outbox_entry_found'    => true,
+                ]);
+        }
+
+        return false;
+    }
+
+    public function shouldProcessOrderTransfersForReverseShadow($orderId, $merchant)
+    {
+        $transfers = $this->repo
+            ->transfer
+            ->fetchBySourceTypeAndIdAndMerchant(
+                Transfer\Constant::ORDER,  $orderId, $merchant , [Transfer\Status::PENDING, Transfer\Status::FAILED]);
+
+        foreach ($transfers as $transfer)
+        {
+            $payloadName = $this->getPayloadName($transfer->getPublicId(), LedgerConstants::TRANSFER);
+
+            $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadName($payloadName);
+
+            if (count($outboxEntries) === 0)
+            {
+                [, $debitJournalId] = (new Transfer\Core())->fetchJournalIdFromLedgerForTransfer($transfer, $transfer->getMerchantId());
+
+                $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY,
+                    [
+                        'order_id'              => $orderId,
+                        'transfer_id'           => $transfer->getId(),
+                        'outbox_entry_found'    => false,
+                        'journal_found'         => empty($debitJournalId) === false,
+                    ]);
+
+                if (empty($debitJournalId) === false)
+                {
+                    // Journal exists, so transfer shouldn't be re-processed
+                    return false;
+                }
+
+                // No outbox and journal present
+                return true;
+            }
+
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY,
+                [
+                    'order_id'              => $orderId,
+                    'transfer_id'           => $transfer->getId(),
+                    'outbox_entry_found'    => true,
+                ]);
+        }
+
+        return false;
+    }
 }
