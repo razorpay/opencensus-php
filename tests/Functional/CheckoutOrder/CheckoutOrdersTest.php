@@ -1548,7 +1548,7 @@ class CheckoutOrdersTest extends TestCase
             $this->ba->privateAuth('rzp_live_' . $merchantId);
         }
 
-        $defaultValues = $this->getDefaultCreateCheckoutOrderArray();
+        $defaultValues = $this-> getDefaultCreateCheckoutOrderArray();
 
         $attributes = array_merge($defaultValues, $input);
 
@@ -1620,7 +1620,7 @@ class CheckoutOrdersTest extends TestCase
                     "fhash" => "069a7598fa5cf4d27b9aea85b73b0a46148415e4",
                     "tz" => 330
                 ],
-                "checkout_signature" => "b39aefb12b1d00440cefdc27aeca929cb48afb16a3614fd6e58f09fa755dfdc12ed86af2a0c8a9f373eaf3437c1a792ef643006b998f68ced2d35b79007bda00",
+                "checkout_signature" => "a8a09e1bbbc7f97465ea28956930d06413ae70b34125f8559af08227df84680b53c7d4aa4d005f0aacc662a400d16634e1b5c15de0a5505b9f84783d6f3976f0",
                 "checkout_version" => "v1",
             ],
         ];
