@@ -1302,7 +1302,14 @@ class Repository extends Base\Repository
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
 
-        $query = $this->getSelectParamsQueryForReconSummary(ConstantEntity::PAYMENT);
+        $dbConnection = $this->getSlaveConnection();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $dbConnection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $this->getSelectParamsQueryForReconSummary(ConstantEntity::PAYMENT, $dbConnection);
 
         //
         // Adding join with payment and terminal
@@ -1430,9 +1437,16 @@ class Repository extends Base\Repository
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
 
+        $dbConnection = $this->getSlaveConnection();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $dbConnection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
         foreach ($gatewaysWithDate as $gateway => $dates)
         {
-            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::PAYMENT);
+            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::PAYMENT, $dbConnection);
 
             $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn)
                   ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
@@ -1507,7 +1521,14 @@ class Repository extends Base\Repository
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
 
-        $query = $this->getSelectParamsQueryForReconSummary(ConstantEntity::REFUND);
+        $dbConnection = $this->getSlaveConnection();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $dbConnection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $this->getSelectParamsQueryForReconSummary(ConstantEntity::REFUND, $dbConnection);
 
         $this->addRefundJoinForReconSummary($query);
 
@@ -1535,9 +1556,16 @@ class Repository extends Base\Repository
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
 
+        $dbConnection = $this->getSlaveConnection();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $dbConnection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
         foreach ($gatewaysWithDate as $gateway => $dates)
         {
-            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::REFUND);
+            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::REFUND, $dbConnection);
 
             $this->addRefundJoinForReconSummary($query);
 
@@ -1562,7 +1590,7 @@ class Repository extends Base\Repository
         return $reconciledPaymentsSummary;
     }
 
-    protected function getSelectParamsQueryForReconSummary(string $entityName)
+    protected function getSelectParamsQueryForReconSummary(string $entityName, string $dbConnection)
     {
         (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
@@ -1626,13 +1654,13 @@ class Repository extends Base\Repository
 
         $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($dbConnection)
                       ->selectRaw($dateCol . ',' . $params);
 
         return $query;
     }
 
-    protected function getMinimumSelectParamsQueryForUnreconSummary(string $entityName)
+    protected function getMinimumSelectParamsQueryForUnreconSummary(string $entityName, string $dbConnection)
     {
         (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
@@ -1668,7 +1696,7 @@ class Repository extends Base\Repository
 
         $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($dbConnection)
                 ->selectRaw($dateCol . ',' . $params);
 
         return $query;
@@ -2015,8 +2043,14 @@ class Repository extends Base\Repository
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
-        $query = $this->newQuery()
-                      ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount"))
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $query->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount"))
                       ->where($transactionMerchantId, $merchantId)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -2079,9 +2113,15 @@ class Repository extends Base\Repository
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
 	    // The filter on channel is dropped since we have a new index which works without it. WEF Feb 2020.
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select($selectedColumns)
+        $query = $query->select($selectedColumns)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -2258,8 +2298,14 @@ class Repository extends Base\Repository
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
 
-        return $this->newQuery()
-                    ->select($balanceTypeColumn)
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $query->select($balanceTypeColumn)
                     ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
                     ->where($id , $transactionId)
                     ->value(Entity::TYPE);
@@ -2291,6 +2337,11 @@ class Repository extends Base\Repository
         $startTime = microtime(true);
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
 
         if($fetchAllIds === true)
         {
@@ -2512,8 +2563,14 @@ class Repository extends Base\Repository
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
-        $query = $this->newQuery()
-            ->select($transactionMerchantId, $transactionSettledAt)
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        $query = $query->select($transactionMerchantId, $transactionSettledAt)
             ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
             ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
             {
@@ -2566,8 +2623,14 @@ class Repository extends Base\Repository
         $selectedColumns[] = $balanceTypeColumn.' as balance_type';
         $selectedColumns[] = $transactionSourceType.' as source_type';
 
-        return $this->newQuery()
-            ->select($selectedColumns)
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
+        {
+            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+
+        return $query->select($selectedColumns)
             ->whereIn($transactionId, $txnIds)
             ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
             ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
