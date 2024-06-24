@@ -157,6 +157,28 @@ trait RecurringTrait
 
         // For already created payment we can trace if there is any anomaly
         $id = $input[Entity::PAYMENT][Entity::ID] . $env . $action . $attempt;
+
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // in case of recon if merchant_reference is different so will update merchant_reference id from recon input
+        if (($routeName === 'payment_upi_authorize_failed') and
+            (isset($input['upi']) === true) and ($input['upi']['act'] === Action::VERIFY))
+        {
+            if ((isset($input['gateway_data']) == true) and
+                (isset($input['gateway_data']['merchant_reference']) === true) and
+                (str_contains($input['gateway_data']['merchant_reference'], 'execte')) and
+                ($input['gateway_data']['merchant_reference'] !== $upi->getMerchantReference()))
+            {
+                $id = $input['gateway_data']['merchant_reference'];
+                $gatewayData[Constants::ID] = $id;
+                $upi->setGatewayData($gatewayData);
+            }
+            else if ($upi->getMerchantReference() !== $id)
+            {
+                $id = $upi->getMerchantReference();
+            }
+        }
+
         $gatewayData[Constants::ID] = $id;
 
         // First set the correct gateway data

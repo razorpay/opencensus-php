@@ -4185,6 +4185,11 @@ class Service extends Base\Service
         return (new Verify)->verifyPayment($payment);
     }
 
+    public function verifyRecurringPayment($payment, $input)
+    {
+        return (new Verify)->verifyPayment($payment, null, $input['upi']);
+    }
+
     public function verifyCapturedPayments(array $input)
     {
         (new Payment\Validator)->validateInput('verify_all', $input);
@@ -7284,6 +7289,10 @@ class Service extends Base\Service
             if ($payment->isExternal() === true)
             {
                 $verifyResponse = $this->handleRearchPaymentVerification($payment);
+            }
+            else if($payment->isUpiRecurring() === true)
+            {
+                $verifyResponse = $this->verifyRecurringPayment($payment, $input);
             }
             else
             {
