@@ -6230,6 +6230,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KAFKA_MESSAGE_PROCESSOR_PAYLOAD                       = 'KAFKA_MESSAGE_PROCESSOR_PAYLOAD';
     const KAFKA_MESSAGE_PROCESSING_ERROR                        = 'KAFKA_MESSAGE_PROCESSING_ERROR';
 
+    //PGOS Dual Write Kafka Consumer
+    const PGOS_DUAL_WRITE_CONSUMER_PAYLOAD                      = 'PGOS_DUAL_WRITE_CONSUMER_PAYLOAD';
+    const PGOS_DUAL_WRITE_CONSUMER_WARNING                      = 'PGOS_DUAL_WRITE_CONSUMER_WARNING';
+    const PGOS_DUAL_WRITE_CONSUMER_ERROR                        = 'PGOS_DUAL_WRITE_CONSUMER_ERROR';
+
     // Merchant Business Verification Notification
     const ONBOARDING_BVS_VERIFICATION_JOB_REQUEST               = 'ONBOARDING_BVS_VERIFICATION_JOB_REQUEST';
     const ONBOARDING_BVS_VERIFICATION_JOB_ERROR                 = 'ONBOARDING_BVS_VERIFICATION_JOB_ERROR';

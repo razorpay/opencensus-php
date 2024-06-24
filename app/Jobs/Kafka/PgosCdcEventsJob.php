@@ -4,12 +4,23 @@
 namespace RZP\Jobs\Kafka;
 
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Metric;
+use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Service;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\ExtraFieldsException;
+use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Exception\BadRequestValidationFailureException;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 class PgosCdcEventsJob extends Job
 {
+
+    const ERROR = "ERROR";
+    const WARNING = "WARNING";
     /**
-     * @throws \Throwable
+     * @throws \Exception
      */
     public function handle()
     {
@@ -27,19 +38,71 @@ class PgosCdcEventsJob extends Job
             'job'          => 'PgosCdcEventsJob'
         ];
 
-        $this->trace->info(TraceCode::KAFKA_MESSAGE_PROCESSOR_PAYLOAD, $tracePayload);
+        $this->trace->info(TraceCode::PGOS_DUAL_WRITE_CONSUMER_PAYLOAD, $tracePayload);
 
         try
         {
             (new Service)->savePGOSDataToAPI($this->payload);
         }
+        catch (ExtraFieldsException|BadRequestValidationFailureException|BadRequestException|UniqueConstraintViolationException $e)
+        {
+            //Not propagating the error post this, we don't want to re-attempt here
+            $this->trace->warning(TraceCode::PGOS_DUAL_WRITE_CONSUMER_WARNING, [
+                'code'      => $e->getCode(),
+                'message'   => $e->getMessage(),
+                'payload'   => $this->payload
+            ]);
+
+            $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                'level'           => self::WARNING,
+                'code'            => $e->getCode(),
+                'description'     => $e->getMessage(),
+                'attempt'         => $this->attempts(),
+                'retry'           => false
+            ]);
+
+        }
+        catch (DbQueryException $e)
+        {
+            //Continue to retry the same message in this case, increasing the consumer lag to trigger an alert
+            $this->trace->error(TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                'code'      => $e->getCode(),
+                'message'   => $e->getMessage(),
+                'payload'   => $this->payload,
+                'attempt'   => $this->attempts()
+            ]);
+
+            $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                'level'           => self::ERROR,
+                'code'            => $e->getCode(),
+                'description'     => $e->getMessage(),
+                'attempt'         => $this->attempts(),
+                'retry'           => true
+            ]);
+
+            throw $e;
+        }
         catch (\Throwable $e)
         {
+            //For unknown errors, we want to reattempt until successful, or else lag increases to trigger an alert.
+
+            $payload = ['payload' => $this->payload,
+                        'error_block' => "GENERIC_ERROR",
+                        'attempt'   => $this->attempts()];
+
             $this->trace->traceException(
                 $e,
-                null,
-                TraceCode::KAFKA_MESSAGE_PROCESSING_ERROR,
-                $this->payload);
+                Logger::ERROR,
+                TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR,
+                $payload);
+
+            $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                'level'           => self::ERROR,
+                'code'            => $e->getCode(),
+                'description'     => $e->getMessage(),
+                'attempt'         => $this->attempts(),
+                'retry'           => false
+            ]);
         }
 
     }

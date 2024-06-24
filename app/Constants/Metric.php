@@ -219,4 +219,6 @@ class Metric
     const PROXYSQL_OR_DB_CONNECTION                             = 'proxysql_or_db_connection';
 
     const CIRCUIT_BREAKER_OPEN                                  = 'circuit_breaker_open';
+
+    const PGOS_DUAL_WRITE_CONSUMER_ERROR                        = 'pgos_dual_write_consumer_error';
 }
