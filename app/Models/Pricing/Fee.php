@@ -471,14 +471,6 @@ class Fee extends Base\Core
     protected function addNonAppBankingPayoutFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)
     {
         //
-        // Add default pricing rules with payouts_filter = rzp_charge_collections, only when no such rules are already defined.
-        if ($pricingPlan->hasBankingAccountChargeCollectionsRule() === false)
-        {
-            $rules       = $this->repo->getBankingAccountChargeCollectionDefaultPricingRules(Feature::PAYOUT, $merchant);
-            $pricingPlan = $pricingPlan->merge($rules);
-        }
-
-        //
         // Add default pricing rules with payouts_filter = free_payout, only when no such rules are already defined for
         // Shared accounts.
         // If ANY custom pricing rules for payouts_filter = free_payout have been added for banking payouts, we do not
@@ -549,6 +541,20 @@ class Fee extends Base\Core
                 $merchant,
                 $directChannelsWithRulesAbsent);
 
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
+
+        $variantFlag = $this->app['razorx']->getTreatment(
+            $merchant->getId(),
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING,
+            Mode::LIVE);
+
+        //
+        // Add default pricing rules with payouts_filter = rzp_charge_collections, only when no such rules are already defined.
+        if (($variantFlag === 'on') and
+            ($pricingPlan->hasBankingAccountChargeCollectionsRule() === false))
+        {
+            $rules       = $this->repo->getBankingAccountChargeCollectionDefaultPricingRules(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 

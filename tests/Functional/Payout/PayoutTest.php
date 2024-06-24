@@ -27054,11 +27054,517 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
     }
 
+    public function createTestMerchantForPayout(string $mid,
+                                                string $accountType = 'shared',
+                                                string $channel = null,
+                                                bool $createCustomPricing = true,
+    )
+    {
+        $balanceId = random_alphanum_string(14);
+
+        $this->fixtures->create('merchant',
+            [
+                'id'               => $mid,
+                'business_banking' => 1
+            ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT,
+            'entity_id'   => $mid,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('key', ['merchant_id' => $mid, 'id' => $mid]);
+
+        $this->fixtures->create('contact',
+            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => $mid]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000004fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000002contact',
+                'merchant_id' => $mid
+            ]);
+
+        if ($accountType === 'shared')
+        {
+            $this->fixtures->create('balance',
+                [
+                    'id'             => $balanceId,
+                    'merchant_id'    => $mid,
+                    'type'           => 'banking',
+                    'account_type'   => 'shared',
+                    'account_number' => '2224440041626786',
+                    'balance'        => 3000000,
+                ]);
+
+            $this->fixtures->create('banking_account', [
+                'balance_id'          => $balanceId,
+                'merchant_id'         => '10000000000000',
+                'id'                  => '10000000000001',
+                'account_type'        => 'shared',
+                'fts_fund_account_id' => '12345678',
+                'status'              => 'activated'
+            ]);
+
+        } else if ($accountType === 'direct')
+        {
+            $this->fixtures->create('balance',
+                [
+                    'id'             => $balanceId,
+                    'merchant_id'    => $mid,
+                    'type'           => 'banking',
+                    'account_type'   => 'direct',
+                    'account_number' => '2224440041626787',
+                    'balance'        => 3000000,
+                    'channel'        => $channel
+                ]);
+
+            $this->fixtures->create('banking_account', [
+                'balance_id'          => $balanceId,
+                'merchant_id'         => '10000000000000',
+                'id'                  => '10000000000001',
+                'account_type'        => 'direct',
+                'fts_fund_account_id' => '12345678',
+                'status'              => 'activated'
+            ]);
+
+            $basdId = random_alphanum_string(14);
+
+            $this->fixtures->create('banking_account_statement_details', [
+                'id' => $basdId,
+                'balance_id' => $balanceId,
+                'account_number' => '2224440041626787',
+                'channel' => $channel,
+                'status' => 'active',
+            ]);
+        }
+
+        if ($createCustomPricing === true)
+        {
+            $this->fixtures->create('pricing', [
+                'id'             => 'custompricing1',
+                'plan_id'        => 'customplanid01',
+                'plan_name'      => 'testDefaultPlan',
+                'org_id'         => '100000razorpay',
+                'product'        => 'banking',
+                'feature'        => 'payout',
+                'type'           => 'pricing',
+                'payment_method' => 'fund_transfer',
+                'account_type'   => $accountType,
+                'channel'        => $channel,
+                'fixed_rate'     => 900,
+            ]);
+
+            $this->fixtures->edit('merchant', $mid, [
+                'pricing_plan_id'  => 'customplanid01',
+            ]);
+        }
+    }
+
+    public function testPayoutCreateForSharedAccountWhenBankingRulePresentInCustomPricingPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626786';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+            ->withArgs(function($payload, $headers, $throwExOnFailure) {
+                return true;
+            })
+            ->once();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'shared');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'custompricing1')->toArray();
+
+        $this->assertNotEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'custompricing1');
+    }
+
+    public function testPayoutCreateForDirectAccountWhenBankingRulePresentInCustomPricingPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid, 'direct', 'icici',true);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626787';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'direct');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'custompricing1')->toArray();
+
+        $this->assertNotEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'custompricing1');
+    }
+
+    public function testPayoutCreateForSharedWhenBankingRuleNotPresentInCustomPricingPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid, 'shared', null,false);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626786';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+            ->withArgs(function($payload, $headers, $throwExOnFailure) {
+                return true;
+            })
+            ->once();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'shared');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'Bbg7dTcURsOr77')->toArray();
+
+        $this->assertEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'Bbg7dTcURsOr77');
+    }
+
+    public function testPayoutCreateForSharedAndFreePayoutWhenBankingRuleNotPresentInCustomPricingPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid, 'shared', null,false);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626786';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->testData[__FUNCTION__]['response']['content']['tax'] = 0;
+        $this->testData[__FUNCTION__]['response']['content']['fees'] = 0;
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+            ->withArgs(function($payload, $headers, $throwExOnFailure) {
+                return true;
+            })
+            ->once();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'shared');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'Bbg7cl6t6I3XA9')->toArray();
+
+        $this->assertEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'Bbg7cl6t6I3XA9');
+
+        $this->assertEquals($payout['fee_type'], 'free_payout');
+    }
+
+    public function testPayoutCreateForDirectWhenBankingRuleNotPresentInCustomPricingPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid,  'direct', 'icici',false);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626787';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'direct');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'Bbg7dTcURsOr89')->toArray();
+
+        $this->assertEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'Bbg7dTcURsOr89');
+    }
+
+    public function testPayoutCreateForDirectAndFreePayoutWhenBankingRuleNotPresentInCustomPricingPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid,  'direct', 'icici',false);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626787';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->testData[__FUNCTION__]['response']['content']['tax'] = 0;
+        $this->testData[__FUNCTION__]['response']['content']['fees'] = 0;
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->create('counter', [
+            'account_type'          => 'direct',
+            'balance_id'            => $balanceId,
+            'free_payouts_consumed' => 0,
+        ]);
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'icici');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'direct');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'Bbg7cl6t6I3XB0')->toArray();
+
+        $this->assertEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'Bbg7cl6t6I3XB0');
+
+        $this->assertEquals($payout['fee_type'], 'free_payout');
+    }
+
+    public function testPayoutCreateForSharedWhenBankingRuleNotPresentInCustomPricingPlanAndChargeCollectionRulesAreAddedInDefaultPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid, 'shared',null,false);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626786';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+            ->withArgs(function($payload, $headers, $throwExOnFailure) {
+                return true;
+            })
+            ->once();
+
+        $this->fixtures->create('pricing', [
+            'id'             => random_alphanum_string(14),
+            'plan_id'        => 'BTo98voDY05ueB',
+            'plan_name'      => 'chargeCollectionRules',
+            'org_id'         => '100000razorpay',
+            'product'        => 'banking',
+            'feature'        => 'payout',
+            'payouts_filter' => 'rzp_charge_collections',
+            'type'           => 'pricing',
+            'payment_method' => 'fund_transfer',
+            'account_type'   => 'shared',
+            'percent_rate'   => 0,
+            'fixed_rate'     => 0,
+        ]);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'shared');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'Bbg7dTcURsOr77')->toArray();
+
+        $this->assertEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'Bbg7dTcURsOr77');
+    }
+
+    public function testPayoutCreateForDirectWhenBankingRuleNotPresentInCustomPricingPlanAndChargeCollectionRulesAreAddedInDefaultPlan()
+    {
+        $mid = random_alphanum_string(14);
+
+        $this->createTestMerchantForPayout($mid, 'direct', 'icici',false);
+
+        $this->ba->privateAuth('rzp_test_' . $mid);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayout'];
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = '2224440041626787';
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_100000000004fa';
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ], $mid);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
+        $this->fixtures->create('pricing', [
+            'id'             => random_alphanum_string(14),
+            'plan_id'        => 'BTo98voDY05ueB',
+            'plan_name'      => 'chargeCollectionRules',
+            'org_id'         => '100000razorpay',
+            'product'        => 'banking',
+            'feature'        => 'payout',
+            'payouts_filter' => 'rzp_charge_collections',
+            'type'           => 'pricing',
+            'payment_method' => 'fund_transfer',
+            'account_type'   => 'direct',
+            'channel'        => 'icici',
+            'percent_rate'   => 0,
+            'fixed_rate'     => 0,
+        ]);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $payout->getBalanceId());
+
+        $this->assertEquals($balance['account_type'], 'direct');
+
+        $pricingEntity = $this->getDbEntityById('pricing', 'Bbg7dTcURsOr89')->toArray();
+
+        $this->assertEquals($pricingEntity['plan_id'], 'BTo98voDY05ueB');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'Bbg7dTcURsOr89');
+    }
+
     public function testPayoutCreateOnInternalContactByChargeCollections()
     {
         $this->ba->chargeCollectionsAuth();
 
-        $this->setUpZeroPricing('IMPS', Payout\Purpose::RZP_CHARGE_COLLECTIONS);
+        $this->fixtures->create('pricing', [
+            'id'             => 'custompricing1',
+            'plan_id'        => 'BTo98voDY05ueB',
+            'plan_name'      => 'testDefaultPlan',
+            'org_id'         => '100000razorpay',
+            'product'        => 'banking',
+            'feature'        => 'payout',
+            'type'           => 'pricing',
+            'payment_method' => 'fund_transfer',
+            'account_type'   => 'shared',
+            'channel'        => null,
+            'payouts_filter' => Payout\Purpose::RZP_CHARGE_COLLECTIONS,
+            'fixed_rate'     => 0,
+            'percent_rate'   => 0,
+        ]);
 
         $contact = $this->fixtures->create('contact',
             [
@@ -27084,6 +27590,10 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->merchant->addFeatures([
             Feature\Constants::LEDGER_REVERSE_SHADOW
         ]);
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
 
         $this->app['rzp.mode'] = Mode::TEST;
 
@@ -27129,13 +27639,13 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+
+        $this->assertEquals($payout['pricing_rule_id'], 'custompricing1');
     }
 
     public function testPayoutCreateOnInternalContactByChargeCollectionsAndInvalidNotes()
     {
         $this->ba->chargeCollectionsAuth();
-
-        $this->setUpZeroPricing();
 
         $contact = $this->fixtures->create('contact',
             [
@@ -27183,8 +27693,6 @@ class PayoutTest extends OAuthTestCase
     public function testPayoutCreateOnInternalContactByChargeCollectionsAndInvalidContactType()
     {
         $this->ba->chargeCollectionsAuth();
-
-        $this->setUpZeroPricing();
 
         $contact = $this->fixtures->create('contact',
             [
@@ -27260,7 +27768,21 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('balance', $balanceId, ['balance' => 0]);
 
-        $this->setUpZeroPricing('IMPS', Payout\Purpose::RZP_CHARGE_COLLECTIONS);
+        $this->fixtures->create('pricing', [
+            'id'             => 'custompricing1',
+            'plan_id'        => 'BTo98voDY05ueB',
+            'plan_name'      => 'testDefaultPlan',
+            'org_id'         => '100000razorpay',
+            'product'        => 'banking',
+            'feature'        => 'payout',
+            'type'           => 'pricing',
+            'payment_method' => 'fund_transfer',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'payouts_filter' => Payout\Purpose::RZP_CHARGE_COLLECTIONS,
+            'fixed_rate'     => 0,
+            'percent_rate'   => 0,
+        ]);
 
         $contact = $this->fixtures->create('contact',
             [
@@ -27286,6 +27808,10 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['account_number']  = '2224440041626906';
 
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING => 'on',
+        ], 'control');
+
         $this->startTest();
 
         $this->assertEquals($contactDb['type'], 'rzp_charge_collections');
@@ -27293,6 +27819,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($contactDb['id'], $contact['id']);
 
         $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals($payout['pricing_rule_id'], 'custompricing1');
 
         $feeRecovery = $this->getDbLastEntity('fee_recovery');
 

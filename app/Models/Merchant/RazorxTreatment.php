@@ -757,6 +757,9 @@ final class RazorxTreatment
     // This is to show the feedback collection popup for npci
     public const ALLOW_NPCI_FEEDBACK_POPUP = "allow_npci_feedback_popup";
 
+    // This is to enable zero pricing for central billing payouts
+    public const ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING = "zero_pricing_enable_for_central_billing";
+
     // This is to show the feedback collection popup for npci
     public const ALLOW_NPCI_FEEDBACK_POPUP_EMANDATE_FAILURE = "allow_npci_feedback_popup_emandate_failure";
 
