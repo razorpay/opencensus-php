@@ -919,11 +919,11 @@ trait ReverseShadowTrait
     }
 
 
-    public function transformJournalResponseToTransactionEntityForDispute($journalResponse)
+    public function transformJournalResponseToTransactionEntityForDispute($journalResponse, $adjustment)
     {
         $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
 
-        $adjustmentId = $this->getDisputeAdjustmentAsEntityIdFromDisputeId($baseTransactionEntity->getEntityId(), $baseTransactionEntity->getMerchantId());
+        $adjustmentId = $adjustment->getId();
 
         $baseTransactionEntity->setType(LedgerOutboxConstants::ADJUSTMENT);
 
@@ -951,9 +951,13 @@ trait ReverseShadowTrait
         return $baseTransactionEntity;
     }
 
-    public function transformJournalResponseToTransactionEntityForRefund($journalResponse)
+    public function transformJournalResponseToTransactionEntityForRefund($journalResponse, $refundId)
     {
         $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journalResponse);
+
+        $baseTransactionEntity->setType(LedgerOutboxConstants::REFUND);
+
+        $baseTransactionEntity->setEntityId($refundId);
 
         $baseTransactionEntity->setAttribute(TransactionEntity::BALANCE_UPDATED, null);
 

@@ -312,7 +312,7 @@ class Core extends Base\Core
 
         if (($transactorEvent === LedgerConstants::RAZORPAY_DISPUTE_DEDUCT) OR ($transactorEvent === LedgerConstants::RAZORPAY_DISPUTE_REVERSAL))
         {
-            $virtualAdjustmentTransaction = $this->transformJournalResponseToTransactionEntityForDispute($journal);
+            $virtualAdjustmentTransaction = $this->transformJournalResponseToTransactionEntityForDispute($journal, $adjustment);
         }
         else if (($transactorEvent === LedgerConstants::POSITIVE_ADJUSTMENT) OR ($transactorEvent === LedgerConstants::NEGATIVE_ADJUSTMENT))
         {

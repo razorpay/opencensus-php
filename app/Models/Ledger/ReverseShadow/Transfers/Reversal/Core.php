@@ -393,7 +393,7 @@ class Core extends Base\Core
 
                 if (empty($customerRefundJournal) === false and $isExpEnabledCustomerRefund === true)
                 {
-                    $this->dispatchToSettlementFromJournalForRefund($customerRefundJournal);
+                    $this->dispatchToSettlementFromJournalForRefund($customerRefundJournal, $customerRefundId);
                 }
             }
 
@@ -445,7 +445,7 @@ class Core extends Base\Core
 
                 if (empty($dummyRefundJournal) === false and $isExpEnabledDummyRefund === true)
                 {
-                    $this->dispatchToSettlementFromJournalForRefund($dummyRefundJournal);
+                    $this->dispatchToSettlementFromJournalForRefund($dummyRefundJournal, $dummyRefundId);
                 }
             }
         }
@@ -465,10 +465,10 @@ class Core extends Base\Core
         }
     }
 
-    private function dispatchToSettlementFromJournalForRefund($refundJournal)
+    private function dispatchToSettlementFromJournalForRefund($refundJournal, $refundId)
     {
         // early dispatch refund transaction
-        $virtualDummyRefundTransaction = $this->transformJournalResponseToTransactionEntityForRefund($refundJournal);
+        $virtualDummyRefundTransaction = $this->transformJournalResponseToTransactionEntityForRefund($refundJournal, $refundId);
 
         $bucketCore = new Bucket\Core;
 
