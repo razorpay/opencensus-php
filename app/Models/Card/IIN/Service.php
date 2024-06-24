@@ -35,7 +35,7 @@ class Service extends Base\Service
         return $iin->toArrayAdmin();
     }
 
-    public function editIin($id, $input)
+    public function editIin($id, $input, $editSource='manual')
     {
         $iin = $this->repo->iin->findOrFailAPIEntity($id);
 
@@ -46,7 +46,7 @@ class Service extends Base\Service
             return [];
         }
 
-        $this->formatEditInput($iin, $input);
+        $this->formatEditInput($iin, $input, $editSource);
 
         $iin->edit($input);
 
@@ -568,7 +568,7 @@ class Service extends Base\Service
         return $IinBatchCollection->toArrayWithItems();
     }
 
-    protected function formatEditInput(Entity $iin, array & $input)
+    protected function formatEditInput(Entity $iin, array & $input, $editSource)
     {
         foreach ($iin->getEditFormattableKeys() as $key)
         {
@@ -583,7 +583,7 @@ class Service extends Base\Service
 
                 $mergedValues = array_merge($existingValues, $input[$key]);
 
-                $this->pushIINFlowEventIfApplicable($existingValues, $mergedValues, $key, $iin);
+                $this->pushIINFlowEventIfApplicable($existingValues, $mergedValues, $key, $iin, $editSource);
 
                 $input[$key] = $mergedValues;
             }
@@ -609,7 +609,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function pushIINFlowEventIfApplicable(array $enabledFlows, $newValues, $key, Entity $iin)
+    protected function pushIINFlowEventIfApplicable(array $enabledFlows, $newValues, $key, Entity $iin, $editSource)
     {
         if ($key !== Entity::FLOWS)
         {
@@ -646,6 +646,7 @@ class Service extends Base\Service
                 null,
                 [
                     'iin' => $iin->getIin(),
+                    'enabled_via' => $editSource
                 ]);
         }
     }
@@ -795,7 +796,9 @@ class Service extends Base\Service
                     $editInput['flows'][$flow] = '1';
                 }
 
-                return $this->editIin($input['iin'], $editInput);
+                $editSource = 'cron';
+
+                return $this->editIin($input['iin'], $editInput, $editSource);
             }
         }
 

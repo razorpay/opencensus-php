@@ -6,6 +6,7 @@ use App;
 use Exception;
 use Carbon\Carbon;
 use RZP\Diag\Traits;
+use RZP\Trace\TraceCode;
 
 class DiagClient extends EventTrackerClient
 {
