@@ -11755,6 +11755,14 @@ class Core extends Base\Core
                     unset($data["business_operation_address"]);
                 }
 
+                if (empty($data["business_category"]) === true) {
+                    unset($data["business_category"]);
+                }
+
+                if (empty($data["business_subcategory"]) === true) {
+                    unset($data["business_subcategory"]);
+                }
+
                 $merchantDetails->edit($data);
 
                 $this->repo->saveOrFail($merchantDetails);

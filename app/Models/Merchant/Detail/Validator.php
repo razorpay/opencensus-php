@@ -1403,23 +1403,23 @@ class Validator extends Base\Validator
 
     public function validateBusinessSubcategoryForCategory(array $input)
     {
+        //Due to lag in master and replica sync, signup campaign coming as null. To fix that, reading it from master directly.
+        $isEligibleSignupCampaign = optional($this->entity->merchant)->isSignupCampaignAnyOfFromMaster(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS);
+
         $this->app['trace']->info(TraceCode::MERCHANT_CATEGORY_SUBCATEGORY_VALIDATION, [
             'input'           => $input,
             'is_entity_set'   => (empty($this->entity) === false),
-            'signup_campaign' => optional($this->entity->merchant)->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS)
+            'signup_campaign' => $isEligibleSignupCampaign
         ]);
 
-        if (
-            (empty($this->entity) === false) and
-            optional($this->entity->merchant)->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS)
-        )
+        if ((empty($this->entity) === false) and $isEligibleSignupCampaign === true)
         {
             return;
         }
 
         // If category and subcategory are not set
-        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
-            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
+        if ((empty($input[Entity::BUSINESS_CATEGORY]) === false) and
+            (empty($input[Entity::BUSINESS_SUBCATEGORY]) === false))
         {
             return;
         }
@@ -1430,7 +1430,7 @@ class Validator extends Base\Validator
         $category = $this->extractBusinessCategory($input, $subcategory);
 
         // If category is `null`
-        if (isset($category) === false)
+        if (empty($category) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY . ': ' . $subcategory,
@@ -1464,7 +1464,7 @@ class Validator extends Base\Validator
         ]);
 
         // If category is not `others` and subcategory is not valid
-        if (($category !== BusinessCategory::OTHERS) and
+        if (($category !== BusinessCategory::OTHERS) and (empty($subcategory) === false) and
             (in_array($subcategory, $validSubcategories, true) === false))
         {
             $isError = true;

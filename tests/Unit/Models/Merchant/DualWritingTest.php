@@ -122,6 +122,8 @@ class DualWritingTest extends TestCase
                     "business_type"               => "llp",
                     "business_operation_address"  => null,
                     "business_registered_address" => null,
+                    "business_category"           => "",
+                    "business_subcategory"        => "",
                 ],
                 "business_identity"  => [
                     "company_pan"      => "ABCCD1235B",
