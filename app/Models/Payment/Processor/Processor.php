@@ -12565,6 +12565,7 @@ class Processor
     {
 
         $amount = $input['amount'] ?? 0;
+        $currency = $input['currency'] ?? '';
 
         if (($this->merchant->isFeeBearerCustomerOrDynamic() === true) and
             (isset($input['fee']) === true))
@@ -12577,20 +12578,21 @@ class Processor
 
         $expectedSignature = hash_hmac(
             HashAlgo::SHA512,
-            $checkoutId . '|' . $amount,
+            $checkoutId . '|' . $amount . '|' . $currency,
             $this->app['config']->get('applications.checkout_service.amount_signature_secret'),
         );
 
         if (!hash_equals($expectedSignature, $checkoutSignature))
         {
-            $this->trace->info(TraceCode::CHECKOUT_SIGNATURE_PAYMENT_AMOUNT_MISMATCH, [
+            $this->trace->info(TraceCode::PAYMENT_CHECKOUT_SIGNATURE_MISMATCH, [
                 'amount'            => $amount,
                 'checkout_id'       => $checkoutId,
+                'currency'          => $currency,
                 'checkout_signature'=> $checkoutSignature,
             ]);
 
             throw new Exception\BadRequestValidationFailureException(
-                RzpError\PublicErrorDescription::BAD_REQUEST_AMOUNT_MISMATCH,
+            RzpError\PublicErrorDescription::BAD_REQUEST_AMOUNT_MISMATCH,
                 Payment\Entity::AMOUNT,
             );
         }
