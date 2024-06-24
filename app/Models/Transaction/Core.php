@@ -139,15 +139,28 @@ class Core extends Base\Core
      */
     public function updateOnHoldToggle(Payment\Entity $payment)
     {
-        $txn = $payment->transaction;
 
-        if ($txn->isSettled() === true)
+        $paymentService = new Payment\Service();
+
+        $isExpEnabled = $paymentService->checkIfTransactionOnholdWriteRemovalEnabled($payment->merchant);
+
+        if($isExpEnabled===false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
-        }
+            $txn = $payment->transaction;
 
-        $txn->setOnHold($payment->getOnHold());
+            if ($txn->isSettled() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
+            }
+
+            $txn->setOnHold($payment->getOnHold());
+        }
+        else
+        {
+            $txn = $paymentService->createVirtualPaymentTxnFromLedger($payment);
+            $txn->setOnHold($payment->getOnHold());
+        }
 
         $this->trace->info(
             TraceCode::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION,
@@ -2413,20 +2426,21 @@ class Core extends Base\Core
             try
             {
                 $txn = $this->repo->transaction(function() use ($transactionId, $holdFlag)
+                {
+                    $txn = $this->repo->transaction->lockForUpdate($transactionId);
+
+                    if($txn->isSettled() === true)
                     {
-                        $txn = $this->repo->transaction->lockForUpdate($transactionId);
+                        throw new Exception\LogicException('settled transaction can not be put on hold');
+                    }
 
-                        if($txn->isSettled() === true)
-                        {
-                            throw new Exception\LogicException('settled transaction can not be put on hold');
-                        }
+                    $txn->setOnHold($holdFlag);
 
-                        $txn->setOnHold($holdFlag);
+                    $this->repo->saveOrFail($txn);
 
-                        $this->repo->saveOrFail($txn);
-
-                        return $txn;
+                    return $txn;
                 });
+
 
                 $bucketCore = new Settlement\Bucket\Core;
 
@@ -2505,6 +2519,41 @@ class Core extends Base\Core
         }
 
         return $failedTransactionUpdate ;
+    }
+
+    public function toggleTransactionOnHoldOnNss(array $transactionIds, bool $holdFlag, $reason = null)
+    {
+        try
+        {
+            if ($holdFlag === true)
+            {
+               $resp = app('settlements_dashboard')->transactionHold([
+                    "ids" => $transactionIds,
+                    "reason" => $reason,
+                ]);
+
+                $failedTransactionUpdate = array_diff($transactionIds, $resp['ids']);
+            } else {
+                $resp = app('settlements_dashboard')->transactionRelease([
+                    "ids" => $transactionIds,
+                ]);
+                $failedTransactionUpdate = array_diff($transactionIds, $resp['ids']);
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $failedTransactionUpdate = $transactionIds;
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::TOGGLE_TRANSACTION_UPDATE_FAILED,
+                [
+                    'failed_transaction_ids' => $transactionIds,
+                ]);
+        }
+
+        return $failedTransactionUpdate;
     }
 
     public function updatePostedDate(Base\Entity $source, int $postedDate)

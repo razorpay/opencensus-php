@@ -33,6 +33,7 @@ use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Transaction\FeeBreakup\Repository as FeesBreakupRepo;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Service extends Base\Service
 {
@@ -47,6 +48,8 @@ class Service extends Base\Service
     const INTERNAL_TRANSACTION_CREATE_MUTEX_RETRIES = 20;
     const INTERNAL_TRANSACTION_CREATE_MUTEX_MIN_RETRY_DELAY = 1000;
     const INTERNAL_TRANSACTION_CREATE_MUTEX_MAX_RETRY_DELAY = 2000;
+
+    const TRANSACTION_ON_HOLD_TOGGLE = 'transaction_on_hold_toggle';
 
     public function __construct()
     {
@@ -414,7 +417,18 @@ class Service extends Base\Service
     {
         $requestCount = sizeof($transactionIds);
 
-        $failedTransactionUpdate = (new Transaction\Core)->toggleTransactionOnHold($transactionIds, $toggleFlag, $reason);
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $isExpEnabled = $this->checkIfTransactionOnholdToggleExpEnabled($experimentVariable);
+
+        if ($isExpEnabled === false)
+        {
+            $failedTransactionUpdate = (new Transaction\Core)->toggleTransactionOnHold($transactionIds, $toggleFlag, $reason);
+        }
+        else
+        {
+            $failedTransactionUpdate = (new Transaction\Core)->toggleTransactionOnHoldOnNss($transactionIds, $toggleFlag, $reason);
+        }
 
         $failedCount = sizeof($failedTransactionUpdate);
 
@@ -969,5 +983,24 @@ class Service extends Base\Service
         }
 
         return $responseDiff;
+    }
+
+    public function checkIfTransactionOnholdToggleExpEnabled($txnId): bool
+    {
+        $variant = \App::getFacadeRoot()->razorx->getTreatment(
+            $txnId,
+            self::TRANSACTION_ON_HOLD_TOGGLE,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::TRANSACTION_ON_HOLD_TOGGLE_EXP_CHECK,
+            [
+                'merchant'               => $txnId,
+                'isExperimentEnabled'    => $isExperimentEnabled
+            ]);
+
+        return $isExperimentEnabled;
     }
 }

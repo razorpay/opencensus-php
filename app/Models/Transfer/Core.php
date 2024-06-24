@@ -2265,6 +2265,45 @@ class Core extends Base\Core
         return (new LedgerOutbox\Core)->determineJournalIdForAPITransaction($journal, "merchant_balance", "merchant_balance");
     }
 
+    public function fetchJournalsFromLedgerForTransfer(Transfer\Entity $transfer, string $merchant)
+    {
+        try
+        {
+            $journal = $this->fetchJournalFromLedgerForTransfer($transfer, $merchant);
+        }
+        catch (\RZP\Exception\BaseException $ex)
+        {
+            $exceptionData = $ex->getData();
+
+            // If no journal found
+            if (str_contains($exceptionData['response_body']['msg'], 'record_not_found'))
+            {
+                return [null, null];
+            }
+            else
+            {
+                throw $ex;
+            }
+        }
+
+        $ledgerOutboxCore = new LedgerOutbox\Core;
+
+        $debitJournals = array_filter($journal, function($item) use ($ledgerOutboxCore) {
+            return $ledgerOutboxCore->filterByFundAccountTypeAndEntryType($item, LedgerConstants::MERCHANT_BALANCE, LedgerConstants::ENTRY_TYPE_DEBIT);
+        });
+
+        $creditJournals = array_filter($journal, function($item) use ($ledgerOutboxCore) {
+            return $ledgerOutboxCore->filterByFundAccountTypeAndEntryType($item, LedgerConstants::MERCHANT_BALANCE, LedgerConstants::ENTRY_TYPE_CREDIT);
+        });
+
+        $this->trace->info(TraceCode::MISSING_MERCHANT_ID_LEDGER_ENTRIES,
+            [
+                '$creditJournals'               => $creditJournals,
+            ]);
+
+        return [$creditJournals['body'], $debitJournals['body']];
+    }
+
     public function fetchJournalIdFromLedgerForTransferReversal(string $publicReversalId, string $merchantId )
     {
         $requestHeaders = [

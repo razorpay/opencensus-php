@@ -103,6 +103,7 @@ use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\GenericDocument\Constants as GenericDocumentConstants;
+use RZP\Models\Ledger\ReverseShadow as LedgerReverseShadow;
 use Symfony\Component\HttpFoundation;
 
 
@@ -130,6 +131,8 @@ class Service extends Base\Service
     const GET_PAYMENTS_QUERY = "select p.id, a.rrn, p.created_at from hive.realtime_hudi_api.payments as p INNER JOIN hive.realtime_pgpayments_card_live.authorization AS a ON p.id = a.payment_id WHERE a.status in ('authorized', 'captured') AND p.method = 'card' and p.gateway = 'hdfc' and p.cps_route = 2 and p.created_at < %s and p.id > '%s' order by p.id asc limit %s";
 
     const PG_ROUTER_URL ="https://pg-router-int.razorpay.com";
+
+    const TRANSACTION_ON_HOLD_WRITE_REMOVAL = 'transaction_on_hold_write_removal';
 
     public function __construct()
     {
@@ -4625,11 +4628,23 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($payment);
 
-        $txn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+        $isExpEnabled = $this->checkIfTransactionOnholdWriteRemovalEnabled($payment->merchant);
 
-        $txn->setOnHold(false);
+        if($isExpEnabled===false)
+        {
 
-        $this->repo->saveOrFail($txn);
+            $txn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+
+            $txn->setOnHold(false);
+
+            $this->repo->saveOrFail($txn);
+        }
+        else
+        {
+            $txn = $this->createVirtualPaymentTxnFromLedger($payment);
+
+            $txn->setOnHold(false);
+        }
 
         //
         // If the payment has a transfer, update the
@@ -4658,6 +4673,32 @@ class Service extends Base\Service
                     'transaction_id'    => $txn->getId(),
                     'payment_id'        => $payment->getId(),
                 ]);
+        }
+
+        return $txn;
+    }
+
+    public function createVirtualPaymentTxnFromLedger($payment){
+        $txn = [];
+        if ($payment->hasTransfer() === true)
+        {
+            $transfer = $this->repo->transfer->findOrFail($payment->getTransferId());
+            $transferCore = new Transfer\Core();
+            $reverseShadowTransfersCore = new LedgerReverseShadow\Transfers\Core();
+
+            // fetch the credit journal
+            [$creditJournal,] = $transferCore->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getToId());
+
+            // set txn to virtual payment txn
+            $txn = $reverseShadowTransfersCore->createVirtualTransferPaymentTransactionFromLedgerJournal($creditJournal, $payment);
+
+        }
+        else
+        {
+            $reverseShadowPaymentsCore = new LedgerReverseShadow\Payments\Core();
+            $journalResponse = $reverseShadowPaymentsCore->fetchLedgerJournalForPaymentMerchantCapture($payment);
+            // set txn to virtual payment txn
+            $txn = $reverseShadowPaymentsCore->transformJournalResponseToTransactionEntityForPayments($journalResponse);
         }
 
         return $txn;
@@ -8427,17 +8468,28 @@ class Service extends Base\Service
 
         (new Payment\Validator())->validatePaymentRelease($payment);
 
-        /** @var Transaction\Entity */
-        $paymentTrxn = $this->repo->transaction(function() use ($payment) {
+        $isExpEnabled = $this->checkIfTransactionOnholdWriteRemovalEnabled($payment->merchant);
 
-            $paymentTrxn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+        if($isExpEnabled===false)
+        {
 
+            /** @var Transaction\Entity */
+            $paymentTrxn = $this->repo->transaction(function () use ($payment) {
+
+                $paymentTrxn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+
+                $paymentTrxn->setOnHold(false);
+
+                $this->repo->transaction->saveOrFail($paymentTrxn);
+
+                return $paymentTrxn;
+            });
+        }
+        else
+        {
+            $paymentTrxn = $this->createVirtualPaymentTxnFromLedger($payment);
             $paymentTrxn->setOnHold(false);
-
-            $this->repo->transaction->saveOrFail($paymentTrxn);
-
-            return $paymentTrxn;
-        });
+        }
 
         $accountBalance = $paymentTrxn->accountBalance;
 
@@ -8723,5 +8775,38 @@ class Service extends Base\Service
         $standardInput['data']['payment']['amount_authorized'] = $input['payment']['amount'];
 
         return $standardInput;
+    }
+
+    public function checkIfTransactionOnholdWriteRemovalEnabled($merchant): bool
+    {
+        $isFeatureAssigned = $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+        if ($isFeatureAssigned === false)
+        {
+            $this->trace->info(TraceCode::TRANSACTION_ON_HOLD_WRITE_REMOVAL_EXP_CHECK,
+                [
+                    'merchant'               => $merchant->getId(),
+                    'isExperimentEnabled'    => false,
+                    'reason'                 => "merchant not on reverse shadow"
+                ]);
+            return false;
+        }
+
+        $variant = \App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            self::TRANSACTION_ON_HOLD_WRITE_REMOVAL,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::TRANSACTION_ON_HOLD_WRITE_REMOVAL_EXP_CHECK,
+            [
+                'merchant'               => $merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+                'type'                   => "payment"
+            ]);
+
+        return $isExperimentEnabled;
     }
 }

@@ -616,4 +616,37 @@ class Core extends Base\Core
 
         return $txn;
     }
+
+    public function createVirtualTransferPaymentTransactionFromLedgerJournal($journal, $transferPayment)
+    {
+        $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
+
+        $txnData = [
+            Transaction\Entity::CHANNEL         => $transferPayment->merchant->getChannel(),
+        ];
+
+        if ($transferPayment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
+        {
+            $txnData[Transaction\Entity::RECONCILED_AT]     = time();
+            $txnData[Transaction\Entity::RECONCILED_TYPE]   = ReconciledType::NA;
+        }
+
+        $txn->fill($txnData);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $onHold = $transferPayment->getOnHold() ?? false;
+
+        $txn->setReconciledAt(time());
+
+        $txn->setReconciledType(ReconciledType::NA);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Transaction\Entity::ON_HOLD, $onHold);
+
+        $txn->setBalanceUpdated(false);
+
+        return $txn;
+    }
 }

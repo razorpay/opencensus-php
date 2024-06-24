@@ -23,6 +23,7 @@ use RZP\Models\Transaction\Type;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Invoice\Constants;
+use RZP\Models\Payment;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Merchant\EsDisabledNotify;
 use RZP\Models\Invoice\DccEInvoiceCore;
@@ -513,7 +514,7 @@ class CrossBorderCommonUseCases extends Job
 
         try
         {
-            $txn = $this->setOnHoldFalse($transaction->getId());
+            $txn = $this->setOnHoldFalse($transaction->getId(), $payment);
             $successTxnIds[] = $txn->getId();
 
             $this->dispatchForSettlement($txn, $successTxnIds);
@@ -571,18 +572,30 @@ class CrossBorderCommonUseCases extends Job
         }
     }
 
-    private function setOnHoldFalse($transactionId): Transaction\Entity
+    private function setOnHoldFalse($transactionId, $payment): Transaction\Entity
     {
-        $result = $this->repo->transaction(function () use ($transactionId)
+        $isExpEnabled = (new Payment\Service)->checkIfTransactionOnholdWriteRemovalEnabled($payment->merchant);
+
+        if($isExpEnabled===false)
         {
-            $txn = $this->repo->transaction->lockForUpdate($transactionId);
+            $result = $this->repo->transaction(function () use ($transactionId) {
+                $txn = $this->repo->transaction->lockForUpdate($transactionId);
+
+                $txn->setOnHold(false);
+
+                $this->repo->saveOrFail($txn);
+
+                return $txn;
+            });
+        }
+        else
+        {
+            $txn = (new Payment\Service())->createVirtualPaymentTxnFromLedger($payment);
 
             $txn->setOnHold(false);
-
-            $this->repo->saveOrFail($txn);
-
+            
             return $txn;
-        });
+        }
 
         return $result;
     }

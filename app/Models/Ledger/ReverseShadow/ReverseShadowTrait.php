@@ -11,6 +11,8 @@ use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
+use RZP\Models\Payment\Constant;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
@@ -623,7 +625,7 @@ trait ReverseShadowTrait
         return [$creditJournalId, $debitJournalId];
     }
 
-    private function filterByFundAccountTypeAndEntryType($item, $fundAccountType, $entryType)
+    public function filterByFundAccountTypeAndEntryType($item, $fundAccountType, $entryType)
     {
         $searchResults = [];
 
@@ -900,6 +902,15 @@ trait ReverseShadowTrait
             $pricingRuleId = (new Fee())->getZeroPricingPlanRule($payment)->getId();
 
             $baseTransactionEntity->setPricingRule($pricingRuleId);
+        }
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true or
+            ($merchant->isOpgspImportEnabled() === true and in_array($merchant->getPurposeCode(), Constant::OPGSP_AWB_REQUIRED)) or
+            (new Transaction\Processor\payment($baseTransactionEntity))::shouldHoldSubmerchantPayment($payment, $merchant) === true)
+        {
+            $baseTransactionEntity->setOnHold(true);
         }
 
         return $baseTransactionEntity;
