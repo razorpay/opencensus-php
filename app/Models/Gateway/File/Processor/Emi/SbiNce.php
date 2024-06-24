@@ -9,6 +9,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Emi;
 use RZP\Encryption;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -189,12 +190,18 @@ class SbiNce extends Base
             {
                 $emiPlan = $emiPayment->emiPlan;
 
+                $gateway = $emiPayment->terminal->getGateway();
+
                 $merchantDetail = $emiPayment->merchant->merchantDetail;
 
-                $terminal = $this->repo->terminal->getByMerchantIdAndGateway(
-                    $emiPayment->getMerchantId(),
-                    Payment\Gateway::EMI_SBI
+                $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
+                    $emiPayment->getMerchantId(), [Payment\Method::EMI],
+                    [Gateway::EMI_SBI],
                 );
+
+                $terminalsByGateway = $this->getTerminalsByGateway($terminals);
+
+                $terminal = $gateway === 'hdfc' ? $terminalsByGateway[$gateway] : $terminalsByGateway['hitachi'];
 
                 if ($terminal === null)
                 {
@@ -315,6 +322,17 @@ class SbiNce extends Base
         $textRows = array_merge($header, $body);
 
         return implode("\r\n", $textRows);
+    }
+
+    protected function getTerminalsByGateway($terminals)
+    {
+        $terminalsByGateway = [];
+        foreach ($terminals as $terminal)
+        {
+            $gatewayAcquirer = $terminal->getGatewayAcquirer() === null ? 'hitachi' : $terminal->getGatewayAcquirer();
+            $terminalsByGateway[$gatewayAcquirer] = $terminal;
+        }
+        return $terminalsByGateway;
     }
 
     protected function getBusinessName($merchantDetails)

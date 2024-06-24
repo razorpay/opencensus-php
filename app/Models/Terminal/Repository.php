@@ -3079,7 +3079,7 @@ class Repository extends Base\Repository
      * @throws \Throwable
      */
     public function getActiveTerminalsBasedOnMethodsAndGateways(
-        string $mid, array $methods, array $gateways, $acquirer=null): PublicCollection
+        string $mid, array $methods, array $gateways, $acquirer=null, $apiTypes = null): PublicCollection
     {
         $terminals = new PublicCollection();
 
@@ -3112,7 +3112,7 @@ class Repository extends Base\Repository
 
                 $content['enabled'] = true;
 
-                $content['api_type'] = [Type::RECURRING_3DS, Type::RECURRING_NON_3DS];
+                $content['api_type'] = $apiTypes;
 
                 $content['methods'] = $methods;
 

@@ -466,6 +466,39 @@ return [
         ]
     ],
 
+    'testGenerateEmiFileForSbiWithHdfcTerminal' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['sbi'],
+                'begin'   => Carbon::today(Timezone::IST)->subMinutes(30)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emifiles@razorpay.com',
+                        'type'                => 'emi',
+                        'target'              => 'sbi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testGenerateEmiFileForIciciDebit' => [
         'request' => [
             'content' => [

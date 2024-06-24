@@ -494,6 +494,49 @@ class GatewayEmiFileTest extends TestCase
         });
     }
 
+    public function testGenerateEmiFileForSbiWithHdfcTerminal()
+    {
+        $input = [
+            [
+                'emi_duration' => 9,
+            ],
+            [
+                'emi_duration' => 12,
+            ]
+        ];
+
+        $this->prerequisitesForSbiEmiWithHdfcTerminal($input);
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $amountData = [58846];
+
+        $merchantNames = ['A WEIRD MERCH NT NAME W TH S PECIAL CHAR'];
+
+        $cardNumbers = ['0000000000000006709'];
+
+        $payment = $this->getLastPayment(true);
+
+        $transactionDate = Carbon::createFromTimestamp($payment['authorized_at'], Timezone::IST)->format('dmY');
+
+        $this->assertSbiEmiFileData($content, 2, $amountData, $merchantNames, $cardNumbers, [$transactionDate],
+            0, 1, 325, 166, 57, 102, 450, 'sbi_emi_file');
+
+        Mail::assertQueued(EmiMail\File::class, function ($mail)
+        {
+            $this->assertEmpty($mail->attachments);
+
+            return $mail->hasTo('emi.ops@sbicard.com');
+        });
+    }
+
     public function testGenerateEmiFileForSbiNce()
     {
         $input = [
@@ -1401,6 +1444,7 @@ class GatewayEmiFileTest extends TestCase
         $terminal = $this->fixtures->create('terminal', [
             'merchant_id'           => '10000000000000',
             'gateway'               => Payment\Gateway::EMI_SBI,
+            'gateway_acquirer'      => null,
             'gateway_merchant_id'   => '250000002',
             'gateway_terminal_id'   => '38R00001',
             'enabled'               => 0,
@@ -1428,6 +1472,116 @@ class GatewayEmiFileTest extends TestCase
         $discounted_amount = isset($input[1]['discounted_amount']) ? $input[1]['discounted_amount'] : 0;
 
         $this->makeEmiPaymentOnCard('4006660000086709', $input[1]['emi_duration'], 0 , null, null, false, $order_id, $discounted_amount);
+
+        $this->ba->adminAuth();
+    }
+
+    protected function prerequisitesForSbiEmiWithHdfcTerminal($input)
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $merchantId = $this->fixtures->create(
+            'merchant_detail:valid_fields',
+            [
+                'business_name' => 'A weird merch@nt name\'w!th s®pecial chars and > 40 chars'
+            ]
+        )['merchant_id'];
+
+        $hdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'emi',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hdfc',
+            'issuer'        => 'SBIN',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'routing_filter',
+            'emi_subvention'=> 'customer',
+            'step'          => 'authorization',
+        ]);
+
+        $this->fixtures->edit('merchant_detail', $merchantId,[
+            'merchant_id' => $merchantId,
+        ]);
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '400666',
+                'category'      => 'STANDARD',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'merchant_id'           => $merchantId,
+            'gateway'               => Payment\Gateway::EMI_SBI,
+            'gateway_merchant_id'   => '250000002',
+            'gateway_terminal_id'   => '38R00001',
+            'enabled'               => 0,
+        ]);
+
+        $this->fixtures->edit('terminal', $terminal->getId(),[
+            'enabled'   => 1,
+        ]);
+
+        $card = $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'name'              =>  'test',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'SBIN',
+                'network'           =>  'Visa',
+                'last4'             =>  '6709',
+                'type'              =>  'credit',
+                'vault'             =>  'visa',
+                'iin'               =>  '0',
+                'vault_token'       =>  'pay_sampletoken',
+            ]
+        );
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                 => '90101010101011',
+                'duration'           => '9',
+                'rate'               => '1400',
+                'methods'            => 'creditcard',
+                'bank'               => 'SBIN',
+                'min_amount'         => '300000',
+                'issuer_plan_id'     => '85009',
+                'merchant_id'        => '100000Razorpay',
+                'cobranding_partner' => null,
+            ]);
+
+        $this->fixtures->payment->create(
+            [
+                'merchant_id'      => $merchantId,
+                'amount'           => 500000,
+                'currency'         => 'INR',
+                'method'           => 'emi',
+                'status'           => 'captured',
+                'bank'             => 'SBIN',
+                'gateway'          => 'hdfc',
+                'terminal_id'      => $hdfcTerminal['id'],
+                'card_id'          => $card['id'],
+                'emi_plan_id'      => '90101010101011',
+                'captured_at'      => Carbon::now(Timezone::IST)->getTimestamp(),
+                'reference2'       => '103820',
+            ]
+        );
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('hdfc', $payment['gateway']);
 
         $this->ba->adminAuth();
     }

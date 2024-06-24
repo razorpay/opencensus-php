@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Terminal\Type;
 use RZP\Trace\TraceCode;
 use RZP\Models\EMandate;
 use RZP\lib\FuzzyMatcher;
@@ -141,7 +142,7 @@ trait EmandateRecurring
         $this->repo->saveOrFail($token);
 
         $gatewayRecurringStatus = $data[Token\Entity::RECURRING_STATUS];
-        
+
         if ($gatewayRecurringStatus === Token\RecurringStatus::REJECTED)
         {
             $this->refundPayment($payment);
@@ -150,7 +151,7 @@ trait EmandateRecurring
         {
             $this->updateGatewayTokenAttributes($payment, $token);
         }
-        
+
         $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
@@ -283,51 +284,51 @@ trait EmandateRecurring
                 ]);
         }
     }
-    
+
     public function getCurrentMonthIST($timestamp=null)
     {
         try {
             $timezone = new DateTimeZone('Asia/Kolkata');
-    
+
             if($timestamp !== null)
             {
                 $datetime = new DateTime("@$timestamp");
-        
+
                 $datetime->setTimezone($timezone);
-        
+
                 return $datetime->format('M');
             }
-    
+
             $now = new DateTime('now', $timezone);
-    
+
             return $now->format('M');
         }
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, null, TraceCode::CURRENT_MONTH_FETCH_ERROR);
         }
-        
+
         return null;
     }
-    
+
     public function resetEmandateTokenDetails(Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
-    
+
         $configs = $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [];
-    
+
         if($configs !== null or empty($configs) === false)
         {
             $this->trace->info(TraceCode::EMANDATE_TOKEN_CONFIG_RESET, [
                 "step" => "payment_processing"
             ]);
-    
+
             $token->setNotes([]);
-    
+
             $this->repo->saveOrFail($token);
         }
     }
-    
+
     public function achReturnProcessingFlow(Entity $payment, $errorCode): string
     {
         try
@@ -347,20 +348,20 @@ trait EmandateRecurring
             {
                 return "";
             }
-    
+
             $token = $payment->getGlobalOrLocalTokenEntity();
-            
+
             $emandateConfigs = $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [];
-    
+
             $retriesAttempted = (int)$emandateConfigs[Token\Constants::RETRY_ATTEMPTS] ?? 0;
-            
+
             $previousFlow = $emandateConfigs[Token\Constants::TOKEN_FLOW] ?? "";
-            
+
             if ($previousFlow !== EmandateConstants::ACH_RETURNS_FLOW)
             {
                 $retriesAttempted = 0;
             }
-    
+
             $updatedConfigs = [
                 EmandateConstants::COOLDOWN_PERIOD      => $this->calculateBlockPeriod(EmandateConstants::EMANDATE_DEBIT_COOLDOWN),
                 EmandateConstants::RETRY_ATTEMPTS       => $retriesAttempted + 1,
@@ -370,16 +371,16 @@ trait EmandateRecurring
                 Token\Constants::EMANDATE_TOKEN_STATUS  => Token\Constants::BLOCKED_TEMPORARILY,
                 Token\Constants::TOKEN_FLOW             => EmandateConstants::ACH_RETURNS_FLOW
             ];
-    
+
             (new Token\Core)->updateEmandateTokenDetails($token, $updatedConfigs);
-    
+
             $this->repo->saveOrFail($token);
-    
+
             $this->trace->info(TraceCode::EMANDATE_CONFIG_SET_DETAILS, [
                 "present_configs" => $updatedConfigs,
                 "previous_configs" => $emandateConfigs
             ]);
-    
+
             if ($updatedConfigs[Token\Constants::EMANDATE_TOKEN_STATUS] === Token\Constants::BLOCKED_TEMPORARILY)
             {
                 return " The token has been put on hold temporarily for raising recurring payments.";
@@ -392,16 +393,16 @@ trait EmandateRecurring
                 "payment_id"  => $payment->getId()
             ]);
         }
-        
+
         return "";
     }
-    
+
     public function isCurrentMonth($payment): bool
     {
         $paymentCreatedMonth = $this->getCurrentMonthIST($payment->getCreatedAt());
-    
+
         $currentMonth = $this->getCurrentMonthIST();
-    
+
         // if payment created and response received are different months we ignore them
         if ($paymentCreatedMonth !== $currentMonth)
         {
@@ -414,13 +415,13 @@ trait EmandateRecurring
                     'payment_id'            => $payment->getId(),
                     "merchant_id"           => $payment->getMerchantId()
                 ]);
-        
+
             return false;
         }
-        
+
         return true;
     }
-    
+
     public function nrProcessingFlow(Entity $payment, $nrErrorCode): string
     {
         $this->trace->info(
@@ -432,31 +433,31 @@ trait EmandateRecurring
                 "merchant_id"     => $payment->getMerchantId(),
                 "step"            => EmandateConstants::NR_FLOW
             ]);
-    
+
         // if payment created and response received are different months we ignore them
         if ($this->isCurrentMonth($payment) === false)
         {
             return "";
         }
-        
+
         $merchantConfig = $this->fetchEmandateDcsConfigs($payment->getMerchantId());
-    
+
         $this->trace->info(TraceCode::EMANDATE_FETCH_MERCHANT_CONFIG, [
             "merchant_config"       => $merchantConfig,
             'token_id'              => $payment->getTokenId(),
             'payment_id'            => $payment->getId(),
             "merchant_id"           => $payment->getMerchantId()
         ]);
-        
+
         $token = $payment->getGlobalOrLocalTokenEntity();
-        
+
         if ($merchantConfig === null or $token === null)
         {
             return "";
         }
-        
+
         $emandateConfig = $this->fetchConfigsForToken($token, $merchantConfig, $nrErrorCode);
-        
+
         $configArray = [
             "emandate_new_configs"      => $emandateConfig,
             "emandate_previous_configs" => $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [],
@@ -464,63 +465,63 @@ trait EmandateRecurring
             'payment_id'                => $payment->getId(),
             "merchant_id"               => $payment->getMerchantId()
         ];
-    
+
         $this->trace->info(TraceCode::EMANDATE_CONFIG_SET_DETAILS,  $configArray);
-        
+
         if($emandateConfig === null)
         {
             return "";
         }
-    
+
         (new Token\Core)->updateEmandateTokenDetails($token, $emandateConfig);
-        
+
         $this->repo->saveOrFail($token);
-        
+
         if(isset($emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS]) === true and
             $emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS] === Token\Constants::BLOCKED_TEMPORARILY)
         {
             $this->trace->info(TraceCode::EMANDATE_TOKEN_BLOCKED, $configArray);
-            
+
             return " The token has been put on hold temporarily for raising recurring payments.";
         }
-        
+
         return "";
     }
-    
+
     public function fetchConfigsForToken($token, $merchantConfig, $nrErrorCode)
     {
         // merchant configs
         $retriesAllowed = $merchantConfig[Token\Constants::RETRY_ATTEMPTS] ?? 0;
-        
+
         $coolDownPeriod = $merchantConfig[Token\Constants::COOLDOWN_PERIOD] ?? 0;
-    
+
         $tempErrorEnableFlag = $merchantConfig[EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG] ?? false;
-        
+
         // token configs
         $emandateConfig = $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [];
-    
+
         $retriesAttempted = (int) $emandateConfig[Token\Constants::RETRY_ATTEMPTS] ?? 0;
-    
+
         $emandateTokenStatus = $emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS] ?? null;
-    
+
         $temporaryErrorCode = $nrErrorCode["temporary_error_code"] ?? null;
-    
+
         $previousFlow = $emandateConfig[Token\Constants::TOKEN_FLOW] ?? "";
-    
+
         // if previously ach flow is present need to reset values
         if ($previousFlow != EmandateConstants::NR_FLOW)
         {
             $retriesAttempted = 0;
-    
+
             $emandateTokenStatus = null;
         }
-    
+
         // Case 1: already token blocked or temp config is not enabled, no need to go to flow
         if($tempErrorEnableFlag === false or $emandateTokenStatus !== null)
         {
             return null;
         }
-    
+
         //Incase if error is not temporary and config exists, we are removing emandate configs
         // Need to do this if we got different error in between
         if($temporaryErrorCode === null)
@@ -533,25 +534,25 @@ trait EmandateRecurring
                         'token_id'        => $token->getId(),
                         'nr_error_code'   => $nrErrorCode
                     ]);
-    
+
                 return [];
             }
-        
+
             return null;
         }
-    
-    
+
+
         // cases for temporarily blocking token
         if($tempErrorEnableFlag === true and $retriesAllowed > 0 and $coolDownPeriod > 0)
         {
             $lastUpdatedMonth = $emandateConfig[Token\Constants::LAST_UPDATED_MONTH] ?? '';
-            
+
             $lastUpdatedDate =  Carbon::now(Timezone::IST)->toDateTimeString();
-    
+
             $currentMonth = $this->getCurrentMonthIST();
-            
+
             $previousError = $emandateConfig[Token\Constants::GATEWAY_ERROR] ?? null;
-            
+
             // Case 2: Previous error doesn't match with present error, reset with new error
             // Case 3: Previously no error present, start new retry
             // Edge Case: If update attempt in token month doesn't match with present month restart again
@@ -566,7 +567,7 @@ trait EmandateRecurring
                     Token\Constants::GATEWAY_ERROR                  => $temporaryErrorCode,
                     Token\Constants::TOKEN_FLOW                     => EmandateConstants::NR_FLOW
                 ];
-                
+
             }
             else
             {
@@ -596,18 +597,18 @@ trait EmandateRecurring
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     public function calculateBlockPeriod($coolDownPeriod)
     {
         $currentTime = Carbon::now('Asia/Kolkata');
-        
+
         $blockDate = $currentTime->addDays((int) $coolDownPeriod);
-        
+
         $endOfMonthDate = Carbon::now('Asia/Kolkata')->endOfMonth();
-        
+
         if($blockDate <= $endOfMonthDate)
         {
             return $this->modifyCooloffBasedOnPresentedDay($blockDate->getTimestamp());
@@ -617,11 +618,11 @@ trait EmandateRecurring
             return $this->modifyCooloffBasedOnPresentedDay($endOfMonthDate->getTimestamp());
         }
     }
-    
+
     public function modifyCooloffBasedOnPresentedDay($timestamp)
     {
         $startOfDay = Carbon::createFromTimestamp($timestamp)->tz('Asia/Kolkata')->startOfDay();
-        
+
         return $startOfDay->addHours(9)->getTimestamp();
     }
 
@@ -769,9 +770,9 @@ trait EmandateRecurring
                     "method"           => $payment->getMethod(),
                     "payment_redirect" => true
                 ];
-    
+
                 $this->sendPaymentEvent($payment, EventCode::PAYMENT_EMANDATE_SDN_IDENTIFICATION, $properties);
-    
+
                 $this->trace->count(EMandate\Metric::EMANDATE_SDN_IDENTIFICATION_MATCH, $properties);
 
                 return true;
@@ -786,7 +787,7 @@ trait EmandateRecurring
             "method"           => $payment->getMethod(),
             "payment_redirect" => false
         ];
-        
+
         $this->sendPaymentEvent($payment, EventCode::PAYMENT_EMANDATE_SDN_IDENTIFICATION, $properties);
 
         return false;
@@ -800,14 +801,16 @@ trait EmandateRecurring
         {
             $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
                 $payment->getMerchantId(), [Payment\Method::EMANDATE],
-                [Gateway::ENACH_NPCI_NETBANKING], Payment\Gateway::ACQUIRER_YESB);
+                [Gateway::ENACH_NPCI_NETBANKING], Payment\Gateway::ACQUIRER_YESB,
+                [Type::RECURRING_3DS, Type::RECURRING_NON_3DS]);
         }
 
         if ($payment->isNach())
         {
             $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
                 $payment->getMerchantId(), [Payment\Method::NACH],
-                [Gateway::NACH_ICICI], Payment\Gateway::ACQUIRER_ICIC);
+                [Gateway::NACH_ICICI], Payment\Gateway::ACQUIRER_ICIC,
+                [Type::RECURRING_3DS, Type::RECURRING_NON_3DS]);
         }
 
         $this->trace->info(TraceCode::ALTERNATE_TERMINALS_FETCHED_FOR_SDN,

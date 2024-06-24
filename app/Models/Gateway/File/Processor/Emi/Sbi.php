@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Encryption;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -228,12 +229,18 @@ class Sbi extends Base
                 {
                     $emiPlan = $emiPayment->emiPlan;
 
+                    $gateway = $emiPayment->terminal->getGateway();
+
                     $merchantDetail = $emiPayment->merchant->merchantDetail;
 
-                    $terminal = $this->repo->terminal->getByMerchantIdAndGateway(
-                        $emiPayment->getMerchantId(),
-                        Payment\Gateway::EMI_SBI
+                    $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
+                        $emiPayment->getMerchantId(), [Payment\Method::EMI],
+                        [Gateway::EMI_SBI],
                     );
+
+                    $terminalsByGateway = $this->getTerminalsByGateway($terminals);
+
+                    $terminal = $gateway === 'hdfc' ? $terminalsByGateway[$gateway] : $terminalsByGateway['hitachi'];
 
                     if ($terminal === null) {
                         throw new LogicException(
@@ -250,7 +257,6 @@ class Sbi extends Base
                     $mid = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
                     $tid = $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
-
                     if ($mid === null or
                         $tid === null) {
                         throw new LogicException(
@@ -265,7 +271,6 @@ class Sbi extends Base
                     }
 
                     $totalTransactions++;
-
                     $uniqueReferenceNum++;
 
                     try {
@@ -284,7 +289,6 @@ class Sbi extends Base
                     } catch (\Exception $e) {
                         $this->trace->info(TraceCode::MISC_TRACE_CODE, ['cache_val_set_error' => $uniqueReferenceNum]);
                     }
-
 
                     $principalAmount = $emiPayment->getAmount();
 
@@ -382,6 +386,17 @@ class Sbi extends Base
         $textRows = array_merge($header, $body);
 
         return implode("\r\n", $textRows);
+    }
+
+    protected function getTerminalsByGateway($terminals)
+    {
+        $terminalsByGateway = [];
+        foreach ($terminals as $terminal)
+        {
+            $gatewayAcquirer = $terminal->getGatewayAcquirer() === null ? 'hitachi' : $terminal->getGatewayAcquirer();
+            $terminalsByGateway[$gatewayAcquirer] = $terminal;
+        }
+        return $terminalsByGateway;
     }
 
     protected function isTerminalWithV2Sku($terminal): bool
