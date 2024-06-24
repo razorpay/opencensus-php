@@ -58,6 +58,9 @@ class UserController extends Controller
     const ONBOARDING_FTUX_AFTER_L2 = 'ONBOARDING_FTUX_AFTER_L2';
 
     const ELIGIBLE_FOR_POS = 'ELIGIBLE_FOR_POS';
+    
+    const CHUNKED_BASED_STREAMING_DISABLED = 'CHUNKED_BASED_STREAMING_DISABLED';
+    
     /**
      * @var \App\Admin\Service|null
      */
@@ -136,8 +139,9 @@ class UserController extends Controller
         $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
         $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
         $eligibleForPosExperiment = config('splitz.experiments')[self::ELIGIBLE_FOR_POS];
-
-        $experimentIds = [$onboardingFtuxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment];
+        $chunkedBasedStreamingEnabled = config('splitz.experiments')[self::CHUNKED_BASED_STREAMING_DISABLED];
+        
+        $experimentIds = [$onboardingFtuxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment, $chunkedBasedStreamingEnabled];
 
         $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariantBulk(
             $currentMerchantId,
@@ -356,6 +360,9 @@ class UserController extends Controller
         // $data is used to run diferent pieces of JS
         if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)
         {
+            $this->trace->info(TraceCode::VIEW_MERCHANT_LA_INDEX_FILE, [
+                'la_index_file_view'   => true,
+            ]);
             return view('merchant.la', $data);
         }
         else
@@ -405,21 +412,30 @@ class UserController extends Controller
 
             // Chunk based streaming: get the flag to check streaming
             $isMerchantLogin = $this->userService->getMerchantLogin($currentMerchantId);
-
+            
+            $isChunkedBasedStreamingDisabled = $this->isChunkedBasedSteamingDisabledForDashboardUser();
+            
             $this->trace->info(TraceCode::CHUNKED_DETAILS, [
-                'isMerchantLogin'     => $isMerchantLogin,
-                'currentMerchantId'   => $currentMerchantId
+                'isMerchantLogin'                 => $isMerchantLogin,
+                'currentMerchantId'               => $currentMerchantId,
+                'isChunkedBasedStreamingDisabled' => $isChunkedBasedStreamingDisabled
             ]);
-
-            if ($isMerchantLogin === false)
+            
+            
+            if (($isMerchantLogin === false) || ($isChunkedBasedStreamingDisabled === true))
             {
-
-                if (is_null($currentMerchantId) === false)
+                if (is_null($currentMerchantId) === false && ($isChunkedBasedStreamingDisabled === false))
                 {
-                    // Chunk based straming: set flag to enable streaming
-                    // Add to cache with 12 hr of ttl
+                    // Chunk based streaming: set flag to enable streaming
+                    // Add to cache with 2 hr of ttl
                     $key = Util::getIsMerchantLoginCacheKey($currentMerchantId);
-                    $this->cache->put($key, true, 43200);
+                    
+                    $this->cache->put($key, true, 7200);
+    
+                    $this->trace->info(TraceCode::CHUNKED_DETAILS_LOGIN_CACHED, [
+                        'chunked_based_login_cached' =>  true,
+                    ]);
+                    
                 }
 
                 $timeTaken = self::millitime() - $startTime;
@@ -435,7 +451,11 @@ class UserController extends Controller
                         }
                     }
                 }
-
+    
+                $this->trace->info(TraceCode::VIEW_MERCHANT_INDEX_FILE, [
+                    'merchant_index_file_show' =>  true,
+                ]);
+                
                 return view('merchant.index', $data);
             }
             else
@@ -468,6 +488,20 @@ class UserController extends Controller
         return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
 
     }
+    
+    private function isChunkedBasedSteamingDisabledForDashboardUser(): bool
+    {
+        $experimentId = config('splitz.experiments')[self::CHUNKED_BASED_STREAMING_DISABLED];
+        
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+        
+        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
+        
+    }
+    
 
     private function getSecondChunkedData(array $firstChunkData, bool $isConcurrentApiCallEnabled): array
     {
@@ -595,9 +629,6 @@ class UserController extends Controller
         $merchantId= $this->getMidIfExists($firstChunkData);
         $isMerchantLogin = $this->userService->getMerchantLogin($merchantId);
 
-        $this->trace->info(TraceCode::CHUNKED_DETAILS, [
-            'shouldRenderCBS' => $isMerchantLogin,
-        ]);
 
         $currentMerchant = $firstChunkData['currentMerchant'] ?? null;
 
@@ -605,7 +636,14 @@ class UserController extends Controller
 
         $isConcurrentApiCallEnabled = $this->isConcurrentApiCallEnabledForDashboardUser();
 
-        if ($isMerchantLogin === false)
+        $isChunkedBasedStreamingDisabled = $this->isChunkedBasedSteamingDisabledForDashboardUser();
+
+        $this->trace->info(TraceCode::CHUNKED_DETAILS, [
+            'shouldRenderCBS'       => $isMerchantLogin,
+            'isChunkedBasedDisable' => $isChunkedBasedStreamingDisabled
+        ]);
+        
+        if (($isMerchantLogin === false) || ($isChunkedBasedStreamingDisabled === true))
         {
             if (empty($userError) and empty($orgError))
             {
@@ -613,7 +651,11 @@ class UserController extends Controller
             }
 
             $details = $secondChunkData['details'] ?? [];
-
+    
+            $this->trace->info(TraceCode::VIEW_MERCHANT_INDEX_FILE, [
+               'view_merchant_index_page' => true
+            ]);
+            
             return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCallEnabled);
         }
         else
@@ -647,7 +689,10 @@ class UserController extends Controller
                 }
 
                 $secondDetails = $secondChunkData['details'] ?? [];
-
+    
+                $this->trace->info(TraceCode::VIEW_MERCHANT_INDEX_SECOND_FILE, [
+                    'view_merchant_index_2' => true
+                ]);
                 $this->viewOrRedirectToUrl($secondDetails, $org, $userError, $orgError, $startTime, $isConcurrentApiCallEnabled);
             });
 
@@ -1658,7 +1703,7 @@ class UserController extends Controller
 
         Session::forget('show_tnc_popup');
 
-        $this->forgetCacheForIsMerchantLogin($userDetails);
+        $this->forgetCacheForIsMerchantLogin();
 
         Cookie::expire(AppConstants::RZP_ACCESS_TOKEN, AppConstants::ROOT_PATH);
 
@@ -2095,11 +2140,13 @@ class UserController extends Controller
         return $currentMerchant->id;
     }
 
-    private function forgetCacheForIsMerchantLogin($userDetails): void
+    private function forgetCacheForIsMerchantLogin(): void
     {
-        if(is_null($userDetails->id) === false and $userDetails->id !== "")
+        $merchant_id = Session::get('current_merchant_id') ?? '';
+    
+        if($merchant_id !== '')
         {
-            $cacheKey = Util::getIsMerchantLoginCacheKey($userDetails->id);
+            $cacheKey = Util::getIsMerchantLoginCacheKey($merchant_id);
             $this->cache->forget($cacheKey);
         }
     }
