@@ -35,7 +35,11 @@ jest.mock('react-router-dom', () => ({
 
 describe('Business website automation - PrimaryWebsiteWorkflowStatus', () => {
   it('should not show anything when no condition for workflow matches i.e deafult state', () => {
-    renderApp();
+    renderApp({
+      websiteUpdateData: {
+        current_status: 'Non Existent Status',
+      },
+    });
     checkIfComponentIsEmpty();
   });
 
@@ -94,7 +98,7 @@ describe('Business website automation - PrimaryWebsiteWorkflowStatus', () => {
       screen.getByText('Your website verification request is under review'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('We’ll verify your details and share an update within 5 minutes'),
+      screen.getByText('We’ll verify your details and share an update within 10 minutes'),
     ).toBeInTheDocument();
   });
 

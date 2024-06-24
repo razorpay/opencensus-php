@@ -25,7 +25,7 @@ export const settleNowRestrictionMsgFn = (
   const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
     ondemand_restrictions.data;
   if (isEsOnDemandBlocked) {
-    return 'Temporary Downtime: Settle Now Feature Unavailable Due to Technical Issues';
+    return 'Settle now is temporarily unavailable. Please try again at 8:00 AM tomorrow.';
   } else if (isOnDemandDisabled()) {
     const restrictedItem = restrictedFeatures
       .filter((feat) => user.isFeatureEnabled(feat))

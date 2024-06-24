@@ -16,9 +16,14 @@ import { BusinessWebsiteCardData } from '../types';
 interface BusinessWebsiteCardProps {
   websiteData: BusinessWebsiteCardData;
   editCta?: React.ReactNode;
+  isMobile: boolean;
 }
 
-const BusinessWebsiteCard: React.FC<BusinessWebsiteCardProps> = ({ websiteData, editCta }) => {
+const BusinessWebsiteCard: React.FC<BusinessWebsiteCardProps> = ({
+  websiteData,
+  editCta,
+  isMobile,
+}) => {
   const { isPrimary, platform, status, url } = websiteData;
   return (
     <Box
@@ -27,7 +32,7 @@ const BusinessWebsiteCard: React.FC<BusinessWebsiteCardProps> = ({ websiteData, 
       borderWidth="thin"
       borderColor="surface.border.gray.subtle"
       padding="spacing.4"
-      width="min(362px, 100%)"
+      width={isMobile ? '100%' : 'min(362px, 100%)'}
       borderRadius="medium"
     >
       <Box display="flex" justifyContent="space-between" marginBottom="spacing.5">

@@ -39,11 +39,7 @@ const renderApp = (props = {}) => {
 
 describe('Business website automation -  WebsiteFixModal', () => {
   const testFormInputAndSubmit = async () => {
-    expect(
-      screen.getByRole('heading', {
-        name: 'Required policy pages on your website',
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Required policy pages on your website')).toBeInTheDocument();
 
     const termsAndConditionsLink = screen.getByRole('textbox', {
       name: 'Terms and Conditions link',
@@ -57,11 +53,7 @@ describe('Business website automation -  WebsiteFixModal', () => {
     expect(privacyPolicyLink).toBeInTheDocument();
     await userEvent.type(privacyPolicyLink, mockPrivacyPageUrl);
 
-    expect(
-      screen.getByRole('heading', {
-        name: 'Policy pages found on your website',
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Policy pages found on your website')).toBeInTheDocument();
 
     expect(screen.getByTestId('verified-policy-page-card-contact')).toBeInTheDocument();
     expect(screen.getByTestId('verified-policy-page-card-shipping')).toBeInTheDocument();

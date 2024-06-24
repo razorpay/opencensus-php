@@ -2613,7 +2613,7 @@
       "ddd": 0,
       "ind": 16,
       "ty": 5,
-      "nm": "Weâre checking your website",
+      "nm": "We're checking your website",
       "sr": 1,
       "ks": {
         "o": { "a": 0, "k": 100, "ix": 11 },
@@ -2632,7 +2632,7 @@
                 "ps": [-252, -48],
                 "s": 32,
                 "f": "TASAOrbiterDeck-SemiBold",
-                "t": "Weâre checking your website",
+                "t": "We're checking your website",
                 "j": 2,
                 "tr": 0,
                 "lh": 38.4,
@@ -4246,7 +4246,7 @@
       "fFamily": "TASA Orbiter Deck"
     },
     {
-      "ch": "â",
+      "ch": "'",
       "size": 32,
       "style": "SemiBold",
       "w": 22.8,
@@ -4293,12 +4293,12 @@
                   },
                   "ix": 2
                 },
-                "nm": "â",
+                "nm": "'",
                 "mn": "ADBE Vector Shape - Group",
                 "hd": false
               }
             ],
-            "nm": "â",
+            "nm": "'",
             "np": 3,
             "cix": 2,
             "bm": 0,

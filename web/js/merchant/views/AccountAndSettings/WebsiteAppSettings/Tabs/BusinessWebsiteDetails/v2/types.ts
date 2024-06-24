@@ -95,6 +95,7 @@ export enum WebsiteUpdateAutomationStatus {
   WORKFLOW_IN_PROGRESS = 'workflow_in_progress',
   WORKFLOW_REJECTED = 'workflow_rejected',
   WORKFLOW_COMPLETED = 'workflow_completed',
+  WORKFLOW_EXECUTED = 'workflow_executed',
 }
 
 export enum WebsiteVerificationStatus {
@@ -202,4 +203,6 @@ export type GetCtaConditionData = {
   isAdditionalWebsiteActionAllowed: boolean;
   isAddActionAllowed: boolean;
   isAddFirstWebsiteAllowed: boolean;
+  ctaText: string;
+  ctaDisabledReason: string;
 };

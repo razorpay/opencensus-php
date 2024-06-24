@@ -186,7 +186,6 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               flex="1.5"
               display="flex"
               justifyContent="center"
-              alignItems="center"
             >
               <SuggestionsBox step={suggestionStep} />
             </Box>

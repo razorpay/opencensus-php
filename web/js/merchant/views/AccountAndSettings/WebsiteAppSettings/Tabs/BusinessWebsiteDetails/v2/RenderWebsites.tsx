@@ -1,5 +1,13 @@
 import React from 'react';
-import { Box, Text, Link, EditIcon, LinkIcon } from '@razorpay/blade/components';
+import {
+  Box,
+  Text,
+  Link,
+  EditIcon,
+  LinkIcon,
+  Tooltip,
+  TooltipInteractiveWrapper,
+} from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
 
@@ -14,6 +22,7 @@ interface RenderWebsitesProps {
   isMainWebsiteEditActionAllowed: boolean;
   businessWebsiteWorkflow: Record<string, any>;
   websiteUpdateData: WebsiteUpdateApiData | undefined;
+  ctaDisabledReason: string;
 }
 
 const RenderWebsites: React.FC<RenderWebsitesProps> = ({
@@ -23,6 +32,7 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
   isMainWebsiteEditActionAllowed,
   businessWebsiteWorkflow,
   websiteUpdateData,
+  ctaDisabledReason,
 }) => {
   const businessWebsitesToShow = getBusinessWebsitesToShow({
     user,
@@ -31,19 +41,31 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
   });
 
   const EditCta = (
-    <Link
-      variant="button"
-      onClick={() =>
-        onClickAddWebsite({
-          actionOn: WebsiteUpdateActionOn.MAIN_WEBSITE,
-          isEdit: true,
-        })
-      }
-      icon={EditIcon}
-      isDisabled={!isMainWebsiteEditActionAllowed}
-    >
-      Edit
-    </Link>
+    <Box>
+      {isMainWebsiteEditActionAllowed ? (
+        <Link
+          variant="button"
+          onClick={() =>
+            onClickAddWebsite({
+              actionOn: WebsiteUpdateActionOn.MAIN_WEBSITE,
+              isEdit: true,
+            })
+          }
+          icon={EditIcon}
+          isDisabled={false}
+        >
+          Edit
+        </Link>
+      ) : (
+        <Tooltip content={ctaDisabledReason} placement="bottom">
+          <TooltipInteractiveWrapper>
+            <Link variant="button" icon={EditIcon} isDisabled={true}>
+              Edit
+            </Link>
+          </TooltipInteractiveWrapper>
+        </Tooltip>
+      )}
+    </Box>
   );
 
   return businessWebsitesToShow.length === 0 ? (
@@ -73,6 +95,7 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
           key={`${websiteData.platform}_${idx}`}
           websiteData={websiteData}
           editCta={websiteData.isPrimary ? EditCta : null}
+          isMobile={isMobile}
         />
       ))}
     </Box>

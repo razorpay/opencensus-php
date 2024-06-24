@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Heading, Text, Link, TextInput } from '@razorpay/blade/components';
+import { Box, Button, Text, Link, TextInput } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
 import { isUrlLenient } from 'common/utils/validators';
@@ -88,8 +88,10 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
           >
             <Box display="flex" flexDirection="column" gap="spacing.4">
               <Box>
-                <Heading>Required policy pages on your website</Heading>
-                <Text size="small">
+                <Text size="large" weight="medium">
+                  Required policy pages on your website
+                </Text>
+                <Text size="small" color="surface.text.gray.subtle">
                   Kindly update your website pages/details{' '}
                   <Link
                     size="small"
@@ -118,8 +120,10 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
             {verifiedPagesKeys.length ? (
               <Box gap="spacing.4" display="flex" flexDirection="column">
                 <Box>
-                  <Heading>Policy pages found on your website</Heading>
-                  <Text size="small">
+                  <Text size="large" weight="medium">
+                    Policy pages found on your website
+                  </Text>
+                  <Text size="small" color="surface.text.gray.subtle">
                     The details have been saved and are ready for verification{' '}
                   </Text>
                 </Box>
@@ -148,7 +152,6 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               flex="1.5"
               display="flex"
               justifyContent="center"
-              alignItems="center"
             >
               <SuggestionsBox step={policySuggestionStep[activeField]} />
             </Box>

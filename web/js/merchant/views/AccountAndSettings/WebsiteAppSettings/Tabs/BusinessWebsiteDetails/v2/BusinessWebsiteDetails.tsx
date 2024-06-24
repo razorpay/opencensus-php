@@ -1,5 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Heading, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  Button,
+  Heading,
+  Text,
+  Tooltip,
+  TooltipInteractiveWrapper,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -55,7 +62,13 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
   const businessWebsiteWorkflow = workflows[WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE];
   const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
 
-  const { isMainWebsiteEditActionAllowed, isAddActionAllowed, isAddFirstWebsiteAllowed } = useMemo(
+  const {
+    isMainWebsiteEditActionAllowed,
+    isAddActionAllowed,
+    isAddFirstWebsiteAllowed,
+    ctaText,
+    ctaDisabledReason,
+  } = useMemo(
     () =>
       getCTACondition({
         isWebsiteDetailsFetching,
@@ -159,20 +172,28 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
               Verified websites/apps integrated with {org.business_name} Payment Gateway
             </Text>
           </Box>
-          <Button
-            isDisabled={!isAddActionAllowed}
-            onClick={() =>
-              handleClickAddWebsite({
-                actionOn: isAddFirstWebsiteAllowed
-                  ? WebsiteUpdateActionOn.MAIN_WEBSITE
-                  : WebsiteUpdateActionOn.ADDITIONAL_WEBSITE,
-              })
-            }
-          >
-            {isAddFirstWebsiteAllowed
-              ? 'Add website/app details'
-              : 'Add additional website/app details'}
-          </Button>
+          <Box>
+            {isAddActionAllowed ? (
+              <Button
+                isDisabled={false}
+                onClick={() =>
+                  handleClickAddWebsite({
+                    actionOn: isAddFirstWebsiteAllowed
+                      ? WebsiteUpdateActionOn.MAIN_WEBSITE
+                      : WebsiteUpdateActionOn.ADDITIONAL_WEBSITE,
+                  })
+                }
+              >
+                {ctaText}
+              </Button>
+            ) : (
+              <Tooltip content={ctaDisabledReason} placement="bottom">
+                <TooltipInteractiveWrapper>
+                  <Button isDisabled={true}>{ctaText}</Button>
+                </TooltipInteractiveWrapper>
+              </Tooltip>
+            )}
+          </Box>
         </Box>
         <WorkflowAndAlerts
           openModal={openModal}
@@ -187,6 +208,7 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
           user={user}
           businessWebsiteWorkflow={businessWebsiteWorkflow}
           websiteUpdateData={websiteUpdateData}
+          ctaDisabledReason={ctaDisabledReason}
         />
       </Box>
       <WebsiteSubmitModal isOpen={isOpen} onDismiss={onDismiss} />

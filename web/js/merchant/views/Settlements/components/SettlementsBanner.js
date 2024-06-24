@@ -134,8 +134,8 @@ const SettlementsBanner = (props) => {
     className = 'highlight-error';
   } else if (isEsOnDemandBlocked) {
     icon = <i className="i i-triangle-alert alert-red" />;
-    title = 'Temporary downtime';
-    subTitle = `We're experiencing some technical difficulties, and the Settle Now feature is temporarily unavailable. Our team is working on resolving the issue. We apologize for the inconvenience.`;
+    title = 'Settle now is temporarily unavailable.';
+    subTitle = 'Please try again at 8:00 AM tomorrow.';
     actions = null;
     className = 'highlight-error';
   }

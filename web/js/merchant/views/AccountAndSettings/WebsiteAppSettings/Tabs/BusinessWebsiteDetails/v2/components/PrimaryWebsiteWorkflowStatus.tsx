@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Alert, Text } from '@razorpay/blade/components';
+import { Alert, Box, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -179,7 +179,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
         isDismissible={false}
         isFullWidth
         title={title}
-        description="We’ll verify your details and share an update within 5 minutes"
+        description="We’ll verify your details and share an update within 10 minutes"
       />
     );
   }
@@ -192,9 +192,6 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
         isFullWidth
         title={title}
         description={`We’ll verify your details and share an update by ${getUnderReviewETA({
-          date: websiteUpdateData?.current_status_updated_at
-            ? new Date(+websiteUpdateData.current_status_updated_at * 1000)
-            : new Date(),
           offset: 48 * 60 * 60 * 1000,
         })}`}
       />
@@ -230,9 +227,12 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
         isFullWidth
         title={title}
         description={
-          <Text>
-            <b>From {org.business_name} support: </b>&quot;{rejection_reason_message}&quot;
-          </Text>
+          <Box display="flex" flexDirection="row">
+            <Text weight="medium" color="surface.text.gray.subtle">
+              From {org.business_name} support:&nbsp;
+            </Text>
+            <Text color="surface.text.gray.subtle">&quot;{rejection_reason_message}&quot;</Text>
+          </Box>
         }
       />
     );

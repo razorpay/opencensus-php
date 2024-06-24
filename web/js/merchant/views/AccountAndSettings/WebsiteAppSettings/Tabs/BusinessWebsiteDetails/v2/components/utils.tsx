@@ -8,6 +8,7 @@ import {
   ShieldIcon,
   Heading,
   Button,
+  Box,
 } from '@razorpay/blade/components';
 
 import ListSuggestionBox from './ListSuggestionBox';
@@ -145,12 +146,14 @@ export const loaderVariant = {
         <Heading size="large" textAlign="center">
           Your website is submitted for verification
         </Heading>
-        <Text textAlign="center">We’re verifying your details and will share an update by</Text>
-        <Text weight="medium" textAlign="center">
-          {getUnderReviewETA({
-            offset: 10 * 60 * 1000,
-          })}
-        </Text>
+        <Box>
+          <Text textAlign="center" color="surface.text.gray.subtle">
+            We’re verifying your details and will share an update
+          </Text>
+          <Text weight="medium" textAlign="center" color="surface.text.gray.subtle">
+            within 10 minutes
+          </Text>
+        </Box>
         <Button onClick={onClick}>Okay, got it</Button>
       </>
     ),
@@ -162,12 +165,16 @@ export const loaderVariant = {
         <Heading size="large" textAlign="center">
           Your website is submitted for verification
         </Heading>
-        <Text textAlign="center">We’re verifying your details and will share an update by</Text>
-        <Text textAlign="center" weight="medium">
-          {getUnderReviewETA({
-            offset: 48 * 60 * 60 * 1000,
-          })}
-        </Text>
+        <Box>
+          <Text textAlign="center" color="surface.text.gray.subtle">
+            We’re verifying your details and will share an update by
+          </Text>
+          <Text textAlign="center" weight="medium" color="surface.text.gray.subtle">
+            {getUnderReviewETA({
+              offset: 48 * 60 * 60 * 1000,
+            })}
+          </Text>
+        </Box>
         <Button onClick={onClick}>Okay, got it</Button>
       </>
     ),
@@ -180,7 +187,7 @@ export const loaderVariant = {
         <Heading size="large" textAlign="center">
           Your website has been successfully verified
         </Heading>
-        <Text textAlign="center">
+        <Text textAlign="center" color="surface.text.gray.subtle">
           To start accepting payments, you’ll need to download API keys and integrate them on the
           website
         </Text>
@@ -195,7 +202,9 @@ export const loaderVariant = {
         <Heading size="large" textAlign="center">
           Your website isn’t ready for verification
         </Heading>
-        <Text textAlign="center">Kindly update your website details and retry verification</Text>
+        <Text textAlign="center" color="surface.text.gray.subtle">
+          Kindly update your website details and retry verification
+        </Text>
         <Button onClick={onClick}>Okay, got it</Button>
       </>
     ),

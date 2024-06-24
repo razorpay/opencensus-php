@@ -4,7 +4,7 @@ import { isUrlLenient } from 'common/utils/validators';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 
-import { getBusinessPlatformType, isWebsiteRecentlyUpdated } from './components/utils';
+import { getBusinessPlatformType } from './components/utils';
 import {
   BusinessWebsiteCardBadgeStatus,
   BusinessWebsiteWorkflow,
@@ -43,6 +43,11 @@ export const getCTACondition = ({
   additionalWebsiteWorkflow,
   user,
 }: GetCtaConditionArgs): GetCtaConditionData => {
+  let ctaDisabledReason = 'Your updation request is in progress';
+  const ctaText = !Boolean(user.business_website)
+    ? 'Add website/app details'
+    : 'Add additional website/app details';
+
   const isBvsFlowInProgress =
     websiteUpdateData?.current_status &&
     [
@@ -56,6 +61,10 @@ export const getCTACondition = ({
       isAdditionalWebsiteActionAllowed: false,
       isAddActionAllowed: false,
       isAddFirstWebsiteAllowed: false,
+      ctaText,
+      ctaDisabledReason: isBvsFlowInProgress
+        ? ctaDisabledReason
+        : 'Please wait while we fetch the data',
     };
   }
 
@@ -103,11 +112,23 @@ export const getCTACondition = ({
   // if flow is first time main website add or adding the additional website
   const isAddFirstWebsiteAllowed = !user.business_website && user.isOwner;
 
+  if (Boolean(user.business_website) && !isAdditionalWebsitedActionAllowedOld && isLimitReached) {
+    ctaDisabledReason = 'You have reached the limit of 5 additional websites';
+  }
+
+  if (!user.isAdminOrOwner) {
+    ctaDisabledReason = `Only ${
+      user.business_website ? 'owner or admin' : 'owner'
+    } can update the website details`;
+  }
+
   return {
     isMainWebsiteEditActionAllowed,
     isAdditionalWebsiteActionAllowed,
     isAddActionAllowed,
     isAddFirstWebsiteAllowed,
+    ctaText,
+    ctaDisabledReason,
   };
 };
 
@@ -322,12 +343,8 @@ export function getWebsiteWorkflowStatus({
     request_under_validation,
     ocr_automated_check_enable,
   } = businessWebsiteWorkflow ?? {};
-  const {
-    current_status,
-    current_status_updated_at,
-    website_verification_stage,
-    website_verification_page_status,
-  } = websiteUpdateData ?? {};
+  const { current_status, website_verification_stage, website_verification_page_status } =
+    websiteUpdateData ?? {};
 
   const hasReviewStatus =
     (reviewWorkflowStatus.includes(workflow_status) && !needs_clarification) ||
@@ -357,8 +374,8 @@ export function getWebsiteWorkflowStatus({
     [
       WebsiteUpdateAutomationStatus.COMPLETED,
       WebsiteUpdateAutomationStatus.WORKFLOW_COMPLETED,
+      WebsiteUpdateAutomationStatus.WORKFLOW_EXECUTED,
     ].includes(current_status) &&
-    isWebsiteRecentlyUpdated(current_status_updated_at) &&
     isWorkflowChangeAllowed(businessWebsiteWorkflow)
   ) {
     status = Status.Success;
@@ -380,6 +397,7 @@ export function getWebsiteWorkflowStatus({
   } else if (hasRejectedStatus) {
     status = Status.Rejected;
   }
+
   return {
     status,
   };

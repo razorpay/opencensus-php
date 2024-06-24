@@ -79,7 +79,7 @@ class SettlementsListContainer extends ListContainer {
       this.props.ondemand_restrictions.data;
 
     if (this.props.user.isEsOnDemandBlocked) {
-      return `Temporary Downtime: We're experiencing some technical difficulties, and the Settle Now feature is temporarily unavailable. Our team is working on resolving the issue. We apologize for the inconvenience.`;
+      return 'Settle now is temporarily unavailable. Please try again at 8:00 AM tomorrow.';
     } else if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
