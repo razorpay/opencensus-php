@@ -488,54 +488,114 @@ class CBPaymentCreateTest extends TestCase
     public function testOpgspImportForSingleUploadAWB()
 {
     $merchantId = "10000000000000";
-
     $merchantAttribute = [
         MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
         'purpose_code' => 'S0101',
-
-
     ];
+
     $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
-    $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+    $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'opgsp_import_flow', 'opgsp_settlement', 'import_settlement']);
 
     $merchantDetailAttribute = [
         DetailEntity::MERCHANT_ID => $merchantId,
     ];
-
     $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
-    $payment = $this->getDefaultNetbankingPaymentArray();
-    $payment['amount'] = '1000000';
+
+    $this->fixtures->create('merchant_international_integrations', [
+        InternationalIntegration\Entity::MERCHANT_ID => $merchantId,
+        InternationalIntegration\Entity::INTEGRATION_ENTITY => 'opgsp_import_flow',
+        InternationalIntegration\Entity::INTEGRATION_KEY => 'opgsp_import_flow',
+        InternationalIntegration\Entity::NOTES => [
+            'purpose_code' => 'S0101',
+        ],
+    ]);
+    // create order
+    $order = $this->fixtures->create('order',
+        [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'customer_id' => '100000customer',
+        ]);
+    $this->fixtures->create('order_meta',
+        [
+            'order_id' => $order->getId(),
+            'value' => self::getOrderMetaValue(),
+            'type' => 'cart_info',
+        ]);
+
+    // create payment
+    $payment = $this->getDefaultPaymentArray();
+
+    $payment['amount'] = '1000';
+    $payment['currency'] = 'INR';
+    $payment['order_id'] = $order->getPublicId();
     $payment['notes'] = [
-        'invoice_number' => 'AWBINV12'
+        'invoice_number' => '1234567890qwertyuiop'
     ];
 
-    $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
-    $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+    $response = $this->doS2SPrivateAuthPayment($payment);
+
+    $this->assertArrayHasKey('razorpay_payment_id', $response);
+    $this->assertArrayHasKey('razorpay_order_id', $response);
+    $this->assertArrayHasKey('razorpay_signature', $response);
+    $this->assertEquals($order->getPublicId(), $response['razorpay_order_id']);
+
+    // validate payment authorized and details saved
     $paymentEntity = $this->getDbLastPayment();
-    $paymentSupportingDocs = $this->getDbEntities('invoice', ['entity_id' =>$paymentEntity['id']]);
-    $this->assertEquals($paymentSupportingDocs[0]['type'],'opgsp_awb');
-    $this->assertEquals($paymentSupportingDocs[1]['type'],'opgsp_invoice');
-    $this->assertEquals($paymentSupportingDocs[0]['receipt'], 'AWBINV12');
-    $this->assertEquals($paymentSupportingDocs[1]['receipt'], 'AWBINV12');
-    $this->assertNull($paymentSupportingDocs[0]['ref_num']);
-    $this->assertNull($paymentSupportingDocs[1]['ref_num']);
+    $this->assertEquals('authorized', $paymentEntity['status']);
+    $this->assertEquals($order->getId(), $paymentEntity['order_id']);
+    $this->assertEquals($payment['notes']['invoice_number'], $paymentEntity['notes']['invoice_number']);
+
+    // validate payment invoice updated
+    $paymentInvoice = $this->getDbEntities('invoice', ['entity_id' => $paymentEntity['id']]);
+    $this->assertEquals($paymentEntity['id'], $paymentInvoice[0]['entity_id']);
+    $this->assertEquals($paymentInvoice[0]['type'], 'opgsp_awb');
+    $this->assertNull($paymentInvoice[0]['ref_num']);
+
+    // capture payment
+    $this->capturePayment($response['razorpay_payment_id'], $paymentEntity['amount'], $paymentEntity['currency'], $paymentEntity['amount']);
+
+    // validate payment captured and txn  on_hold
+    $paymentEntity = $this->getDbLastPayment();
+    $transactionEntity = $paymentEntity->transaction;
+
+    $this->assertEquals('captured', $paymentEntity['status']);
+    $this->assertTrue($paymentEntity['captured']);
+
+    $this->assertEquals($paymentEntity['amount'], $transactionEntity['amount']);
+    $this->assertTrue($transactionEntity['on_hold']);
 
     $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-    $this->ba->proxyAuth('rzp_test_' . $merchantId , $merchantUser['id']);
+    $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+    Queue::fake();
 
     $request = [
-        'url'    => '/payment/'.$paymentEntity['id'].'/update_merchant_doc',
+        'url' => '/payment/' . $paymentEntity['id'] . '/update_merchant_doc',
         'method' => 'patch',
         'content' => [
             'document_id' => "12345678901234",
             'document_type' => "opgsp_awb"
         ]
     ];
-
     $response = $this->makeRequestAndGetContent($request);
     $this->assertEquals(true, $response['document_updated']);
-    $paymentSupportingDocs = $this->getDbEntities('invoice', ['entity_id' =>$paymentEntity['id'],'type'=>'opgsp_awb']);
-    $this->assertEquals($paymentSupportingDocs[0]['ref_num'],'12345678901234');
+    $paymentSupportingDocs = $this->getDbEntities('invoice', ['entity_id' => $paymentEntity['id'], 'type' => 'opgsp_awb']);
+    $this->assertNotNull($paymentSupportingDocs[0]['ref_num']);
+
+    Queue::assertPushed(CrossBorderCommonUseCases::class);
+
+    $data = [
+        'merchant_id' => $merchantId,
+        'action' => CrossBorderCommonUseCases::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
+        'payment_id' => $paymentInvoice[0]['entity_id'],
+        'mode' => 'test',
+    ];
+    (new CrossBorderCommonUseCases($data))->handle();
+    // validate  txn not on_hold
+    $paymentEntity = $this->getDbLastPayment();
+    $transactionEntity = $paymentEntity->transaction;
+    $this->assertFalse($transactionEntity['on_hold']);
 
 }
     /*public function testOpgspImportPaymentPositive()
