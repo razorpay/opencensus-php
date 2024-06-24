@@ -1695,6 +1695,46 @@ return [
         ],
     ],
 
+    'testValidateOfflineTerminalV3' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals/validatev3',
+            'content' => [
+                'gateway'                  => 'offline_hdfc',
+                'gateway_merchant_id'      => '12345',
+                'gateway_acquirer'         => 'hdfc',
+                'offline'                  =>  true,
+                'type'                  => [
+                    'direct_settlement_without_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
+    'testCreateOfflineTerminalV3' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals/v3',
+            'content' => [
+                'gateway'                  => 'offline_hdfc',
+                'gateway_merchant_id'      => '12345',
+                'gateway_acquirer'         => 'hdfc',
+                'offline'                  =>  true,
+                'type'                  => [
+                    'direct_settlement_without_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
     'testCreateEzetapBadRequestTerminal' => [
         'request' => [
             'url' => '/merchants/100000Razorpay/terminals',

@@ -79,7 +79,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|string',
         Entity::PLAN_ID                     => 'sometimes',
         Entity::ENABLED_WALLETS             => 'sometimes|array',
-        Entity::OFFLINE                     => 'sometimes|string',
+        Entity::OFFLINE                     => 'sometimes|boolean',
         Entity::MERCHANT_MOBILE_CONTACT     => 'sometimes|string|numeric|size:12',
     ];
 

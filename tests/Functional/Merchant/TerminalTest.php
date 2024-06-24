@@ -69,6 +69,8 @@ class TerminalTest extends TestCase
                 }) );
 
         $this->setUpSalesforceMock();
+
+        $this->app['config']->set('applications.terminals_service.mock', true);
     }
 
     public function testProxyFetchMerchantTerminals()
@@ -1287,6 +1289,16 @@ class TerminalTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $this->startTest();
+    }
+
+    public function testValidateOfflineTerminalV3()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOfflineTerminalV3()
+    {
         $this->startTest();
     }
 
