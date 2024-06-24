@@ -296,7 +296,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         // This is temporarily being increased to unblock curlec signup flows.
         // https://razorpay.slack.com/archives/C043K5N223F/p1700641894030849?thread_ts=1699005756.802759&cid=C043K5N223F
         self::SEND_OTP                                  => 20,
-        self::MERCHANT_WEBSITE_POLICY_VERIFY                    => 30,
+        self::MERCHANT_WEBSITE_POLICY_VERIFY            => 40,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
