@@ -3,6 +3,7 @@
 namespace RZP\Models\Invitation;
 
 use RZP\Error\PublicErrorDescription;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -76,9 +77,22 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function list(): array
+    public function list(array $input = []): array
     {
         $product = $this->auth->getRequestOriginProduct();
+
+        /** @var BasicAuth $ba */
+        $ba = $this->app['basicauth'];
+
+        // If request comes from admin dashboard, allow fetching invitations for different products by filtering
+        // on `product` query param.
+        // `auth->getRequestOriginProduct()` function call above always returns `primary` for admin dashboard.
+        if ($ba->isAdminAuth() && !empty($input['product']))
+        {
+            (new Validator())->setStrictFalse()->validateInput(Validator::PRODUCT, $input);
+
+            $product = $input['product'];
+        }
 
         $invitations = $this->core()->list($product);
 

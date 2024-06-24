@@ -25,7 +25,9 @@ class InvitationController extends Controller
 
     public function list()
     {
-        $data = $this->service()->list();
+        $input = Request::all();
+
+        $data = $this->service()->list($input);
 
         return ApiResponse::json($data);
     }

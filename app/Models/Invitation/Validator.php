@@ -2,15 +2,13 @@
 
 namespace RZP\Models\Invitation;
 
-use phpDocumentor\Reflection\Types\Boolean;
 use RZP\Base;
-use RZP\Exception;
-use RZP\Models\User;
-use RZP\Models\Roles;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
-use RZP\Models\Admin\Role;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Models\Merchant;
+use RZP\Models\Roles;
+use RZP\Models\User;
 
 class Validator extends Base\Validator
 {
@@ -20,6 +18,7 @@ class Validator extends Base\Validator
     const RESEND_XPERIENCE_USER_INVITE          = 'resendXperienceUserInvite';
     const CREATE_INVITATION_VENDOR_PORTAL_V2    = 'createInvitationVendorPortalV2';
     const HANDLE_INVITATION_VENDOR_PORTAL_V2    = 'handleInvitationVendorPortalV2';
+    const PRODUCT                               = 'product';
 
     protected static $createRules = [
         Entity::ROLE               => 'required|string|custom',
@@ -30,6 +29,10 @@ class Validator extends Base\Validator
         Entity::IS_DRAFT           => 'sometimes|boolean|',
         Entity::INVITATIONTYPE     => 'sometimes|string',
         Entity::INVITATION_DETAILS => 'sometimes|array|custom',
+    ];
+
+    protected static $productRules = [
+        Entity::PRODUCT => 'required|string|in:primary,banking',
     ];
 
     protected static $createXperienceInvitationRules = [
