@@ -179,4 +179,31 @@ class Core extends Base\Core
             return "";
         }
     }
+
+    public function rollKeyForLiveAndTestMode($merchantId, $keyId, $mode)
+    {
+        Key\Validator::checkForDemoKeys($keyId);
+
+        $old = $this->repo->key->findByMerchantIdAndKeyIdForTestAndLiveMode($merchantId, $keyId, $mode);
+
+        if ($old === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        return $this->repo->transaction(function() use ($old, $mode)
+        {
+            $this->expireKey($old, false);
+
+            $key = $this->create($old->merchant, $mode);
+
+            (new Credcase)->rotate($old, $key, $mode);
+
+            $keysData['old'] = $old->toArrayPublic();
+
+            $keysData['new'] = $key->toArrayPublicWithSecret();
+
+            return $keysData;
+        });
+    }
 }

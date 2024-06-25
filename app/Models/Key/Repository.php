@@ -93,4 +93,24 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, '=', $keyId)
                     ->first();
     }
+
+    public function getKeysForMerchantForLiveAndTestMode($merchantId, $mode, $expired = false)
+    {
+        $query = $this->newQueryWithConnection($mode)->merchantId($merchantId);
+
+        if ($expired === false)
+        {
+            $query->notExpired();
+        }
+
+        return $query->get();
+    }
+
+    public function findByMerchantIdAndKeyIdForTestAndLiveMode($merchantId, $keyId, $mode)
+    {
+        return $this->newQueryWithConnection($mode)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::ID, '=', $keyId)
+            ->first();
+    }
 }

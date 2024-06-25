@@ -118,6 +118,7 @@ use RZP\Models\Typeform\Constants as TypeformConstant;
 use RZP\Models\Typeform\Core as TypeformCore;
 use RZP\Models\User;
 use RZP\Models\User\BankingRole;
+use RZP\Models\Key\Core as KeyCore;
 use RZP\Models\User\Core as UserCore;
 use RZP\Models\User\Role;
 use RZP\Models\VirtualAccount;
@@ -3001,6 +3002,19 @@ class Core extends Base\Core
         else if ($action === Constants::SUSPEND)
         {
             $this->removeMerchantEmailToMailingList($merchant);
+
+            try
+            {
+                $this->rotateKeysForSuspendedMerchant($merchant);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->error(TraceCode::ROTATE_KEYS_FOR_SUSPENDED_MERCHANTS, [
+                    'error' => $exception->getMessage(),
+                ]);
+
+            }
+
         }
         else if ($action === Constants::UNSUSPEND)
         {
@@ -7495,6 +7509,38 @@ class Core extends Base\Core
                     $list)
                                  ->delay($iterationNumber % 901);
             }
+        }
+    }
+
+    protected function rotateKeysForSuspendedMerchant($merchant)
+    {
+        try
+        {
+            $merchantId = $merchant->getId();
+
+            $liveKeys = $this->repo->key->getKeysForMerchantForLiveAndTestMode($merchantId, MODE::LIVE);
+            foreach ($liveKeys as $key)
+            {
+                $keyId = $key->getPublicKey(MODE::LIVE);
+                $prefix = "rzp_live_";
+                $keyId = str_replace($prefix, '', $keyId);
+
+                (new KeyCore())->rollKeyForLiveAndTestMode($merchantId, $keyId, MODE::LIVE);
+            }
+
+            $testKeys = $this->repo->key->getKeysForMerchantForLiveAndTestMode($merchantId, MODE::TEST);
+            foreach ($testKeys as $key)
+            {
+                $keyId = $key->getPublicKey(MODE::TEST);
+                $prefix = "rzp_test_";
+                $keyId = str_replace($prefix, '', $keyId);
+
+                (new KeyCore())->rollKeyForLiveAndTestMode($merchantId, $keyId,MODE::TEST);
+            }
+        }
+        catch(\Throwable $e)
+        {
+            throw $e;
         }
     }
 
