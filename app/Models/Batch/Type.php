@@ -101,6 +101,8 @@ class Type
 
     const PAYMENT_LINK_V2           = 'payment_link_v2';
 
+    const UPDATE_MIQ                = 'update_miq';
+
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
     const CREATE_TERMINAL                  = 'create_terminal';
@@ -385,6 +387,7 @@ class Type
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::EZETAP_SETTLEMENT,
         self::MERCHANT_UPLOAD_MIQ,
+        self::UPDATE_MIQ,
         self::BVS_BULK_KYC_VERIFICATION
     ];
 
@@ -483,6 +486,7 @@ class Type
         self::ALT_ID_TERMINAL_ONBOARD,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
+        self::UPDATE_MIQ,
         self::TOKEN_HQ_CHARGE,
         self::PAYMENT_PAGE
     ];
@@ -610,6 +614,7 @@ class Type
         self::VAULT_MIGRATE_TOKEN_NS,
         self::TOKEN_HQ_CHARGE,
         self::MERCHANT_UPLOAD_MIQ,
+        self::UPDATE_MIQ,
         self::HITACHI_FULCRUM_ONBOARD,
         self::ALT_ID_TERMINAL_ONBOARD,
         self::PAYMENT_PAGE,
@@ -722,6 +727,8 @@ class Type
         self::PARTNER_SUBMERCHANT_REFERRAL_INVITE,
         self::CREATE_WALLET_USER_CONTAINERS,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
+        self::UPDATE_MIQ,
+        self::CREATE_BULK_GIFT_CARDS,
         self::CREATE_BULK_GIFT_CARDS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION
@@ -807,6 +814,7 @@ class Type
         self::MERCHANT_STATUS_ACTIVATION         => Name::MERCHANT_STATUS_ACTIVATION,
         self::PRICING_RULE                       => Name::PRICING_RULE,
         self::PARTNER_REFERRAL_FETCH             => Name::ADMIN_BATCH_CREATE,
+        self::UPDATE_MIQ                         => Name::MERCHANT_BULK_UPLOAD_MIQ,
 
         self::MERCHANT_UPLOAD_MIQ                => Name::MERCHANT_BULK_UPLOAD_MIQ,
 

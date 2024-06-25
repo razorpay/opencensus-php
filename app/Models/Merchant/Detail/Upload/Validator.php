@@ -21,11 +21,13 @@ class Validator extends Base\Validator
     const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
     const COMPANY_PAN_NUMBER_REGEX  = '/^[A-Za-z]{3}[CcHhFfAaTtBbLlJjGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
 
+    protected $app;
+
     public function __construct($entity = null)
     {
         parent::__construct($entity);
 
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
     }
 
     protected static $uploadMerchantRules = [
@@ -106,6 +108,83 @@ class Validator extends Base\Validator
         UConstants::IS_DS_MERCHANT                   => 'sometimes',
     ];
 
+    protected static array $updateMiqMerchantBatchRules = [
+        Header::MIQ_MERCHANT_ID                      => 'required',
+        Header::MIQ_STATUS                           => 'sometimes',
+        Header::MIQ_MERCHANT_NAME_BUSINESS_NAME      => 'sometimes|alpha_space',
+        Header::MIQ_DBA_NAME                         => 'sometimes|alpha_space',
+        Header::MIQ_WEBSITE                          => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_ABOUT_US                 => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_TERMS_CONDITIONS         => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_CONTACT_US               => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_PRIVACY_POLICY           => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_PRODUCT_PRICING          => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_REFUNDS                  => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_CANCELLATION             => 'sometimes|max:255',
+        Header::MIQ_WEBSITE_SHIPPING_DELIVERY        => 'sometimes|max:255',
+        Header::MIQ_CONTACT_NAME                     => 'sometimes|alpha_space|max:255',
+        Header::MIQ_CONTACT_EMAIL                    => 'sometimes|naEmail|max:255',
+        Header::MIQ_TXN_REPORT_EMAIL                 => 'sometimes|naEmail|max:255',
+        Header::MIQ_ADDRESS                          => 'sometimes|max:255',
+        Header::MIQ_CITY                             => 'sometimes|alpha_space_num|max:255',
+        Header::MIQ_PIN_CODE                         => 'sometimes|alpha_space_num|max:255',
+        Header::MIQ_STATE                            => 'sometimes|alpha_space',
+        Header::MIQ_CONTACT_NUMBER                   => 'sometimes|max:15|naContact',
+        Header::MIQ_CIN                              => 'sometimes|companyCin',
+        Header::MIQ_BUSINESS_TYPE                    => 'sometimes|custom:businessType',
+        Header::MIQ_BUSINESS_PAN                     => 'sometimes|companyPan',
+        Header::MIQ_BUSINESS_NAME                    => 'sometimes|max:255',
+        Header::MIQ_AUTHORISED_SIGNATORY_PAN         => 'sometimes|personalPan',
+        Header::MIQ_PAN_OWNER_NAME                   => 'sometimes|max:255',
+        Header::MIQ_BUSINESS_CATEGORY                => 'sometimes|custom:businessCategory',
+        Header::MIQ_SUB_CATEGORY                     => 'sometimes|custom:businessSubCategory',
+        Header::MIQ_GSTIN                            => 'sometimes',
+        Header::MIQ_BUSINESS_DESCRIPTION             => 'sometimes|max:255',
+        Header::MIQ_ESTD_DATE                        => 'sometimes|before:"today"',
+        Header::MIQ_FEE_MODEL                        => 'sometimes|custom:feeModel',
+    ];
+
+    protected static array $updateMiqPricingBatchRules = [
+        Header::MIQ_MERCHANT_ID                      => 'required',
+        Header::MIQ_UPI_FEE_TYPE                     => 'sometimes|custom:feeType',
+        Header::MIQ_UPI_FEE_BEARER                   => 'sometimes|nullable',
+        Header::MIQ_UPI                              => 'sometimes|nullable',
+        Header::MIQ_NB_FEE_TYPE                      => 'sometimes|custom:feeType',
+        Header::MIQ_NB_FEE_BEARER                    => 'sometimes|nullable',
+        Header::MIQ_AXIS                             => 'sometimes|nullable',
+        Header::MIQ_HDFC                             => 'sometimes|nullable',
+        Header::MIQ_ICICI                            => 'sometimes|nullable',
+        Header::MIQ_SBI                              => 'sometimes|nullable',
+        Header::MIQ_YES                              => 'sometimes|nullable',
+        Header::MIQ_NB_ANY                           => 'sometimes|nullable',
+        Header::MIQ_WALLETS_FEE_TYPE                 => 'sometimes|custom:feeType',
+        Header::MIQ_WALLETS_FEE_BEARER               => 'sometimes|nullable',
+        Header::MIQ_WALLETS_FREECHARGE               => 'sometimes|nullable',
+        Header::MIQ_WALLETS_ANY                      => 'sometimes|nullable',
+        Header::MIQ_DEBIT_CARD_FEE_TYPE              => 'sometimes|custom:feeType',
+        Header::MIQ_DEBIT_CARD_FEE_BEARER            => 'sometimes|nullable',
+        Header::MIQ_DEBIT_CARD_0_2K                  => 'sometimes|nullable',
+        Header::MIQ_DEBIT_CARD_2K_1CR                => 'sometimes|nullable',
+        Header::MIQ_RUPAY_FEE_TYPE                   => 'sometimes|custom:feeType',
+        Header::MIQ_RUPAY_FEE_BEARER                 => 'sometimes|nullable',
+        Header::MIQ_RUPAY_0_2K                       => 'sometimes|nullable',
+        Header::MIQ_RUPAY_2K_1CR                     => 'sometimes|nullable',
+        Header::MIQ_CREDIT_CARD_FEE_TYPE             => 'sometimes|custom:feeType',
+        Header::MIQ_CREDIT_CARD_FEE_BEARER           => 'sometimes|nullable',
+        Header::MIQ_CREDIT_CARD_0_2K                 => 'sometimes|nullable',
+        Header::MIQ_CREDIT_CARD_2K_1CR               => 'sometimes|nullable',
+        Header::MIQ_INTERNATIONAL                    => 'sometimes|string',
+        Header::MIQ_INTL_CARD_FEE_TYPE               => 'sometimes|custom:feeType',
+        Header::MIQ_INTL_CARD_FEE_BEARER             => 'sometimes|nullable',
+        Header::MIQ_INTERNATIONAL_CARD               => 'sometimes|nullable',
+        Header::MIQ_BUSINESS_FEE_TYPE                => 'sometimes|custom:feeType',
+        Header::MIQ_BUSINESS_FEE_BEARER              => 'sometimes|nullable',
+        Header::MIQ_BUSINESS                         => 'sometimes|nullable',
+        Header::MIQ_BANK_ACC_NUMBER                  => 'sometimes',
+        Header::MIQ_BENEFICIARY_NAME                 => 'sometimes|string',
+        Header::MIQ_BRANCH_IFSC_CODE                 => 'sometimes|alpha_num|max:11',
+    ];
+
     /**
      * Validate the request input for merchant and pricing creation.
      *
@@ -182,7 +261,7 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestValidationFailureException("The ".Header::MIQ_PAN_OWNER_NAME. " is required");
             }
-        }      
+        }
 
         $validFeeTypes = [
             Header::MIQ_UPI_FEE_TYPE => Header::MIQ_UPI_FEE_BEARER,
@@ -203,7 +282,7 @@ class Validator extends Base\Validator
                     Merchant\FeeBearer::PLATFORM,
                     Merchant\FeeBearer::CUSTOMER
                 ];
-        
+
                 if (!in_array(strtolower($entry[$feeBearer]), $validTypes, true))
                 {
                     throw new BadRequestValidationFailureException('Invalid ' . $feeBearer);
@@ -212,12 +291,12 @@ class Validator extends Base\Validator
                 // net banking validations
                 if($feeType === Header::MIQ_NB_FEE_TYPE){
                     $netBankingTypes = [
-                        Header::MIQ_AXIS,    
-                        Header::MIQ_HDFC, 
-                        Header::MIQ_ICICI, 
-                        Header::MIQ_SBI, 
-                        Header::MIQ_YES, 
-                        Header::MIQ_NB_ANY, 
+                        Header::MIQ_AXIS,
+                        Header::MIQ_HDFC,
+                        Header::MIQ_ICICI,
+                        Header::MIQ_SBI,
+                        Header::MIQ_YES,
+                        Header::MIQ_NB_ANY,
                     ];
 
                     foreach ($netBankingTypes as $index => $value){
@@ -232,10 +311,10 @@ class Validator extends Base\Validator
                 if($feeType === Header::MIQ_DEBIT_CARD_FEE_TYPE)
                 {
                     $cardTypes = [
-                        Header::MIQ_DEBIT_CARD_0_2K,  
-                        Header::MIQ_DEBIT_CARD_2K_1CR 
+                        Header::MIQ_DEBIT_CARD_0_2K,
+                        Header::MIQ_DEBIT_CARD_2K_1CR
                       ];
-                       
+
                     foreach ($cardTypes as $index => $value){
                         if(empty($entry[$value]) === true)
                         {
@@ -248,8 +327,8 @@ class Validator extends Base\Validator
                 if($feeType === Header::MIQ_RUPAY_FEE_TYPE)
                 {
                     $cardTypes = [
-                        Header::MIQ_RUPAY_0_2K,  
-                        Header::MIQ_RUPAY_2K_1CR 
+                        Header::MIQ_RUPAY_0_2K,
+                        Header::MIQ_RUPAY_2K_1CR
                       ];
 
                     foreach ($cardTypes as $index => $value){
@@ -273,10 +352,10 @@ class Validator extends Base\Validator
                 if($feeType === Header::MIQ_WALLETS_FEE_TYPE)
                 {
                     $walletTypes = [
-                        Header::MIQ_WALLETS_FREECHARGE,  
-                        Header::MIQ_WALLETS_ANY 
+                        Header::MIQ_WALLETS_FREECHARGE,
+                        Header::MIQ_WALLETS_ANY
                     ];
-                       
+
                     foreach ($walletTypes as $index => $value){
                         if(empty($entry[$value]) === true)
                         {
@@ -289,10 +368,10 @@ class Validator extends Base\Validator
                 if($feeType === Header::MIQ_CREDIT_CARD_FEE_TYPE)
                 {
                     $creditCardTypes = [
-                        Header::MIQ_CREDIT_CARD_0_2K,  
-                        Header::MIQ_CREDIT_CARD_2K_1CR 
+                        Header::MIQ_CREDIT_CARD_0_2K,
+                        Header::MIQ_CREDIT_CARD_2K_1CR
                     ];
-                       
+
                     foreach ($creditCardTypes as $index => $value){
                         if(empty($entry[$value]) === true)
                         {
@@ -319,7 +398,7 @@ class Validator extends Base\Validator
                     }
                 }
 
-            }  
+            }
         }
     }
 
@@ -336,9 +415,30 @@ class Validator extends Base\Validator
         }
     }
 
-      /**
+    public function validateUpdateRequestInput(array $entry): void
+    {
+        (new Validator)->validateInput('updateMiqMerchantBatch', $entry);
+
+        if(empty($entry[Header::MIQ_MERCHANT_ID]))
+        {
+            throw new BadRequestValidationFailureException("The ".Header::MIQ_MERCHANT_ID." is required");
+        }
+    }
+
+    public function validateUpdatePricingRequestInput(array $entry): void
+    {
+        (new Validator)->validateInput('updateMiqPricingBatch', $entry);
+
+        if(empty($entry[Header::MIQ_MERCHANT_ID]))
+        {
+            throw new BadRequestValidationFailureException("The ".Header::MIQ_MERCHANT_ID." is required");
+        }
+    }
+
+
+    /**
+     * Validate the fee bearer
      * Validate the NA/na
-     *
      * @param $attribute
      * @param $value
      * @return void
@@ -346,9 +446,20 @@ class Validator extends Base\Validator
      */
     protected function validateNaValue($attribute, $value): void
     {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'pricing_update_miq') // only for our flow
+        {
+            return;
+        }
+
+        $validTypes = [
+            Merchant\FeeBearer::PLATFORM,
+            Merchant\FeeBearer::CUSTOMER
+        ];
 
         $validHeader = [
-            Header::MIQ_ADDRESS,Header::MIQ_CITY,Header::MIQ_PIN_CODE,Header::MIQ_STATE, 
+            Header::MIQ_ADDRESS,Header::MIQ_CITY,Header::MIQ_PIN_CODE,Header::MIQ_STATE,
         ];
 
         if (in_array($attribute, $validHeader, true) === true)
@@ -357,7 +468,7 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestValidationFailureException('Invalid ' . $attribute);
             }
-        }  
+        }
     }
 
     /**
@@ -370,6 +481,13 @@ class Validator extends Base\Validator
      */
     protected function validateFeeType($attribute, $value): void
     {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'pricing_update_miq') // only for our flow
+        {
+            return;
+        }
+
         $validTypes = [
             UConstants::FEE_TYPE_NA,
             UConstants::FEE_TYPE_FLAT,
@@ -392,6 +510,13 @@ class Validator extends Base\Validator
      */
     protected function validateFeeModel($attribute, $value): void
     {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'merchant_update_miq') // only for our flow
+        {
+            return;
+        }
+
         $validTypes = [
             Merchant\FeeModel::NA,
             Merchant\FeeModel::PREPAID,
@@ -414,6 +539,28 @@ class Validator extends Base\Validator
      */
     protected function validateWebsite($attribute, $value): void
     {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'merchant_update_miq') // only for our flow
+        {
+            return;
+        }
+
+        if(preg_match(self::HTTPS_RULE, $value) === 0)
+        {
+            throw new BadRequestValidationFailureException('Invalid ' . $attribute);
+        }
+    }
+
+    protected function validateWebsiteDetails($attribute, $value): void
+    {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'merchant_update_miq') // only for our flow
+        {
+            return;
+        }
+
         if(preg_match(self::HTTPS_RULE, $value) === 0)
         {
             throw new BadRequestValidationFailureException('Invalid ' . $attribute);
@@ -430,6 +577,13 @@ class Validator extends Base\Validator
      */
     protected function validateBusinessType($attribute, $value): void
     {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'merchant_update_miq') // only for our flow
+        {
+            return;
+        }
+
         $validBusinessType = [
             Merchant\Detail\BusinessType::LLP, Merchant\Detail\BusinessType::NGO,
             Merchant\Detail\BusinessType::SOCIETY, Merchant\Detail\BusinessType::HUF,
@@ -454,6 +608,13 @@ class Validator extends Base\Validator
      */
     protected function validateBusinessCategory($attribute, $value): void
     {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'merchant_update_miq') // only for our flow
+        {
+            return;
+        }
+
         if(!Merchant\Detail\BusinessCategoriesV2\BusinessCategory::isValidCategory($value))
         {
             throw new BadRequestValidationFailureException('Invalid ' . $attribute);
@@ -470,6 +631,12 @@ class Validator extends Base\Validator
      */
     protected function validateBusinessSubCategory($attribute, $value): void
     {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        if(strtolower($value) === 'na' and $route === 'merchant_update_miq') // only for our flow
+        {
+            return;
+        }
         if(!Merchant\Detail\BusinessCategoriesV2\BusinessSubcategory::isValidSubcategory($value))
         {
             throw new BadRequestValidationFailureException('Invalid ' . $attribute);

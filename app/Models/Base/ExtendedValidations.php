@@ -688,6 +688,28 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         return (new EmailValidator)->isValid($value, new EmailValidation\MultipleValidationWithAnd($validations));
     }
+    public function validateNaEmail($attribute, $value, $parameters)
+    {
+        $app = \App::getFacadeRoot();
+        if ($app['api.route']->getCurrentRouteName() === 'merchant_update_miq' && strtolower($value) === 'na') {
+           return true;
+        }
+        else
+        {
+            return $this->validateEmail($attribute, $value, $parameters);
+        }
+    }
+    public function validateNaContact($attribute, $value, $parameters)
+    {
+        $app = \App::getFacadeRoot();
+        if ($app['api.route']->getCurrentRouteName() === 'merchant_update_miq' && strtolower($value) === 'na') {
+            return true;
+        }
+        else
+        {
+            return $this->validateContactSyntax($attribute, $value, $parameters);
+        }
+    }
 
     /**
      * Validate that an attribute is a valid token recurring status.

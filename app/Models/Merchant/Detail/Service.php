@@ -1482,6 +1482,81 @@ class Service extends Base\Service
         return $input;
     }
 
+    public function updateMerchantMiqBatch(array $input): array
+    {
+        try
+        {
+            return (new Upload\Core)->processUpdateMerchantEntry($input);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MIQ_MERCHANT_ID     => $input[BatchHeader::MIQ_MERCHANT_ID],
+            ]);
+
+            $error = $e->getError();
+
+            $input[BatchHeader::STATUS]            = BatchStatus::FAILURE;
+
+            $input[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
+
+            $input[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MIQ_MERCHANT_ID     => $input[BatchHeader::MIQ_MERCHANT_ID],
+            ]);
+
+            $input[BatchHeader::STATUS]     = BatchStatus::FAILURE;
+
+            $input[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+            $input[BatchHeader::ERROR_DESCRIPTION] = PublicErrorDescription::SERVER_ERROR;
+        }
+
+        return $input;
+    }
+
+    public function updatePricingMiqBatch(array $input): array
+    {
+        try
+        {
+            return (new Upload\Core)->processUpdatePricingEntry($input);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MIQ_MERCHANT_ID     => $input[BatchHeader::MIQ_MERCHANT_ID],
+            ]);
+
+            $error = $e->getError();
+
+            $input[BatchHeader::STATUS]            = BatchStatus::FAILURE;
+
+            $input[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
+
+            $input[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MIQ_MERCHANT_ID     => $input[BatchHeader::MIQ_MERCHANT_ID],
+            ]);
+
+            $input[BatchHeader::STATUS]     = BatchStatus::FAILURE;
+
+            $input[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+            $input[BatchHeader::ERROR_DESCRIPTION] = PublicErrorDescription::SERVER_ERROR;
+        }
+
+        return $input;
+    }
+
+
     public function sendWhatsappNotification($id, array $input): array
     {
         (new Validator)->validateInput(__FUNCTION__, $input);

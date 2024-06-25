@@ -1501,6 +1501,9 @@ class Header
     const MIQ_BRANCH_IFSC_CODE              = 'Branch IFSC Code';
     const MIQ_OUT_FEE_BEARER                = 'Fee_bearer';
     const MIQ_OUT_MERCHANT_ID               = 'Merchant_id';
+    const MIQ_MERCHANT_NAME_BUSINESS_NAME  = 'MerchantNameBusinessName';
+    const MIQ_STATUS                        = 'status';
+    const MIQ_MERCHANT_ID                   = 'Merchant_id';
 
     // Payment Transfer Headers
     const PAYMENT_ID_2          = 'payment_id';
@@ -1659,6 +1662,142 @@ class Header
     const CONSENT_COLLECTION_SUCCESS           = "success";
     const CONSENT_COLLECTION_ERROR_CODE        = "Error Code";
     const CONSENT_COLLECTION_ERROR_DESCRIPTION = "Error description";
+
+    // update miq headers
+    const UPDATE_MIQ_MERCHANT_ID = "Merchant id";
+    const UPDATE_MIQ_STATUS = "Status";
+    const UPDATE_MIQ_MERCHANT_NAME_BUSINESS_NAME = "Merchant Name (business name)";
+    const UPDATE_MIQ_DBA_NAME_BILLING_LABEL = "DBA Name (billing label)";
+    const UPDATE_MIQ_WEBSITE = "Website";
+    const UPDATE_MIQ_WEBSITE_ABOUT_US = "Website About us";
+    const UPDATE_MIQ_WEBSITE_TERMS_AND_CONDITIONS = "Website Terms and conditions";
+    const UPDATE_MIQ_WEBSITE_CONTACT_US = "Website Contact us";
+    const UPDATE_MIQ_WEBSITE_PRIVACY_POLICY = "Website Privacy Policy";
+    const UPDATE_MIQ_WEBSITE_PRODUCT_PRICING = "Website Product Pricing";
+    const UPDATE_MIQ_WEBSITE_REFUNDS = "Website Refunds";
+    const UPDATE_MIQ_WEBSITE_CANCELLATION = "Website Cancellation";
+    const UPDATE_MIQ_WEBSITE_SHIPPING_AND_DELIVERY = "Website Shipping and delivery";
+    const UPDATE_MIQ_CONTACT_NAME = "Contact Name";
+    const UPDATE_MIQ_CONTACT_EMAIL = "Contact Email";
+    const UPDATE_MIQ_TRANSACTIONS_REPORT_EMAIL_ID = "Transactions Report Email-id";
+    const UPDATE_MIQ_ADDRESS = "Address";
+    const UPDATE_MIQ_CITY = "City";
+    const UPDATE_MIQ_PIN_CODE = "PIN Code";
+    const UPDATE_MIQ_STATE = "State";
+    const UPDATE_MIQ_CONTACT_NUMBER = "Contact Number";
+    const UPDATE_MIQ_BUSINESS_TYPE = "Business Type";
+    const UPDATE_MIQ_CIN = "CIN";
+    const UPDATE_MIQ_BUSINESS_PAN = "Business PAN";
+    const UPDATE_MIQ_BUSINESS_NAME = "Business Name";
+    const UPDATE_MIQ_AUTHORISED_SIGNATURE_PAN = "Authorised Signatory PAN";
+    const UPDATE_MIQ_PAN_OWNER_NAME = "PAN Owner's name";
+    const UPDATE_MIQ_BUSINESS_CATEGORY = "Business Category";
+    const UPDATE_MIQ_SUB_CATEGORY = "Sub Category";
+    const UPDATE_MIQ_GSTIN = "GSTIN";
+    const UPDATE_MIQ_BUSINESS_DESCRIPTION = "Business Description";
+    const UPDATE_MIQ_ESTD_DATE = "ESTD Date";
+    const UPDATE_MIQ_FEE_MODEL = "Fee Model";
+    const UPDATE_MIQ_NET_BANKING_FEE_TYPE = "Netbanking Fee Type";
+    const UPDATE_MIQ_NET_BANKING_FEE_BEARER = "Net Banking Fee bearer";
+    const UPDATE_MIQ_AXIS_NET_BANKING = "Axis NetBanking";
+    const UPDATE_MIQ_HDFC_NET_BANKING = "HDFC NetBanking";
+    const UPDATE_MIQ_ICICI_NET_BANKING = "ICICI Netbanking";
+    const UPDATE_MIQ_SBI_NET_BANKING = "SBI NetBanking";
+    const UPDATE_MIQ_YES_NET_BANKING = "Yes Netbanking";
+    const UPDATE_MIQ_NET_BANKING_ANY = "NetBanking (Any)";
+    const UPDATE_MIQ_DEBIT_CARD_FEE_TYPE = "Debit Card Fee Type";
+    const UPDATE_MIQ_DEBIT_CARD_FEE_BEARER = "Debit Card Fee bearer";
+    const UPDATE_MIQ_DEBIT_CARD_0_TO_2K = "Debit Card  0<2K";
+    const UPDATE_MIQ_DEBIT_CARD_2K_TO_1CR = "Debit Card  2K<1Cr";
+    const UPDATE_MIQ_RUPAY_FEE_TYPE = "Rupay Fee Type";
+    const UPDATE_MIQ_RUPAY_FEE_BEARER = "Rupay Fee bearer";
+    const UPDATE_MIQ_RUPAY_0_TO_2K = "Rupay 0<2K";
+    const UPDATE_MIQ_RUPAY_2K_TO_1CR = "Rupay 2K<1cr";
+    const UPDATE_MIQ_UPI_FEE_TYPE = "UPI Fee Type";
+    const UPDATE_MIQ_UPI_FEE_BEARER = "UPI Fee bearer";
+    const UPDATE_MIQ_UPI = "UPI";
+    const UPDATE_MIQ_WALLETS_FEE_TYPE = "Wallets Fee Type";
+    const UPDATE_MIQ_WALLETS_FEE_BEARER = "Wallets Fee bearer";
+    const UPDATE_MIQ_WALLETS_FREE_CHARGE = "Wallets (Freecharge)";
+    const UPDATE_MIQ_WALLETS_ANY = "Wallets (Any)";
+    const UPDATE_MIQ_CREDIT_CARD_FEE_TYPE = "Credit Card Fee Type";
+    const UPDATE_MIQ_CREDIT_CARD_FEE_BEARER = "Credit Card Fee bearer";
+    const UPDATE_MIQ_CREDIT_CARD_0_TO_2K = "Credit Card  0<2K";
+    const UPDATE_MIQ_CREDIT_CARD_2K_TO_1CR = "Credit Card 2K<1Cr";
+    const UPDATE_MIQ_INTERNATIONAL = "International";
+    const UPDATE_MIQ_INTERNATIONAL_CARDS_FEE_TYPE = "International Cards Fee Type";
+    const UPDATE_MIQ_INTERNATIONAL_CARDS_FEE_BEARER = "International Cards Fee bearer";
+    const UPDATE_MIQ_INTERNATIONAL_CARDS = "International Cards";
+    const UPDATE_MIQ_BUSINESS_FEE_TYPE = "Business Fee Type";
+    const UPDATE_MIQ_BUSINESS_FEE_BEARER = "Business Fee bearer";
+    const UPDATE_MIQ_BUSINESS = "Business";
+    const UPDATE_MIQ_BANK_ACCOUNT_NUMBER = "Bank Account Number";
+    const UPDATE_MIQ_BENEFICIARY_NAME = "Beneficiary Name";
+    const UPDATE_MIQ_BRANCH_IFSC_CODE = "Branch IFSC Code";
+    const UPDATE_MIQ_MODE = "Mode";
+    const UPDATE_MIQ_GATEWAY_A = "Gateway (A)";
+    const UPDATE_MIQ_GATEWAY_ACQUIRER_A = "Gateway Acquirer (A)";
+    const UPDATE_MIQ_TERMINAL_CATEGORY_A = "Terminal Category (A)";
+    const UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_A = "Existing Gateway Merchant ID (A)";
+    const UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_A = "New Gateway Merchant ID (A)";
+    const UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_A = "Gateway Merchant ID 2 (A)";
+    const UPDATE_MIQ_GATEWAY_ACCESS_CODE_A = "Gateway Access Code (A)";
+    const UPDATE_MIQ_GATEWAY_SECURE_SECRET_A = "Gateway Secure Secret (A)";
+    const UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_A = "Gateway Secure Secret 2 (A)";
+    const UPDATE_MIQ_GATEWAY_TERMINAL_ID_A = "Gateway Terminal ID (A)";
+    const UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_A = "Gateway Terminal Password (A)";
+    const UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_A = "Confirm Gateway Terminal Password (A)";
+    const UPDATE_MIQ_TERMINAL_MODE_A = "Terminal Mode (A)";
+    const UPDATE_MIQ_GATEWAY_RECON_PASSWORD_A = "Gateway Recon Password (A)";
+    const UPDATE_MIQ_CARDS_TERMINAL_A = "Cards terminal (A)";
+    const UPDATE_MIQ_UPI_TERMINAL_A = "UPI (A)";
+    const UPDATE_MIQ_BANK_TRANSFER_A = "Bank Transfer (A)";
+    const UPDATE_MIQ_OFFLINE_A = "Offline (A)";
+    const UPDATE_MIQ_TYPES_A = "Types (A)";
+    const UPDATE_MIQ_CAPABILITY_A = "Capability (A)";
+    const UPDATE_MIQ_CURRENCY_A = "Currency (A)";
+    const UPDATE_MIQ_GATEWAY_B = "Gateway (B)";
+    const UPDATE_MIQ_GATEWAY_ACQUIRER_B = "Gateway Acquirer (B)";
+    const UPDATE_MIQ_TERMINAL_CATEGORY_B = "Terminal Category (B)";
+    const UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_B = "Existing Gateway Merchant ID (B)";
+    const UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_B = "New Gateway Merchant ID (B)";
+    const UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_B = "Gateway Merchant ID 2 (B)";
+    const UPDATE_MIQ_GATEWAY_ACCESS_CODE_B = "Gateway Access Code (B)";
+    const UPDATE_MIQ_GATEWAY_SECURE_SECRET_B = "Gateway Secure Secret (B)";
+    const UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_B = "Gateway Secure Secret 2 (B)";
+    const UPDATE_MIQ_GATEWAY_TERMINAL_ID_B = "Gateway Terminal ID (B)";
+    const UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_B = "Gateway Terminal Password (B)";
+    const UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_B = "Confirm Gateway Terminal Password (B)";
+    const UPDATE_MIQ_TERMINAL_MODE_B = "Terminal Mode (B)";
+    const UPDATE_MIQ_GATEWAY_RECON_PASSWORD_B = "Gateway Recon Password (B)";
+    const UPDATE_MIQ_CARDS_TERMINAL_B = "Cards terminal (B)";
+    const UPDATE_MIQ_UPI_TERMINAL_B  = "UPI (B)";
+    const UPDATE_MIQ_BANK_TRANSFER_B = "Bank Transfer (B)";
+    const UPDATE_MIQ_OFFLINE_B = "Offline (B)";
+    const UPDATE_MIQ_TYPES_B = "Types (B)";
+    const UPDATE_MIQ_CAPABILITY_B = "Capability (B)";
+    const UPDATE_MIQ_CURRENCY_B = "Currency (B)";
+    const UPDATE_MIQ_GATEWAY_C = "Gateway (C)";
+    const UPDATE_MIQ_GATEWAY_ACQUIRER_C = "Gateway Acquirer (C)";
+    const UPDATE_MIQ_TERMINAL_CATEGORY_C = "Terminal Category (C)";
+    const UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_C = "Existing Gateway Merchant ID (C)";
+    const UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_C = "New Gateway Merchant ID (C)";
+    const UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_C = "Gateway Merchant ID 2 (C)";
+    const UPDATE_MIQ_GATEWAY_ACCESS_CODE_C = "Gateway Access Code (C)";
+    const UPDATE_MIQ_GATEWAY_SECURE_SECRET_C = "Gateway Secure Secret (C)";
+    const UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_C = "Gateway Secure Secret 2 (C)";
+    const UPDATE_MIQ_GATEWAY_TERMINAL_ID_C = "Gateway Terminal ID (C)";
+    const UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_C = "Gateway Terminal Password (C)";
+    const UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_C = "Confirm Gateway Terminal Password (C)";
+    const UPDATE_MIQ_TERMINAL_MODE_C = "Terminal Mode (C)";
+    const UPDATE_MIQ_GATEWAY_RECON_PASSWORD_C = "Gateway Recon Password (C)";
+    const UPDATE_MIQ_CARDS_TERMINAL_C = "Cards terminal (C)";
+    const UPDATE_MIQ_UPI_TERMINAL_C  = "UPI (C)";
+    const UPDATE_MIQ_BANK_TRANSFER_C = "Bank Transfer (C)";
+    const UPDATE_MIQ_OFFLINE_C = "Offline (C)";
+    const UPDATE_MIQ_TYPES_C = "Types (C)";
+    const UPDATE_MIQ_CAPABILITY_C = "Capability (C)";
+    const UPDATE_MIQ_CURRENCY_C = "Currency (C)";
 
     //headers for tokenisation terminals onboarding
     const TERMINAL_BATCH_CREATION_TYPE = "terminal_type";
@@ -5854,6 +5993,284 @@ class Header
                 self::ERROR_DESCRIPTION,
             ]
         ],
+
+        Type::UPDATE_MIQ => [
+            self::INPUT => [
+                self::UPDATE_MIQ_MERCHANT_ID,
+                self::UPDATE_MIQ_STATUS,
+                self::UPDATE_MIQ_MERCHANT_NAME_BUSINESS_NAME,
+                self::UPDATE_MIQ_DBA_NAME_BILLING_LABEL,
+                self::UPDATE_MIQ_WEBSITE,
+                self::UPDATE_MIQ_WEBSITE_ABOUT_US,
+                self::UPDATE_MIQ_WEBSITE_TERMS_AND_CONDITIONS,
+                self::UPDATE_MIQ_WEBSITE_CONTACT_US,
+                self::UPDATE_MIQ_WEBSITE_PRIVACY_POLICY,
+                self::UPDATE_MIQ_WEBSITE_PRODUCT_PRICING,
+                self::UPDATE_MIQ_WEBSITE_REFUNDS,
+                self::UPDATE_MIQ_WEBSITE_CANCELLATION,
+                self::UPDATE_MIQ_WEBSITE_SHIPPING_AND_DELIVERY,
+                self::UPDATE_MIQ_CONTACT_NAME,
+                self::UPDATE_MIQ_CONTACT_EMAIL,
+                self::UPDATE_MIQ_TRANSACTIONS_REPORT_EMAIL_ID,
+                self::UPDATE_MIQ_ADDRESS,
+                self::UPDATE_MIQ_CITY,
+                self::UPDATE_MIQ_PIN_CODE,
+                self::UPDATE_MIQ_STATE,
+                self::UPDATE_MIQ_CONTACT_NUMBER,
+                self::UPDATE_MIQ_BUSINESS_TYPE,
+                self::UPDATE_MIQ_CIN,
+                self::UPDATE_MIQ_BUSINESS_PAN,
+                self::UPDATE_MIQ_BUSINESS_NAME,
+                self::UPDATE_MIQ_AUTHORISED_SIGNATURE_PAN,
+                self::UPDATE_MIQ_PAN_OWNER_NAME,
+                self::UPDATE_MIQ_BUSINESS_CATEGORY,
+                self::UPDATE_MIQ_SUB_CATEGORY,
+                self::UPDATE_MIQ_GSTIN,
+                self::UPDATE_MIQ_BUSINESS_DESCRIPTION,
+                self::UPDATE_MIQ_ESTD_DATE,
+                self::UPDATE_MIQ_FEE_MODEL,
+                self::UPDATE_MIQ_NET_BANKING_FEE_TYPE,
+                self::UPDATE_MIQ_NET_BANKING_FEE_BEARER,
+                self::UPDATE_MIQ_AXIS_NET_BANKING,
+                self::UPDATE_MIQ_HDFC_NET_BANKING,
+                self::UPDATE_MIQ_ICICI_NET_BANKING,
+                self::UPDATE_MIQ_SBI_NET_BANKING,
+                self::UPDATE_MIQ_YES_NET_BANKING,
+                self::UPDATE_MIQ_NET_BANKING_ANY,
+                self::UPDATE_MIQ_DEBIT_CARD_FEE_TYPE,
+                self::UPDATE_MIQ_DEBIT_CARD_FEE_BEARER,
+                self::UPDATE_MIQ_DEBIT_CARD_0_TO_2K,
+                self::UPDATE_MIQ_DEBIT_CARD_2K_TO_1CR,
+                self::UPDATE_MIQ_RUPAY_FEE_TYPE,
+                self::UPDATE_MIQ_RUPAY_FEE_BEARER,
+                self::UPDATE_MIQ_RUPAY_0_TO_2K,
+                self::UPDATE_MIQ_RUPAY_2K_TO_1CR,
+                self::UPDATE_MIQ_UPI_FEE_TYPE,
+                self::UPDATE_MIQ_UPI_FEE_BEARER,
+                self::UPDATE_MIQ_UPI,
+                self::UPDATE_MIQ_WALLETS_FEE_TYPE,
+                self::UPDATE_MIQ_WALLETS_FEE_BEARER,
+                self::UPDATE_MIQ_WALLETS_FREE_CHARGE,
+                self::UPDATE_MIQ_WALLETS_ANY,
+                self::UPDATE_MIQ_CREDIT_CARD_FEE_TYPE,
+                self::UPDATE_MIQ_CREDIT_CARD_FEE_BEARER,
+                self::UPDATE_MIQ_CREDIT_CARD_0_TO_2K,
+                self::UPDATE_MIQ_CREDIT_CARD_2K_TO_1CR,
+                self::UPDATE_MIQ_INTERNATIONAL,
+                self::UPDATE_MIQ_INTERNATIONAL_CARDS_FEE_TYPE,
+                self::UPDATE_MIQ_INTERNATIONAL_CARDS_FEE_BEARER,
+                self::UPDATE_MIQ_INTERNATIONAL_CARDS,
+                self::UPDATE_MIQ_BUSINESS_FEE_TYPE,
+                self::UPDATE_MIQ_BUSINESS_FEE_BEARER,
+                self::UPDATE_MIQ_BUSINESS,
+                self::UPDATE_MIQ_BANK_ACCOUNT_NUMBER,
+                self::UPDATE_MIQ_BENEFICIARY_NAME,
+                self::UPDATE_MIQ_BRANCH_IFSC_CODE,
+                self::UPDATE_MIQ_MODE,
+                self::UPDATE_MIQ_GATEWAY_A,
+                self::UPDATE_MIQ_GATEWAY_ACQUIRER_A,
+                self::UPDATE_MIQ_TERMINAL_CATEGORY_A,
+                self::UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_A,
+                self::UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_A,
+                self::UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_A,
+                self::UPDATE_MIQ_GATEWAY_ACCESS_CODE_A,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_A,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_A,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_ID_A,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_A,
+                self::UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_A,
+                self::UPDATE_MIQ_TERMINAL_MODE_A,
+                self::UPDATE_MIQ_GATEWAY_RECON_PASSWORD_A,
+                self::UPDATE_MIQ_CARDS_TERMINAL_A,
+                self::UPDATE_MIQ_UPI_TERMINAL_A,
+                self::UPDATE_MIQ_BANK_TRANSFER_A,
+                self::UPDATE_MIQ_OFFLINE_A,
+                self::UPDATE_MIQ_TYPES_A,
+                self::UPDATE_MIQ_CAPABILITY_A,
+                self::UPDATE_MIQ_CURRENCY_A,
+                self::UPDATE_MIQ_GATEWAY_B,
+                self::UPDATE_MIQ_GATEWAY_ACQUIRER_B,
+                self::UPDATE_MIQ_TERMINAL_CATEGORY_B,
+                self::UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_B,
+                self::UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_B,
+                self::UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_B,
+                self::UPDATE_MIQ_GATEWAY_ACCESS_CODE_B,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_B,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_B,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_ID_B,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_B,
+                self::UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_B,
+                self::UPDATE_MIQ_TERMINAL_MODE_B,
+                self::UPDATE_MIQ_GATEWAY_RECON_PASSWORD_B,
+                self::UPDATE_MIQ_CARDS_TERMINAL_B,
+                self::UPDATE_MIQ_UPI_TERMINAL_B,
+                self::UPDATE_MIQ_BANK_TRANSFER_B,
+                self::UPDATE_MIQ_OFFLINE_B,
+                self::UPDATE_MIQ_TYPES_B,
+                self::UPDATE_MIQ_CAPABILITY_B,
+                self::UPDATE_MIQ_CURRENCY_B,
+                self::UPDATE_MIQ_GATEWAY_C,
+                self::UPDATE_MIQ_GATEWAY_ACQUIRER_C,
+                self::UPDATE_MIQ_TERMINAL_CATEGORY_C,
+                self::UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_C,
+                self::UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_C,
+                self::UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_C,
+                self::UPDATE_MIQ_GATEWAY_ACCESS_CODE_C,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_C,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_C,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_ID_C,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_C,
+                self::UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_C,
+                self::UPDATE_MIQ_TERMINAL_MODE_C,
+                self::UPDATE_MIQ_GATEWAY_RECON_PASSWORD_C,
+                self::UPDATE_MIQ_CARDS_TERMINAL_C,
+                self::UPDATE_MIQ_UPI_TERMINAL_C,
+                self::UPDATE_MIQ_BANK_TRANSFER_C,
+                self::UPDATE_MIQ_OFFLINE_C,
+                self::UPDATE_MIQ_TYPES_C,
+                self::UPDATE_MIQ_CAPABILITY_C,
+                self::UPDATE_MIQ_CURRENCY_C,
+            ],
+            self::OUTPUT => [
+                self::UPDATE_MIQ_MERCHANT_ID,
+                self::UPDATE_MIQ_STATUS,
+                self::UPDATE_MIQ_MERCHANT_NAME_BUSINESS_NAME,
+                self::UPDATE_MIQ_DBA_NAME_BILLING_LABEL,
+                self::UPDATE_MIQ_WEBSITE,
+                self::UPDATE_MIQ_WEBSITE_ABOUT_US,
+                self::UPDATE_MIQ_WEBSITE_TERMS_AND_CONDITIONS,
+                self::UPDATE_MIQ_WEBSITE_CONTACT_US,
+                self::UPDATE_MIQ_WEBSITE_PRIVACY_POLICY,
+                self::UPDATE_MIQ_WEBSITE_PRODUCT_PRICING,
+                self::UPDATE_MIQ_WEBSITE_REFUNDS,
+                self::UPDATE_MIQ_WEBSITE_CANCELLATION,
+                self::UPDATE_MIQ_WEBSITE_SHIPPING_AND_DELIVERY,
+                self::UPDATE_MIQ_CONTACT_NAME,
+                self::UPDATE_MIQ_CONTACT_EMAIL,
+                self::UPDATE_MIQ_TRANSACTIONS_REPORT_EMAIL_ID,
+                self::UPDATE_MIQ_ADDRESS,
+                self::UPDATE_MIQ_CITY,
+                self::UPDATE_MIQ_PIN_CODE,
+                self::UPDATE_MIQ_STATE,
+                self::UPDATE_MIQ_CONTACT_NUMBER,
+                self::UPDATE_MIQ_BUSINESS_TYPE,
+                self::UPDATE_MIQ_CIN,
+                self::UPDATE_MIQ_BUSINESS_PAN,
+                self::UPDATE_MIQ_BUSINESS_NAME,
+                self::UPDATE_MIQ_AUTHORISED_SIGNATURE_PAN,
+                self::UPDATE_MIQ_PAN_OWNER_NAME,
+                self::UPDATE_MIQ_BUSINESS_CATEGORY,
+                self::UPDATE_MIQ_SUB_CATEGORY,
+                self::UPDATE_MIQ_GSTIN,
+                self::UPDATE_MIQ_BUSINESS_DESCRIPTION,
+                self::UPDATE_MIQ_ESTD_DATE,
+                self::UPDATE_MIQ_FEE_MODEL,
+                self::UPDATE_MIQ_NET_BANKING_FEE_TYPE,
+                self::UPDATE_MIQ_NET_BANKING_FEE_BEARER,
+                self::UPDATE_MIQ_AXIS_NET_BANKING,
+                self::UPDATE_MIQ_HDFC_NET_BANKING,
+                self::UPDATE_MIQ_ICICI_NET_BANKING,
+                self::UPDATE_MIQ_SBI_NET_BANKING,
+                self::UPDATE_MIQ_YES_NET_BANKING,
+                self::UPDATE_MIQ_NET_BANKING_ANY,
+                self::UPDATE_MIQ_DEBIT_CARD_FEE_TYPE,
+                self::UPDATE_MIQ_DEBIT_CARD_FEE_BEARER,
+                self::UPDATE_MIQ_DEBIT_CARD_0_TO_2K,
+                self::UPDATE_MIQ_DEBIT_CARD_2K_TO_1CR,
+                self::UPDATE_MIQ_RUPAY_FEE_TYPE,
+                self::UPDATE_MIQ_RUPAY_FEE_BEARER,
+                self::UPDATE_MIQ_RUPAY_0_TO_2K,
+                self::UPDATE_MIQ_RUPAY_2K_TO_1CR,
+                self::UPDATE_MIQ_UPI_FEE_TYPE,
+                self::UPDATE_MIQ_UPI_FEE_BEARER,
+                self::UPDATE_MIQ_UPI,
+                self::UPDATE_MIQ_WALLETS_FEE_TYPE,
+                self::UPDATE_MIQ_WALLETS_FEE_BEARER,
+                self::UPDATE_MIQ_WALLETS_FREE_CHARGE,
+                self::UPDATE_MIQ_WALLETS_ANY,
+                self::UPDATE_MIQ_CREDIT_CARD_FEE_TYPE,
+                self::UPDATE_MIQ_CREDIT_CARD_FEE_BEARER,
+                self::UPDATE_MIQ_CREDIT_CARD_0_TO_2K,
+                self::UPDATE_MIQ_CREDIT_CARD_2K_TO_1CR,
+                self::UPDATE_MIQ_INTERNATIONAL,
+                self::UPDATE_MIQ_INTERNATIONAL_CARDS_FEE_TYPE,
+                self::UPDATE_MIQ_INTERNATIONAL_CARDS_FEE_BEARER,
+                self::UPDATE_MIQ_INTERNATIONAL_CARDS,
+                self::UPDATE_MIQ_BUSINESS_FEE_TYPE,
+                self::UPDATE_MIQ_BUSINESS_FEE_BEARER,
+                self::UPDATE_MIQ_BUSINESS,
+                self::UPDATE_MIQ_BANK_ACCOUNT_NUMBER,
+                self::UPDATE_MIQ_BENEFICIARY_NAME,
+                self::UPDATE_MIQ_BRANCH_IFSC_CODE,
+                self::UPDATE_MIQ_MODE,
+                self::UPDATE_MIQ_GATEWAY_A,
+                self::UPDATE_MIQ_GATEWAY_ACQUIRER_A,
+                self::UPDATE_MIQ_TERMINAL_CATEGORY_A,
+                self::UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_A,
+                self::UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_A,
+                self::UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_A,
+                self::UPDATE_MIQ_GATEWAY_ACCESS_CODE_A,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_A,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_A,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_ID_A,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_A,
+                self::UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_A,
+                self::UPDATE_MIQ_TERMINAL_MODE_A,
+                self::UPDATE_MIQ_GATEWAY_RECON_PASSWORD_A,
+                self::UPDATE_MIQ_CARDS_TERMINAL_A,
+                self::UPDATE_MIQ_UPI_TERMINAL_A,
+                self::UPDATE_MIQ_BANK_TRANSFER_A,
+                self::UPDATE_MIQ_OFFLINE_A,
+                self::UPDATE_MIQ_TYPES_A,
+                self::UPDATE_MIQ_CAPABILITY_A,
+                self::UPDATE_MIQ_CURRENCY_A,
+                self::UPDATE_MIQ_GATEWAY_B,
+                self::UPDATE_MIQ_GATEWAY_ACQUIRER_B,
+                self::UPDATE_MIQ_TERMINAL_CATEGORY_B,
+                self::UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_B,
+                self::UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_B,
+                self::UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_B,
+                self::UPDATE_MIQ_GATEWAY_ACCESS_CODE_B,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_B,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_B,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_ID_B,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_B,
+                self::UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_B,
+                self::UPDATE_MIQ_TERMINAL_MODE_B,
+                self::UPDATE_MIQ_GATEWAY_RECON_PASSWORD_B,
+                self::UPDATE_MIQ_CARDS_TERMINAL_B,
+                self::UPDATE_MIQ_UPI_TERMINAL_B,
+                self::UPDATE_MIQ_BANK_TRANSFER_B,
+                self::UPDATE_MIQ_OFFLINE_B,
+                self::UPDATE_MIQ_TYPES_B,
+                self::UPDATE_MIQ_CAPABILITY_B,
+                self::UPDATE_MIQ_CURRENCY_B,
+                self::UPDATE_MIQ_GATEWAY_C,
+                self::UPDATE_MIQ_GATEWAY_ACQUIRER_C,
+                self::UPDATE_MIQ_TERMINAL_CATEGORY_C,
+                self::UPDATE_MIQ_EXISTING_GATEWAY_MERCHANT_ID_C,
+                self::UPDATE_MIQ_NEW_GATEWAY_MERCHANT_ID_C,
+                self::UPDATE_MIQ_GATEWAY_MERCHANT_ID_2_C,
+                self::UPDATE_MIQ_GATEWAY_ACCESS_CODE_C,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_C,
+                self::UPDATE_MIQ_GATEWAY_SECURE_SECRET_2_C,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_ID_C,
+                self::UPDATE_MIQ_GATEWAY_TERMINAL_PASSWORD_C,
+                self::UPDATE_MIQ_CONFIRM_GATEWAY_TERMINAL_PASSWORD_C,
+                self::UPDATE_MIQ_TERMINAL_MODE_C,
+                self::UPDATE_MIQ_GATEWAY_RECON_PASSWORD_C,
+                self::UPDATE_MIQ_CARDS_TERMINAL_C,
+                self::UPDATE_MIQ_UPI_TERMINAL_C,
+                self::UPDATE_MIQ_BANK_TRANSFER_C,
+                self::UPDATE_MIQ_OFFLINE_C,
+                self::UPDATE_MIQ_TYPES_C,
+                self::UPDATE_MIQ_CAPABILITY_C,
+                self::UPDATE_MIQ_CURRENCY_C,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION
+            ]
+            ],
         Type::BVS_BULK_KYC_VERIFICATION => [
             self::INPUT => [
                 self::BVS_BULK_KYC_VERIFICATION_DOCUMENT,

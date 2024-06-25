@@ -919,7 +919,8 @@ class Route
         // Api for creating merchant using raw file
         'merchant_upload'                          => ['post',     'merchant/upload',                                'MerchantController@uploadMerchant'                ],
         'merchant_upload_miq_admin'                => ['post',     'merchant/upload_miq/batch',                      'MerchantController@uploadMiqBatch'                                 ],
-
+        'merchant_update_miq'                      => ['post',     'merchant/update_miq/batch',                      'MerchantController@updateMerchantMiqBatch'                         ],
+        'pricing_update_miq'                      =>  ['post',     'merchant/pricing_update_miq/batch',              'MerchantController@updatePricingMiqBatch'                          ],
         'merchant_activation_migrate'              => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'              => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
         'merchant_activation_document_type'        => ['get',      'merchant/activation/document_types',              'MerchantController@getNCAdditionalDocuments'                       ],
@@ -6641,6 +6642,10 @@ class Route
         'create_ledger_journal_batch',
 
         'merchant_upload_miq_admin',
+
+        'pricing_update_miq',
+
+        'merchant_update_miq',
 
         'payment_nbplus_authorize_failed',
 
@@ -17490,6 +17495,8 @@ class Route
             'create_local_tokens_from_consents_bulk',
             'create_ledger_journal_batch',
             'merchant_upload_miq_admin',
+            'merchant_update_miq',
+            'pricing_update_miq',
             'irctc_settlement_batch_service',
             'payouts_bas_process_post_recon',
         ],
@@ -17551,6 +17558,8 @@ class Route
         ],
 
         'terminals_service' => [
+            'merchant_update_miq',
+            'pricing_update_miq',
             'terminal_sync_internal',
             'terminal_compare_and_sync_internal',
             'merchant_fetch_methods_internal',

@@ -1621,6 +1621,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateMerchantMiqBatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateMerchantMiqBatch($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePricingMiqBatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updatePricingMiqBatch($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function putEditMerchantDetailsAfterLockPartner($id)
     {
         $input = Request::all();

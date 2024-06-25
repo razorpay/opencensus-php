@@ -56,6 +56,29 @@ class BulkUploadMIQParser
         Header::MIQ_NB_ANY      =>  Header::MIQ_NB_ANY,
     ];
 
+    private static array $miqbusinessDetails = [
+        Header::MIQ_CONTACT_NAME                => MDEntity::CONTACT_NAME,
+        Header::MIQ_CONTACT_EMAIL               => MDEntity::CONTACT_EMAIL,
+        Header::MIQ_TXN_REPORT_EMAIL            => MDEntity::TRANSACTION_REPORT_EMAIL,
+        Header::MIQ_PIN_CODE                    => MDEntity::BUSINESS_REGISTERED_PIN,
+        Header::MIQ_ADDRESS                     => MDEntity::BUSINESS_OPERATION_ADDRESS,
+        Header::MIQ_CITY                        => MDEntity::BUSINESS_OPERATION_CITY,
+        Header::MIQ_STATE                       => MDEntity::BUSINESS_OPERATION_STATE,
+        Header::MIQ_CONTACT_NUMBER              => MDEntity::CONTACT_MOBILE,
+        Header::MIQ_MERCHANT_NAME_BUSINESS_NAME => MDEntity::BUSINESS_NAME,
+        Header::MIQ_DBA_NAME                    => MDEntity::BUSINESS_DBA,
+        Header::MIQ_GSTIN                       => MDEntity::GSTIN,
+        Header::MIQ_BUSINESS_PAN                => MDEntity::COMPANY_PAN,
+        Header::MIQ_BUSINESS_NAME               => MDEntity::COMPANY_PAN_NAME,
+        Header::MIQ_AUTHORISED_SIGNATORY_PAN    => MDEntity::PROMOTER_PAN,
+        Header::MIQ_PAN_OWNER_NAME              => MDEntity::PROMOTER_PAN_NAME,
+        Header::MIQ_SUB_CATEGORY                => MDEntity::BUSINESS_SUBCATEGORY,
+        Header::MIQ_BUSINESS_CATEGORY           => MDEntity::BUSINESS_CATEGORY,
+        Header::MIQ_BUSINESS_DESCRIPTION        => MDEntity::BUSINESS_DESCRIPTION,
+        Header::MIQ_CIN                         => MDEntity::COMPANY_CIN,
+        Header::MIQ_WEBSITE                     => MDEntity::BUSINESS_WEBSITE,
+    ];
+
     private static array $cardPricingMapping = [
         Header::MIQ_CREDIT_CARD_FEE_TYPE => [
             UConstants::PRICING_FEE_BEARER          => Header::MIQ_CREDIT_CARD_FEE_BEARER,
@@ -113,6 +136,7 @@ class BulkUploadMIQParser
             UConstants::PRICING_METHOD_TYPE    => '',
             UConstants::PRICING_NETWORK        => '',
             UConstants::PRICING_METHOD_SUBTYPE => '',
+            UConstants::INTERNATIONAL          => '',
             UConstants::PRICING_AMOUNT_RANGE_ACTIVE => '0',
             UConstants::PRICING_AMOUNT_RANGES  => [
                 Header::MIQ_INTERNATIONAL_CARD => [],
@@ -195,6 +219,40 @@ class BulkUploadMIQParser
             ],
         ];
     }
+    /**
+     * *
+     * Map merchant detail entity.
+     *
+     * @param array $entry
+     * @return array
+     */
+    public static function getUpdatedMerchantDetailInput(): array
+    {
+        return self::$miqbusinessDetails;
+    }
+
+    /**
+     * *
+     * Map website detail entity.
+     *
+     * @param array $entry
+     * @return array
+     */
+
+    public static function getUpdatedWebsiteDetailInput(array $entry, array $websiteData): array
+    {
+        return [
+            BEntity::WEBSITE_DETAILS => [
+                BConstants::REFUND              => strtolower($entry[Header::MIQ_WEBSITE_REFUNDS]) !== 'na' ? $entry[Header::MIQ_WEBSITE_REFUNDS] : $websiteData[BConstants::REFUND]['url'],
+                BConstants::ABOUT               => strtolower($entry[Header::MIQ_WEBSITE_ABOUT_US]) !== 'na' ? $entry[Header::MIQ_WEBSITE_ABOUT_US] : $websiteData['about_us']['url'],
+                BConstants::CONTACT             => strtolower($entry[Header::MIQ_WEBSITE_CONTACT_US]) !== 'na' ? $entry[Header::MIQ_WEBSITE_CONTACT_US] : $websiteData['contact_us']['url'],
+                BConstants::CANCELLATION        => strtolower($entry[Header::MIQ_WEBSITE_CANCELLATION]) !== 'na' ? $entry[Header::MIQ_WEBSITE_CANCELLATION] : $websiteData[BConstants::CANCELLATION]['url'],
+                BConstants::PRIVACY             => strtolower($entry[Header::MIQ_WEBSITE_PRIVACY_POLICY]) !== 'na' ? $entry[Header::MIQ_WEBSITE_PRIVACY_POLICY] : $websiteData[BConstants::PRIVACY]['url'],
+                BConstants::PRICING             => strtolower($entry[Header::MIQ_WEBSITE_PRODUCT_PRICING]) !== 'na' ? $entry[Header::MIQ_WEBSITE_PRODUCT_PRICING] : $websiteData[BConstants::PRICING]['url'],
+                BConstants::TERMS               => strtolower($entry[Header::MIQ_WEBSITE_TERMS_CONDITIONS]) !== 'na'? $entry[Header::MIQ_WEBSITE_TERMS_CONDITIONS]: $websiteData[BConstants::TERMS]['url'],
+            ],
+        ];
+    }
 
     public static function getMerchantWebsiteInput(array $input, string $website, string $mid, array $processedEntry): array
     {
@@ -212,6 +270,33 @@ class BulkUploadMIQParser
 
        $response['shipping'] = $processedEntry[Header::MIQ_WEBSITE_SHIPPING_DELIVERY] !==''
            ? $processedEntry[Header::MIQ_WEBSITE_SHIPPING_DELIVERY] : null;
+
+        return [
+            'merchant_id' => $mid,
+            'admin_website_details' => [
+                'website' => [
+                    $website => $response
+                ]
+            ],
+        ];
+    }
+
+    public static function getUpdateMerchantWebsiteInput(array $input, string $website, string $mid, array $processedEntry): array
+    {
+        $response = [];
+
+        foreach ($input as $key=>$value)
+        {
+            if($key === BConstants::ABOUT or $key === BConstants::CONTACT)
+                $key = $key . '_us';
+
+            $response[$key]=[
+                'url' => $value
+            ];
+        }
+
+        $response['shipping'] = $processedEntry[Header::MIQ_WEBSITE_SHIPPING_DELIVERY] !=='NA'
+            ? $processedEntry[Header::MIQ_WEBSITE_SHIPPING_DELIVERY] : $response['shipping'];
 
         return [
             "merchant_id" => $mid,
@@ -534,5 +619,267 @@ class BulkUploadMIQParser
         }
 
         return $rules;
+    }
+
+    public function filterRules( &$rules, $entry): void
+    {
+        $this->filterUpiRules($rules,$entry);
+
+        $this->filterWalletRules($rules,$entry);
+
+        $this->filterNetBankingRules($rules,$entry);
+    }
+    public function filterUpiRules(&$rules, $entry): void
+    {
+        $filteredRules = $rules;
+
+        $feeBearer = strtolower($entry[Header::MIQ_UPI_FEE_BEARER]);
+        $feeType = strtolower($entry[Header::MIQ_UPI_FEE_TYPE]);
+
+        if($this->isValidFilter($feeBearer, $feeType)) {
+            $upiRules = $this->filterMethodRules($filteredRules, MethodEntity::UPI);
+            $this->updateRules($rules, $upiRules, $feeBearer, $feeType, $entry[Header::MIQ_UPI]);
+        }
+    }
+
+    public function filterWalletRules( &$rules, $entry): void
+    {
+        $filteredRules = $rules;
+
+        $feeBearer = strtolower($entry[Header::MIQ_WALLETS_FEE_BEARER]);
+        $feeType = strtolower($entry[Header::MIQ_WALLETS_FEE_TYPE]);
+
+        if($this->isValidFilter($feeBearer, $feeType)) {
+            $walletRules = $this->filterMethodRules($filteredRules, 'wallet');
+
+            if (strtolower($entry[Header::MIQ_WALLETS_FREECHARGE]) !== 'na') {
+                $freeChargeWalletRules = $this->filterNetworkRules($walletRules, 'wallet', MethodEntity::FREECHARGE);
+                $this->updateRules($rules, $freeChargeWalletRules, $feeBearer, $feeType, $entry[Header::MIQ_WALLETS_FREECHARGE]);
+            }
+
+            if (strtolower($entry[Header::MIQ_WALLETS_ANY]) !== 'na') {
+                $this->updateAnyRules($rules, $walletRules, $feeBearer, $feeType, $entry[Header::MIQ_WALLETS_ANY]);
+            }
+        }
+    }
+
+    public function filterNetBankingRules( &$rules, $entry): void
+    {
+        $filteredRules = $rules;
+
+        $feeBearer = strtolower($entry[Header::MIQ_NB_FEE_BEARER]);
+        $feeType = strtolower($entry[Header::MIQ_NB_FEE_TYPE]);
+
+        if($this->isValidFilter($feeBearer, $feeType))
+        {
+            $netBankingRules = $this->filterMethodRules($filteredRules, MethodEntity::NETBANKING);
+            foreach (self::$netBankingPricingMapping as $key => $value)
+            {
+                if (($key === Header::MIQ_NB_ANY && strtolower($entry[$key]) != 'na') || $feeBearer != 'na')
+                {
+                    $this->updateAnyRules($rules, $netBankingRules, $feeBearer, $feeType, $entry[Header::MIQ_NB_ANY]);
+                }
+                else if (strtolower($entry[$key]) != 'na')
+                {
+                    $netBankingNetworkRules = $this->filterNetworkRules($rules, MethodEntity::NETBANKING, $value);
+                    $this->updateRules($rules, $netBankingNetworkRules, $feeBearer, $feeType, $entry[$key]);
+                }
+            }
+        }
+    }
+
+    public function filterCardsRules( &$rules, $entry): void
+    {
+        foreach (self::$cardPricingMapping as $key => $value)
+        {
+            $filteredRules = $rules;
+            $feeBearerHeader = $value[UConstants::PRICING_FEE_BEARER];
+            $feeBearer = strtolower($entry[$feeBearerHeader]);
+            $feeType = strtolower($entry[$key]);
+
+            if ($feeBearer != 'na' || $feeType != 'na') {
+                if (isset($value[UConstants::PRICING_METHOD_TYPE])) {
+                    $cardRules = $this->filterMethodTypeRules($filteredRules, MethodEntity::CARD, $value[UConstants::PRICING_METHOD_TYPE]);
+                    if ($value[UConstants::PRICING_METHOD_TYPE] === CardType::DEBIT && $feeBearer === Header::MIQ_RUPAY_FEE_BEARER) {
+                        $cardRules = $this->filterNetworkRules($cardRules, MethodEntity::CARD, $value[UConstants::PRICING_NETWORK]);
+                    }
+                }
+
+                if ($value[UConstants::PRICING_METHOD_SUBTYPE] === 'business') {
+                    $cardRules = $this->filterMethodSubTypeRules($filteredRules, MethodEntity::CARD, $value[UConstants::PRICING_METHOD_SUBTYPE]);
+                }
+
+                //add for international
+                if ($value[UConstants::INTERNATIONAL] === '1') {
+                    $cardRules = $this->filterInternationalRules($filteredRules, MethodEntity::CARD, $value[UConstants::INTERNATIONAL]);
+                }
+
+                foreach ($value[UConstants::PRICING_AMOUNT_RANGES] as $rangeHeader => $rangeValues) {
+                    $this->updateRules($rules, $cardRules, $feeBearer, $feeType, $entry[$rangeHeader]);
+                }
+            }
+        }
+    }
+
+    public function updateAnyRules( &$rules, $filteredRules, $feeBearer, $feeType, $amount ): void
+    {
+        foreach ($filteredRules as $filteredRule)
+        {
+            foreach ($rules as &$rule)
+            {
+                if (($rule['id'] == $filteredRule['id']) && ($rule[PricingEntity::PAYMENT_NETWORK] == null))
+                {
+                    if (($feeBearer !== 'na') && (in_array($feeBearer, [MFeeBearer::PLATFORM, MFeeBearer::CUSTOMER])))
+                    {
+                        $rule[PricingEntity::FEE_BEARER] = $feeBearer;
+                    }
+                    if (($feeType !== 'na') && (strtolower($amount) !== 'na')) {
+                        $this->updateAmount($feeType, $amount, $rule);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+
+    public function updateRules( &$rules, $filteredRules, $feeBearer, $feeType, $amount ): void
+    {
+        // Index rules by ID for faster lookup
+        $indexedRules = [];
+        foreach ($rules as $rule)
+        {
+            $indexedRules[$rule['id']] = &$rule;
+        }
+        // Iterate through filtered rules and update corresponding rules
+        foreach ($filteredRules as $filteredRule)
+        {
+            if (isset($indexedRules[$filteredRule['id']]))
+            {
+                $rule = &$indexedRules[$filteredRule['id']];
+
+                if (($feeBearer !== 'na') && (in_array($feeBearer, [MFeeBearer::PLATFORM, MFeeBearer::CUSTOMER])))
+                {
+                    $rule[PricingEntity::FEE_BEARER] = $feeBearer;
+                }
+
+                if (($feeType !== 'na') && (strtolower($amount) !== 'na'))
+                {
+                    $this->updateAmount($feeType, $amount, $rule);
+                }
+            }
+        }
+    }
+
+    public function isvalidFilter($feeBearer,$feeType):bool
+    {
+        return ($feeBearer!=='na' || $feeType!=='na');
+    }
+
+    public function filterMethodRules($rules, $method)
+    {
+        $filters = [
+            [PricingEntity::PAYMENT_METHOD, $method, false, null],
+            [PricingEntity::FEATURE, 'payment', false, null],
+        ];
+
+        return $this->applyFiltersOnRules($rules, $filters);
+    }
+
+    public function filterNetworkRules($rules, $method, $network){
+        $filters = [
+            [PricingEntity::PAYMENT_METHOD, $method, false, null],
+            [PricingEntity::FEATURE, 'payment', false, null],
+            [PricingEntity::PAYMENT_NETWORK, $network, false, null]
+        ];
+
+         return $this->applyFiltersOnRules($rules, $filters);
+    }
+
+    public function filterMethodTypeRules($rules, $method, $method_type){
+        $filters = [
+            [PricingEntity::PAYMENT_METHOD, $method, false, null],
+            [PricingEntity::FEATURE, 'payment', false, null],
+            [PricingEntity::PRODUCT, 'primary', false, null],
+            [PricingEntity::PAYMENT_METHOD_TYPE, $method_type, true, null]
+        ];
+        return $this->applyFiltersOnRules($rules, $filters);
+    }
+
+    public function filterMethodSubTypeRules($rules, $method, $method_subtype){
+        $filters = [
+            [PricingEntity::PRODUCT, 'primary', false, null],
+            [PricingEntity::PAYMENT_METHOD_SUBTYPE, $method_subtype, true, null]
+        ];
+        $this -> filterMethodRules($rules, $method);
+        return $this->applyFiltersOnRules($rules, $filters);
+    }
+
+    public function filterInternationalRules(array &$rules, $method, $international){
+        $filters = [
+            [PricingEntity::PAYMENT_METHOD, $method, false, null],
+            [PricingEntity::FEATURE, 'payment', false, null],
+            [PricingEntity::INTERNATIONAL, $international, false, null]
+        ];
+        return $this->applyFiltersOnRules($rules, $filters);
+    }
+
+    protected function applyFiltersOnRules($rules, $filters)
+    {
+        foreach ($filters as $filter)
+        {
+            $rules = $this->filterRulesOnFieldByValue(
+                $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
+        }
+        return $rules;
+    }
+
+    protected function filterRulesOnFieldByValue(
+        $rules,
+        $fieldName,
+        $fieldValue,
+        $chooseDefault = true,
+        $defaultValue = null)
+    {
+        $matchRules         = [];
+        $defaultMatchRules  = [];
+
+        foreach ($rules as $rule)
+        {
+            $value = $rule->getAttribute($fieldName);
+
+            if ($value === $fieldValue)
+            {
+                $matchRules[] = $rule;
+            }
+            else if (($chooseDefault === true) and
+                ($value === $defaultValue))
+            {
+                $defaultMatchRules[] = $rule;
+            }
+        }
+
+        if (empty($matchRules))
+        {
+            if (empty($defaultMatchRules) === false)
+            {
+                $defaultMatchRules[0]->getAttribute('plan_id');;
+            }
+            return $defaultMatchRules;
+        }
+        return $matchRules;
+    }
+    public function updateAmount( $feeBearerType, $amount, &$rule ): void
+    {
+            if ($feeBearerType === UConstants::FEE_TYPE_PERCENT)
+            {
+                $rule[PricingEntity::PERCENT_RATE] = round($amount, 2) * 100;
+                $rule[PricingEntity::FIXED_RATE] = 0;
+            }
+            else
+            {
+                $rule[PricingEntity::FIXED_RATE] = round($amount, 2) * 100;
+                $rule[PricingEntity::PERCENT_RATE] = 0;
+            }
     }
 }

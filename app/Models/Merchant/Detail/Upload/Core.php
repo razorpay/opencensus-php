@@ -19,6 +19,8 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\User\Service as UserService;
+use RZP\Models\Pricing\Service as PricingService;
+use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
 use RZP\Models\Merchant\Website\Core as MWebsiteCore;
@@ -47,6 +49,10 @@ class Core extends Base\Core
 
     private $merchantWebsite;
 
+    private  $pricingService;
+
+    private  $merchantService;
+
     public function __construct()
     {
         parent::__construct();
@@ -62,6 +68,10 @@ class Core extends Base\Core
         $this->businessDetailService = new BusinessDetail\Service();
 
         $this->merchantWebsite = new MWebsiteCore();
+
+        $this->pricingService = new PricingService();
+
+        $this->merchantService = new MerchantService();
     }
 
     public function uploadMerchant(array $input)
@@ -249,6 +259,182 @@ class Core extends Base\Core
         });
     }
 
+    public function processUpdateMerchantEntry(array $entry): array
+    {
+        (new Validator)->validateUpdateRequestInput($entry);
+
+        $lockKey = $entry[Header::MIQ_MERCHANT_ID];
+
+        return $this->mutex->acquireAndRelease($lockKey, function () use ($entry) {
+            $parser = Factory::getInstance(Constants::BULK_UPLOAD_MIQ);
+
+            $this->trace->info(TraceCode::BATCH_SERVICE_MERCHANT_UPDATE_MIQ_REQUEST, [
+                    'entry' => $parser->getMaskedEntryForLogging($entry),
+                ]
+            );
+
+            // Creating a copy of entry for preprocessing
+            $processedEntry = array_slice($entry, 0);
+
+            $parser->preProcessMerchantEntry($processedEntry);
+
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry)
+            {
+                $merchant = $this->repo->merchant->findOrFail($entry[Header::MIQ_MERCHANT_ID]);
+                // update fee model
+                $this->updateFeeModel($merchant, $processedEntry);
+
+                //update merchant details
+
+                $merchantDetail = $this->repo->merchant_detail->getByMerchantId($entry[Header::MIQ_MERCHANT_ID]);
+
+                $merchantDetailData = $parser->getUpdatedMerchantDetailInput();
+
+                foreach ($merchantDetailData as $key=>$value )
+                {
+                    if(strtolower($entry[$key]) != 'na')
+                    {
+                        ($merchantDetail->setAttribute($value,$entry[$key]));
+                    }
+                }
+
+                $merchantDetail->setLocked(false);
+
+                $merchantDetail[DetailEntity::ACTIVATION_STATUS] = null;
+
+                $this->repo->merchant_detail->saveOrFail($merchantDetail);
+
+                //update website details
+
+                if(strtolower($entry[Header::MIQ_WEBSITE]) !== 'na')
+                {
+                    $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($entry[Header::MIQ_MERCHANT_ID]);
+
+                    $adminWebsiteDetails = $websiteDetail['admin_website_details']['website'][$entry[Header::MIQ_WEBSITE]];
+
+                    $newWebsiteDetail = $parser->getUpdatedWebsiteDetailInput($entry, $adminWebsiteDetails);
+
+                    $this->businessDetailService->saveBusinessDetailsForMerchant($entry[Header::MIQ_MERCHANT_ID], $newWebsiteDetail);
+
+                    $merchantWebsite = $parser->getUpdateMerchantWebsiteInput($newWebsiteDetail['website_details'],
+                        $processedEntry[Header::MIQ_WEBSITE],$merchant->getId(),$processedEntry);
+
+                    $this->merchantWebsite->createOrEditWebsiteDetails($merchant->merchant_detail, $merchantWebsite);
+                }
+
+                $submitData = [
+                    DetailEntity::ACTIVATION_FORM_MILESTONE => "L2",
+                    DetailEntity::SUBMIT => '1',
+                ];
+
+                $response = $this->merchantDetailCore->saveMerchantDetails($submitData, $merchant);
+
+                if ($response[DetailEntity::SUBMITTED] === false)
+                {
+                    $this->trace->info(TraceCode::MERCHANT_UPDATION_FORM_SUBMISSION_FAILURE,
+                        [
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+
+                    $entry[Header::STATUS] = Status::FAILURE;
+
+                    $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                    $entry[Header::ERROR_DESCRIPTION] = 'Failed to submit updation details';
+                }
+                else
+                {
+                    //storing errors from KYC verification calls
+                    $bvsResponse = $this->merchantDetailCore->getBVSResponseforKYCValidations($merchant->getId());
+                    $entry[Header::ERROR_CODE] = $bvsResponse[0];
+                    $entry[Header::ERROR_DESCRIPTION] = $bvsResponse[1];
+                }
+            });
+
+            $entry[Header::STATUS] = Status::SUCCESS;
+
+            return $entry;
+        });
+    }
+
+    public function processUpdatePricingEntry(array $entry): array
+    {
+        (new Validator)->validateUpdatePricingRequestInput($entry);
+
+        $lockKey = $entry[Header::MIQ_MERCHANT_ID];
+
+        return $this->mutex->acquireAndRelease($lockKey, function () use ($entry) {
+            $parser = Factory::getInstance(Constants::BULK_UPLOAD_MIQ);
+
+            $this->trace->info(TraceCode::BATCH_SERVICE_PRICING_UPDATE_MIQ_REQUEST, [
+                    'entry' => $parser->getMaskedEntryForLogging($entry),
+                ]
+            );
+
+            // Creating a copy of entry for preprocessing
+            $processedEntry = array_slice($entry, 0);
+
+            $parser->preProcessMerchantEntry($processedEntry);
+
+            $merchant = $this->repo->merchant->findOrFail($entry[Header::MIQ_MERCHANT_ID]);
+
+            try {
+
+                $planId = $merchant->getPricingPlanId();
+
+                $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
+
+                if ($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId))
+                {
+                    $newPlan = $this->pricingService->replicatePlanAndAssign($merchant, $plan);
+
+                    $merchant->refresh();
+
+                    $plan = $newPlan;
+                }
+
+                $parser->filterRules($plan, $entry);
+
+                $this->repo->saveOrFail($merchant);
+
+                $entry[Header::STATUS] = Status::SUCCESS;
+            }
+            catch (BaseException $e)
+            {
+                $error = $e->getError();
+                $this->trace->info(TraceCode::BATCH_SERVICE_UPDATE_MIQ_CREATE_RESPONSE, [
+                        'Error Response'    =>  $error->getDescription(),
+                    ]
+                );
+                $entry[Header::STATUS]            = Status::FAILURE;
+
+                $entry[Header::ERROR_CODE]        = $error->getPublicErrorCode();
+
+                $entry[Header::ERROR_DESCRIPTION] = $error->getDescription();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, null, TraceCode::MERCHANT_UPLOAD_MIQ_PRICING_PLAN_UPDATION_FAILED, [
+                    Header::MIQ_CONTACT_EMAIL          => $entry[Header::MIQ_CONTACT_EMAIL],
+                    Header::MERCHANT_ID                => $merchant->getId(),
+                ]);
+
+                $entry[Header::STATUS]   = Status::FAILURE;
+
+                $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                $entry[Header::ERROR_DESCRIPTION] = 'Failed to update pricing plan';
+            }
+
+            $this->trace->info(TraceCode::BATCH_SERVICE_UPDATE_MIQ_CREATE_RESPONSE, [
+                    'response'    =>  $parser->getMaskedEntryForLogging($entry),
+                ]
+            );
+
+            return $entry;
+        });
+    }
+
     protected function createUser(string $email, string $businessName, string $onlyDs = null, string $contactMobile = null)
     {
         $confirm_token = gen_uuid();
@@ -314,6 +500,16 @@ class Core extends Base\Core
         if(empty($feeBearer) === false)
         {
             $merchant->setFeeBearer($feeBearer);
+        }
+
+        $this->repo->saveOrFail($merchant);
+    }
+
+    private function updateFeeModel(MerchantEntity $merchant, array $input): void
+    {
+        if(strtolower($input[Header::MIQ_FEE_MODEL]) != 'na')
+        {
+            $merchant->setFeeModel($input[Header::MIQ_FEE_MODEL]);
         }
 
         $this->repo->saveOrFail($merchant);
