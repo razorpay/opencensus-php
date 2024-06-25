@@ -60,6 +60,8 @@ class Core extends Base\Core
     const GATEWAY = 'gateway';
     const STATUS  = 'status';
     const ENABLED = 'enabled';
+    const METHOD_ENABLED = 'method_enabled';
+    const TERMINAL_AVAILABLE = 'terminal_available';
 
     const SET_DEFAULT_METHODS_LOCK_TIMEOUT        = 0.07;  //seconds
 
@@ -641,6 +643,71 @@ class Core extends Base\Core
                 UpiType::INTENT => $recurringUpiTerminals->isPay(),
             ];
         }
+    }
+
+    public function getMethodsForSubscriptionSettings(Merchant\Entity $merchant, $method): array
+    {
+        $methodsEnabled = $this->getMethods($merchant);
+
+        $data = [];
+        $data[$method][self::METHOD_ENABLED] = 0;
+        $data[$method][self::TERMINAL_AVAILABLE] = 0;
+
+        if($method === 'card')
+        {
+            $data[$method][self::TERMINAL_AVAILABLE] = 1; // for card always keep terminal available as true by default
+            if (($methodsEnabled->isCreditCardEnabled() === true) or ($methodsEnabled->isPrepaidCardEnabled() === true)
+                    or ($methodsEnabled->isDebitCardEnabled() === true))
+            {
+                $data[$method][self::METHOD_ENABLED] = 1;
+            }
+        }
+        else if ($method === 'emandate')
+        {
+            if ($methodsEnabled->isEmandateEnabled() === true)
+            {
+                $data[$method][self::METHOD_ENABLED] = 1;
+            }
+
+            if($this->IsEmandateTerminalAvailable($merchant) === true)
+            {
+                $data[$method][self::TERMINAL_AVAILABLE] = 1;
+            }
+        }
+        else if ($method === 'upi')
+        {
+            if ($methodsEnabled->isUpiEnabled() === true)
+            {
+                $data[$method][self::METHOD_ENABLED] = 1;
+            }
+
+            $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchant->getId());
+
+            if (empty($recurringUpiTerminals) === false)
+            {
+                $data[$method][self::TERMINAL_AVAILABLE] = 1;
+            }
+        }
+
+        return $data;
+    }
+
+    protected function IsEmandateTerminalAvailable(Merchant\Entity $merchant): bool
+    {
+        $authTypes = Payment\AuthType::getAuthTypeForMethod(Payment\Method::EMANDATE);
+
+        foreach ($authTypes as $authType)
+        {
+            $applicableEmandateTerminals = $this->repo
+                ->terminal
+                ->getEmandateTerminalsForMerchantAndSharedMerchant($merchant, $authType);
+
+            if(empty($applicableEmandateTerminals) === false)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function addRecurringEmandateToMethodsIfApplicable(

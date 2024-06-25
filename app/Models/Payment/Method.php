@@ -97,6 +97,12 @@ class Method
         self::WALLET,
     ];
 
+    public static $subscriptionsDomesticMethods = [
+        self::CARD,
+        self::EMANDATE,
+        self::UPI
+    ];
+
     protected static $asynchronous = [
         self::UPI,
     ];

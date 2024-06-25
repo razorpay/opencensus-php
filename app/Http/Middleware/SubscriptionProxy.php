@@ -16,6 +16,8 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\RequestContextV2;
+use RZP\Models\Payment\Method as PaymentMethods;
+use RZP\Models\Merchant\Methods\Core as MethodsCore;
 
 class SubscriptionProxy
 {
@@ -36,6 +38,12 @@ class SubscriptionProxy
      * @var RequestContextV2
      */
     protected $reqCtx;
+
+    const NAME = 'name';
+
+    const SETTINGS_ENABLED = 'setting_enabled';
+
+    const METHOD_ENABLED = 'method_enabled';
 
     public function __construct(Application $app)
     {
@@ -88,6 +96,22 @@ class SubscriptionProxy
             return $next($request);
         }
 
+        $body = $this->getRequestBody($request);
+
+        $response = $this->preProcessSubscriptionsSettings($body);
+
+        if(empty($response) === false)
+        {
+            return ApiResponse::json($response, 400);
+        }
+
+        $response = $this->preProcessSubscriptionsCreate($body);
+
+        if(empty($response) === false)
+        {
+            return ApiResponse::json($response, 400);
+        }
+
         $url = $request->path();
 
         $body = [];
@@ -105,8 +129,6 @@ class SubscriptionProxy
         $headers = $this->getHeaders($request);
 
         $method = $request->method();
-
-        $body = $this->getRequestBody($request);
 
         $this->trace->info(TraceCode::SUBSCRIPTION_SERVICE_PROXY_REQUEST, [
             'request'      => $request->path(),
@@ -206,6 +228,8 @@ class SubscriptionProxy
             'code' => $code,
             'body' => $body,
         ]);
+
+        $this->processGetSubscriptionsSettingsResponse($body);
 
         return ApiResponse::json($body, $code);
     }
@@ -338,5 +362,116 @@ class SubscriptionProxy
         }
 
         return false;
+    }
+
+    protected function preProcessSubscriptionsSettings($input): array
+    {
+        $response = [];
+        if (($this->route->getCurrentRouteName() === 'subscription_settings') and ($input[self::SETTINGS_ENABLED] === '1') and (isset($input[self::NAME]) === true))
+        {
+            $merchant = $this->ba->getMerchant();
+            // proceed only for india merchants
+            if(($merchant->getCountry() === 'IN') and (in_array($input[self::NAME], PaymentMethods::$subscriptionsDomesticMethods, true) === true))
+            {
+                $methodData = (new MethodsCore())->getMethodsForSubscriptionSettings($merchant, $input[self::NAME]);
+                $this->trace->info(TraceCode::SUBSCRIPTION_TERMINAL_AND_METHOD_DETAILS, [
+                    'Method And Terminal Details'    => $methodData,
+                    'merchant'                       => $merchant
+                ]);
+                [$methodEnabled, $terminalAvailable] = $this->checkMethodAndTerminalAvailability($methodData, $input[self::NAME]);
+                return $this->buildMethodsResponse($methodEnabled, $terminalAvailable, $input, $merchant);
+            }
+        }
+        return $response;
+    }
+
+    protected function processGetSubscriptionsSettingsResponse(&$body)
+    {
+        if (($this->route->getCurrentRouteName() === 'subscription_settings_get') and ((empty($body) === false) and (isset($body['items']) === true)))
+        {
+            $merchant = $this->ba->getMerchant();
+            $modifiedItems = [];
+            foreach ($body['items'] as $item)
+            {
+                $method = $item[self::NAME];
+                $item[self::METHOD_ENABLED] = '1';
+                // check terminal & method enablement for India merchants & domestic methods
+                if(($merchant->getCountry() === 'IN') and (in_array($method, PaymentMethods::$subscriptionsDomesticMethods, true) === true))
+                {
+                    $methodData = (new MethodsCore())->getMethodsForSubscriptionSettings($merchant, $method);
+                    $this->trace->info(TraceCode::SUBSCRIPTION_TERMINAL_AND_METHOD_DETAILS, [
+                        'Method And Terminal Details'    => $methodData,
+                        'merchant'                       => $merchant
+                    ]);
+                    [$methodEnabled, $terminalAvailable] = $this->checkMethodAndTerminalAvailability($methodData, $method);
+                    if(($methodEnabled === false) or ($terminalAvailable === false)){
+                        $item[self::METHOD_ENABLED] = '0';
+                    }
+                }
+                $modifiedItems [] = $item;
+            }
+            $body['items'] = $modifiedItems;
+        }
+    }
+
+    protected function preProcessSubscriptionsCreate($input): array
+    {
+        $response = [];
+        if ($this->route->getCurrentRouteName() === 'subscription_create')
+        {
+            $merchant = $this->ba->getMerchant();
+            // proceed only for india merchants
+            if($merchant->getCountry() === 'IN')
+            {
+                foreach (PaymentMethods::$subscriptionsDomesticMethods as $method)
+                {
+                    $methodData = (new MethodsCore())->getMethodsForSubscriptionSettings($merchant, $method);
+                    $this->trace->info(TraceCode::SUBSCRIPTION_TERMINAL_AND_METHOD_DETAILS, [
+                        'Method & Terminal Details'      => $methodData,
+                        'merchant'                       => $merchant
+                    ]);
+                    [$methodEnabled, $terminalAvailable] = $this->checkMethodAndTerminalAvailability($methodData, $method);
+                    if(($methodEnabled === true) and ($terminalAvailable === true))
+                    {
+                        return $response;
+                    }
+                }
+                return $this->buildErrorRsp();
+            }
+        }
+        return $response;
+    }
+
+    protected function checkMethodAndTerminalAvailability($methodData, $method): array
+    {
+        $methodEnabled = ((isset($methodData[$method][MethodsCore::METHOD_ENABLED])) and ($methodData[$method][MethodsCore::METHOD_ENABLED] === 1));
+        $terminalAvailable = ((isset($methodData[$method][MethodsCore::TERMINAL_AVAILABLE])) and ($methodData[$method][MethodsCore::TERMINAL_AVAILABLE] === 1));
+        return [$methodEnabled, $terminalAvailable];
+    }
+
+    protected function buildMethodsResponse($methodEnabled, $terminalAvailable, $input, $merchant): array
+    {
+        $response = [];
+
+        if(($methodEnabled === false) or ($terminalAvailable === false))
+        {
+            $this->trace->info(TraceCode::SUBSCRIPTION_TERMINAL_OR_METHOD_NOT_ENABLED, [
+                'input'             => $input,
+                'merchant'          => $merchant,
+                'methodEnabled'     => $methodEnabled,
+                'terminalAvailable' => $terminalAvailable
+            ]);
+            return $this->buildErrorRsp();
+        }
+
+        return $response;
+    }
+
+    protected function buildErrorRsp(): array
+    {
+        $response = [];
+        $response['error']['code']  = 'BAD_REQUEST_METHOD_NOT_ENABLED';
+        $response['error']['description']  = 'There is no recurring payment method enabled. Please visit Subscriptions Settings tab to raise a request.';
+        return $response;
     }
 }
