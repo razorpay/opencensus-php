@@ -22,6 +22,8 @@ class Validator extends Base\Validator
 
     protected static $allowedStatus = [
         OfflinePayment\Status::CAPTURED,
+        OfflinePayment\Status::PENDING,
+        OfflinePayment\Status::FAILED,
     ];
 
     protected static $hdfcEcollectRules = [
@@ -40,6 +42,7 @@ class Validator extends Base\Validator
         OfflinePayment\Entity::PAYMENT_TIMESTAMP     => 'required|epoch',
         OfflinePayment\Entity::ADDITIONAL_INFO       => 'nullable|array',
         OfflinePayment\Entity::CLIENT_CODE           => 'required|string',
+        OfflinePayment\Entity::SOURCE                => 'sometimes|string|in:file,callback',
     ];
 
 

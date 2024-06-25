@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::CHALLAN_NUMBER              => 'required|string',
         Entity::AMOUNT                      => 'required|string',
         Entity::MODE                        => 'required|string',
-        Entity::STATUS                      => 'required|in:captured',
+        Entity::STATUS                      => 'required|in:captured,failed,pending',
         Entity::DESCRIPTION                 => 'nullable|string',
         Entity::BANK_REFERENCE_NUMBER       => 'nullable|string',
         Entity::PAYMENT_INSTRUMENT_DETAILS  => 'sometimes|notes',
@@ -30,6 +30,7 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_INFO             => 'nullable|array',
         Entity::CLIENT_CODE                 => 'required|string',
         Entity::CURRENCY                    => 'required|in:INR',
+        Entity::SOURCE                      => 'sometimes|string|in:file,callback',
     ];
 
     public static $OfflinePaymentRules = [
@@ -45,9 +46,18 @@ class Validator extends Base\Validator
         'payment_time'                      => 'required|string',
         'additional_info'                   => 'sometimes|string',
         'client_code'                       => 'sometimes|string',
+        'source'                            => 'sometimes|string|in:file,callback',
     ];
 
 
+
+    protected static $allowedModesForHdfc = [
+        OfflinePayment\Mode::CASH,
+        OfflinePayment\Mode::CHEQUE,
+        OfflinePayment\Mode::DD,
+        OfflinePayment\Mode::BC,
+        OfflinePayment\Mode::HFT,
+    ];
 
     protected function validateMode($attribute, $mode)
     {
@@ -63,10 +73,12 @@ class Validator extends Base\Validator
     public function validateOfflineStatus(string $status, string $inputStatus)
     {
         switch ($status) {
+            case 'paid':
             case 'processed':
                 $status = OfflinePayment\Status::CAPTURED;
                 break;
 
+            case 'return':
             case 'failed':
                 $status = OfflinePayment\Status::FAILED;
                 break;
@@ -130,6 +142,14 @@ class Validator extends Base\Validator
                 throw new BadRequestValidationFailureException('invalid mode: ' . $inputMode, null, null);
         }
         return $mode;
+    }
+
+    public function validateModeForHdfc($mode)
+    {
+        if (in_array($mode,self::$allowedModesForHdfc , true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Mode: ' . $mode, null);
+        }
     }
 
 }

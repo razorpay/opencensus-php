@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     //PID is payer_instrument_details , PD is payer_details
     const ID                           = 'id';
     const CHALLAN_NUMBER               = 'challan_number';
+    const CHALLAN_NO                   = 'challan_no';
     const AMOUNT                       = 'amount';
     const MODE                         = 'mode';
     const STATUS                       = 'status';
@@ -54,6 +55,12 @@ class Entity extends Base\PublicEntity
 
     const CHALLAN_LENGTH = 40;
 
+    // SOURCE to identify offline_payments entity creation via Api or Batch
+
+    const SOURCE              = 'source';
+    const FILE                = 'file';
+    const CALLBACK            = 'callback';
+
     // Indicates whether the bank transfer corresponds
     // to an active virtual account on our side. If
     // false, this transfer will need to be refunded
@@ -62,8 +69,6 @@ class Entity extends Base\PublicEntity
     const ERROR             = 'error';
     const SUCCESS           = 'success';
     const AUTH              = 'auth';
-
-
 
     protected $fillable = [
         self::CHALLAN_NUMBER,
@@ -76,7 +81,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::PAYMENT_TIMESTAMP,
         self::PAYMENT_INSTRUMENT_DETAILS,
-        self::PAYER_DETAILS
+        self::PAYER_DETAILS,
+        self::SOURCE
     ];
 
     protected $public = [
@@ -90,7 +96,8 @@ class Entity extends Base\PublicEntity
         self::CHALLAN_NUMBER,
         self::PAYMENT_TIMESTAMP,
         self::PAYMENT_INSTRUMENT_DETAILS,
-        self::PAYER_DETAILS
+        self::PAYER_DETAILS,
+        self::SOURCE
     ];
 
 
@@ -108,7 +115,8 @@ class Entity extends Base\PublicEntity
         self::CLIENT_CODE,
         self::PAYMENT_TIMESTAMP,
         self::PAYMENT_INSTRUMENT_DETAILS,
-        self::PAYER_DETAILS
+        self::PAYER_DETAILS,
+        self::SOURCE
     ];
 
 
@@ -120,7 +128,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::MODE,
     ];
-
 
     protected $entity = Constants\Entity::OFFLINE_PAYMENT;
 
@@ -159,7 +166,9 @@ class Entity extends Base\PublicEntity
         return $this->morphOne(Transaction\Entity::class, 'source', 'type', 'entity_id');
     }
 
-    // ----------------------- Public Setters ----------------------------------
+    // ------------------------------ Associations END ------------------------------
+    // --------------------------------------------------------------------------------
+    // ------------------------------ Public Setters ----------------------------------
 
     public function setPublicVirtualAccountIdAttribute(array & $array)
     {
@@ -264,6 +273,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UNEXPECTED_REASON);
     }
 
+    public function getSource()
+    {
+        return $this->getAttribute(self::SOURCE);
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     public function setAuth($auth)
@@ -281,5 +295,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UNEXPECTED_REASON, $unexpectedReason);
     }
 
+    public function setSource($source)
+    {
+        return $this->setAttribute(self::SOURCE,$source);
+    }
 
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
+use DB;
 use Hash;
 use Cache;
 use Queue;
@@ -16,6 +17,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
+use RZP\Models\OfflinePayment;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payout\Metric;
 use RZP\Models\VirtualAccount;
@@ -3757,6 +3759,7 @@ class VirtualAccountTest extends TestCase
         $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
 
         $this->startTest($testData);
+
     }
 
     public function testValidateOfflineChallanPresentInNotesWithExpirySetting()
@@ -3814,7 +3817,7 @@ class VirtualAccountTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        return  $this->startTest($testData);
+        $this->startTest($testData);
     }
 
     public function testValidateOfflineChallanPresentInNotesWithExpirySettingNegative()
@@ -3873,19 +3876,14 @@ class VirtualAccountTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
 
-        return $this->startTest($testData);
+        $this->startTest($testData);
     }
 
     public function testOfflinePaymentCreditWithMerchantChallan()
     {
-        $challanNumber = $this->testValidateOfflineChallanPresentInNotes()['challan_no'];
+        $this->testValidateOfflineChallanPresentInNotes();
 
-        $this->testData[__FUNCTION__]['response'] =   [
-            'content' => [
-                'plan_name'           => 'TestPlan1',
-                'payment_method'      => 'offline',
-            ],
-        ];
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
 
         $content = $this->createPricingPlan();
 
@@ -3939,69 +3937,27 @@ class VirtualAccountTest extends TestCase
         ];
 
         $this->startTest();
+
     }
 
-    public function testOfflinePaymentCreditForMerchantChallanWithExpirySuccess(){
-
-        $challanNumber = $this->testValidateOfflineChallanPresentInNotesWithExpirySetting()['challan_no'];
-
-        $content = $this->createPricingPlan();
-
-        $this->testData[__FUNCTION__]['request'] =  [
-            'method'  => 'post',
-            'content' => [
-                'payment_method'      => 'offline',
-            ],
-        ];
-
-        $this->testData[__FUNCTION__]['response'] =   [
-            'content' => [
-                'plan_name'           => 'TestPlan1',
-                'payment_method'      => 'offline',
-            ],
-        ];
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
-
-        $this->ba->adminAuth();
-
-        $resp = $this->startTest();
-
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
-
-        $paymentData = [
-            'challan_no' =>  $challanNumber,
-            'amount' => 1000,
-            'mode' => 'cash',
-            'status' => 'processed',
-            'payment_date' => '01-sep-2024',
-            'payment_time' => '21:30:45',
-            'client_code'  =>  '12345678',
-        ];
-
-        $this->testData[__FUNCTION__]['request'] =  [
-            'url'     => '/credit/ecollect/offline',
-            'method'  => 'post',
-            'content' => $paymentData,
-        ];
-
-        $this->ba->hdfcOtcAuth();
-
-        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
-
-        $this->testData[__FUNCTION__]['response'] =   [
-            'content' => [
-                'challan_no' => $challanNumber,
-                'status' => 0
-            ],
-        ];
-
-        $this->startTest();
-    }
-
-    public function testOfflinePaymentCreditForMerchantChallanWithExpiryFailure()
+    public function testValidateChallanWithDuplicateOfflinePaymentCredit()
     {
-        $challanNumber = $this->testValidateOfflineChallanPresentInNotesWithExpirySettingNegative()['challan_no'];
+        $this->testOfflinePaymentCreditWithMerchantChallan();
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->startTest($this->testData);
+    }
+
+    public function testOfflinePaymentCreditWithOtherBankChequeByApi()
+    {
+        $this->testValidateOfflineChallan();
+
+        $offlineChallans = DB::select('select * from offline_challans')[0];
+
+        $challanNumber = $offlineChallans->challan_number;
 
         $content = $this->createPricingPlan();
 
@@ -4030,11 +3986,131 @@ class VirtualAccountTest extends TestCase
         $paymentData = [
             'challan_no' =>  $challanNumber,
             'amount' => 1000,
-            'mode' => 'cash',
+            'mode'   => 'other bank cheque',
             'status' => 'processed',
             'payment_date' => '01-sep-2024',
             'payment_time' => '21:30:45',
-            'client_code'  =>  '12345678',
+            'client_code'  => '12345678',
+            'source'       =>  'callback',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] = [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 1,
+                'error' => [
+                    'code' => 'BAD_REQ_ER',
+                    'description' =>  'Invalid Mode: othcheque',
+                    'field' => '',
+                    'source' =>  'business',
+                    'step' => null,
+                    'reason' => 'Invalid Mode: othcheque',
+                    'metadata' => [],
+                ],
+            ],
+        ];
+
+        $this->startTest();
+
+    }
+
+    public function testOfflinePaymentCreditWithOtherBankChequeByBatch()
+    {
+        $this->testValidateOfflineChallan();
+
+        $offlineChallans = DB::select('select * from offline_challans')[0];
+
+        $challanNumber = $offlineChallans->challan_number;
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData =  [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode'   => 'other bank cheque',
+            'status' => 'paid',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  => '12345678',
+            'source'       =>  'file',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+
+        $offlinePayment = DB::select('select * from offline_payments')[0];
+
+        // Verifying new added  column SOURCE in offline_payments entity.
+
+        $this->assertEquals('captured', $offlinePayment->status);
+
+        $this->assertEquals('file', $offlinePayment->source);
+
+    }
+
+    public function testDuplicateOfflinePaymentCreditByBatch()
+    {
+        $this->testOfflinePaymentCreditWithMerchantChallan();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
+
+        $paymentData =  [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode'   => 'cash',
+            'status' => 'paid',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  => '12345678',
+            'source'       =>  'file'
         ];
 
         $this->testData[__FUNCTION__]['request'] =  [
@@ -4052,13 +4128,369 @@ class VirtualAccountTest extends TestCase
                 'challan_no' => $challanNumber,
                 'status' => 1,
                 'error' => [
-                    'code'        => 'BAD_REQ_ER',
-                    'description' => 'Challan is not validated',
-                    'source'      =>  'business',
-                    'reason'      =>  'Challan is not validated'
-                ],
+                    'code' =>  "BAD_REQ_ER",
+                    'description' => "OFFLINE_PAYMENT_DUPLICATE_REQUEST",
+                    'reason' => "OFFLINE_PAYMENT_DUPLICATE_REQUEST",
+                ]
             ],
         ];
+
+        $this->startTest();
+
+    }
+
+    public function testFailedOfflinePaymentCreditWithOtherBankChequeByBatch()
+    {
+        $this->testValidateOfflineChallanPresentInNotes();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode'   => 'other bank cheque',
+            'status' => 'return',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  => '12345678',
+            'source'       =>  'file',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+
+        $offlinePayment = DB::select('select * from offline_payments')[0];
+
+        // Verifying newly added column SOURCE in offline_payments entity.
+
+        $this->assertEquals('failed', $offlinePayment->status);
+
+        $this->assertEquals('file', $offlinePayment->source);
+
+    }
+
+    public function testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithExpirySuccessByBatch(){
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotesWithExpirySetting']['request']['content']['challan_no'];
+
+        $requestContent = [
+            'challan_no' => $challanNumber,
+            'amount' => 1000,
+            'mode' => 'other bank dd',
+            'status' => 'return',
+            'payment_date' => '01-apr-2025',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'source' => 'file'
+        ];
+
+        $responseContent = [
+            'challan_no'    => $challanNumber,
+            'status'        => 0,
+            'error'         => null
+        ];
+
+        $this->testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithExpirySuccess($requestContent, $responseContent);
+
+    }
+
+    public function testOfflinePaymentCreditBeforeExpiryForMerchantChallanWithExpirySuccess($functionalPaymentRequest = null, $functionalPaymentResponse = null)
+    {
+
+        $this->testValidateOfflineChallanPresentInNotesWithExpirySetting();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotesWithExpirySetting']['request']['content']['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'source'    => 'callback'
+        ];
+
+        $paymentData = $functionalPaymentRequest ?? $paymentData;
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response']['content']=   $functionalPaymentResponse ??
+             [
+                'challan_no' => $challanNumber,
+                'status' => 0
+             ];
+
+        $this->startTest();
+    }
+
+    public function testOfflinePaymentCreditAfterChallanExpiryWithExpirySuccessByBatch(){
+
+        $requestContent = [
+            'amount' => 1000,
+            'mode' => 'other bank dd',
+            'status' => 'paid',
+            'payment_date' => '01-apr-2025',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'source' => 'file'
+        ];
+
+        $this->testOfflinePaymentCreditAfterChallanExpiryWithExpirySuccess($requestContent);
+
+    }
+    public function testOfflinePaymentCreditAfterChallanExpiryWithExpirySuccess($functionalPaymentRequest = null,
+                                                                                $functionalPaymentResponse = null, $challanNo = null)
+    {
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+        $request = $this->testData['testVirtualAccountMerchantChallanExpirySetting'];
+
+        $request['request']['content'][Constant::VA_EXPIRY_OFFSET_MERCHANT_CHALLAN] = 2089;
+
+        $this->runRequestResponseFlow($request);
+
+        $this->testValidateOfflineChallan();
+
+        $offlineChallans = DB::select('select * from offline_challans')[0];
+
+        $challanNumber = $offlineChallans->challan_number;
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'source'       => 'callback'
+        ];
+
+        $paymentData = $functionalPaymentRequest ?? $paymentData;
+
+        $paymentData['challan_no'] = $challanNo ?? $challanNumber;
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $nextTenDays =  Carbon::today(Timezone::IST)->addDays(10)->timestamp;
+
+        $fixedTime = (new Carbon())->timestamp($nextTenDays);
+
+        Carbon::setTestNow($fixedTime);
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response']['content'] = $functionalPaymentResponse ??  [
+                'challan_no' => $challanNumber,
+                'status' => 0
+        ];
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testOfflinePaymentCreditForMerchantChallanWithExpiryFailureByBatch()
+    {
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotesWithExpirySettingNegative']['request']['content']['challan_no'];
+
+        $requestContent = [
+            'challan_no' => $challanNumber,
+            'amount' => 1000,
+            'mode' => 'other bank dd',
+            'status' => 'return',
+            'payment_date' => '01-feb-2025',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'source' => 'file'
+        ];
+
+        $responseContent = [
+            'challan_no' => $challanNumber,
+            'status' => 1,
+            'error' => [
+                'code'        => 'BAD_REQ_ER',
+                'description' => OfflinePayment\StatusCode::CHALLAN_NOT_VALIDATED,
+                'source'      =>  'business',
+                'reason'      =>  OfflinePayment\StatusCode::CHALLAN_NOT_VALIDATED
+            ],
+        ];
+
+        $this->testOfflinePaymentCreditForMerchantChallanWithExpiryFailure($requestContent, $responseContent);
+
+    }
+    public function testOfflinePaymentCreditForMerchantChallanWithExpiryFailure($functionalPaymentRequest = null, $functionalPaymentResponse = null)
+    {
+        $this->testValidateOfflineChallanPresentInNotesWithExpirySettingNegative();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotesWithExpirySettingNegative']['request']['content']['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-apr-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'source'    => 'callback'
+        ];
+
+        $paymentData = $functionalPaymentRequest ?? $paymentData;
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $responseContent = [
+            'challan_no' => $challanNumber,
+            'status' => 1,
+            'error' => [
+                'code'        => 'BAD_REQ_ER',
+                'description' => OfflinePayment\StatusCode::CHALLAN_NOT_VALIDATED,
+                'source'      =>  'business',
+                'reason'      =>  OfflinePayment\StatusCode::CHALLAN_NOT_VALIDATED
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response']['content'] = $functionalPaymentResponse ?? $responseContent;
 
         $this->startTest();
     }
@@ -4107,7 +4539,7 @@ class VirtualAccountTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        return $this->startTest($testData);
+        $this->startTest($testData);
     }
 
     public function testValidateOfflineChallanNotPresentInNotes()

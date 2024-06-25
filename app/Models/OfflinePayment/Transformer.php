@@ -31,13 +31,20 @@ class Transformer extends Base\Service
 
         (new JitValidator)->setStrictFalse()->rules(Validator::$OfflinePaymentRules)->caller($this)->validate($input);
 
-        $mode = strtolower($input['mode']);
+        $mode = strtolower($input[Entity::MODE]);
 
-        $mode = $validator->validateOfflineMode($mode, $input['mode']);
+        $mode = $validator->validateOfflineMode($mode, $input[Entity::MODE]);
 
-        $status = strtolower($input['status']);
+        // Validate payment mode if API call is not from Batch service.
 
-        $status = $validator->validateOfflineStatus($status, $input['status']);
+        if($input[Entity::SOURCE] !== Entity::FILE)
+        {
+            $validator->validateModeForHDFC($mode);
+        }
+
+        $status = strtolower($input[Entity::STATUS]);
+
+        $status = $validator->validateOfflineStatus($status, $input[Entity::STATUS]);
 
         $dateArray = explode("-", $input['payment_date']);
         if (strlen($dateArray[1]) > 2) {
@@ -63,17 +70,18 @@ class Transformer extends Base\Service
         $time = Carbon::createFromFormat('d-m-Y H:i:s', $data, Timezone::IST)->getTimestamp();
 
         return [
-            'challan_number' => $input['challan_no'],
-            'amount' => stringify($input['amount']),
-            'mode' => $mode,
-            'status' => $status,
-            'description' => $input['description'] ?? null,
-            'bank_reference_number' => $input['bank_reference_number'] ?? null,
-            'payment_instrument_details' => $input['payment_instrument_details'] ?? '',
-            'payer_details' => $input['payer_details'] ?? '',
-            'payment_timestamp' => $time ?? null,
-            'additional_info' => $input['additional_info'] ?? null,
-            'client_code' => $input['client_code'] ?? null,
+            Entity::CHALLAN_NUMBER => $input[Entity::CHALLAN_NO],
+            Entity::AMOUNT => stringify($input[Entity::AMOUNT]),
+            Entity::MODE => $mode,
+            Entity::STATUS => $status,
+            Entity::DESCRIPTION => $input[Entity::DESCRIPTION] ?? null,
+            Entity::BANK_REFERENCE_NUMBER => $input[Entity::BANK_REFERENCE_NUMBER] ?? null,
+            Entity::PAYMENT_INSTRUMENT_DETAILS => $input[Entity::PAYMENT_INSTRUMENT_DETAILS] ?? '',
+            Entity::PAYER_DETAILS => $input[Entity::PAYER_DETAILS] ?? '',
+            Entity::PAYMENT_TIMESTAMP => $time ?? null,
+            Entity::ADDITIONAL_INFO => $input[Entity::ADDITIONAL_INFO] ?? null,
+            Entity::CLIENT_CODE => $input[Entity::CLIENT_CODE] ?? null,
+            Entity::SOURCE => $input[Entity::SOURCE] ?? Entity::CALLBACK,
         ];
     }
 

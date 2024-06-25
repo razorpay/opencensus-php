@@ -1995,6 +1995,33 @@ return [
         ],
     ],
 
+
+    'testValidateChallanWithDuplicateOfflinePaymentCredit' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST',
+            'content' =>[
+                'challan_no'                => 'aiynuvrpwbhg6161uvrpwbrpwbhg612quvrpwbhg',
+                'client_code'               => '12345678',
+                'identification_id'         => '12345'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'challan_no' => 'aiynuvrpwbhg6161uvrpwbrpwbhg612quvrpwbhg',
+                'identification_id' => '',
+                'currency' =>  'INR',
+                'partial_payment' =>  '',
+                'status' =>  '1',
+                'error' => [
+                    'code'        => 'BAD_REQ_ER',
+                    'description' => 'BAD_REQUEST_PAYMENT_CAPTURE_CLOSED_VIRTUAL_ACCOUNT',
+                ],
+            ],
+        ],
+    ],
+
     'testValidateOfflineChallanPresentInNotesWithExpirySetting' => [
         'request' => [
             'convertContentToString'    => false,

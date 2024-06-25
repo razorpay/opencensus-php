@@ -7237,3 +7237,5 @@ CREATE TABLE notifications (
 ALTER TABLE offline_challans MODIFY COLUMN challan_number VARCHAR(40) ;
 
 ALTER TABLE offline_payments MODIFY COLUMN challan_number VARCHAR(40) ;
+
+ALTER TABLE offline_payments ADD COLUMN source varchar(20) DEFAULT NULL ;

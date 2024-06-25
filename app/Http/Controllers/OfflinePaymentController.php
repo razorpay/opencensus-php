@@ -30,7 +30,7 @@ class OfflinePaymentController extends Controller
         {
             $failureMessage = $e->getMessage();
 
-            return $this->createOfflineResponse($input['challan_number'], $failureMessage, 1);
+            return $this->createOfflineResponse($input[Entity::CHALLAN_NO], $failureMessage, 1);
         }
 
         $errStatus = $this->service()->checkIfChallanExists($request);
@@ -84,7 +84,7 @@ class OfflinePaymentController extends Controller
 
     public function createOfflineResponse(string $challan_num, $failureMessage, $statusCode)
     {
-        $response['challan_no'] = $challan_num;
+        $response[Entity::CHALLAN_NO] = $challan_num;
 
         $response[Entity::STATUS] = $statusCode;
 

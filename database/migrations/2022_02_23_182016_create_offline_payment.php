@@ -69,6 +69,9 @@ class CreateOfflinePayment extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->string(OfflinePayment::SOURCE)
+                ->nullable();
+
             $table->index(OfflinePayment::CHALLAN_NUMBER);
         });
     }

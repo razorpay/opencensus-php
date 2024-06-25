@@ -39,6 +39,8 @@ class Core extends Base\Core
 
         $offlinePayment = (new Entity)->build($input);
 
+        $offlinePayment->setSource($input[Entity::SOURCE]);
+
         $processor = new Processor();
 
         //on basis of challan_number

@@ -1736,6 +1736,8 @@ class Service extends Base\Service
 
         $response['challan_number'] = $input['challan_number'];
 
+        $duplicateOfflinePayment = $this->repo->offline_payment->fetchByChallanNumber($response['challan_number']);
+
         $this->trace->info(TraceCode::OTC_VALIDATION_OFFLINE_CHALLAN,
             [
                 'Challan Number' => $response['challan_number'],
@@ -1751,7 +1753,7 @@ class Service extends Base\Service
             ]);
         }
 
-        if($virtualAccount->isClosed() === true){
+        if($virtualAccount->isClosed() === true and $duplicateOfflinePayment !== null){
             {
                 throw new Exception\BadRequestValidationFailureException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CLOSED_VIRTUAL_ACCOUNT,null,[
