@@ -26,6 +26,7 @@ class Kernel extends HttpKernel {
     protected $middlewareGroups = [
         'web' => [
             \App\Edge\Middleware\EdgeResponseHandler::class,
+            \App\Edge\Middleware\RegionCookieHandler::class,
             \App\Http\Middleware\Cors::class,
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
