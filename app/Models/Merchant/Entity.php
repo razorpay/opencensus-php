@@ -3825,6 +3825,7 @@ class Entity extends Base\PublicEntity
             self::SECOND_FACTOR_AUTH    => $this->getAttribute(self::SECOND_FACTOR_AUTH),
             self::PARENT_ID             => $this->getAttribute(self::PARENT_ID),
             Constants::PARENT_NAME      => null,
+            self::COUNTRY_CODE          => $this->getAttribute(self::COUNTRY_CODE),
         ];
 
         if (empty($attributes[self::PARENT_ID]) === false)

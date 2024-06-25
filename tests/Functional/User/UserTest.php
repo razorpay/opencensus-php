@@ -154,10 +154,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $row = DB::table('merchant_map')
-                    ->where('merchant_id', '=', $merchant['id'])
-                    ->where('entity_id', '=', $adminId)
-                    ->where('entity_type', '=', 'admin')
-                    ->first();
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('entity_id', '=', $adminId)
+            ->where('entity_type', '=', 'admin')
+            ->first();
 
         $this->assertNotNull($row);
     }
@@ -196,10 +196,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id'   => $merchant['id'],
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id'   => $merchant['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::ADMIN_LEAD_PARTNER, $featuresArray);
     }
@@ -236,10 +236,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id'   => $merchant['id'],
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id'   => $merchant['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::REGULAR_TEST_MERCHANT, $featuresArray);
     }
@@ -276,10 +276,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id'   => $merchant['id'],
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id'   => $merchant['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::OPTIMIZER_ONLY_MERCHANT, $featuresArray);
     }
@@ -316,10 +316,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id'   => $merchant['id'],
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id'   => $merchant['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::ONLY_DS, $featuresArray);
     }
@@ -452,10 +452,10 @@ class UserTest extends TestCase
         );
 
         $featuresArray = $this->getDbEntity('feature',
-                                                [
-                                                    'entity_id' => $merchantAttribute->getMerchantId(),
-                                                    'entity_type' => 'merchant'
-                                                ])->pluck('name')->toArray();
+            [
+                'entity_id' => $merchantAttribute->getMerchantId(),
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
     }
@@ -466,14 +466,14 @@ class UserTest extends TestCase
             'request' => [
                 'cookies' => [
                     'rzp_utm' => json_encode([
-                                                 'attributions' => [
-                                                     [
-                                                         Constants::UTM_SOURCE   => 'Facebook',
-                                                         Constants::UTM_MEDIUM   => 'CPC',
-                                                         Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021'
-                                                     ]
-                                                 ]
-                                             ])
+                        'attributions' => [
+                            [
+                                Constants::UTM_SOURCE   => 'Facebook',
+                                Constants::UTM_MEDIUM   => 'CPC',
+                                Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021'
+                            ]
+                        ]
+                    ])
                 ]
             ]
         ];
@@ -497,10 +497,10 @@ class UserTest extends TestCase
         );
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id' => $merchantAttribute->getMerchantId(),
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id' => $merchantAttribute->getMerchantId(),
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
     }
@@ -675,14 +675,14 @@ class UserTest extends TestCase
             'request' => [
                 'cookies' => [
                     'rzp_utm' => json_encode([
-                                                 'attributions' => [
-                                                     [
-                                                         Constants::UTM_SOURCE   => 'Facebook',
-                                                         Constants::UTM_MEDIUM   => 'CPC',
-                                                         Constants::UTM_CAMPAIGN => 'facebook_RZPx_CA_Conv_NewAcquisItion_India_Entrepreneurship_2555_M_All_07092021'
-                                                     ]
-                                                 ]
-                                             ])
+                        'attributions' => [
+                            [
+                                Constants::UTM_SOURCE   => 'Facebook',
+                                Constants::UTM_MEDIUM   => 'CPC',
+                                Constants::UTM_CAMPAIGN => 'facebook_RZPx_CA_Conv_NewAcquisItion_India_Entrepreneurship_2555_M_All_07092021'
+                            ]
+                        ]
+                    ])
                 ]
             ]
         ];
@@ -706,10 +706,10 @@ class UserTest extends TestCase
         );
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id' => $merchantAttribute->getMerchantId(),
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id' => $merchantAttribute->getMerchantId(),
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
     }
@@ -720,8 +720,8 @@ class UserTest extends TestCase
             'request' => [
                 'cookies' => [
                     'rzp_utm' => json_encode([
-                                                 'website' => 'razorpay.com/x/current-accounts/'
-                                             ])
+                        'website' => 'razorpay.com/x/current-accounts/'
+                    ])
                 ]
             ]
         ];
@@ -734,10 +734,10 @@ class UserTest extends TestCase
         ]);
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id' => $merchantAttribute->getMerchantId(),
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id' => $merchantAttribute->getMerchantId(),
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
 
@@ -758,8 +758,8 @@ class UserTest extends TestCase
             'request' => [
                 'cookies' => [
                     'rzp_utm' => '"' . json_encode([
-                        'final_page' => 'razorpay.com/x/current-accounts/'
-                    ]) . '"'
+                            'final_page' => 'razorpay.com/x/current-accounts/'
+                        ]) . '"'
                 ]
             ]
         ];
@@ -813,10 +813,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $row = DB::table('merchant_map')
-                 ->where('merchant_id', '=', $merchant['id'])
-                 ->where('entity_id', '=', $adminId)
-                 ->where('entity_type', '=', 'admin')
-                 ->first();
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('entity_id', '=', $adminId)
+            ->where('entity_type', '=', 'admin')
+            ->first();
 
         $this->assertNotNull($row);
 
@@ -854,10 +854,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $featuresArray = $this->getDbEntity('feature',
-                                            [
-                                                'entity_id' => $merchant['id'],
-                                                'entity_type' => 'merchant'
-                                            ])->pluck('name')->toArray();
+            [
+                'entity_id' => $merchant['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
 
@@ -894,9 +894,9 @@ class UserTest extends TestCase
     protected function mockDCS()
     {
         $dcsMock = $this->getMockBuilder(DCSService::class)
-                        ->setConstructorArgs([$this->app])
-                        ->onlyMethods(['editFeature'])
-                        ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['editFeature'])
+            ->getMock();
 
         $this->app->instance('dcs', $dcsMock);
 
@@ -907,14 +907,14 @@ class UserTest extends TestCase
     protected function mockHubSpotClient($methodName, $times = 1)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
-                            ->setConstructorArgs([$this->app])
-                            ->setMethods([$methodName])
-                            ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods([$methodName])
+            ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
 
         $hubSpotMock->expects($this->exactly($times))
-                    ->method($methodName);
+            ->method($methodName);
     }
 
     public function testGet()
@@ -1478,6 +1478,62 @@ class UserTest extends TestCase
 
         Mail::assertQueued(Login::class, function ($mail)
         {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('orgHostname', $viewData);
+            $this->assertArrayHasKey('browserDetails', $viewData);
+            $this->assertArrayHasKey('loginAt', $viewData);
+            $this->assertEquals('emails.user.login', $mail->view);
+
+            return true;
+        });
+
+        $this->assertFalse(isset($response['invitations']));
+        $this->assertFalse(isset($response['settings']));
+        $this->assertFalse(isset($response['merchants'][0]['methods']));
+    }
+
+    public function testLoginWithCountryCode()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
+
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::ORG_ID => '100000razorpay',
+            MerchantEntity::COUNTRY_CODE => 'SG',
+        ]);
+
+        $mappingData = [
+            'user_id' => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role' => 'owner',
+            'product' => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email' => $user['email'],
+            'password' => 'hello123',
+            'captcha_disable' => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details' => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('IN', $response['merchants'][0]['country_code']);
+        $this->assertEquals('SG', $response['merchants'][1]['country_code']);
+
+        Mail::assertQueued(Login::class, function ($mail) {
             $viewData = $mail->viewData;
 
             $this->assertArrayHasKey('orgHostname', $viewData);
@@ -2245,14 +2301,14 @@ class UserTest extends TestCase
         ];
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
 
         $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
 
@@ -2722,9 +2778,9 @@ class UserTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -2784,8 +2840,8 @@ class UserTest extends TestCase
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
 
         $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
-                                  ->makePartial()
-                                  ->shouldAllowMockingProtectedMethods();
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
         $this->app->instance('losService', $losServiceMock);
         $this->mockCreateApplicationRequestOnLOSServiceWithError($losServiceMock);
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
@@ -2834,9 +2890,9 @@ class UserTest extends TestCase
 
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -2896,8 +2952,8 @@ class UserTest extends TestCase
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
 
         $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
-                                  ->makePartial()
-                                  ->shouldAllowMockingProtectedMethods();
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
         $this->app->instance('losService', $losServiceMock);
         $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
@@ -4304,10 +4360,10 @@ class UserTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $row = DB::table('merchant_map')
-                 ->where('merchant_id', '=', $merchant['id'])
-                 ->where('entity_id', '=', $adminId)
-                 ->where('entity_type', '=', 'admin')
-                 ->first();
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('entity_id', '=', $adminId)
+            ->where('entity_type', '=', 'admin')
+            ->first();
 
         $this->assertNotNull($row);
     }
@@ -4504,8 +4560,8 @@ class UserTest extends TestCase
         );
 
         $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
-                                  ->makePartial()
-                                  ->shouldAllowMockingProtectedMethods();
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
         $this->app->instance('losService', $losServiceMock);
         $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
@@ -4761,20 +4817,20 @@ class UserTest extends TestCase
     public function testOauthLoginInvalidateContactDetails()
     {
         $user = $this->fixtures->create('user', ['id'             => 'FL0nl7kME8j3Dd',
-                                                 'email'          => 'hello123@gmail.com',
-                                                 'password'       => 'hello123',
-                                                 'contact_mobile' => '9999999999',
-                                                 'confirm_token'  => 'confirm_token']);
+            'email'          => 'hello123@gmail.com',
+            'password'       => 'hello123',
+            'contact_mobile' => '9999999999',
+            'confirm_token'  => 'confirm_token']);
 
         $merchant = $user->getMerchantEntity();
 
         $merchantDetails = $this->fixtures->create('merchant_detail',
-                                                   ['merchant_id'        => $merchant->getId(),
-                                                    'business_name'      => $merchant['name'],
-                                                    'contact_name'       => $merchant['name'],
-                                                    'business_type'      => '1',
-                                                    'transaction_volume' => '1',
-                                                    'contact_mobile'     => '9999999999']);
+            ['merchant_id'        => $merchant->getId(),
+                'business_name'      => $merchant['name'],
+                'contact_name'       => $merchant['name'],
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_mobile'     => '9999999999']);
 
         $testData =   &$this->testData['testOauthLoginInvalidatePassword'];
 
@@ -4807,23 +4863,23 @@ class UserTest extends TestCase
     public function testOauthLoginInvalidateContactDetailsL2Submitted()
     {
         $user = $this->fixtures->create('user', ['id'             => 'FL0nl7kME8j3Dd',
-                                                 'email'          => 'hello123@gmail.com',
-                                                 'password'       => 'hello123',
-                                                 'contact_mobile' => '9999999999',
-                                                 'confirm_token'  => 'confirm_token']);
+            'email'          => 'hello123@gmail.com',
+            'password'       => 'hello123',
+            'contact_mobile' => '9999999999',
+            'confirm_token'  => 'confirm_token']);
 
         $merchant = $user->getMerchantEntity();
 
         $this->fixtures->edit('merchant',$merchant->getId(),['name'=>'hello world']);
 
         $merchantDetails = $this->fixtures->create('merchant_detail',
-                                                   ['merchant_id'        => $merchant->getId(),
-                                                    'business_name'      => 'hello world',
-                                                    'contact_name'       => 'hello',
-                                                    'business_type'      => '1',
-                                                    'transaction_volume' => '1',
-                                                    'contact_mobile'     => '9999999999',
-                                                    'activation_form_milestone'=>'L2']);
+            ['merchant_id'        => $merchant->getId(),
+                'business_name'      => 'hello world',
+                'contact_name'       => 'hello',
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_mobile'     => '9999999999',
+                'activation_form_milestone'=>'L2']);
 
         $testData =   &$this->testData['testOauthLoginInvalidatePassword'];
 
@@ -5179,16 +5235,16 @@ class UserTest extends TestCase
     public function testUserEnable2FaAsCriticalAction()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-        [
-            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
-            UserEntity::CONTACT_MOBILE          => '9999999999',
-            UserEntity::SECOND_FACTOR_AUTH      => 0,
-        ]);
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+            ]);
 
         $this->fixtures->edit('merchant', '10000000000000',
-        [
-            MerchantEntity::SECOND_FACTOR_AUTH => 0
-        ]);
+            [
+                MerchantEntity::SECOND_FACTOR_AUTH => 0
+            ]);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setCOnstructorArgs([$this->app])
@@ -5219,16 +5275,16 @@ class UserTest extends TestCase
     public function testUserDisable2FaAsCriticalAction()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-        [
-            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
-            UserEntity::CONTACT_MOBILE          => '9999999999',
-            UserEntity::SECOND_FACTOR_AUTH      => 1,
-        ]);
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 1,
+            ]);
 
         $this->fixtures->edit('merchant', '10000000000000',
-        [
-            MerchantEntity::SECOND_FACTOR_AUTH => 0
-        ]);
+            [
+                MerchantEntity::SECOND_FACTOR_AUTH => 0
+            ]);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setCOnstructorArgs([$this->app])
@@ -5420,12 +5476,12 @@ class UserTest extends TestCase
     public function testFailedUserEnable2faMobNotPresent()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-        [
-            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
-            UserEntity::CONTACT_MOBILE          => null,
-            UserEntity::SECOND_FACTOR_AUTH      => 0,
-            UserEntity::PASSWORD                => 'hello123',
-        ]);
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+                UserEntity::CONTACT_MOBILE          => null,
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+            ]);
 
         $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
 
@@ -5487,11 +5543,11 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
 
         $user = $this->fixtures->create('user', [
-                    'password'                => 'hello123',
-                    'second_factor_auth'      => true,
-                    'contact_mobile'          => '9999999999',
-                    'contact_mobile_verified' => true,
-                ]);
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -5517,11 +5573,11 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
 
         $user = $this->fixtures->create('user', [
-                    'password'                => 'hello123',
-                    'second_factor_auth'      => false,
-                    'contact_mobile'          => '9999999999',
-                    'contact_mobile_verified' => true,
-                ]);
+            'password'                => 'hello123',
+            'second_factor_auth'      => false,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
 
         $merchant = $this->fixtures->create('merchant', [
             'second_factor_auth' => true,
@@ -6014,7 +6070,7 @@ class UserTest extends TestCase
         $user = $this->fixtures->create('user', [
             'password'         => 'hello123',
             'account_locked'   => true,
-            ]);
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -6041,7 +6097,7 @@ class UserTest extends TestCase
             'second_factor_auth'      => true,
             'contact_mobile'          => '9999999999',
             'contact_mobile_verified' => false,
-            ]);
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -6166,7 +6222,7 @@ class UserTest extends TestCase
             'contact_mobile'          => '9999999999',
             'contact_mobile_verified' => false,
             'account_locked'          => false,
-            ]);
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -6191,7 +6247,7 @@ class UserTest extends TestCase
             'contact_mobile'          => '9999999999',
             'contact_mobile_verified' => false,
             'account_locked'          => false,
-            ]);
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -6244,10 +6300,10 @@ class UserTest extends TestCase
             ]);
 
         $merchantId = $user
-                        ->merchants()
-                        ->get()
-                        ->pluck('id')
-                        ->toArray()[0];
+            ->merchants()
+            ->get()
+            ->pluck('id')
+            ->toArray()[0];
 
         $apiKey = 'rzp_live_'.$merchantId;
 
@@ -6276,10 +6332,10 @@ class UserTest extends TestCase
             ]);
 
         $merchantId = $user
-                        ->merchants()
-                        ->get()
-                        ->pluck('id')
-                        ->toArray()[0];
+            ->merchants()
+            ->get()
+            ->pluck('id')
+            ->toArray()[0];
 
         $apiKey = 'rzp_live_'.$merchantId;
 
@@ -6303,22 +6359,22 @@ class UserTest extends TestCase
     public function testTriggerTwoFaOtpWithTwoFaSetupForMobileUsers()
     {
         $user = $this->fixtures->create('user',
-                                        [
-                                            'contact_mobile'            => '9123456788',
-                                            'contact_mobile_verified'   => true,
-                                            'signup_via_email'          => 0,
-                                            'email'                     => null,
-                                        ]);
+            [
+                'contact_mobile'            => '9123456788',
+                'contact_mobile_verified'   => true,
+                'signup_via_email'          => 0,
+                'email'                     => null,
+            ]);
 
         $this->fixtures->edit('org', '100000razorpay', [
             'second_factor_auth_mode'    => 'email',
         ]);
 
         $merchantId = $user
-                        ->merchants()
-                        ->get()
-                        ->pluck('id')
-                        ->toArray()[0];
+            ->merchants()
+            ->get()
+            ->pluck('id')
+            ->toArray()[0];
 
         $apiKey = 'rzp_live_' . $merchantId;
 
@@ -6329,10 +6385,10 @@ class UserTest extends TestCase
         ]);
 
         $this->fixtures->user->createUserMerchantMapping([
-                                                             'merchant_id' => $merchantId,
-                                                             'user_id'     => $user->getId(),
-                                                             'role'        => 'owner',
-                                                         ], 'live');
+            'merchant_id' => $merchantId,
+            'user_id'     => $user->getId(),
+            'role'        => 'owner',
+        ], 'live');
 
         $this->ba->proxyAuth($apiKey, $user->getId());
 
@@ -6342,22 +6398,22 @@ class UserTest extends TestCase
     public function testTriggerTwoFaOtpVerificationForMobileUsers()
     {
         $user = $this->fixtures->create('user',
-                                        [
-                                            'contact_mobile'            => '9123456788',
-                                            'contact_mobile_verified'   => true,
-                                            'signup_via_email'          => 0,
-                                            'email'                     => null,
-                                        ]);
+            [
+                'contact_mobile'            => '9123456788',
+                'contact_mobile_verified'   => true,
+                'signup_via_email'          => 0,
+                'email'                     => null,
+            ]);
 
         $this->fixtures->edit('org', '100000razorpay', [
             'second_factor_auth_mode'    => 'email',
         ]);
 
         $merchantId = $user
-                        ->merchants()
-                        ->get()
-                        ->pluck('id')
-                        ->toArray()[0];
+            ->merchants()
+            ->get()
+            ->pluck('id')
+            ->toArray()[0];
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id'   => $merchantId,
@@ -6366,10 +6422,10 @@ class UserTest extends TestCase
         ]);
 
         $this->fixtures->user->createUserMerchantMapping([
-                                                             'merchant_id' => $merchantId,
-                                                             'user_id'     => $user->getId(),
-                                                             'role'        => 'owner',
-                                                         ], 'live');
+            'merchant_id' => $merchantId,
+            'user_id'     => $user->getId(),
+            'role'        => 'owner',
+        ], 'live');
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -6386,10 +6442,10 @@ class UserTest extends TestCase
         ]);
 
         $merchantId = $user
-                        ->merchants()
-                        ->get()
-                        ->pluck('id')
-                        ->toArray()[0];
+            ->merchants()
+            ->get()
+            ->pluck('id')
+            ->toArray()[0];
 
         $apiKey = 'rzp_live_'.$merchantId;
 
@@ -6576,11 +6632,11 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
-                                                             [
-                                                                 'signup_via_email'        => 1,
-                                                                 'contact_mobile'          => '9012345678',
-                                                                 'contact_mobile_verified' => true,
-                                                             ]);
+            [
+                'signup_via_email'        => 1,
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+            ]);
 
         $user->setPasswordNull();
 
@@ -6627,11 +6683,11 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
-                                                             [
-                                                                 'signup_via_email'        => 0,
-                                                                 'contact_mobile'          => '9012345678',
-                                                                 'contact_mobile_verified' => true,
-                                                             ]);
+            [
+                'signup_via_email'        => 0,
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+            ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
@@ -6823,8 +6879,8 @@ class UserTest extends TestCase
         $this->startTest();
 
         $merchants = DB::table('merchant_users')
-                       ->where('user_id', '=', $user['id'])
-                       ->pluck('merchant_id', 'role');
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'role');
 
         $this->assertEquals(count($merchants), 2);
 
@@ -6867,8 +6923,8 @@ class UserTest extends TestCase
         $this->startTest();
 
         $merchants = DB::table('merchant_users')
-                        ->where('user_id', '=', $user['id'])
-                        ->pluck('merchant_id', 'role');
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'role');
 
         $this->assertEquals(count($merchants), 1);
     }
@@ -6909,8 +6965,8 @@ class UserTest extends TestCase
         $this->startTest();
 
         $merchants = DB::table('merchant_users')
-                        ->where('user_id', '=', $user['id'])
-                        ->pluck('merchant_id', 'role');
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'role');
 
         $this->assertEquals(count($merchants), 2);
 
@@ -7083,12 +7139,12 @@ class UserTest extends TestCase
         DB::table('merchant_users')
             ->insert(
                 [
-                'merchant_id' => $merchantId,
-                'user_id'     => $userId,
-                'role'        => $role,
-                'product'     => $product,
-                'created_at'  => 1493805150,
-                'updated_at'  => 1493805150
+                    'merchant_id' => $merchantId,
+                    'user_id'     => $userId,
+                    'role'        => $role,
+                    'product'     => $product,
+                    'created_at'  => 1493805150,
+                    'updated_at'  => 1493805150
                 ]
             );
     }
@@ -7127,12 +7183,12 @@ class UserTest extends TestCase
         Mail::fake();
 
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-                                      [UserEntity::CONFIRM_TOKEN => 'testing123456789',
-                                       UserEntity::EMAIL => 'abc@rzp.com']);
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789',
+                UserEntity::EMAIL => 'abc@rzp.com']);
 
         $merchant = $this->fixtures->create('merchant',
-                                                   ['id'    => '10000000000002',
-                                                    'email' => 'abc@rzp.com']);
+            ['id'    => '10000000000002',
+                'email' => 'abc@rzp.com']);
 
         $mappingData = [
             'user_id'     => $user->getId(),
@@ -7212,7 +7268,7 @@ class UserTest extends TestCase
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-                        [UserEntity::CONFIRM_TOKEN => 'testing123456789',UserEntity::EMAIL => 'abc@rzp.com']);
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789',UserEntity::EMAIL => 'abc@rzp.com']);
 
         $this->fixtures->edit('merchant','10000000000000', ['email' => 'abc@rzp.com']);
 
@@ -7853,9 +7909,9 @@ class UserTest extends TestCase
         $this->createFundAccount();
 
         $this->fixtures->edit('user', 'MerchantUser01',
-                              ['contact_mobile'          => '1234567890',
-                               'contact_mobile_verified' => 1
-                              ]);
+            ['contact_mobile'          => '1234567890',
+                'contact_mobile_verified' => 1
+            ]);
 
         $this->ba->proxyAuth();
 
@@ -7866,14 +7922,14 @@ class UserTest extends TestCase
         $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
 
         $ravenMock->shouldReceive('sendSms')
-                  ->andReturnUsing(function(array $request) {
-                      $template = $request['template'];
-                      $receiver = $request['receiver'];
-                      self::assertEquals('Sms.User.Create_payout.V3', $template);
-                      self::assertEquals('1234567890', $receiver);
+            ->andReturnUsing(function(array $request) {
+                $template = $request['template'];
+                $receiver = $request['receiver'];
+                self::assertEquals('Sms.User.Create_payout.V3', $template);
+                self::assertEquals('1234567890', $receiver);
 
-                      return [];
-                  });
+                return [];
+            });
 
         $this->app->instance('raven', $ravenMock);
 
@@ -7892,9 +7948,9 @@ class UserTest extends TestCase
         $this->createFundAccount();
 
         $this->fixtures->edit('user', 'MerchantUser01',
-                              ['contact_mobile'          => '1234567890',
-                               'contact_mobile_verified' => 1
-                              ]);
+            ['contact_mobile'          => '1234567890',
+                'contact_mobile_verified' => 1
+            ]);
 
         $this->ba->proxyAuth();
 
@@ -7909,14 +7965,14 @@ class UserTest extends TestCase
         $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
 
         $ravenMock->shouldReceive('sendSms')
-                  ->andReturnUsing(function(array $request) {
-                      $template = $request['template'];
-                      $receiver = $request['receiver'];
-                      self::assertEquals('Sms.User.Create_payout.V3', $template);
-                      self::assertEquals('1234567890', $receiver);
+            ->andReturnUsing(function(array $request) {
+                $template = $request['template'];
+                $receiver = $request['receiver'];
+                self::assertEquals('Sms.User.Create_payout.V3', $template);
+                self::assertEquals('1234567890', $receiver);
 
-                      return [];
-                  });
+                return [];
+            });
 
         $this->app->instance('raven', $ravenMock);
 
@@ -7934,9 +7990,9 @@ class UserTest extends TestCase
         $this->createFundAccount();
 
         $this->fixtures->edit('user', 'MerchantUser01',
-                              ['contact_mobile'          => '1234567890',
-                               'contact_mobile_verified' => 1
-                              ]);
+            ['contact_mobile'          => '1234567890',
+                'contact_mobile_verified' => 1
+            ]);
 
         $this->ba->proxyAuth();
 
@@ -7951,14 +8007,14 @@ class UserTest extends TestCase
         $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
 
         $ravenMock->shouldReceive('sendSms')
-                  ->andReturnUsing(function(array $request) {
-                      $template = $request['template'];
-                      $receiver = $request['receiver'];
-                      self::assertEquals('sms.user.create_payout', $template);
-                      self::assertEquals('1234567890', $receiver);
+            ->andReturnUsing(function(array $request) {
+                $template = $request['template'];
+                $receiver = $request['receiver'];
+                self::assertEquals('sms.user.create_payout', $template);
+                self::assertEquals('1234567890', $receiver);
 
-                      return [];
-                  });
+                return [];
+            });
 
         $this->app->instance('raven', $ravenMock);
 
@@ -7993,16 +8049,16 @@ class UserTest extends TestCase
         $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
 
         $ravenMock->shouldReceive('generateOtp')
-                  ->andReturnUsing(function(array $request) use ($expectedContext, $receiver, $source) {
-                      self::assertEquals($request['receiver'], $receiver);
-                      self::assertEquals($request['context'], $expectedContext);
-                      self::assertEquals($request['source'], $source);
+            ->andReturnUsing(function(array $request) use ($expectedContext, $receiver, $source) {
+                self::assertEquals($request['receiver'], $receiver);
+                self::assertEquals($request['context'], $expectedContext);
+                self::assertEquals($request['source'], $source);
 
-                      return [
-                          'otp'        => '0007',
-                          'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
-                      ];
-                  });
+                return [
+                    'otp'        => '0007',
+                    'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+                ];
+            });
 
         $this->app->instance('raven', $ravenMock);
     }
@@ -8032,10 +8088,10 @@ class UserTest extends TestCase
         $testData['request']['content']['token'] = 'QtrxYjsbrs';
 
         $expectedContext = sprintf('%s:%s:%s:%s',
-                                   '10000000000000',
-                                   $user->getId(),
-                                   'create_workflow_config',
-                                   'QtrxYjsbrs');
+            '10000000000000',
+            $user->getId(),
+            'create_workflow_config',
+            'QtrxYjsbrs');
 
         $this->mockRaven($expectedContext, '123456789');
 
@@ -8047,9 +8103,9 @@ class UserTest extends TestCase
     public function testBulkPayoutApproveSmsTemplateSelection()
     {
         $this->fixtures->edit('user', 'MerchantUser01',
-                              ['contact_mobile'          => '1234567890',
-                               'contact_mobile_verified' => 1
-                              ]);
+            ['contact_mobile'          => '1234567890',
+                'contact_mobile_verified' => 1
+            ]);
 
         $this->ba->proxyAuth();
 
@@ -8060,16 +8116,16 @@ class UserTest extends TestCase
         $this->app['stork_service']->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
 
         $this->app['stork_service']->shouldReceive('sendSms')
-                                   ->andReturnUsing(function(string $mode, array $request) {
+            ->andReturnUsing(function(string $mode, array $request) {
 
-                                       $template = $request['templateName'];
-                                       $receiver = $request['destination'];
+                $template = $request['templateName'];
+                $receiver = $request['destination'];
 
-                                       self::assertEquals('Sms.User.Bulk_payouts_approve.V1', $template);
-                                       self::assertEquals('1234567890', $receiver);
+                self::assertEquals('Sms.User.Bulk_payouts_approve.V1', $template);
+                self::assertEquals('1234567890', $receiver);
 
-                                       return [];
-                                   });
+                return [];
+            });
 
         (new AdminService())->setConfigKeys([ConfigKey::SHIFT_BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT_SMS_TEMPLATE => [
             'bulk_payout_approve_to_bulk_approve_payout' => '*',
@@ -8111,13 +8167,13 @@ class UserTest extends TestCase
         $testData['request']['content']['token'] = 'QtrxYjsbrs';
 
         $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
-                                   $this->fundAccount->merchant->getId(),
-                                   $user->getId(),
-                                   Constants::CREATE_PAYOUT,
-                                   'QtrxYjsbrs',
-                                   10000,
-                                   $this->fundAccount->getPublicId(),
-                                   '1234567890');
+            $this->fundAccount->merchant->getId(),
+            $user->getId(),
+            Constants::CREATE_PAYOUT,
+            'QtrxYjsbrs',
+            10000,
+            $this->fundAccount->getPublicId(),
+            '1234567890');
 
         $expectedContext = hash('sha3-512', $expectedContext);
 
@@ -8158,11 +8214,11 @@ class UserTest extends TestCase
         $testData['request']['content']['token'] = 'QtrxYjsbrs';
 
         $expectedContext = sprintf('%s:%s:%s:%s:%s',
-                                   $this->fundAccount->merchant->getId(),
-                                   $user->getId(),
-                                   Constants::APPROVE_PAYOUT,
-                                   'QtrxYjsbrs',
-                                   'pout_IxOlvTAXZIAduq');
+            $this->fundAccount->merchant->getId(),
+            $user->getId(),
+            Constants::APPROVE_PAYOUT,
+            'QtrxYjsbrs',
+            'pout_IxOlvTAXZIAduq');
 
         $expectedContext = hash('sha3-512', $expectedContext);
 
@@ -8643,7 +8699,7 @@ class UserTest extends TestCase
     public function testVerifyEmailWithOtp()
     {
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-                                      [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
 
         $testData = &$this->testData[__FUNCTION__];
 
@@ -8675,7 +8731,7 @@ class UserTest extends TestCase
     public function testVerifyEmailWithInvalidOtp()
     {
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-                                              [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
 
         $this->ba->proxyAuth();
 
@@ -8687,7 +8743,7 @@ class UserTest extends TestCase
     public function testVerifyEmailWithEasyOnboardingMerchant()
     {
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-                                      [UserEntity::CONFIRM_TOKEN => 'testing123456789']);
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789']);
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id'   => '10000000000000',
@@ -8771,7 +8827,7 @@ class UserTest extends TestCase
     public function testVerifyEmailWithOtpAlreadyVerified()
     {
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-                                      [UserEntity::CONFIRM_TOKEN => NULL, UserEntity::EMAIL => 'abc@rzp.com']);
+            [UserEntity::CONFIRM_TOKEN => NULL, UserEntity::EMAIL => 'abc@rzp.com']);
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -9038,14 +9094,14 @@ class UserTest extends TestCase
     protected function enableRazorXTreatmentForRazorX()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
+            ->willReturn('on');
     }
 
     protected function disableRazorXTreatmentCAC()
@@ -9072,43 +9128,43 @@ class UserTest extends TestCase
     protected function enableRazorXTreatmentForBlockBankingRoutes()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function($mid, $feature, $mode) {
-                                  if ($feature === 'block_banking_requests')
-                                  {
-                                      return 'on';
-                                  }
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'block_banking_requests')
+                    {
+                        return 'on';
+                    }
 
-                                  return 'off';
-                              }));
+                    return 'off';
+                }));
     }
 
     protected function enableRazorXTreatmentForRxAclDenyUnauthorized()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function($mid, $feature, $mode) {
-                                  if ($feature === 'razorpay_x_acl_deny_unauthorised')
-                                  {
-                                      return 'on';
-                                  }
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'razorpay_x_acl_deny_unauthorised')
+                    {
+                        return 'on';
+                    }
 
-                                  return 'off';
-                              }));
+                    return 'off';
+                }));
     }
 
     public function enableRazorXTreatmentForRazorXForOrgLevel2Fa()
@@ -9284,9 +9340,9 @@ class UserTest extends TestCase
         $this->disableRazorXTreatmentCAC();
 
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000',
-                                                            $attributes = ['id' => '30000000000000'],
-                                                            $role = 'owner',
-                                                            $mode = 'test');
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -9313,7 +9369,7 @@ class UserTest extends TestCase
         Carbon::setTestNow($oldDateTime);
 
         $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
-        Channel::RBL);
+            Channel::RBL);
 
         $this->disableRazorXTreatmentCAC();
 
@@ -9330,9 +9386,9 @@ class UserTest extends TestCase
         ]);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
-                                                            $attributes = ['id' => '30000000000000'],
-                                                            $role = 'owner',
-                                                            $mode = 'test');
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -9348,12 +9404,12 @@ class UserTest extends TestCase
         Carbon::setTestNow($oldDateTime);
 
         $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
-                                               Channel::ICICI);
+            Channel::ICICI);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
-                                                            $attributes = ['id' => '30000000000000'],
-                                                            $role = 'owner',
-                                                            $mode = 'test');
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
 
         $this->disableRazorXTreatmentCAC();
 
@@ -9377,9 +9433,9 @@ class UserTest extends TestCase
     public function testMultiCaGetUserWithMultipleCaOnBas()
     {
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
-                                                            $attributes = ['id' => '30000000000000'],
-                                                            $role = 'owner',
-                                                            $mode = 'test');
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
 
         $this->disableRazorXTreatmentCAC();
 
@@ -9395,12 +9451,12 @@ class UserTest extends TestCase
         $this->setMockRazorxTreatment([RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED => 'on', RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED => 'off']);
 
         $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
-                                               Channel::ICICI);
+            Channel::ICICI);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
-                                                            $attributes = ['id' => '30000000000000'],
-                                                            $role = 'owner',
-                                                            $mode = 'test');
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
 
         $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID                      => 'xbas0000000002',
@@ -9538,9 +9594,9 @@ class UserTest extends TestCase
         ]);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
-                                                            $attributes = ['id' => '30000000000000'],
-                                                            $role = 'owner',
-                                                            $mode = 'test');
+            $attributes = ['id' => '30000000000000'],
+            $role = 'owner',
+            $mode = 'test');
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -9846,9 +9902,9 @@ class UserTest extends TestCase
     public function testEditContactMobileWhichIsVerifiedByUserOnBanking()
     {
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
-                UserEntity::CONTACT_MOBILE              => '9123456789',
-                UserEntity::CONTACT_MOBILE_VERIFIED     => true,
-            ]);
+            UserEntity::CONTACT_MOBILE              => '9123456789',
+            UserEntity::CONTACT_MOBILE_VERIFIED     => true,
+        ]);
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '10000000000000',
@@ -10611,7 +10667,7 @@ class UserTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-         $request =[
+        $request =[
             'method'    => 'GET',
             'url'       => '/users/access',
             'content'   => [
@@ -10987,7 +11043,7 @@ class UserTest extends TestCase
                 ],
                 'status_code' => 400,
             ],
-           'exception' => [
+            'exception' => [
                 'class'               => \RZP\Exception\BadRequestException::class,
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ]
@@ -11071,8 +11127,8 @@ class UserTest extends TestCase
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
 
         $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
-                                  ->makePartial()
-                                  ->shouldAllowMockingProtectedMethods();
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
         $this->app->instance('losService', $losServiceMock);
         $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
@@ -11569,9 +11625,9 @@ class UserTest extends TestCase
     public function testOtpLoginVerifyWith2FAWithoutPassword()
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -12073,19 +12129,19 @@ class UserTest extends TestCase
         ];
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
 
         $storkMock = $this->getMockBuilder(\RZP\Services\Mock\Stork::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['sendSms'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendSms'])
+            ->getMock();
 
         $this->app->instance('stork', $storkMock);;
 
@@ -12424,24 +12480,24 @@ class UserTest extends TestCase
 
         // Validate that invitation is accepted and deleted
         $invite = \DB::table('invitations')
-                     ->where('id', '=', $invitation['id'])
-                     ->whereNull('deleted_at')
-                     ->first();
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
 
         $this->assertNull($invite);
 
         // User is created for given email
         $user = \DB::table('users')
-                   ->where('email', '=', 'random@rbl.com')
-                   ->first();
+            ->where('email', '=', 'random@rbl.com')
+            ->first();
 
         $this->assertNotNull($user);
 
         // User is attached to given merchant on given role
         $merchants = DB::table('merchant_users')
-                       ->where('user_id', '=', $user->id)
-                       ->where('merchant_id', '1DummyMerchant')
-                       ->first();
+            ->where('user_id', '=', $user->id)
+            ->where('merchant_id', '1DummyMerchant')
+            ->first();
 
         $this->assertEquals(BankingRole::BANK_MID_OFFICE_POC, $merchants->role);
     }
@@ -12555,7 +12611,7 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant', ['id' => '12345678901234']);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
-                                                             ['contact_mobile' => '9091929394']);
+            ['contact_mobile' => '9091929394']);
 
         $this->ba->careAppAuth();
 
@@ -12567,7 +12623,7 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant', ['id' => '12345678901234']);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
-                                                             ['contact_mobile' => '9091929394']);
+            ['contact_mobile' => '9091929394']);
 
         $this->ba->careAppAuth();
 
@@ -13662,18 +13718,18 @@ class UserTest extends TestCase
         ];
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
         $storkMock = $this->getMockBuilder(\RZP\Services\Mock\Stork::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['sendSms'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendSms'])
+            ->getMock();
 
         $this->app->instance('stork', $storkMock);;
 
@@ -13711,14 +13767,14 @@ class UserTest extends TestCase
         ];
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
 
         $user = $this->fixtures->create('user');
 
@@ -13756,9 +13812,9 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -13776,9 +13832,9 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -13821,9 +13877,9 @@ class UserTest extends TestCase
         $this->app['config']->set('app.debug', false);
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -13834,7 +13890,7 @@ class UserTest extends TestCase
         ];
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
 
         $ravenMock->expects($this->once())->method('generateOtp');
 
@@ -13872,9 +13928,9 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -13894,9 +13950,9 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -13914,14 +13970,14 @@ class UserTest extends TestCase
         ];
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
 
         $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false]);
 
@@ -13962,9 +14018,9 @@ class UserTest extends TestCase
     public function testMobileVerifyOtpLoginForSubmerchantsWithOnboardingSignature()
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -14013,14 +14069,14 @@ class UserTest extends TestCase
         ];
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
 
         $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false]);
 
@@ -14061,9 +14117,9 @@ class UserTest extends TestCase
     public function testMobileVerifyOtpLoginForSubmerchantsWithInvalidOnboardingSignature()
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
@@ -14110,14 +14166,14 @@ class UserTest extends TestCase
         ];
 
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
         $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
+            ->willReturn($smsPayload);
 
         $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false]);
 
@@ -14160,9 +14216,9 @@ class UserTest extends TestCase
     public function testMobileVerifyOtpLoginForSubmerchantsWithOnboardingSignatureWithExpDisabled()
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->setMethods(['verifyOtp'])
-                          ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
 
         $this->app->instance('raven', $ravenMock);
 
