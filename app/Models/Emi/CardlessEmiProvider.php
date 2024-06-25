@@ -20,6 +20,7 @@ class CardlessEmiProvider
     const FDRL = 'fdrl';
     const IDFB = 'idfb';
     const HCIN = 'hcin';
+
     const CARDLESS_EMI = 'cardless_emi';
     const KRBE = 'krbe';
     const CSHE = 'cshe';
@@ -51,6 +52,7 @@ class CardlessEmiProvider
         self::BARB,
         self::KRBE,
         self::LIQUILOANS,
+        self::HDFC,
     ];
 
     public static $experimentCheckRequiredCardlessEmiProviders = [
