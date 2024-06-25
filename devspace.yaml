@@ -45,7 +45,7 @@ dev:
 vars:
   # Note: now you can choose to export DEVSTACK_LABEL from your shell as well!
   - name: DEVSTACK_LABEL
-    source: env 
+    source: env
     default: "your-label"
   - name: NAMESPACE
     value: "api"

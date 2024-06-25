@@ -29,6 +29,7 @@ use RZP\Models\Device;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\User\Role;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Http\Edge\Metric;
@@ -37,6 +38,7 @@ use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Models\EntityOrigin;
+use RZP\Models\Admin\Admin as AdminImp;
 use RZP\Constants\HyperTrace;
 use RZP\Http\RequestContextV2;
 use RZP\Base\RepositoryManager;
@@ -3242,6 +3244,69 @@ class BasicAuth
 
     public function setUserRole(string $userId)
     {
+
+        // https://docs.google.com/document/d/1G45uWHQbghZTrWzIPooywJAIKr_K1zt2mc_edeq43p4/edit#heading=h.w22h9m5sn4hl
+        if ($this->isAdminLoggedInAsMerchantOnDashboard() === true)
+        {
+            $adminId = $this->request->header(RequestHeader::X_DASHBOARD_ADMIN_ID);
+
+            $this->trace->info(
+                TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
+                [
+                    'adminId'               => $adminId,
+                ]
+            );
+
+            if (empty($adminId) === false)
+            {
+
+                $admin = $this->repo->admin->findByPublicId($adminId);
+
+                // if they have read only permission change the role to read only
+
+                $hasReadPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_READ_ONLY);
+
+                $hasViewLoginPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN);
+
+                $hasEditPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_EDIT);
+
+                if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false)
+                {
+                    $this->userRole = Role::ADMIN_READONLY;
+
+                    $this->trace->info(
+                        TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
+                        [
+                            'route_name'            => $this->route->getCurrentRouteName(),
+                            'userRole'              => $this->userRole,
+                            'adminId'               => $adminId,
+                            'hasReadPerm'           => $hasReadPerm,
+                            'hasEditPerm'          => $hasEditPerm,
+                        ]
+                    );
+
+                    return;
+                }
+                else if ($hasViewLoginPerm === true && $hasEditPerm === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, null, null,
+                        PublicErrorDescription::BAD_FEATURE_PERMISSION_NOT_FOUND
+                    );
+                }
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::NO_ADMIN_ID_FOR_LOGIN_AS_MERCHANT,
+                    [
+                        'route_name'          => $this->route->getCurrentRouteName(),
+                    ]
+                );
+            }
+
+        }
+
         // Fetching MID from authcreds because X-Razorpay-Account will be set as ba merchant
         // When a marketplace account requests on behalf of linked account. so fetching the user
         // mapping via keyId and userId.
@@ -3268,6 +3333,13 @@ class BasicAuth
                 $this->userRole = (new UserService)->syncMerchantUserOnProducts($merchantId);
             }
         }
+        $this->trace->info(
+            TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
+            [
+                'route_name'            => $this->route->getCurrentRouteName(),
+                'userRole'              => $this->userRole,
+            ]
+        );
     }
 
     public function setUserRoleWithUserIdAndMerchantId($merchantId, $userId, $product = Product::PRIMARY)

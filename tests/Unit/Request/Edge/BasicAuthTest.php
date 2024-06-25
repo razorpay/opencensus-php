@@ -10,6 +10,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Middleware\Authenticate;
 use RZP\Http\Route;
+use RZP\Models\User\Role;
 use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
 use RZP\Tests\TestCase;
 use \Mockery;
@@ -143,5 +144,24 @@ class BasicAuthTest extends TestCase
         $ba->setPassport($this->getDummyMerchantAuthPassport());
         $passportAlterationPath = $ba->getPassportAlterationPath();
         self::assertEquals(9,sizeof($passportAlterationPath));
+    }
+
+    public function testSetUserRoleIsAdminReadOnlyWhenAdminLoggedInAsMerchant()
+    {
+        $mock = $this->getMockBuilder(BasicAuth::class)
+                     ->setConstructorArgs([$this->app])
+                     ->onlyMethods(['isAdminLoggedInAsMerchantOnDashboard'])
+                     ->getMock();
+
+        $mock->expects($this->once())
+             ->method('isAdminLoggedInAsMerchantOnDashboard')
+             ->willReturn(true);
+
+        $mock->setUserRole('user_id');
+
+        $role = $mock->getUserRole();
+
+        self::assertEquals(Role::ADMIN_READONLY, $role);
+
     }
 }

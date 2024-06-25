@@ -41,6 +41,8 @@ class RequestHeader
     // Is admin making request as merchant
     const X_DASHBOARD_ADMIN_AS_MERCHANT = 'X-Dashboard-AdminLoggedInAsMerchant';
 
+    const X_DASHBOARD_ADMIN_ID = 'X-Dashboard-AdminLoggedInAsMerchant-AdminId';
+
     /**
      * To support Account Auth: Allows API requests to be served under the
      * scope of a merchant ID that is sent as the value to this header

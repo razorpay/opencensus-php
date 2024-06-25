@@ -7,6 +7,7 @@ use ApiResponse;
 
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\User\Role;
 use RZP\Http\AxisCardsUser;
 use RZP\Http\Route;
 use RZP\Http\LmsUserRolePermissionsMap;

@@ -14,6 +14,10 @@ class Role
 {
     const RAZORPAY_SALES        = 'razorpay_sales';
     const POS_SALES_ADMIN       = 'pos_sales_admin';
+    // This is internal role which is implicitly assigned when an admin login as merchant
+    // this will/should grant permission to the routes which are view only
+    const ADMIN_READONLY        = 'admin_readonly';
+    const PARTNER ='partner';
     const MANAGER               = 'manager';
     const OPERATIONS            = 'operations';
     const FINANCE               = 'finance';
@@ -21,7 +25,6 @@ class Role
     const ADMIN                 = 'admin';
     const SELLERAPP             = 'sellerapp';
     const OWNER                 = 'owner';
-    const PARTNER               = 'partner';
     const PARTNER_AGENT         = 'partner_agent';
     const LINKED_ACCOUNT_OWNER  = 'linked_account_owner';
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
@@ -63,6 +66,8 @@ class Role
     const IT_L2                 = 'it_l2';
 
     const ALL_ROLES = [
+        self::ADMIN_READONLY,
+
         self::MANAGER,
         self::OPERATIONS,
         self::FINANCE,
@@ -106,7 +111,9 @@ class Role
         self::OPERATIONS,
         self::FINANCE,
         self::ADMIN,
+        self::ADMIN_READONLY,
     ];
+
 
     // Custom roles defined for payment link access control
     const PL_ROLES = [

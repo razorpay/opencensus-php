@@ -117,7 +117,7 @@ class Name
     const VIEW_BANKING_CONFIGS                = 'view_banking_configs';
     const UPSERT_BANKING_CONFIGS              = 'upsert_banking_configs';
     const MANAGE_ORG_PRICING                  = 'manage_org_pricing';
-    const MODIFY_ORG_PRICING_ACCESS           = 'modify_org_pricing_access';    
+    const MODIFY_ORG_PRICING_ACCESS           = 'modify_org_pricing_access';
     const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
@@ -1213,6 +1213,9 @@ class Name
 
     // IDAM Admin permissions
     const BANKING_IDAM_ADMIN                      = 'banking_idam_admin';
+
+    const VIEW_MERCHANT_LOGIN_READ_ONLY = 'view_merchant_login_read_only';
+    const VIEW_MERCHANT_LOGIN_EDIT = 'view_merchant_login_edit';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
