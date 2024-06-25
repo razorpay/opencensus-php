@@ -1388,7 +1388,7 @@ class MerchantController extends Controller
     // Activation Form Handlers
     public function getActivationDetails()
     {
-        $response = $this->service(E::MERCHANT_DETAIL)->fetchMerchantDetails();
+        $response = $this->service(E::MERCHANT_DETAIL)->fetchMerchantDetails(true);
 
         return $response;
     }

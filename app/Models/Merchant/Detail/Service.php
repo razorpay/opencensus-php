@@ -216,14 +216,14 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMerchantDetails()
+    public function fetchMerchantDetails($isActivationDetailsFlow = false)
     {
         $merchantId = $this->merchant->getId();
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $this->merchant->getCountry());
         $isPGOSExpEnabled     = false;
         $isActivated          = $this->merchant->isActivated();
 
-        if ($shouldMerchantOnboardViaPGOS === true and $isActivated === false)
+        if ($shouldMerchantOnboardViaPGOS === true and $isActivated === false and $isActivationDetailsFlow === true)
         {
             $properties = [
                 'id'            => $merchantId,
