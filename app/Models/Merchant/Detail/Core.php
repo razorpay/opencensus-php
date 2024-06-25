@@ -908,13 +908,8 @@ class Core extends Base\Core
         $ocrInput = [
             'website_url' => $input[Entity::BUSINESS_WEBSITE]
         ];
-        // load merchant to avoid null values
-        $merchant = $this->merchant;
-        if ($this->isPartnerAuthContextRoute() or $this->uploadMIQRoute())
-        {
-            $merchantDetails->load('merchant');
-            $merchant = $merchantDetails->merchant;
-        }
+        $merchantDetails->load('merchant');
+        $merchant = $merchantDetails->merchant;
         $this->triggerOCRService($ocrInput, Constant::WEBSITE_POLICY, $merchant);
 
         $this->triggerOCRService($ocrInput, Constant::MCC_CATEGORISATION, $merchant);
@@ -983,25 +978,6 @@ class Core extends Base\Core
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::UPLOAD_MIQ_CONTEXT_ERROR);
-        }
-        return false;
-    }
-
-    protected function isPartnerAuthContextRoute()
-    {
-        try
-        {
-            $partnerAuthContextRoutes = [
-                'account_create_v2',
-                'account_edit_v2'
-            ];
-            $runningInQueue = app()->runningInQueue();
-            $routeName = app('request.ctx')->getRoute();
-            return $runningInQueue === false && in_array($routeName, $partnerAuthContextRoutes);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::GET_PARTNER_AUTH_CONTEXT_ERROR);
         }
         return false;
     }
