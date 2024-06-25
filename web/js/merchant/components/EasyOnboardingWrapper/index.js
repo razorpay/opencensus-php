@@ -31,7 +31,7 @@ const EasyOnboardingWrapper = (props) => {
   const isFtuxEnabled = isEligibleForFtux({ user, abExperiments, isAdmin });
 
   const getShouldRouteToEasy = async () => {
-    if (isSourceRX) {
+    if (isSourceRX || isAdmin) {
       return false;
     }
 

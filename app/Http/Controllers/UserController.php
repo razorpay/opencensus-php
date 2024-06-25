@@ -881,7 +881,9 @@ class UserController extends Controller
     private function isRedirectionApplicable($details): bool
     {
 
-        if (ApiUrl::isBankingOriginRequest() === true)
+        $isAdminAsMerchant = (new Admin\Service)->isAdminLoggedIn();
+
+        if ($isAdminAsMerchant === true || ApiUrl::isBankingOriginRequest() === true)
         {
             return false;
         }
