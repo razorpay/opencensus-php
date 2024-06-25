@@ -45,7 +45,10 @@ class MerchantIpFilter
     {
         $ret = null;
 
-        if ($this->ba->isStrictPrivateAuth() === true)
+        // Since application auth via EDGE is treated as private auth, we do not require IP filter for the same.
+        $consumerType = $this->ba->getPassportConsumerClaims()['type'];
+        if (($this->ba->isStrictPrivateAuth() === true) and
+            ($consumerType !== BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION))
         {
             $ret = $this->authenticateIpForPrivateAuth($request);
         }
