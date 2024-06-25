@@ -138,8 +138,11 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function getSupportChatJwtToken()
+    public function getSupportChatJwtToken($input)
     {
+        $support_session_id = $input["support_session_id"] ?? "";
+
+        $support_linked_id = $input["support_linked_id"] ?? "";
 
         $privateKey = $this->app['config']->get('app.chat_support_jwt_encryption_key');
 
@@ -181,6 +184,8 @@ class Service extends Base\Service
             'cf_activation_status' => $merchantDetails['activation_status'],
             'cf_dashboard_link' => sprintf(Constants::MERCHANT_DETAIL_ADMIN_PAGE, $currentMerchant->id,),
             'cf_is_contexual' => true,
+            'cf_support_session_id' => $support_session_id,
+            'cf_support_linked_id' => $support_linked_id
         ];
 
         $jwt = JWT::encode($payload, $privateKey, 'RS256');

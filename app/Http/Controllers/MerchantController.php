@@ -134,7 +134,9 @@ class MerchantController extends Controller
 
     public function getSupportChatJwtToken()
     {
-        list($error, $data) = (new Merchant\Service)->getSupportChatJwtToken();
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)->getSupportChatJwtToken($input);
 
         return AppResponse::jsonResponse($error,$data);
     }
