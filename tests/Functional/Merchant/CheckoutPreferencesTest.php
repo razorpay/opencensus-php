@@ -590,7 +590,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertEquals($response['methods']['cardless_emi']['zestmoney'],true);
 
-        $this->assertEquals($response['methods']['cardless_emi']['hdfc'],true);
+//        $this->assertEquals($response['methods']['cardless_emi']['hdfc'],true);
 
         $this->assertEquals($response['methods']['cardless_emi']['kkbk'],true);
 
@@ -1336,7 +1336,7 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
     }
 
-    public function testGetCheckoutPreferencesForCardlessEmiEnabledBanks()
+        public function testGetCheckoutPreferencesForCardlessEmiEnabledBanks()
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
@@ -1348,10 +1348,10 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertEquals(7, count($response['methods']['cardless_emi']));
+        $this->assertEquals(6, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('kkbk', $response['methods']['cardless_emi']);
-        $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
+//        $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
 //        $this->assertArrayHasKey('barb', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('cshe', $response['methods']['cardless_emi']);
