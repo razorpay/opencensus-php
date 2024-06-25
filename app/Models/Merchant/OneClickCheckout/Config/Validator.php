@@ -90,21 +90,18 @@ class Validator extends Base\Validator
 
     protected static $gettingShopifyConfigByKeyIdRules = [
         'key_id' => 'required|string',
-        'keys'   => 'sometimes|string|custom:keys',
         'app_name' => 'sometimes|string|in:sopc'
     ];
 
     protected static $gettingShopifyConfigByShopIdRules = [
         'shop_id' => 'required|string',
         'mode'    => 'sometimes|string|in:live,test',
-        'keys'    => 'sometimes|string|custom:keys',
         'app_name' => 'sometimes|string|in:sopc'
     ];
 
     protected static $gettingShopifyConfigByMerchantIdRules = [
         'merchant_id' => 'required|string|size:14',
         'mode'        => 'sometimes|string|in:live,test',
-        'keys'        => 'sometimes|string|custom:keys',
         'app_name' => 'sometimes|string|in:sopc'
     ];
 
