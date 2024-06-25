@@ -9702,10 +9702,11 @@ class Core extends Base\Core
 
         try {
 
-            $whitelistExperiments = [
-                $this->app['config']->get('app.lazypay_whitelisted_merchants_experiment_id') => Emi\PaylaterProvider::LAZYPAY,
-                $this->app['config']->get('app.icic_whitelisted_merchants_experiment_id') => Emi\PaylaterProvider::ICIC,
-            ];
+            foreach(Emi\PaylaterProvider::$experimentCheckRequiredPaylaterProviders as $bank => $experimentId)
+            {
+                $whitelistExperiments[ $this->app['config']->get($experimentId) ] = $bank;
+            }
+
 
             foreach ($whitelistExperiments as $experimentId => $instrument)
             {

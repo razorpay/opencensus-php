@@ -27,6 +27,15 @@ class PaylaterProvider
         self::RZPXPOSTPAID,
     ];
 
+    public static $disabledInstruments = [
+        self::GETSIMPL,
+    ];
+
+    public static $experimentCheckRequiredPaylaterProviders = [
+        self::LAZYPAY => 'app.lazypay_whitelisted_merchants_experiment_id',
+        self::ICIC => 'app.icic_whitelisted_merchants_experiment_id',
+    ];
+
     public static function checkProviderValidity($provider)
     {
         if (in_array($provider, self::$providers, true) === false)

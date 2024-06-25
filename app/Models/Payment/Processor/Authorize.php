@@ -19,7 +19,9 @@ use RZP\Http\RequestContextV2;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Card\Type;
+use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp as MagicDecomp;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -10707,10 +10709,11 @@ trait Authorize
         }
 
         $whitelistedInstruments = (new MerchantCore())->getWhitelistedPaylaterInstruments($payment->merchant);
+        $isExperimentCheckRequired = array_key_exists($wallet, PaylaterProvider::$experimentCheckRequiredPaylaterProviders);
 
         if(isset($wallet) === true and
-            ($wallet === EMI\PaylaterProvider::LAZYPAY or $wallet === EMI\PaylaterProvider::ICIC) and
-            !in_array($wallet, $whitelistedInstruments))
+            (in_array($wallet, Emi\PaylaterProvider::$disabledInstruments, true) or
+                ($isExperimentCheckRequired === true and !in_array($wallet,$whitelistedInstruments))))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED);

@@ -617,7 +617,8 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertEquals($response['methods']['paylater']['epaylater'],true);
 
-        $this->assertEquals($response['methods']['paylater']['getsimpl'],true);
+        //temporarily disable
+        $this->assertEquals($response['methods']['paylater']['getsimpl'],false);
 
         $this->assertEquals($response['methods']['paylater']['icic'],true);
 

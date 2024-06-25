@@ -1477,15 +1477,16 @@ class Core extends Base\Core
 
             foreach ($providers as $index => $instrument) {
 
-                if (isset($paylaterProviders[$instrument]) == false or  $paylaterProviders[$instrument] == 0) {
+                $isDisabledInstrument = in_array($instrument, PaylaterProvider::$disabledInstruments, true);
 
+                if ($isDisabledInstrument === true or isset($paylaterProviders[$instrument]) == false or $paylaterProviders[$instrument] == 0)
+                {
                     unset($providers[$index]);
-
                 }
 
-                if(($instrument === EMI\PaylaterProvider::LAZYPAY or $instrument === EMI\PaylaterProvider::ICIC) and
-                    !in_array($instrument, $whitelistedInstruments))
-                {
+                $isExperimentCheckRequired = array_key_exists($instrument, PaylaterProvider::$experimentCheckRequiredPaylaterProviders);
+
+                if($isExperimentCheckRequired === true and !in_array($instrument,$whitelistedInstruments)){
                     unset($providers[$index]);
                 }
 
@@ -1680,6 +1681,16 @@ class Core extends Base\Core
                 {
                     array_push($enabledBanks, $providerName);
                 }
+            }
+            foreach ($enabledBanks as $index => $instrument) {
+
+                $isDisabledInstrument = in_array(strtolower($instrument), PaylaterProvider::$disabledInstruments, true);
+
+                if ($isDisabledInstrument === true)
+                {
+                    unset($enabledBanks[$index]);
+                }
+
             }
         }
 
