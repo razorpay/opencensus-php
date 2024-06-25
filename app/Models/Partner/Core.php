@@ -2041,7 +2041,10 @@ class Core extends Detail\Core
         if ($commBalance == null) {
             return null;
         }
-        return [ Balance\Entity::BALANCE_ID => $commBalance->getId() ];
+        return [
+            Balance\Entity::BALANCE_ID => $commBalance->getId(),
+            Balance\Entity::BALANCE => $commBalance->getBalance(),
+        ];
     }
 
     private function buildPartnerActivationArray(Merchant\Entity $merchant)

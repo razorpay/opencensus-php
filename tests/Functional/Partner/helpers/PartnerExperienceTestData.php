@@ -2207,7 +2207,8 @@ return [
                     'activation_status'  => 'activated'
                 ],
                 'commission_balance' => [
-                    'balance_id'         => 'balanceIdTest1'
+                    'balance_id'         => 'balanceIdTest1',
+                    'balance'            => 300000
                 ]
             ]],
             'status_code' => 200,
