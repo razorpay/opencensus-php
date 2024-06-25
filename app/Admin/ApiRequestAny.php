@@ -269,6 +269,16 @@ class ApiRequestAny
 
         $baUser = null;
 
+        $isAdminAsMerchant = (new AdminService())->isAdminLoggedIn();
+
+        $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_AS_MERCHANT] = $isAdminAsMerchant;
+
+        $admin = Auth::guard('api')->user();
+        if (empty($admin) === false)
+        {
+            $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_ID] = $admin->id;
+        }
+
         if (empty($clientType) === false) {
 
             if ($clientType === 'merchant')
@@ -299,10 +309,6 @@ class ApiRequestAny
                     // bool value is converted to '1' for true & '0' for false
                     $this->options['headers']['X-Dashboard-User-2FA-Verified'] =
                         $twoFaVerified ? 'true' : 'false';
-
-                    $isAdminAsMerchant = (new AdminService())->isAdminLoggedIn();
-
-                    $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_AS_MERCHANT] = $isAdminAsMerchant;
 
                     Trace::info(TraceCode::ADMIN_LOGGED_IN_AS_MERCHANT, [
                         self::ADMIN_AS_MERCHANT => $isAdminAsMerchant

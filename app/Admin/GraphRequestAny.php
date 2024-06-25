@@ -11,6 +11,7 @@ use SplFileInfo;
 use App\Trace\TraceCode;
 use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Client as Guzzle;
+use App\Admin\Service as AdminService;
 use GuzzleHttp\Exception\RequestException;
 
 use App\Http\ApiUrl;
@@ -267,6 +268,16 @@ class GraphRequestAny
         $user = Auth::guard('user')->user();
 
         $userId = app('request.ctx')->getUserId();
+
+        $isAdminAsMerchant = (new AdminService())->isAdminLoggedIn();
+
+        $this->headers[Headers::X_DASHBOARD_ADMIN_AS_MERCHANT] = $isAdminAsMerchant;
+
+        $admin = Auth::guard('api')->user();
+        if (empty($admin) === false)
+        {
+            $this->headers[Headers::X_DASHBOARD_ADMIN_ID] = $admin->id;
+        }
 
         if ($user)
         {

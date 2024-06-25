@@ -271,7 +271,7 @@ export const getOtherMethodsCoverageData = (gatewayCoverage, razorpayCoverage, o
   const data = [];
   otherMethods.forEach((method) => {
     data.push({
-      method: method,
+      method,
       gatewayCoverage: !!gatewayCoverage.find((gatewayItem) => gatewayItem.method === method)
         ?.enabled,
       razorpayCoverage: !!razorpayCoverage.find((gatewayItem) => gatewayItem.method === method)

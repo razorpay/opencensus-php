@@ -358,9 +358,9 @@ class Service extends Base\Service
             (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
 
             $traceData = [
-                'org_id'        => $admin->org_id,
-                'email'         => $admin->email,
-                'merchant_id'   => $merchantId,
+                'org_id'            => $admin->org_id,
+                'merchant_id'       => $merchantId,
+                'admin_user_id1'    => $admin->id,
             ];
 
             $this->trace->info(TraceCode::ADMIN_AS_MERCHANT, $traceData);
@@ -1795,7 +1795,7 @@ class Service extends Base\Service
         }
 
         $response = [
-            'redis' => $redisStatus['statusMessage'],   
+            'redis' => $redisStatus['statusMessage'],
             'version' => app()->version(),
         ];
 
