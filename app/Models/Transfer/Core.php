@@ -1948,7 +1948,12 @@ class Core extends Base\Core
         // if public key is not available for a payment then fetch application from payment entity origin
         // note: during testing for card payments, it was found that public_key was not getting set, so this
         // is a fix for such scenarios
-        if (empty($publicKey) === true)
+        if(empty($publicKey) === false)
+        {
+            $application = (new EntityOrigin\Core())->getOriginEntityFromPublicKey($publicKey);
+        }
+
+        if (empty($application)===true)
         {
             if (empty($entity) === false and $entity->getEntityName() === Constants\Entity::PAYMENT)
             {
@@ -1993,10 +1998,6 @@ class Core extends Base\Core
                     ]);
                 }
             }
-        }
-        else
-        {
-            $application = (new EntityOrigin\Core())->getOriginEntityFromPublicKey($publicKey);
         }
 
         // fetch and set partner context from the application

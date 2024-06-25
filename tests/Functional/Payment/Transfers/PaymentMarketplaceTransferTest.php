@@ -1146,6 +1146,35 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
     }
 
+    public function testCreatePaymentTransferWithOAuthForMarketplaceWithInvalidPublicKey()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->setupMarketPlace(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'public_key' => 'rzp_live']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+    }
+
     public function testCreatePaymentTransferWithOAuthForMarketplaceInReverseShadow()
     {
         $this->setPurePlatformContext(Mode::TEST);
