@@ -860,7 +860,14 @@ class AddProvider extends React.Component {
           properties: { success: true },
         });
 
-        history.push('/optimizer/rules');
+        if (isEdit && !integrationAuditFlow) {
+          history.push('/optimizer/rules');
+        } else if (isEdit && integrationAuditFlow) {
+          history.push({
+            pathname: `/optimizer/provider/${payload?.Terminal_id}`,
+            state: { provider: res?.data },
+          });
+        }
       }
 
       this.setState({ isSaving: false });

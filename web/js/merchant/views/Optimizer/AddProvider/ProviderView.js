@@ -67,6 +67,8 @@ const reducer = (state, action) => {
       return { ...state, goToStep: action.payload };
     case 'set_should_fetch_summary':
       return { ...state, shouldFetchSummary: action.payload };
+    case 'set_provider':
+      return { ...state, provider: action.payload };
     default:
       return state;
   }
@@ -82,6 +84,7 @@ const initialState = {
   razorpayCoverage: [],
   goToStep: '',
   shouldFetchSummary: true,
+  provider: {},
 };
 
 const ProviderView = (props) => {
@@ -97,10 +100,16 @@ const ProviderView = (props) => {
     isUpdating,
     showAuditSummaryButton,
     shouldFetchSummary,
+    provider,
   } = state;
 
   const selectedProviderId = props.location.pathname.split('/').pop();
-  const provider = activeProviders?.find((provider) => provider.Terminal_id === selectedProviderId);
+  useEffect(() => {
+    const providerResult = activeProviders?.find(
+      (provider) => provider.Terminal_id === selectedProviderId,
+    );
+    dispatch({ type: 'set_provider', payload: providerResult });
+  }, [activeProviders]);
 
   const integrationAuditFlowEnabled =
     isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(provider?.Gateway);
@@ -162,6 +171,11 @@ const ProviderView = (props) => {
           dispatch({ type: 'set_gateway_coverage', payload: response?.data?.methods });
         }
       });
+    }
+
+    const { state } = props?.location;
+    if (state?.provider) {
+      dispatch({ type: 'set_provider', payload: state.provider });
     }
   }, []);
 
@@ -342,6 +356,10 @@ const ProviderView = (props) => {
     props.history.push(`/optimizer/update-provider/${provider?.Terminal_id}`);
   };
 
+  const updateProviderViewDetails = (data) => {
+    dispatch({ type: 'set_provider', payload: data });
+  };
+
   return (
     <Box
       display="flex"
@@ -369,6 +387,7 @@ const ProviderView = (props) => {
           goToStep={goToStep}
           shouldFetchSummary={shouldFetchSummary}
           activeMethods={activeMethods}
+          updateProviderViewDetails={updateProviderViewDetails}
         />
       )}
       <Box display="flex" flexDirection="row">

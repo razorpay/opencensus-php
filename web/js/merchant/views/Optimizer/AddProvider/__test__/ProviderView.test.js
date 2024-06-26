@@ -186,4 +186,37 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
     expect(screen.queryByRole('button', { name: 'View detailed provider settings' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Restart integration testing' })).toBeInTheDocument();
   });
+
+  it('should render after updating the provider', () => {
+    const props = {
+      location: {
+        pathname: 'optimizer/update-provider/HdvEjdKKJMBX89',
+        state: {
+          provider: {
+            Provider_name: 'payu test edit 1',
+            Description: 'testing edit',
+            Gateway: 'payu',
+            Gateway_details: {
+              Key: 'hujyb3123',
+              'Payment Methods': ['card', 'emi', 'netbanking', 'upi', 'emandate'],
+              Recurring: true,
+              Salt: '',
+              Sodexo: false,
+              optimizer_seamless_disabled: false,
+            },
+            Currency: ['INR'],
+            Gateway_acquirer: 'payu',
+            Terminal_id: 'HdvEjdKKJMBX89',
+            Status: 'activated',
+            created_at: 1715591857,
+            updated_at: 1715591857,
+          },
+        },
+      },
+    };
+    render(<App initialState={initialState} props={props} />);
+    expect(screen.getByRole('heading', { name: 'payu test edit 1' })).toBeInTheDocument();
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('testing edit')).toBeInTheDocument();
+  });
 });

@@ -10,6 +10,7 @@ import {
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
+import { useNavigate } from 'react-router-dom';
 
 import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
 import { FooterButtons } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/FooterButtons';
@@ -48,7 +49,9 @@ const IntegrationTesting = ({
   user,
   org,
   showNotification,
+  updateProviderViewDetails,
 }) => {
+  const navigate = useNavigate();
   const businessName = org?.business_name;
   const [steps, setSteps] = useState(INTEGRATION_TESTING_STEPS);
 
@@ -61,6 +64,7 @@ const IntegrationTesting = ({
   const [isWebhookFailure, setIsWebhookFailure] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [isPaymentDetailsFetched, setIsPaymentDetailsFetched] = useState(false);
+  const [isPaymentTestingDone, setIsPaymentTestingDone] = useState(false);
 
   // Refund testing screen
   const [payments, setPayments] = useState([]);
@@ -455,6 +459,12 @@ const IntegrationTesting = ({
           }
           closeIntegrationTestingModal();
           setIsGoLiveConfirmation(false);
+          if (!goToStep) {
+            navigate('/optimizer/rules');
+          } else {
+            // Make function call to update deatils in provider view screen
+            updateProviderViewDetails(res?.data);
+          }
         })
         .catch((error) => {
           showNotification({
@@ -533,6 +543,8 @@ const IntegrationTesting = ({
                 isPaymentDetailsFetched={isPaymentDetailsFetched}
                 setIsPaymentDetailsFetched={setIsPaymentDetailsFetched}
                 providerId={providerId}
+                isPaymentTestingDone={isPaymentTestingDone}
+                setIsPaymentTestingDone={setIsPaymentTestingDone}
               />
             )}
             {currentStep === 'refund_testing' && (

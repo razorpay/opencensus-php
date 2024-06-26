@@ -40,6 +40,8 @@ export const PaymentTesting = ({
   isPaymentDetailsFetched,
   setIsPaymentDetailsFetched,
   providerId,
+  isPaymentTestingDone,
+  setIsPaymentTestingDone,
 }) => {
   const [isValidAmount, setIsValidAmount] = useState(true);
   const [amountErrorText, setAmountErrorText] = useState('');
@@ -67,7 +69,7 @@ export const PaymentTesting = ({
   }, [amount]);
 
   useEffect(() => {
-    if (isPaymentDone && paymentId) {
+    if (isPaymentDone && paymentId && !isPaymentTestingDone) {
       storeAuditData(providerId, {
         audit_type: AUDIT_TYPES.payment,
         audit_data: { id: paymentId },
@@ -92,6 +94,7 @@ export const PaymentTesting = ({
           setPaymentError(res?.errors?.[0]);
         }
         setIsPaymentDetailsFetched(true);
+        setIsPaymentTestingDone(true);
       });
     }
   }, [isPaymentDone, paymentId]);

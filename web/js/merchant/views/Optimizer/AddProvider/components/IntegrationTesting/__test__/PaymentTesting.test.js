@@ -35,6 +35,8 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
     changeIntegrationTestingStep: jest.fn(),
     isPaymentDetailsFetched: false,
     setIsPaymentDetailsFetched: jest.fn(),
+    isPaymentTestingDone: false,
+    setIsPaymentTestingDone: jest.fn(),
   };
 
   const App = (props) => {
