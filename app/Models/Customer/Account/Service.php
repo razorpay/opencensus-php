@@ -1689,7 +1689,7 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PRESENT);
         }
-        if ((new SplitzExperimentEvaluator())->useTripleConsentForMerchant($this->merchant->getId()))
+        if ((new SplitzExperimentEvaluator())->useTripleConsentForMerchant($merchantID))
         {
             return $this->core->fetchTripleConsentFor1CC($contact, $merchantID);
         }
