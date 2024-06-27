@@ -3,9 +3,9 @@ import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
 const { test, expect } = require('utils/base');
 
 const WEBHOOK_DATA = {
-  EMAIL: 'https://www.youtube.com/71',
+  EMAIL: 'https://youtube.com/test123',
   STATUS: 'Enabled',
-  EVENT: '1 event',
+  EVENT: '2 event',
 };
 
 const ELEMENT_CONSTANTS = {

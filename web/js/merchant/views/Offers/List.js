@@ -52,7 +52,7 @@ const _offerId = {
 
 class OffersList extends ListContainer {
   render() {
-    const { user, loading, items, skip, count, hasMoreData = true } = this.props;
+    const { user, loading, items, hasMoreData = true } = this.props;
     const offerListColumns = [
       isOfferIdClickable(user) ? _offerId : OfferIdWithoutLink,
       offerTitle,
@@ -105,8 +105,8 @@ class OffersList extends ListContainer {
             <Box>
               {this.paginate && (
                 <Pager
-                  count={count}
-                  skip={skip}
+                  count={this.state.count}
+                  skip={this.state.skip}
                   length={items.length}
                   onClick={this.paginate}
                   hasMoreData={hasMoreData}
