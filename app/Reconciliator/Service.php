@@ -877,28 +877,6 @@ class Service extends Base\Service
     {
         (new Validator)->validateUpdateUpiReconData($input);
 
-        $paymentId = $input['payment_id'];
-
-        if ($payment->isExternal() === true)
-        {
-            $payment->transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
-        }
-
-        $transaction = $payment->transaction;
-
-        if ((empty($transaction) === false) and
-            ($transaction->isReconciled() === true))
-        {
-            return [
-                'success'        => false,
-                'gateway'        => $payment->getGateway(),
-                'error' => [
-                    'code'        => InfoCode::ALREADY_RECONCILED,
-                    'description' => 'Upi payment is already reconciled'
-                ],
-            ];
-        }
-
         $this->trace->info(
             TraceCode::RECON_UPDATE_RECONCILIATION_DATA_STARTED,
            [
@@ -909,6 +887,28 @@ class Service extends Base\Service
 
         try
         {
+            $paymentId = $input['payment_id'];
+
+            if ($payment->isExternal() === true)
+            {
+                $payment->transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+            }
+
+            $transaction = $payment->transaction;
+
+            if ((empty($transaction) === false) and
+                ($transaction->isReconciled() === true))
+            {
+                return [
+                    'success'        => false,
+                    'gateway'        => $payment->getGateway(),
+                    'error' => [
+                        'code'        => InfoCode::ALREADY_RECONCILED,
+                        'description' => 'Upi payment is already reconciled'
+                    ],
+                ];
+            }
+
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
                 $this->updateTransactionData($input, $payment);
@@ -1372,6 +1372,11 @@ class Service extends Base\Service
 
         if (empty($transaction) === true)
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSACTION_NOT_FOUND,
+                $input
+            );
+            
             throw new Exception\BadRequestException(
                 'Payment transaction not found',
                 $input);

@@ -5139,7 +5139,7 @@ class Route
         'fetch_turbo_upi_error_mapping',
         'record_turbo_upi_customer_consent',
         'turbo_upi_customer_reward_eligibility',
-        'turbo_upi_customer_reward_allocate'
+        'turbo_upi_customer_reward_allocate' 
     ];
 
     public static $device = [
