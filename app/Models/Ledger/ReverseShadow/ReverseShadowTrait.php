@@ -908,7 +908,7 @@ trait ReverseShadowTrait
 
         if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true or
             ($merchant->isOpgspImportEnabled() === true and in_array($merchant->getPurposeCode(), Constant::OPGSP_AWB_REQUIRED)) or
-            (new Transaction\Processor\payment($baseTransactionEntity))::shouldHoldSubmerchantPayment($payment, $merchant) === true)
+            Transaction\Processor\Payment::shouldHoldSubmerchantPayment($payment, $merchant) === true)
         {
             $baseTransactionEntity->setOnHold(true);
         }

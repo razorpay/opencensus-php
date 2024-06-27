@@ -2648,6 +2648,11 @@ class Core extends Base\Core
         $reverseShadowEnabledForTransferDebitMid = $transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
         $reverseShadowEnabledForLinkedAccount = $paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
 
+        if (($reverseShadowEnabledForTransferDebitMid === false) and ($reverseShadowEnabledForLinkedAccount === false))
+        {
+            return;
+        }
+
         if (( $reverseShadowEnabledForTransferDebitMid === false) ^ ( $reverseShadowEnabledForLinkedAccount === false))
         {
             $this->trace->info(
