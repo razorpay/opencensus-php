@@ -32,6 +32,14 @@ class Constants
 
     public const MERCHANT_ID                = 'merchant_id';
 
+    public const MERCHANT_NAME              = "merchant_name";
+
+    public const MERCHANT_PAN               = "merchant_pan";
+
+    public const MERCHANT_DETAIL            = "merchant_detail";
+
+    public const MERCHANT_ADDRESS           = "merchant_address";
+
     public const ATTACHMENT_FILE_URL        = 'attachment_file_url';
 
     public const PAYOUT_ATTACHMENT_METRO_TOPIC = 'payout_attachments';

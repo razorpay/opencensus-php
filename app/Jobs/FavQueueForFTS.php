@@ -4,7 +4,6 @@ namespace RZP\Jobs;
 
 use Razorpay\Trace\Logger;
 
-use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
@@ -13,6 +12,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Services\RazorXClient;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\FundAccount\Validation\Metric as FAVMetric;
 
 class FavQueueForFTS extends Job

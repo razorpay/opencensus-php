@@ -3229,6 +3229,139 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
     }
 
+    public function testCreatePayoutWithRemitterDetailsToFTS()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
+            ], 'control'
+        );
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsTransferSuccess = false;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+             ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                self::assertEquals([
+                    'merchant_detail' => [
+                        'merchant_name'     =>  'businessNAME',
+                        'merchant_pan'      =>  'companyPAN',
+                        'merchant_address'  => 'Line 1 Address, Line 2 Address, Bhubaneswar, India - 751490'
+                    ],
+                    ], $input['transfer']['request_meta']);
+
+                $ftsTransferSuccess = true;
+
+                return [
+                    FTSConstants::BODY => [
+                        FTSConstants::STATUS           => FTSConstants::STATUS_CREATED,
+                        FTSConstants::MESSAGE          => 'fund transfer sent to fts.',
+                        FTSConstants::FUND_TRANSFER_ID => random_integer(2),
+                        FTSConstants::FUND_ACCOUNT_ID  => random_integer(2),
+                    ]
+                ];
+            })->times(1);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000000',
+            Detail\Entity::COMPANY_PAN                    => "companyPAN",
+            Detail\Entity::BUSINESS_NAME                  => "businessNAME",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
+        $this->testCreatePayout();
+
+        $this->assertTrue($ftsTransferSuccess);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotNull($payout['transferred_at']);
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        $this->assertEquals('initiated', $fta->getStatus());
+    }
+
+    public function testCreatePayoutWithoutRemitterDetailsToFTS()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'off',
+
+            ], 'control'
+        );
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsTransferSuccess = false;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                self::assertNull($input['transfer']['request_meta']);
+
+                $ftsTransferSuccess = true;
+
+                return [
+                    FTSConstants::BODY => [
+                        FTSConstants::STATUS           => FTSConstants::STATUS_CREATED,
+                        FTSConstants::MESSAGE          => 'fund transfer sent to fts.',
+                        FTSConstants::FUND_TRANSFER_ID => random_integer(2),
+                        FTSConstants::FUND_ACCOUNT_ID  => random_integer(2),
+                    ]
+                ];
+            })->times(1);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000000',
+            Detail\Entity::COMPANY_PAN                    => "companyPAN",
+            Detail\Entity::BUSINESS_NAME                  => "businessNAME",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
+        $this->testCreatePayout();
+
+        $this->assertTrue($ftsTransferSuccess);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotNull($payout['transferred_at']);
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        $this->assertEquals('initiated', $fta->getStatus());
+    }
+
     public function testCreatePayoutWithASyncFtsTransferCall()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_FTS_TRANSFER]);

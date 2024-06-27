@@ -512,6 +512,32 @@ class FundTransfer extends Base
                     $this->addRequestMetaForMasterCardSend($request, $source);
                 }
             }
+
+            $variant = $this->app->razorx->getTreatment(
+                $this->fta->merchant->getId(),
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS,
+                ModeConstants::LIVE
+            );
+
+            if ($variant === 'on')
+            {
+                $this->addRequestMetaForMerchantDetails($request, $source);
+
+                $requestMetaObject = $request[Constants::TRANSFER][Constants::REQUEST_META];
+
+                if ((isset($requestMetaObject[PayoutConstants::MERCHANT_DETAIL][PayoutConstants::MERCHANT_NAME]) === false) or
+                    (isset($requestMetaObject[PayoutConstants::MERCHANT_DETAIL][PayoutConstants::MERCHANT_PAN]) === false) or
+                    (isset($requestMetaObject[PayoutConstants::MERCHANT_DETAIL][PayoutConstants::MERCHANT_ADDRESS]) === false))
+                {
+                    $this->trace->info(TraceCode::MERCHANT_DETAIL_NOT_PRESENT_IN_FTS_REQUEST, [
+                        'payout_id'                 => $this->fta->getSourceId(),
+                        'merchant_id'               => $this->fta->merchant->getId(),
+                        'is_merchant_name_empty'    => empty($requestMetaObject[PayoutConstants::MERCHANT_DETAIL][PayoutConstants::MERCHANT_NAME]),
+                        'is_merchant_pan_empty'     => empty($requestMetaObject[PayoutConstants::MERCHANT_DETAIL][PayoutConstants::MERCHANT_PAN]),
+                        'is_merchant_address_empty' => empty($requestMetaObject[PayoutConstants::MERCHANT_DETAIL][PayoutConstants::MERCHANT_ADDRESS]),
+                    ]);
+                }
+            }
         }
 
         if (method_exists($source, 'hasBatch'))
@@ -551,6 +577,39 @@ class FundTransfer extends Base
         else
         {
             $request[Constants::TRANSFER][Constants::REQUEST_META] = $requestMeta;
+        }
+    }
+
+    protected function addRequestMetaForMerchantDetails(&$request, Payout\Entity $payout): void
+    {
+        $requestMeta = [];
+
+        if (empty($requestMeta) === true)
+        {
+            /* @var Detail\Entity $merchantDetails*/
+            $merchantDetails = $this->repo->merchant_detail->findByPublicId($payout->getMerchantId());
+
+            if (empty($merchantDetails) === true)
+            {
+                return;
+            }
+
+            $requestMeta[PayoutConstants::MERCHANT_NAME] = $merchantDetails->getBusinessName();
+            $requestMeta[PayoutConstants::MERCHANT_PAN] = $merchantDetails->getPan();
+            $requestMeta[PayoutConstants::MERCHANT_ADDRESS] = $merchantDetails->getBusinessRegisteredAddressAsText(', ');
+        }
+
+        if (isset($request[Constants::TRANSFER][Constants::REQUEST_META]) === true)
+        {
+            $request[Constants::TRANSFER][Constants::REQUEST_META] += [
+                PayoutConstants::MERCHANT_DETAIL => $requestMeta
+            ];
+        }
+        else
+        {
+            $request[Constants::TRANSFER][Constants::REQUEST_META] = [
+                PayoutConstants::MERCHANT_DETAIL => $requestMeta
+            ];
         }
     }
 

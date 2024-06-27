@@ -26,6 +26,7 @@ use RZP\Constants\Timezone;
 use RZP\Jobs\FavQueueForFTS;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Constants\HyperTrace;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
@@ -34,6 +35,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Constants\Mode as ModeConstants;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
@@ -1369,13 +1371,43 @@ class Core extends Base\Core
                 // Creating request separately for input received from FAV service
                 if (empty($input) === false)
                 {
+                    $merchantId = $input['merchant_id'];
+
                     $request = $this->createRequestBodyFromInputForFTS($input);
                 }
                 else
                 {
                     $fav = $this->repo->fund_account_validation->findOrFail($favId);
 
+                    $merchantId = $fav->getMerchantId();
+
                     $request = $this->createRequestBodyFromFavForFTS($fav);
+                }
+
+                $variant = $this->app->razorx->getTreatment(
+                    $merchantId,
+                    RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS,
+                    ModeConstants::LIVE
+                );
+
+                if ($variant === 'on')
+                {
+                    $this->addRequestMetaForMerchantDetails($request, $merchantId);
+
+                    $requestMetaObject = $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META];
+
+                    if ((isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_NAME]) === false) or
+                        (isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_PAN]) === false) or
+                        (isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_ADDRESS]) === false))
+                    {
+                        $this->trace->info(TraceCode::MERCHANT_DETAIL_NOT_PRESENT_IN_FTS_REQUEST, [
+                            'fav_id'                    => $favId,
+                            'merchant_id'               => $merchantId,
+                            'is_merchant_name_empty'    => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_NAME]),
+                            'is_merchant_pan_empty'     => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_PAN]),
+                            'is_merchant_address_empty' => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_ADDRESS]),
+                        ]);
+                    }
                 }
 
                 $ftsClient = new FTS\Transfer\Client($this->app);
@@ -1386,6 +1418,39 @@ class Core extends Base\Core
             },
             self::FAV_QUEUE_FOR_FTS_MUTEX_LOCK_TIMEOUT
         );
+    }
+
+    protected function addRequestMetaForMerchantDetails(&$request, $merchantId): void
+    {
+        $requestMeta = [];
+
+        if (empty($requestMeta) === true)
+        {
+            /* @var Detail\Entity $merchantDetails*/
+            $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+            if (empty($merchantDetails) === true)
+            {
+                return;
+            }
+
+            $requestMeta[Constants::MERCHANT_NAME] = $merchantDetails->getBusinessName();
+            $requestMeta[Constants::MERCHANT_PAN] = $merchantDetails->getPan();
+            $requestMeta[Constants::MERCHANT_ADDRESS] = $merchantDetails->getBusinessRegisteredAddressAsText(', ');
+        }
+
+        if (isset($request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META]) === true)
+        {
+            $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META] += [
+                Constants::MERCHANT_DETAIL => $requestMeta
+            ];
+        }
+        else
+        {
+            $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META] = [
+                Constants::MERCHANT_DETAIL => $requestMeta
+            ];
+        }
     }
 
     /**

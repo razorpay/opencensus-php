@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Database\Connection;
 
 use RZP\Services\Mock\WorkflowService;
+use RZP\Models\Merchant\Detail;
 use \WpOrg\Requests\Response;
 
 use RZP\Exception;
@@ -2304,16 +2305,23 @@ class PayoutServiceTest extends TestCase
             'shouldAllowTransfersViaFts' => [true, 'Dummy'],
         ]);
 
-        $mock->shouldReceive('createAndSendRequest')->once()->andReturn(
-            [
-                'body' => [
-                    'status'           => 'initiated',
-                    'fund_transfer_id' => 123,
-                    'fund_account_id'  => 'D6Z9Jfir2egAUT'
-                ],
-                'code' => 201,
-            ]
-        );
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                self::assertNull($input['transfer']['request_meta']);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
 
         $this->mockPayoutServiceStatusShouldNotBeInvoked();
 
@@ -2326,6 +2334,104 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
 
         return $payout;
+    }
+
+    public function testCreatePayoutServiceFtaCreationWithRemitterDetails($mode = 'IMPS')
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutServiceFtaCreation'];
+
+        $payout = $this->testCreatePayoutEntry($mode, false);
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
+
+            ], 'control'
+        );
+
+        $this->fixtures->edit('merchant_detail', '10000000000000', [
+            Detail\Entity::COMPANY_PAN                    => "companyPAN",
+            Detail\Entity::BUSINESS_NAME                  => "businessNAME",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'transaction_id' => 'randomtxnnnnnn',
+            'status'         => 'created',
+            'tax'            => 90,
+            'fees'           => 590,
+            'notes' => ['abc' => 'def']
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'randomtxnnnnnn',
+            'entity_id'   => substr($payout['id'], 5),
+            'type'        => 'payout',
+            'merchant_id' => $payout['merchant_id'],
+            'amount'      => $payout['amount'],
+            'debit'       => $payout['amount'],
+            'balance_id'  => $payout['balance_id'],
+            'posted_at'   => $payout['created_at'],
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+            DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+            Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                self::assertEquals([
+                    'merchant_detail' => [
+                        'merchant_name'     =>  'businessNAME',
+                        'merchant_pan'      =>  'companyPAN',
+                        'merchant_address'  => 'Line 1 Address, Line 2 Address, Bhubaneswar, India - 751490'
+                    ],
+                ], $input['transfer']['request_meta']);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
     }
 
     public function testCreatePayoutServiceFtaCreationWithPayoutInInitiatedState($mode = 'IMPS')

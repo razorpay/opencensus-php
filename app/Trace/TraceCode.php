@@ -5872,6 +5872,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SYNC_FTS_FALLBACK_FTA_QUEUE_PUSH                      = 'SYNC_FTS_FALLBACK_FTA_QUEUE_PUSH';
     const SYNC_FTS_FAILED_FTA_EMPTY                             = 'SYNC_FTS_FAILED_FTA_EMPTY';
 
+    const MERCHANT_DETAIL_NOT_PRESENT_IN_FTS_REQUEST            = 'MERCHANT_DETAIL_NOT_PRESENT_IN_FTS_REQUEST';
+
     const PAYOUT_UPDATE_BY_BAS_RECON                            = 'PAYOUT_UPDATE_BY_BAS_RECON';
     const PAYOUT_UPDATE_BY_BAS_RECON_COMPLETE                   = 'PAYOUT_UPDATE_BY_BAS_RECON_COMPLETE';
     const PAYOUT_UPDATE_BY_BAS_RECON_FAILURE                    = 'PAYOUT_UPDATE_BY_BAS_RECON_FAILURE';

@@ -41,6 +41,13 @@ class Constants
 
     const TYPE_NEW_FAV_COMPOSITE          = "new_fav_composite";
 
+    public const MERCHANT_NAME              = "merchant_name";
+
+    public const MERCHANT_PAN               = "merchant_pan";
+
+    public const MERCHANT_DETAIL            = "merchant_detail";
+
+    public const MERCHANT_ADDRESS           = "merchant_address";
 
     protected $slackSettings;
 

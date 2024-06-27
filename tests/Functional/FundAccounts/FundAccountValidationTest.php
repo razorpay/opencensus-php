@@ -15,8 +15,10 @@ use RZP\Models\Pricing\Fee;
 use RZP\Jobs\FavQueueForFTS;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Detail;
 use RZP\Services\FavService\Fetch;
 use RZP\Services\FavService\Update;
+use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use Illuminate\Support\Facades\Queue;
@@ -927,6 +929,433 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
     }
+
+    public function testFavFtsRequestWithRemitterDetails()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
+
+            ], 'control'
+        );
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testPennilessValidationWithBlacklistedBeneBank'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $txn         = $this->getLastEntity('transaction', true);
+        $balance     = $this->getLastEntity('balance', true);
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+
+        // Note: because no fee credits are available
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        // validate balance entry in database
+        $this->assertEquals(9999997, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        // Test worker
+        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->edit('merchant_detail', '10000000000000', [
+            Detail\Entity::COMPANY_PAN                    => "companyPAN",
+            Detail\Entity::BUSINESS_NAME                  => "businessNAME",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                self::assertEquals([
+                    'merchant_detail' => [
+                        'merchant_name'     =>  'businessNAME',
+                        'merchant_pan'      =>  'companyPAN',
+                        'merchant_address'  =>  'Line 1 Address, Line 2 Address, Bhubaneswar, India - 751490'
+                    ],
+                ], $input['transfer']['request_meta']);
+
+                return [
+                    'body' => [
+                        'status'           => 'created',
+                        'message'          => 'fund transfer sent to fts.',
+                        'fund_transfer_id' => 11,
+                        'fund_account_id'  => '12'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
+
+        $favQueueForFts->handle();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'COMPLETED');
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Test', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+
+        // Penny drop assertion
+        $this->assertEquals('fav_'.$favUpdated['id'], $fta['source']);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+    }
+
+    public function testFavFtsRequestWithoutRemitterDetails()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
+
+            ], 'control'
+        );
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testPennilessValidationWithBlacklistedBeneBank'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $txn         = $this->getLastEntity('transaction', true);
+        $balance     = $this->getLastEntity('balance', true);
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+
+        // Note: because no fee credits are available
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        // validate balance entry in database
+        $this->assertEquals(9999997, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        // Test worker
+        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+                self::assertNull($input['transfer']['request_meta']['merchant_detail']['name']);
+                self::assertNull($input['transfer']['request_meta']['merchant_detail']['pan']);
+
+                return [
+                    'body' => [
+                        'status'           => 'created',
+                        'message'          => 'fund transfer sent to fts.',
+                        'fund_transfer_id' => 11,
+                        'fund_account_id'  => '12'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
+
+        $favQueueForFts->handle();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'COMPLETED');
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Test', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+
+        // Penny drop assertion
+        $this->assertEquals('fav_'.$favUpdated['id'], $fta['source']);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+    }
+
+    public function testFavMicroServiceFtsRequestWithRemitterDetails()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testValidateTypeBankAccountInternal'];
+
+        Queue::fake();
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
+
+            ], 'control'
+        );
+
+        $this->ba->payoutInternalAppAuth();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $content = $this->testData[__FUNCTION__]['request']['content'];
+
+        $mock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
+
+        $mock->shouldReceive('updateFavInMicroservice')
+            ->withArgs(function ($fav_id, $fund_transfer_id, $type){
+
+                return ($fav_id === '1234567890' && empty($fund_transfer_id) == false);})
+            ->times(1);
+
+        $this->startTest();
+
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        $favQueueForFts = new FavQueueForFTS('test', $content['fav_id'], $content);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->edit('merchant_detail', '10000000000000', [
+            Detail\Entity::COMPANY_PAN                    => "companyPAN",
+            Detail\Entity::BUSINESS_NAME                  => "businessNAME",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                self::assertEquals([
+                    'merchant_detail' => [
+                        'merchant_name'     =>  'businessNAME',
+                        'merchant_pan'      =>  'companyPAN',
+                        'merchant_address'  => 'Line 1 Address, Line 2 Address, Bhubaneswar, India - 751490'
+                    ],
+                ], $input['transfer']['request_meta']);
+
+                return [
+                    'body' => [
+                        'status'           => 'created',
+                        'message'          => 'fund transfer sent to fts.',
+                        'fund_transfer_id' => 11,
+                        'fund_account_id'  => '12'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
+
+        $favQueueForFts->handle();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'test');
+
+        // Penny drop assertion
+        $this->assertEquals("1234567890", $fta['source_id']);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
+    }
+
+    public function testFavMicroServiceFtsRequestWithoutRemitterDetails()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testValidateTypeBankAccountInternal'];
+
+        Queue::fake();
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
+
+            ], 'control'
+        );
+
+        $this->ba->payoutInternalAppAuth();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $content = $this->testData[__FUNCTION__]['request']['content'];
+
+        $mock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
+
+        $mock->shouldReceive('updateFavInMicroservice')
+            ->withArgs(function ($fav_id, $fund_transfer_id, $type){
+
+                return ($fav_id === '1234567890' && empty($fund_transfer_id) == false);})
+            ->times(1);
+
+        $this->startTest();
+
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        $favQueueForFts = new FavQueueForFTS('test', $content['fav_id'], $content);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+                self::assertNull($input['transfer']['request_meta']['merchant_detail']['name']);
+                self::assertNull($input['transfer']['request_meta']['merchant_detail']['pan']);
+
+                return [
+                    'body' => [
+                        'status'           => 'created',
+                        'message'          => 'fund transfer sent to fts.',
+                        'fund_transfer_id' => 11,
+                        'fund_account_id'  => '12'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
+
+        $favQueueForFts->handle();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'test');
+
+        // Penny drop assertion
+        $this->assertEquals("1234567890", $fta['source_id']);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
+    }
+
 
     public function testFetchPricingInfoForFavService()
     {
