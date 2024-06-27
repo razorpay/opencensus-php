@@ -2161,6 +2161,9 @@ class Constants
 
     const SHOW_INTL_RISK_ANALYTICS_DASHBOARD = 'show_intl_risk_dashboard';
 
+    const PACB_EXPORT_PARTNER_FLOW = 'pacb_export_partner_flow';
+
+
     /*feature flag forthe HDFC OTC new flow*/
     const OTC_MERCHANT_CHALLAN = 'otc_merchant_challan';
 
@@ -3019,7 +3022,8 @@ class Constants
         self::ENABLE_INTL_PRICING_AMEX               => true,
         self::CREDIT_RISK_BAND_ENABLED               => true,
         self::RewardPoints                           => true,
-        self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD          => true,
+        self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD     => true,
+        self::PACB_EXPORT_PARTNER_FLOW               => true,
         self::OTC_MERCHANT_CHALLAN                   => true,
         self::EXTERNAL_PA_VAS                        =>  true,
         self::AMAZON_GC_VALIDATIONS                  => true,
@@ -4316,6 +4320,11 @@ class Constants
         self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD => [
             'feature'       => self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD,
             'display_name'  => 'Feature to enable international risk analytics dashboard for merchant',
+            'documentation' => '',
+        ],
+        self::PACB_EXPORT_PARTNER_FLOW => [
+            'feature'       => self::PACB_EXPORT_PARTNER_FLOW,
+            'display_name'  => 'Feature to enable PaCB export flow for partner merchants',
             'documentation' => '',
         ],
         self::RBL_BANK_LMS_DASHBOARD => [
