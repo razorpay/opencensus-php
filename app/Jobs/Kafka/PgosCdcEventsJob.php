@@ -79,8 +79,6 @@ class PgosCdcEventsJob extends Job
                 'attempt'         => $this->attempts(),
                 'retry'           => true
             ]);
-
-            throw $e;
         }
         catch (\Throwable $e)
         {

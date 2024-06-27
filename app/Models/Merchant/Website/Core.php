@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
@@ -173,46 +174,54 @@ class Core extends Base\Core
     {
         $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
 
-        if ($splitzResult === 'variables')
+        try
         {
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
-
-            $websitePolicyV2SplitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'policy_wizard_v2_exp_id');
-
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants for whom website policy v2 experiment is enabled
-            // merchants who are not completely activated
-
-            if (($merchant->getService() === MerchantConstants::PGOS or
-                    $websitePolicyV2SplitzResult === 'variables') and
-                $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED)
+            if ($splitzResult === 'variables')
             {
-                $websiteDetails = (new Repository())->getWebsiteDetailsForMerchantId($data["merchant_id"]);
+                $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-                if (empty($websiteDetails) === false)
+                $websitePolicyV2SplitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'policy_wizard_v2_exp_id');
+
+                // dual write only for below merchants
+                // merchants for whom pgos is serving onboarding requests
+                // merchants for whom website policy v2 experiment is enabled
+                // merchants who are not completely activated
+
+                if (($merchant->getService() === MerchantConstants::PGOS or
+                     $websitePolicyV2SplitzResult === 'variables') and
+                    $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED)
                 {
-                    unset($data[Entity::MERCHANT_ID]);
+                    $websiteDetails = (new Repository())->getWebsiteDetailsForMerchantId($data["merchant_id"]);
 
-                    unset($data[Entity::ID]);
+                    if (empty($websiteDetails) === false)
+                    {
+                        unset($data[Entity::MERCHANT_ID]);
 
-                    $websiteDetails->edit($data);
+                        unset($data[Entity::ID]);
 
-                    $this->repo->saveOrFail($websiteDetails);
-                }
-                else
-                {
-                    $websiteDetails = new Entity;
+                        $websiteDetails->edit($data);
 
-                    $websiteDetails->setId($data[Entity::ID]);
+                        $this->repo->saveOrFail($websiteDetails);
+                    }
+                    else
+                    {
+                        $websiteDetails = new Entity;
 
-                    unset($data[Entity::ID]);
+                        $websiteDetails->setId($data[Entity::ID]);
 
-                    $websiteDetails->build($data);
+                        unset($data[Entity::ID]);
 
-                    $this->repo->merchant_website->saveOrFail($websiteDetails);
+                        $websiteDetails->build($data);
+
+                        $this->repo->merchant_website->saveOrFail($websiteDetails);
+                    }
                 }
             }
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Logger::CRITICAL,
+                TraceCode::PGOS_DUAL_WRITE_MERCHANT_WEBSITE_ERROR);
         }
     }
 }
