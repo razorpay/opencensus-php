@@ -163,6 +163,7 @@ class Entity extends Base\PublicEntity
         switch ($routeName)
         {
             case 'upi_transfer_process':
+            case 'bank_transfer_process':
                 $requestSource = [
                     'source'       => 'callback',
                     'request_from' => 'bank',

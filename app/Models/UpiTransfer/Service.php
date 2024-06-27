@@ -33,7 +33,7 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function processUpiTransferPayment($input, $gateway)
+    public function processUpiTransferPayment($input, $gateway, $isCollectXPayment = false)
     {
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
@@ -48,7 +48,15 @@ class Service extends Base\Service
 
         try
         {
-            [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminal($input, $gateway);
+            if ($isCollectXPayment === true)
+            {
+                $input = json_decode($input, true);
+                [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminalForCollectX($input['validate'], $gateway);
+            }
+            else
+            {
+                [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminal($input, $gateway);
+            }
 
             if ($this->isQrCodePayment === true)
             {
@@ -69,6 +77,45 @@ class Service extends Base\Service
             'message'        => null,
             'transaction_id' => $transactionId,
         ];
+    }
+
+    private function computeGatewayResponseAndTerminalForCollectX($input, $gateway)
+    {
+        $transferData = $this->formatGatewayResponseDataForCollectX($input, $gateway);
+
+        $gatewayResponse['upi_transfer_data'] = $transferData;
+        $gatewayResponse['callback_data'] = $input;
+
+        $terminal = $this->getTerminalForCollectXMerchant($transferData['payee_vpa']);
+
+        return [$terminal, $gatewayResponse];
+    }
+
+    private function formatGatewayResponseDataForCollectX($input, $gateway)
+    {
+        // Since this route is only being used for CollectX Yesbank UPI transfer callbacks
+        $transferData[Entity::PAYEE_VPA] = $input['bene_account_no'] . "@yesbankltd";
+
+        $transferData[Entity::GATEWAY] = $gateway;
+
+        $transferData[Entity::NPCI_REFERENCE_ID] = $input['transfer_unique_no'];
+
+        $transferData[Entity::PAYER_ACCOUNT] = $input['rmtr_account_no'];
+
+        // Hardcoding as we don't want to remove validations on this but payer can be bank account as well
+        $transferData[Entity::PAYER_VPA] = "collectXMerchant@vpa";
+
+        $transferData[Entity::GATEWAY_MERCHANT_ID] = "COLLECTX";
+
+        $transferData[Entity::PROVIDER_REFERENCE_ID] = $input['transfer_unique_no'];
+
+        $transferData[Entity::TRANSACTION_TIME] = $input['transfer_timestamp'];
+
+        $transferData[Entity::PAYER_IFSC] = $input['rmtr_account_ifsc'];
+
+        $transferData[Entity::AMOUNT] = $input['transfer_amt'] * 100;
+
+        return $transferData;
     }
 
     private function computeGatewayResponseAndTerminal($input, $gateway)
@@ -247,6 +294,17 @@ class Service extends Base\Service
            );
        }
     }*/
+
+    protected function getTerminalForCollectXMerchant($payeeVPA)
+    {
+        // Prefixes are going to be 7 characters long like "RZPAYX." or "SWIGGY."
+        $prefix = substr($payeeVPA, 0, 7);
+        $prefix = strtolower($prefix);
+
+        $vpaPrefixEntity = $this->repo->virtual_vpa_prefix->fetchEntityByVPAPrefix($prefix);
+
+        return $this->repo->terminal->getById($vpaPrefixEntity->terminal_id, false);
+    }
 
     protected function getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass)
     {

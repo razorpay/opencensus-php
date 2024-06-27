@@ -3389,6 +3389,10 @@ class Processor
                     $payment->setRelation('entityOrigin', $entityOrigin);
                 }
 
+                if ($this->merchant->isFeatureEnabled(Feature::COLLECTX_ENABLED) === true)
+                {
+                    $gatewayInput["payment"] = $payment;
+                }
 
                 $paymentData = $this->authorize($payment, $input, $gatewayInput);
 

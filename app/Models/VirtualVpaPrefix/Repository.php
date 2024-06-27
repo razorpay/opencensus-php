@@ -30,4 +30,9 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->first();
     }
+
+    public function fetchEntityByVPAPrefix(string $prefix)
+    {
+        return $this->newQuery()->where(Entity::PREFIX, $prefix)->first();
+    }
 }

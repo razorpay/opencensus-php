@@ -4028,6 +4028,7 @@ class Gateway
     public static $upiTransferGateway = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::UPI_YESBANK,
     ];
 
     public static $partialRefundDisabledGateways = [

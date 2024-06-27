@@ -49,6 +49,7 @@ use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Currency\Currency;
+use RZP\Models\UpiTransfer;
 use RZP\Models\Merchant\InternationalIntegration;
 use function GuzzleHttp\default_ca_bundle;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
@@ -166,6 +167,11 @@ class Service extends Base\Service
         //If it is a notification request (request type = "notification") these validations
         //are skipped.
         //$response is returned empty if it is not a validation request
+
+        if ($this->checkForCollectXRequestForUPI($input) === true)
+        {
+            return $this->routeForCollectXUPIRequest($input);
+        }
         $response = $this->processValidationRequest($input, $provider);
 
         if (empty($response) === false) {
@@ -216,6 +222,20 @@ class Service extends Base\Service
         }
 
         return $this->validateAndProcessRequest($input, $bankTransferRequest, $provider, $checkForIfsc);
+    }
+
+    protected function checkForCollectXRequestForUPI(array $input): bool
+    {
+        if ((array_key_exists('validate', $input)) and $input['validate']['transfer_type'] === "UPI")
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected function routeForCollectXUPIRequest(array $input)
+    {
+        return (new UpiTransfer\Service())->processUpiTransferPayment(json_encode($input), Gateway::UPI_YESBANK, isCollectXPayment: true);
     }
 
     protected function processValidationRequest(array $input, string $provider = null)
