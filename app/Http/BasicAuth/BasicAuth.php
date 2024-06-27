@@ -3260,7 +3260,7 @@ class BasicAuth
             if (empty($adminId) === false)
             {
 
-                $admin = $this->repo->admin->findByPublicId($adminId);
+                $admin = $this->repo->admin->connection('live')->findByPublicId($adminId);
 
                 // if they have read only permission change the role to read only
 
