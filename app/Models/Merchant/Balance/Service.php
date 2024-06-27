@@ -361,7 +361,9 @@ class Service extends Base\Service
     {
         $counter = (new Payout\CounterHelper)->getCounterForBalance($balance);
 
-        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId());
+        $accountType = $balance->getAccountType();
+
+        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId(), $accountType);
 
         $response = $this->repo->counter->transaction(
             function() use ($counter, $balance, $merchant, $action)
@@ -384,7 +386,9 @@ class Service extends Base\Service
 
     protected function handleFreePayoutDisable($merchant, $balance, $action)
     {
-        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId());
+        $accountType = $balance->getAccountType();
+
+        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId(), $accountType);
 
         $input = [
             Entity::MERCHANT_ID     => $merchant->getId(),

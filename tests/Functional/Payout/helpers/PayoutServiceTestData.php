@@ -2582,6 +2582,27 @@ return [
         ],
     ],
 
+    'testFreePayoutMigrationAdminActionForCAMerchant' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBasDetailsStatusUpdateAdminAction' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',
@@ -2645,6 +2666,27 @@ return [
         ],
     ],
 
+    'testFreePayoutMigrationAdminActionWithLedgerReverseShadowNotAssignedForCAMerchant' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testFreePayoutMigrationAdminActionWithPayoutServiceEnabledFeature' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',
@@ -2667,6 +2709,27 @@ return [
     ],
 
     'testFreePayoutMigrationAdminActionDisableAction' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION => EntityConstants::DISABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutMigrationAdminActionDisableActionForCAMerchant' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',
             'method'  => 'post',
@@ -2757,6 +2820,51 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFreePayoutRollbackForCAMerchant' => [
+        'request'  => [
+            'url'     => '/payouts_service/free_payout_rollback',
+            'method'  => 'post',
+            'content' => [
+                Entity::MERCHANT_ID                                => '10000000000000',
+                EntityConstants::BALANCE_TYPE                      => 'shared',
+                CounterEntity::FREE_PAYOUTS_CONSUMED               => 200,
+                CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
+                Balance\FreePayout::FREE_PAYOUTS_COUNT             => 300,
+                Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => ['IMPS', 'RTGS'],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                EntityConstants::COUNTERS_ROLLBACK  => true,
+                EntityConstants::SETTINGS_ROLLBACK  => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutRollbackWithLedgerReverseShadowNotAssignedForCAMerchant' => [
+        'request'  => [
+            'url'     => '/payouts_service/free_payout_rollback',
+            'method'  => 'post',
+            'content' => [
+                Entity::MERCHANT_ID                                => '10000000000000',
+                EntityConstants::BALANCE_TYPE                      => 'shared',
+                CounterEntity::FREE_PAYOUTS_CONSUMED               => 200,
+                CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
+                Balance\FreePayout::FREE_PAYOUTS_COUNT             => 300,
+                Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => ['IMPS', 'RTGS'],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                EntityConstants::COUNTERS_ROLLBACK  => true,
+                EntityConstants::SETTINGS_ROLLBACK  => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 
     'testFreePayoutRollbackValidationFailure' => [
         'request'  => [

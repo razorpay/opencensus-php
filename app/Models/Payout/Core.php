@@ -6396,7 +6396,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function freePayoutMigrationFeatureChecks(string $action, string $merchantId)
+    public function freePayoutMigrationFeatureChecks(string $action, string $merchantId, string $accountType)
     {
         /** @var Merchant\Entity $merchant */
         $merchant = $this->repo->merchant->find($merchantId);
@@ -6412,7 +6412,7 @@ class Core extends Base\Core
             case EntityConstant::ENABLE:
 
                 // We can only process free payout migration if ledger_reverse_shadow is enabled.
-                if ($merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+                if ($accountType ===  Merchant\Balance\AccountType::SHARED && $merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
                 {
                     $this->trace->error(TraceCode::LEDGER_REVERSE_SHADOW_NOT_ENABLED_FOR_THE_MERCHANT, [
                         Entity::MERCHANT_ID     => $merchant->getId(),
@@ -6447,7 +6447,7 @@ class Core extends Base\Core
 
             case EntityConstant::DISABLE:
 
-                if ($merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+                if ($accountType ===  Merchant\Balance\AccountType::SHARED && $merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
                 {
                     $this->trace->error(TraceCode::LEDGER_REVERSE_SHADOW_NOT_ENABLED_FOR_THE_MERCHANT, [
                         Entity::MERCHANT_ID     => $merchant->getId(),
@@ -6541,7 +6541,11 @@ class Core extends Base\Core
             throw $e;
         }
 
-        $this->freePayoutMigrationFeatureChecks(EntityConstant::DISABLE, $merchant->getId());
+        /** @var Entity $balance */
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+        $accountType = $balance->getAccountType();
+
+        $this->freePayoutMigrationFeatureChecks(EntityConstant::DISABLE, $merchant->getId(), $accountType);
 
         $balance = (new Balance\Service)->getBankingTypeBalanceEntity($balanceId);
 
