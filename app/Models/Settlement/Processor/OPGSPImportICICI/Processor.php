@@ -60,7 +60,10 @@ class Processor extends Base\Core
             $to = $input['to'] ?? Carbon::today(Timezone::IST)->getTimestamp();
 
             $this->trace->info(TraceCode::OPGSP_IMPORT_SETTLEMENT_FILE_GENERATION_INPUT, [
-               'file_generation_input' => $input
+                'merchantId' => $merchantId,
+                'sendFile' => $sendFile,
+                'from' => $from,
+                'to' => $to,
             ]);
 
             $settlements = $this->repo->settlement
