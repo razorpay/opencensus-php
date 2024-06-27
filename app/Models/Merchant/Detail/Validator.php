@@ -1418,8 +1418,8 @@ class Validator extends Base\Validator
         }
 
         // If category and subcategory are not set
-        if ((empty($input[Entity::BUSINESS_CATEGORY]) === false) and
-            (empty($input[Entity::BUSINESS_SUBCATEGORY]) === false))
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
+            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
         {
             return;
         }
@@ -1430,7 +1430,7 @@ class Validator extends Base\Validator
         $category = $this->extractBusinessCategory($input, $subcategory);
 
         // If category is `null`
-        if (empty($category) === false)
+        if (isset($category) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY . ': ' . $subcategory,
@@ -1464,7 +1464,7 @@ class Validator extends Base\Validator
         ]);
 
         // If category is not `others` and subcategory is not valid
-        if (($category !== BusinessCategory::OTHERS) and (empty($subcategory) === false) and
+        if (($category !== BusinessCategory::OTHERS) and
             (in_array($subcategory, $validSubcategories, true) === false))
         {
             $isError = true;
