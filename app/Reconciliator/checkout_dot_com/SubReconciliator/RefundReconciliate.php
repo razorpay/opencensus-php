@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\checkout_dot_com\SubReconciliator;
 
+use RZP\Models\Currency\Currency;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Refund\Status;
@@ -54,5 +56,22 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return true;
+    }
+
+    protected function getReconRefundAmount(array $row)
+    {
+        if (empty($row[ReconciliationFields::PROCESSING_CURRENCY_AMOUNT]) === true)
+        {
+            return null;
+        }
+
+        if (empty($row[ReconciliationFields::PROCESSING_CURRENCY]) === true)
+        {
+            return null;
+        }
+
+        $denomination = Currency::getDenomination($row[ReconciliationFields::PROCESSING_CURRENCY]);
+
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::PROCESSING_CURRENCY_AMOUNT], $denomination);
     }
 }
