@@ -435,4 +435,32 @@ describe('User model', () => {
       expect(user.isLRSEducationFlow).toBe(false);
     });
   });
+
+  describe('isSyncBankVerificationEnabled', () => {
+    test('should return true when org level feature flag - kyc_verification_for_vas is enabled', () => {
+      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(true);
+
+      expect(user.isSyncBankVerificationEnabled).toBe(true);
+    });
+
+    test('should return false when org level feature flag - kyc_verification_for_vas is not enabled', () => {
+      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(false);
+
+      expect(user.isSyncBankVerificationEnabled).toBe(false);
+    });
+  });
+
+  describe('isSyncExperimentEnabled', () => {
+    test('should return true when org level feature flag - kyc_verification_for_vas is enabled', () => {
+      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(true);
+
+      expect(user.isSyncExperimentEnabled).toBe(true);
+    });
+
+    test('should return false when mid level feature flag - kyc_verification_for_vas is not enabled', () => {
+      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(false);
+
+      expect(user.isSyncExperimentEnabled).toBe(false);
+    });
+  });
 });

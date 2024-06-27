@@ -1750,7 +1750,7 @@ export default class User {
   }
 
   get isSyncExperimentEnabled() {
-    return this.isOrgRZP;
+    return this.isOrgRZP || this.isOrgFeatureEnabled('kyc_verification_for_vas');
   }
 
   get isRecurringMoreAccountType() {
@@ -1776,7 +1776,10 @@ export default class User {
 
   get isSyncBankVerificationEnabled() {
     if (this.isSourceRX) return false; // not required for Razorpay X;
-    return this.getExpStatus('KARZA_BANK_ACCOUNT_VERIFICATION') && this.isOrgRZP;
+    return (
+      (this.getExpStatus('KARZA_BANK_ACCOUNT_VERIFICATION') && this.isOrgRZP) ||
+      this.isOrgFeatureEnabled('kyc_verification_for_vas')
+    );
   }
 
   get isProductRecommendationEnabled() {
