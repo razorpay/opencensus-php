@@ -106,6 +106,9 @@ class Entity extends Base\PublicEntity
     const MPAN                          = 'mpan';
     const CRED                          = 'cred';
     const APP                           = 'app';
+
+    const DYNAMIC_QR                    = 'dynamic_qr';
+    const STATIC_QR                     = 'static_qr';
     const OFFLINE                       = 'offline';
     const FPX                           = 'fpx';
     const MERCHANT_MOBILE_CONTACT       = 'merchant_mobile_contact';

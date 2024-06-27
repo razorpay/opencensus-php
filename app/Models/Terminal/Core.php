@@ -64,6 +64,10 @@ class Core extends Base\Core
 
         $input = $this->addMerchantMobileContactInNotesIfApplicable($input);
 
+        $input = $this->addStaticQr($input);
+
+        $input = $this->addDynamicQr($input);
+
         $input = $this->addCcOrWalletOnUpiInNotesIfApplicable($input);
 
         $terminal = (new Entity)->build($input);
@@ -370,6 +374,10 @@ class Core extends Base\Core
                 ]);
 
             $input = $this->addMerchantMobileContactInNotesIfApplicable($input);
+
+            $input = $this->addStaticQr($input);
+
+            $input = $this->addDynamicQr($input);
 
             $input = $this->addCcOrWalletOnUpiInNotesIfApplicable($input);
 
@@ -1242,6 +1250,48 @@ class Core extends Base\Core
         $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);
 
         unset($input[Entity::MERCHANT_MOBILE_CONTACT]);
+
+        return $input;
+    }
+
+    protected function addStaticQr(&$input)
+    {
+        if(isset($input[Entity::STATIC_QR]) === false)
+        {
+            return $input;
+        }
+
+        if(isset($input[Entity::NOTES]) === false)
+        {
+            $input[Entity::NOTES] = [];
+        }
+
+        $input[Entity::NOTES][Entity::STATIC_QR] =  $input[Entity::STATIC_QR];
+
+        $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);
+
+        unset($input[Entity::STATIC_QR]);
+
+        return $input;
+    }
+
+    protected function addDynamicQr(&$input)
+    {
+        if(isset($input[Entity::DYNAMIC_QR]) === false)
+        {
+            return $input;
+        }
+
+        if(isset($input[Entity::NOTES]) === false)
+        {
+            $input[Entity::NOTES] = [];
+        }
+
+        $input[Entity::NOTES][Entity::DYNAMIC_QR] =  $input[Entity::DYNAMIC_QR];
+
+        $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);
+
+        unset($input[Entity::DYNAMIC_QR]);
 
         return $input;
     }
