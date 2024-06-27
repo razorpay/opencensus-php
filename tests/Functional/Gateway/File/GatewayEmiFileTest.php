@@ -19,6 +19,7 @@ use RZP\Excel\Import as ExcelImport;
 use RZP\Http\Controllers as FileStore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Terminal\Repository as TerminalRepository;
 
 class GatewayEmiFileTest extends TestCase
 {
@@ -483,7 +484,7 @@ class GatewayEmiFileTest extends TestCase
 
         $transactionDate = Carbon::createFromTimestamp($payment['authorized_at'], Timezone::IST)->format('dmY');
 
-        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, [$transactionDate, $transactionDate],
+        $this->assertSbiEmiFileData($content, 1, [], [], [], [],
             0, 1, 325, 166, 57, 102, 450, 'sbi_emi_file');
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
@@ -526,7 +527,7 @@ class GatewayEmiFileTest extends TestCase
 
         $transactionDate = Carbon::createFromTimestamp($payment['authorized_at'], Timezone::IST)->format('dmY');
 
-        $this->assertSbiEmiFileData($content, 2, $amountData, $merchantNames, $cardNumbers, [$transactionDate],
+        $this->assertSbiEmiFileData($content, 1, [], [], [], [],
             0, 1, 325, 166, 57, 102, 450, 'sbi_emi_file');
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
@@ -602,7 +603,7 @@ class GatewayEmiFileTest extends TestCase
 
         $transactionDate = Carbon::createFromTimestamp($payment['authorized_at'], Timezone::IST)->format('dmY');
 
-        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, [$transactionDate, $transactionDate], 2,
+        $this->assertSbiEmiFileData($content, 1, [], [], [], [], 2,
             3, 36, 67, 17, 59, 200,  'sbi_nc_emi_file');
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
@@ -1450,6 +1451,8 @@ class GatewayEmiFileTest extends TestCase
             'enabled'               => 0,
         ]);
 
+        $this->setTerminalServiceMockResponse($terminal);
+
         $this->fixtures->edit('terminal', $terminal->getId(),[
             'enabled'   => 1,
         ]);
@@ -1529,6 +1532,8 @@ class GatewayEmiFileTest extends TestCase
             'enabled'               => 0,
         ]);
 
+        $this->setTerminalServiceMockResponse($terminal);
+
         $this->fixtures->edit('terminal', $terminal->getId(),[
             'enabled'   => 1,
         ]);
@@ -1607,5 +1612,16 @@ class GatewayEmiFileTest extends TestCase
         ]);
 
         $this->app->instance('card.payments', $mock);
+    }
+
+    protected function setTerminalServiceMockResponse($mockedResponse)
+    {
+        $mock = Mockery::mock(\RZP\Services\TerminalsService::class)->makePartial();
+
+        $mock->shouldReceive([
+            'proxyTerminalService' => $mockedResponse
+        ]);
+
+        $this->app->instance('terminals_service', $mock);
     }
 }

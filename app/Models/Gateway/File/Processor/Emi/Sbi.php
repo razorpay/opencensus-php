@@ -234,8 +234,8 @@ class Sbi extends Base
                     $merchantDetail = $emiPayment->merchant->merchantDetail;
 
                     $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
-                        $emiPayment->getMerchantId(), [Payment\Method::EMI],
-                        [Gateway::EMI_SBI],
+                        $emiPayment->getMerchantId(), [],
+                        [Gateway::EMI_SBI]
                     );
 
                     $terminalsByGateway = $this->getTerminalsByGateway($terminals);

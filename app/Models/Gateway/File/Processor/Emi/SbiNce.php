@@ -195,7 +195,7 @@ class SbiNce extends Base
                 $merchantDetail = $emiPayment->merchant->merchantDetail;
 
                 $terminals = $this->repo->terminal->getActiveTerminalsBasedOnMethodsAndGateways(
-                    $emiPayment->getMerchantId(), [Payment\Method::EMI],
+                    $emiPayment->getMerchantId(), [],
                     [Gateway::EMI_SBI],
                 );
 
