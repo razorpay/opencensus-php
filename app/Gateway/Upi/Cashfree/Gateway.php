@@ -1,7 +1,7 @@
 <?php
 
 namespace RZP\Gateway\Upi\Cashfree;
-
+use Request;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
@@ -65,11 +65,24 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input): array
     {
+        if(isset($input["data"]["order"]["order_id"]) === true)
+        {
+            $headers = Request::header();
+            $input["headers"]["signature"] = $headers["x-webhook-signature"][0] ?? '';
+            $input["headers"]["timestamp"] = $headers["x-webhook-timestamp"][0] ?? '';
+            $input["headers"]["webhook-version"] = $headers["x-webhook-version"][0] ?? '';
+        }
+
         return $input;
     }
 
     public function getPaymentIdFromServerCallback(array $response, $gateway)
     {
+        //temporary fix until complete migration to V4 version
+        if(isset($response["data"]["order"]["order_id"]) === true)
+        {
+            return $response["data"]["order"]["order_id"];
+        }
         return $response[Fields::ORDER_ID];
     }
 
