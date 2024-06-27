@@ -50,6 +50,7 @@ class BankCodes
     const STANDARD_CHARTERED_SAADIQ_BANK = "Standard Chartered Saadiq Bank Berhad";
     const SUMITOMO_MITSUI_BANK           = "Sumitomo Mitsui Bank";
     const UOB                            = "United Overseas Bank";
+    const TNG_DIGITAL                    = "TNG Digital";
 
     const COUNTRY_ELIGIBLE_FOR_SWIFT_CODE_MAPPING = [
         Country::MY
@@ -57,13 +58,13 @@ class BankCodes
 
     const BANK_CODE_TO_SWIFTCODE_MAPPING = [
         self::AFFIN_BANK                        => "PHBMMYKL",
-        self::AFFIN_ISLAMIC_BANK                => "AIBBMYKL",
+        self::AFFIN_ISLAMIC_BANK                => "PHBMMYKL",
         self::AGROBANK                          => "AGOBMYKL",
         self::ALLIANCE_BANK                     => "MFBBMYKL",
-        self::ALLIANCE_ISLAMIC_BANK             => "ALSRMYKL",
+        self::ALLIANCE_ISLAMIC_BANK             => "MFBBMYKL",
         self::AL_RAJHI_BANKING                  => "RJHIMYKL",
         self::AMBANK                            => "ARBKMYKL",
-        self::AMISLAMIC_BANK                    => "AISLMYKL",
+        self::AMISLAMIC_BANK                    => "ARBKMYKL",
         self::BANGKOK_BANK                      => "BKKBMYKL",
         self::BANK_ISLAM                        => "BIMBMYKL",
         self::BANK_MUAMALAT                     => "BMMBMYKL",
@@ -74,30 +75,31 @@ class BankCodes
         self::BNP_PARIBAS                       => "BNPAMYKL",
         self::CHINA_CONSTRUCTION_BANK           => "PCBCMYKL",
         self::CIMB_BANK                         => "CIBBMYKL",
-        self::CIMB_ISLAMIC_BANK                 => "CTBBMYKL",
+        self::CIMB_ISLAMIC_BANK                 => "CIBBMYKL",
         self::CITIBANK                          => "CITIMYKL",
         self::DEUTSCHE_BANK                     => "DEUTMYKL",
         self::HONG_LEONG_BANK                   => "HLBBMYKL",
-        self::HONG_LEONG_ISLAMIC_BANK           => "HLIBMYKL",
-        self::HSBC_AMANAH                       => "HMABMYKL",
+        self::HONG_LEONG_ISLAMIC_BANK           => "HLBBMYKL",
+        self::HSBC_AMANAH                       => "HBMBMYKL",
         self::HSBC_BANK                         => "HBMBMYKL",
         self::ICBC                              => "ICBKMYKL",
         self::JP_MORGAN_CHASE_BANK              => "CHASMYKX",
         self::KUWAIT_FINANCE_HOUSE              => "KFHOMYKL",
         self::MALAYAN_BANKING                   => "MBBEMYKL",
-        self::MAYBANK_ISLAMIC                   => "MBISMYKL",
+        self::MAYBANK_ISLAMIC                   => "MBBEMYKL",
         self::MBSB_BANK                         => "AFBQMYKL",
         self::MIZUHO_BANK                       => "MHCBMYKA",
         self::MUFG_BANK                         => "BOTKMYKX",
-        self::OCBC_AL_AMIN_BANK                 => "OABBMYKL",
+        self::OCBC_AL_AMIN_BANK                 => "OCBCMYKL",
         self::OCBC_BANK                         => "OCBCMYKL",
         self::PUBLIC_BANK                       => "PBBEMYKL",
-        self::PUBLIC_ISLAMIC_BANK               => "PIBEMYK1",
+        self::PUBLIC_ISLAMIC_BANK               => "PBBEMYKL",
         self::RHB_BANK                          => "RHBBMYKL",
-        self::RHB_ISLAMIC_BANK                  => "RHBAMYKL",
+        self::RHB_ISLAMIC_BANK                  => "RHBBMYKL",
         self::STANDARD_CHARTERED_BANK           => "SCBLMYKX",
-        self::STANDARD_CHARTERED_SAADIQ_BANK    => "SCSRMYKK",
+        self::STANDARD_CHARTERED_SAADIQ_BANK    => "SCBLMYKX",
         self::SUMITOMO_MITSUI_BANK              => "SMBCMYKL",
         self::UOB                               => "UOVBMYKL",
+        self::TNG_DIGITAL                       => "TNGDMYNB",
     ];
 }
