@@ -860,7 +860,7 @@ class AddProvider extends React.Component {
           properties: { success: true },
         });
 
-        if (isEdit && !integrationAuditFlow) {
+        if (!isEdit || (isEdit && !integrationAuditFlow)) {
           history.push('/optimizer/rules');
         } else if (isEdit && integrationAuditFlow) {
           history.push({
