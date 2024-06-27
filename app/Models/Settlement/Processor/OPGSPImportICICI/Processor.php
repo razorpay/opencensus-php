@@ -317,9 +317,7 @@ class Processor extends Base\Core
                     [$name,$consolidatedAddress] = $this->getBuyerAddressAndName($address);
                     $row->BuyerName = $name;
                     $row->BuyerAddress = $consolidatedAddress;
-                    if (abs($paymentIdMap[$transaction->getEntityId()]['base_amount']) <= 100) { // base_amount in paise , hence less <= 100 (< Rs1)
-                        $shouldSkipRow = true;
-                    }
+
                     break;
 
                 case Type::REFUND:
@@ -337,9 +335,7 @@ class Processor extends Base\Core
                     [$name,$consolidatedAddress] = $this->getBuyerAddressAndName($address);
                     $row->BuyerName = $name;
                     $row->BuyerAddress = $consolidatedAddress;
-                    if (abs($paymentForRefund['base_amount']) <= 100) { // base_amount in paise , hence less <= 100 (< Rs1)
-                        $shouldSkipRow = true;
-                    }
+
                     break;
 
                 case Type::ADJUSTMENT:
@@ -363,9 +359,7 @@ class Processor extends Base\Core
                     {
                         $row->InvoiceNumber =  $disputePayment['notes']['invoice_number'];
                     }
-                    if (abs($netAmountValue) <= 1) { // amount in Rs
-                        $shouldSkipRow = true;
-                    }
+
                     break;
 
                 default:
