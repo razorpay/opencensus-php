@@ -679,7 +679,7 @@ class Core extends Base\Core
         // pushing event to queue for pre-debit notification and delaying it for 60 sec
         try
         {
-            CardRecurringNotificationProcess::dispatch($this->mode, $notification->getId())->delay(60);
+            CardRecurringNotificationProcess::dispatch($this->mode, $notification->getId(), $order)->delay(60);
         }
         catch (\Throwable $e)
         {
