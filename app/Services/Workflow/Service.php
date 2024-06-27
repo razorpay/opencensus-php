@@ -278,6 +278,11 @@ class Service
 
         $makerName = $maker->getName() ?? $maker->getEmail();
 
+        if ($maker->getName() == "")
+        {
+            $makerName = $maker->getEmail();
+        }
+        
         $differEntity = [
             Differ\Entity::ENTITY_NAME              => $entity,
             Differ\Entity::ENTITY_ID                => $entityId,
