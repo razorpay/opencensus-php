@@ -46,7 +46,7 @@
         var preferences = {!! json_encode($preferences) !!};
       @endif
     </script>
-    <script src="https://cdn.polyfill.io/v3/polyfill.min.js?features=Intl.~locale.en"></script>
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=Intl.~locale.en"></script>
     <script src="{{ $framejs }}" crossorigin onerror="appendScript(this)"></script>
   @endif
 </html>
