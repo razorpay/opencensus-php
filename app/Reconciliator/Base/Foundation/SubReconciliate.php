@@ -4,7 +4,9 @@ namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
 use Carbon\Carbon;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Jobs\Ledger\ReconNFCToCLS;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
@@ -444,6 +446,8 @@ class SubReconciliate extends Base\Core
 
             $transaction->saveOrFail();
 
+            $this->sendPaymentReconNFCDataToCLS($time, $reconciledType, $entity);
+
             $this->deleteCardMetaDataIfApplicable($entity);
 
             $this->pushSuccessReconMetrics($entity);
@@ -453,6 +457,56 @@ class SubReconciliate extends Base\Core
         }
 
         $this->setRowReconStatusAndError(InfoCode::RECONCILED);
+    }
+
+    public function sendPaymentReconNFCDataToCLS($reconciledAt, $reconciledType, $payment)
+    {
+        $payload = [
+            "event" => [
+                "name"=> "prod_live_art_events",
+                "data" => [
+                    "dual_write_request"=> [
+                        "reconciled_at"  => $reconciledAt,
+                        "reconciled_type" => $reconciledType,
+                        "entity_id"=> $payment->getId(),
+                        "entity_type"=> "payment"
+                    ]
+                ],
+                "metadata"=> [
+                    "version" => "v2"
+                ]
+            ]
+        ];
+
+        $payloadString = json_encode($payload);
+
+        $encodedPayload = base64_encode($payloadString);
+
+        $kafkaPayload = [
+            "after"=> [
+                "payload"=> $encodedPayload,
+            ],
+            "op"=> "dummy"
+        ];
+
+        $this->trace->info(TraceCode::NFC_RECON_DATA, [
+            "message"      => $kafkaPayload
+        ]);
+
+        $this->pushReconNFCDataToKafka($kafkaPayload, $payment->getId());
+    }
+
+    private function pushReconNFCDataToKafka($payload, $paymentId)
+    {
+        if (($this->app->runningUnitTests() === true))
+        {
+            return;
+        }
+
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($payload, $paymentId) {
+            // Job will be dispatched only if the transaction commits.
+            ReconNFCToCLS::dispatchNow($this->mode, $payload, $paymentId);
+        }));
     }
 
     /**

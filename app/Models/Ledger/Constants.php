@@ -256,6 +256,7 @@ class Constants
     const CREATE_TRANSACTION_FOR_ADJUSTMENT        = 'create_transaction_for_adjustment';
     const CREATE_TRANSACTION_FOR_DIRECT_TRANSFER   = 'create_transaction_for_direct_transfer';
     const CREATE_TRANSACTION_FOR_TRANSFER_REVERSAL = 'create_transaction_for_transfer_reversal';
+    const LIVE_ART_EVENTS                          = 'live_art_events'; // check if to add prod_
 
     const PRODUCER_KEY  = 'producer_key';
     const TOPIC         = 'topic';

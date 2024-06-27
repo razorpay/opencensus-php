@@ -410,6 +410,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->handleVAUnExpectedPaymentRefundInRecon($this->payment);
     }
 
+
+
     public function resetRowProcessingAttributes()
     {
         $this->payment                         = null;

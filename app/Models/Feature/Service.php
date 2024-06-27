@@ -1710,7 +1710,7 @@ class Service extends Base\Service
      *
      * @param array $input
      */
-    public function onboardMerchantOnPGReverseShadow(array $input, $throwException = false)
+    public function onboardMerchantOnPGReverseShadow(array $input, $throwException = false, $addRampOnHoldFeature = false)
     {
         $response = new Base\PublicCollection;
 
@@ -1774,7 +1774,7 @@ class Service extends Base\Service
                     );
                 }
 
-                $this->repo->transaction(function () use ($merchant, $merchantId, &$result, $featureCore)
+                $this->repo->transaction(function () use ($merchant, $merchantId, &$result, $featureCore, $addRampOnHoldFeature)
                 {
                     // Create PG account on ledger service
                     $response = $this->ledgerPGAccountCreateRequest($merchant);
@@ -1794,13 +1794,16 @@ class Service extends Base\Service
                         );
                     }
 
-                    // Add PG_LEDGER_RAMP_ON_HOLD feature to merchant
-                    $featureCore->create(
-                        [
-                            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                            Entity::ENTITY_ID => $merchant->getId(),
-                            Entity::NAME => Constants::PG_LEDGER_RAMP_ON_HOLD,
-                        ]);
+                    if($addRampOnHoldFeature === true)
+                    {
+                        // Add PG_LEDGER_RAMP_ON_HOLD feature to merchant
+                        $featureCore->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::PG_LEDGER_RAMP_ON_HOLD,
+                            ]);
+                    }
 
                     // Add PG_LEDGER_REVERSE_SHADOW feature to merchant
                     $featureCore->create(
@@ -2326,7 +2329,7 @@ class Service extends Base\Service
                 $response = $this->onboardMerchantOnPGShadow($input);
                 break;
             case 'reverse-shadow':
-                $response = $this->onboardMerchantOnPGReverseShadow($input);
+                $response = $this->onboardMerchantOnPGReverseShadow($input, false, true);
                 break;
             case 'only_create_accounts':
                 $response = $this->onlyCreatePGAccountsOnReverseShadow($input);
