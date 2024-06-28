@@ -374,6 +374,7 @@ class Tracing
 
             //Onboarding APIs
             'account_create_v2',
+            'account_create_india_v2',
             'account_fetch_v2',
             'account_edit_v2',
             'account_delete_v2',

@@ -81,6 +81,19 @@ class InputHelper
             $subMerchant[Merchant\Entity::NOTES] = $input[Constants::NOTES];
         }
 
+        // store Udyam ID in notes if present
+        if (isset($input[Constants::LEGAL_INFO]) and isset($input[Constants::LEGAL_INFO][Constants::UDYAM]))
+        {
+            if (isset($subMerchant[Merchant\Entity::NOTES]))
+            {
+                $subMerchant[Merchant\Entity::NOTES][Constants::UDYAM] = $input[Constants::LEGAL_INFO][Constants::UDYAM];
+            }
+            else
+            {
+                $subMerchant[Merchant\Entity::NOTES] = [Constants::UDYAM => $input[Constants::LEGAL_INFO][Constants::UDYAM]];
+            }
+        }
+
         return $subMerchant;
     }
 

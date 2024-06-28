@@ -785,7 +785,7 @@ class Service extends Base\Service
      * */
     public function isInviteExistingMerchantForLocEnabled()
     {
-        if($this->app['request.ctx']->getRoute() === 'account_create_v2')
+        if (in_array($this->app['request.ctx']->getRoute(), Merchant\Account\Constants::V2_ACCOUNT_CREATE_APIS_LIST))
         {
             return false;
         }

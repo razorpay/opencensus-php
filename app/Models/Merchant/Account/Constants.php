@@ -122,16 +122,20 @@ class Constants
     const REFERENCE_ID        = 'reference_id';
     const LEGAL_BUSINESS_NAME = 'legal_business_name';
     const BUSINESS_TYPE       = 'business_type';
+    const REMITTANCE_CODE     = 'remittance_code';
     const LEGAL_INFO          = 'legal_info';
     const TOS_ACCEPTANCE      = 'tos_acceptance';
     const CATEGORY            = 'category';
     const SUBCATEGORY         = 'subcategory';
     const POSTAL_CODE         = 'postal_code';
+    const ZIPCODE             = 'zipcode';
     const STREET1             = 'street1';
     const STREET2             = 'street2';
     const PAN                 = 'pan';
     const GST                 = 'gst';
     const CIN                 = 'cin';
+    const UDYAM               = 'udyam';
+    const IEC                 = 'iec';
     const USER_AGENT          = 'user_agent';
     const DATE                = 'date';
     const IP                  = 'ip';
@@ -194,8 +198,14 @@ class Constants
         Status::INSTANTLY_ACTIVATED     => Status::INSTANTLY_ACTIVATED
     ];
 
+    const V2_ACCOUNT_CREATE_APIS_LIST = [
+        'account_create_v2',
+        'account_create_india_v2',
+    ];
+
     const V2_ONBOARDING_APIS_LIST = [
         'account_create_v2',
+        'account_create_india_v2',
         'account_fetch_v2',
         'account_edit_v2',
         'account_delete_v2',
@@ -224,6 +234,7 @@ class Constants
 
     const LOC_SUBM_ONBOARDING_APIS_LIST = [
         'account_create_v2',
+        'account_create_india_v2',
         'account_fetch_v2',
         'product_config_create_v2',
         'product_config_fetch_v2',

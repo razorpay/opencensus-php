@@ -18,6 +18,7 @@ final class PartnershipFlows {
 
     public static array $PARTNERSHIP_FLOWS = array(
         "account_create_v2" => true,
+        "account_create_india_v2" => true,
         "stakeholder_create_v2" => true,
         "link_stakeholder_documents_v2" => true,
         "product_config_update_v2" => true,

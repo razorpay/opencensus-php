@@ -238,7 +238,7 @@ class Core extends Merchant\Core
                     // except webhook v2 APIs, since webhook v2 APIs was enabled via OAuth quite a long time ago and may be in use by other partners.
                     Merchant\PhantomUtility::validateCobrandedOnboardingEnabledForPlatformPartner($partner);
 
-                    if($this->app['request.ctx']->getRoute() !== 'account_create_v2')
+                    if (!in_array($this->app['request.ctx']->getRoute(), Constants::V2_ACCOUNT_CREATE_APIS_LIST))
                     {
                         Entity::verifyIdAndSilentlyStripSign($accountId);
 
@@ -248,7 +248,7 @@ class Core extends Merchant\Core
                 else if ($this->isPartnerAllowedToOnboardLOCMerchantViaOnboardingAPIs($partner)
                     && $this->isOnboardingV2ApiRouteEnabledForLOCOnboarding() === true)
                 {
-                    if($this->app['request.ctx']->getRoute() !== 'account_create_v2')
+                    if (!in_array($this->app['request.ctx']->getRoute(), Constants::V2_ACCOUNT_CREATE_APIS_LIST))
                     {
                         Entity::verifyIdAndSilentlyStripSign($accountId);
 

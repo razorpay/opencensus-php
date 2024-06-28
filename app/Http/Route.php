@@ -3417,6 +3417,7 @@ class Route
         'account_service_handle_update_event'      => ['POST',    'account_service/handle_update_event',             'AcsController@handleAccountUpdateEvent'                            ],
 
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
+        'account_create_india_v2'                  => ['post',     'accounts/india',                                 'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
         'account_edit_v2'                          => ['patch',    'accounts/{id}',                                  'AccountControllerV2@editAccount'                                   ],
         'account_delete_v2'                        => ['delete',   'accounts/{id}',                                  'AccountControllerV2@deleteAccount'                                 ],
@@ -5503,6 +5504,7 @@ class Route
         'stakeholder_fetch_all_v2',
 
         'account_create_v2',
+        'account_create_india_v2',
         'account_fetch_v2',
         'change_banking_user_role',
         'account_edit_v2',
@@ -6814,6 +6816,7 @@ class Route
         'merchant_activation_update_partner',
 
         'account_create_v2',
+        'account_create_india_v2',
         'account_fetch_v2',
         'account_edit_v2',
         'account_delete_v2',
@@ -12354,6 +12357,7 @@ class Route
             'account_action',
             'account_create',
             'account_create_v2',
+            'account_create_india_v2',
             'account_delete_v2',
             'account_edit',
             'account_edit_v2',
@@ -14024,6 +14028,7 @@ class Route
             'account_action',
             'account_create',
             'account_create_v2',
+            'account_create_india_v2',
             'account_delete_v2',
             'account_edit',
             'account_edit_v2',
@@ -19279,6 +19284,7 @@ class Route
         'stakeholder_fetch_v2',
         'stakeholder_fetch_all_v2',
         'account_create_v2',
+        'account_create_india_v2',
         'account_fetch_v2',
         'account_edit_v2',
         'account_delete_v2',

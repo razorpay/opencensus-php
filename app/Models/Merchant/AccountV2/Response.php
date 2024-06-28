@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AccountV2;
 
 
 use App;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Constants\IndianStates;
@@ -98,7 +99,64 @@ class Response extends Core
 
         $data = $this->getTosAcceptanceData($accountDetails, $data);
 
+        $data = $this->transformOutputIfApplicable($account, $accountDetails, $data);
+
         $this->trace->info(TraceCode::ACCOUNT_CREATION_V2_RESPONSE, $data);
+
+        return $data;
+    }
+
+    protected function transformOutputIfApplicable($account, Detail\Entity $accountDetails, $data)
+    {
+        if (!$this->merchant->isFeatureEnabled(Feature\Constants::PACB_EXPORT_PARTNER_FLOW))
+        {
+            return $data;
+        }
+        // transform legalInfo
+        $legalInfo = [];
+        foreach($data[Constants::LEGAL_INFO] as $key => $value){
+            $legalInfo[] = array(Constants::TYPE => $key, Constants::ID => $value);
+        }
+        if ($accountDetails->getIecCode() !== null)
+        {
+            $legalInfo[] = array(Constants::TYPE => Constants::IEC, Constants::ID => $accountDetails->getIecCode());
+        }
+        if (isset($data[Constants::NOTES]) and isset($data[Constants::NOTES][Constants::UDYAM]))
+        {
+            $legalInfo[] = array(Constants::TYPE => Constants::UDYAM, Constants::ID => $data[Constants::NOTES][Constants::UDYAM]);
+            unset($data[Constants::NOTES][Constants::UDYAM]);
+        }
+        $data[Constants::LEGAL_INFO] = $legalInfo;
+
+        // transform profile->purpose_code/remittance_code
+        if ($account->getPurposeCode() !== null)
+        {
+            if(isset($data[Constants::PROFILE]))
+            {
+                $data[Constants::PROFILE][Constants::REMITTANCE_CODE] = $account->getPurposeCode();
+            }
+            else
+            {
+                $data[Constants::PROFILE] = [Constants::REMITTANCE_CODE => $account->getPurposeCode()];
+            }
+        }
+
+        // transform profile->address
+        if (isset($data[Constants::PROFILE]) and isset($data[Constants::PROFILE][Constants::ADDRESSES]))
+        {
+            $addresses = [];
+            foreach($data[Constants::PROFILE][Constants::ADDRESSES] as $addressType => $address)
+            {
+                $address[Constants::LINE1] = $address[Constants::STREET1];
+                $address[Constants::LINE2] = $address[Constants::STREET2];
+                $address[Constants::ZIPCODE] = $address[Constants::POSTAL_CODE];
+                unset($address[Constants::STREET1]);
+                unset($address[Constants::STREET2]);
+                unset($address[Constants::POSTAL_CODE]);
+                $addresses[$addressType] = $address;
+            }
+            $data[Constants::PROFILE][Constants::ADDRESSES] = $addresses;
+        }
 
         return $data;
     }

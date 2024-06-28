@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use Illuminate\Support\Str;
 use RZP\Constants\IndianStates;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\User\Core as UserCore;
 use RZP\Exception\BadRequestException;
@@ -107,6 +109,7 @@ class Validator extends Merchant\Validator
         Constants::SUBCATEGORY       => 'required|string',
         Constants::DESCRIPTION       =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
         Constants::BUSINESS_MODEL    => 'sometimes|string',
+        Constants::REMITTANCE_CODE   => 'sometimes|string',
     ];
 
     protected static $editProfileRules = [
@@ -116,6 +119,7 @@ class Validator extends Merchant\Validator
         Constants::SUBCATEGORY       => 'sometimes|string',
         Constants::DESCRIPTION       =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
         Constants::BUSINESS_MODEL    => 'sometimes|string',
+        Constants::REMITTANCE_CODE   => 'sometimes|string',
     ];
 
     protected static $accountAddressRules = [
@@ -150,6 +154,8 @@ class Validator extends Merchant\Validator
         Constants::PAN => 'sometimes|companyPan',
         Constants::GST => 'sometimes|gstin',
         Constants::CIN => 'sometimes|string',
+        Constants::UDYAM => 'sometimes|string',
+        Constants::IEC   => 'sometimes|string|max:20',
     ];
 
     protected static $brandRules = [
@@ -260,6 +266,25 @@ class Validator extends Merchant\Validator
         }
     }
 
+    protected function validateRemittanceCode(array $profileInput)
+    {
+        if (isset($profileInput[Constants::REMITTANCE_CODE]) === false)
+        {
+            return;
+        }
+
+        $remittanceCode = $profileInput[Constants::REMITTANCE_CODE];
+
+        // allow only export remittance codes
+        if (Str::startsWith($remittanceCode, 'P') and
+            array_key_exists($remittanceCode, PurposeCodeList::$purposeCodeDescMappings))
+        {
+            return;
+        }
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PURPOSE_CODE_FOR_INTL_PAYMENTS,
+            null, ['remittance_code' => $remittanceCode]);
+    }
+
     protected function validateAddresses(array $profileInput, string $action = '')
     {
         $addresses = $profileInput[Constants::ADDRESSES];
@@ -286,6 +311,7 @@ class Validator extends Merchant\Validator
         $this->validateInput('profile', $profileInput);
 
         $this->validateAddresses($profileInput);
+        $this->validateRemittanceCode($profileInput);
     }
 
     protected function validateEditProfileInput(array $input)

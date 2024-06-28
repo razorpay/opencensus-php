@@ -69,6 +69,8 @@ class Core extends Merchant\Core
             $requestedProduct = ProductConstants::CAPITAL;
         }
 
+        $input = $this->transformInputIfApplicable($input);
+
         (new Validator)->validateCreateAccount($input, $requestedProduct);
 
         if ($requestedProduct === ProductConstants::CAPITAL)
@@ -138,6 +140,68 @@ class Core extends Merchant\Core
         return $account;
     }
 
+    protected function transformInputIfApplicable($input)
+    {
+        if (!$this->merchant->isFeatureEnabled(Feature\Constants::PACB_EXPORT_PARTNER_FLOW)) {
+            return $input;
+        }
+
+        // validate remittance code for create call
+        $route = $this->app['request.ctx']->getRoute();
+        if ($route === 'account_create_india_v2' and
+             (!isset($input[Constants::PROFILE]) or !isset($input[Constants::PROFILE][Constants::REMITTANCE_CODE])))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PURPOSE_CODE_FOR_INTL_PAYMENTS,
+                null, ['remittance_code' => '']);
+        }
+
+        // transform legalInfo
+        $newLegalInfo = [];
+        foreach ($input[Constants::LEGAL_INFO] as $legalInfo) {
+            $newLegalInfo[$legalInfo[Constants::TYPE]] = $legalInfo[Constants::ID];
+        }
+        $input[Constants::LEGAL_INFO] = $newLegalInfo;
+
+        // transform addresses
+        if (isset($input[Constants::PROFILE]) and isset($input[Constants::PROFILE][Constants::ADDRESSES]))
+        {
+            $addresses = [];
+            foreach($input[Constants::PROFILE][Constants::ADDRESSES] as $addressType => $address)
+            {
+                $address[Constants::STREET1] = $address[Constants::LINE1];
+                $address[Constants::STREET2] = $address[Constants::LINE2];
+                $address[Constants::POSTAL_CODE] = $address[Constants::ZIPCODE];
+                unset($address[Constants::LINE1]);
+                unset($address[Constants::LINE2]);
+                unset($address[Constants::ZIPCODE]);
+                $addresses[$addressType] = $address;
+            }
+            $input[Constants::PROFILE][Constants::ADDRESSES] = $addresses;
+        }
+        return $input;
+    }
+
+    protected function updatePACBDataIfApplicable($subMerchant, $input)
+    {
+        if (!$this->merchant->isFeatureEnabled(Feature\Constants::PACB_EXPORT_PARTNER_FLOW)) {
+            return;
+        }
+
+        // add purpose code
+        if(isset($input[Constants::PROFILE]) and isset($input[Constants::PROFILE][Constants::REMITTANCE_CODE]))
+        {
+            $subMerchant->edit([Merchant\Entity::PURPOSE_CODE => $input[Constants::PROFILE][Constants::REMITTANCE_CODE]]);
+            $this->repo->merchant->saveOrFail($subMerchant);
+        }
+
+        // add iec code
+        if(isset($input[Constants::LEGAL_INFO]) and isset($input[Constants::LEGAL_INFO][Constants::IEC]))
+        {
+            $subMerchant->merchantDetail->edit([Merchant\Detail\Entity::IEC_CODE => $input[Constants::LEGAL_INFO][Constants::IEC]]);
+            $this->repo->merchant_detail->saveOrFail($subMerchant->merchantDetail);
+        }
+    }
+
     /**
      * @param string $accountId
      *
@@ -181,6 +245,8 @@ class Core extends Merchant\Core
 
         $subMerchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);
 
+        $input = $this->transformInputIfApplicable($input);
+
         if (empty($subMerchantDetails) === false && $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
         {
             (new Validator)->validateEditAccountRequest($input);
@@ -205,6 +271,8 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        $this->updatePACBDataIfApplicable($account, $input);
 
         $this->saveBMCAnswers($account, $partner->getId(), $input);
 
@@ -245,6 +313,8 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        $this->updatePACBDataIfApplicable($subMerchant, $input);
 
         $this->addInstantActivationTagIfApplicable($subMerchant, $input);
 
