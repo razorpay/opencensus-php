@@ -3,8 +3,11 @@ import styled from 'styled-components';
 import { Outlet, Routes, Route } from 'react-router-dom';
 import errorService from '@razorpay/universe-cli/errorService';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
-import POSDashboard from './views/POSDashboard';
+// import { graphqlRequest } from '@dashboard/shared-utils/graphql/graphql';
+// import { useInfiniteQuery } from '@tanstack/react-query';
+// import { SALES_ONBOARDED_MERCHANTS } from '../services/queries/SalesDashboard';
 import { MODULE_NAME, module_routes } from './utils/constants';
+import POSDashboard from './views/POSDashboard';
 
 // Some styles are applied globally, hence disabled them in POS module's root level
 const StyledDashboardWrapper = styled.div`
@@ -23,6 +26,31 @@ const StyledDashboardWrapper = styled.div`
 `;
 
 const AssistedOnboarding: React.FC<{}> = () => {
+  // const { data } = useInfiniteQuery({
+  //   queryKey: ['TestKey'],
+  //   queryFn: async () => {
+  //     const response = await graphqlRequest({
+  //       document: SALES_ONBOARDED_MERCHANTS,
+  //       variables: {
+  //         limit: 10,
+  //         offset: 0,
+  //         startDate: 1717547425,
+  //         endDate: 1717979425,
+  //         status: 'all',
+  //       },
+  //     });
+
+  //     if (response?.salesOnboardedMerchants?.merchants) return response;
+  //   },
+  //   staleTime: 60000 * 1,
+  //   retry: false,
+  //   networkMode: 'always',
+  //   refetchOnWindowFocus: false,
+  //   refetchOnMount: false,
+  //   keepPreviousData: true,
+  // });
+  // console.log('DATA', data);
+
   return (
     <ErrorBoundary rank={errorService.ErrorRank.P0} tags={{ module: MODULE_NAME }}>
       <StyledDashboardWrapper>
