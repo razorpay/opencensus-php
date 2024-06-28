@@ -116,6 +116,8 @@ abstract class AbstractTransfer
                     $core->failTransferIfSourcePaymentIsRefunded($transfer, $payment);
                 }
             }
+
+            return [$transfers, []];
         }
 
         $this->trace->info($this->tracecode,

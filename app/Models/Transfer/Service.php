@@ -924,8 +924,7 @@ class Service extends Base\Service
             {
                 $core = new ReverseShadow\Transfers\Core();
 
-                $shouldProcess = $core->shouldProcessOrderTransfersForReverseShadow(
-                    Constant::ORDER, $orderId, $order->merchant);
+                $shouldProcess = $core->shouldProcessOrderTransfersForReverseShadow($orderId, $order->merchant);
 
                 if ($shouldProcess === false)
                 {
