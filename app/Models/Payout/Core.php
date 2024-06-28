@@ -5329,6 +5329,11 @@ class Core extends Base\Core
                             !$basReconUpdate)
                         {
                             list($bankAccStmtForReversal, $bankAccStmtForPayout) = $this->handleReversalTransactionForDirectBanking($reversal, $credit_bas);
+                            $this->trace->info(
+                                TraceCode::REVERSAL_TRANSACTION_LINKED,
+                                [
+                                    'payout_id' => $payout->getId(),
+                                ]);
                         }
 
                         $previousStatus = $payout->getStatus();
@@ -5366,6 +5371,12 @@ class Core extends Base\Core
             self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
+
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_TRANSACTION_COMPLETED,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
 
         // send event to ledger in shadow mode for direct acc
         $this->sendExtToPayoutEventToLedger($payout, $bankAccStmtForPayout);

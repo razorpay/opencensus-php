@@ -4369,7 +4369,7 @@ class Service extends Base\Service
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
-                    TraceCode::PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION,
+                    TraceCode::NON_PS_PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION,
                     [
                         'payout_id'         => $payout->getId(),
                         'failure_reason'    => $e->getMessage(),
@@ -4406,7 +4406,7 @@ class Service extends Base\Service
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
-                    TraceCode::PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION,
+                    TraceCode::PS_PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION,
                     [
                         'payout_id'         => $payoutId,
                         'failure_reason'    => $e->getMessage(),
