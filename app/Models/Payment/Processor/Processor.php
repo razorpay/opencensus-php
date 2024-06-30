@@ -1537,6 +1537,7 @@ class Processor
                 Card\IIN\Flow::PIN,
                 // Ifram is mainly used for checkout flows and has no impact on payment flows
                 Card\IIN\Flow::IFRAME,
+                Card\IIN\Flow::HEADLESS_FORBIDDEN,
             ];
 
             $enabledFlows = Card\IIN\Flow::getEnabledFlows($iin->getFlows());
@@ -1545,6 +1546,15 @@ class Processor
             {
                 if (in_array($flow, $supportedFlows, true) === false)
                 {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "flow_not_enabled",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
+                    // unsetting below fields for a safer sides if at all they might have been added in above flows.
+                    // API payment creation don't require these fields
+                    unset($input['convenience_fee']);
+                    unset($input['convenience_fee_gst']);
                     return false;
                 }
             }
