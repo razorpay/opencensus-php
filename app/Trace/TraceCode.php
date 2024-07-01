@@ -3165,7 +3165,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_ALERT                                           = 'RECON_ALERT';
     const RECON_EMAIL_VALIDATION_FAILED                         = 'RECON_EMAIL_VALIDATION_FAILED';
     const RECON_FILE_SKIP                                       = 'RECON_FILE_SKIP';
-    const RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK                  ='RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK';
+    const RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK                  = 'RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK';
+    const REFUNDS_FETCHED_FOR_REFRENCE1_UPDATE                  = 'REFUNDS_FETCHED_FOR_REFRENCE1_UPDATE';
+    const REFUND_REFERENCE_PRESENT                              = 'REFUND_REFERENCE_PRESENT';
+    const REFUND_REFRENCE1_TO_UPDATE                            = 'REFUND_REFRENCE1_TO_UPDATE';
     const RECON_MISMATCH                                        = 'RECON_MISMATCH';
     const RECON_INFO                                            = 'RECON_INFO';
     const RECON_PARSE_ERROR                                     = 'RECON_PARSE_ERROR';

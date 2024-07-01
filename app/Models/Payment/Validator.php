@@ -573,7 +573,7 @@ class Validator extends Base\Validator
         'cardless_emi'                         => 'sometimes',
         'wallet'                               => 'required|array',
         'wallet.wallet_transaction_id'         => 'sometimes',
-        'wallet.gateway'                       => 'required|string|in:wallet_bajaj',
+        'wallet.gateway'                       => 'required|string',
         'meta'                                 => 'required|array',
         'meta.force_auth_payment'              => 'required|boolean',
         'meta.art_request_id'                  => 'required',

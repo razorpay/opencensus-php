@@ -689,7 +689,7 @@ class Gateway
         self::HDFC_DEBIT_EMI,
         self::KOTAK_DEBIT_EMI,
         self::FULCRUM,
-
+        self::NETBANKING_IBK,
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
         self::UPI_HULK,
@@ -742,7 +742,28 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_YESBANK,
     ];
-
+    /**
+     * List of gateway for netbanking
+     * Where in mis we get gateway amount,gateway fees and gateway tax
+     */
+    const UPDATE_NETBANKING_GATEWAY_FEES_TAX_AMOUNT =[
+        self::ATOM,
+        self::BILLDESK,
+        self::NETBANKING_FEDERAL
+    ];
+     /**
+     * List of gateway for wallet
+     * Where in mis we get gateway amount,gateway fees and gateway tax
+     */
+    const UPDATE_WALLET_GATEWAY_FEES_TAX_AMOUNT =[
+        self::WALLET_AMAZONPAY,
+        self::WALLET_FREECHARGE,
+        self::MOBIKWIK,
+        self::WALLET_OLAMONEY,
+        self::WALLET_PHONEPE,
+        self::WALLET_PAYZAPP,
+        self::WALLET_PHONEPESWITCH
+    ];
     /**
      * List of gateways that we wish to attempt this with.
      * This should eventually cover all API based refund

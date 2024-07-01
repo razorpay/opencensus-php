@@ -1399,7 +1399,26 @@ class Service extends Base\Service
             $transaction->setGatewaySettledAt($input['gateway_settled_at']);
 
         }
+          //this willonly be updated for defined gateway when method is netbanking
+          if ($payment->getMethod() === Payment\Method::NETBANKING && (in_array($payment->getGateway(), Payment\Gateway::UPDATE_NETBANKING_GATEWAY_FEES_TAX_AMOUNT, true) === true))
+          {
+              $transaction->setGatewayAmount($input['gateway_amount']);
 
+              $transaction->setGatewayFee($input['gateway_fee']);
+
+              $transaction->setGatewayServiceTax($input['gateway_service_tax']);
+
+          }
+          //this will only be updated for defined gateway when method is wallet
+          if ($payment->getMethod() === Payment\Method::WALLET && (in_array($payment->getGateway(), Payment\Gateway::UPDATE_WALLET_GATEWAY_FEES_TAX_AMOUNT, true) === true) )
+          {
+              $transaction->setGatewayAmount($input['gateway_amount']);
+
+              $transaction->setGatewayFee($input['gateway_fee']);
+              
+              $transaction->setGatewayServiceTax($input['gateway_service_tax']);
+          }
+  
         if ($payment->getMethod() !== Payment\Method::UPI && $payment->isMethodCardOrEmi() === false)
         {
             $transaction->setGatewayAmount($input['amount']);

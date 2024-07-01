@@ -137,6 +137,11 @@ class Core extends Base\Core
     protected function RequestScroogeForReference1Update(array $refundIds)
     {
         $refunds = $this->repo->refund->fetchRefundByRefundIds($refundIds);
+        $this->trace->info(TraceCode::REFUNDS_FETCHED_FOR_REFRENCE1_UPDATE,
+        [
+            'info_code'     => InfoCode::REFUND_DETAILS,
+            'refund_fetched'     => $refunds
+        ]);
 
         // Contain refundId as key and and payment reference1 from payment as value
         // we are doing this so that we can send this data to scrooge service in order to update
@@ -147,31 +152,33 @@ class Core extends Base\Core
         {
             $scroogeInputObject = (object)[];
 
-            $paymentReference1 = $refund->payment->getReference1();
+            $payment_details = $this->repo->payment->findOrFail($refund['payment_id']); //fetch the referecne1 details from payments entity
 
-            if ($refund !== null){
-                $refundReference1  = $refund->getReference1();
-            }
-            else{
-                $this->trace->info(TraceCode::RECON_MULTIPLE_MAIL_CHECK_ELSE_BLOCK,
-                    [
-                        'info_code'     => InfoCode::PRINT_RECON_DETAILS_TO_CATCH,
-                        'refund_id'     => $refund->getId(),
-                        'payment_id'    => $refund->payment->getId(),
-                        'gateway'       => $refund->payment->getGateway()
-            ]);
+            $paymentReference1=$payment_details['reference1'];
+
+            if (isset($refund['reference1'])=== true and $refund['reference1'] != '') { //added this check to ensure we are not point to null
+               
+                $refundReference1 = $refund['reference1'];
+
             }
             // $refundReference1  = $refund->getReference1();
 
             if (empty($refundReference1) === false)
             {
+                $this->trace->info(
+                    TraceCode::REFUND_REFERENCE_PRESENT,
+                    [
+                        'info_code'     => InfoCode::UPDATED_REFUND_DETAILS,
+                        'refund_fetched'     => $refund['id']
+                    ]
+                );   
                 // Do not update the refund reference1 as it is already present
                 continue;
             }
 
             if (empty($paymentReference1) === false)
             {
-                $refundId = $refund->getId();
+                $refundId = $refund['id'];//as the refunds data are in json format pick directly from it
 
                 $scroogeInputObject->id          = $refundId;
                 $scroogeInputObject->reference1  = $paymentReference1;
@@ -183,15 +190,23 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::RECON_INFO,
                     [
                         'info_code'     => InfoCode::REFUND_AUTO_RECON_PAYMENT_REFERENCE_ID_EMPTY,
-                        'refund_id'     => $refund->getId(),
-                        'payment_id'    => $refund->payment->getId(),
-                        'gateway'       => $refund->payment->getGateway()
+                        'refund_id'     => $refund['id'],
+                        'payment_id'    => $refund['payment_id'],
+                        'gateway'       => $payment_details['gateway']
                     ]);
             }
 
             // Empty allocated memory
             $scroogeInputObject = null;
         }
+
+        $this->trace->info(
+            TraceCode::REFUND_REFRENCE1_TO_UPDATE,
+            [
+                'info_code'     => InfoCode::REFUND_DETAILS,
+                'refunds_to_be_updated'     => $refundsData
+            ]
+        );
 
         if (empty($refundsData) === false)
         {

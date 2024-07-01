@@ -308,6 +308,9 @@ class Validator extends Base\Core
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'reconciled_at'                                    => 'required|filled|epoch',
+        'gateway_fee'                                      => 'sometimes|string',
+        'gateway_service_tax'                              => 'sometimes|string',
+        'gateway_amount'                                   => 'sometimes|string',
     ];
 
     const UPDATE_CARD_RECON_DATA_RULES = [
@@ -343,6 +346,10 @@ class Validator extends Base\Core
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'reconciled_at'                                    => 'required|filled|epoch',
+        'gateway_fee'                                      => 'sometimes|string',
+        'gateway_service_tax'                              => 'sometimes|string',
+        'gateway_amount'                                   => 'sometimes|string',
+        
     ];
 
     const UPDATE_CARDLESS_EMI_RECON_DATA_RULES = [
