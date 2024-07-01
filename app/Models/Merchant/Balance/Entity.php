@@ -146,6 +146,14 @@ class Entity extends Base\PublicEntity
         self::LAST_FETCHED_AT
     ];
 
+    public function toArrayPublic()
+    {
+        $publicArr = parent::toArrayPublic();
+
+        $publicArr[self::NAME] = null;
+        return $publicArr;
+    }
+
     protected $entity = 'balance';
 
     protected $generateIdOnCreate = true;
@@ -222,6 +230,11 @@ class Entity extends Base\PublicEntity
             }
 
         }
+    }
+
+    public function setName($name)
+    {
+        $this->setAttribute(self::NAME, $name);
     }
 
     public function setBalance($balance)

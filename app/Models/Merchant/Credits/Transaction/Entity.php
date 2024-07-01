@@ -12,6 +12,8 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID      = 'entity_id';
     const ENTITY_TYPE    = 'entity_type';
 
+    const TIDB_STREAM           = 'tidb_stream';
+
     protected $entity = 'credit_transaction';
 
     protected $generateIdOnCreate = true;
@@ -22,11 +24,22 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::CREDITS_USED,
+        self::TIDB_STREAM
     ];
 
     protected $ignoredRelations = [
         'entity',
     ];
+
+    public function setTidbStream($tidbStream)
+    {
+        $this->setAttribute(self::TIDB_STREAM, $tidbStream);
+    }
+
+    public function getTidbStream($tidbStream)
+    {
+        $this->getAttribute(self::TIDB_STREAM);
+    }
 
     public function transaction()
     {

@@ -5,6 +5,7 @@ namespace RZP\Models\Ledger\ReverseShadow\Payments;
 use Ramsey\Uuid\Uuid;
 use Razorpay\Trace\Logger;
 use RZP\Models\Base;
+use RZP\Models\Ledger\Constants;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\TraceCode;
@@ -13,7 +14,6 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
-use RZP\Models\Ledger\Constants;
 use RZP\Models\Transaction\Entity;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Merchant\Balance\BalanceConfig;
@@ -86,6 +86,9 @@ class Core extends Base\Core
             Constants::LEDGER_INTEGRATION_MODE       => Constants::REVERSE_SHADOW,
             Constants::IDEMPOTENCY_KEY               => Uuid::uuid1(),
             Constants::TENANT                        => Constants::TENANT_PG,
+            Constants::NOTES                        => [
+                Constants::TRANSACTOR_AMOUNT => $payment->getBaseAmount(),
+            ]
         );
 
         $apiTransactionId = $this->getAPITransactionId($transactorId, $payment);
@@ -512,7 +515,8 @@ class Core extends Base\Core
             Constants::IDEMPOTENCY_KEY              => Uuid::uuid1(),
             Constants::TENANT                       => Constants::TENANT_PG,
             Constants::NOTES                        => [
-                Constants::API_TXN_ID    => $apiTransactionId
+                Constants::API_TXN_ID    => $apiTransactionId,
+                Constants::TRANSACTOR_AMOUNT => $payment->getBaseAmount(),
             ]
         );
 

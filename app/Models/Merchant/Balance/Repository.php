@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
@@ -188,6 +189,26 @@ class Repository extends Base\Repository
     public function updateBalance($balance)
     {
         assertTrue($this->isTransactionActive());
+
+        $properties = [
+            'request_data' => json_encode([
+                "merchant_id" => $balance->merchant->getId()
+            ]),
+            'id'            => $balance->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
+        ];
+
+        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($balance->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+
+            if ($enableTidbStreaming === false) {
+                $balance->setName("enabled");
+            } else {
+                $balance->setName("disabled");
+            }
+        }
 
         $balance->saveOrFail();
     }

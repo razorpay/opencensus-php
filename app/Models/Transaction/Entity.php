@@ -712,6 +712,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TAX, $tax);
     }
 
+    public function setReference3($reference3)
+    {
+        $this->setAttribute(self::REFERENCE3, $reference3);
+    }
+
     public function setFeeBearer($bearer)
     {
         $this->setAttribute(self::FEE_BEARER, $bearer);

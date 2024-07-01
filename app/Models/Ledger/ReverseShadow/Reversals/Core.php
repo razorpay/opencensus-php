@@ -60,6 +60,9 @@ class Core extends Base\Core
             Constants::LEDGER_INTEGRATION_MODE       => Constants::REVERSE_SHADOW,
             Constants::IDEMPOTENCY_KEY               => Uuid::uuid1(),
             Constants::TENANT                        => Constants::TENANT_PG,
+            Constants::NOTES                        => [
+                Constants::TRANSACTOR_AMOUNT => $reversal->getAmount(),
+            ],
             Constants::IDENTIFIERS                   => [
                 Constants::GATEWAY      => $reversal->entity->getGateway(),
             ],
