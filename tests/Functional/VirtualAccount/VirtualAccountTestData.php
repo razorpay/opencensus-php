@@ -2291,4 +2291,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
+
+    'testFetchMultipleVirtualAccountForCollectX' => [
+        'entity' => 'collection',
+        'count'  => 2,
+        'items'  => [
+            [
+                'name'            => 'Second VA',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => 'VA for tests',
+            ],
+            [
+                'name'            => 'First VA',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => 'VA for tests',
+            ],
+        ],
+    ],
 ];

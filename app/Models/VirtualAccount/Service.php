@@ -356,7 +356,16 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        if (isset($input[Entity::BALANCE_ID]) === false)
+        $isCollectXMerchant = false;
+
+        if ($this->merchant->isFeatureEnabled(Constants::COLLECTX_ENABLED))
+        {
+            $isCollectXMerchant = true;
+        }
+
+        // In case of CollectX Merchants, we want to show all VAs (primary + direct banking)
+        // So balance ID would not be defaulted to primary
+        if (isset($input[Entity::BALANCE_ID]) === false and !$isCollectXMerchant)
         {
             $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
         }

@@ -5301,6 +5301,36 @@ class VirtualAccountTest extends TestCase
         $this->closeVirtualAccount($virtualAccount['id']);
     }
 
+    public function testFetchMultipleVirtualAccountForCollectX()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::WHITE_LABELLED_INVOICES,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature\Constants::COLLECTX_ENABLED,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->createVirtualAccount(['name' => 'First VA']);
+        $this->createVirtualAccount(['name' => 'Second VA']);
+
+        $response = $this->fetchVirtualAccounts();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     protected function mockSplitzTreatmentBulkRequest($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
