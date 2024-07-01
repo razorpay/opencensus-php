@@ -53,6 +53,82 @@ class PaymentCreateController extends Controller
                 ['merchant_id' => $this->app['basicauth']->getMerchantId()]);
         }
 
+        $input = Request::all();
+
+        $result = 'control';
+
+        try
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $mode = $this->app['rzp.mode'] ?? 'live';
+
+            $result = $this->app['razorx']->getTreatment(
+                $merchant->getId(),
+                RazorxTreatment::PAYMENT_CREATE_ROUTE_REARCH,
+                $mode);
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::POST_CREATE_PAYMENT_RAZORX_ERROR, [
+                'error' => $ex->getMessage(),
+                'function' => __FUNCTION__
+            ]);
+        }
+
+        if ($result === 'on' && $this->app->runningUnitTests() === false)
+        {
+            $tokenisationConsent = new TokenisationConsent();
+
+            if ((isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true) or
+                (isset($input[Payment\Entity::RECURRING]) === true))
+            {
+                if($tokenisationConsent->showRecurringTokenisationConsentView($input, $merchant) === true)
+                {
+                    $tokenisationConsent->logRecurringTokenisationConsentViewRequest($input);
+
+                    return $tokenisationConsent->returnTokenisationConsentView($input);
+                }
+
+            } elseif ($tokenisationConsent->showTokenisationConsentView($input, $merchant) === true)
+            {
+                $tokenisationConsent->logTokenisationConsentViewRequest($input);
+
+                return $tokenisationConsent->returnTokenisationConsentView($input);
+            }
+
+            $this->addDummyEmailIfApplicable($input, $merchant);
+
+            $ret = $this->createPayment();
+
+            if ((is_array($ret)) and
+                (isset($ret['request'])) === false)
+            {
+                return $this->returnCheckoutCallbackView($ret);
+            }
+
+            return $ret;
+        }
+
+        $tokenisationConsent = new TokenisationConsent();
+
+        if ((isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true) or
+            (isset($input[Payment\Entity::RECURRING]) === true))
+        {
+            if($tokenisationConsent->showRecurringTokenisationConsentView($input, $merchant) === true)
+            {
+                $this->trace->info(TraceCode::POST_CREATE_PAYMENT_TOKENISATION_RECURRING_CONSENT_LOG, [
+                    'consent_view' => true
+                ]);
+            }
+
+        } elseif ($tokenisationConsent->showTokenisationConsentView($input, $merchant) === true)
+        {
+            $this->trace->info(TraceCode::POST_CREATE_PAYMENT_TOKENISATION_CONSENT_LOG, [
+                'consent_view' => true
+            ]);
+        }
+
         $ret = $this->createPayment();
 
         $this->trace->info(TraceCode::POST_CREATE_PAYMENT_LOG, [
