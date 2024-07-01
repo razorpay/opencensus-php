@@ -105,6 +105,7 @@ use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\GenericDocument\Constants as GenericDocumentConstants;
 use RZP\Models\Ledger\ReverseShadow as LedgerReverseShadow;
 use Symfony\Component\HttpFoundation;
+use RZP\Services\UfhService;
 
 
 class Service extends Base\Service
@@ -8029,7 +8030,8 @@ class Service extends Base\Service
                     );
                 }
 
-                $uploadResponse = (new DocumentService())->uploadDocument($input);
+                $fileStorage = 'api/' . $input['file']->getClientOriginalName();
+                $uploadResponse = (new UfhService($this->app))->uploadFileAndGetResponse($input['file'], $fileStorage, $input['purpose'], $merchant);
                 $paymentDocument = $this->repo->invoice->findOrFail($paymentDocument->getId());
                 $paymentDocument->setRefNum(substr($uploadResponse['id'], 4));
                 $paymentDocument->setStatus(Invoice\Status::PAID);
