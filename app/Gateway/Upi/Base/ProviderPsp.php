@@ -66,6 +66,7 @@ class ProviderPsp
     Const SUPER_MONEY        = 'super_money';
     Const BOI_MOBILE_OMNI_NEO_BANK  = 'boi_mobile_omni_neo_bank';
     Const FLIPKART           = 'flipkart';
+    Const ONECARD            = 'onecard';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

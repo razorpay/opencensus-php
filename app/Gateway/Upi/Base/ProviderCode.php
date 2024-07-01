@@ -217,6 +217,7 @@ class ProviderCode
     Const MBOI               = 'mboi';
     Const SUPERYES           = 'superyes';
     Const FKAXIS             = 'fkaxis';
+    Const ONEYES             = 'oneyes';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -425,6 +426,7 @@ class ProviderCode
         self::MBOI               => 'NPCI',
         self::SUPERYES           => 'NPCI',
         self::FKAXIS             => 'NPCI',
+        self::ONEYES             => 'NPCI',
     ];
 
     /**
@@ -555,6 +557,7 @@ class ProviderCode
         ProviderPsp::BOI_MOBILE_OMNI_NEO_BANK,
         ProviderPsp::SUPER_MONEY,
         ProviderPsp::FLIPKART,
+        ProviderPsp::ONECARD,
     ];
 
     /**
@@ -635,6 +638,7 @@ class ProviderCode
         self::MBOI         => ProviderPsp::BOI_MOBILE_OMNI_NEO_BANK,
         self::SUPERYES     => ProviderPsp::SUPER_MONEY,
         self::FKAXIS       => ProviderPsp::FLIPKART,
+        self::ONEYES       => ProviderPsp::ONECARD,
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
     ];
