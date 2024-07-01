@@ -94,6 +94,7 @@ class Xperience
     const LIST_PETTY_CASH_ALL_PATH           = 'v1/petty-cash-all';
     const GET_PETTY_CASH_ALL_PATH            = 'v1/petty-cash-all/%s';
     const UPDATE_PETTY_CASH_PATH             = 'v1/petty-cash/%s';
+    const UPDATE_PETTY_CASH_BULK_PATH        = 'v1/petty-cash-bulk';
     const CREATE_EXPENSE_CATEGORY_PATH       = 'v1/expense-categories';
     const LIST_EXPENSE_CATEGORIES_PATH       = 'v1/expense-categories';
     const UPDATE_EXPENSE_CATEGORY_PATH       = 'v1/expense-categories/%s';
@@ -859,6 +860,13 @@ class Xperience
         return $this->makeRequest($url, $input, [], self::PATCH);
     }
 
+    public function updatePettyCashBulk(array $input)
+    {
+        $url = $this->getConstructedUrl(self::UPDATE_PETTY_CASH_BULK_PATH);
+
+        return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
     public function pettyCashStatusCallback(array $input)
     {
         $url = $this->getConstructedUrl(self::PETTY_CASH_PAYOUT_STATUS_CALLBACK_PATH);
@@ -1007,6 +1015,7 @@ class Xperience
             'payout_status' => $payout->getStatus(),
             'payout_id'     => $payout->getPublicId(),
             'merchant_id'   => $payout->getMerchantId(),
+            'utr'           => $payout->getUtr(),
         ];
 
         $sourceDetails = $payout->getSourceDetails();

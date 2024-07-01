@@ -506,6 +506,15 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updatePettyCashBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->updatePettyCashBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function hardUpdateStatusPettyCash()
     {
         $input = Request::all();

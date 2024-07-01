@@ -2046,6 +2046,7 @@ class Route
         'xps_update_pettycash_balance'              => ['patch',    'xperience/petty-cash-balance',                         'XperienceController@updatePettyCashBalance'],
         'xps_create_pettycash'                      => ['post',     'xperience/petty-cash',                                 'XperienceController@createPettyCash'],
         'xps_update_petty_cash'                     => ['patch',    'xperience/petty-cash/{id}',                            'XperienceController@updatePettyCash'],
+        'xps_update_petty_cash_bulk_admin'          => ['patch',    'xperience/admin/petty-cash-bulk',                      'XperienceController@updatePettyCashBulk'],
         'xps_list_pettycash_self'                   => ['get',      'xperience/petty-cash-self',                            'XperienceController@listPettyCashSelf'],
         'xps_get_pettycash'                         => ['get',      'xperience/petty-cash/{id}',                            'XperienceController@getPettyCash'],
         'xps_list_pettycash'                        => ['get',      'xperience/petty-cash',                                 'XperienceController@listPettyCash'],
@@ -5204,6 +5205,7 @@ class Route
         'proxy_for_activation_status',
         'banking_account_service_rbl_migration',
         'banking_account_statement_generate_admin',
+        'xps_update_petty_cash_bulk_admin',
     ];
 
     /**
@@ -9467,6 +9469,7 @@ class Route
         'xps_list_expense_categories_admin',
         'xps_update_expense_category_admin',
         'xps_delete_expense_category_admin',
+        'xps_update_petty_cash_bulk_admin',
 
         //1cc rto model configs
         '1cc_rto_mlmodel_configs_create_admin',
@@ -11151,6 +11154,7 @@ class Route
         'xps_list_expense_categories_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'xps_update_expense_category_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'xps_delete_expense_category_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'xps_update_petty_cash_bulk_admin'          => Permission::VIEW_ACTIVATION_FORM,
 
         'salesforce_event_admin'                    => Permission::VIEW_ACTIVATION_FORM,
         'salesforce_event_admin_one_ca'             => Permission::SUBMIT_ONE_CA,
@@ -16379,6 +16383,7 @@ class Route
             'xps_list_expense_categories_admin',
             'xps_update_expense_category_admin',
             'xps_delete_expense_category_admin',
+            'xps_update_petty_cash_bulk_admin',
 
             '1cc_configs_update',
             '1cc_configs_get',
