@@ -38,4 +38,15 @@ class IntentParams
     const CESS          = 'CESS';
     const GST_INCENTIVE = 'GSTIncentive';
     const GST_PCT       = 'GSTPCT';
+
+    const AMOUNT_RULE    = 'amrule';
+    const TXN_TYPE       = 'txnType';
+    const RECUR_TYPE     = 'recurtype';
+    const REV            = 'rev';
+    const VALIDITY_END   = 'validityend';
+    const VALIDITY_START = 'validitystart';
+    const BLOCK          = 'block';
+    const RECUR_VALUE    = 'recurvalue';
+    const FAM            = 'fam';
+    const FREQUENCY      = 'recur';
 }

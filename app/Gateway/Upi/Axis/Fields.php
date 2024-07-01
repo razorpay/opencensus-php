@@ -61,4 +61,8 @@ class Fields
     const CALLBACK_STATUS_DESCRIPTION  = 'callBackstatusDescription';
     const CALLBACK_TXN_ID              = 'callBacktxnId';
     const CALLBACK_URL                 = 'callBackUrl';
+
+    // recurring fields
+    const REQUEST_TYPE                 = 'requestType';
+    const UMN                          = 'umn';
 }

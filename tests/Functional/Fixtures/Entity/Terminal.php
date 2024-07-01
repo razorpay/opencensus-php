@@ -1168,6 +1168,64 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedAxisRecurringTerminal(array $attributes = [])
+    {
+        $termId = Shared::UPI_AXIS_RECURRING_TERMINAL;
+
+        $default = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_axis',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'upi'                       => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'auth_code',
+            'gateway_terminal_id'       => 'axis_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => '293823',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        $attributes['type'] = [
+            Type::RECURRING_3DS     => '1',
+            Type::RECURRING_NON_3DS => '1',
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDedicatedAxisRecurringTerminal(array $attributes = [])
+    {
+        $termId = Shared::UPI_AXIS_RECURRING_TERMINAL_DEDICATED;
+
+        $default = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_axis',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'upi'                       => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'auth_code',
+            'gateway_terminal_id'       => 'axis_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => '293823',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        $attributes['type'] = [
+            Type::RECURRING_3DS     => '1',
+            Type::RECURRING_NON_3DS => '1',
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedIciciRecurringTerminal(array $attributes = [])
     {
         $termId = Shared::UPI_ICICI_RECURRING_TERMINAL;
@@ -1184,6 +1242,32 @@ class Terminal extends Base
         $attributes = array_merge($default, $attributes);
 
         return $this->createSharedUpiIciciTerminal($attributes);
+    }
+
+    public function createDedicatedUpiAxisIntentRecurringTerminal(array $attributes = [])
+    {
+        $termId = Shared::UPI_AXIS_RECURRING_INTENT_TERMINAL_DEDICATED;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_axis',
+            'gateway_merchant_id'       => 'razorpay upi',
+            'gateway_terminal_id'       => 'nodal account upi axis',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::RECURRING_3DS         => '1',
+                Type::RECURRING_NON_3DS     => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createDedicatedUpiIciciRecurringTerminal(array $attributes)

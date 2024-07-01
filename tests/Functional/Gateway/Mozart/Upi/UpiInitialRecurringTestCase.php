@@ -1590,6 +1590,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['citrus_payu_allow']             = ['razorpay@payu', $throwables['whitelisted']];
         $cases['fi_fifederal_allow']            = ['razorpay@fifederal', $throwables['whitelisted']];
         $cases['timepay_timecosmos_allow']      = ['razorpay@timecosmos', $throwables['whitelisted']];
+        $cases['axisbank_axis_allow']           = ['razorpay@axis', $throwables['whitelisted']];
         $cases['fampay_yesfam_allow']           = ['razorpay@yesfam', $throwables['whitelisted']];
         $cases['bobworldupi_barodampay_allow']  = ['razorpay@barodampay', $throwables['whitelisted']];
         $cases['sibmirrorplus_sib_allow']       = ['razorpay@sib', $throwables['whitelisted']];

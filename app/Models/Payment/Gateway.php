@@ -3932,6 +3932,7 @@ class Gateway
         Gateway::FULCRUM,
         Gateway::CHECKOUT_DOT_COM,
         Gateway::PAYU,
+        Gateway::UPI_AXIS,
     ];
 
     public static $cardMandateGateways = [
@@ -3939,9 +3940,15 @@ class Gateway
         Gateway::MANDATE_HQ,
     ];
 
+    public static $upiRecurringValidateVPASupportedGateway = [
+        Gateway::UPI_MINDGATE,
+        Gateway::UPI_AXIS,
+    ];
+
     public static $upiRecurringGateways = [
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
+        Gateway::UPI_AXIS,
     ];
 
     public static $recurringCardNetworks = [
@@ -6162,6 +6169,11 @@ class Gateway
     public static function isUpiRecurringSupportedGateway($gateway): bool
     {
         return in_array($gateway, self::$upiRecurringGateways, true);
+    }
+
+    public static function isUpiRecurringValidateVPASupportedGateway($gateway): bool
+    {
+        return in_array($gateway, self::$upiRecurringValidateVPASupportedGateway, true);
     }
 
     public static function isCardPaymentServiceGateway($gateway)

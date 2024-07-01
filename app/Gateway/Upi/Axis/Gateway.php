@@ -15,6 +15,7 @@ use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\BankAccount;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -30,6 +31,9 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
     use CommonGatewayTrait;
+
+    use Base\RecurringTrait;
+    use Base\MandateTrait;
 
     const ACQUIRER      = 'axis';
 
@@ -82,6 +86,24 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::action($input, GatewayBase\Action::AUTHENTICATE);
+
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            return $this->authenticate($input);
+        }
+
+        if ($this->isMandateCreateRequest($input) === true)
+        {
+            $data = $this->getGatewayEntityAttributes($input);
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHORIZE);
+
+            $response = $this->mandateCreate($input);
+
+            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi'], false);
+
+            return $response;
+        }
 
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
@@ -487,13 +509,14 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
+    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE, string $type = Base\Type::COLLECT)
     {
         $attrs = [
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
-            Entity::TYPE                => Base\Type::COLLECT,
+            Entity::TYPE                => $type,
+            Entity::GATEWAY_DATA        => $input['upi']['gateway_data'] ?? null,
         ];
 
         if ($action === Action::REFUND)
@@ -792,7 +815,9 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input): array
     {
-        if ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_AXIS))
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_AXIS) and $routeName !== 'gateway_payment_callback_recurring')
         {
             $data = [
                 'payload'       => $input['data'],
@@ -813,7 +838,45 @@ class Gateway extends Base\Gateway
 
         try
         {
+            if ( $routeName === 'gateway_payment_callback_recurring')
+            {
+                $aesdecrypted = $this->decryptRecurringAes($encryptedmessage);
+                $aesdecrypted = preg_replace('/[[:cntrl:]]/', '', $aesdecrypted);
+
+                $response = $this->jsonToArray($aesdecrypted);
+
+//              update umn and mandate status in case revoke, pause or unpause
+                $traceHeaders = $this->app['request']->header();
+                unset($traceHeaders['authorization'], $traceHeaders['x-passport-jwt-v1']);
+
+                $mandateResponse = $this->getMandateCallbackResponseIfApplicable($response);
+
+                if (empty($mandateResponse) === false) {
+                    $this->trace->info(
+                        TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                        [
+                            'body' => $input,
+                            'headers' => $traceHeaders,
+                            'gateway' => $this->gateway,
+                            'data' => $response,
+                            'mandateResponse' => $mandateResponse,
+                        ]);
+                    return $mandateResponse;
+                }
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                    [
+                        'body' => $input,
+                        'headers' => $traceHeaders,
+                        'gateway' => $this->gateway,
+                        'data' => $response,
+                    ]);
+
+                return $response;
+            }
             return $this->jsonToArray($aesdecrypted);
+
         }
         catch(\Exception $e)
         {
@@ -830,10 +893,18 @@ class Gateway extends Base\Gateway
             return $this->upiPaymentIdFromServerCallback($input);
         }
 
+        $details = $this->getRecurringDetailsFromServerCallback($input);
+
+        if (empty($details[Entity::PAYMENT_ID]) === false)
+        {
+            return $details[Entity::PAYMENT_ID];
+        }
+
         if (isset($input[Fields::MERCHANT_TRANSACTION_ID]) === true)
         {
             return $input[Fields::MERCHANT_TRANSACTION_ID];
         }
+
 
         throw new Exception\GatewayErrorException(
             Error\ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
@@ -850,6 +921,11 @@ class Gateway extends Base\Gateway
     public function callback(array $input): array
     {
         parent::callback($input);
+
+        if ($input['payment']['recurring'] === true)
+        {
+            return $this->processRecurringCallback($input);
+        }
 
         if ((isset($input['gateway']['data']['version']) === true) and
             ($input['gateway']['data']['version']) === 'v2')
@@ -929,9 +1005,15 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function updateGatewayPaymentResponse($payment, array $response)
+    protected function updateGatewayPaymentResponse($payment, array $response, bool $shouldMap = true)
     {
-        $attributes = $this->getMappedAttributes($response);
+        $attributes = $response;
+
+        if ($shouldMap === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
+
         // To mark that we have received a response for this request
         $attributes[Entity::RECEIVED] = 1;
 
@@ -946,6 +1028,12 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        if (($this->isFirstRecurringPayment($input) === true) or
+            ($this->isSecondRecurringPayment($input) === true))
+        {
+            return $this->recurringPaymentVerify($input);
+        }
+
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
@@ -955,6 +1043,12 @@ class Gateway extends Base\Gateway
     public function verifyGateway(array $input)
     {
         parent::verify($input);
+
+        if (($this->isFirstRecurringPayment($input) === true) or
+            ($this->isSecondRecurringPayment($input) === true))
+        {
+            return $this->recurringPaymentVerifyGateway($input);
+        }
 
         $verify = new Verify($this->gateway, $input);
 
@@ -1650,6 +1744,23 @@ class Gateway extends Base\Gateway
         return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 
+    public function getRecurringSecret()
+    {
+        return $this->config['recurring_aes_encryption_key'];
+    }
+
+    public function decryptRecurringAes(string $stringToDecrypt)
+    {
+        $this->createRecurringCryptoIfNotCreated();
+
+        return $this->aesCrypto->decryptString($stringToDecrypt);
+    }
+
+    protected function createRecurringCryptoIfNotCreated()
+    {
+        $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->getRecurringSecret());
+    }
+
     public function setCurlOptions($curl)
     {
         curl_setopt($curl, CURLOPT_ENCODING, null);
@@ -1868,5 +1979,114 @@ class Gateway extends Base\Gateway
         $gatewayEntity->setAction($input[Entity::ACTION]);
 
         $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
+    }
+
+    // Recurring specific methods
+    protected function getMandateCallbackResponseIfApplicable($mandateData)
+    {
+        if (($this->isMandatePauseCallback($mandateData) === true))
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $mandateData[Fields::UMN],
+                    'status'  => 'pause',
+                ]
+            ];
+        }
+        else if ($this->isMandateResumeCallback($mandateData) === true)
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $mandateData[Fields::UMN],
+                    'status'  => 'resume',
+                ]
+            ];
+        }
+        else if ($this->isMandateRevokeCallback($mandateData) === true)
+        {
+            return [
+                'upi_mandate' => [
+                    'umn'     => $mandateData[Fields::UMN],
+                    'status'  => 'revoke',
+                ]
+            ];
+        }
+        return [];
+    }
+
+    protected function isMandatePauseCallback($input)
+    {
+        if ((isset($input[Fields::REQUEST_TYPE]))
+            and ($input[Fields::REQUEST_TYPE] === Status::PAUSE)
+            and ($input[Fields::STATUS] === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isMandateResumeCallback($input)
+    {
+        if ((isset($input[Fields::REQUEST_TYPE]))
+            and ($input[Fields::REQUEST_TYPE] === Status::UNPAUSE)
+            and ($input[Fields::STATUS] === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isMandateRevokeCallback($input)
+    {
+        if ((isset($input[Fields::REQUEST_TYPE]))
+            and ($input[Fields::REQUEST_TYPE] === Status::REVOKE)
+            and ($input[Fields::STATUS] === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function mandateCancel(array $input)
+    {
+        parent::action($input, Action::MANDATE_CANCEL);
+
+        $this->setGatewayDataBlockForUpiRecurring($input);
+
+        return $this->recurringMandateRevoke($input);
+    }
+
+    protected function getActualPaymentIdFromServerCallback(array $response)
+    {
+        if (isset($response['transactionId']) === true)
+        {
+            return $response['transactionId'];
+        }
+    }
+
+    protected function getRedactedData($data)
+    {
+        unset($data['data']['Key']);
+
+        unset($data['data']['enqinfo']['0']['Key']);
+
+        unset($data['data']['enqinfo']['0']['MOBILENO']);
+
+        unset($data['data']['MobileNo']);
+
+        unset($data['data']['valkey']);
+
+        unset($data['otp']);
+
+        unset($data['data']['_raw']);
+
+        unset($data['_raw']);
+
+        unset($data['data']['account_number']);
+
+        return $data;
     }
 }

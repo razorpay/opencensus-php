@@ -49,4 +49,18 @@ class Status
     const REFUND_SUCCESS            = '000';
 
     const REFUND_ABSENT             = '111';
+
+    const UPDATE        = 'UPDATE';
+
+    const REVOKE        = 'REVOKE';
+
+    const PAUSE         = 'PAUSE';
+
+    const UNPAUSE       = 'UNPAUSE';
+
+    const EXECUTE      = 'EXECUTE';
+
+    const CREATE        = 'CREATE';
+
+    const SUCCESS     = 'SUCCESS';
 }

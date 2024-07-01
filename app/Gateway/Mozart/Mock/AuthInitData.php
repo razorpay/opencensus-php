@@ -245,4 +245,89 @@ class AuthInitData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_axis($entities)
+    {
+        assertTrue(isset($entities['upi']['remark']));
+        assertTrue($entities['upi']['remark'] === 'Test Merchant random description');
+
+        if ($entities['upi']['flow'] === 'intent') {
+            [
+                $response = [
+                    'data' => [
+                        '_raw' => '',
+                        'status_code' => '00',
+                        'intent_url' => 'upi://mandate?am=22.00&amrule=MAX&block=N&cu=INR&mc=5411&mode=04&orgid=000000&pn=Razorpay&purpose=14&recur=MONTHLY&recurtype=ON&recurvalue=27&rev=Y&tr=CyttkcQ3u000269&txnType=CREATE&validityend=08072020&validitystart=27062020',
+                        'errCode' => '00',
+                        'status' => '00',
+                        'version' => 'v2',
+                        'terminal' => [
+                            'gateway' => 'upi_axis',
+                            'gateway_merchant_id' => 'MER1234'
+                        ],
+                        'upi' => [
+                            'status_code' => '00',
+                            'gateway_data' => [
+                                'id' => 'CyttkcQ3u000269'
+                            ]
+                        ],
+                        'status_desc' => 'Success',
+                        'mandate' => [
+                            'gateway_data' => [
+                                'id' => 'CyttkcQ3u000269'
+                            ]
+                        ],
+                        'payment' => [
+                            'currency' => 'INR'
+                        ]
+                    ],
+                    'error' => null,
+                    'external_trace_id' => '',
+                    'next' => [],
+                    'success' => true
+                ]
+            ];
+
+            return $response;
+        }
+
+        $response = [
+            'data' => [
+                '_raw' => '',
+                'status_code' => '00',
+                'errCode' => '00',
+                'status' => '00',
+                'version' => 'v2',
+                'terminal' => [
+                    'gateway' => 'upi_axis',
+                    'gateway_merchant_id' => 'RAZORPAY10040616'
+                ],
+                'upi' => [
+                    'status_code' => '00',
+                    'gateway_data' => [
+                        'id' => 'NrSPyEOccuftKZ0create1'
+                    ],
+                    'gateway_payment_id' => '408724842701',
+                    'merchant_reference' => 'NrSPyEOccuftKZ0create1',
+                    'npci_reference_id' => '408724842701'
+                ],
+                'status_desc' => 'Success',
+                'mandate' => [
+                    'gateway_data' => [
+                        'id' => 'NrSPyEOccuftKZ0create1'
+                    ],
+                    'rrn' => '408724842701'
+                ],
+                'payment' => [
+                    'currency' => 'INR'
+                ]
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
 }

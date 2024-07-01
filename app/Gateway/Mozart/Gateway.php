@@ -10,16 +10,19 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Mozart;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Gateway\Upi\Base\Type;
+use RZP\Models\Payment\Processor;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Base\Constants;
 use RZP\Models\UpiMandate\Frequency;
 use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Base\IntentParams;
 use RZP\Gateway\Upi\Base\MandateTrait;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -32,6 +35,8 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
+    use Processor\UpiTrait;
+
     // set Upi Aquirer as null for all upi gateways.
     const ACQUIRER = null;
 
@@ -408,10 +413,105 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    protected function getRecurrence(array $input)
+    {
+        $frequency = $input['upi_mandate']['frequency'] ?? null;
+
+        switch ($frequency)
+        {
+            case 'as_presented':
+                return [
+                    'recurring_rule' => 'ON',
+                    'recurring_value' => null,
+                    'frequency' => 'ASPRESENTED'
+                ];
+
+            case 'daily':
+                return [
+                    'recurring_rule' => null,
+                    'recurring_value' => null,
+                    'frequency' => 'DAILY'
+                ];
+
+            case 'half_yearly':
+                return [
+                    'recurring_rule' => strtoupper($input['upi_mandate']['recurring_type']),
+                    'recurring_value' => $input['upi_mandate']['recurring_value'],
+                    'frequency' => 'HALFYEARLY'
+                ];
+
+            default:
+                return [
+                    'recurring_rule' => strtoupper($input['upi_mandate']['recurring_type']),
+                    'recurring_value' => $input['upi_mandate']['recurring_value'],
+                    'frequency' => strtoupper($input['upi_mandate']['frequency'])
+                ];
+        }
+    }
+
+    protected function generateRecurringIntentUrl(array $input)
+    {
+        $recurrence = $this->getRecurrence($input);
+
+        $content = [
+            IntentParams::TXN_AMOUNT     => number_format($input['upi_mandate']['max_amount'] / 100, 2),
+            IntentParams::TXN_NOTE       => $this->getPaymentRemark($input),
+            IntentParams::TXN_TYPE       => 'CREATE',
+            IntentParams::PAYEE_NAME     => preg_replace('/\s+/', '',
+                $input['merchant']->getFilteredDba()),
+            IntentParams::RECUR_TYPE     => $recurrence['recurring_rule'],
+            IntentParams::REV            => $input['upi']['gateway_data']['rev'],
+            IntentParams::TRANSACTION_ID => $input['upi']['gateway_data']['id'],
+            IntentParams::PAYEE_ADDRESS  => $input['terminal']['vpa'],
+            IntentParams::TXN_CURRENCY   => $input['payment']['currency'],
+            IntentParams::VALIDITY_END   => Carbon::createFromTimestamp($input['upi_mandate']['end_time'], Timezone::IST)->format('dmY'),
+            IntentParams::MCC            => (string) ($input['terminal']['category'] ?? 5411),
+            IntentParams::VALIDITY_START => Carbon::createFromTimestamp($input['upi_mandate']['start_time'], Timezone::IST)->format('dmY'),
+            IntentParams::BLOCK          => 'N',
+            IntentParams::RECUR_VALUE    => $recurrence['recurring_value'],
+            IntentParams::MODE           => '04',
+            IntentParams::FAM            => number_format($input['payment']['amount'] / 100, 2),
+            IntentParams::FREQUENCY      => $recurrence['frequency'],
+            IntentParams::TXN_REF_ID     => $input['upi']['gateway_data']['id'],
+            IntentParams::PURPOSE        => '14',
+            IntentParams::AMOUNT_RULE    => 'MAX',
+            IntentParams::ORG_ID         => '400011',
+        ];
+
+        $url = 'upi://mandate?' . str_replace(' ', '', urldecode(http_build_query($content)));
+
+        $response = [
+            'success' => true,
+            'data' => [
+                'intent_url' => $url,
+                'version' => 'v2',
+                'mandate' => [
+                    'gateway_data' => [
+                        'id' => $input['upi']['gateway_data']['id']
+                    ],
+                ]
+            ]
+        ];
+
+        $this->trace->info(
+            TraceCode::UPI_AUTOPAY_INTENT_RESPONSE,
+            [
+                'response' => $response,
+                'payment_id' => $input['payment']['id']
+            ]);
+
+        return $response;
+    }
+
     public function mandateCreate($input)
     {
         if ($this->isUpiRecurringPayment($input['payment']) === true)
         {
+            if (($input['payment']['gateway'] === 'upi_axis') and ($this->isUpiIntent($input) === true))
+            {
+                return $this->generateRecurringIntentUrl($input);
+            }
+
             parent::action($input, Action::AUTH_INIT);
 
             $traceReq = TraceCode::GATEWAY_MANDATE_CREATE_REQUEST;
@@ -3435,7 +3535,7 @@ class Gateway extends Base\Gateway
 
             return;
         }
-        
+
         $version = $input['data']['version'] ?? '';
         if ($version === 'v2')
         {

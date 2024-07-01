@@ -314,7 +314,7 @@ trait RecurringTrait
     {
         $gateway = $this->getMozartGatewayWithModeSet();
 
-        if ($input['payment']['gateway'] === Payment\Gateway::UPI_MINDGATE)
+        if (Payment\Gateway::isUpiRecurringValidateVPASupportedGateway($input['payment']['gateway']) === true)
         {
             if ($input['upi']['flow'] === Constants::COLLECT)
             {

@@ -26,4 +26,22 @@ class ValidateVpaData extends Base\Mock\Server
             'external_trace_id' => '',
         ];
     }
+
+    public function upi_axis($entities)
+    {
+        return [
+            'data' => [
+                '_raw' => '',
+                'payer_name' => 'MAYANK ARVINDKUMAR MEHTA',
+                'status_desc' => 'SUCCESS',
+                'vpa' => 'testvpa@hdfcbank',
+                'status' => 'SUCCESS',
+                'errCode' => '00',
+                'isVpaValid' => 'Y'
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'success' => true
+        ];
+    }
 }

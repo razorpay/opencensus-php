@@ -151,4 +151,46 @@ class AuthVerifyData extends Base\Mock\Server
             ],
         ];
     }
+
+    public function upi_axis($entities)
+    {
+        $response = [
+            'data' => [
+                '_raw' => '',
+                'terminal' => [
+                    'gateway_merchant_id' => 'testPgMerchantId',
+                    'gateway' => 'upi_axis'
+                ],
+                'status_code' => '00',
+                'status_desc' => 'Success',
+                'version' => 'v2',
+                'status' => 'Success',
+                'payment' => [
+                    'currency' => 'INR'
+                ],
+                'mandate' => [
+                    'rrn' => '32131429',
+                    'gateway_data' => [
+                        'id' => 'HtWaAkbl2DoVZt'
+                    ],
+                    'umn' => $entities['payment']['id'].'axis'
+                ],
+                'upi' => [
+                    'vpa' => $entities['gateway']['redirect']['payerAddr'],
+                    'npci_reference_id' => '32131429',
+                    'gateway_data' => [
+                        'id' => $entities['gateway']['redirect']['transactionId']
+                    ],
+                    'merchant_reference' => 'HtWaAkbl2DoVZt',
+                    'gateway_payment_id' => '32131429',
+                    'npci_txn_id' => '32131429'
+                ]
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'success' => true
+        ];
+
+        return $response;
+    }
 }
