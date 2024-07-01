@@ -5141,7 +5141,7 @@ class Route
         'fetch_turbo_upi_error_mapping',
         'record_turbo_upi_customer_consent',
         'turbo_upi_customer_reward_eligibility',
-        'turbo_upi_customer_reward_allocate' 
+        'turbo_upi_customer_reward_allocate'
     ];
 
     public static $device = [
@@ -12157,6 +12157,8 @@ class Route
             'contact_create_internal',
             'fund_account_create_internal',
             'vendor_payment_get_tds_categories_internal',
+            'contact_update_internal',
+            'fund_account_update_internal',
         ],
 
         'master_onboarding' => [
