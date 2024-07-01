@@ -258,6 +258,7 @@ test.describe.parallel(
         await page.getByRole('button', { name: 'Get Code' }).click();
         await page.getByRole('link', { name: 'Back To Dashboard' }).click();
 
+        await page.locator('input[name="title"]').fill(testButtonTitle);
         await page.getByRole('combobox').selectOption('Inactive');
         await page.getByRole('button', { name: 'Search' }).click();
 
