@@ -486,6 +486,11 @@ class Processor
     const ALLOW_UPI_GLOBAL_TOKEN_SAVE_ON_REARCH_UPS = 'allow_upi_global_token_save_on_rearch_ups';
 
     /**
+     * Razorx flag to allow payment create bypass on respawn flow
+     */
+    const ALLOW_RESPAWN_ON_REARCH_UPS = 'allow_respawn_on_rearch_ups';
+
+    /**
      * Razorx flag to allow payment create bypass on token
      */
     const ALLOW_UPI_TOKEN_ON_REARCH_UPS = 'allow_upi_token_on_rearch_ups';
@@ -2610,8 +2615,10 @@ class Processor
                 (empty($input[Payment\Entity::TOKEN]) === true))
         )
         {
-            $routeViaReArch = false;
-            $dimensions[33] = 1;
+            if ($this->shouldRouteUpsRespawn($input) === false) {
+                $routeViaReArch = false;
+                $dimensions[33] = 1;
+            }
         }
 
         if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS) === true)
@@ -12394,6 +12401,25 @@ class Processor
 
         $feature = self::ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS ;
 
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $feature,
+        ]);
+
+        return str_starts_with($variant, 'on') === true;
+    }
+
+    /**
+     * shouldRouteUpsRespawn checks if upi token save can be enabled
+     * @return bool
+     */
+    private function shouldRouteUpsRespawn($input): bool
+    {
+        $feature = self::ALLOW_RESPAWN_ON_REARCH_UPS;
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
