@@ -2677,6 +2677,61 @@ class Service extends Base\Service
         return (object) $data;
     }
 
+    public function isSectionPresent($sectionName , $websiteDetail): bool
+    {
+        foreach ($websiteDetail as $section => $sectionDetail)
+        {
+            if($sectionName === $section and isset($sectionDetail['url']) === true and empty($sectionDetail['url']) === false)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isAdminWebsiteDetailPresent(MerchantEntity $merchant): bool
+    {
+        $websiteDetails = $this->repo->merchant_website->findOrFailPublic($merchant->getId());
+
+        $adminWebsiteDetail = $websiteDetails->getAdminWebsiteDetails();
+
+        if(empty($adminWebsiteDetail) === true)
+        {
+            return false;
+        }
+
+        $isAdminWebsiteDetailPresent = true;
+
+        foreach ($adminWebsiteDetail as $urlType => $data)
+        {
+            if(empty($data) === false and is_array($data))
+            {
+                foreach ($data as $url => $websiteDetail)
+                {
+                    if(empty($websiteDetail) === false and is_array($websiteDetail))
+                    {
+                        foreach (explode(',', Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
+                        {
+                            if($this->isSectionPresent($sectionName, $websiteDetail) === false)
+                            {
+                                $isAdminWebsiteDetailPresent = false;
+                                break;
+                            }
+                        }
+
+                        if($isAdminWebsiteDetailPresent === true)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $isAdminWebsiteDetailPresent;
+    }
+
     // if merchant has any published pages send that information to checkout preferences
     // if merchant is activated save to redis and fetch from redis
     public function checkAndFillMerchantPolicyPage(MerchantEntity $merchant)
@@ -2710,6 +2765,11 @@ class Service extends Base\Service
 
                 if (empty($websiteDetail) === true or
                     empty(optional($websiteDetail)->getStatus()) === true)
+                {
+                    return null;
+                }
+
+                if($this->isAdminWebsiteDetailPresent($merchant) === true)
                 {
                     return null;
                 }

@@ -1882,4 +1882,112 @@ class TncActivationTest extends TestCase
         $this->assertEquals(true, $response);
 
     }
+
+    public function testIsAdminWebsiteDetailPresentSuccess()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://testing.com'], false);
+
+        $websiteDetails = [
+            'merchant_id'              => $merchant->getId(),
+            'shipping_period'          => '3-5 days',
+            'refund_request_period'    => '3-5 days',
+            'refund_process_period'    => '3-5 days',
+            'additional_data'          => [
+                'support_contact_number' => '9898989898',
+                'support_email'          => 'testing@razorpay.com'
+            ],
+            'merchant_website_details' => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "published_url"  => "https://merchant.razorpay.com/policy/Nc0BZGCTRhatjO/contact_us"
+                ]
+            ],
+            'admin_wesbite_details' => [
+                'website'=> [
+                    'https://razorpay.com/'=> [
+                        'terms'=> [
+                            'url'=> 'https://razorpay.com/terms'
+                        ],
+                        'refund'=> [
+                            'url'=> 'https://razorpay.com/refunds'
+                        ],
+                        'pricing'=> [
+                            'url'=> 'https://razorpay.com/pricing'
+                        ],
+                        'privacy'=> [
+                            'url'=> 'https://razorpay.com/privacy'
+                        ],
+                        'about_us'=> [
+                            'url'=> 'https://razorpay.com/about'
+                        ],
+                        'comments'=> 'hello',
+                        'shipping'=> [
+                            'url'=> 'https://razorpay.com/delivery'
+                        ],
+                        'contact_us'=> [
+                            'url'=> 'https://razorpay.com/contact'
+                        ],
+                        'cancellation'=> [
+                            'url'=> 'https://razorpay.com/cancel'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $merchantWesbite = $this->createWebsiteDetails($websiteDetails);
+
+        $response = (new Merchant\Website\Service())->isAdminWebsiteDetailPresent($merchant);
+
+        $this->assertEquals(true, $response);
+
+    }
+
+    public function testIsAdminWebsiteDetailPresentFailure()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://testing.com'], false);
+
+        $websiteDetails = [
+            'merchant_id'              => $merchant->getId(),
+            'shipping_period'          => '3-5 days',
+            'refund_request_period'    => '3-5 days',
+            'refund_process_period'    => '3-5 days',
+            'additional_data'          => [
+                'support_contact_number' => '9898989898',
+                'support_email'          => 'testing@razorpay.com'
+            ],
+            'merchant_website_details' => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "published_url"  => "https://merchant.razorpay.com/policy/Nc0BZGCTRhatjO/contact_us"
+                ]
+            ],
+            'admin_wesbite_details' => [
+                'website'=> [
+                    'https://razorpay.com/'=> [
+                        'privacy'=> [
+                            'url'=> 'https://razorpay.com/privacy'
+                        ],
+                        'about_us'=> [
+                            'url'=> 'https://razorpay.com/about'
+                        ],
+                        'comments'=> 'hello',
+                        'shipping'=> [
+                            'url'=> 'https://razorpay.com/delivery'
+                        ],
+                        'cancellation'=> [
+                            'url'=> 'https://razorpay.com/cancel'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $merchantWesbite = $this->createWebsiteDetails($websiteDetails);
+
+        $response = (new Merchant\Website\Service())->isAdminWebsiteDetailPresent($merchant);
+
+        $this->assertEquals(false, $response);
+
+    }
 }
