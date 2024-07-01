@@ -803,6 +803,11 @@ class Service extends Base\Service
     {
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
 
+        if ($this->checkIfLinkedAccountBatchUploadNewFlowExpIsEnabled($this->merchant) === true)
+        {
+            return $this->createLinkedAccountViaBatchNewFlow($input);
+        }
+
         $this->trace->info(
             TraceCode::LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH,
             [
@@ -870,6 +875,144 @@ class Service extends Base\Service
         );
 
         return $input;
+    }
+
+    public function createLinkedAccountViaBatchNewFlow($input)
+    {
+        RuntimeManager::setTimeLimit(3 * 60);
+        RuntimeManager::setMaxExecTime(3 * 60);
+
+        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH,
+            [
+                'parent_merchant_id'    => $this->merchant->getId(),
+                'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
+            ]
+        );
+        // - unblocking batch la creation from dashboard. Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
+
+        //$this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
+
+        $submerchantInput = $this->extractSubmerchantInput($input);
+
+        $mutexKey = sprintf(self::LINKED_ACCOUNT_CREATE, strtolower($submerchantInput[Entity::EMAIL]));
+
+        [$linkedAccount, $accountStatus] = $this->mutex->acquireAndReleaseStrict(
+            $mutexKey,
+            function() use ($input, $submerchantInput)
+            {
+                [$linkedAccount, $accountStatus] = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $submerchantInput) {
+                    $linkedAccountArray = $this->createSubMerchantAndSetRelationsForLinkedAccount($this->merchant, $submerchantInput);
+
+                    if (isset($linkedAccountArray['id']) === false)
+                    {
+                        throw new Exception\LogicException(
+                            'Linked account creation failed.',
+                            null,
+                            $linkedAccountArray
+                        );
+                    }
+
+                    $this->app->hubspot->trackLinkedAccountCreation($linkedAccountArray['email'] ?? null);
+
+                    $linkedAccountId = $linkedAccountArray['id'];
+
+                    $linkedAccount = $this->repo->merchant->find($linkedAccountId);
+
+                    $bankAccountDetails = $this->extractBankAccountDetails($input);
+
+                    $merchantDetailCore = new Merchant\Detail\Core();
+
+                    $merchantDetailCore->saveMerchantDetails($bankAccountDetails, $linkedAccount);
+
+                    $this->repo->reload($linkedAccount);
+
+                    $accountStatus = $merchantDetailCore->getCombinedActivationStatusForLinkedAccounts($linkedAccount->merchantDetail);
+
+                    $accountStatus = Merchant\Account\Constants::LA_ACTIVATION_STATUS_MAPPING[$accountStatus] ?? Merchant\Account\Constants::NOT_ACTIVATED;
+
+                    return [$linkedAccount, $accountStatus];
+                });
+
+                return [$linkedAccount, $accountStatus];
+            },
+            Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+            Constants::MERCHANT_MUTEX_RETRY_COUNT
+        );
+
+        $input[BatchHeader::ACCOUNT_ID]         = Merchant\Account\Entity::getSignedId($linkedAccount->getId());
+        $input[BatchHeader::ACCOUNT_STATUS]     = $accountStatus;
+        $input[BatchHeader::ACTIVATED_AT]       = $linkedAccount->getActivatedAt();
+
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_CREATE_VIA_BATCH_SUCCESSFUL,
+            [
+                'linked_account_id'     => $linkedAccount->getId(),
+                'parent_merchant_id'    => $this->merchant->getId(),
+                'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
+                'account_status'        => $accountStatus,
+            ]
+        );
+
+        return $input;
+    }
+
+    protected function createSubMerchantAndSetRelationsForLinkedAccount(Entity $merchant, array $input)
+    {
+        $ownerId = $merchant->primaryOwner()->getId();
+
+        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
+        $actualProduct = $input['actual_product'] ?? $product;
+
+        unset($input['actual_product']);
+
+        // TODO: Remove when dashboard stops sending
+        unset($input['user_id']);
+        unset($input['account']);
+        unset($input[Entity::PRODUCT]);
+
+        $createFlags['v2CreateFlow']  = false;
+        $createFlags['optimise']      = false;
+        $createFlags['linkedAccount'] = true;
+
+        $this->trace->info(TraceCode::SUBMERCHANT_CREATE_FLAG, ['optimise_flag' => $createFlags['optimise']]);
+
+        list($subMerchant, $newUser, $createdNew, $response) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($input, $merchant, $ownerId, $product, $actualProduct, $createFlags) {
+            [$subMerchant, $newUser, $createdNew, $response] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $ownerId, $product, $actualProduct, $createFlags);
+            return [$subMerchant, $newUser, $createdNew, $response];
+        });
+
+        if ($merchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
+        {
+            $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
+        }
+
+        \Event::dispatch(new TransactionalClosureEvent(function() use ($merchant, $newUser, $subMerchant, $createdNew, $actualProduct) {
+            Tracer::inspan(['name' => HyperTrace::SEND_MAIL_TO_SUBMERCHANT], function() use ($merchant, $newUser, $subMerchant, $createdNew, $actualProduct) {
+
+                // Sends email to marketplace LA dashboard enabled users.
+                if ((empty($newUser) === false) and ($merchant->isMarketplace() === true))
+                {
+                    (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
+                }
+                else
+                {
+                    if ((($merchant->isMarketplace() === true) === false) and
+                        ($merchant->canCommunicateWithSubmerchant() === true))
+                    {
+                        $this->communicateSubMerchantCreation($subMerchant, $merchant, $actualProduct, $newUser, $createdNew);
+                    }
+                }
+            });
+        }));
+
+        $response['product'] = $product;
+
+        return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
     }
 
     public function updateLinkedAccountBankAccount(string $id, array $input)
@@ -7534,7 +7677,14 @@ class Service extends Base\Service
                 ]),
         ];
 
-        $optimise = (new Core())->isSplitzExperimentEnable($properties, 'enable');
+        if ($isLinkedAccount === true)
+        {
+            $optimise = false;
+        }
+        else
+        {
+            $optimise = (new Core())->isSplitzExperimentEnable($properties, 'enable');
+        }
 
         $createFlags['v2CreateFlow']  = $v2CreateFlow;
         $createFlags['optimise']      = $optimise;
@@ -13479,5 +13629,24 @@ class Service extends Base\Service
             $str = substr($str, strlen($prefix));
         }
         return $str;
+    }
+
+    protected function checkIfLinkedAccountBatchUploadNewFlowExpIsEnabled($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::USE_NEW_FLOW_FOR_LA_BATCH_UPLOAD,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::LINKED_ACCOUNT_BATCH_UPLOAD_NEW_FLOW_EXP_CHECK,
+            [
+                'merchant'               => $merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
     }
 }

@@ -1028,6 +1028,11 @@ final class RazorxTreatment
      */
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_REVERSALS = 'early_dispatch_of_txns_for_settlements_using_journal_reversals';
 
+    /**
+     * Experiment to use the new flow for creating linked accounts via batch upload
+     */
+    const USE_NEW_FLOW_FOR_LA_BATCH_UPLOAD = 'use_new_flow_for_la_batch_upload';
+
     const SHOW_BALANCE_FROM_CLS                                            = 'show_balance_from_cls';
 
     /**
