@@ -34,6 +34,7 @@ class AsvRouter
 
     const FLOW_WITH_TRANSACTION = 'FLOW_WITH_TRANSACTION';
     const SPLITZ_REJECTED = 'SPLITZ_REJECTED';
+    const MERCHANT_FETCH_INTERNAL_USERS =  'merchant_fetch_internal_users';
 
     const None = "none";
 
@@ -71,7 +72,7 @@ class AsvRouter
 
             $isExclusionFlow = AsvFlows::isExclusionFLow($routeOrWorkerName);
 
-            if($isExclusionFlow === true) {
+            if($isExclusionFlow === true && $routeOrWorkerName != self::MERCHANT_FETCH_INTERNAL_USERS) {
                 $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForEnableExclusionFlow();
                 $isExclusionFlow = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $routeOrWorkerName);
             }
@@ -416,7 +417,7 @@ class AsvRouter
     {
         try {
 
-            $isExclusionFlow = $this->isExclusionFlowOrFailure();
+            $isExclusionFlow =  $this->isExclusionFlowOrFailure();
 
             if ($isExclusionFlow === true) {
                 $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [

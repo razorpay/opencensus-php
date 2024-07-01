@@ -8,6 +8,7 @@ final class AsvFlows
         'worker:update_merchant_context' => true,
         'merchant_activation_status' => true,
         'merchant_activation_save' => true,
+        'merchant_fetch_internal_users' => true,
     );
 
     public static function isExclusionFLow(string $flow): bool
