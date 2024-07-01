@@ -521,6 +521,10 @@ class Shield
         {
             $payloadDetails[ShieldConstants::PACKAGE_NAME] = $packageName;
         }
+        else
+        {
+            $payloadDetails[ShieldConstants::PACKAGE_NAME] = "";
+        }
 
         $virtualDeviceId = $paymentAnalytics->getVirtualDeviceId();
         if (empty($virtualDeviceId) === false)
