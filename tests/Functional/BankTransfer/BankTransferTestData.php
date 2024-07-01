@@ -614,6 +614,41 @@ return [
         ]
     ],
 
+    'testHdfcEcmsBankTransferCallbackWithTypeFundTrans' => [
+        'request' => [
+            'url'     => '/ecollect/validate/hdfc/ecms',
+            'method'  => 'post',
+            'content' => [
+                'Virtual_Account_No'=> 'HB45898041727816',
+                'Remitter_Name'=> 'Dhiraj',
+                'Remitter_Account_No'=> '9876543210',
+                'Remitter_IFSC'=> 'RZPRAZORPAY',
+                'Remitter_Bank_Name'=>'CANARA BANK',
+                'Remitting_Bank_Branch'=>'AHMEDABAD',
+                'Client_Code'=> 'Client',
+                'Type'=> 'FUND TRANS',
+                'Reference_No'=> '10000000092',
+                'Bene_Name'=> 'TPSL',
+                'Transaction_Date'=> '25-may-2025',
+                'Amount'=> '10000',
+                'Transaction_Description'=> 'Fund Transfer payment of 10000 rupees',
+                'UniqueID'=>'02081900017',
+                'UserID'=>'qBD0eNLhMAca0ihiUfG8hw==',
+                'Debit_Credit'=>'C',
+                'Cheque_No'=>'',
+                'Account_Number'=>'02400922022726'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status' => 0,
+                'Reason' => 'Success',
+                'transaction_id' => '02081900017',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testHdfcFailVAOnValidation' => [
         'request' => [
             'url'     => '/ecollect/validate/hdfc/ecms',

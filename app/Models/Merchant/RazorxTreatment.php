@@ -1183,4 +1183,11 @@ final class RazorxTreatment
      * Razorx flag to route calls to downtime manager to fetch ongoing and resolved downtimes
      */
     const DOWNTIME_MANAGER_ROUTING_EXPERIMENT= 'downtime_manager_routing_experiment';
+
+    /**
+     * Razorx flag to test FUND TRANS mode in ECMS E-challan validation flow
+     */
+
+    const HDFC_ECMS_FUND_TRANS = 'hdfc_ecms_fund_trans';
+
 }

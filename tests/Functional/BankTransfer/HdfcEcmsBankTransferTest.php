@@ -11,6 +11,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\BankTransfer\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -102,7 +103,7 @@ class HdfcEcmsBankTransferTest extends TestCase
         $razorx->shouldReceive('getTreatment')
             ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
             {
-                if ($featureFlag === (RazorxTreatment::BANK_TRANSFER_DISABLE_GATEWAY))
+                if ($featureFlag === (RazorxTreatment::BANK_TRANSFER_DISABLE_GATEWAY) or $featureFlag === (RazorxTreatment::HDFC_ECMS_FUND_TRANS))
                 {
                     return 'on';
                 }
@@ -131,6 +132,23 @@ class HdfcEcmsBankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals(1000000, $payment['amount']);
         $this->assertEquals('bt_hdfc_ecms', $payment['gateway']);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackWithTypeFundTrans()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(strtoupper(Mode::FT), $bankTransfer['mode']);
     }
 
     public function testHdfcFailVAOnValidation()

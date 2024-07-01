@@ -3,8 +3,11 @@
 namespace RZP\Models\BankTransfer\HdfcEcms;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
+use RZP\Models\VirtualAccount;
 use RZP\Models\BankTransferRequest;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends BankTransfer\Service
@@ -33,6 +36,33 @@ class Service extends BankTransfer\Service
         try
         {
             $entityInput = $this->utility->modifyInputDataToEntity($requestPayload);
+
+            $auth = $this->auth->getInternalApp();
+
+            if($auth === 'hdfc_ecms')
+            {
+                $bankCode = VirtualAccount\Provider::getBankCode($this->provider);
+
+                $bankAccount = $this->repo
+                    ->bank_account
+                    ->findVirtualBankAccountByAccountNumberAndBankCode($requestPayload['Virtual_Account_No'], $bankCode, true);
+
+                if ($bankAccount !== null)
+                {
+                    $merchantId = $bankAccount->getMerchantId();
+
+                    $israzorxExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,
+                        RazorxTreatment::HDFC_ECMS_FUND_TRANS);
+
+                    $mode = strtolower($requestPayload[Entity::TYPE]);
+
+                    if ($mode === BankTransfer\Mode::FUND_TRANS and $israzorxExperimentEnabled === true)
+                    {
+                        $entityInput[BankTransfer\Entity::MODE] = BankTransfer\Mode::FT;
+                        $requestPayload[Entity::TYPE] = BankTransfer\Mode::FT;
+                    }
+                }
+            }
 
             $bankTransferRequest = $this->bankTransferRequestCore->create(
                 $entityInput,
