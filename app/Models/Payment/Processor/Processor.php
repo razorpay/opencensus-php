@@ -6297,6 +6297,11 @@ class Processor
         if (!$isOfferValidAtOE || $hasException) {
             if($isReverseShadowEnabled && $this->offer->shouldBlockPayment() === true) {
                 $errorMessage = $this->offer->getErrorMessage();
+                $this->trace->info(
+                    TraceCode::OFFERS_ENGINE_PAYMENT_REVERSE_SHADOW,
+                    [
+                        'OFFER_ID' => $this->offer->getId(),
+                    ]);
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
