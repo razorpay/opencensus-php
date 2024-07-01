@@ -106,6 +106,14 @@ class Service extends Base\Service
 
         try
         {
+            $merchant = $this->repo->merchant->find($merchantId);
+
+            if( $merchant != null and $this->pgosProxyController->shouldRouteViaPGOSV2($merchant)){
+                $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::UPLOAD_MERCHANT_DOCUMENT_BY_AGENT, $this->pgosProxyController->getPayloadForFileUpload($input), $merchant);
+                return $pgosResponse['data'];
+            }
+
+
             (new Validator())->validateInput(__FUNCTION__, $input);
 
             (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);

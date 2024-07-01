@@ -436,6 +436,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::SUBMITTED_AT,
         self::TRANSACTION_REPORT_EMAIL,
         self::BANK_ACCOUNT_NUMBER,
+        self::BANK_NAME,
         self::BANK_ACCOUNT_NAME,
         self::BANK_ACCOUNT_TYPE,
         self::BANK_BRANCH,
@@ -741,6 +742,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function setActivationFormMilestone($milestone)
     {
         $this->setAttribute(self::ACTIVATION_FORM_MILESTONE, $milestone);
+    }
+
+    public function getBankName()
+    {
+        return $this->getAttribute(self::BANK_NAME);
     }
 
     public function getBankAccountName()

@@ -9,6 +9,7 @@ use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
+use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -2752,6 +2753,11 @@ class Core extends Base\Core
             {
                 try
                 {
+                    if($this->pgosProxyController->shouldRouteViaPGOSV2($merchant)){
+                        $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DETAILS_PATCH_V2, $input, $this->merchant, true);
+                        return $this->repo->merchant_detail->find($merchant->getId());
+                    }
+
                     $input['merchant_id'] = $merchant->getMerchantId();
 
                     $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests('merchant_details_patch', $input, $this->merchant, true);
@@ -4886,10 +4892,16 @@ class Core extends Base\Core
        return $isExpEnabled;
     }
 
-
-
     public function getNCAdditionalDocuments() : array
     {
+
+        $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+        $merchant = $this->repo->merchant->find($merchantId);
+        if( $merchant != null and $this->pgosProxyController->shouldRouteViaPGOSV2($merchant)){
+            $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ACTIVATION_DOCUMENT_TYPES, [], $merchant);
+            return $pgosResponse['data'];
+        }
+
         $response = [];
 
         foreach (DocumentType::NC_ADDITIONAL_DOCUMENTS as $DOCUMENT_NAME)

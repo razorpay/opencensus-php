@@ -148,7 +148,10 @@ abstract class BaseProxyController extends Controller
             'Authorization'    => $this->getAuthorizationHeader(),
             'X-Client-ID'      => $this->serviceConfig['client_id'] ?? '',
             'X-Request-ID'     => Request::getTaskId(),
-            'X-IP-Address'     => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip()
+            'X-IP-Address'     => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+            'X-Org-Id'         => optional($this->ba->getMerchant())->getOrgId() ?? '',
+            'X-Merchant-Country' => optional($this->ba->getMerchant())->getCountry() ?? '',
+            'X-Admin-id'       => optional($this->ba->getAdmin())->getId() ?? '',
         ];
 
         $actorDetailsHeaders = $this->getActorDetailHeaders();
@@ -224,6 +227,7 @@ abstract class BaseProxyController extends Controller
     public function handleAdminProxyRequests($path = null){
         $request = $this->getRequestInstance();
         $body    = $request->all();
+
 
         $route = $this->getRoute($path);
 
@@ -395,7 +399,6 @@ abstract class BaseProxyController extends Controller
         $headers = array_merge($headers, [
             RequestHeader::DEV_SERVE_USER =>  Request::header(RequestHeader::DEV_SERVE_USER)
         ]);
-
         $baseUrl = $this->getBaseUrl();
         $url     = $baseUrl . '/' . $path;
         $body    = empty($body) ? '{}' : json_encode($body);

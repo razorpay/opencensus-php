@@ -6,6 +6,7 @@ use App;
 use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Models\Merchant;
 use RZP\Constants\Country;
 use RZP\Trace\TraceCode;
@@ -63,10 +64,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
     // Merchant Activation Business categories v3 mapping
     const MERCHANT_CATEGORIES_V3                    = 'fetch_merchant_categories';
     const MERCHANT_CATEGORIES_ADMIN_V3              = 'fetch_merchant_categories_admin';
+    const ACTIVATION_DOCUMENT_TYPES                 = 'activation_document_types';
+    const UPLOAD_MERCHANT_DOCUMENT_BY_AGENT         = 'upload_merchant_document_by_agent';
     const MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE   = 'merchant_categories_v3_eligibility_save';
 
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
     const MERCHANT_DETAILS_PATCH         = 'merchant_details_patch';
+    const MERCHANT_DETAILS_PATCH_V2      = 'merchant_details_patch_v2';
     const MERCHANT_RM_FETCH              = 'merchant_rm_details_fetch';
     const MERCHANT_RM_CREATE             = 'merchant_rm_details_create';
     const MERCHANT_RM_UPDATE             = 'merchant_rm_details_update';
@@ -195,7 +199,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_DOCUMENT_DETAILS,
         self::FETCH_MERCHANT_DOCUMENT_DETAILS,
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK,
-        self::MERCHANT_CATEGORIES_ADMIN_V3
+        self::MERCHANT_CATEGORIES_ADMIN_V3,
+        self::ACTIVATION_DOCUMENT_TYPES
     ];
 
     const RESTRICTED_ACTIVATION_STATUSES_FOR_MERCHANT_UPDATES = [
@@ -228,6 +233,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_UPDATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/UpdateRMDetails',
         self::SEND_OTP                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendOTP',
         self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch',
+        self::MERCHANT_DETAILS_PATCH_V2           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatchV2',
         self::SAVE_MERCHANT_DOCUMENT_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantDocumentMetadata',
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantDocumentMetadata',
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CheckMerchantDocumentDetailsValidity',
@@ -253,6 +259,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreview',
         self::MERCHANT_CATEGORIES_V3                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesV3Map',
         self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
+        self::ACTIVATION_DOCUMENT_TYPES                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchAllDocumentsTypesList',
+        self::UPLOAD_MERCHANT_DOCUMENT_BY_AGENT            => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/UploadMerchantDocumentByAgent',
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantCategoriesV3EligibilitySave',
         self::SEND_SMS_OTP                                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
         self::VERIFY_OTP                                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',
@@ -329,6 +337,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_FETCH,
         self::MERCHANT_RM_CREATE,
         self::MERCHANT_RM_UPDATE,
+        self::ACTIVATION_DOCUMENT_TYPES,
         self::MERCHANT_SIGN_UP,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP
     ];
@@ -412,6 +421,49 @@ class MerchantOnboardingProxyController extends BaseProxyController
             ],
             default => null,
         };
+    }
+
+
+
+    public function  shouldRouteViaPGOSV2($merchant){
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
+
+        //Check for Google OAuth merchants
+        if (empty($userDeviceDetail) === false)
+        {
+            $merchantOnboardedViaService = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+
+            if (empty($merchantOnboardedViaService) === false)
+            {
+                if ($merchantOnboardedViaService === DeviceDetailConstants::MODULAR_ONBOARDING)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public function  shouldRouteAdminViaPGOSV2($merchant){
+
+        if($this->app['basicauth']->isAdminAuth() === true and $this->shouldRouteViaPGOSV2($merchant)){
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getPayloadForFileUpload($input){
+        $fileObj = $input['file'];
+        $filePayload = [
+            "original_name" => $fileObj->getClientOriginalName(),
+            "content" =>  base64_encode(file_get_contents($fileObj)),
+            "mime_type" =>  '',
+            "extention" =>  '',
+        ];
+        $input['file'] = $filePayload;
+        return $input;
     }
 
     public function handlePGOSProxyRequests($routeKey, $payload, $merchant, $ignoreRoutingConditions = false)
@@ -673,7 +725,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
                     }
                 }
             }
-
             return false;
         }
         catch (\Throwable $e) {
