@@ -13,7 +13,7 @@ export const TEXT_CONTENT = {
   FAIL_SLA_NOT_BREACHED: "Settlement is being automatically retried. We'll update you soon",
   FAIL_SLA_BREACHED: 'Payment failed due to a bank server issue',
   FOH_UPCOMMING_BLOCK:
-    "Your settlements are on-hold as we've noticed unusual activity in your account. Contact support to resume settlements for your account.",
+    'Your settlements are not being processed currently. Contact support to know more and to resume settlements',
   SOH_UPCOMMING_BLOCK:
     "Your settlements are on-hold as we've encountered a few issues with your given bank account. Update your bank account details to resume settlements.",
   MOH_UPCOMMING_BLOCK:

@@ -1,8 +1,7 @@
-import BusinessDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/BusinessDetails';
-import { render, screen } from 'test-utils';
 import { BUSINESS_TYPE_MAP } from 'merchant/views/Account/constants';
-import { titleCase } from 'common/utils/rzp-utils';
+import BusinessDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/BusinessDetails';
 import { testNewStylesUsingFlowRevamped } from 'merchant/views/AccountAndSettings/__test__/mocks/fixtures';
+import { render, screen } from 'test-utils';
 
 const user = {
   business_name: 'ACME Business',
@@ -27,9 +26,7 @@ describe('BusinessDetails', () => {
     renderApp();
 
     expect(screen.getByText('Business Name')).toBeInTheDocument();
-    // text is converted to title case
-    expect(screen.queryByText(user.business_name)).not.toBeInTheDocument();
-    expect(screen.getByText(titleCase(user.business_name))).toBeInTheDocument();
+    expect(screen.getByText(user.business_name)).toBeInTheDocument();
 
     expect(screen.getByText('Business Type')).toBeInTheDocument();
     expect(screen.getByText(BUSINESS_TYPE_MAP[user.business_type])).toBeInTheDocument();

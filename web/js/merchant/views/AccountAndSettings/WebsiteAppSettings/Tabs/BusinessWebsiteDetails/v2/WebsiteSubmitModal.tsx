@@ -157,6 +157,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
                 basicCheckPassed: 'no',
                 newWebsiteLink: response?.main_page_url,
                 websiteCount: getWebsiteCount(user),
+                actionFrom: 'websiteFlow',
               });
               setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS);
             } else {
@@ -219,6 +220,9 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               basicCheckPassed: 'no',
               newWebsiteLink: main_page_url,
               websiteCount: getWebsiteCount(user),
+              isSuccess: false,
+              isWorkflowRaised: true,
+              actionFrom: 'policyPages',
             });
             setCurrentStep(WebsiteSubmitModalSteps.MANUAL_WF_RAISED);
           } else if (current_status === WebsiteUpdateAutomationStatus.COMPLETED) {
@@ -227,6 +231,9 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               basicCheckPassed: 'yes',
               newWebsiteLink: main_page_url,
               websiteCount: getWebsiteCount(user),
+              isSuccess: true,
+              isWorkflowRaised: false,
+              actionFrom: 'policyPages',
             });
             setCurrentStep(WebsiteSubmitModalSteps.WEBSITE_UPDATE_SUCCESS);
           } else {
