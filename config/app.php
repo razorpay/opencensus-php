@@ -685,6 +685,8 @@ return array(
 
     'cross_border_dcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_REARCH_EXPERIMENT_ID'),
 
+    'cross_border_s2s_dcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_REARCH_EXPERIMENT_ID'),
+
     'fetch_flows_api_forex_rates_from_rearch_experiment_id' => env('FETCH_FLOWS_API_FOREX_RATES_FROM_REARCH_EXPERIMENT_ID'),
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),

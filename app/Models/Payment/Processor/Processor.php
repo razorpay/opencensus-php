@@ -859,6 +859,8 @@ class Processor
 
     private function canRouteInternationalPaymentsViaRearchFlow($input, $merchant)
     {
+        $result = false;
+
         if($input['currency'] !== Currency\Currency::INR){
             return false;
         }
@@ -867,34 +869,71 @@ class Processor
             return false;
         }
 
+        if($merchant->isFeeBearerCustomerOrDynamic() === true){
+            return false;
+        }
+
+        $library = $input['_']['library'];
+
         $internationalSupportedLibraries = [
             Payment\Analytics\Metadata::CHECKOUTJS,
             Payment\Analytics\Metadata::HOSTED
         ];
 
-        $library = $input['_']['library'];
-
-        if(in_array($library,$internationalSupportedLibraries,true) === false){
-            return false;
+        if(in_array($library,$internationalSupportedLibraries,true)) {
+            $result = $this->evaluateSplitzExperimentforCrossBorderRearchCheckoutJS($merchant);
         }
 
-        if($merchant->isFeeBearerCustomerOrDynamic() === true){
-            return false;
+        if($library == Payment\Analytics\Metadata::S2S) {
+            $result = $this->evaluateSplitzExperimentforCrossBorderRearchS2S($merchant);
         }
-
-        $result = $this->evaluateSplitzExperimentforCrossBorderRearch($merchant);
 
         return ($result == true);
-
     }
 
-    private function evaluateSplitzExperimentforCrossBorderRearch($merchant)
+    private function evaluateSplitzExperimentforCrossBorderRearchCheckoutJs($merchant)
     {
         try
         {
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.cross_border_dcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchS2S($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_s2s_dcc_rearch_experiment_id'),
                 'request_data'  => json_encode(
                     [
                         'merchant_id' => $merchant->getId(),
