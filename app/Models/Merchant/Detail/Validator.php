@@ -1465,6 +1465,7 @@ class Validator extends Base\Validator
 
         // If category is not `others` and subcategory is not valid
         if (($category !== BusinessCategory::OTHERS) and
+            (empty($subcategory) === false) and
             (in_array($subcategory, $validSubcategories, true) === false))
         {
             $isError = true;

@@ -18021,4 +18021,78 @@ class CoreTest extends TestCase
 
         return $instance;
     }
+
+    public function testSubcategoryForCategory()
+    {
+        $merchantId = 'OlyFnGyZQeEKrF';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'                => $merchantId
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_details',[
+            'merchant_id'       => $merchantId,
+            'business_type'     => 5
+        ]);
+
+        $input = [
+            "business_category" => "services",
+            "business_subcategory" => "pharmacy"
+        ];
+
+        $this->pgosProxyController->shouldNotReceive('handlePGOSProxyRequests');
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        try
+        {
+            (new DetailCore())->patchMerchantDetails($merchant, $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertNotNull($e);
+        }
+    }
+
+    public function testEmptyInputSubcategory()
+    {
+        $merchantId = 'OlyFnGyZQeEKrF';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'                => $merchantId
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_details',[
+            'merchant_id'               => $merchantId,
+            'business_type'             => 5,
+            'business_category'         => 'it_and_software',
+            'business_subcategory'      => 'consulting_and_outsourcing',
+            'activation_flow'           => 'whitelist',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'activation_status'         => 'activated',
+            'submitted'                 => true
+        ]);
+
+
+        $input = [
+            "business_category" => "services"
+        ];
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->pgosProxyController->shouldNotReceive('handlePGOSProxyRequests');
+
+        (new DetailCore())->patchMerchantDetails($merchant, $input);
+
+        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->assertEquals($merchantDetail->getBusinessCategory(), 'services');
+
+        $this->assertEquals($merchantDetail->setBusinessSubcategory(), 'consulting_and_outsourcing');
+
+    }
+
+
 }
