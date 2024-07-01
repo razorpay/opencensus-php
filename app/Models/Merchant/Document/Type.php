@@ -77,6 +77,10 @@ class Type
     const LEGAL_OPINION          = 'legal_opinion';
     const BUSINESS_CORRESPONDENT = 'business_correspondent';
 
+    const UDYAM_CERTIFICATE         = 'udyam_certificate';
+    const INCORPORATION_CERTIFICATE = 'incorporation_certificate';
+    const TRUST_DEED                = 'trust_deed';
+
     const SALES_TAX_RETURNS                  = 'sales_tax_returns';
     const INCOME_TAX_RETURNS                 = 'income_tax_returns';
     const CERTIFICATION_REGISTRATION_BY_TAX_AUTH    = 'certificate_registration_by_tax_auth';
@@ -227,6 +231,12 @@ class Type
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
         self::PGI_CERTIFICATE,
+        self::UDYAM_CERTIFICATE,
+        self::INCORPORATION_CERTIFICATE,
+        self::TRUST_DEED,
+        self::MOA,
+        self::AOA,
+        self::UBO,
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -290,8 +300,14 @@ class Type
         self::BAR_COUNCIL_CERTIFICATE           => "Bar Council Certificate",
         self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter",
         self::WEBSITE_SCREENSHOTS_ADDITIONAL    => "Website Screenshots Additional",
-        self::PGI_CERTIFICATE                   => "PGI Certificate"
-,    ];
+        self::PGI_CERTIFICATE                   => "PGI Certificate",
+        self::UDYAM_CERTIFICATE                 => "Udyam Certificate",
+        self::INCORPORATION_CERTIFICATE         => "Incorporation Certificate",
+        self::TRUST_DEED                        => "Trust Deed",
+        self::MOA                               =>  "MOA",
+        self::AOA                               =>  "AOA",
+        self::UBO                               =>  "UBO",
+    ];
 
     const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,
@@ -384,6 +400,10 @@ class Type
         self::WEBSITE_SCREENSHOT,
         self::LEGAL_OPINION,
         self::BUSINESS_CORRESPONDENT,
+
+        self::UDYAM_CERTIFICATE,
+        self::INCORPORATION_CERTIFICATE,
+        self::TRUST_DEED,
 
         self::FIRS_ICICI_FILE,
         self::FIRS_ICICI_ZIP,
@@ -590,6 +610,13 @@ class Type
         self::WEBSITE_SCREENSHOT     => self::ADDITIONAL_DOCUMENTS,
         self::BUSINESS_CORRESPONDENT => self::ADDITIONAL_DOCUMENTS,
         self::LEGAL_OPINION          => self::ADDITIONAL_DOCUMENTS,
+
+        self::UDYAM_CERTIFICATE         => self::ADDITIONAL_DOCUMENTS,
+        self::INCORPORATION_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
+        self::TRUST_DEED                => self::ADDITIONAL_DOCUMENTS,
+        self::MOA                       => self::ADDITIONAL_DOCUMENTS,
+        self::AOA                       => self::ADDITIONAL_DOCUMENTS,
+        self::UBO                       => self::ADDITIONAL_DOCUMENTS,
 
         self::FIRS_ICICI_FILE => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_ICICI_ZIP  => self::ADDITIONAL_DOCUMENTS,

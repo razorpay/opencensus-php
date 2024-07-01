@@ -114,6 +114,12 @@ class NeedsClarificationMetaData
         DocumentType::BOARD_RESOLUTION_LETTER               => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::WEBSITE_SCREENSHOTS_ADDITIONAL        => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::SHOP_FRONT_IMAGE                      => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::UDYAM_CERTIFICATE                     => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::INCORPORATION_CERTIFICATE             => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::TRUST_DEED                            => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::MOA                                   => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::AOA                                   => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::UBO                                   => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::SHOP_INTERIOR_IMAGE                   => [ReasonList::ILLEGIBLE_DOC,
                                                                 ReasonList::STOCK_NOT_MATCHES_WITH_MCC_CODE],
     ];

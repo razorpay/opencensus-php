@@ -1745,6 +1745,12 @@ return [
             "board_resolution_letter"           => "Board Resolution Letter",
             "website_screenshots_additional"    => "Website Screenshots Additional",
             "pgi_certificate"                   => "PGI Certificate",
+            "udyam_certificate"                 => "Udyam Certificate",
+            "incorporation_certificate"         => "Incorporation Certificate",
+            "trust_deed"                        => "Trust Deed",
+            "moa"                               => "MOA",
+            "aoa"                               => "AOA",
+            "ubo"                               => "UBO",
         ]
     ],
 ],
