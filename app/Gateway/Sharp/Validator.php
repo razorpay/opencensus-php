@@ -20,5 +20,6 @@ class Validator extends Base\Validator
         'upi_mandate'       => 'required',
         'upi'               => 'required',
         'merchant'          => 'required',
+        'notification'      => 'sometimes'
     ];
 }

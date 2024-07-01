@@ -759,6 +759,21 @@ class Gateway extends Base\Gateway
             ],
         ];
 
+        if(isset($input['notification']) === true)
+        {
+            $response['upi']['remind_at'] = null;
+            $gatewayResponse['data'] = $response;
+            $gatewayResponse['success'] = true;
+
+            $this->trace->info(
+                TraceCode::UPI_RECURRING_TEST_NOTIFICATION_RESPONSE,
+                [
+                    'response'          => $gatewayResponse
+                ]
+            );
+            return $gatewayResponse;
+        }
+
         if (($shouldSkip === true) or ($errorCode === null))
         {
             return $response;
