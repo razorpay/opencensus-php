@@ -17724,7 +17724,8 @@ class Route
             'transfer_reversal_transactions_create',
             'internal_order_associations_fetch',
             'post_force_authorize_payments',
-            'feature_get_all_internal'
+            'feature_get_all_internal',
+            'order_fetch_by_id',
         ],
 
         'freshdesk_webhook' => [
@@ -20751,6 +20752,7 @@ class Route
         'payment_create_ajax',
         'payment_create_private_old',
         'payment_create_checkout',
+        'order_fetch_by_id',
     ];
 
 
