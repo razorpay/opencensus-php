@@ -13,10 +13,6 @@ use Symfony\Component\HttpFoundation\Cookie;
 class RegionCookieHandler
 {
     const RZP_USER_MERCHANT_REGION = 'rzp_user_merchant_region';
-    const PROD = 'production';
-
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent
-    const PROD_DOMAIN = 'razorpay.com';
 
     /**
      * Handle an incoming request and set region cookie.
@@ -36,12 +32,15 @@ class RegionCookieHandler
         $region = (new Merchant\Service)->getCurrentMerchantRegion();
         $config = config('session');
 
-        // same as user session cookie
-        $response->headers->setCookie(new Cookie(
-            self::RZP_USER_MERCHANT_REGION, $region, $this->getCookieExpirationDate($config),
-            $config['path'], $this->getCookieDomain(), $config['secure'] ?? false,
-            $config['http_only'] ?? true, false, $config['same_site'] ?? null
-        ));
+        // set the cookie only if region is available
+        if (! empty($region)) {
+            // same as user session cookie
+            $response->headers->setCookie(new Cookie(
+                self::RZP_USER_MERCHANT_REGION, $region, $this->getCookieExpirationDate($config),
+                $config['path'], null, $config['secure'] ?? false,
+                $config['http_only'] ?? true, false, $config['same_site'] ?? null
+            ));
+        }
 
         return $response;
     }
@@ -55,10 +54,5 @@ class RegionCookieHandler
     {
         // same as user session cookie
         return Date::instance(Carbon::now()->addRealMinutes($config['lifetime']));
-    }
-
-    protected function getCookieDomain()
-    {
-        return \App::environment() === self::PROD ? self::PROD_DOMAIN : null;
     }
 }

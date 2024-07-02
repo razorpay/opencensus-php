@@ -51,8 +51,6 @@ class Service extends Base\Service
         'promoter_address_proof'   => 'promoter_address_url'
     ];
 
-    const IN = 'IN';
-
     public function __construct(array $options = [])
     {
         $this->currentUser = Auth::user();
@@ -1101,20 +1099,19 @@ class Service extends Base\Service
     /**
      * returns region of the current merchant
      * used for setting region cookie for frontend routing
-     * @return string
+     * @return ?string
      */
     public function getCurrentMerchantRegion()
     {
         try {
             $currentMerchant = Auth::user()->currentMerchant();
 
-            if (!empty($currentMerchant)) {
+            if (! empty($currentMerchant)) {
                 return $currentMerchant->country_code;
             }
         } catch (\Throwable $e) {
-            // This case will happen only if the user has zero merchants attached.
-            // return IN region as default
-            return self::IN;
+            // return null if there is any error
+            return null;
         }
     }
 

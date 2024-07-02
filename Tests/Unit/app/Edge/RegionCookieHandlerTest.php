@@ -85,8 +85,6 @@ class RegionCookieHandlerTest extends BaseTestCase
         });
 
         $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
-        $this->assertEquals('rzp_user_merchant_region', $response->headers->getCookies()[0]->getName());
-        $this->assertEquals('IN', $response->headers->getCookies()[0]->getValue());
+        $this->assertCount(0, $cookies);
     }
 }
