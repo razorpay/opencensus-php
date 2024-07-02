@@ -477,9 +477,24 @@ class Core extends Base\Core
                     $cardMandateNotification->getAfaStatus() === AfaStatus::APPROVED and
                     $isApproved === true) and ($payment->getStatus() === Payment\Status::CREATED))
             {
-                $namespace  = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
-                $paymentId  = $cardMandateNotification->payment->GetId();
-                (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $paymentId, []);
+                if (Carbon::now()->getTimestamp() - $payment->getCreatedAt() > Constants::AFA_MHQ_APPROVAL_LIMIT)
+                {
+                    $this->trace->info(TraceCode::PAYMENT_CARD_MANDATE_AFA_APPROVED_AFTER_TAT, [
+                        'card_mandate_notification_id' => $cardMandateNotification->getId(),
+                        'status'                       => $cardMandateNotification->getStatus(),
+                        'current_time'                 => Carbon::now()->getTimestamp(),
+                        'payment_created_at'           => $payment->getCreatedAt(),
+                        'payment_id'                   => $payment->getId(),
+                    ]);
+
+                    $this->handleNotificationApprovedAfterPredefinedTAT($cardMandateNotification, $cardMandateNotification->payment);
+                }
+                else
+                {
+                    $namespace  = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
+                    $paymentId  = $cardMandateNotification->payment->GetId();
+                    (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $paymentId, []);
+                }
             }
 
             if (($cardMandateNotification->isAfaRequired() and
@@ -546,6 +561,13 @@ class Core extends Base\Core
         $processor = new Payment\Processor\Processor($notification->merchant);
 
         $processor->failMandateHQPaymentAFANotApproved($payment);
+    }
+
+    protected function handleNotificationApprovedAfterPredefinedTAT(Entity $notification, Payment\Entity $payment)
+    {
+        $processor = new Payment\Processor\Processor($notification->merchant);
+
+        $processor->failMandateHQPaymentAFAApprovedAfterPredefinedTAT($payment);
     }
 
     protected function setCardAutoRecurringReminder(Entity $cardMandateNotification, $mandateHub = MandateHubs\MandateHubs::MANDATE_HQ)

@@ -7968,6 +7968,19 @@ class Processor
         $this->updatePaymentFailed($exception, $traceCode);
     }
 
+    public function failMandateHQPaymentAFAApprovedAfterPredefinedTAT(Payment\Entity $payment)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CARD_MANDATE_AFA_APPROVED_AFTER_TAT;
+
+        $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_APPROVED_AFTER_TAT;
+
+        $exception = new BadRequestException($errorCode);
+
+        $this->updatePaymentFailed($exception, $traceCode);
+    }
+
     protected function updatePaymentFailed($exception, $traceCode)
     {
         $error = $exception->getError();
