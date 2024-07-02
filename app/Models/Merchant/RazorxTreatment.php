@@ -944,6 +944,8 @@ final class RazorxTreatment
 
     const UPI_AUTOPAY_PAYMENT_REMARK            = "upi_autopay_payment_remark";
 
+    const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
+
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
     const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS = 'qrv2_static_qr_unrecognised_payment_process';

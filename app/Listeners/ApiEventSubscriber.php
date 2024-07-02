@@ -501,12 +501,34 @@ class ApiEventSubscriber extends Base\Core
             $this->app['bill_me']->postPaymentDataToBillMe($payment->toArrayPublic(), false);
         }
 
-        if (($payment->hasSubscription() === true) and
-            ($payment->isApiBasedEmandateAsyncPayment() === false))
-        {
-            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+        $variant = $this->app->razorx->getTreatment(
+            $payment->getMerchantId(),
+            RazorxTreatment::CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER,
+            $this->getMode()
+        );
 
-            $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+        if(strtolower($variant) === 'on')
+        {
+            $isInternationalRecurringAuto = (($payment->isInternational() === true) and ($payment->isRecurringTypeAuto() === true));
+
+            if (($payment->hasSubscription() === true) and
+                ($payment->isApiBasedEmandateAsyncPayment() === false) and
+                (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
+            {
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+            }
+        }
+        else
+        {
+            if (($payment->hasSubscription() === true) and
+                ($payment->isApiBasedEmandateAsyncPayment() === false))
+            {
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+            }
         }
 
         // Removed reportInitialPayment from here,
