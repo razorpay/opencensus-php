@@ -9,9 +9,11 @@ use ApiResponse;
 use Request as Req;
 use Illuminate\Http\Request;
 
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Order\Core;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Services\CredcaseSigner;
@@ -61,6 +63,15 @@ class PlinkController extends Controller
     public function sendRequest(Request $request, $param = null)
     {
         $params = $this->getRequestParams($request);
+
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ($routeName === 'payment_links_create' &&
+            $this->service(E::INVOICE)->shouldLimitNoCodeAppCreation(ProductType::PAYMENT_LINK)
+        ) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED, null, null);
+        }
 
         try {
             $response = Requests::request(
@@ -405,7 +416,7 @@ class PlinkController extends Controller
         $id = Entity::stripSignWithoutValidation($id);
 
         $merchant = $this->ba->getMerchant();
-        
+
         /**
          * @var $payment \RZP\Models\Payment\Entity
          */

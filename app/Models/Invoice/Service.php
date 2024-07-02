@@ -9,12 +9,14 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
+use RZP\Models\Order\ProductType;
 use RZP\Trace\TraceCode;
 use BaconQrCode\Writer;
 use BaconQrCode\Renderer;
@@ -44,6 +46,8 @@ class Service extends Base\Service
     protected $userId   = null;
     protected $userRole = null;
 
+    const TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY = 100;
+
     public function __construct()
     {
         parent::__construct();
@@ -56,6 +60,11 @@ class Service extends Base\Service
     public function create(array $input): array
     {
         $batchId = null;
+
+        if ($this->shouldLimitNoCodeAppCreation(ProductType::INVOICE)) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED, null, null);
+        }
 
         if ($this->app['basicauth']->isBatchApp() === true)
         {
@@ -850,6 +859,65 @@ class Service extends Base\Service
     public function findByPaymentId($paymentId)
     {
         return (new OPGSPImportInvoiceCore())->findByPaymentId($paymentId);
+    }
+
+    public function shouldLimitNoCodeAppCreation(string $appType): bool {
+        try
+        {
+            if ($this->mode !== Mode::TEST) {
+                return false;
+            }
+
+            $merchantId = $this->merchant->getId();
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.nocodeapps_ratelimit_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant !== 'variant_on') {
+                return false;
+            }
+
+            $date = Carbon::now()->format('d-m-Y');
+
+            $redisKey = sprintf('%s_%s_count_%s', $appType, $merchantId, $date);
+
+            $count = $this->app['cache']->get($redisKey) ?? 0;
+
+            if ($count >= self::TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY) {
+                $this->trace->info(TraceCode::NOCODEAPP_CREATION_RATELIMITED, [
+                    'appType'       => $appType,
+                    'merchantId'    => $merchantId,
+                    'mode'          => $this->mode,
+                ]);
+
+                return true;
+            }
+
+            $count += 1;
+
+            /** @var $ttl - ttl of 1 day */
+            $ttl = 24 * 60 * 60;
+
+            $this->app['cache']->put($redisKey, $count, $ttl);
+
+            return false;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::NOCODEAPP_RATELIMIT_CHECK_FAILED
+            );
+        }
+
+        return false;
     }
 
     protected function serializeOrgPropertiesForHostedForPaymentLinkService()
