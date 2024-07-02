@@ -4448,7 +4448,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_FEATURE_FLAG_DISABLED                              = 'ES_FEATURE_FLAG_DISABLED';
     const FPX_EMAIL_SUPPRESS                                    = 'FPX_EMAIL_SUPPRESS';
     const WALLET_EMAIL_SUPPRESS                                 = 'WALLET_EMAIL_SUPPRESS';
-
+    const PACB_SUB_MERCHANT_FLOW                                = 'PACB_SUB_MERCHANT_FLOW';
     const INTL_BANK_TRANSFER_CURRENCY_NOT_SUPPORTED             = 'INTL_BANK_TRANSFER_CURRENCY_NOT_SUPPORTED';
     const B2B_TRANSFER_NOT_APPLICABLE_FOR_THIS_PAYMENT          = 'B2B_TRANSFER_NOT_APPLICABLE_FOR_THIS_PAYMENT';
     const FETCH_BALANCE_ON_VA_FAILED                            = 'FETCH_BALANCE_ON_VA_FAILED';

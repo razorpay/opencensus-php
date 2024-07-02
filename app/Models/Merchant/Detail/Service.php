@@ -263,6 +263,13 @@ class Service extends Base\Service
             $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
         }
 
+        $isPACBPartnerSubMerchant = (new Merchant\AccessMap\Core())->isPACBPartnerSubMerchant($this->merchant->getId());
+
+        if ($isPACBPartnerSubMerchant)
+        {
+            $response[FeatureConstants::PACB_EXPORT_PARTNER_FLOW] = true;
+        }
+
         return $response;
     }
 
@@ -2310,7 +2317,7 @@ class Service extends Base\Service
 
         $merchant = $this->app['basicauth']->getMerchant();
         $merchantId = $merchant->getId();
-        
+
         $this->trace->info(TraceCode::MERCHANT_PRE_SIGNUP_DETAILS, [
             'merchant_id' => $merchantId,
             'input'       => $input,
@@ -2360,7 +2367,7 @@ class Service extends Base\Service
             if ($merchant->isSignupCampaignAnyOfFromMaster(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
             {
                 $this->handlePreSignUpOptionalFields($input);
-                
+
                 $this->trace->info(TraceCode::HANDLE_PRE_SIGNUP_OPTIONAL_FIELDS, [
                     'merchant_id' => $merchant->getId(),
                     'input'       => $input,
@@ -2460,11 +2467,11 @@ class Service extends Base\Service
                     'business_website' => $input['business_website'],
                     'merchantId' => $merchantId,
                 ];
-                
+
                 $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
                     'payload' => $body,
                 ]);
-                
+
                 $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $body, $this->merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [

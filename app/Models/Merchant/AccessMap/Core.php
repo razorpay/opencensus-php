@@ -718,6 +718,27 @@ class Core extends Base\Core
         return empty($merchant) === false;
     }
 
+    public function isPACBPartnerSubMerchant(string $merchantId) : bool
+    {
+        $partnerMids = $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId);
+        if(empty($partnerMids) or count($partnerMids) > 1) {
+            $this->trace->info(TraceCode::PACB_SUB_MERCHANT_FLOW, [
+                'partner_mids' => $partnerMids,
+            ]);
+            return false;
+        }
+        $partnerMerchant = $this->repo->merchant->find($partnerMids[0]);
+        if (empty($partnerMerchant)) {
+            $this->trace->info(TraceCode::PACB_SUB_MERCHANT_FLOW, [
+                'text' => 'pacb partner merchant does not exist',
+                'partner_mids' => $partnerMids,
+            ]);
+            return false;
+        }
+
+        return $partnerMerchant->isFeatureEnabled(Feature\Constants::PACB_EXPORT_PARTNER_FLOW);
+    }
+
     public function getPartnerIds(string $merchantId) : array
     {
         return $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId, true)->toArray();

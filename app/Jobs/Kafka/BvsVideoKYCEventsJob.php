@@ -1,6 +1,13 @@
 <?php
 namespace RZP\Jobs\Kafka;
 
+use App;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Base\RepositoryManager;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Merchant\AccessMap\Core;
+use RZP\Models\Merchant\AccessMap\Service;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
@@ -32,10 +39,20 @@ class BvsVideoKYCEventsJob extends Job
     ];
 
     /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
+    protected $repo;
+
+
+    /**
      * @throws \Throwable
      */
     public function handle()
     {
+        $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
+
         $taskId = gen_uuid();
 
         $this->setTaskId($taskId);
@@ -50,31 +67,32 @@ class BvsVideoKYCEventsJob extends Job
                 'payload' => $this->getPayload(),
                 'task_id' => $taskId
             ];
-    
+
             $this->trace->info(TraceCode::BVS_VIDEO_KYC_EVENTS_JOB_REQUEST, $tracePayload);
-    
+
             $vKYCStatus = $this->payload[self::STATUS];
-    
+
             $merchantID = $this->payload[self::ACCOUNT_ID];
-    
+
             if(isset($merchantID) === true && isset($vKYCStatus) === true && $this->shouldUpdateEDDStatus($vKYCStatus))
             {
                 $merchantDetailsCore = new MerchantDetailsCore;
-    
+
                 $eddStatus = $this->getVKycToEDDStatusMapping($vKYCStatus);
-                
+
                 $requestPayload = [
-                    self::STATUS        =>  $eddStatus, 
+                    self::STATUS        =>  $eddStatus,
                     self::MERCHANT_ID   =>  $merchantID
                 ];
 
                 $response = $merchantDetailsCore->updateEDDStatus($requestPayload);
 
+                $this->sendPACBVkycWebhhok($eddStatus);
                 $this->trace->info(TraceCode::BVS_VIDEO_KYC_EVENTS_UPDATE_EDD_STATUS_PROCESSED, [
                     "response" => $response,
                 ]);
             }
-        } 
+        }
         catch(\Throwable $e)
         {
             $this->trace->error(TraceCode::BVS_VIDEO_KYC_EVENTS_JOB_PROCESSING_FAILED,
@@ -96,9 +114,47 @@ class BvsVideoKYCEventsJob extends Job
         return self::BVS_VIDEO_KYC_TO_EDD_STATUS_MAPPING[$vKYCstatus];
     }
 
+    private function sendPACBVkycWebhhok($eddStatus)
+    {
+        $merchantID = $this->payload[self::ACCOUNT_ID];
+        $isPACBPartnerSubMerchant = (new Core())->isPACBPartnerSubMerchant($merchantID);
+        if (!$isPACBPartnerSubMerchant) {
+            return;
+        }
+        $merchant = $this->repo->merchant->find($merchantID);
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+        if ($activationStatus === Status::ACTIVATED and $eddStatus === MerchantDetailsConstants::VERIFIED) {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $merchant,
+            ];
+
+            $event = 'api.account.' . $activationStatus;
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($event, $eventPayload) {
+                $this->app['events']->dispatch($event, $eventPayload);
+            }));
+        }
+
+        if ($eddStatus === MerchantDetailsConstants::FAILED) {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $merchant,
+                ApiEventSubscriber::WITH => [
+                    'vkyc' => 'VKYC was rejected. Please try VKYC again.'
+                ]
+            ];
+
+            $event = 'api.account.needs_clarification';
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($event, $eventPayload) {
+                $this->app['events']->dispatch($event, $eventPayload);
+            }));
+        }
+
+    }
+
     private function getJobMode() : string
     {
-        if (isset($this->mode) === true) 
+        if (isset($this->mode) === true)
         {
             return $this->mode;
         }

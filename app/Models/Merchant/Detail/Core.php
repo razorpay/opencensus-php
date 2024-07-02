@@ -13,6 +13,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\User;
 use RZP\Constants\Mode;
@@ -4535,6 +4536,16 @@ class Core extends Base\Core
 
     public function shouldTriggerActivatedWebhook(string $merchantId, string $newStatus = null) : bool
     {
+        if($newStatus === Status::ACTIVATED) {
+            $isPACBPartnerSubmerchant = (new Merchant\AccessMap\Core())->isPACBPartnerSubMerchant($merchantId);
+            if ($isPACBPartnerSubmerchant) {
+                $eddStatus = $this->getEDDStatus(['merchant_id' => $merchantId]);
+                if ($eddStatus !== DEConstants::VERIFIED) {
+                    return false;
+                }
+            }
+        }
+
         if ($newStatus === Status::ACTIVATED)
         {
             $isMerchantAlreadyActivated = $this->repo->action_state->isActionNameExistsForEntityIdAndType($merchantId,Entity::MERCHANT_DETAIL, Status::ACTIVATED_MCC_PENDING);
