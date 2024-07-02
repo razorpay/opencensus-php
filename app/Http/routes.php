@@ -79,6 +79,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/2fa/otp-verify', 'AdminController@postVerify2faAuthOtp')->name('admin_2FA_verify');
         Route::post('/2fa/otp-resend', 'AdminController@postResendOtp')->name('admin_2FA_resend');
         Route::get('/', 'AdminController@getIndex')->name('admin_getIndex');
+        Route::get('/saml/sso', 'AdminController@getSso')->name('adfs_sso');
+        Route::post('/saml/callback', 'AdminController@postCallback')->name('adfs_callback');
         //admin verify 2fa page
         Route::get('/enter-2fa','AdminController@show2FALayout')
             ->name('enter-2fa')

@@ -34,6 +34,7 @@ use App\MerchantDetails;
 use App\Mailers\MiscMailer;
 use App\Providers\ApiGuard;
 use App\Admin\ApiRequestAny;
+use OneLogin\Saml2 as SamlAuth;
 use App\Session as SessionTable;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Request as ApiRequest;
@@ -67,6 +68,7 @@ class Service extends Base\Service
 
     const PNG           = 'png';
     const SVG           = 'svg';
+    const ADFS_ERROR    = 'ADFS Authentication Failed';
     const PNG_MIME_TYPE = 'image/png';
     const SVG_MIME_TYPE = 'image/svg+xml';
 
@@ -95,6 +97,10 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
 
         $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
+
+        $this->settings = Config::get('samlconfig');
+
+        $this->auth = new SamlAuth\Auth($this->settings, true);
     }
 
     protected function getEncryptionSecret()
@@ -246,6 +252,131 @@ class Service extends Base\Service
         list($error, $data) = $request->processInput($input)->send("admin/oauth_login", 'POST');
 
         return [$error, $data];
+    }
+
+
+    public function getSso()
+    {
+        $ssoBuiltUrl = $this->auth->login(null, array(), false, false, true);
+
+        $_SESSION['AuthNRequestID'] = $this->auth->getLastRequestID();
+
+        $this->trace->info(TraceCode::SAML_LOGIN, [
+            'val' =>$_SESSION['AuthNRequestID']
+        ]);
+
+        return $ssoBuiltUrl;
+    }
+
+
+    public function postCallback($input)
+    {
+        $validator = (new Admin\Validator);
+
+        $validator->validateInput('callback', $input);
+
+        $_POST['SAMLResponse'] = $input['SAMLResponse'] ?? null;
+
+        if (isset($_SESSION['AuthNRequestID']) === true) {
+            $requestID = $_SESSION['AuthNRequestID'];
+        } else {
+            $requestID = null;
+        }
+
+        $this->auth->processResponse($requestID);
+
+        $errors = $this->auth->getErrors();
+
+        if (empty($errors) === false) {
+            $ex = $this->auth->getLastErrorException();
+            //log exception
+
+            $this->trace->info(TraceCode::SAML_LOGIN_EXCEPTION, [
+                'exception' => $ex->getMessage(),
+            ]);
+
+            $response = [
+                'success' => false,
+                'errors'  => [self::ADFS_ERROR],
+            ];
+
+            return view('admin.adfs',['response' =>  $response]);
+
+        }
+
+        $attributes = $this->auth->getAttributes();
+
+        $this->trace->info(TraceCode::SAML_LOGIN, [
+            '$errors' => $errors,
+        ]);
+
+        $data = $this->getApiRequest($attributes);
+
+        $response = $this->validateAdminAndGenerateToken($data);
+
+        if (isset($response[1]['token']) === true)
+        {
+            $response = [
+                'success' => true
+            ];
+        }
+        else
+        {
+            $response = [
+                'success' => false,
+                'errors'  => [self::ADFS_ERROR],
+            ];
+        }
+
+        return view('admin.adfs',['response' =>  $response]);
+
+    }
+
+    function getApiRequest($data)
+    {
+        $claimToRequestMap = [
+            'http://schemas.microsoft.com/identity/claims/displayname' => 'username',
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress' => 'email',
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'=> 'ad_id',
+        ];
+
+        $requestMap = [];
+
+        foreach ($claimToRequestMap as $key => $value) {
+            $requestMap[$value] = $data[$key][0] ?? null;
+
+            if ($value === 'email')
+                $requestMap['email'] = strtolower($requestMap['email']);
+        }
+
+        $requestMap['userrole'] = ["role_G2ctRSTCZ3O0be"]; //hard coding for now
+
+        return $requestMap;
+    }
+
+    function validateAdminAndGenerateToken($input)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $request = new ApiRequestAny();
+
+            list($error, $data) = $request->processInput($input)->send('admins/saml/login', 'POST');
+
+            $this->trace->info(TraceCode::SAML_LOGIN, $data);
+
+            Session::put(config('auth.guards.api.session_key'), $data);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $this->trace->info(TraceCode::SAML_LOGIN,[
+                'data' => $e->getMessage(),
+            ] );
+            $error[] = $e->getMessage();
+        }
+
+        return $this->handleLoginResponse($error,$data);
     }
 
     public function loginWithGoogle($code, $googleService)

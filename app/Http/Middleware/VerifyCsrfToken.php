@@ -58,7 +58,8 @@ class VerifyCsrfToken extends BaseVerifier
         '/live/analytics/aggregations/month',
         '/live/analytics/aggregations/year',
         '/live/analytics/payment/aggregations',
-        '/v1/growth/assets'
+        '/v1/growth/assets',
+        '/admin/saml/callback'
     ];
 
     /**

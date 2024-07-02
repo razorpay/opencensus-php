@@ -11,6 +11,9 @@ class TraceCode
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
     const USER_CONTEXT_LOG                          = 'USER_CONTEXT_LOG';
 
+    const SAML_LOGIN                                = 'SAML_LOGIN';
+    const SAML_LOGIN_EXCEPTION                      = 'SAML_LOGIN_EXCEPTION';
+
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
     const USER_REGISTER_LOGIN_ATTEMPT               = 'USER_REGISTER_LOGIN_ATTEMPT';

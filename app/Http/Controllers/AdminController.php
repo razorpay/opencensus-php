@@ -841,6 +841,20 @@ class AdminController extends Controller
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getSso()
+    {
+        $url = (new Admin\Service())->getSso();
+
+        return redirect($url);
+    }
+
+    public function postCallback()
+    {
+        $data = Input::all();
+
+        return (new Admin\Service())->postCallback($data);
+    }
+
     // invalidate the complete razorX cache
     public function clearRazorXCache() {
 

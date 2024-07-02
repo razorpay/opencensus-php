@@ -15,6 +15,10 @@ class Validator extends Base\Validator
         'password'  =>      'required|between:6,50'
     );
 
+    protected static $callbackRules = [
+        'SAMLResponse'         =>  'required|string'
+    ];
+
     protected static $apiCallRules = [
         'auth'          =>  'required|in:proxy,admin',
         'mode'          =>  'required|in:test,live',

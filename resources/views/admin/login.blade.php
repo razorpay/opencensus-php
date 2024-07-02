@@ -10,6 +10,7 @@
     <input type="password" name="password" placeholder="Password" required>
     <a class="forgot-password" href="/admin/forgot-password">Forgot Password?</a>
     <input type="submit" value="Login">
+    <input type="submit" id="adfsBtn" value="Login for Axis Bank Employees" onclick="loginWithADFS()">
     <div id="errorText"></div>
   </form>
 </body>
@@ -25,6 +26,35 @@
     }
   }
 
+  function reloadWindow(){
+      location.reload();
+  }
+  function loginSuccessful() {
+      if (localStorage.getItem('loginDetails')) {
+          const loginDetailsJson = localStorage.getItem('loginDetails');
+          const data = JSON.parse(loginDetailsJson || '{}');
+          if (data.success) {
+              setTimeout(reloadWindow, 5000)
+          }else if(data.errors && data.errors.length) {
+              let firstError = data.errors[0]
+              if (firstError.hasOwnProperty("internal_error_code")) {
+                  handleErrorsWithInternalCode(firstError);
+                  return;
+              }
+              errorText.innerHTML = data.errors.join('\n');
+              errorText.style.display = 'block';
+          }
+      }
+  }
+
+  function loginWithADFS()
+  {
+      window.addEventListener("storage", loginSuccessful);
+      const baseURL = window.location.origin;
+      const ssoTab = window.open(`${baseURL}/admin/saml/sso`, '_blank');
+      ssoTab.focus();
+  }
+
   var xhr;
   let errorText = document.querySelector('#errorText');
 
@@ -33,6 +63,10 @@
     var feats = org.features;
     if(feats && Array.isArray(feats) && feats.includes('org_admin_password_reset')) {
       document.querySelector('.forgot-password').style.display="block";
+    }
+
+    if(feats && Array.isArray(feats) && !feats.includes('bank_admin_adfs_login')) {
+      document.querySelector("#adfsBtn").style.display="none";
     }
   })();
 
