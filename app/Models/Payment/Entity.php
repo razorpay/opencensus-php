@@ -283,6 +283,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFUND_AUTHORIZED_PAYMENT = 'refund_authorized_payment';
     const CAPTURE_REFUNDED_PAYMENT  = 'capture_refunded_payment';
 
+    const FUNDS_SPLIT = 'funds_split';
+
     const OPTIMIZER_PROVIDER = 'optimizer_provider';
     const WALLET_AMOUNT = 'wallet_amount';
     const WALLET_USER_ID = 'wallet_user_id';
@@ -540,6 +542,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPI_METADATA,
         self::REFUND_AUTHORIZED_PAYMENT,
         self::CAPTURE_REFUNDED_PAYMENT,
+        self::FUNDS_SPLIT,
         self::REWARD,
         self::REWARD_ID
     ];
