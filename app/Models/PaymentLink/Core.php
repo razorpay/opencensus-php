@@ -1863,7 +1863,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::PAYMENT_LINK_DONATION_GOAL_TRACKER_UPDATES_COMPLETED, $context);
     }
 
-    protected function createInvoiceIfEnabled(Entity $paymentLink, Payment\Entity $payment)
+    protected function createInvoiceIfEnabled(Entity $paymentLink, Payment\Entity $payment, bool $sendEmail = true)
     {
         if($paymentLink->isReceiptEnabled() === false)
         {
@@ -1891,9 +1891,7 @@ class Core extends Base\Core
 
         $customSerialNumberEnabled = $paymentLink->isCustomSerialNumberEnabled();
 
-        $shouldSendEmail = $customSerialNumberEnabled ? false : true;
-
-        if ($shouldSendEmail === true)
+        if ($sendEmail === true && !$customSerialNumberEnabled)
         {
             $invoice->setRelation('entity', $invoice->entity);
 
@@ -4305,7 +4303,7 @@ class Core extends Base\Core
         try
         {
             $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_INVOICE, ["payment_id" => $payment->getPublicId()]);
-            $this->createInvoiceIfEnabled($paymentLink, $payment);
+            $this->createInvoiceIfEnabled($paymentLink, $payment, false);
         }
         catch (\Throwable $e)
         {
