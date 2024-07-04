@@ -301,6 +301,10 @@ class TraceCode
 
     const AZURE_BOT_DIRECT_LINE_TOKEN_GENERATE_FAIL  = 'AZURE_BOT_DIRECT_LINE_TOKEN_GENERATE_FAIL';
 
+    const UCS_ADMIN_GENERIC_REQUEST_RECIEVED = 'UCS_ADMIN_GENERIC_REQUEST_RECIEVED';
+    const UCS_CALL_FAILED = 'UCS_CALL_FAILED';
+    const UCS_CALL_SUCCESSFUL = 'UCS_CALL_SUCCESSFUL';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

@@ -242,6 +242,10 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  ['admin', 'admin_access', 'set_x_frame', 'set_csp_header']], function()
     {
+        Route::post('/admin/ucs/{path}', 'UCSAdminController@ucsGenericHandler')
+            ->where(['path' => '.*'])
+            ->name('ucs_admin_generic_handler');
+
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats')->name('admin_merchant_stats');
         Route::get('/admin/user', 'AdminController@getAdmin')->name('get_admin_user');
         Route::post('/admin/user/logout', 'AdminController@getLogout')->name('admin_user_logout');

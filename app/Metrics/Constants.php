@@ -12,8 +12,10 @@ class Constants
 
   // Counters
   const METRIC_COUNTER_HTTP_REQUESTS_DOWNSTREAM         = 'http_requests_downstream';
-  const METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM     = 'http_requests_api_downstream';
-  const METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION  = 'http_requests_api_downstream_duration';
+    const METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM     = 'http_requests_api_downstream';
+    const METRIC_COUNTER_HTTP_REQUESTS_UCS_DOWNSTREAM     = 'http_requests_ucs_downstream';
+    const METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION  = 'http_requests_api_downstream_duration';
+    const METRIC_COUNTER_HTTP_REQUESTS_UCS_DOWNSTREAM_DURATION  = 'http_requests_ucs_downstream_duration';
   const METRIC_COUNTER_HTTP_REQUESTS                    = 'http_requests';
   const METRIC_HISTOGRAM_HTTP_REQUESTS_DURATION         = 'http_requests_duration';
   const METRIC_USER_PAGE_RENDER                         = 'user_page_render';
@@ -130,6 +132,8 @@ class Constants
   const LABEL_HTTP_REQUESTS_API_ADMIN_ID                     = 'admin_id';
   const LABEL_HTTP_REQUESTS_API_RESPONSE_BODY_SIZE           = 'response_size';
   const LABEL_HTTP_REQUESTS_API_MERCHANT_ID                  = 'merchant_id';
+
+  const LABEL_HTTP_PATH = "path";
 
   /* Possible Login actions */
   //when user sigin after enterin OTP
