@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
-
-import { expectSuccessNotification, generateRandomText, switchToTestMode } from '../../utils';
-import { clickSkipAndStartBtn } from 'utils';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { clickSkipAndStartBtn } from 'utils';
+
 import {
   paymentButtonType,
   createPaymentButton,
@@ -10,6 +9,7 @@ import {
   updatePaymentButtonReceiptSettings,
   openBtnDetailsView,
 } from './utils';
+import { expectSuccessNotification, generateRandomText, switchToTestMode } from '../../utils';
 
 test.describe.parallel(
   'Test Payments Buttons @flow=payment-buttons @project=no-code-stable',

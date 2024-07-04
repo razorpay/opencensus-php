@@ -374,6 +374,36 @@ class App extends Component {
           initRefiner(user);
         }
 
+        const {
+          showNotification,
+          splitz: { abExperiments },
+        } = this.props;
+
+        const { isSalesAgentActingAsMerchant, isRzpSalesToPosAgentSwitchEnabled } =
+          checkIfPosSalesAgent({
+            user,
+            abExperiments,
+          });
+        console.log('OKK running fine');
+        if (isRzpSalesToPosAgentSwitchEnabled && isSalesAgentActingAsMerchant) {
+          const merchants = user.user.merchants ?? [];
+          const partnerAgent = merchants.find(
+            (merchant) => merchant.role === rolesList.PARTNER_AGENT,
+          );
+          if (partnerAgent) {
+            const currentMid = user.current;
+            const targetUrl = `${location.origin}/app/pos-sales/onboarding/${currentMid}`;
+            this.switchMerchant(partnerAgent, targetUrl);
+          } else {
+            showNotification({
+              type: 'error',
+              message: 'Unable to switch,something went wrong!',
+            });
+            throw new Error(
+              "No merchant with role 'partner_agent' found. Unable to call switchMerchant",
+            );
+          }
+        }
         return data;
       }),
       this.fetchOrg().then(({ data }) => {

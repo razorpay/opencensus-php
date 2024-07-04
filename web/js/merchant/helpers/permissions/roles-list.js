@@ -14,6 +14,7 @@ const RolesList = {
   REGISTRATION_LINK_SUPERVISOR: 'auth_link_supervisor',
   PARTNER: 'partner',
   PARTNER_AGENT: 'partner_agent',
+  RAZORPAY_SALES: 'razorpay_sales',
 };
 
 Object.freeze(RolesList);
