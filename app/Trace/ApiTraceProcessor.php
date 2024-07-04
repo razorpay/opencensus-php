@@ -103,6 +103,7 @@ class ApiTraceProcessor
         'beneficiaryContact',
         'password',
         'client_secret',
+        'refresh_token',
         'payer_account_number',
         'otp',
         'fund_account_name',
@@ -642,3 +643,4 @@ class ApiTraceProcessor
         }
     }
 }
+
