@@ -92,6 +92,26 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
           created_at: 1715076695,
           updated_at: 1715076695,
         },
+        {
+          Provider_name: 'Test_Ccavenue',
+          Description: 'testing only',
+          Gateway: 'ccavenue',
+          Gateway_details: {
+            'Access code': '123456',
+            MID: '00kkk',
+            'Payment Methods': ['card', 'netbanking', 'wallet'],
+            'Working Key': '',
+            wallet_metadata: {
+              wallets: ['freecharge', 'itzcash', 'jiomoney', 'mobikwik', 'paytm'],
+            },
+          },
+          Currency: ['INR'],
+          Gateway_acquirer: 'ccavenue',
+          Terminal_id: 'HsDI1pSuugIxU6',
+          Status: 'activated',
+          created_at: 1630502042,
+          updated_at: 1719334812,
+        },
       ],
       providers_loading: false,
     },
@@ -220,5 +240,31 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
     expect(screen.getByRole('heading', { name: 'payu test edit 1' })).toBeInTheDocument();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('testing edit')).toBeInTheDocument();
+  });
+
+  it('should render for ccavenue', () => {
+    const props = {
+      location: {
+        pathname: 'optimizer/update-provider/HsDI1pSuugIxU6',
+      },
+    };
+    render(<App initialState={initialState} props={props} />);
+    expect(screen.getByRole('heading', { name: 'Test_Ccavenue' })).toBeInTheDocument();
+    expect(screen.getByText('LIVE')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Details' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Method settings' })).toBeNull();
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('testing only')).toBeInTheDocument();
+    expect(screen.getByText('Gateway')).toBeInTheDocument();
+    expect(screen.getByText('ccavenue')).toBeInTheDocument();
+    expect(screen.getByText('Methods enabled')).toBeInTheDocument();
+    expect(screen.getByText('Card, Netbanking, Wallet')).toBeInTheDocument();
+    expect(screen.getByText('Wallets enabled')).toBeInTheDocument();
+    expect(screen.getByText('Freecharge, Itzcash, JioMoney, MobiKwik, Paytm')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Go back' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Details' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'View integration audit results' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'View detailed provider settings' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Restart integration testing' })).toBeNull();
   });
 });

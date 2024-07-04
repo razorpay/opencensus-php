@@ -559,69 +559,69 @@ const ProviderView = (props) => {
             </CardBody>
           </Card>
         </Box>
-        <Box display="flex" flexDirection="column" marginLeft="spacing.5" width="40%">
-          <Card borderRadius="medium" elevation="none" height="100%">
-            <CardBody height="100%">
-              <Heading weight="regular" size="medium">
-                {providerStatus === 'activated' ? 'Method' : 'Provider'} settings
-              </Heading>
-              {providerStatus === 'activated' && (
-                <Box display="flex" flexDirection="column" marginTop="spacing.6">
-                  {loadingGateways ? (
-                    <Spinner
-                      marginLeft="spacing.5"
-                      marginTop="spacing.11"
-                      marginBottom="spacing.10"
-                    />
-                  ) : (
-                    gatewayMethods?.map((method) => (
-                      <Box display="flex" gap="spacing.4" key={method} marginBottom="spacing.5">
-                        <Box display="flex" gap="spacing.2" alignItems="center" width="150px">
-                          <Text weight="semibold">{METHODS_MAP[method]}</Text>
+        {integrationAuditFlowEnabled && (
+          <Box display="flex" flexDirection="column" marginLeft="spacing.5" width="40%">
+            <Card borderRadius="medium" elevation="none" height="100%">
+              <CardBody height="100%">
+                <Heading weight="regular" size="medium">
+                  {providerStatus === 'activated' ? 'Method' : 'Provider'} settings
+                </Heading>
+                {providerStatus === 'activated' && (
+                  <Box display="flex" flexDirection="column" marginTop="spacing.6">
+                    {loadingGateways ? (
+                      <Spinner
+                        marginLeft="spacing.5"
+                        marginTop="spacing.11"
+                        marginBottom="spacing.10"
+                      />
+                    ) : (
+                      gatewayMethods?.map((method) => (
+                        <Box display="flex" gap="spacing.4" key={method} marginBottom="spacing.5">
+                          <Box display="flex" gap="spacing.2" alignItems="center" width="150px">
+                            <Text weight="semibold">{METHODS_MAP[method]}</Text>
+                          </Box>
+                          <Box as="label" display="flex" gap="spacing.2" alignItems="center">
+                            <Switch
+                              accessibilityLabel={METHODS_MAP[method]}
+                              size="medium"
+                              name={method}
+                              value={method}
+                              isChecked={activeMethods?.includes(method)}
+                              onChange={updateMethods}
+                              isDisabled={
+                                (method === 'sodexo' && !activeMethods?.includes('card')) ||
+                                isUpdating
+                              }
+                            />
+                            <Text>{activeMethods?.includes(method) ? 'Enabled' : 'Disabled'}</Text>
+                          </Box>
                         </Box>
-                        <Box as="label" display="flex" gap="spacing.2" alignItems="center">
-                          <Switch
-                            accessibilityLabel={METHODS_MAP[method]}
-                            size="medium"
-                            name={method}
-                            value={method}
-                            isChecked={activeMethods?.includes(method)}
-                            onChange={updateMethods}
-                            isDisabled={
-                              (method === 'sodexo' && !activeMethods?.includes('card')) ||
-                              isUpdating
-                            }
-                          />
-                          <Text>{activeMethods?.includes(method) ? 'Enabled' : 'Disabled'}</Text>
-                        </Box>
-                      </Box>
-                    ))
-                  )}
-                </Box>
-              )}
-              {integrationAuditFlowEnabled && showAuditSummaryButton && (
-                <Button
-                  variant="secondary"
-                  onClick={viewIntegrationAuditResults}
-                  marginTop="spacing.7"
-                  display="block"
-                  isFullWidth={true}
-                >
-                  View integration audit results
-                </Button>
-              )}
-              {providerStatus === 'activated' && (
-                <Button
-                  variant="secondary"
-                  onClick={viewDetailedProviderSettings}
-                  marginTop="spacing.5"
-                  display="block"
-                  isFullWidth={true}
-                >
-                  View detailed provider settings
-                </Button>
-              )}
-              {integrationAuditFlowEnabled && (
+                      ))
+                    )}
+                  </Box>
+                )}
+                {showAuditSummaryButton && (
+                  <Button
+                    variant="secondary"
+                    onClick={viewIntegrationAuditResults}
+                    marginTop="spacing.7"
+                    display="block"
+                    isFullWidth={true}
+                  >
+                    View integration audit results
+                  </Button>
+                )}
+                {providerStatus === 'activated' && (
+                  <Button
+                    variant="secondary"
+                    onClick={viewDetailedProviderSettings}
+                    marginTop="spacing.5"
+                    display="block"
+                    isFullWidth={true}
+                  >
+                    View detailed provider settings
+                  </Button>
+                )}
                 <Button
                   variant="secondary"
                   onClick={restartIntegrationTesting}
@@ -631,10 +631,10 @@ const ProviderView = (props) => {
                 >
                   Restart integration testing
                 </Button>
-              )}
-            </CardBody>
-          </Card>
-        </Box>
+              </CardBody>
+            </Card>
+          </Box>
+        )}
       </Box>
     </Box>
   );
