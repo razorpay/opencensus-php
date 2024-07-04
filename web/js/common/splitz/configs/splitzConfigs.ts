@@ -751,7 +751,7 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: [/^\/magic(?:\/.*)?$/i],
+      routesToMatch: [/^(\/magic\/.*|\/configuration\/magic\/.*)$/],
       abExperiments: [
         {
           uniqueHashKey: 'magic_zones_file_upload',

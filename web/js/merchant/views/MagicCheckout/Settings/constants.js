@@ -23,6 +23,8 @@ import MagicXStoreSettings from 'merchant/views/MagicCheckout/MagicXStoreSetting
 import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import CardCTA from 'merchant/views/MagicCheckout/common/components/CardCTA';
 
+import { convertMagicRoutesToConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
+
 const AnalyticsSettings = lazy(() =>
   import(
     /* webpackChunkName: "MagicAnalyticsSettings" */ 'merchant/views/MagicCheckout/AnalyticsSettings'
@@ -200,6 +202,12 @@ export const TABS = {
     },
   ],
 };
+
+export const CONFIG_TABS = Object.keys(PLATFORMS).reduce((_TABS, _platform) => {
+  let platform = PLATFORMS[_platform];
+  _TABS[platform] = convertMagicRoutesToConfigurationFlow(TABS[platform]);
+  return _TABS;
+}, {});
 
 export const SWITCH_TEXTS = {
   enable: {

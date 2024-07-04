@@ -4,10 +4,12 @@ import { bindActionCreators } from 'redux';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { updatePageView } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
+import { TABS, CONFIG_TABS } from 'merchant/views/MagicCheckout/Settings/constants';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { useSplitzService } from 'common/splitz';
 import { StyledTabsWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
+
+import { checkMagicConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 export const TabItem = ({
   tabHeading,
@@ -29,7 +31,7 @@ export const TabItem = ({
     </div>
   );
 };
-
+const isMagicConfigurationFlow = checkMagicConfigurationFlow();
 const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
   const { platform, showTabHeading } = settings;
   const { cod_order_control: isCODOrderControlEnabled, rcod: isRCOD } = magicCheckout;
@@ -41,7 +43,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
       <StyledTabsWrapper>
         <div className="magic-settings-tabs display-flex">
           <div className="tabs-container display-flex flex--column">
-            {TABS[platform].map((item, index) => {
+            {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform].map((item, index) => {
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (
                 item.label === 'COD Review Workflow' &&
@@ -68,16 +70,24 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
             })}
           </div>
           <Routes>
-            {TABS[platform].map((item) => {
+            {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform].map((item) => {
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (item.label === 'COD Review Workflow' && !isCODOrderControlEnabled) return null;
               if (isRCOD && !(item.onRCOD || item.onRCODOnly)) return null;
               if (!isRCOD && item.onRCODOnly) return null;
-              const isIndex = item.path === '/magic/settings';
+              /**
+               * Adjust route matching based on magic configuration flow and normal flow
+               */
+              const isIndex =
+                item.path ===
+                (isMagicConfigurationFlow ? '/configuration/magic/settings' : '/magic/settings');
+              const path = isMagicConfigurationFlow
+                ? `${item.path.replace('/configuration/magic/settings', '')}/*`
+                : `${item.path.replace('/magic/settings/', '')}/*`;
               return (
                 <Route
-                  path={isIndex ? '' : `${item.path.replace('/magic/settings/', '')}/*`}
-                  key={item.path}
+                  path={isIndex ? '' : path}
+                  key={path}
                   index={isIndex}
                   element={
                     <RouteGuard>

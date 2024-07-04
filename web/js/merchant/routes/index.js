@@ -379,6 +379,27 @@ const ClientPOSOrderList = lazy(() =>
   ),
 );
 
+const MagicCheckoutConfiguration = lazy(() =>
+  import(/* webpackChunkName: "MagicCheckout3.0" */ 'merchant/views/MagicCheckout'),
+);
+
+const ConfigurationHeader = lazy(() =>
+  import(
+    /* webpackChunkName: "OnboardingHeader" */ 'merchant/views/OnboardingConfigs/components/Header'
+  ),
+);
+
+/**
+ * FPV(Full Page View) of component doesnt have header included. But we are extending FPV with Header for
+ * Magic Checkout
+ */
+const MagicFPVWithHeader = () => (
+  <>
+    <ConfigurationHeader />
+    <MagicCheckoutConfiguration />
+  </>
+);
+
 const entityDetailsMap = {
   '/payments/:id(pay_.+)/v2/transfers/new': {
     component: PaymentTransferNew,
@@ -733,6 +754,9 @@ const fullPageViewsMap = {
       </EasyOnboardingWrapper>
     ),
     additionalCondition: (user) => user.isOnboardingV2Enabled,
+  },
+  '/configuration/magic/:rest*': {
+    component: MagicFPVWithHeader,
   },
   '/onboarding/api-keys': {
     component: () => <ApiKeysAndPlugins isFullScreenMode={true} />,

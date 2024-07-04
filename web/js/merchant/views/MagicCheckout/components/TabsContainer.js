@@ -1,16 +1,29 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { useSplitzService } from 'common/splitz';
 import Spinner from 'common/ui/Spinner';
+
+import { useSplitzService } from 'common/splitz';
 import { RouteGuard } from 'merchant/components/ShowWhen';
-import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
+import {
+  checkMagicConfigurationFlow,
+  convertMagicRoutesToConfigurationFlow,
+} from 'merchant/views/MagicCheckout/utils/Configuration';
+
+import magicCheckoutRoutesV1 from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
+
 let redirectPath;
+let magicCheckoutRoutes = magicCheckoutRoutesV1;
+/**
+ * configFlag represents if we are on magic configuration flow which will render Magic Checkout on new route.
+ * If this flag is true , we will render Tabs with updated paths that supports configuration flow.
+ */
+const configFlag = checkMagicConfigurationFlow();
 
 const getTabName = (tabName, dashboardView) => {
   if (
@@ -32,6 +45,11 @@ const RouteContainer = ({
   dashboardView,
 }) => {
   const { abExperiments } = useSplitzService();
+
+  useEffect(() => {
+    if (configFlag)
+      magicCheckoutRoutes = convertMagicRoutesToConfigurationFlow(magicCheckoutRoutes);
+  }, [configFlag]);
 
   const renderNav = useCallback(
     (item) => {
@@ -75,6 +93,7 @@ const RouteContainer = ({
       platform,
       abExperiments,
       isRcodEnabled,
+      isPrepayCODEnabled,
       dashboardView,
     ],
   );
@@ -94,10 +113,14 @@ const RouteContainer = ({
             <content>
               <Routes>
                 {magicCheckoutRoutes.map((item) => {
+                  const path = configFlag
+                    ? `${item?.path}/*`
+                    : `${item.path.replace('/magic/', '')}/*`;
+
                   return (
                     <Route
                       key={item.path}
-                      path={`${item.path.replace('/magic/', '')}/*`}
+                      path={path}
                       element={
                         <RouteGuard
                           additionalCondition={(_user) =>
