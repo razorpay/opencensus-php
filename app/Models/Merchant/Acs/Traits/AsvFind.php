@@ -222,8 +222,12 @@ trait AsvFind
         }
 
         if ($shouldCallAsv === true) {
-            $shouldCacheResults = in_array($this->entity, ["merchant", "merchant_detail"]);
-            if ($shouldCacheResults === true && $this->isTransactionActive() === false && (new Detail\Core())->getIsTransactionActive($id, $this->entity) === false) {
+            $shouldCacheResults = in_array($this->entity, ["merchant", "merchant_detail"]) === true
+                                    && $this->isTransactionActive() === false
+                                    && (new Detail\Core())->getIsTransactionActive($id, $this->entity) === false
+                                    && (new AsvRouter())->isCacheDisabledFlow() === false;
+
+            if ($shouldCacheResults) {
                 return Cache::store('query_cache_live')
                     ->tags(strtolower($this->entity) . '_' . $id)
                     ->remember(

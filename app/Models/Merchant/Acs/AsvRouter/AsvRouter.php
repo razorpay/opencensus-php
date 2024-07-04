@@ -93,6 +93,20 @@ class AsvRouter
         }
     }
 
+    public function isCacheDisabledFlow(): bool
+    {
+        try {
+            $routeOrWorkerName = $this->getRouteOrJobName();
+
+            return AsvFlows::isCacheDisabledFlow($routeOrWorkerName);
+
+        }  catch (\Exception $e) {
+
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_CHECK_CACHEABLE_FLOW_EXCEPTION);
+            return true;
+        }
+    }
+
     public function getRouteOrJobName()
     {
         try {

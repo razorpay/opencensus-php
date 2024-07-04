@@ -11,9 +11,24 @@ final class AsvFlows
         'merchant_fetch_internal_users' => true,
     );
 
+    public const CacheDisabledFlows = array(
+        'worker:update_merchant_context' => true,
+        'merchant_activation_status' => true,
+        'merchant_activation_save' => true,
+    );
+
     public static function isExclusionFLow(string $flow): bool
     {
         if (array_key_exists($flow, self::MAP)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function isCacheDisabledFlow(string $flow): bool
+    {
+        if (array_key_exists($flow, self::CacheDisabledFlows)) {
             return true;
         }
 

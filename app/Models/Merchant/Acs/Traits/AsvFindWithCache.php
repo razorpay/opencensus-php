@@ -44,7 +44,7 @@ trait AsvFindWithCache
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND);
         if ($shouldCallAsv === true)
         {
-            if ($this->isTransactionActive() || (new Detail\Core())->getIsTransactionActive($id, $this->entity)) {
+            if ($this->isTransactionActive() || (new Detail\Core())->getIsTransactionActive($id, $this->entity) || (new AsvRouter())->isCacheDisabledFlow()) {
                 return $this->AsvFindEntity($id, $columns, $connectionType);
             }
 
@@ -71,7 +71,7 @@ trait AsvFindWithCache
         $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL);
         if ($shouldCallAsv === true)
         {
-            if ($this->isTransactionActive() || (new Detail\Core())->getIsTransactionActive($id, $this->entity)) {
+            if ($this->isTransactionActive() || (new Detail\Core())->getIsTransactionActive($id, $this->entity) || (new AsvRouter())->isCacheDisabledFlow()) {
                 return $this->AsvFindEntityOrFail($id, $columns, $connectionType);
             }
 
