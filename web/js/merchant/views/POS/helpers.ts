@@ -56,11 +56,15 @@ export const isPosExperimentEnabled = ({
       ? allowedFlows.includes(user?.pos_activation_flow ?? '')
       : true;
 
+  const isBlockedForSalesAssisted =
+    user.user?.signup_campaign === 'assisted_onboarding' && !user?.pos_activation_status;
+
   return (
     isExperimentEnabled(abExperiments?.pos_onboarding) &&
     !!user.is_pgos_merchant &&
     isWhitelistedForPos &&
-    !isUnregisteredMerchant
+    !isUnregisteredMerchant &&
+    !isBlockedForSalesAssisted
   );
 };
 
