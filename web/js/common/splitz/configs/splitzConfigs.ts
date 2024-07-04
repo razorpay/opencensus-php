@@ -1379,5 +1379,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/subscriptions/settings'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'subscriptions_toggle',
+          experimentId: {
+            beta: 'OQX4MqIo2lXmFR',
+            production: 'OQX1qb9G4chANl',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };
