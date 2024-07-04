@@ -16,17 +16,17 @@ class CardRecurringNotificationProcess extends Job
 
     protected $notificationId;
 
-    protected $order;
+    protected $orderId;
 
     protected $queueConfigKey = self::QUEUE_NAME_KEY;
 
     public $timeout = 3600; // 1 hour
 
-    public function __construct(string $mode, string $notificationId, $order)
+    public function __construct(string $mode, string $notificationId, string $orderId)
     {
         $this->notificationId = $notificationId;
 
-        $this->order = $order;
+        $this->orderId = $orderId;
 
         parent::__construct($mode);
     }
@@ -45,7 +45,9 @@ class CardRecurringNotificationProcess extends Job
             $core = new notificationCore();
             $notification = $this->repoManager->card_mandate_notification->findById($this->notificationId);
 
-            $core->processNotification($notification, $this->order);
+            $order = $this->repoManager->order->findOrFail($this->orderId);
+
+            $core->processNotification($notification, $order);
 
             $this->delete();
         }

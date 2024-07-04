@@ -466,6 +466,12 @@ class Core extends Base\Core
         // This is to block the AFA request for mandate HQ
         if ($cardMandateNotification->getOrderId() !== null)
         {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                "data" => "block request in function updateNotificationFromCallbackResponse()",
+                "card_mandate_notification_id" => $cardMandateNotification->getId(),
+                "order_id" => $cardMandateNotification->getOrderId(),
+            ]);
+
             return $cardMandateNotification;
         }
 
@@ -701,7 +707,7 @@ class Core extends Base\Core
         // pushing event to queue for pre-debit notification and delaying it for 60 sec
         try
         {
-            CardRecurringNotificationProcess::dispatch($this->mode, $notification->getId(), $order)->delay(60);
+            CardRecurringNotificationProcess::dispatch($this->mode, $notification->getId(), $order->getId())->delay(60);
         }
         catch (\Throwable $e)
         {
