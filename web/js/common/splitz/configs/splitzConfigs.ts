@@ -1182,6 +1182,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: [/payment-methods.*/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'recurring_instrument_requester',
+          experimentId: {
+            beta: 'OQX4MqIo2lXmFR',
+            production: 'OQX1qb9G4chANl',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/payment-methods/international-payments'],
       abExperiments: [
         {

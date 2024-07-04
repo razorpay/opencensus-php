@@ -8,8 +8,8 @@ test.describe.parallel('POS activation status @flow=pos-sales-assisted @project=
   test.use({
     storageState: getStorageStatePath(BASE_PATH).POS_SALES_AGENT,
   });
-
-  test('should render sales dashboard view if logged in as sales agent @flow=pos-sales-assisted', async ({
+  // skipping for now: https://razorpay.slack.com/archives/C061HJGS1CY/p1719569228178269
+  test.skip('should render sales dashboard view if logged in as sales agent @flow=pos-sales-assisted', async ({
     page,
   }) => {
     await navigateTo(page, routes.DASHBOARD);

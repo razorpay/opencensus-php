@@ -134,7 +134,7 @@ describe('PaymentMethodsSection', () => {
         type: PaymentMethodsFields.CARDS,
       },
     });
-    expect(screen.getByText(/Intermediate List: 2/)).toBeInTheDocument();
+    expect(screen.getByText(/Intermediate List: 3/)).toBeInTheDocument();
   });
 
   test('should render correct banner if merchant is non-live', () => {

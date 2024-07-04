@@ -24,6 +24,7 @@ export const POLI = 'POLI';
 export const GIROPAY = 'Giropay';
 export const SOFORT = 'Sofort';
 export const BAJAJ_PAY_WALLET = 'Bajaj Pay Wallet';
+export const RECURRING_METHOD_HEADERS = ['Cards Recurring', 'UPI Autopay'];
 
 export const DISABLED_INSTRUMENT = [
   ZESTMONEY,
@@ -40,6 +41,13 @@ export const DISABLED_INSTRUMENT = [
 ];
 
 export const DEACTIVATED = 'deactivated';
+
+export const INSTRUMENT_SLUGS = {
+  RECURRING: 'recurring',
+  NETBANKING: 'netbanking',
+  CARDS: 'cards',
+  INTERNATIONAL: 'international',
+};
 
 export const statusClass = {
   Request: 'btn btn-primary',

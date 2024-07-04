@@ -166,12 +166,6 @@ export const initialState = {
               icon: 'rupay',
             },
             {
-              name: 'Maestro',
-              status: 'greyed',
-              slug: 'domestic.maestro',
-              icon: 'maestro',
-            },
-            {
               name: 'Amex Cards',
               status: 'greyed',
               slug: 'domestic.amex',
@@ -182,6 +176,24 @@ export const initialState = {
               status: 'greyed',
               slug: 'domestic.dicl',
               icon: 'diners',
+            },
+            {
+              name: 'Maestro',
+              status: 'greyed',
+              slug: 'domestic.maestro',
+              icon: 'maestro',
+            },
+          ],
+        },
+        {
+          header: 'Cards Recurring',
+          list: [
+            {
+              name: 'Cards Recurring',
+              description: 'Allow customers to create mandates via cards.',
+              status: 'greyed',
+              slug: 'recurring',
+              icon: '',
             },
           ],
         },
@@ -233,6 +245,17 @@ export const initialState = {
             //     </p>
             //   ),
             // },
+          ],
+        },
+        {
+          header: 'UPI Autopay',
+          list: [
+            {
+              name: 'UPI Autopay',
+              status: 'greyed',
+              slug: 'recurring.autopay',
+              description: 'Allow customers to create mandates via UPI.',
+            },
           ],
         },
       ],
@@ -645,6 +668,37 @@ export const initialState = {
                   name: 'Kotak Mahindra Bank',
                   status: 'greyed',
                   slug: 'kkbk_c',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'E-Mandate',
+          description:
+            'Allow customers to create mandates via netbanking, debit card, eSign or paper NACH',
+          slug: 'recurring',
+          leafList: [
+            {
+              header: 'Available Methods',
+              list: [
+                {
+                  name: 'eNACH',
+                  description: 'Enable customers to create mandates via netbanking and debit card.',
+                  status: 'greyed',
+                  slug: 'enach',
+                },
+                {
+                  name: 'eSign',
+                  description: 'Enable customers to create mandates via Aadhar based eSign flow.',
+                  status: 'greyed',
+                  slug: 'esign',
+                },
+                {
+                  name: 'Paper NACH',
+                  description: 'Enable customers to create physical mandates via Paper NACH.',
+                  status: 'greyed',
+                  slug: 'papernach',
                 },
               ],
             },
@@ -1090,7 +1144,7 @@ function findPath(pathToFind, pg) {
         (_) => _.slug === intermediate,
       );
       str = `${`${str}.intermediateList[${intermediateIndex}]`}`;
-      if (pg[rootIndex].intermediateList[intermediateIndex].leafList) {
+      if (pg[rootIndex].intermediateList[intermediateIndex]?.leafList) {
         const leafSlug = pathToFind.shift();
         let leafIndex;
         pg[rootIndex].intermediateList[intermediateIndex].leafList.every((leaf, index) => {

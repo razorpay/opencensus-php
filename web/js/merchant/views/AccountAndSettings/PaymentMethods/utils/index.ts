@@ -1,3 +1,5 @@
+import { SpiltzContextState } from 'common/splitz/types';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { User, LeafListItem } from 'common/typings';
 
 export const isInternationalLeafItemDisabled = ({
@@ -27,4 +29,12 @@ export const isInternationalLeafItemDisabled = ({
     ].includes(slug ?? '') &&
     (!user?.international || user?.isInternationalMethodsHidden)
   );
+};
+
+export const isRecurringInstrumentEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || {
+    abExperiments: { recurring_instrument_requester: undefined },
+  };
+  if (!abExperiments?.recurring_instrument_requester) return false;
+  return isExperimentEnabled(abExperiments.recurring_instrument_requester);
 };

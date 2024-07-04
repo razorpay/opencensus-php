@@ -4,11 +4,19 @@ import { connect } from 'react-redux';
 import { Link as NavLink } from 'react-router-dom';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import lazy from 'merchant/routes/LazyLoader';
-import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
+import {
+  isInternationalLeafItemDisabled,
+  isRecurringInstrumentEnabled,
+} from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
 import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
+import {
+  INSTRUMENT_SLUGS,
+  RECURRING_METHOD_HEADERS,
+} from 'merchant/views/Settings/PaymentMethods/constants';
 
 const Paypal = lazy(() =>
   import(
@@ -86,6 +94,7 @@ const DocumentLink = ({ link, method }) => {
 
 const LeafList = ({ instrument, intermediateInstrument, user }) => {
   const [filter, setFilter] = useState('active');
+  const splitz = useSplitzService();
 
   const ulRef = useRef(null);
   const addShadow = () => {
@@ -129,7 +138,10 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
 
     const list = leafList.list
       .filter((_) => {
-        if (intermediateInstrument && intermediateInstrument.slug === 'netbanking') {
+        // for recurring, filter is not applicable
+        if (instrument.slug === INSTRUMENT_SLUGS.RECURRING) return true;
+
+        if (intermediateInstrument && intermediateInstrument.slug === INSTRUMENT_SLUGS.NETBANKING) {
           if (filter === 'active') {
             return _.status === 'activated';
           } else {
@@ -201,6 +213,11 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
     >
       {instrument.leafList.map((leafList) => {
         if (isInternationalLeafItemDisabled({ leafList, user })) return null;
+        if (
+          RECURRING_METHOD_HEADERS.includes(leafList.header) &&
+          !isRecurringInstrumentEnabled(splitz)
+        )
+          return null;
 
         function getDescription() {
           const description = leafList?.description;
@@ -248,55 +265,63 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
               </div>
               {getDescription()}
             </div>
-            {intermediateInstrument && intermediateInstrument.slug === 'netbanking' && (
-              <div className="filter">
-                <button
-                  className={`filter-btn${filter === 'active' ? ' filter-active' : ''}`}
-                  onClick={() => {
-                    setFilter(() => {
-                      addShadow();
-                      return 'active';
-                    });
-                    analyticsTrack({
-                      objectName: 'active banks',
-                      actionName: 'clicked',
-                      screen: 'settings',
-                      properties: {
-                        location: 'Payment Methods',
-                        netbanking: instrument.name,
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                >
-                  Active Banks
-                </button>
-                <button
-                  className={`filter-btn${filter === 'inactive' ? ' filter-active' : ''}`}
-                  onClick={() => {
-                    setFilter(() => {
-                      addShadow();
-                      return 'inactive';
-                    });
-                    analyticsTrack({
-                      objectName: 'add more banks',
-                      actionName: 'clicked',
-                      screen: 'settings',
-                      properties: {
-                        location: 'Payment Methods',
-                        netbanking: instrument.name,
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                >
-                  Add more Banks
-                </button>
-              </div>
-            )}
+            {intermediateInstrument &&
+              intermediateInstrument.slug === INSTRUMENT_SLUGS.NETBANKING &&
+              instrument.slug !== INSTRUMENT_SLUGS.RECURRING && (
+                <div className="filter">
+                  <button
+                    className={`filter-btn${filter === 'active' ? ' filter-active' : ''}`}
+                    onClick={() => {
+                      setFilter(() => {
+                        addShadow();
+                        return 'active';
+                      });
+                      analyticsTrack({
+                        objectName: 'active banks',
+                        actionName: 'clicked',
+                        screen: 'settings',
+                        properties: {
+                          location: 'Payment Methods',
+                          netbanking: instrument.name,
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                  >
+                    Active Banks
+                  </button>
+                  <button
+                    className={`filter-btn${filter === 'inactive' ? ' filter-active' : ''}`}
+                    onClick={() => {
+                      setFilter(() => {
+                        addShadow();
+                        return 'inactive';
+                      });
+                      analyticsTrack({
+                        objectName: 'add more banks',
+                        actionName: 'clicked',
+                        screen: 'settings',
+                        properties: {
+                          location: 'Payment Methods',
+                          netbanking: instrument.name,
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                    }}
+                  >
+                    Add more Banks
+                  </button>
+                </div>
+              )}
             <ul
               style={{
-                maxHeight: `${!intermediateInstrument ? '420px' : '370px'}`,
+                maxHeight: `${
+                  !intermediateInstrument
+                    ? instrument.slug === INSTRUMENT_SLUGS.CARDS
+                      ? '300px'
+                      : '420px'
+                    : '370px'
+                }`,
                 overflowY: 'auto',
                 width: '420px',
               }}
@@ -315,7 +340,7 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
         );
       })}
       {/* FIRC banner for international merchants */}
-      {instrument.slug === 'international' && user.international && (
+      {instrument.slug === INSTRUMENT_SLUGS.INTERNATIONAL && user.international && (
         <div className="instrument-firc-banner">
           <div>
             <img
