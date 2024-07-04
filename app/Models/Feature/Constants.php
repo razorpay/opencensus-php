@@ -103,7 +103,7 @@ class Constants
     const VOID_REFUNDS                    = 'void_refunds';
     /**
      * If set, enables void refunds for offline payments
-     */
+     * */
     const ALLOW_VOID_FOR_OFFLINE          = 'allow_void_for_offline';
     const PARTNER                         = 'partner';
     const OTPELF                          = 'otpelf';
@@ -527,6 +527,11 @@ class Constants
      * If set, disables all refund operations on the merchant's account
      */
     const DISABLE_REFUNDS               = 'disable_refunds';
+
+    /**
+     * If set, enables instant refund operations for payments with paytm vpa on the merchant's account
+     */
+    const ALLOW_IR_FOR_PAYTM_VPA  = 'allow_ir_for_paytm_vpa';
 
     /**
      * If set, disables all refund operations on the merchant's card payments
@@ -2405,6 +2410,7 @@ class Constants
         self::S2S_OPTIONAL_DATA                            => true,
         self::VOID_REFUNDS                                 => true,
         self::ALLOW_VOID_FOR_OFFLINE                       => true,
+        self::ALLOW_IR_FOR_PAYTM_VPA                       => true,
         self::PARTNER                                      => true,
         self::PAYMENT_NOBRANDING                           => true,
         self::OTPELF                                       => true,
