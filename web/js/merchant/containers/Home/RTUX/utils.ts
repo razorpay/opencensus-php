@@ -11,7 +11,7 @@ interface RTUXHomepageEnabled {
 }
 
 export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabled): boolean => {
-  const isActivated = window.rzp_user?.activated === 1;
+  const isActivated = user?.isAccepted;
   // enabled for activated user and rzp org and non-partner accounts
 
   return (
