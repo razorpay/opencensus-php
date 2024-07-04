@@ -32,6 +32,7 @@ const backgroundImageMap = {
   razorpayPosBackground: 'pos.jpg',
   payrollBackground: 'payroll.jpg',
   currentAccountBackground: 'current-account.jpg',
+  rizeBackground: 'rize.jpg',
 };
 
 export const getBackgroundImage = (imageIdentifier) => {
