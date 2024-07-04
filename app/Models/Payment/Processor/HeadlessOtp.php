@@ -450,7 +450,8 @@ trait HeadlessOtp
                 [
                     'iin' => $iin,
                     'payment_id' => $payment->getPublicId(),
-                    'disable_reason' => $code
+                    'disable_reason' => $code,
+                    'reason_code' => "UNPROCESSABLE_ENTITY"
                 ]);
         }
 

@@ -35,7 +35,7 @@ class Service extends Base\Service
         return $iin->toArrayAdmin();
     }
 
-    public function editIin($id, $input, $editSource='manual')
+    public function editIin($id, $input, $editSource='manual', $editReason='manual')
     {
         $iin = $this->repo->iin->findOrFailAPIEntity($id);
 
@@ -46,7 +46,7 @@ class Service extends Base\Service
             return [];
         }
 
-        $this->formatEditInput($iin, $input, $editSource);
+        $this->formatEditInput($iin, $input, $editSource, $editReason);
 
         $iin->edit($input);
 
@@ -568,7 +568,7 @@ class Service extends Base\Service
         return $IinBatchCollection->toArrayWithItems();
     }
 
-    protected function formatEditInput(Entity $iin, array & $input, $editSource)
+    protected function formatEditInput(Entity $iin, array & $input, $editSource, $editReason)
     {
         foreach ($iin->getEditFormattableKeys() as $key)
         {
@@ -583,7 +583,7 @@ class Service extends Base\Service
 
                 $mergedValues = array_merge($existingValues, $input[$key]);
 
-                $this->pushIINFlowEventIfApplicable($existingValues, $mergedValues, $key, $iin, $editSource);
+                $this->pushIINFlowEventIfApplicable($existingValues, $mergedValues, $key, $iin, $editSource, $editReason);
 
                 $input[$key] = $mergedValues;
             }
@@ -609,7 +609,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function pushIINFlowEventIfApplicable(array $enabledFlows, $newValues, $key, Entity $iin, $editSource)
+    protected function pushIINFlowEventIfApplicable(array $enabledFlows, $newValues, $key, Entity $iin, $editSource, $editReason)
     {
         if ($key !== Entity::FLOWS)
         {
@@ -627,14 +627,27 @@ class Service extends Base\Service
             {
                 if ($newValues[Flow::HEADLESS_OTP] === '0')
                 {
-                    $this->app['diag']->trackIINEvent(
-                        EventCode::BIN_HEADLESS_DISABLED,
-                        $iin,
-                        null,
-                        [
-                            'iin' => $iin->getIin(),
-                            'disable_reason' => 'manual'
-                        ]);
+                    if($$editReason === 'manual'){
+                        $this->app['diag']->trackIINEvent(
+                            EventCode::BIN_HEADLESS_DISABLED,
+                            $iin,
+                            null,
+                            [
+                                'iin' => $iin->getIin(),
+                                'disable_reason' => $editSource,
+                                'reason_code' => $editReason
+                            ]);
+                    } else {
+                        $this->app['diag']->trackIINEvent(
+                            EventCode::BIN_HEADLESS_DISABLED,
+                            $iin,
+                            null,
+                            [
+                                'iin' => $iin->getIin(),
+                                'disable_reason' => $editSource,
+                                'reason_code' => $editReason
+                            ]);
+                    }
                 }
             }
         }
@@ -772,8 +785,13 @@ class Service extends Base\Service
                 {
                     $editInput['flows'][$flow] = '0';
                 }
-
-                return $this->editIin($input['iin'], $editInput);
+                if(empty($input['id']) === false){
+                    $editReason = $input['id'];
+                } else {
+                    $editReason = "UNPROCESSABLE_ENTITY";
+                }
+                $editSource = 'automatic';
+                return $this->editIin($input['iin'], $editInput, $editSource, $editReason);
             }
         }
 
