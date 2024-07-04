@@ -1,4 +1,4 @@
-import { Badge, CheckIcon, CloseIcon } from '@razorpay/blade/components';
+import { Badge, CheckIcon, CloseIcon, InfoIcon } from '@razorpay/blade/components';
 
 import { titleCase } from 'common/utils/rzp-utils';
 import { METHODS_MAP } from 'merchant/views/Navigator/constants';
@@ -88,9 +88,25 @@ export const getInstrumentCoverageTabsList = (razorpayCoverage, gatewayCoverage)
 };
 
 const CoverageBadge = ({ status }) => {
+  let badgeIconComp;
+  if (status === 'positive') {
+    badgeIconComp = CheckIcon;
+  } else if (status === 'negative') {
+    badgeIconComp = CloseIcon;
+  } else if (status === 'notice') {
+    badgeIconComp = InfoIcon;
+  }
+  let statusText = '';
+  if (status === 'positive') {
+    statusText = 'Covered';
+  } else if (status === 'negative') {
+    statusText = 'Not covered';
+  } else if (status === 'notice') {
+    statusText = 'Unknown';
+  }
   return (
-    <Badge color={status} icon={status === 'positive' ? CheckIcon : CloseIcon}>
-      {status === 'positive' ? 'Covered' : 'Not covered'}
+    <Badge color={status} icon={badgeIconComp}>
+      {statusText}
     </Badge>
   );
 };
@@ -105,10 +121,16 @@ export const getCardCoverageData = (gatewayCoverage, razorpayCoverage) => {
   const data = [];
   Object.keys(cardRazorpayCoverage).forEach((key) => {
     cardRazorpayCoverage[key]?.network?.forEach((networkItem) => {
+      let unkownData = false;
+      if (!cardGatewayCoverage?.[key]?.network && cardGatewayCoverageData[0]?.enabled) {
+        unkownData = true;
+      }
       data.push({
         cardType: key,
         cardNetwork: networkItem,
-        gatewayCoverage: !!cardGatewayCoverage?.[key]?.network?.includes(networkItem),
+        gatewayCoverage: unkownData
+          ? 'unkown'
+          : !!cardGatewayCoverage?.[key]?.network?.includes(networkItem),
         razorpayCoverage: true,
       });
     });
@@ -133,7 +155,17 @@ export const getCardCoverageColumns = (gateway) => {
     },
     {
       label: `On ${GATEWAY_NAMES[gateway]}`,
-      value: (item) => <CoverageBadge status={item.gatewayCoverage ? 'positive' : 'negative'} />,
+      value: (item) => (
+        <CoverageBadge
+          status={
+            typeof item.gatewayCoverage === 'string'
+              ? 'notice'
+              : item.gatewayCoverage
+              ? 'positive'
+              : 'negative'
+          }
+        />
+      ),
     },
   ];
 };
@@ -297,4 +329,8 @@ export const getOtherMethodsCoverageColumns = (gateway) => {
       value: (item) => <CoverageBadge status={item?.gatewayCoverage ? 'positive' : 'negative'} />,
     },
   ];
+};
+
+export const exportedForTesting = {
+  CoverageBadge,
 };

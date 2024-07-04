@@ -159,7 +159,9 @@ describe('Optimizer IntegrationTesting PaymentTesting', () => {
     expect(
       screen.getByRole('button', { name: 'View detailed provider settings' }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Restart integration testing' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Restart integration testing' }),
+    ).toBeInTheDocument();
   });
 
   it('should render for payu pending', () => {

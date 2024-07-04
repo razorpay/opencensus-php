@@ -99,3 +99,33 @@ export const GATEWAY_COVERAGE = [
     enabled: true,
   },
 ];
+
+export const PAYTM_GATEWAY_COVERAGE = [
+  {
+    enabled: true,
+    method: 'upi',
+    upi: {
+      collect: true,
+      intent: true,
+    },
+  },
+  {
+    enabled: true,
+    method: 'netbanking',
+    netbanking: {
+      banks: ['SBIN', 'KKBK', 'CNRB', 'PUNB_R', 'IOBA', 'IDIB', 'UBIN', 'YESB'],
+    },
+  },
+  {
+    method: 'wallet',
+    wallets: {},
+  },
+  {
+    card: {
+      creditType: {},
+      debitType: {},
+    },
+    enabled: true,
+    method: 'card',
+  },
+];
