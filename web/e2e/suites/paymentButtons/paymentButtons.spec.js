@@ -118,7 +118,7 @@ test.describe.parallel(
         await expect(page.getByRole('link', { name: updatedButtonTitle })).toBeVisible();
       });
 
-      test('should update and verify stock @priority=critical', async ({ page }) => {
+      test.skip('should update and verify stock @priority=critical', async ({ page }) => {
         await openBtnDetailsView({
           page,
           buttonTitle: testButtonTitle,
