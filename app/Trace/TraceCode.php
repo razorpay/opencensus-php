@@ -10296,6 +10296,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RESET_PASSWORD_REDIS_ERROR                        = 'RESET_PASSWORD_REDIS_ERROR';
 
     const BULK_REGENERATE_API_KEYS                          =  'BULK_REGENERATE_API_KEYS';
+
+    const EXPIRE_KEYS                                       = 'EXPIRE_KEYS';
     const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
     const TERMINAL_ORG_HEADERS_EXCEPTION                    = 'TERMINAL_ORG_HEADERS_EXCEPTION';

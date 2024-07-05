@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Mockery;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -13,6 +14,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 class KeyTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -508,5 +510,25 @@ class KeyTest extends TestCase
         });
 
     }
+
+    public function testExpireKeys()
+    {
+        $merchant = $this->fixtures->create('merchant',['id'=>'Hoah6C9SnyNIs5']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+        $testData                   = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['key_ids'][]   = $key->getKey();
+        $testData['response']['content']['success'] = [0 => $key->getKey()];
+        $this->startTest();
+    }
+
+    public function testExpireKeysWhenKeyDoesNotExist()
+    {
+        $testData                   = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['key_ids'][]   = 'invalid_key';
+        $testData['response']['content']['success'] = [];
+        $testData['response']['content']['failed'] = [ 0 => 'invalid_key'];
+        $this->startTest();
+    }
+
 
 }

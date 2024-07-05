@@ -222,6 +222,42 @@ return [
         ],
     ],
 
+    'testExpireKeys' => [
+        'request' => [
+            'url'    => '/keys/expire',
+            'method' => 'POST',
+            'server' => [
+                'PHP_AUTH_USER' => 'rzp_test',
+                'PHP_AUTH_PW'   => env('APP_CREDCASE_SECRET')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => [],
+                'failed' => []
+            ],
+        ],
+        'status_code' => 200
+    ],
+
+
+    'testExpireKeysWhenKeyDoesNotExist' => [
+        'request' => [
+            'url'    => '/keys/expire',
+            'method' => 'POST',
+            'server' => [
+                'PHP_AUTH_USER' => 'rzp_test',
+                'PHP_AUTH_PW'   => env('APP_CREDCASE_SECRET')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => [],
+                'failed' => []
+            ],
+        ],
+        'status_code' => 200
+    ],
 
 
 ];

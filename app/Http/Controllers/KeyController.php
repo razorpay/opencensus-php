@@ -66,4 +66,14 @@ class KeyController extends Controller
 
         return ApiResponse::json($keys);
     }
+
+    public function expireKeys() {
+
+        $input = Request::all();
+
+        $keys = $this->service()->expireKeys($input);
+
+        return ApiResponse::json($keys);
+
+    }
 }

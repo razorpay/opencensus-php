@@ -1146,7 +1146,9 @@ class ErrorCode
 
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
-    const BAD_REQUEST_NOTES_TOO_MANY_KEYS                                           = 'BAD_REQUEST_NOTES_TOO_MANY_KEYS';
+    const BAD_REQUEST_KEY_NOT_FOUND                                                 = 'BAD_REQUEST_KEY_NOT_FOUND';
+
+    const BAD_REQUEST_KEY_MISMATCH                                                  = "BAD_REQUEST_KEY_MISMATCH";
     const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY                                   = 'BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY';
     const BAD_REQUEST_NOTES_KEY_TOO_LARGE                                           = 'BAD_REQUEST_NOTES_KEY_TOO_LARGE';
     const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                         = 'BAD_REQUEST_NOTES_VALUE_TOO_LARGE';
@@ -1978,6 +1980,10 @@ class ErrorCode
     const BAD_REQUEST_INVALID_PARTNER_CONFIG_EXPAND_COLUMN                          = 'BAD_REQUEST_INVALID_PARTNER_CONFIG_EXPAND_COLUMN';
     const BAD_REQUEST_ROUTE_PARTNERSHIPS_FEATURE_NOT_ENABLED                        = 'BAD_REQUEST_ROUTE_PARTNERSHIPS_FEATURE_NOT_ENABLED';
     const SERVER_ERROR_PAYMENT_MANUAL_SETTLEMENT_FAILURE                            = 'SERVER_ERROR_PAYMENT_MANUAL_SETTLEMENT_FAILURE';
+
+    const BAD_REQUEST_TOO_MANY_KEYS_TO_EXPIRE                                       = 'BAD_REQUEST_TOO_MANY_KEYS_TO_EXPIRE';
+
+    const BAD_REQUEST_NO_KEYS_TO_EXPIRE                                             = 'BAD_REQUEST_NO_KEYS_TO_EXPIRE';
 
     const SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT';
     const SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE';

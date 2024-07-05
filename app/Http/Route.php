@@ -4980,6 +4980,8 @@ class Route
 
         // internal API for business website update
         'internal_post_website_update'  => ['post', 'internal/website/update/merchants/{id}', 'MerchantController@internalUpdateWebsite'],
+        'expire_keys'                   => ['post', 'keys/expire', 'KeyController@expireKeys'],
+
     ];
 
     public static $public = [
@@ -6743,6 +6745,9 @@ class Route
         'invite_to_vendor_portal_v2',
         'create_fund_account_vendor_portal_v2',
         'fetch_fund_accounts_vendor_portal_v2',
+
+        'expire_keys'
+
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -18086,6 +18091,8 @@ class Route
         'edge' => [
             'third_party_authenticate'
         ],
+        'credcase' => ['expire_keys'],
+
         'razorassist' => [
             'internal_workflow_create',
             'internal_post_website_update',

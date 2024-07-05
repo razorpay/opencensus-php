@@ -4,6 +4,7 @@ namespace RZP\Models\Key;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Constants\Mode;
@@ -244,4 +245,79 @@ class Service extends Base\Service
             $this->merchant, $segmentProperties, $segmentEventName
         );
     }
+
+    /**
+     * Expire keys for given key_ids
+     * @throws BadRequestException
+     */
+    public function expireKeys($input): array
+    {
+        $keyIDs = array_get($input, 'key_ids', []);
+
+        if (empty($keyIDs)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_KEYS_TO_EXPIRE);
+        }
+
+        $success = [];
+        $failed = [];
+
+        foreach ($keyIDs as $keyID) {
+
+            try {
+
+                $key = $this->repo->transaction(function () use ($keyID) {
+
+                    $key = $this->repo->key->findNotExpired($keyID);
+
+                    if (!$key) {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_KEY_NOT_FOUND);
+                    }
+
+                    if ($key->getId() != $keyID) {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_KEY_MISMATCH);
+                    }
+
+                    (new Core)->expireKey($key, false);
+
+                    $this->trace->info(TraceCode::EXPIRE_KEYS, [
+                        'msg' => 'key expired successfully',
+                        'key_id' => $keyID,
+                        'key' => $key
+                    ]);
+
+                    return $key;
+
+                });
+
+                $success[] = $key->getId() ;
+
+            } catch (\Exception $exception) {
+
+                $this->trace->info(
+                    TraceCode::EXPIRE_KEYS,
+                    [
+                        'msg' => 'failed to expire key',
+                        'key_id' => $keyID,
+                        'error' => $exception->getCode(),
+                    ]);
+
+                $failed[] = $keyID;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::EXPIRE_KEYS,
+            [
+                Constants::KEY_IDS => isset($input[Constants::KEY_IDS]) ?? $input[Constants::KEY_IDS],
+                Constants::SUCCESS => $success,
+                Constants::FAILED => $failed
+            ]);
+
+        return [
+            Constants::SUCCESS => $success,
+            Constants::FAILED => $failed
+        ];
+
+    }
+
 }

@@ -2002,6 +2002,10 @@ return [
         'secret'    => env('APP_EDGE_SECRET')
     ],
 
+    'credcase' => [
+        'secret' => env('APP_CREDCASE_SECRET'),
+    ],
+
     'offers_engine' => [
         'mock'                    => env('OFFERS_ENGINE_MOCK', false),
         'offers_engine_username'  => [
