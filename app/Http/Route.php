@@ -2032,6 +2032,7 @@ class Route
         'create_group_type_admin'                   => ['post',     'xperience/admin/group-types',                          'XperienceController@createGroupType'],
         'bulk_create_user_details_admin'            => ['post',     'xperience/admin/bulk-users',                           'XperienceController@bulkCreateUserDetails'],
         'bulk_create_user_details_admin_raw'        => ['post',     'xperience/admin/bulk-users-raw',                       'XperienceController@bulkCreateUserDetailsRaw'],
+        'xps_sync_user_details'                     => ['post',     'xperience/admin/sync-users',                           'XperienceController@syncUserDetails'],
         'xps_create_budget'                         => ['post',     'xperience/budgets',                                    'XperienceController@createBudget'],
         'xps_list_budgets'                          => ['get',      'xperience/budgets',                                    'XperienceController@listBudgets'],
         'xps_get_budget'                            => ['get',      'xperience/budgets/{id}',                               'XperienceController@getBudget'],
@@ -5206,6 +5207,7 @@ class Route
         'banking_account_service_rbl_migration',
         'banking_account_statement_generate_admin',
         'xps_update_petty_cash_bulk_admin',
+        'xps_sync_user_details',
     ];
 
     /**
@@ -9460,6 +9462,7 @@ class Route
         'create_group_type_admin',
         'bulk_create_user_details_admin',
         'bulk_create_user_details_admin_raw',
+        'xps_sync_user_details',
 
         // xps budgets route
         'xps_budget_cron_admin',
@@ -11147,6 +11150,7 @@ class Route
         'create_group_type_admin'                   => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'bulk_create_user_details_admin'            => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'bulk_create_user_details_admin_raw'        => Permission::VIEW_ACTIVATION_FORM,
+        'xps_sync_user_details'                     => Permission::VIEW_ACTIVATION_FORM,
         'xps_budget_cron_admin'                     => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'xps_petty_cash_hard_update_status'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'xps_petty_cash_status_callback'            => Permission::SELF_SERVE_WORKFLOW_CONFIG,
@@ -11779,7 +11783,7 @@ class Route
         'xps_list_budgets_all'                      => Permission::VIEW_ALL_BUDGET,
         'xps_get_budget_all'                        => Permission::VIEW_ALL_BUDGET,
         'xps_update_budget'                         => Permission::CREATE_BUDGET,
-        'xps_get_budgets_summary'                   => Permission::VIEW_ALL_BUDGET,
+        'xps_get_budgets_summary'                   => Permission::VIEW_BUDGET,
         'xps_get_budgets_summary_all'               => Permission::VIEW_ALL_BUDGET,
         'xps_get_pettycash_balance'                 => Permission::VIEW_BUDGET,
         'xps_update_pettycash_balance'              => Permission::CREATE_BUDGET,
@@ -16376,6 +16380,7 @@ class Route
             'create_group_type_admin',
             'bulk_create_user_details_admin',
             'bulk_create_user_details_admin_raw',
+            'xps_sync_user_details',
 
             // xps budget routes
             'xps_budget_cron_admin',

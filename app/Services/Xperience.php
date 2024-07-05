@@ -71,6 +71,7 @@ class Xperience
     const USER_INVITE_ACCEPTED_PATH          = 'v1/users/callbacks/invite-accepted';
     const BULK_CREATE_USER_DETAILS_PATH      = 'v1/bulk-users';
     const BULK_CREATE_USER_DETAILS_RAW_PATH  = 'v1/bulk-users-raw';
+    const SYNC_USER_DETAILS_PATH             = 'v1/sync-users';
     const CREATE_BUDGET_PATH                 = 'v1/budgets';
     const LIST_BUDGETS_PATH                  = 'v1/budgets';
     const GET_BUDGET_PATH                    = 'v1/budgets/%s';
@@ -756,6 +757,13 @@ class Xperience
     public function bulkCreateUserDetailsRaw(array $input)
     {
         $url = $this->getConstructedUrl(self::BULK_CREATE_USER_DETAILS_RAW_PATH);
+
+        return $this->makeRequest($url, $input, [], self::POST);
+    }
+
+    public function syncUserDetails(array $input)
+    {
+        $url = $this->getConstructedUrl(self::SYNC_USER_DETAILS_PATH);
 
         return $this->makeRequest($url, $input, [], self::POST);
     }

@@ -382,6 +382,15 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function syncUserDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->syncUserDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function createBudget()
     {
         $input = Request::all();
