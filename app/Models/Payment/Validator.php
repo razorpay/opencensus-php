@@ -1963,14 +1963,6 @@ class Validator extends Base\Validator
         {
             $this->validateUpiBlockForOtm($input);
         }
-
-        if (($this->isUpiRecurringPayment($input) === true) and
-            (isset($input['upi']['vpa']) === true))
-        {
-            $vpa = $this->getUpiVpa($input);
-
-            $this->validateUpiBlockForAutoPay($vpa);
-        }
     }
 
     protected function validateUpiBlockForAutoPay($vpa)
