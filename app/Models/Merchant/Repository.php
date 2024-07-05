@@ -3019,6 +3019,29 @@ class Repository extends Base\Repository
                     ->take($limit);
     }
 
+    public function getMerchantsWithActivatedButNotLive()
+    {
+        $merchantIdColumn = $this->repo->merchant->dbColumn(MerchantEntity::ID);
+        $createdAtColumn = $this->repo->merchant->dbColumn(Detail\Entity::CREATED_AT);
+        $merchantDetailsActivationStatusColumn = $this->repo->merchant_detail->dbColumn(Detail\Entity::ACTIVATION_STATUS);
+        $merchantDetailsId = $this->repo->merchant_detail->dbColumn(Detail\Entity::MERCHANT_ID);
+        $merchantActivatedColumn = $this->repo->merchant->dbColumn(MerchantEntity::ACTIVATED);
+        $merchantLiveColumn = $this->repo->merchant->dbColumn(MerchantEntity::LIVE);
+        $merchantActivatedAtColumn = $this->repo->merchant->dbColumn(MerchantEntity::ACTIVATED_AT);
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+                    ->select(
+                        $merchantIdColumn
+                    )
+                    ->join(Table::MERCHANT_DETAIL, $merchantIdColumn, '=', $merchantDetailsId)
+                    ->where($merchantDetailsActivationStatusColumn, '=', MerchantEntity::ACTIVATED)
+                    ->where($merchantActivatedColumn, '=', 0)
+                    ->where($merchantLiveColumn, '=', 0)
+                    ->whereNull($merchantActivatedAtColumn)
+                    ->orderBy($createdAtColumn, 'desc')
+                    ->get();
+    }
+
     /**
      * @param string $partnerMerchantId
      * @param int    $pastDaysTimestamp

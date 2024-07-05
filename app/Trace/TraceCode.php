@@ -3228,6 +3228,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRACE_EMPTY_PROVIDER_REFERENCE                        = 'TRACE_EMPTY_PROVIDER_REFERENCE';
     const METHOD_NOT_SUPPORTED_FOR_RECON                        = 'METHOD_NOT_SUPPORTED_FOR_RECON';
     const PAYMENT_TRANSACTION_NOT_FOUND                         = 'PAYMENT_TRANSACTION_NOT_FOUND';
+    const ACTIVATION_DATA_FIX_VIA_CRON                          = 'ACTIVATION_DATA_FIX_VIA_CRON';
+    const ACTIVATION_DATA_FIX_VIA_CRON_FAILED                   = 'ACTIVATION_DATA_FIX_VIA_CRON_FAILED';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

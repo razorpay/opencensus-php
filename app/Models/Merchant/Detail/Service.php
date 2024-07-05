@@ -5032,6 +5032,8 @@ class Service extends Base\Service
         {
             case 'SEND_OTP':
                 return $this->core->sendOtpViaEmailPGOSInternal($merchantId, $input);
+            case 'ACTIVATED_NOT_LIVE_FIX':
+                return $this->core->updateActivatedNotLiveMerchantsCron();
             case 'UPDATE_ACTIVATION_PROGRESS':
                 return $this->core->updateActivationProgressPGOSInternal($merchantId, $input);
             case 'UPDATE_ACTIVATION_MILESTONE':

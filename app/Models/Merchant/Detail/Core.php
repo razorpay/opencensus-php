@@ -677,6 +677,78 @@ class Core extends Base\Core
 
     }
 
+    public function updateActivatedNotLiveMerchantsCron()
+    {
+        $merchantList = $this->repo->merchant->getMerchantsWithActivatedButNotLive();
+
+        $succeededIds = [];
+        $failedIds = [];
+
+        foreach ($merchantList as $merchant)
+        {
+            $merchantId = $merchant->id;
+            try {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $merchantDetail = $merchant->merchantDetail;
+
+                $merchant->activate();
+
+                $merchant->releaseFunds();
+
+                // making sure that merchant's has_key_access is set to true when website is set.
+                if ((empty($merchantDetail->getWebsite()) === false) and
+                    ($merchant->getHasKeyAccess() === false))
+                {
+                    $merchant->setHasKeyAccess(true);
+                }
+
+                $this->trace->info(Tracecode::ACTIVATION_DATA_FIX_VIA_CRON, [
+                    'merchant_id' => $merchantId,
+                    'is activate' => $merchant->isActivated()
+                ]);
+
+                $this->repo->merchant->saveOrFail($merchant);
+
+                $succeededIds[$merchantId] = true;
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(
+                    TraceCode::ACTIVATION_DATA_FIX_VIA_CRON_FAILED,
+                    [
+                        'msg' => 'Failed',
+                        'error_message' => $ex->getMessage()
+                    ]
+                );
+
+                $failedIds[$merchantId] = false;
+            }
+
+        }
+
+        $traceData = [];
+
+        if (sizeof($failedIds) > 0) {
+            $traceData["activated_not_live_failed_count"] = sizeof($failedIds);
+        }
+
+        if (sizeof($succeededIds) > 0) {
+            $traceData["activated_not_live_success_count"] = sizeof($succeededIds);
+        }
+
+        if (!empty($traceData)) {
+            $this->trace->count(Metric::ACTIVATED_NOT_LIVE, $traceData);
+        }
+
+        return [
+            "succeeded_ids" => $succeededIds,
+            "failed_ids" => $failedIds,
+            "success_count" => sizeof($succeededIds),
+            "failed_count" => sizeof($failedIds),
+        ];
+    }
+
     public function updateActivationProgressPGOSInternal($merchantId, $input)
     {
         // this also sends the lumberjack events
