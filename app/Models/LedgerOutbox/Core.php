@@ -150,6 +150,8 @@ class Core extends Base\Core
         }
         else
         {
+            $this->dispatchForTransferProcessingIfApplicable($journal);
+
             $this->dispatchToSettlementFromJournalIfApplicable($journal);
         }
 
@@ -1157,11 +1159,6 @@ class Core extends Base\Core
 
                         $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
 
-                         if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
-                         {
-                             $paymentProcessor->processTransferIfApplicable($payment);
-                         }
-
                          return $txn;
                     });
                 },
@@ -1315,6 +1312,8 @@ class Core extends Base\Core
                     }
                     else
                     {
+                        $this->dispatchForTransferProcessingIfApplicable($journal);
+
                         $this->dispatchToSettlementFromJournalIfApplicable($journal);
                     }
 
@@ -1915,6 +1914,22 @@ class Core extends Base\Core
                 $bucketCore->publishForSettlement($virtualPaymentTransaction);
                 }
             }
+        }
+    }
+
+    private function dispatchForTransferProcessingIfApplicable($journal)
+    {
+        $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
+
+        if (($transactorEvent === LedgerConstants::MERCHANT_CAPTURED))
+        {
+            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+
+            $payment = $this->repo->payment->findByPublicId($transactorPublicId);
+
+            $paymentProcessor = new Payment\Processor\Processor($payment->merchant);
+
+            $paymentProcessor->processTransferIfApplicable($payment);
         }
     }
 

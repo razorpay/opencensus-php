@@ -182,13 +182,18 @@ class TransferProcess extends Job
         {
             $journal = (new ReverseShadow\Payments\Core())->fetchLedgerJournalForPaymentMerchantCapture($payment);
 
+            $isLedgerHoldFlagEnabled = (new ReverseShadow\Transfers\Core())->isLedgerReverseShadowHoldFlagEnabled($payment->merchant);
+
             $this->trace->info(
                 TraceCode::TRANSFER_PROCESS_PAYMENT_JOURNAL_INFO,
                 [
-                    'payment_id'              => $this->payment->getId(),
-                    'is_journal_created'      => (empty($journal) === false),
+                    'payment_id'                  => $this->payment->getId(),
+                    'is_journal_created'          => (empty($journal) === false),
+                    'is_ledger_hold_flag_enabled' => $isLedgerHoldFlagEnabled,
                 ]
             );
+
+            $isApiTxnBalanceUpdated = false;
 
             if ($journal === null)
             {
@@ -200,11 +205,9 @@ class TransferProcess extends Job
 
                 $txn = $repo->transaction->fetchPaymentTransactionFromPaymentFetchReplica($payment);
 
-                $isBalanceUpdated = false;
-
                 if ((empty($txn) === false) && ($txn->isBalanceUpdated() === true))
                 {
-                    $isBalanceUpdated = true;
+                    $isApiTxnBalanceUpdated = true;
                 }
 
                 $this->trace->info(
@@ -212,19 +215,25 @@ class TransferProcess extends Job
                     [
                         'payment_id'             => $this->payment->getId(),
                         'txn_created'            => (empty($txn) === false),
-                        'balance_updated'        => $isBalanceUpdated,
+                        'balance_updated'        => $isApiTxnBalanceUpdated,
+                        'is_ledger_hold_flag_enabled' => $isLedgerHoldFlagEnabled,
                     ]
                 );
+            }
 
-                if ($isBalanceUpdated === true)
-                {
-                    return false;
-                }
-
+            if ($isLedgerHoldFlagEnabled === true)
+            {
                 return true;
             }
 
-            return false;
+            if ((empty($journal) === false) || ($isApiTxnBalanceUpdated === true))
+            {
+                // CLS journal is created or the API txn balance is updated.
+                // In either case, do not re-push to the queue
+                return false;
+            }
+
+            return true;
         }
 
         $transaction =  $payment->transaction;

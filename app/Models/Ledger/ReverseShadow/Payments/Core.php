@@ -4,10 +4,12 @@ namespace RZP\Models\Ledger\ReverseShadow\Payments;
 
 use Ramsey\Uuid\Uuid;
 use Razorpay\Trace\Logger;
+use RZP\Exception\BaseException;
 use RZP\Models\Base;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
@@ -90,6 +92,11 @@ class Core extends Base\Core
                 Constants::TRANSACTOR_AMOUNT => $payment->getBaseAmount(),
             ]
         );
+
+        if ($payment->getGateway() === Gateway::WALLET_OPENWALLET)
+        {
+            $merchantCaptureData[Constants::NOTES][Constants::GATEWAY] = Gateway::WALLET_OPENWALLET;
+        }
 
         $apiTransactionId = $this->getAPITransactionId($transactorId, $payment);
 
@@ -721,27 +728,28 @@ class Core extends Base\Core
         {
             $response = $this->app['ledger']->fetchByTransactor($ledgerInput, $requestHeaders, true);
         }
-        catch (\RZP\Exception\BaseException $ex)
+        catch (\Throwable $ex)
         {
-            $exceptionData = $ex->getData();
-
-            // If no journal found
-            if (str_contains($exceptionData['response_body']['msg'], 'record_not_found'))
+            if ($ex instanceof BaseException)
             {
-                return null;
-            }
-            else
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Logger::ERROR,
-                    TraceCode::FETCH_JOURNAL_FAILED,
-                    [
-                        'payment_id'  => $payment->getId(),
-                    ]);
+                $exceptionData = $ex->getData();
 
-                return null;
+                // If no journal found
+                if (str_contains($exceptionData['response_body']['msg'], 'record_not_found'))
+                {
+                    return null;
+                }
             }
+
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::FETCH_JOURNAL_FAILED,
+                [
+                    'payment_id'  => $payment->getId(),
+                ]);
+
+            return null;
         }
 
         return $response['body'];

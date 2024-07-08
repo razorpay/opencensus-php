@@ -16,7 +16,7 @@ class TransferReversalCreateTransaction extends Job
 
     protected  $delaySecs = 900;
 
-    const MAX_RETRY_ATTEMPT = 20;
+    const MAX_RETRY_ATTEMPT = 50;
 
     protected $queueConfigKey = 'transfer_reversal_transaction_create_process';
 

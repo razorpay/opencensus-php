@@ -2314,13 +2314,13 @@ class Core extends Base\Core
     }
 
     //Async Update Merchant Balance
-    public function asyncUpdateMerchantBalance($payment, $txn)
+    public function asyncUpdateMerchantBalance($payment, $txn, $asyncTxnEnabled = false)
     {
         $processor = $this->getFactory($payment);
 
         $processor->setTransaction($txn);
 
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS)=== true) or ($asyncTxnEnabled === true))
         {
             $processor->setCreditDebitDetails($processor);
 

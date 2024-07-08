@@ -118,6 +118,7 @@ use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransfersCore;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
@@ -6905,17 +6906,21 @@ class Processor
 
             $isJournalCreated = !(($journal === null));
 
+            $isLedgerHoldFlagEnabled = (new ReverseShadowTransfersCore())->isLedgerReverseShadowHoldFlagEnabled($this->merchant);
+
             $this->trace->info(TraceCode::PAYMENT_TRANSFER_LEDGER_OUTBOX_PUSH_CHECK,
                 [
-                    'merchant'                => $this->merchant->getId(),
-                    'isExperimentEnabled'     => $isExperimentEnabled,
-                    'isPaymentJournalCreated' => $isJournalCreated,
-                    'customerWalletTransfer'  => $isCustomerWalletTransfer,
+                    'merchant'                 => $this->merchant->getId(),
+                    'isExperimentEnabled'      => $isExperimentEnabled,
+                    'isPaymentJournalCreated'  => $isJournalCreated,
+                    'customerWalletTransfer'   => $isCustomerWalletTransfer,
+                    'isLedgerHoldFlagEnabled'  => $isLedgerHoldFlagEnabled,
                 ]);
 
             if (($isExperimentEnabled === true)
                 and ($isCustomerWalletTransfer === false)
-                and ($isJournalCreated === true))
+                and ($isJournalCreated === true)
+                and ($isLedgerHoldFlagEnabled === false))
             {
                 return [$isExperimentEnabled, true];
             }

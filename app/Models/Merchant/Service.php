@@ -805,7 +805,25 @@ class Service extends Base\Service
 
         if ($this->checkIfLinkedAccountBatchUploadNewFlowExpIsEnabled($this->merchant) === true)
         {
-            return $this->createLinkedAccountViaBatchNewFlow($input);
+            try
+            {
+                return $this->createLinkedAccountViaBatchNewFlow($input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::LINKED_ACCOUNT_CREATE_VIA_BATCH_FAILED,
+                    [
+                        'flow'  => 'new',
+                        'input' => $input
+                    ]
+                );
+
+                throw $e;
+            }
+
         }
 
         $this->trace->info(
@@ -827,7 +845,25 @@ class Service extends Base\Service
             $mutexKey,
             function() use ($submerchantInput)
             {
-                return $this->createSubMerchantAndSetRelations($this->merchant, true, $submerchantInput);
+                try
+                {
+                    return $this->createSubMerchantAndSetRelations($this->merchant, true, $submerchantInput);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::LINKED_ACCOUNT_CREATE_VIA_BATCH_FAILED,
+                        [
+                            'flow'  => 'old',
+                            'step'  => 'submerchant_create',
+                            'input' => $submerchantInput
+                        ]
+                    );
+
+                    throw $e;
+                }
             },
             Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
@@ -853,7 +889,25 @@ class Service extends Base\Service
 
         $merchantDetailCore = new Merchant\Detail\Core();
 
-        $merchantDetailCore->saveMerchantDetails($bankAccountDetails, $linkedAccount);
+        try
+        {
+            $merchantDetailCore->saveMerchantDetails($bankAccountDetails, $linkedAccount);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::LINKED_ACCOUNT_CREATE_VIA_BATCH_FAILED,
+                [
+                    'flow'  => 'old',
+                    'step'  => 'save_merchant_details',
+                    'input' => $submerchantInput
+                ]
+            );
+
+            throw $e;
+        }
 
         $this->repo->reload($linkedAccount);
 
@@ -904,7 +958,25 @@ class Service extends Base\Service
             function() use ($input, $submerchantInput)
             {
                 [$linkedAccount, $accountStatus] = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $submerchantInput) {
-                    $linkedAccountArray = $this->createSubMerchantAndSetRelationsForLinkedAccount($this->merchant, $submerchantInput);
+                    try
+                    {
+                        $linkedAccountArray = $this->createSubMerchantAndSetRelationsForLinkedAccount($this->merchant, $submerchantInput);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::LINKED_ACCOUNT_CREATE_VIA_BATCH_FAILED,
+                            [
+                                'flow'  => 'new',
+                                'step'  => 'submerchant_create',
+                                'input' => $input
+                            ]
+                        );
+
+                        throw $e;
+                    }
 
                     if (isset($linkedAccountArray['id']) === false)
                     {
@@ -925,7 +997,25 @@ class Service extends Base\Service
 
                     $merchantDetailCore = new Merchant\Detail\Core();
 
-                    $merchantDetailCore->saveMerchantDetails($bankAccountDetails, $linkedAccount);
+                    try
+                    {
+                        $merchantDetailCore->saveMerchantDetails($bankAccountDetails, $linkedAccount);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::LINKED_ACCOUNT_CREATE_VIA_BATCH_FAILED,
+                            [
+                                'flow'  => 'new',
+                                'step'  => 'save_merchant_details',
+                                'input' => $input
+                            ]
+                        );
+
+                        throw $e;
+                    }
 
                     $this->repo->reload($linkedAccount);
 

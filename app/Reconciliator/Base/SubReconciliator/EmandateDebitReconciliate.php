@@ -333,6 +333,8 @@ class EmandateDebitReconciliate extends PaymentReconciliate
         $transaction->setReconciledAt($time);
         $transaction->saveOrFail();
 
+        $this->sendPaymentReconNFCDataToCLS($time, $reconciledType, $entity);
+
         $this->pushSuccessReconMetrics($entity);
     }
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor\Emandate;
 
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use ZipArchive;
 use Carbon\Carbon;
 use DirectoryIterator;
@@ -61,7 +62,7 @@ abstract class Base extends BaseProcessor
         {
             return;
         }
-        
+
         $this->trace->info(TraceCode::EMANDATE_DEBIT_RECONCILE_AT,
             [
                 "payment_id" => $entity->getId(),
@@ -70,6 +71,8 @@ abstract class Base extends BaseProcessor
         $time = Carbon::now(Timezone::IST)->getTimestamp();
 
         $transaction->setReconciledAt($time);
+
+        (new SubReconciliate())->sendPaymentReconNFCDataToCLS($time, "", $entity);
 
         $this->repo->saveOrFail($transaction);
     }

@@ -1580,7 +1580,8 @@ class Core extends Base\Core
 
         $useLedgerOutboxPushQueue = false;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        if (($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) ||
+            ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_TRANSFER_ON_HOLD) === true))
         {
             $useLedgerOutboxPushQueue = true;
         }
@@ -1924,7 +1925,7 @@ class Core extends Base\Core
             return;
         }
 
-        $transferMerchant = $transfer->merchant;
+        $transferMerchant = $this->repo->merchant->findOrFail($transfer->getMerchantId());
 
         if ( ($transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             or ($transferPaymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))

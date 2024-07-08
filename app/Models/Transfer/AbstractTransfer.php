@@ -265,10 +265,11 @@ abstract class AbstractTransfer
 
 //       Todo: $subMerchant should be renamed to the linkedAccount
         $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
+        $transferParentMerchant = $this->repo->merchant->findOrFail($transfer->getMerchantId());
 
         $processViaReverseShadow = false;
 
-        $reverseShadowEnabledForParent = $transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+        $reverseShadowEnabledForParent = $transferParentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
         $reverseShadowEnabledForLinkedAccount = $subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
 
         if (( $reverseShadowEnabledForParent === true) and
@@ -298,6 +299,8 @@ abstract class AbstractTransfer
             try
             {
                 (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
+
+                $processViaReverseShadow = true;
             }
             catch (\Exception $e)
             {

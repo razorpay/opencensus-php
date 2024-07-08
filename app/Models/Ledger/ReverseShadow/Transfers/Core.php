@@ -741,4 +741,16 @@ class Core extends Base\Core
 
         return false;
     }
+
+    public function isLedgerReverseShadowHoldFlagEnabled($merchant)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchant->getId());
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_TRANSFER_ON_HOLD) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

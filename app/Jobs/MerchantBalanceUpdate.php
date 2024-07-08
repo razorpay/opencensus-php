@@ -55,7 +55,14 @@ class MerchantBalanceUpdate extends Job
                 $key,
                 function ()
                 {
-                    (new PaymentService)->updateMerchantBalance($this->input['payment_id']);
+                    $asyncTxnEnabled = false;
+
+                    if (isset($this->input['async_txn_fill_enabled']) === true)
+                    {
+                        $asyncTxnEnabled = $this->input['async_txn_fill_enabled'];
+                    }
+
+                    (new PaymentService)->updateMerchantBalance($this->input['payment_id'], $asyncTxnEnabled);
 
                      $this->trace->info(
                         TraceCode::MERCHANT_BALANCE_UPDATE_SUCCESSFULL,[

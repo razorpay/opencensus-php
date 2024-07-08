@@ -4835,7 +4835,7 @@ class Service extends Base\Service
         return $updated;
     }
 
-    public function updateMerchantBalance(string $paymentId)
+    public function updateMerchantBalance(string $paymentId, $asyncTxnEnabled = false)
     {
         $payment = null;
 
@@ -4871,7 +4871,7 @@ class Service extends Base\Service
             return;
         }
 
-        $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction);
+        $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction, $asyncTxnEnabled);
     }
 
 

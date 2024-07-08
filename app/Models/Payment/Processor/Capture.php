@@ -1089,9 +1089,17 @@ trait Capture
                 return;
             }
 
+            $asyncTxnEnabled = false;
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+            {
+                $asyncTxnEnabled = true;
+            }
+
             $input = [
                 'payment_id'  => $payment->getId(),
                 'mode'        => $this->mode,
+                'async_txn_fill_enabled' => $asyncTxnEnabled,
             ];
 
             $this->trace->info(
@@ -1158,15 +1166,15 @@ trait Capture
         }
     }
 
-    public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn)
+    public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn, $asyncTxnEnabled = false)
     {
         $this->payment = $payment;
 
-        $this->repo->transaction(function() use ($payment, $txn)
+        $this->repo->transaction(function() use ($payment, $txn, $asyncTxnEnabled)
         {
-            $feesSplit = (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn);
+            $feesSplit = (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn, $asyncTxnEnabled);
 
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS)=== true) or ($asyncTxnEnabled === true))
             {
                 $payment->setTax($txn->getTax());
 
@@ -1196,11 +1204,14 @@ trait Capture
             }
         });
 
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS)=== true) or ($asyncTxnEnabled === true))
         {
             $this->createLedgerEntriesForMerchantCapture($payment, $txn);
 
-            $this->processTransferIfApplicable($payment);
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
+                $this->processTransferIfApplicable($payment);
+            }
 
             $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
 
