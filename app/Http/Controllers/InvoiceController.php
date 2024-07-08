@@ -19,6 +19,8 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use Illuminate\Http\Response as ResponseCodes;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Order\ProductType;
 
 class InvoiceController extends Controller
 {
@@ -39,6 +41,11 @@ class InvoiceController extends Controller
 
         if ($this->shouldForwardToPaymentLinkService($input, true) === true)
         {
+            if ($this->service()->shouldLimitNoCodeAppCreation(ProductType::PAYMENT_LINK)) {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED, null, null);
+            }
+
             $response =  $this->paymentlinkservice->sendRequest($this->app->request);
 
             return ApiResponse::json($response['response'], $response['status_code']);
