@@ -2326,6 +2326,10 @@ class Entity extends Base\PublicEntity
             return self::MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER;
         }
 
+        if ($international === true and ($method === Method::BANK_TRANSFER)) {
+            return self::MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER;
+        }
+
         if ($international)
         {
             $maxPaymentAmount = $this->getAttribute(self::MAX_INTERNATIONAL_PAYMENT_AMOUNT);

@@ -1694,7 +1694,7 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $virtualAccountArray,
         ];
 
-        if ($payment->isBankTransfer() === true)
+        if ($payment->isInternational() === false and $payment->isBankTransfer() === true)
         {
             $bankTransfer = $payment->bankTransfer;
 

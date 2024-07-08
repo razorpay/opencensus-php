@@ -35,6 +35,9 @@ class PaymentsCrossBorderClient
 
     const UPDATE_PAYMENT_STATUS = 'v1/payment_status/{order_id}';
 
+    const GET_FOREX_RATES = 'v1/internal/forex_charges';
+
+
     const PAYMENTS_CROSS_BORDER_URLS = [
         "GET_DOCUMENTS" => self::GET_DOCUMENTS,
         "CONFIGURE_DCS" => self::CONFIGURE_DCS,
@@ -42,6 +45,7 @@ class PaymentsCrossBorderClient
         "GET_LRS_QUOTE" => self::GET_LRS_QUOTE,
         "UPDATE_PAYMENT_STATUS" => self::UPDATE_PAYMENT_STATUS,
         "REQUEST_INTERNAL_FIRS_DOCUMENT" => self::REQUEST_INTERNAL_FIRS_DOCUMENT,
+        "GET_FOREX_RATES" => self::GET_FOREX_RATES,
     ];
 
     protected $client;
@@ -76,12 +80,14 @@ class PaymentsCrossBorderClient
             ]]);
     }
 
-    public function makeRequest($path, $method, $payload=[])
+    public function makeRequest($path, $method, $payload=[], $headers = [])
     {
         $url = $this->config['url'][$this->mode] . $path;
 
+        $headers = array_merge($headers, $this->getRequestHeaders());
+
         $this->options = [
-            'headers' => $this->getRequestHeaders(),
+            'headers' => $headers,
         ];
         if (isset($payload))
         {
@@ -238,5 +244,20 @@ class PaymentsCrossBorderClient
             ]);
         }
         return ["success" => false];
+    }
+
+    public function getForexRates($headers, $input)
+    {
+        $url = self::PAYMENTS_CROSS_BORDER_URLS['GET_FOREX_RATES'];
+
+        try {
+            return $this->makeRequest($url, self::GET, $input, $headers);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_GET_FOREX_RATES_ERROR,[
+                'error' => $e,
+            ]);
+
+            throw $e;
+        }
     }
 }

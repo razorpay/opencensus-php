@@ -26,7 +26,7 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp as MagicDecomp;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
-
+use RZP\Models\Partner;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\Payment\Constant;
 use RZP\Services\Shield;
@@ -394,6 +394,12 @@ trait Authorize
         {
             return;
         }
+
+        if ($this->payment->isInternational() and $this->payment->isBankTransfer())
+        {
+            return;
+        }
+
         // set authentication channel based on request body
         if(isset($input['authentication']) and isset($input['authentication'][PaymentConstants::AUTHENTICATION_CHANNEL]))
         {
@@ -840,7 +846,7 @@ trait Authorize
 
             // TODO: This is temporarily added here until we make
             // gateway functions like authorize for bank transfer.
-            if (($payment->isBankTransfer() === true) or
+            if (($payment->isInternational() === false and $payment->isBankTransfer() === true) or
                 ($payment->isNach() === true))
             {
                 return null;
@@ -1570,6 +1576,10 @@ trait Authorize
             return $this->processCreated($payment);
         }
 
+        if ($payment->isInternational() and $payment->isBankTransfer()) {
+            return $this->processIntlBankTransferCreated();
+        }
+
         if ($this->shouldSkipAuthorizeOnRecurringForEmandate($payment, $data) === true)
         {
             return $this->processRecurringCreatedForEmandateAsyncGateway($payment, $data);
@@ -1606,6 +1616,16 @@ trait Authorize
         }
 
         return $this->processAuth($payment, $data);
+    }
+
+    protected function processIntlBankTransferCreated() {
+        $this->payment->setStatus(Payment\Status::AUTHORIZED);
+        $this->payment->setAuthenticatedTimestamp();
+        $this->payment->setAmountAuthorized();
+        $this->payment->setAuthorizeTimestamp();
+        $this->repo->payment->saveOrFail($this->payment);
+
+        return ['razorpay_payment_id' => $this->payment->getPublicId()];
     }
 
     protected function processPaymentPendingForCoD($payment): array
@@ -2330,6 +2350,8 @@ trait Authorize
 
             $this->validateJPMCImportFlowDataIfApplicable($payment);
 
+            $this->validatePaCBDataIfApplicable($payment);
+
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -2339,6 +2361,50 @@ trait Authorize
             throw $ex;
         }
 
+    }
+
+    protected function validatePaCBDataIfApplicable(Payment\Entity $payment)
+    {
+
+        $isPaCbFlowEnabled = (new Partner\Service())->isPaCbFeatureEnabledForPartner();
+
+        if ($isPaCbFlowEnabled === false) {
+            return;
+        }
+
+        if($payment->getMethod() !== Payment\Method::BANK_TRANSFER) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD, [
+                    'payment_id' => $payment->getId(),
+                ]
+            );
+        }
+
+        if ($payment->getCurrency() === Currency\Currency::INR) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, [
+                    'payment_id' => $payment->getId(),
+                ]
+            );
+        }
+
+        if(empty($payment->getWallet())) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_MODE_NOT_SUPPORTED, [
+                    'payment_id' => $payment->getId(),
+                ]
+            );
+        }
+
+        if (!in_array($payment->getCurrency(), [CurrencyCurrency::USD,CurrencyCurrency::EUR, CurrencyCurrency::GBP])) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, [
+                    'payment_id' => $payment->getId(),
+                ]
+            );
+        }
+
+//
     }
 
     protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)
@@ -2613,7 +2679,7 @@ trait Authorize
         // Check for bank transfer batch insertion, S2S validation
         // is not relevant here in case of queue flow.
         //
-        if (($payment->isBankTransfer() === true) and
+        if (($payment->isInternational() === false and $payment->isBankTransfer() === true) and
             (($this->app->runningInQueue() === true) or
              (Route::currentRouteName() === 'bank_transfer_process_test')))
         {
@@ -5605,53 +5671,72 @@ trait Authorize
              */
             $input['is_lrs_convert_amount'] = true;
         }
-        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchant->getCurrency(), $input);
 
-        if($merchant->isLRSFlowEnabled() === true)
-        {
-            unset($input['is_lrs_convert_amount']);
-        }
-        // if gateway is doing currency conversions, actual rate used by gateway
-        // will use lower than current rates hence we also use merchant / default
-        // level percentage for lower values in base_amount for settlement.
-        if ($payment->getConvertCurrency() === false ||
-            ($currency !== $merchant->getCurrency() && $payment->getConvertCurrency() === null))
-        {
-            $input['mcc_mark_down_percent'] = $merchant->getMccMarkdownMarkdownPercentage();
-            $mccMarkdownPercentage = 1 - $input['mcc_mark_down_percent'] / 100;
-            $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);
-        }
+        $isPacbFlow = (new Partner\Service())->isPaCbFeatureEnabledForPartner();
 
-        /**
-         * Correct the base amount by adding back the removed fee in case of MCC.
-         * Strange workarounds eh? Things you have to do for NR (Ask your product manager about it)
-         * Same applies for LRS transactions as well.
-         */
+        if ($isPacbFlow === true) {
+            $param = [
+                'base_currency' => $input['currency'],
+                'conversion_currency' => 'INR',
+                'amount' => $amount,
+                'flow' => 'pacb',
+                'action' => 'markdown',
+                'entity_id' => $this->app['basicauth']->getPartnerMerchantId(),
+                'entity_type' => 'merchant',
+            ];
 
-        if (($merchant->isFeeBearerCustomerOrDynamic() and
-            $currency !== $merchant->getCurrency()) and
-            ($payment->isInternational() or
-                $merchant->isLRSFlowEnabled()))
-        {
-            if($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSFlowEnabled())
-            {
-                $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $merchant->getCurrency(), $input);
-                $baseAmount = $baseAmount + $baseFee;
+            $headers = [
+                RequestHeader::X_RAZORPAY_ACCOUNT => $this->merchant->getId()
+            ];
+            $forexRates = $this->app['payments-cross-border']->getForexRates($headers, $param);
+            $baseAmount = $forexRates['converted_amount'];
+            $input['mcc_mark_down_percent'] = $forexRates['markdown_percent'];
+            $input['mcc_forex_rate'] = $forexRates['forex_rate'];
+            $input['mcc_applied'] = 1;
+        } else {
+
+            $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchant->getCurrency(), $input);
+
+            if ($merchant->isLRSFlowEnabled() === true) {
+                unset($input['is_lrs_convert_amount']);
             }
-            else
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
-                    null,
-                    [
-                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomerOrDynamic(),
-                        'payment_id'            => $payment->getId(),
-                        'currency'              => $currency,
-                    ]);
+            // if gateway is doing currency conversions, actual rate used by gateway
+            // will use lower than current rates hence we also use merchant / default
+            // level percentage for lower values in base_amount for settlement.
+            if ($payment->getConvertCurrency() === false ||
+                ($currency !== $merchant->getCurrency() && $payment->getConvertCurrency() === null)) {
+                $input['mcc_mark_down_percent'] = $merchant->getMccMarkdownMarkdownPercentage();
+                $mccMarkdownPercentage = 1 - $input['mcc_mark_down_percent'] / 100;
+                $baseAmount = (int)ceil($baseAmount * $mccMarkdownPercentage);
             }
-        }
 
-        $dummyProcessing = $input['dummy_payment'] ?? false ;
+            /**
+             * Correct the base amount by adding back the removed fee in case of MCC.
+             * Strange workarounds eh? Things you have to do for NR (Ask your product manager about it)
+             * Same applies for LRS transactions as well.
+             */
+
+            if (($merchant->isFeeBearerCustomerOrDynamic() and
+                    $currency !== $merchant->getCurrency()) and
+                ($payment->isInternational() or
+                    $merchant->isLRSFlowEnabled())) {
+                if ($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSFlowEnabled()) {
+                    $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $merchant->getCurrency(), $input);
+                    $baseAmount = $baseAmount + $baseFee;
+                } else {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                        null,
+                        [
+                            'fee_bearer_customer' => $merchant->isFeeBearerCustomerOrDynamic(),
+                            'payment_id' => $payment->getId(),
+                            'currency' => $currency,
+                        ]);
+                }
+            }
+
+            $dummyProcessing = $input['dummy_payment'] ?? false;
+        }
 
         if(isset($input['mcc_mark_down_percent']) && isset($input['mcc_forex_rate']) && isset($input['mcc_applied']) && !($dummyProcessing))
         {
@@ -11563,7 +11648,7 @@ trait Authorize
         //
         // No gateway for bank transfer or Bharat Qr or UPI Transfer, everything is internal
         //
-        if (($payment->isBankTransfer() === true) or
+        if (($payment->isInternational() === false and $payment->isBankTransfer() === true) or
             ($payment->isBharatQr() === true) or
             ($payment->isUpiTransfer() === true) or
             ($payment->isCoD() === true) or
@@ -11982,7 +12067,7 @@ trait Authorize
 
         if (($this->shouldRedirectPaymentCreateReq($payment, $gatewayInput) === false) or
             ($payment->isRecurringTypeAuto() === true) or
-            ($payment->isBankTransfer() === true) or
+            ($payment->isInternational() === false and $payment->isBankTransfer() === true) or
             ($payment->isUpi() === true) or
             ($payment->isBharatQr() === true) or
             ($payment->isUpiTransfer() === true) or

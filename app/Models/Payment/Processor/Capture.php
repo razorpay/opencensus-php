@@ -1415,13 +1415,17 @@ trait Capture
     {
         $payment = $this->payment;
 
+        if($payment->isInternational()) {
+            return;
+        }
+
         // Skip event trigger if receiver is an instance of QRv2
         if ($payment->getReceiverType() === VirtualAccount\Receiver::POS or $payment->isQrV2Payment() === true)
         {
             return;
         }
 
-        if (($payment->isBankTransfer() === false) and
+        if (($payment->isInternational() === true or $payment->isBankTransfer() === false) and
             ($payment->isBharatQr() === false) and
             ($payment->isUpiTransfer() === false) and
             ($payment->isOffline() === false))
@@ -1722,7 +1726,7 @@ trait Capture
     {
         $virtualAccountCore = new VirtualAccount\Core;
 
-        if ($payment->isBankTransfer() === true)
+        if ($payment->isInternational() === false and $payment->isBankTransfer() === true)
         {
             $virtualAccount = $payment->bankTransfer->virtualAccount;
         }
@@ -1848,7 +1852,11 @@ trait Capture
             return;
         }
 
-        if (($payment->isBankTransfer() === true) or
+        if($payment->isInternational() && $payment->isBankTransfer()) {
+            return;
+        }
+
+        if (($payment->isInternational() === false and $payment->isBankTransfer() === true) or
             ($payment->isUpiTransfer() === true) or
             ($payment->isOffline() === true))
         {

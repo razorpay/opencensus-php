@@ -855,7 +855,7 @@ class Service extends Base\Service
             return $this->updateCardReconciliationData($input, $payment);
         }
 
-       else if($payment->isBankTransfer() === true)
+       else if($payment->isInternational() === false and $payment->isBankTransfer() === true)
        {
            return $this->updateBankTransferReconciliationData($input, $payment);
        }
@@ -1394,7 +1394,7 @@ class Service extends Base\Service
 
         $transaction->setReconciledType($input['reconciled_type']);
 
-        if (($payment->getMethod() === Payment\Method::UPI || $payment->getMethod() === Payment\Method::CARD || $payment->isBankTransfer() === true) && isset($input['gateway_settled_at']) === true){
+        if (($payment->getMethod() === Payment\Method::UPI || $payment->getMethod() === Payment\Method::CARD || ($payment->isInternational() === false and $payment->isBankTransfer() === true)) && isset($input['gateway_settled_at']) === true){
 
             $transaction->setGatewaySettledAt($input['gateway_settled_at']);
 

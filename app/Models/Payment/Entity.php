@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use App;
 use Carbon\Carbon;
+use Google\Service\CloudControlsPartnerService\Partner;
 use Lib\PhoneBook;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
@@ -1252,6 +1253,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
         }
+
+        $isPACBPartnerFlow = (new \RZP\Models\Partner\Service())->isPaCbFeatureEnabledForPartner();
+        if ($isPACBPartnerFlow && isset($input['bank_transfer']['type'])) {
+            $this->setAttribute(self::WALLET, $input['bank_transfer']['type']);
+        }
     }
 
     protected function generateBillingAddress($input)
@@ -1278,6 +1284,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->isB2BExportCurrencyCloudPayment())
         {
             $isInternational = true;
+        }
+
+        if ($isInternational === false) {
+            $isInternational = (new \RZP\Models\Partner\Service())->isPaCbFeatureEnabledForPartner();
         }
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
@@ -3046,7 +3056,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isPushPaymentMethod()
     {
-        return ($this->isBankTransfer() === true) or
+        return ($this->isInternational() === false and $this->isBankTransfer() === true) or
                ($this->isBharatQr() === true) or
                ($this->isUpiTransfer() === true) or
                ($this->isUpi() === true);
@@ -3475,7 +3485,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->isCoD() === true) or
                (($this->getAttribute(self::METHOD) === Method::WALLET) and
                    ($this->getWallet() === Wallet::PAYPAL)) or
-               ($this->merchant->isLRSFlowEnabled() === true));
+               ($this->merchant->isLRSFlowEnabled() === true) or
+            ($this->isInternational() and $this->isBankTransfer())
+        );
     }
 
     public function isFeeBearerCustomer()
@@ -7115,6 +7127,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function fetchInternationalFromInput(array $input): bool
     {
         $method = $input['method'];
+
+        if ($method === Payment\Method::BANK_TRANSFER) {
+            $isPacbPartnerFlow = (new \RZP\Models\Partner\Service())->isPaCbFeatureEnabledForPartner();
+            if ($isPacbPartnerFlow === true) {
+                return true;
+            }
+            return false;
+        }
 
         if ($method === Payment\Method::CARD and
             isset($input[Payment\Entity::CARD]) and

@@ -23,7 +23,7 @@ trait VirtualAccountUnexpectedPaymentRefundHandler
     {
         if ((empty($payment) === true) or
             (in_array($payment->getMerchantId(), self::$demoAccounts) === false) or
-            ($payment->isBankTransfer() === false) or
+            ($payment->isInternational() === true or $payment->isBankTransfer() === false) or
             (empty($payment->getRefundAt()) === true))
         {
             return;
@@ -50,7 +50,7 @@ trait VirtualAccountUnexpectedPaymentRefundHandler
     public function handleVAUnExpectedPaymentRefundInRecon($payment)
     {
         if ((in_array($payment->getMerchantId(), self::$demoAccountIds) === false) or
-            ($payment->isBankTransfer() === false))
+            ($payment->isInternational() === true or $payment->isBankTransfer() === false))
         {
             return;
         }
@@ -69,7 +69,7 @@ trait VirtualAccountUnexpectedPaymentRefundHandler
         $bankTransfer = $this->repo->bank_transfer->findByPayment($payment);
 
         if ((in_array($payment->getMerchantId(), self::$demoAccountIds) === false) or
-            ($payment->isBankTransfer() === false) or
+            ($payment->isInternational() === true or $payment->isBankTransfer() === false) or
             ($payment->getStatus() !== Payment\Status::AUTHORIZED) or
             ($bankTransfer === null) or
             ($bankTransfer->isExpected() === true) or

@@ -887,4 +887,19 @@ class Service extends Base\Service
 
         return $splitzVariables;
     }
+
+    public function isPaCbFeatureEnabledForPartner(): bool
+    {
+        if($this->auth->isOAuth() === false) {
+            return false;
+        }
+
+        $partnerMerchant = $this->auth->getPartnerMerchant();
+
+        if (empty($partnerMerchant) or $partnerMerchant->getId() === $this->merchant->getId()) {
+            return false;
+        }
+
+        return $partnerMerchant->isFeatureEnabled(FeatureConstants::PACB_EXPORT_PARTNER_FLOW);
+    }
 }

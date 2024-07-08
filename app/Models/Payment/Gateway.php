@@ -227,6 +227,8 @@ class Gateway
     const ICICI_DEBIT_EMI    = 'icici_debit_emi';
     const CURRENCY_CLOUD     = 'currency_cloud';
 
+    const PING_PONG     = 'ping_pong';
+
     const VA_SWIFT = 'swift';
     const VA_USD   = 'usd';
     const SWIFT = 'SWIFT';

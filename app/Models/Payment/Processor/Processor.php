@@ -3394,9 +3394,12 @@ class Processor
 
             $isUpiDfb = false;
 
+            $isPaCbPartnerPayment = (new \RZP\Models\Partner\Service())->isPaCbFeatureEnabledForPartner();
+
             if (($isSplitPaymentRequest === false) and
                 ($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
+                ($isPaCbPartnerPayment === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or
@@ -3431,6 +3434,13 @@ class Processor
                 $this->convert3ds2BrowserDetails($input);
 
                 $payment = $this->buildPaymentEntity($input);
+
+                if ($isPACBPartnerExportFlow) {
+                    $payment->setInternational();
+                    $payment->setGateway(Payment\Gateway::PING_PONG);
+                }
+
+
 
                 $this->preProcessForSubscriptionsIfApplicable($input, $payment);
 
@@ -9658,7 +9668,7 @@ class Processor
 
     protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->isBankTransfer() === false)
+        if ($payment->isInternational() or $payment->isBankTransfer() === false)
         {
             return;
         }
@@ -10044,6 +10054,15 @@ class Processor
         }
 
         // Bank transfers are auto-captured only if they are expected. This is checked later.
+        if ($payment->isInternational() and $payment->isBankTransfer() === true)
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::INTL_BANK_TRANSFER_PAYMENT;
+
+            return $response;
+        }
+
         if ($payment->isBankTransfer() === true)
         {
             $response['should_auto_capture'] = false;
@@ -11592,7 +11611,7 @@ class Processor
 
     protected function validateBankTransferFeeWithAmountReceived(Payment\Entity $payment)
     {
-        if ($payment->isBankTransfer() === false)
+        if ($payment->isInternational() or $payment->isBankTransfer() === false)
         {
             return;
         }
