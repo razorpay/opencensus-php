@@ -727,6 +727,42 @@ return [
         ],
     ],
 
+    'testCreateRzpFeesPayoutViaMicroserviceAndPassFundAccountInfo' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'rzp_fees',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'error'           => [
+                    'source'      => '',
+                    'reason'      => '',
+                    'description' => '',
+                    'code'        => '',
+                    'step'        => '',
+                    'metadata'    => [],
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePayoutViaMicroserviceAndPassFundAccountInfo' => [
         'request'  => [
             'method'  => 'POST',

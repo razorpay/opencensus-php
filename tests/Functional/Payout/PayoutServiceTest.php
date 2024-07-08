@@ -147,7 +147,8 @@ class PayoutServiceTest extends TestCase
                                             $newBankingError = false,
                                             &$assertionBody = [],
                                             &$actualPayload = [],
-                                            $isShieldError = false)
+                                            $isShieldError = false,
+                                            $isRzpFees = false)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -209,7 +210,7 @@ class PayoutServiceTest extends TestCase
                                 // We are returning this response only as we don't have a use case of supporting
                                 // response based on $request, if needed, that can also be added here using
                                 // andReturnUsing method instead of andReturn
-                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError, $metadata, $isShieldError)
+                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError, $metadata, $isShieldError, $isRzpFees)
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
@@ -849,7 +850,7 @@ class PayoutServiceTest extends TestCase
     }
 
 
-    public function createResponseForPayoutServiceMock($fail, $status = 'processing', $insufficient_balance = false, $newBankingError = false, $metadata = [], $isShieldError = false)
+    public function createResponseForPayoutServiceMock($fail, $status = 'processing', $insufficient_balance = false, $newBankingError = false, $metadata = [], $isShieldError = false, $isRzpFees = false)
     {
         $response = new \WpOrg\Requests\Response();
 
@@ -946,6 +947,44 @@ class PayoutServiceTest extends TestCase
                         ]
                 ]);
             $response->status_code = 400;
+            $response->success = true;
+        }
+        else if ($isRzpFees === true)
+        {
+            $content = [
+                "id"                =>   "pout_Gg7sgBZgvYjlSB",
+                "entity"            =>   "payout",
+                "fund_account_id"   =>   "fa_100000000000fa",
+                "amount"            =>   100,
+                "currency"          =>   "INR",
+                "merchant_id"       =>   "10000000000000",
+                "notes"             =>   "",
+                "fees"              =>   0,
+                "tax"               =>   0,
+                "status"            =>   $status,
+                "purpose"           =>   "rzp_fees",
+                "utr"               =>   "",
+                "reference_id"      =>   null,
+                "narration"         =>   "test Merchant Fund Transfer",
+                "batch_id"          =>   "",
+                "initiated_at"      =>   1614325830,
+                "failure_reason"    =>   null,
+                "created_at"        =>   1614325826,
+                "fee_type"          =>   null,
+                "mode"              =>   'IMPS',
+                "error"   =>
+                    [
+                        "code"        => '',
+                        "description" => '',
+                        "field"       => '',
+                        "source"      => '',
+                        "step"        => '',
+                        "reason"      => '',
+                        "metadata"    => [],
+                    ]
+            ];
+            $response->body = json_encode($content);
+            $response->status_code = 200;
             $response->success = true;
         }
         else
@@ -3635,6 +3674,159 @@ class PayoutServiceTest extends TestCase
         $assertionBody = [];
 
         $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa', 'live');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id'], 'live');
+
+        $vpaObject = $this->getDbEntityById('vpa', 'vpa_' . $fundAccountObject->toArray()['account_id'], 'live');
+
+        $expectedFundAccountExtraInfo = [
+            'id'           => 'fa_' . $fundAccountObject['id'],
+            'entity'       => 'fund_account',
+            'contact_id'   => 'cont_' . $fundAccountObject['source_id'],
+            'account_type' => $fundAccountObject['account_type'],
+            'active'       => $fundAccountObject['active'],
+            'batch_id'     => $fundAccountObject['batch_id'],
+            'created_at'   => $fundAccountObject['created_at'],
+            'vpa'          => [
+                'id'       => 'vpa_' . $vpaObject['id'],
+                'username' => $vpaObject['username'],
+                'handle'   => $vpaObject['handle'],
+                'address'  => $vpaObject['address'],
+            ],
+            'contact'      => [
+                'id'           => 'cont_' . $contactObject['id'],
+                'entity'       => 'contact',
+                'name'         => $contactObject['name'],
+                'contact'      => $contactObject['contact'],
+                'email'        => $contactObject['email'],
+                'type'         => $contactObject['type'],
+                'reference_id' => $contactObject['reference_id'],
+                'batch_id'     => $contactObject['batch_id'],
+                'active'       => $contactObject['active'],
+                'created_at'   => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertTrue(isset($assertionBody['va_to_va_info']));
+
+        $expectedVaToVaInfo = [
+            Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT => true,
+            Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            => null,
+        ];
+
+        $vaToVaInfo = $assertionBody['va_to_va_info'];
+
+        $this->assertEquals($expectedVaToVaInfo, $vaToVaInfo);
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreateRzpFeesPayoutForBankAccountViaMicroserviceAndPassVaToVaInfo()
+    {
+
+        $this->fixtures->on('live')->create('contact', [
+            'id'      => 'cont1000000000',
+            'name'    => 'Test Testing',
+            'email'   => 'test@razorpay.com',
+            'contact' => '987654321',
+            'type'    => 'self',
+            'active'  => 1,
+        ]);
+
+        $this->fixtures->on('live')->create('vpa', [
+            'id'          => 'vpa10000000000',
+            'entity_id'   => 'cont1000000000',
+            'entity_type' => 'contact',
+            'username'    => 'test',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->on('live')->create('merchant',
+            [
+                'id'               => '10000000000001',
+                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                'business_banking' => 1,
+                'activated'        => 1,
+            ]);
+
+        $this->fixtures->on('live')->create('vpa', [
+            'id'          => 'vpa10000000001',
+            'entity_id'   => 'cont1000000001',
+            'entity_type' => 'virtual_account',
+            'username'    => 'test',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'vpa',
+                'account_id'   => 'vpa10000000000'
+            ]
+        );
+        $payoutData = [
+            'id'                   => 'Gg7sgBZgvYjlSB',
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "rzp_fees",
+            'narration'            => "Spiderman",
+            'purpose_type'         => "refund",
+            'amount'               => 100,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 0,
+            'tax'                  => 0,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => null,
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => null,
+            'on_hold_at'           => null,
+            'created_at'           => 1614325826,
+            'updated_at'           => 1614325828,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $testData = $this->testData['testCreateRzpFeesPayoutViaMicroserviceAndPassFundAccountInfo'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $assertionBody = [];
+        $actualPayload = [];
+
+        $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, false, $assertionBody,$actualPayload,false,true);
 
         $this->mockRazorxDefault();
 

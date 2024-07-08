@@ -1550,6 +1550,16 @@ class Core extends Base\Core
 
             $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
 
+            if ($this->merchant === null)
+            {
+                $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+            }
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_FETCH_FOR_PS_FEE_RECOVERY_PAYOUT,
+                [
+                    'merchant' => $this->merchant->toArray()
+                ]);
+
             $entity = (new FundAccount\Repository)->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
             $entity->load('contact');

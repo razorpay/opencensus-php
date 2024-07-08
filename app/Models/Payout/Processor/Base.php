@@ -19,7 +19,6 @@ use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
 use RZP\Constants as RzpConstants;
 use Razorpay\Trace\Logger as Trace;
-
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -44,6 +43,7 @@ use RZP\Models\WalletAccount;
 use RZP\Models\Payout\Entity;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Payout\DualWrite;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Internal\Service;
 use RZP\Models\Admin\Permission;
@@ -4410,7 +4410,33 @@ class Base extends BaseCore
             $id = $response[Entity::ID];
             $id = Entity::verifyIdAndStripSign($id);
 
+            /** @var Payout\Entity $payout */
             $payout = new Payout\Entity;
+
+            if ($response[Payout\Entity::PURPOSE]===Payout\Purpose::RZP_FEES)
+            {
+                try
+                {
+                    $payout = (new DualWrite\Payout)->getAPIPayoutFromPayoutService($id);
+
+                    $this->trace->info(
+                        TraceCode::PAYOUT_CREATE_RZP_FEES_RESPONSE_FROM_MICROSERVICE,
+                        [
+                            'rzp_fees_response' => $payout
+                        ]);
+                }
+                catch (\Throwable $exception)
+                {
+
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::ERROR,
+                        TraceCode::RZP_FEES_PAYOUT_FETCH_FROM_MICROSERVICE_FAILED,
+                        [
+                            'payout_id' => $id,
+                        ]);
+                }
+            }
 
             $payout->setId($id);
             $payout->setIsPayoutService(1);
