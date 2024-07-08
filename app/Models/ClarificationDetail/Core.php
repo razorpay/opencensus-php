@@ -416,10 +416,11 @@ class Core extends Base\Core
                 }
                 else
                 {
-                    $this->trace->info(TraceCode::MERCHANT_CREATE_CLARIFICATION_DETAILS, $data);
+                    $this->trace->info(TraceCode::MERCHANT_EDIT_CLARIFICATION_DETAILS, $data);
 
-                    $clarificationDetail->edit($data);
+                    $editData = [Entity::STATUS => $data[Entity::STATUS]];
 
+                    $clarificationDetail->edit($editData);
                     $this->repo->clarification_detail->saveOrFail($clarificationDetail);
 
                 }
