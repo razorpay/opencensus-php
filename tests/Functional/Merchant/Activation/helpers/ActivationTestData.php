@@ -2755,6 +2755,26 @@ return [
         ],
     ],
 
+    'submitKycUnderReview' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+            ],
+        ],
+    ],
+
     'validateCanSubmit' => [
         'request'  => [
             'content' => [

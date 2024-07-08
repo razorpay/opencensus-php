@@ -2794,6 +2794,11 @@ class ActivationTest extends OAuthTestCase
         $this->kycSubmissionWithSuccessCases('verified', 'verified');
     }
 
+    public function testKycSubmissionWhenPoaIsOcrVerifiedForFinanceCategory()
+    {
+        $this->kycSubmissionWithSuccessCaseForFinanceCategory('verified', 'verified');
+    }
+
     public function testKycSubmissionWhenPoaIsOcrVerifiedPartner()
     {
         $this->kycSubmissionWithSuccessCasesPartner('verified', 'verified');
@@ -2983,6 +2988,64 @@ class ActivationTest extends OAuthTestCase
         $merchantDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl', 'test');
 
         $this->assertEquals('whitelist', $merchantDetail->getActivationFlow());
+    }
+
+    public function kycSubmissionWithSuccessCaseForFinanceCategory($poaVerificationStatus, $bankDetailsVerificationStatus = null)
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->createMerchantDocumentEntries($merchantId, 'irdai_registration_certificate');
+
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_front');
+
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_back');
+
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantId);
+
+        $this->getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus);
+
+        $testSuits = [
+            'submitKycUnderReview'
+        ];
+
+        $plan = $this->createZeroFundAccountValidationPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant',
+            '100000Razorpay',
+            [
+                'pricing_plan_id' => $plan->getPlanId()
+            ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, [
+            Entity::BUSINESS_CATEGORY => 'financial_services',
+            Entity::BUSINESS_SUBCATEGORY => 'financial_advisor',
+            Entity::BUSINESS_TYPE => '1'
+        ]);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, [
+            Entity::BUSINESS_CATEGORY => 'financial_services',
+            Entity::BUSINESS_SUBCATEGORY => 'financial_advisor',
+            Entity::BUSINESS_TYPE => '1'
+        ]);
+
+        $data = [
+            StoreConstants::NAMESPACE => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1
+        ];
+
+        $data = (new StoreCore())->updateMerchantStore($merchantId,
+            $data,
+            StoreConstants::INTERNAL);
+
+        foreach ($testSuits as $index => $testSuit) {
+            $testData = $this->testData[$testSuit];
+
+            $this->startTest($testData);
+        }
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId, 'test');;
+
+        $this->assertEquals('greylist', $merchantDetail->getActivationFlow());
     }
 
     public function kycSubmissionWithSuccessCasesPartner($poaVerificationStatus, $bankDetailsVerificationStatus = null)

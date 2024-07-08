@@ -14,6 +14,7 @@ class SelectiveRequiredFields
     const NBFC_REGISTRATION_CERTIFICATE_OR_SLA    = 'nbfc_registration_certificate_or_sla';
     const AMFI_CERTIFICATE_OR_SLA                 = 'amfi_certificate_or_sla';
     const PROPRIETORSHIP_BUSINESS_PROOF_DOCUMENTS = 'proprietorship_business_proof_documents';
+    const SEBI_OR_IRDAI_REGISTRATION_CERTIFICATE_OR_SLA    = 'sebi_or_irdai_registration_certificate_or_sla';
 
     /**
      * This contains documents required for unregistered business
@@ -103,9 +104,11 @@ class SelectiveRequiredFields
     ];
 
     const FINANCIAL_ADVISOR = [
-        self::SEBI_REGISTRATION_CERTIFICATE_OR_SLA => [
+        self::SEBI_OR_IRDAI_REGISTRATION_CERTIFICATE_OR_SLA => [
             [Type::SEBI_REGISTRATION_CERTIFICATE],
             [Type::SLA_SEBI_REGISTRATION_CERTIFICATE],
+            [Type::IRDAI_REGISTRATION_CERTIFICATE],
+            [Type::SLA_IRDAI_REGISTRATION_CERTIFICATE],
         ],
     ];
 
