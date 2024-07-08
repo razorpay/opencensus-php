@@ -9,6 +9,7 @@ export const queryClient = new QueryClient();
 
 const Wrapper = (): JSX.Element => {
   React.useEffect(() => {
+    console.log('Injected Manifest!');
     const link = document.createElement('link');
     link.rel = 'manifest';
     link.href = `${process.env.UNIVERSE_PUBLIC_ASSETS_URL}/build/browser/manifest.json`;
