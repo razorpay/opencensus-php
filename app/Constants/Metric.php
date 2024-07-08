@@ -221,4 +221,10 @@ class Metric
     const CIRCUIT_BREAKER_OPEN                                  = 'circuit_breaker_open';
 
     const PGOS_DUAL_WRITE_CONSUMER_ERROR                        = 'pgos_dual_write_consumer_error';
+
+    const SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED             = 'settlement_ondemand_global_limit_breached';
+
+    const SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR      = 'settlement_ondemand_invalid_capping_scale_factor';
+
+    const SETTLEMENT_ONDEMAND_ALLOWED_LIMIT_BREACHED            = 'settlement_ondemand_allowed_limit_breached';
 }

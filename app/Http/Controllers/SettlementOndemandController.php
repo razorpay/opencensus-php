@@ -200,7 +200,9 @@ class SettlementOndemandController extends Controller
 
     public function isOndemandBlocked()
     {
-        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->isOndemandBlocked();
+        $merchantId = $this->ba->authCreds->getMerchant()->getId();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->isOndemandBlocked($merchantId);
 
         return ApiResponse::json($data);
     }

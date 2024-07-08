@@ -466,6 +466,14 @@ class ConfigKey
 
     CONST TOKENS_SERVICE_ENABLED                    = self::PREFIX . 'tokens_service_enabled';
 
+    CONST ODS_CAPPING_CHECK_REQUIRED                = self::PREFIX . 'ods_capping_check_required';
+
+    CONST ODS_GLOBAL_LIMIT                          = self::PREFIX . 'ods_global_limit';
+
+    CONST ODS_CAPPING_SCALE_FACTOR                  = self::PREFIX . 'ods_capping_scale_factor';
+
+    CONST ODS_CAPPED_MID_LIST                       = self::PREFIX . 'ods_capped_mid_list';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -651,7 +659,11 @@ class ConfigKey
         self::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT,
         self::TOKENS_SERVICE_ENABLED,
         self::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST,
-        self::PENNILESS_WHITELISTED_BANKS_LIST
+        self::PENNILESS_WHITELISTED_BANKS_LIST,
+        self::ODS_CAPPING_CHECK_REQUIRED,
+        self::ODS_GLOBAL_LIMIT,
+        self::ODS_CAPPING_SCALE_FACTOR,
+        self::ODS_CAPPED_MID_LIST
     ];
 
     const REDIS_CONFIG_MAP = [
@@ -729,5 +741,19 @@ class ConfigKey
         static::$fetchedKeys[$key] = $data;
 
         return $data;
+    }
+
+    public static function set($key, $value, $ttl = 0)
+    {
+        $app = App::getFacadeRoot();
+
+        try
+        {
+            $data = Cache::set($key, $value, $ttl);
+        }
+        catch (\Throwable $ex)
+        {
+            $app['trace']->traceException($ex);
+        }
     }
 }

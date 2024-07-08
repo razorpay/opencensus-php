@@ -10,8 +10,10 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Settlement\Holidays;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\User;
 use RZP\Models\Payout;
@@ -629,6 +631,77 @@ class Core extends Base\Core
         return false;
     }
 
+    public function isODSCappingBreached($merchantId): bool
+    {
+        $odsCappingCheckRequired = (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false);
+
+        if($odsCappingCheckRequired === false)
+            return false;
+
+        $odsGlobalLimit = (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0);
+
+        $key = $this->getTotalODSSettledRedisKey();
+
+        $totalOdsSettled = (int) ConfigKey::get($key, 0);
+
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY, [
+            'merchantId'    => $merchantId,
+            'key'           => $key,
+            'totalSettled'  => $totalOdsSettled,
+        ]);
+
+        if($totalOdsSettled >= $odsGlobalLimit)
+        {
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED, [
+                'merchantId'            => $merchantId,
+                'totalOdsSettled'       => $totalOdsSettled,
+                'odsGlobalLimit'        => $odsGlobalLimit,
+            ]);
+
+            $this->trace->count(
+                Metric::SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED, []);
+
+            return true;
+        }
+
+        $odsCappingScaleFactor = (int) ConfigKey::get(ConfigKey::ODS_CAPPING_SCALE_FACTOR, 100);
+
+        // For invalid scale factor, allow ODS
+        if($odsCappingScaleFactor < 0 || $odsCappingScaleFactor > 100)
+        {
+            $this->trace->error(TraceCode::SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR, [
+                'odsCappingScaleFactor' => $odsCappingScaleFactor,
+            ]);
+
+            $this->trace->count(
+                Metric::SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR, []);
+
+            return false;
+        }
+
+        if($totalOdsSettled >= ($odsCappingScaleFactor / 100) * $odsGlobalLimit)
+        {
+            $merchantIdList = ConfigKey::get(ConfigKey::ODS_CAPPED_MID_LIST, []);
+
+            if($merchantIdList !== null && in_array($merchantId, $merchantIdList))
+            {
+                $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_ALLOWED_LIMIT_BREACHED, [
+                    'merchantId'            => $merchantId,
+                    'totalOdsSettled'       => $totalOdsSettled,
+                    'odsGlobalLimit'        => $odsGlobalLimit,
+                    'isEnterpriseMerchant'  => true,
+                ]);
+
+                $this->trace->count(
+                    Metric::SETTLEMENT_ONDEMAND_ALLOWED_LIMIT_BREACHED, []);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function getTransactionMutexresource(Base\Entity $baseEntity)
     {
         return $baseEntity->getId()."_transaction";
@@ -842,4 +915,46 @@ class Core extends Base\Core
         return $baseTransactionEntity;
     }
 
+    public function updateRedisKeyForTotalOdsSettled($amount)
+    {
+        $key = $this->getTotalODSSettledRedisKey();
+        $totalOdsSettled = (int) ConfigKey::get($key, 0);
+
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY, [
+            'key'           => $key,
+            'totalSettled'  => $totalOdsSettled,
+        ]);
+
+        // If key does not exist
+        if($totalOdsSettled == 0)
+            $totalOdsSettled = $amount;
+        else
+            $totalOdsSettled += $amount;
+
+        // ttl set for 7 days in seconds
+        ConfigKey::set($key, $totalOdsSettled, 604800);
+    }
+
+    public function getTotalODSSettledRedisKey()
+    {
+        // Redis key computation logic wrt current working day
+        $today = Carbon::today(Timezone::IST);
+        if(Holidays::isWorkingDay($today))
+        {
+            $year = $today->year;
+            $month = $today->month;
+            $day = $today->day;
+        }
+        else
+        {
+            $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
+            $year = $lastWorkingDay->year;
+            $month = $lastWorkingDay->month;
+            $day = $lastWorkingDay->day;
+        }
+
+        $keyDateSuffix = $year . '-' . $month . '-' . $day;
+
+        return 'total_ods_settled_' . $keyDateSuffix;
+    }
 }

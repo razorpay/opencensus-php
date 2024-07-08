@@ -136,6 +136,8 @@ class Service extends Base\Service
 
                 $this->validateIfOndemandBlocked();
 
+                $this->validateIfODSCappingBreached($this->merchant->getId());
+
                 $this->validateIfDisabledByCollections();
 
                 $amount = $this->core()->getSettlementAmount($input, $this->merchant);
@@ -188,6 +190,8 @@ class Service extends Base\Service
                 if(($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)){
                     $this->handleJobPushPostTransactionCreation($settlementOndemand,$settlementOndemandPayouts,$this->mode,$this->merchant->getId());
                 }
+
+                $this->updateRedisKeyForTotalOdsSettled($amount);
 
                 if (isset($input['expand']) === true && boolval($input['expand']) === true)
                 {
@@ -316,6 +320,25 @@ class Service extends Base\Service
                 ],
                 'Ondemand settlement has been blocked for a while');
         }
+    }
+
+    public function validateIfODSCappingBreached($merchantId)
+    {
+        if(($this->core()->isODSCappingBreached($merchantId)) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_GLOBAL_CAPPING_BREACHED,
+                null,
+                [
+                    'merchantId'=> $this->merchant->getId(),
+                    'errorDescription' => 'Ondemand settlement has breached the global limit'
+                ]);
+        }
+    }
+
+    public function updateRedisKeyForTotalOdsSettled($amount)
+    {
+        $this->core()->updateRedisKeyForTotalOdsSettled($amount);
     }
 
     public function validateIfOndemandRouteMerchant($merchantId)
@@ -543,12 +566,15 @@ class Service extends Base\Service
         ];
     }
 
-    public function isOndemandBlocked()
+    public function isOndemandBlocked($merchantId)
     {
         $ondemandBlocked = $this->core()->isOndemandBlocked();
 
+        $ondemandDisabled = $this->core()->isODSCappingBreached($merchantId);
+
         return [
-            'blocked' => $ondemandBlocked
+            'blocked'       => $ondemandBlocked,
+            'disable'       => $ondemandDisabled
         ];
     }
 

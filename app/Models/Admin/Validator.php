@@ -293,6 +293,10 @@ class Validator extends Base\Validator
         ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST                                    => 'filled|array',
         ConfigKey::PENNILESS_RESPONSE_BENE_NAME_BLACKLIST                              => 'filled|array',
         ConfigKey::TOKENS_SERVICE_ENABLED                                              => 'filled|boolean',
+        ConfigKey::ODS_CAPPING_CHECK_REQUIRED                                          => 'filled|boolean',
+        ConfigKey::ODS_GLOBAL_LIMIT                                                    => 'filled|integer',
+        ConfigKey::ODS_CAPPING_SCALE_FACTOR                                            => 'filled|integer',
+        ConfigKey::ODS_CAPPED_MID_LIST                                                 => 'filled|array'
     ];
 
     protected static $setRedisKeysRules = [
