@@ -26,6 +26,7 @@ use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Action;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Dispute\Evidence;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
@@ -50,6 +51,7 @@ use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity, FreshdeskTicket\Service as FreshDeskService};
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
@@ -832,6 +834,29 @@ class Core extends Base\Core
                 try
                 {
                     $newBalance = $this->filterByFundAccountTypeAndEntryTypeDebit($journal, LedgerConstants::MERCHANT_BALANCE);
+
+                    // https://razorpay.slack.com/archives/C02QK0VFRPX/p1719908422267349?thread_ts=1719845107.295699&cid=C02QK0VFRPX
+                    if ($newBalance === '')
+                    {
+                        $ledgerService = $this->app['ledger'];
+
+                        $ledgerOutboxCore = new LedgerOutboxCore();
+
+                        $payment = $dispute->payment;
+
+                        $merchant = $payment->merchant;
+
+                        $accountBalanceMap = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchant->getId());
+
+                        if (isset($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]) === true)
+                        {
+                            $newBalance = floatval($accountBalanceMap[LedgerConstants::MERCHANT_BALANCE]);
+                        }
+                        else
+                        {
+                            throw new \Exception('Balance not present in Merchant Account Balance');
+                        }
+                    }
                 }
                 catch (\Exception $e)
                 {
@@ -839,6 +864,7 @@ class Core extends Base\Core
                         TraceCode::ERROR_CALCULATING_UNRECOVERED_AMOUNT,
                         [
                             'journal' => $journal,
+                            'error'   => $e->getMessage(),
                         ]);
                 }
             }
