@@ -14,8 +14,9 @@
     var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
+    var merchantCountry = window.rzp_user && window.rzp_user.merchant ? window.rzp_user.merchant.country_code : undefined;
 
-    if (window.razorpayAnalytics) {
+    if (window.razorpayAnalytics && merchantCountry !== 'SG') {
         let trackers = ['lj'];
 
          if (window.location.href.indexOf('resetpassword') === -1) {

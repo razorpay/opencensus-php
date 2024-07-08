@@ -13,6 +13,10 @@ import { titleCase, getCommonAnalyticsProperties } from './rzp-utils';
 let source = null;
 
 export const sendToLumberjack = ({ eventName, properties = {} }) => {
+  const merchantCountry = window.rzp_user?.merchant?.country_code;
+  if (merchantCountry === 'SG') {
+    return;
+  }
   const body = {
     mode: 'live',
     key: window.LUMBERJACK_API_KEY,
@@ -170,6 +174,10 @@ export const analyticsTrack = ({
   toFacebook = false,
   includeScreenResolution = false,
 }) => {
+  const merchantCountry = window.rzp_user?.merchant?.country_code;
+  if (merchantCountry === 'SG') {
+    return;
+  }
   if (!objectName) {
     throwAnalyticsException(`[analytics]: objectName cannot be empty ${screen} ${actionName}`);
   }
@@ -269,6 +277,10 @@ export const analyticsTrackWithUserInfo = ({
   addUserProperties = false,
   ...rest
 }) => {
+  const merchantCountry = window.rzp_user?.merchant?.country_code;
+  if (merchantCountry === 'SG') {
+    return;
+  }
   const { screen } = rest;
   const propertiesWithUserInfo = {
     ...properties,

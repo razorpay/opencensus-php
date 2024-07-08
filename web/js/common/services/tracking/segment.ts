@@ -133,6 +133,11 @@ export const analyticsTrack = ({
   toCleverTap = false,
   toFacebook = false,
 }) => {
+  const merchantCountry = user?.merchant?.country_code;
+  if (merchantCountry === 'SG') {
+    return;
+  }
+
   if (!objectName) {
     throw new Error('[analytics]: objectName cannot be empty');
   }

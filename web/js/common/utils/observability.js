@@ -25,6 +25,7 @@ function extractPersona() {
     } = {},
     partner: { partner_type: partnerType } = {},
     merchants,
+    merchant: { country_code },
   } = window.rzp_user || {};
 
   return {
@@ -53,6 +54,7 @@ function extractPersona() {
 
     // Multi-merchant related
     merchantsMapped: (merchants && Object.keys(merchants).length) || 0,
+    country_code: country_code ?? null,
   };
 }
 
