@@ -10863,6 +10863,11 @@ class Processor
             return false;
         }
 
+        if($payment->isCollectXPayment() === true)
+        {
+            return false;
+        }
+
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
             ($gatewayInput['skip_gateway_call'] === true))
         {

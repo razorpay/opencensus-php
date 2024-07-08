@@ -3100,6 +3100,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::POS);
     }
 
+    public function isCollectXPayment()
+    {
+        return ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true);
+    }
+
     /**
      * @ToDo: This method needs fixing as it doesn't return the correct value
      *        during manual capture of payments as $metadata is empty.
