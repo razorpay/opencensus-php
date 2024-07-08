@@ -129,4 +129,6 @@ class RequestHeader
     // When this header is passed avoid regenerating payment ID in API.
     // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
     const X_API_BYPASS_PAYMENT_ID        = "X-Api-Bypass-Payment-Id";
+
+    const X_PG_ROUTER_MERCHANT_IP        = "X-PG-Router-Merchant-Ip";
 }

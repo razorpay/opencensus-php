@@ -100,6 +100,20 @@ class MerchantIpFilter
             $whitelistedIps = $merchant->getWhitelistedIpsTest();
         }
 
+        $headerRequestIp = $request->headers->get(RequestHeader::X_PG_ROUTER_MERCHANT_IP);
+
+        if (empty($headerRequestIp) === false)
+        {
+            $this->trace->info(TraceCode::IP_WHITELISTING_FOR_BYPASS,
+                [
+                    'merchant'    => $merchant->getId(),
+                    'requestIp'   => $requestIp,
+                    'headerRequestIp' => $headerRequestIp,
+                ]);
+
+            $requestIp = $headerRequestIp;
+        }
+
         if ((empty($whitelistedIps) === true) or
             (in_array($requestIp, $whitelistedIps,true)))
         {
