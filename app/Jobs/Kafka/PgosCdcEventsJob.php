@@ -53,13 +53,14 @@ class PgosCdcEventsJob extends Job
                 'payload'   => $this->payload
             ]);
 
-            $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-                'level'           => self::WARNING,
-                'code'            => $e->getCode(),
-                'description'     => $e->getMessage(),
-                'attempt'         => $this->attempts(),
-                'retry'           => false
-            ]);
+            //Commenting this for now due to a statsd issue but we wish to add this back for alerting
+            //$this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+            //    'level'           => self::WARNING,
+            //    'code'            => $e->getCode(),
+            //    'description'     => $e->getMessage(),
+            //    'attempt'         => $this->attempts(),
+            //    'retry'           => false
+            //]);
 
         }
         catch (DbQueryException $e)
@@ -72,13 +73,14 @@ class PgosCdcEventsJob extends Job
                 'attempt'   => $this->attempts()
             ]);
 
-            $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-                'level'           => self::ERROR,
-                'code'            => $e->getCode(),
-                'description'     => $e->getMessage(),
-                'attempt'         => $this->attempts(),
-                'retry'           => true
-            ]);
+            //Commenting this for now due to a statsd issue but we wish to add this back for alerting
+            //$this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+            //    'level'           => self::ERROR,
+            //    'code'            => $e->getCode(),
+            //    'description'     => $e->getMessage(),
+            //    'attempt'         => $this->attempts(),
+            //    'retry'           => true
+            //]);
         }
         catch (\Throwable $e)
         {
@@ -94,13 +96,14 @@ class PgosCdcEventsJob extends Job
                 TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR,
                 $payload);
 
-            $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-                'level'           => self::ERROR,
-                'code'            => $e->getCode(),
-                'description'     => $e->getMessage(),
-                'attempt'         => $this->attempts(),
-                'retry'           => false
-            ]);
+            //Commenting this for now due to a statsd issue but we wish to add this back for alerting
+            //$this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+            //    'level'           => self::ERROR,
+            //    'code'            => $e->getCode(),
+            //    'description'     => $e->getMessage(),
+            //    'attempt'         => $this->attempts(),
+            //    'retry'           => false
+            //]);
         }
 
     }
