@@ -56,8 +56,8 @@ class Processor extends Base\Core
 
             $merchantId = $input['merchant_id'];
             $sendFile = $input['send_file'];
-            $from = $input['from'] ?? Carbon::yesterday(Timezone::IST)->getTimestamp();
-            $to = $input['to'] ?? Carbon::today(Timezone::IST)->getTimestamp();
+            $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+            $to = $input['to'] ?? Carbon::now(Timezone::IST)->getTimestamp();
 
             $this->trace->info(TraceCode::OPGSP_IMPORT_SETTLEMENT_FILE_GENERATION_INPUT, [
                 'merchantId' => $merchantId,
