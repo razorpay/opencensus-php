@@ -1247,11 +1247,11 @@ class Processor
                     // Added the experiment back to stop PL traffic for MIDs on cards re-arch.
                     // JIRA: https://razorpay.atlassian.net/browse/CARDREARCH-195
                     $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "payment_link_v2",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
                     if ($result != 'on') {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "payment_link_v2",
+                            'merchant_id' => $merchant->getId(),
+                        ]);
                         return false;
                     }
                 }
@@ -1266,7 +1266,6 @@ class Processor
                             'reason' => "pp_pb_ph",
                             'merchant_id' => $merchant->getId(),
                         ]);
-
                         return false;
                     }
                 }
@@ -1281,7 +1280,6 @@ class Processor
                         'reason' => "other_apps_and_invoice",
                         'merchant_id' => $merchant->getId(),
                     ]);
-
                     return false;
                 }
 
@@ -1296,11 +1294,6 @@ class Processor
                         ]);
                         return false;
                     }
-
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
-                        'reason' => "order_transfers",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
                 }
             }
 
@@ -1522,6 +1515,12 @@ class Processor
                         return false;
                     }
                 }
+
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "not_enagaged_in_saved_card_token_payments_via_pg_router",
+                    'merchant_id' => $merchant->getId(),
+                    'razorx_result' => $result,
+                ]);
                 return false;
             }
 
@@ -1552,6 +1551,7 @@ class Processor
             if (empty($iin) === true)
             {
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'iin' => $iinId,
                     'reason' => "iin_not_available",
                     'merchant_id' => $merchant->getId(),
                 ]);
@@ -1567,41 +1567,13 @@ class Processor
             ];
 
             if((in_array($iin->getNetworkCode(), $supportedNetworks, true) === false)){
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "network_not_supported",
+                    'merchant_id' => $merchant->getId(),
+                ]);
                 return false;
             }
 
-            $supportedFlows = [
-                Card\IIN\Flow::_3DS,
-                Card\IIN\Flow::HEADLESS_OTP,
-                Card\IIN\Flow::IVR,
-                Card\IIN\Flow::OTP,
-                // magic is mainly used for checkout flows and has no impact on payment flows
-                Card\IIN\Flow::MAGIC,
-                // Pin is depricated
-                Card\IIN\Flow::PIN,
-                // Ifram is mainly used for checkout flows and has no impact on payment flows
-                Card\IIN\Flow::IFRAME,
-                Card\IIN\Flow::HEADLESS_FORBIDDEN,
-            ];
-
-            $enabledFlows = Card\IIN\Flow::getEnabledFlows($iin->getFlows());
-
-            foreach ($enabledFlows as $flow)
-            {
-                if (in_array($flow, $supportedFlows, true) === false)
-                {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "flow_not_enabled",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-
-                    // unsetting below fields for a safer sides if at all they might have been added in above flows.
-                    // API payment creation don't require these fields
-                    unset($input['convenience_fee']);
-                    unset($input['convenience_fee_gst']);
-                    return false;
-                }
-            }
 
             if ((($iin->isAmex() === false) and
                     IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true))
@@ -1651,6 +1623,14 @@ class Processor
                 {
                     $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V3, $this->mode);
 
+                    if ($result !== 'on') {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v3",
+                            'merchant_id' => $merchant->getId(),
+                            'razorx_result' => $result,
+                        ]);
+                    }
+
                     return ($result === 'on');
                 }
 
@@ -1667,11 +1647,27 @@ class Processor
                     {
                         $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2, $this->mode);
 
+                        if ($result !== 'on') {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v2",
+                                'merchant_id' => $merchant->getId(),
+                                'razorx_result' => $result,
+                            ]);
+                        }
+
                         return ($result === 'on');
                     }
                     if ($library === Payment\Analytics\Metadata::S2S)
                     {
                         $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V4, $this->mode);
+
+                        if ($result !== 'on') {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v4",
+                                'merchant_id' => $merchant->getId(),
+                                'razorx_result' => $result,
+                            ]);
+                        }
 
                         return ($result === 'on');
                     }
@@ -1680,6 +1676,14 @@ class Processor
                 }
 
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($result !== 'on') {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "not_engaged_in_saved_card_payments_via_pg_router",
+                        'merchant_id' => $merchant->getId(),
+                        'razorx_result' => $result,
+                    ]);
+                }
 
                 return ($result === 'on');
             }
@@ -1692,6 +1696,14 @@ class Processor
             if ($merchant->isFeatureEnabled('raas') === true)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($result !== 'on') {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "not_engaged_in_raas_card_payments_via_pg_router",
+                        'merchant_id' => $merchant->getId(),
+                        'razorx_result' => $result,
+                    ]);
+                }
 
                 return ($result === 'on');
             }
@@ -1761,11 +1773,16 @@ class Processor
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
             }
 
-            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                'reason' => "not_engaged_in_any_function",
-                'merchant_id' => $merchant->getId(),
-                'razorx_result' => $result,
-            ]);
+            if ($result !== 'on') {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "not_engaged_in_any_function",
+                    'merchant_id' => $merchant->getId(),
+                    'razorx_result' => $result,
+                ]);
+
+                unset($input['convenience_fee']);
+                unset($input['convenience_fee_gst']);
+            }
 
             return ($result === 'on');
 
