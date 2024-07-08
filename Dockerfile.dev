@@ -8,6 +8,9 @@ COPY --from=curl-cli /usr/bin/curl /usr/bin/
 RUN pear81 config-set php_ini /etc/php81/php.ini
 RUN pecl81 install opencensus-alpha
 
+RUN apk add font-noto font-noto-thai font-noto-tibetan font-ipa font-sony-misc font-jis-misc && \
+    fc-cache -f
+
 COPY --from=opencensus-ext /usr/lib/php81/modules/opencensus.so /usr/lib/php81/modules
 
 VOLUME ['/app']

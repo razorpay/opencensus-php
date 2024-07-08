@@ -39,4 +39,7 @@ RUN --mount=type=secret,id=git_token set -eux && \
     make error-module-fetch && \
     rm -f ~/.netrc
 
+RUN apk add font-noto font-noto-thai font-noto-tibetan font-ipa font-sony-misc font-jis-misc && \
+    fc-cache -f
+
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.worker.sh"]
