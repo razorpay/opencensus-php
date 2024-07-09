@@ -1,5 +1,13 @@
 import React from 'react';
-import { Text, Box } from '@razorpay/blade/components';
+import {
+  Text,
+  Box,
+  Dropdown,
+  DropdownOverlay,
+  SelectInput,
+  ActionList,
+  ActionListItem,
+} from '@razorpay/blade/components';
 
 import Input from 'common/new-ui/Input';
 import { withSplitzService } from 'common/splitz';
@@ -21,6 +29,7 @@ class ApplicableOn extends React.Component {
         label: '--Select Issuer--',
       },
     ];
+
     this.CO_BRANDING_PARTNERS = ['onecard'];
 
     Object.entries(props.emiData.emi_plans).forEach(([issuer, issuerData]) => {
@@ -34,11 +43,11 @@ class ApplicableOn extends React.Component {
     });
   }
 
-  handleEmiDuration = (duration) => (event) => {
+  handleEmiDuration = (duration, handleChange) => (event) => {
     event.stopPropagation();
 
     let emi_durations = [
-      ...(this.props.formData.emi_durations ? this.props.formData.emi_durations : []),
+      ...(this.props.values.emi_durations ? this.props.values.emi_durations : []),
     ];
 
     if (event.target.value === '0') {
@@ -51,7 +60,7 @@ class ApplicableOn extends React.Component {
       }
     }
 
-    this.props.onChange({
+    handleChange({
       target: {
         name: 'emi_durations',
         value: emi_durations,
@@ -60,8 +69,19 @@ class ApplicableOn extends React.Component {
   };
 
   render() {
-    const { formData, minAmount, offersData } = this.props;
-    const SelectedEMIOptions = this.props.emiData.emi_options[formData.issuer]?.sort(
+    const {
+      minAmount,
+      offersData,
+      values,
+      handleChange,
+      handleBlur,
+      setFieldTouched,
+      setFieldValue,
+      errors,
+      setErrors,
+      touched,
+    } = this.props;
+    const SelectedEMIOptions = this.props.emiData.emi_options[values.issuer]?.sort(
       (a, b) => a.duration - b.duration,
     );
 
@@ -70,27 +90,57 @@ class ApplicableOn extends React.Component {
     } = this.props.splitz;
 
     const isLowCostExperimentEnabled = Low_cost_offer?.variables?.result === 'on';
+
+    const onFormChange = (name, value) => {
+      setFieldTouched(name);
+      setFieldValue(name, value);
+      setErrors(errors);
+    };
+    errors.issuer = validateDiscountType(values.issuer);
     return (
       <StyledOfferForm className={isLowCostExperimentEnabled ? 'low-cost-offer-container' : ''}>
-        <Input.Select
-          required
-          label="Issuer"
-          name="issuer"
-          placeholder="Select network"
-          options={this.ISSUERS_OPTIONS}
-          defaultValue={formData.issuer}
-          className="no-cost-offer-plans"
-          onChange={() => {
-            this.props.onOffersChange({});
-          }}
-        />
+        <Dropdown marginBottom="spacing.7">
+          <SelectInput
+            isRequired
+            necessityIndicator="required"
+            label="Issuer"
+            placeholder="--Select Issuer--"
+            name="issuer"
+            labelPosition="left"
+            value={values.issuer}
+            onChange={({ name, values }) => {
+              onFormChange(name, values[0]);
+            }}
+            onBlur={handleBlur}
+            validationState={touched.issuer && errors?.issuer ? 'error' : 'none'}
+            errorText={errors?.issuer}
+          />
+          <DropdownOverlay>
+            <ActionList>
+              {Object.values(this.ISSUERS_OPTIONS).map((type) => (
+                <ActionListItem
+                  key={type.name}
+                  title={type.label}
+                  value={type.name}
+                  testID={`option-${type.name}`}
+                />
+              ))}
+            </ActionList>
+          </DropdownOverlay>
+        </Dropdown>
 
-        {formData.issuer && (
+        {values.issuer && (
           <Box>
             {isLowCostExperimentEnabled ? (
               <NoCostOfferForm
-                formData={formData}
                 offersData={offersData}
+                values={values}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+                setFieldTouched={setFieldValue}
+                setFieldValue={setFieldValue}
+                errors={errors}
+                touched={touched}
                 onChange={this.props.onChange}
                 onOffersChange={this.props.onOffersChange}
                 tenure={SelectedEMIOptions}
@@ -109,8 +159,10 @@ class ApplicableOn extends React.Component {
                       <div class="emi-check-field">
                         <Input.Check
                           fieldLabel={`${plan.duration} Months`}
-                          onChange={this.handleEmiDuration(plan.duration)}
-                          defaultValue={formData.emi_durations?.indexOf(plan.duration) > -1}
+                          onChange={(value) =>
+                            this.handleEmiDuration(plan.duration, handleChange)(value)
+                          }
+                          defaultValue={values.emi_durations?.indexOf(plan.duration) > -1}
                         />
                       </div>
 
@@ -169,3 +221,9 @@ class ApplicableOn extends React.Component {
 }
 
 export default withSplitzService(ApplicableOn);
+function validateDiscountType(val) {
+  if (!val) {
+    return 'Please select an issuer type';
+  }
+  return false;
+}

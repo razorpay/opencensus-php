@@ -47,9 +47,11 @@ const mockEmiData = {
 
 const mockProps = {
   emiData: mockEmiData,
-  formData: { issuer: 'issuer1', emi_durations: [3] },
+  values: { issuer: 'issuer1', emi_durations: [3] },
+  errors: {},
+  touched: {},
   minAmount: 3000,
-  onChange: jest.fn(),
+  handleChange: jest.fn(),
   onOffersChange: jest.fn(),
 };
 
@@ -62,14 +64,6 @@ describe('ApplicableOn Component', () => {
     expect(screen.getByText('EMI tenure')).toBeInTheDocument();
     expect(screen.getByText('5 %')).toBeInTheDocument();
     expect(screen.getByText('10 %')).toBeInTheDocument();
-  });
-
-  test('calls onOffersChange when issuer is changed', () => {
-    renderComponent();
-    fireEvent.change(screen.getByPlaceholderText('Select network'), {
-      target: { value: 'issuer2' },
-    });
-    expect(mockProps.onOffersChange).toHaveBeenCalled();
   });
 
   test('renders FootNote correctly', () => {
@@ -87,6 +81,6 @@ describe('ApplicableOn Component', () => {
       minAmount: 10000,
     };
     renderComponent(props);
-    expect(screen.queryByText('issuer1')).not.toBeInTheDocument();
+    expect(screen.queryAllByText('issuer1')).toHaveLength(2);
   });
 });

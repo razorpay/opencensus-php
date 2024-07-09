@@ -1,4 +1,5 @@
-import Input from 'common/new-ui/Input';
+import { Checkbox, CheckboxGroup } from '@razorpay/blade/components';
+
 import { findBy } from 'common/utils/rzp-utils';
 import { WorkSection, WorkFlow } from 'merchant/components/WorkFlow';
 import {
@@ -17,7 +18,6 @@ import {
   APPLICABLE_ON_OPTIONS,
   REDEMPTION_TYPE_OPTIONS,
 } from 'merchant/views/Offers/constants';
-
 const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, issuer) => {
   switch (paymentMethod) {
     case PAYMENT_METHODS.Card:
@@ -53,23 +53,36 @@ const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, is
 export default function OverView(props) {
   const {
     currencySymbol,
-    formData: {
-      creation_terms_accepted,
-      description: { type, terms, display_text },
-      discountType: { discount_type, flat_cashback, min_amount, percent_rate, max_cashback },
-      applicableOn: {
-        issuer,
-        payment_method,
-        payment_network,
-        payment_method_type,
-        emi_durations,
-        applicable_on,
-        low_cost_emi,
-      },
-      offerValidity: { starts_at, ends_at, redemption_type },
+    values: {
+      type,
+      terms,
+      display_text,
+      discount_type,
+      flat_cashback,
+      min_amount,
+      percent_rate,
+      max_cashback,
+      issuer,
+      payment_method,
+      payment_network,
+      payment_method_type,
+      emi_durations,
+      applicable_on,
+      low_cost_emi,
+      starts_at,
+      ends_at,
+      redemption_type,
     },
+    values,
+    setFieldTouched,
+    setFieldValue,
+    errors,
+    touched,
   } = props;
-
+  const handleFormChange = (name, value) => {
+    setFieldTouched(name);
+    setFieldValue(name, value);
+  };
   const { isLowCostEnabled } = useLowCostOfferExperiment();
 
   const DiscountTypeHeading = `${discount_type.split('_').join(' ')} discount`;
@@ -104,7 +117,7 @@ export default function OverView(props) {
   if (redemption_type) {
     redemptionType = findBy(REDEMPTION_TYPE_OPTIONS, 'name', redemption_type).label;
   }
-
+  errors.creation_terms_accepted = validateTermsAndConditions(values.creation_terms_accepted);
   return (
     <div class="Subscription--New-review">
       <div class="Payments">
@@ -152,15 +165,28 @@ export default function OverView(props) {
           </WorkSection>
         </WorkFlow>
 
-        <Input.Check
-          required
-          name="creation_terms_accepted"
+        <CheckboxGroup
+          isRequired
+          necessityIndicator="required"
           label="Terms and Conditions"
-          className="Input--vTop"
-          fieldLabel="I understand that the discount/cashback given in this offer will be borne by me and not Razorpay"
-          defaultValue={creation_terms_accepted}
-          disabled={props.isFormLocked}
-        />
+          marginBottom="spacing.3"
+          isDisabled={props.isFormLocked}
+          size="medium"
+          name="creation_terms_accepted"
+          value={values.creation_terms_accepted}
+          onChange={({ name, values }) => {
+            handleFormChange(name, values?.[0]);
+          }}
+          validationState={
+            touched.creation_terms_accepted && errors?.creation_terms_accepted ? 'error' : 'none'
+          }
+          errorText={errors?.creation_terms_accepted}
+        >
+          <Checkbox value="1">
+            I understand that the discount/cashback given in this offer will be borne by me and not
+            Razorpay.
+          </Checkbox>
+        </CheckboxGroup>
       </div>
     </div>
   );
@@ -185,4 +211,11 @@ function DualColumnTable({ heading, children, columnRatio = 0.25 }) {
 
 export function wordWithSpace(word) {
   return word ? `${word} ` : '';
+}
+
+function validateTermsAndConditions(val) {
+  if (!val || val == '') {
+    return 'Please accept Terms and Conditions';
+  }
+  return false;
 }

@@ -12,18 +12,16 @@ import {
   validateMerchantDiscount,
   isMerchantDiscountValid,
 } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
-import {
-  EMI_OFFER_TYPES as EmiTypes,
-  EMITenureActionProps,
-} from 'merchant/views/Offers/New/Screens/NoCostEMI/types';
+import { EMI_OFFER_TYPES as EmiTypes } from 'merchant/views/Offers/New/Screens/NoCostEMI/types';
 
 const EMITenureAction = ({
   plan,
-  formData,
-  onChange,
   onOffersChange,
   offersData,
-}: EMITenureActionProps): JSX.Element => {
+  values,
+  handleChange,
+  errors,
+}): JSX.Element => {
   const [emiTypeSelected, setEmiTypeSelected] = useState<EmiTypes>(EmiTypes.NONE);
   const [merchantInterest, setMerchantInterest] = useState<number>(0);
   const merchantDiscountRef = useRef<HTMLInputElement>(null);
@@ -87,8 +85,8 @@ const EMITenureAction = ({
    * @param {number} duration
    */
   const handleEmiDurationSelect = useCallback(
-    (duration: number) => (e) => {
-      let emi_durations: number[] = [...(formData.emi_durations ? formData.emi_durations : [])];
+    (duration: number, handleChange) => (e) => {
+      let emi_durations: number[] = [...(values.emi_durations ? values.emi_durations : [])];
 
       if (!e.isChecked) {
         emi_durations = emi_durations.filter((ele) => ele != duration);
@@ -98,7 +96,7 @@ const EMITenureAction = ({
         emi_durations.push(duration);
       }
 
-      onChange({
+      handleChange({
         target: {
           name: offerPayloadKeys.emi_durations,
           value: emi_durations,
@@ -109,7 +107,7 @@ const EMITenureAction = ({
         tenure: duration,
       });
     },
-    [formData.emi_durations, onChange, updateOfferState],
+    [values.emi_durations, updateOfferState],
   );
 
   /**
@@ -141,7 +139,8 @@ const EMITenureAction = ({
     (duration: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const { target } = e;
       setEmiTypeSelected(target.value as EmiTypes);
-      let low_cost_tenures = formData.low_cost_emi || [];
+      let low_cost_tenures = values.low_cost_emi || [];
+      console.log('merchant.........Interest', merchantInterest);
       if (target.value === EmiTypes.LOW_COST) {
         low_cost_tenures.push({
           discount_to_avail: {
@@ -150,14 +149,14 @@ const EMITenureAction = ({
             applicable_values: null,
           },
           tenure: duration,
-          issuer: formData.issuer,
+          issuer: values.issuer,
         });
       } else {
         // If no cost offer is selected for the tenure, filter out the tenure from low cost payload
         low_cost_tenures = low_cost_tenures.filter((item) => item.tenure !== duration);
       }
 
-      onChange({
+      handleChange({
         target: {
           name: offerPayloadKeys.low_cost_emi,
           value: low_cost_tenures,
@@ -170,7 +169,7 @@ const EMITenureAction = ({
         value: target.value,
       });
     },
-    [formData.issuer, formData.low_cost_emi, merchantInterest, onChange, updateOfferState],
+    [values.low_cost_emi, values.issuer, handleChange, updateOfferState, merchantInterest],
   );
 
   // If the entered payback is same as merchant payback make the offer type as no cost EMI
@@ -179,9 +178,9 @@ const EMITenureAction = ({
       const { value } = e;
       if (+value === +plan.merchant_payback) {
         setEmiTypeSelected(EmiTypes.NO_COST);
-        let low_cost_tenures = formData.low_cost_emi || [];
+        let low_cost_tenures = values.low_cost_emi || [];
         low_cost_tenures = low_cost_tenures.filter((item) => item.tenure !== duration);
-        onChange({
+        handleChange({
           target: {
             name: offerPayloadKeys.low_cost_emi,
             value: low_cost_tenures,
@@ -195,7 +194,7 @@ const EMITenureAction = ({
         });
       } else {
         setMerchantInterest(Number(value));
-        const low_cost_tenures = formData.low_cost_emi;
+        const low_cost_tenures = values.low_cost_emi;
 
         if (low_cost_tenures?.length) {
           low_cost_tenures.forEach((offer) => {
@@ -205,7 +204,7 @@ const EMITenureAction = ({
           });
 
           // Update Form Data for the offer creation payload
-          onChange({
+          handleChange({
             target: {
               name: offerPayloadKeys.low_cost_emi,
               value: low_cost_tenures,
@@ -222,14 +221,14 @@ const EMITenureAction = ({
         }
       }
     },
-    [formData.low_cost_emi, onChange, plan.merchant_payback, updateOfferState],
+    [plan.merchant_payback, values.low_cost_emi, handleChange, updateOfferState],
   );
 
   const handleOnChange = useCallback(
     (duration: number) => (e) => {
       const { value } = e;
 
-      const low_cost_tenures = formData.low_cost_emi;
+      const low_cost_tenures = values.low_cost_emi;
 
       if (low_cost_tenures?.length) {
         low_cost_tenures.forEach((offer) => {
@@ -239,7 +238,7 @@ const EMITenureAction = ({
         });
 
         // Update Form Data for the offer creation payload
-        onChange({
+        handleChange({
           target: {
             name: offerPayloadKeys.low_cost_emi,
             value: low_cost_tenures,
@@ -255,15 +254,25 @@ const EMITenureAction = ({
         });
       }
     },
-    [formData.low_cost_emi, onChange, plan.merchant_payback, updateOfferState],
+    [values.low_cost_emi, handleChange, updateOfferState, plan.merchant_payback],
   );
 
+  const merchantBorneDiscountError =
+    emiTypeSelected === EmiTypes.LOW_COST
+      ? validateMerchantDiscount(+merchantInterest, plan).validationText
+      : '';
+
+  // Then, update the errors object accordingly
+  useEffect(() => {
+    errors.merchant_borne_discount = merchantBorneDiscountError;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [merchantBorneDiscountError]);
   return (
     <StyledActionRow data-testid="offer-action-row">
       <div className="tenure offer-body-row">
         <Checkbox
-          isChecked={formData.emi_durations?.includes(plan.duration)}
-          onChange={handleEmiDurationSelect(plan.duration)}
+          isChecked={values.emi_durations?.includes(plan.duration)}
+          onChange={(value) => handleEmiDurationSelect(plan.duration, handleChange)(value)}
         >
           {`${plan.duration} Months`}
         </Checkbox>
@@ -274,7 +283,7 @@ const EMITenureAction = ({
           data-testid="offer-type-select"
           placeholder="Select"
           options={EMI_OFFER_TYPES}
-          disabled={!formData.emi_durations?.includes(plan.duration)}
+          disabled={!values.emi_durations?.includes(plan.duration)}
           onChange={handleOfferEmiTyeSelection(plan.duration)}
           value={emiTypeSelected}
         />
@@ -287,11 +296,7 @@ const EMITenureAction = ({
           onBlur={handleOnBlur(plan.duration)}
           onChange={handleOnChange(plan.duration)}
           label=""
-          errorText={
-            emiTypeSelected === EmiTypes.LOW_COST
-              ? validateMerchantDiscount(+merchantInterest, plan).validationText
-              : ''
-          }
+          errorText={merchantBorneDiscountError}
           validationState={
             emiTypeSelected === EmiTypes.LOW_COST
               ? validateMerchantDiscount(+merchantInterest, plan).validation

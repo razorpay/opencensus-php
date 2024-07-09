@@ -13,18 +13,18 @@ import OfferValidity, {
 } from '../OfferValidity';
 
 describe('OfferValidity Component', () => {
-  const mockFormData = {
+  const mockValues = {
     starts_at: '2024-05-27T00:00:00Z',
     ends_at: '2024-06-27T00:00:00Z',
     block: '0',
     max_offer_usage: '10',
-    default_offer: false,
+    default_offer: '0',
   };
 
   const renderApp = (props = {}) =>
     render(
       <Provider store={store}>
-        <OfferValidity formData={mockFormData} {...props} />
+        <OfferValidity values={mockValues} errors={{}} touched={{}} {...props} />
       </Provider>,
     );
 
@@ -64,18 +64,18 @@ describe('OfferValidity Component', () => {
   });
 
   it('should return undefined if value is provided', () => {
-    expect(validateBlock('some_value')).toBeUndefined();
+    expect(validateBlock('some_value')).toBe(false);
   });
   it('should return error message if value is not a number', () => {
     expect(validateMaxOfferUsage('abc')).toBe('Please enter a number');
   });
 
   it('should return undefined if value is empty', () => {
-    expect(validateMaxOfferUsage('')).toBeUndefined();
+    expect(validateMaxOfferUsage('')).toBe(false);
   });
 
   it('should return undefined if value is within range and a number', () => {
-    expect(validateMaxOfferUsage('100')).toBeUndefined();
+    expect(validateMaxOfferUsage('100')).toBe(false);
   });
 
   it('should return error message if value is not provided', () => {

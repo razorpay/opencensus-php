@@ -1,7 +1,8 @@
-import { withRouter } from 'common/deprecated/withRouter';
+import { withFormik } from 'formik';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { luminateRow } from 'merchant/reducers/app';
@@ -48,12 +49,12 @@ class CreateOfferWizard extends React.Component {
     };
   }
 
-  onSubmit = (formData) => {
+  onSubmit = (values) => {
     this.setState({
       isFormLocked: true,
     });
 
-    return saveOffer(formData)
+    return saveOffer(values)
       .then((savedOffer) => {
         this.setState({
           isFormLocked: false,
@@ -179,7 +180,6 @@ class CreateOfferWizard extends React.Component {
     const { state, props } = this;
     const showSelectionView = this.CURRENT_FORM === BaseFormKey;
     const Form = FORMS[this.CURRENT_FORM];
-
     return (
       <StyledOfferModal class="Offers--Create">
         {showSelectionView && (
@@ -195,4 +195,13 @@ class CreateOfferWizard extends React.Component {
   }
 }
 
-export default withRouter(CreateOfferWizard);
+export default withRouter(
+  withFormik({
+    mapPropsToValues: () => ({}),
+    validate: () => {
+      const errors = {};
+      return errors;
+    },
+    validateOnChange: true,
+  })(CreateOfferWizard),
+);

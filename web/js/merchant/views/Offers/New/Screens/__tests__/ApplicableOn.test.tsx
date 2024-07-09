@@ -8,7 +8,7 @@ import { PAYMENT_METHODS } from 'merchant/views/Offers/constants';
 import ApplicableOn from '../ApplicableOn';
 
 const defaultProps = {
-  formData: {
+  values: {
     payment_method: '',
     issuer: '',
     payment_method_type: '',
@@ -17,6 +17,8 @@ const defaultProps = {
     iins: [],
   },
   isFormLocked: false,
+  errors: {},
+  touched: {},
 };
 
 const renderApp = (props = {}) => {
@@ -28,11 +30,10 @@ describe('ApplicableOn Component', () => {
     renderApp();
     expect(screen.getByText('Payment Method')).toBeInTheDocument();
   });
-
   it('should render Wallet issuer select when payment method is Wallet', () => {
     const props = {
-      formData: {
-        ...defaultProps.formData,
+      values: {
+        ...defaultProps.values,
         payment_method: PAYMENT_METHODS.Wallet,
       },
     };
@@ -42,8 +43,8 @@ describe('ApplicableOn Component', () => {
 
   it('should render Card Less EMI issuer select when payment method is CardLessEmi', () => {
     const props = {
-      formData: {
-        ...defaultProps.formData,
+      values: {
+        ...defaultProps.values,
         payment_method: PAYMENT_METHODS.CardLessEmi,
       },
     };
@@ -53,8 +54,8 @@ describe('ApplicableOn Component', () => {
 
   it('should render card related inputs when payment method is Card', () => {
     const props = {
-      formData: {
-        ...defaultProps.formData,
+      values: {
+        ...defaultProps.values,
         payment_method: PAYMENT_METHODS.Card,
       },
     };
@@ -65,8 +66,8 @@ describe('ApplicableOn Component', () => {
 
   it('should render EMI related inputs when payment method is EMI', () => {
     const props = {
-      formData: {
-        ...defaultProps.formData,
+      values: {
+        ...defaultProps.values,
         payment_method: PAYMENT_METHODS.EMI,
       },
     };
@@ -76,8 +77,8 @@ describe('ApplicableOn Component', () => {
 
   it('should render Net Banking issuer select when payment method is NetBanking', () => {
     const props = {
-      formData: {
-        ...defaultProps.formData,
+      values: {
+        ...defaultProps.values,
         payment_method: PAYMENT_METHODS.NetBanking,
       },
     };

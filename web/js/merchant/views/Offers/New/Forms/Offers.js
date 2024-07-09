@@ -10,19 +10,9 @@ import BaseForm from './BaseForm';
 const VALID_TABS = [false, false, false, false, false];
 
 export default class OffersForm extends BaseForm {
+  // eslint-disable-next-line no-useless-constructor
   constructor(props) {
     super(props);
-
-    this.state = {
-      formData: {
-        description: {},
-        discountType: {},
-        applicableOn: {},
-        offerValidity: {},
-        // HINT: Input.Check don't have validation support
-        creation_terms_accepted: undefined,
-      },
-    };
   }
 
   get tabsData() {
@@ -31,8 +21,15 @@ export default class OffersForm extends BaseForm {
         name: 'Description',
         render: () => (
           <Description
-            formData={this.state.formData.description}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -42,8 +39,15 @@ export default class OffersForm extends BaseForm {
           <DiscountType
             isFormLocked={this.props.isFormLocked}
             currencySymbol={this.currencySymbol}
-            offerType={this.state.formData.description.type}
-            formData={this.state.formData.discountType}
+            offerType={this.props.values.type}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -52,8 +56,15 @@ export default class OffersForm extends BaseForm {
         render: () => {
           return (
             <ApplicableOn
-              formData={this.state.formData.applicableOn}
               isFormLocked={this.props.isFormLocked}
+              values={this.props.values}
+              handleChange={this.props.handleChange}
+              handleBlur={this.props.handleBlur}
+              setFieldTouched={this.props.setFieldTouched}
+              setFieldValue={this.props.setFieldValue}
+              errors={this.props.errors}
+              setErrors={this.props.setErrors}
+              touched={this.props.touched}
             />
           );
         },
@@ -63,8 +74,15 @@ export default class OffersForm extends BaseForm {
         render: () => (
           <OfferValidity
             onChange={this.onFieldChange}
-            formData={this.state.formData.offerValidity}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -72,9 +90,16 @@ export default class OffersForm extends BaseForm {
         name: 'Overview',
         render: () => (
           <Overview
-            formData={this.state.formData}
             currencySymbol={this.currencySymbol}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -82,8 +107,8 @@ export default class OffersForm extends BaseForm {
   }
 
   render() {
-    const isFormDisabled =
-      this.props.isFormLocked || this.state.formData.creation_terms_accepted !== '1';
+    const { isFormLocked, values } = this.props;
+    const isFormDisabled = isFormLocked || !values.creation_terms_accepted;
     return (
       <Wizard
         disabled={isFormDisabled}
@@ -95,6 +120,9 @@ export default class OffersForm extends BaseForm {
         onClose={this.props.onClose}
         onSubmit={this.onSubmit}
         zIndex={9999}
+        values={this.props.values}
+        errors={this.props.errors}
+        setErrors={this.props.setErrors}
       />
     );
   }

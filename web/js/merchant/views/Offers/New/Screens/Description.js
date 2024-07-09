@@ -1,90 +1,168 @@
 /* eslint-disable consistent-return */
 import React from 'react';
+import {
+  TextInput,
+  TextArea,
+  Dropdown,
+  DropdownOverlay,
+  SelectInput,
+  ActionList,
+  ActionListItem,
+} from '@razorpay/blade/components';
 
-import Input from 'common/new-ui/Input';
 import { OFFER_TYPES_OPTIONS, OFFER_TYPES } from 'merchant/views/Offers/constants';
-
-export default ({ formData, isFormLocked, hideType }) => {
+export default ({
+  isFormLocked,
+  hideType,
+  values,
+  handleBlur,
+  setFieldTouched,
+  setFieldValue,
+  errors,
+  touched,
+}) => {
   let offerTypeDescription;
 
-  if (formData.type === OFFER_TYPES.Cashback) {
+  if (values.type === OFFER_TYPES.Cashback) {
     offerTypeDescription =
       'Cashbacks need to be processed by the provider (Wallet providers, Banks etc). Please create Cashback Offers only if you have an agreement in place with them';
   }
 
+  const handleFormChange = (name, value) => {
+    setFieldTouched(name);
+    setFieldValue(name, value);
+  };
+
+  errors.name = validateName(values.name);
+  errors.display_text = validateDisplayText(values.display_text);
+  errors.terms = validateTerms(values.terms);
+  errors = hideType
+    ? Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'type'))
+    : { ...errors, type: validateDiscountType(values.type) };
+
   return (
     <React.Fragment>
-      <Input
-        required
+      <TextInput
+        isRequired
+        necessityIndicator="required"
         autoFocus
         label="Offer Name"
+        labelPosition="left"
         name="name"
-        autoComplete="false"
         placeholder="Example: New Year Sale (This name appears on your dashboard)"
-        defaultValue={formData.name}
-        maxLength={50}
-        validator={validateName}
-        disabled={isFormLocked}
+        maxCharacters={50}
+        isDisabled={isFormLocked}
+        marginBottom="spacing.4"
+        onChange={({ name, value }) => {
+          handleFormChange(name, value);
+        }}
+        onBlur={handleBlur}
+        value={values.name}
+        validationState={touched.name && errors.name ? 'error' : 'none'}
+        errorText={errors?.name}
       />
 
-      <Input
-        required
+      <TextInput
+        isRequired
+        necessityIndicator="required"
         label="Display Text"
+        labelPosition="left"
         name="display_text"
         placeholder="10% off on all HDFC Debit Cards (This appears on checkout for your customers)"
-        defaultValue={formData.display_text}
-        maxLength={250}
-        validator={validateDisplayText}
-        disabled={isFormLocked}
+        maxCharacters={250}
+        validationState={touched.display_text && errors?.display_text ? 'error' : 'none'}
+        errorText={errors?.display_text}
+        isDisabled={isFormLocked}
+        marginBottom="spacing.4"
+        onChange={({ name, value }) => {
+          handleFormChange(name, value);
+        }}
+        onBlur={handleBlur}
+        value={values.display_text}
       />
 
-      <Input.Textarea
-        required
+      <TextArea
+        isRequired
+        necessityIndicator="required"
         label="Terms"
         name="terms"
         placeholder="Terms and conditions for offer"
-        description="Enter offer terms and conditions"
-        defaultValue={formData.terms}
-        maxLength={250}
-        validator={validateTerms}
-        disabled={isFormLocked}
+        helpText="Enter offer terms and conditions"
+        labelPosition="left"
+        maxCharacters={250}
+        validationState={touched.terms && errors?.terms ? 'error' : 'none'}
+        errorText={errors?.terms}
+        isDisabled={isFormLocked}
+        marginBottom="spacing.7"
+        onChange={({ name, value }) => {
+          handleFormChange(name, value);
+        }}
+        onBlur={handleBlur}
+        value={values.terms}
       />
 
       {!hideType && (
-        <Input.Select
-          required
-          name="type"
-          label="Offer Type"
-          defaultValue={formData.type}
-          options={OFFER_TYPES_OPTIONS}
-          description={offerTypeDescription}
-          validator={validateDiscountType}
-          disabled={isFormLocked}
-        />
+        <Dropdown isDisabled={isFormLocked}>
+          <SelectInput
+            label="Offer Type"
+            placeholder="--Please select--"
+            name="type"
+            labelPosition="left"
+            necessityIndicator="required"
+            isRequired
+            helpText={offerTypeDescription}
+            value={values.type}
+            onChange={({ name, values }) => {
+              handleFormChange(name, values[0]);
+            }}
+            onBlur={handleBlur}
+            validationState={touched?.type && errors?.type ? 'error' : 'none'}
+            errorText={errors?.type}
+          />
+          <DropdownOverlay>
+            <ActionList>
+              {Object.values(OFFER_TYPES_OPTIONS).map((type) => (
+                <ActionListItem
+                  key={type.name}
+                  title={type.label}
+                  value={type.name}
+                  testID={`option-${type.name}`}
+                />
+              ))}
+            </ActionList>
+          </DropdownOverlay>
+        </Dropdown>
       )}
     </React.Fragment>
   );
 };
 
 export function validateName(val) {
-  if (!val || val.length < 4) {
+  if (!val) return 'Please fill out this field';
+  if (val.length < 4) {
     return 'Short name should be at least of 4 characters';
   }
+  return false;
 }
 
 export function validateDisplayText(val) {
-  if (!val || val.length < 4) {
+  if (!val) return 'Please fill out this field';
+  if (val.length < 4) {
     return 'Short description should be at least of 4 characters';
   }
+  return false;
 }
 export function validateTerms(val) {
-  if (!val || val.length < 4) {
+  if (!val) return 'Please fill out this field';
+  if (val.length < 4) {
     return 'Offer terms should contain at least of 4 characters';
   }
+  return false;
 }
 
 export function validateDiscountType(val) {
-  if (!val || val == '') {
+  if (!val) {
     return 'Please select a discount type';
   }
+  return false;
 }

@@ -22,7 +22,7 @@ export default class BaseForm extends React.Component {
   onFieldChange = (event) => {
     const { currentTab, validTabs } = this.FormWizard.state;
     const currentFormScreen = SCREEN_MAP[currentTab];
-    const { formData } = this.state;
+    const { values } = this.props;
     const newValidTabs = [...validTabs];
 
     let invalidateTabs = false;
@@ -41,31 +41,31 @@ export default class BaseForm extends React.Component {
     }
 
     const newState = {
-      formData: {
-        ...formData,
+      values: {
+        ...values,
       },
     };
 
     if (currentFormScreen) {
-      newState.formData[currentFormScreen] = {
-        ...formData[currentFormScreen],
+      newState.values[currentFormScreen] = {
+        ...values[currentFormScreen],
         [fieldName]: fieldValue,
       };
     } else {
-      newState.formData[fieldName] = fieldValue;
+      newState.values[fieldName] = fieldValue;
     }
     // Description
     if (fieldName === 'type') {
-      if (formData.discountType.discount_type) {
-        newState.formData.discountType.discount_type = null;
+      if (values.discount_type) {
+        newState.values.discount_type = null;
 
         newValidTabs[1] = false;
         newValidTabs[4] = false;
         invalidateTabs = true;
       }
 
-      if (formData.discountType.min_amount) {
-        newState.formData.discountType.min_amount = null;
+      if (values.min_amount) {
+        newState.values.min_amount = null;
 
         newValidTabs[1] = false;
         newValidTabs[4] = false;
@@ -75,16 +75,16 @@ export default class BaseForm extends React.Component {
 
     // Discount Type
     if (fieldName === 'min_amount') {
-      if (formData.applicableOn.issuer) {
-        newState.formData.applicableOn.issuer = null;
+      if (values.issuer) {
+        newState.values.issuer = null;
 
         newValidTabs[2] = false;
         invalidateTabs = true;
         newValidTabs[4] = false;
       }
 
-      if (formData.applicableOn.emi_durations) {
-        newState.formData.applicableOn.emi_durations = null;
+      if (values.emi_durations) {
+        newState.values.emi_durations = null;
 
         newValidTabs[2] = false;
         invalidateTabs = true;
@@ -93,49 +93,49 @@ export default class BaseForm extends React.Component {
     }
 
     if (fieldName === 'discount_type') {
-      if (formData.discountType.flat_cashback) {
-        newState.formData.discountType.flat_cashback = null;
+      if (values.flat_cashback) {
+        newState.values.flat_cashback = null;
       }
 
-      if (formData.discountType.percent_rate) {
-        newState.formData.discountType.percent_rate = null;
+      if (values.percent_rate) {
+        newState.values.percent_rate = null;
       }
 
-      if (formData.discountType.max_cashback) {
-        newState.formData.discountType.max_cashback = null;
+      if (values.max_cashback) {
+        newState.values.max_cashback = null;
       }
     }
 
     if (fieldName === 'redemption_type') {
-      newState.formData.discountType.no_of_cycles = null;
+      newState.values.no_of_cycles = null;
     }
 
     // Applicable On
     if (fieldName === 'payment_method') {
-      if (formData.applicableOn.payment_method_type) {
-        newState.formData.applicableOn.payment_method_type = null;
+      if (values.payment_method_type) {
+        newState.values.payment_method_type = null;
       }
 
-      if (formData.applicableOn.issuer) {
-        newState.formData.applicableOn.issuer = null;
+      if (values.issuer) {
+        newState.values.issuer = null;
       }
 
-      if (formData.applicableOn.payment_network) {
-        newState.formData.applicableOn.payment_network = null;
+      if (values.payment_network) {
+        newState.values.payment_network = null;
       }
 
-      if (formData.applicableOn.max_payment_count) {
-        newState.formData.applicableOn.max_payment_count = null;
+      if (values.max_payment_count) {
+        newState.values.max_payment_count = null;
       }
 
-      if (formData.applicableOn.iins) {
-        newState.formData.applicableOn.iins = null;
+      if (values.iins) {
+        newState.values.iins = null;
       }
     }
 
-    if (fieldName === 'issuer' && newState.formData.applicableOn) {
-      newState.formData.applicableOn.low_cost_emi = [];
-      newState.formData.applicableOn.emi_durations = [];
+    if (fieldName === 'issuer' && newState.values) {
+      newState.values.low_cost_emi = [];
+      newState.values.emi_durations = [];
     }
 
     this.setState(newState);
@@ -148,7 +148,7 @@ export default class BaseForm extends React.Component {
   };
 
   onSubmit = () => {
-    const { formData } = this.state;
+    const { values } = this.props;
 
     let isLowCostExperimentEnabled = false;
     if (this.props.splitz) {
@@ -159,22 +159,13 @@ export default class BaseForm extends React.Component {
       isLowCostExperimentEnabled = isLowCostEnabled(Low_cost_offer);
     }
 
-    const preparedFormData = prepareDataForSubmit(
-      {
-        ...formData.description,
-        ...formData.discountType,
-        ...formData.applicableOn,
-        ...formData.offerValidity,
-      },
-      isLowCostExperimentEnabled,
-    );
+    const preparedFormData = prepareDataForSubmit(values, isLowCostExperimentEnabled);
 
     return this.props.onSubmit(preparedFormData);
   };
 
   render() {
     if (!this.props.onClose) return null;
-
     return (
       <Wizard
         {...this.props}

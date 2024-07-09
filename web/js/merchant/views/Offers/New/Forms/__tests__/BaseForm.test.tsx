@@ -26,6 +26,9 @@ describe('BaseForm Component', () => {
           Low_cost_offer: {},
         },
       },
+      values: {},
+      errors: {},
+      touched: {},
     };
   });
 

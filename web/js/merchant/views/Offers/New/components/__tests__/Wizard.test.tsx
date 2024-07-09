@@ -22,6 +22,10 @@ describe('CreateOfferWizard Component', () => {
     onSubmit: jest.fn(),
     submitBtnText: 'Submit',
     onChange: jest.fn(),
+    errors: {},
+    touched: {},
+    values: {},
+    setErrors: jest.fn(),
   };
 
   test('renders wizard with correct title and initial tab content', () => {

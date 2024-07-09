@@ -13,27 +13,17 @@ import { prepareDataForSubmit } from 'merchant/views/Offers/New/helpers';
 const VALID_TABS = [false, false, false, false, false];
 
 export default class SubscriptionOffersForm extends BaseForm {
+  // eslint-disable-next-line no-useless-constructor
   constructor(props) {
     super(props);
-
-    this.state = {
-      formData: {
-        description: {
-          type: 'instant',
-        },
-        discountType: {
-          redemption_type: 'single',
-        },
-        applicableOn: {
-          applicable_on: 'both',
-        },
-        offerValidity: {},
-        // HINT: Input.Check don't have validation support
-        creation_terms_accepted: undefined,
-      },
-    };
   }
-
+  componentDidMount() {
+    const { setFieldValue } = this.props;
+    //setting initial values
+    setFieldValue('type', 'instant');
+    setFieldValue('redemption_type', 'single');
+    setFieldValue('applicable_on', 'both');
+  }
   get tabsData() {
     return [
       {
@@ -41,8 +31,15 @@ export default class SubscriptionOffersForm extends BaseForm {
         render: () => (
           <Description
             hideType
-            formData={this.state.formData.description}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -53,8 +50,15 @@ export default class SubscriptionOffersForm extends BaseForm {
             showSubscriptionOfferFields
             isFormLocked={this.props.isFormLocked}
             currencySymbol={this.currencySymbol}
-            offerType={this.state.formData.description.type}
-            formData={this.state.formData.discountType}
+            offerType={this.props.values.type}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -63,8 +67,15 @@ export default class SubscriptionOffersForm extends BaseForm {
         render: () => {
           return (
             <ApplicableOn
-              formData={this.state.formData.applicableOn}
               isFormLocked={this.props.isFormLocked}
+              values={this.props.values}
+              handleChange={this.props.handleChange}
+              handleBlur={this.props.handleBlur}
+              setFieldTouched={this.props.setFieldTouched}
+              setFieldValue={this.props.setFieldValue}
+              errors={this.props.errors}
+              setErrors={this.props.setErrors}
+              touched={this.props.touched}
             />
           );
         },
@@ -75,8 +86,15 @@ export default class SubscriptionOffersForm extends BaseForm {
           <OfferValidity
             showSubscriptionOfferFields
             onChange={this.onFieldChange}
-            formData={this.state.formData.offerValidity}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -84,9 +102,16 @@ export default class SubscriptionOffersForm extends BaseForm {
         name: 'Overview',
         render: () => (
           <Overview
-            formData={this.state.formData}
             currencySymbol={this.currencySymbol}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -94,21 +119,18 @@ export default class SubscriptionOffersForm extends BaseForm {
   }
 
   onSubmit = () => {
-    const { formData } = this.state;
+    const { values } = this.props;
     const preparedFormData = prepareDataForSubmit({
       product_type: 'subscription',
-      ...formData.description,
-      ...formData.discountType,
-      ...formData.applicableOn,
-      ...formData.offerValidity,
+      ...values,
     });
 
     return this.props.onSubmit(preparedFormData);
   };
 
   render() {
-    const isFormDisabled =
-      this.props.isFormLocked || this.state.formData.creation_terms_accepted !== '1';
+    const { isFormLocked, values } = this.props;
+    const isFormDisabled = isFormLocked || !values.creation_terms_accepted;
     return (
       <Wizard
         title="Offer for Subscription"
@@ -121,6 +143,9 @@ export default class SubscriptionOffersForm extends BaseForm {
         onClose={this.props.onClose}
         onSubmit={this.onSubmit}
         zIndex={9999}
+        values={this.props.values}
+        errors={this.props.errors}
+        setErrors={this.props.setErrors}
       />
     );
   }

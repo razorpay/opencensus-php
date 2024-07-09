@@ -36,7 +36,12 @@ export default class CreateOfferWizard extends React.Component {
     // HINT: Render taking sometime so we need to delay the validations by 100 milli sec
     setTimeout(() => {
       const { state } = this;
-      const invalidFields = document.querySelectorAll(`.${CLASS_NAME} .Input.is-invalid`);
+      const { errors } = this.props;
+      const invalidFields = Object.entries(errors)
+        // eslint-disable-next-line no-unused-vars
+        .filter(([key, value]) => value !== false)
+        // eslint-disable-next-line no-unused-vars
+        .map(([key, value]) => key);
       const currentTabStatus = invalidFields.length === 0;
 
       let isValidTabsUpdate = false;
@@ -59,6 +64,7 @@ export default class CreateOfferWizard extends React.Component {
 
   handleTabChange = ({ currentTarget }) => {
     this.setState({ currentTab: Number(currentTarget.dataset.index) });
+    this.props.setErrors({});
   };
 
   changeTab = (step) => () => {
@@ -68,6 +74,7 @@ export default class CreateOfferWizard extends React.Component {
       currentTab: prevState.currentTab + step,
       validTabs,
     }));
+    this.props.setErrors({});
   };
 
   renderForm() {

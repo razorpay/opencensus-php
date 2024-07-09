@@ -1,6 +1,16 @@
 import React, { useMemo } from 'react';
+import {
+  TextInput,
+  Dropdown,
+  DropdownOverlay,
+  SelectInput,
+  ActionList,
+  ActionListItem,
+  Text,
+  RupeeIcon,
+  PercentIcon,
+} from '@razorpay/blade/components';
 
-import Input from 'common/new-ui/Input';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   DISCOUNT_TYPES,
@@ -8,7 +18,6 @@ import {
   MAX_DISCOUNT,
   REDEMPTION_TYPE_OPTIONS,
 } from 'merchant/views/Offers/constants';
-
 const DISCOUNT_TYPES_OPTIONS = [
   { label: '--Select Type--', name: '' },
   { label: 'Flat', name: DISCOUNT_TYPES.FLAT },
@@ -17,16 +26,20 @@ const DISCOUNT_TYPES_OPTIONS = [
 
 export default function DiscountType({
   offerType,
-  formData,
-  currencySymbol,
   isFormLocked,
   hideDiscountType,
   showSubscriptionOfferFields,
   emiData = {},
+  values,
+  handleBlur,
+  setFieldTouched,
+  setFieldValue,
+  errors,
+  touched,
 }) {
-  const isFLATDiscount = formData.discount_type === DISCOUNT_TYPES.FLAT;
-  const isPERCENTDiscount = formData.discount_type === DISCOUNT_TYPES.PERCENT;
-  const isNO_COST_EMIDiscount = formData.discount_type === DISCOUNT_TYPES.NO_COST_EMI;
+  const isFlatDiscount = values.discount_type === DISCOUNT_TYPES.FLAT;
+  const isPercentDiscount = values.discount_type === DISCOUNT_TYPES.PERCENT;
+  const isNo_Cost_EmiDiscount = values.discount_type === DISCOUNT_TYPES.NO_COST_EMI;
   const isInstantOffer = offerType === OFFER_TYPES.Instant;
 
   const minAmount = useMemo(() => {
@@ -42,38 +55,103 @@ export default function DiscountType({
     }, Infinity);
     return _minAmount === Infinity ? 0 : _minAmount;
   }, [emiData]);
-  const showNoOfCycles = formData.redemption_type === 'cycle';
+
+  const showNoOfCycles = values.redemption_type === 'cycle';
+
+  const handleFormChange = (name, value) => {
+    setFieldTouched(name);
+    setFieldValue(name, value);
+  };
+
+  errors.discount_type = validateDiscountType(values.discount_type);
+  isPercentDiscount
+    ? (errors.percent_rate = validatePercentRate(values.percent_rate))
+    : Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'percent_rate'));
+  isFlatDiscount
+    ? (errors.flat_cashback = validateFlatCashback(values.flat_cashback, values.min_amount))
+    : Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'flat_cashback'));
+
+  errors.min_amount = validateMinAmount({
+    val: values.min_amount,
+    flat_cashback: values.flat_cashback,
+    isPercentDiscount,
+    max_order_amount: values.max_order_amount,
+    minAmount,
+  });
+  isPercentDiscount
+    ? (errors.max_cashback = validateMaxCashback(values.max_cashback))
+    : Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'max_cashback'));
+  showNoOfCycles
+    ? (errors.no_of_cycles = validateNoOfCycles(values.no_of_cycles))
+    : Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'no_of_cycles'));
+  errors.max_order_amount = validateMaxOrderAmount(values.max_order_amount, values.min_amount);
 
   return (
     <React.Fragment>
       {isInstantOffer && (
         <>
-          <strong>Instant Discount</strong>
-          <p>The customer will pay the discounted price for the product</p>
+          <Text weight="semibold" color="surface.text.gray.staticBlack.Normal">
+            Instant Discount
+          </Text>
+          <Text color="surface.text.gray.staticBlack.Normal" marginBottom="spacing.7">
+            The customer will pay the discounted price for the product
+          </Text>
         </>
       )}
 
       {showSubscriptionOfferFields && (
         <>
-          <Input.Select
-            required
-            name="redemption_type"
-            label="Redemption Type"
-            options={REDEMPTION_TYPE_OPTIONS}
-            defaultValue={formData.redemption_type}
-            disabled={isFormLocked}
-            description="In how many subscription cycles this offer will be applied."
-          />
+          <Dropdown isDisabled={isFormLocked} marginTop="spacing.7" marginBottom="spacing.7">
+            <SelectInput
+              isRequired
+              necessityIndicator="required"
+              label="Redemption Type"
+              placeholder="--Please select--"
+              name="redemption_type"
+              labelPosition="left"
+              helpText="In how many subscription cycles this offer will be applied."
+              value={values.redemption_type}
+              onChange={({ name, values }) => {
+                handleFormChange(name, values[0]);
+              }}
+              onBlur={handleBlur}
+              validationState={
+                touched.redemption_type && errors?.redemption_type ? 'error' : 'none'
+              }
+              errorText={errors?.redemption_type}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {Object.values(REDEMPTION_TYPE_OPTIONS).map((type) => (
+                  <ActionListItem
+                    key={type.name}
+                    title={type.label}
+                    value={type.name}
+                    testID={`option-${type.name}`}
+                  />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
 
           {showNoOfCycles && (
-            <Input
-              required
+            <TextInput
+              isRequired
               type="number"
+              label=" "
+              labelPosition="left"
               name="no_of_cycles"
               placeholder="E.g. 3"
-              defaultValue={formData.no_of_cycles}
-              disabled={isFormLocked}
-              description="Number of cycles in which offer will be applied."
+              isDisabled={isFormLocked}
+              helpText="Number of cycles in which offer will be applied."
+              marginBottom="spacing.7"
+              value={values.no_of_cycles}
+              onChange={({ name, value }) => {
+                handleFormChange(name, value);
+              }}
+              onBlur={handleBlur}
+              validationState={touched.no_of_cycles && errors?.no_of_cycles ? 'error' : 'none'}
+              errorText={errors?.no_of_cycles}
             />
           )}
         </>
@@ -81,91 +159,141 @@ export default function DiscountType({
 
       <div>
         {!hideDiscountType && (
-          <Input.Select
-            required
-            name="discount_type"
-            class="Input--half"
-            label="Discount Type"
-            placeholder="Discount Type"
-            defaultValue={formData.discount_type}
-            options={DISCOUNT_TYPES_OPTIONS}
-            validator={validateDiscountType}
-            disabled={isFormLocked}
-          />
+          <Dropdown isDisabled={isFormLocked} marginTop="spacing.7" marginBottom="spacing.7">
+            <SelectInput
+              isRequired
+              necessityIndicator="required"
+              label="Discount Type"
+              placeholder="--Select Type--"
+              name="discount_type"
+              labelPosition="left"
+              value={values.discount_type}
+              onChange={({ name, values }) => {
+                handleFormChange(name, values[0]);
+              }}
+              onBlur={handleBlur}
+              validationState={touched.discount_type && errors?.discount_type ? 'error' : 'none'}
+              errorText={errors?.discount_type}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {Object.values(DISCOUNT_TYPES_OPTIONS).map((type) => (
+                  <ActionListItem
+                    key={type.name}
+                    title={type.label}
+                    value={type.name}
+                    testID={`option-${type.name}`}
+                  />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
         )}
 
-        {formData.discount_type && (
-          <Input
-            required={!isPERCENTDiscount}
+        {values.discount_type && (
+          <TextInput
+            isRequired={!isPercentDiscount}
+            necessityIndicator={!isPercentDiscount ? 'required' : 'none'}
+            label="Minimum Order amount"
+            labelPosition="left"
             name="min_amount"
             placeholder="0.00"
-            label="Minimum Order amount"
-            defaultValue={formData.min_amount}
-            class="Input--half"
-            validator={validateMinAmount({
-              flat_cashback: formData.flat_cashback,
-              isPERCENTDiscount,
-              max_amount: formData.max_amount,
-              minAmount,
-            })}
-            addonBefore={currencySymbol}
-            disabled={isFormLocked}
+            leadingIcon={RupeeIcon}
+            helpText="Discount worth in cash"
+            validationState={touched.min_amount && errors?.min_amount ? 'error' : 'none'}
+            errorText={errors?.min_amount}
+            isDisabled={isFormLocked}
+            marginBottom="spacing.7"
+            value={values.min_amount}
+            onChange={({ name, value }) => {
+              handleFormChange(name, value);
+            }}
+            onBlur={handleBlur}
           />
         )}
 
-        {(isNO_COST_EMIDiscount || formData.discount_type) && (
-          <Input
-            name="max_order_amount"
+        {(isNo_Cost_EmiDiscount || values.discount_type) && (
+          <TextInput
             label="Maximum Order amount"
+            labelPosition="left"
+            name="max_order_amount"
             placeholder="0.00"
-            defaultValue={formData.max_order_amount}
-            class="Input--half"
-            addonBefore={currencySymbol}
-            validator={validateMaxOrderAmount(formData.min_amount)}
+            leadingIcon={RupeeIcon}
+            helpText="Discount worth in cash"
+            marginBottom="spacing.7"
+            value={values.max_order_amount}
+            onChange={({ name, value }) => {
+              handleFormChange(name, value);
+            }}
+            onBlur={handleBlur}
+            validationState={
+              touched.max_order_amount && errors?.max_order_amount ? 'error' : 'none'
+            }
+            errorText={errors?.max_order_amount}
           />
         )}
 
-        {isFLATDiscount && (
-          <Input
-            required
-            name="flat_cashback"
+        {isFlatDiscount && (
+          <TextInput
+            isRequired
+            necessityIndicator="required"
             label="Discount Worth"
+            labelPosition="left"
+            name="flat_cashback"
             placeholder="0.00"
-            description="Discount worth in cash"
-            class="Input--half"
-            defaultValue={formData.flat_cashback}
-            validator={validateFlatCashback(formData.min_amount)}
-            addonBefore={currencySymbol}
-            disabled={isFormLocked}
+            leadingIcon={RupeeIcon}
+            helpText="Discount worth in cash"
+            validationState={touched.flat_cashback && errors?.flat_cashback ? 'error' : 'none'}
+            errorText={errors?.flat_cashback}
+            isDisabled={isFormLocked}
+            marginBottom="spacing.7"
+            value={values.flat_cashback}
+            onChange={({ name, value }) => {
+              handleFormChange(name, value);
+            }}
+            onBlur={handleBlur}
           />
         )}
 
-        {isPERCENTDiscount && (
+        {isPercentDiscount && (
           <React.Fragment>
-            <Input
-              required
-              name="percent_rate"
+            <TextInput
+              isRequired
+              necessityIndicator="required"
               label="Discount Worth"
-              class="Input--half"
+              labelPosition="left"
+              name="percent_rate"
               placeholder="0.00"
-              description="Discount worth in Percent"
-              addonAfter={<span>%</span>}
-              defaultValue={formData.percent_rate}
-              validator={validatePercentRate}
-              disabled={isFormLocked}
+              trailingIcon={PercentIcon}
+              helpText="Discount worth in Percent"
+              validationState={touched.percent_rate && errors?.percent_rate ? 'error' : 'none'}
+              errorText={errors?.percent_rate}
+              isDisabled={isFormLocked}
+              marginBottom="spacing.7"
+              value={values.percent_rate}
+              onChange={({ name, value }) => {
+                handleFormChange(name, value);
+              }}
+              onBlur={handleBlur}
             />
 
-            <Input
-              required
+            <TextInput
+              isRequired
+              necessityIndicator="required"
               label={`Maximum ${isInstantOffer ? 'Discount' : 'Cashback'}`}
-              placeholder="0.00"
+              labelPosition="left"
               name="max_cashback"
-              defaultValue={formData.max_cashback}
-              class="Input--half"
-              description={`Maximum ${isInstantOffer ? 'discount' : 'cashback'} for this offer`}
-              addonBefore={currencySymbol}
-              validator={validateMaxCashback}
-              disabled={isFormLocked}
+              placeholder="0.00"
+              leadingIcon={RupeeIcon}
+              helpText={`Maximum ${isInstantOffer ? 'discount' : 'cashback'} for this offer`}
+              validationState={touched.max_cashback && errors?.max_cashback ? 'error' : 'none'}
+              errorText={errors?.max_cashback}
+              isDisabled={isFormLocked}
+              value={values.max_cashback}
+              onChange={({ name, value }) => {
+                handleFormChange(name, value);
+              }}
+              onBlur={handleBlur}
             />
           </React.Fragment>
         )}
@@ -181,9 +309,9 @@ export function validateDiscountType(val) {
   return false;
 }
 
-function validatePercentRate(val) {
+export function validatePercentRate(val) {
   if (!val) {
-    return 'Should be valid number between 0 and 100';
+    return 'Please fill out this field';
   }
 
   val = parseFloat(val);
@@ -196,62 +324,61 @@ function validatePercentRate(val) {
   return false;
 }
 
-export function validateFlatCashback(min_amount) {
-  return (val) => {
-    const decimalPointError = validateDecimalPointValue(val);
-    if (decimalPointError) return decimalPointError;
+export function validateFlatCashback(val, min_amount) {
+  if (!val) return 'Please fill out this field';
+  const decimalPointError = validateDecimalPointValue(val);
+  if (decimalPointError) return decimalPointError;
 
-    val = parseFloat(val);
-    // Converting to value entered in RS to Paise for proper validation
-    val = rupeesToPaise(val);
-    if (val > MAX_DISCOUNT) {
-      return `Maximum value allowed is ${MAX_DISCOUNT}`;
-    }
-    const minAmount = rupeesToPaise(min_amount);
+  val = parseFloat(val);
+  // Converting to value entered in RS to Paise for proper validation
+  val = rupeesToPaise(val);
+  if (val > MAX_DISCOUNT) {
+    return `Maximum value allowed is ${MAX_DISCOUNT}`;
+  }
+  const minAmount = rupeesToPaise(min_amount);
 
-    if (val > minAmount) {
-      return 'Discount value cannot be greater than minimum amount';
-    }
-    return false;
-  };
+  if (val > minAmount) {
+    return 'Discount value cannot be greater than minimum amount';
+  }
+  return false;
 }
 
 export function validateMinAmount({
+  val,
   flat_cashback,
-  isPERCENTDiscount,
+  isPercentDiscount,
   max_order_amount,
   minAmount,
 }) {
-  return (val) => {
-    if (!val && isPERCENTDiscount) {
-      return false;
-    }
-
-    const decimalPointError = validateDecimalPointValue(val);
-    if (decimalPointError) return decimalPointError;
-
-    val = parseFloat(val);
-    // Converting to value entered in RS to Paise for proper validation
-    val = rupeesToPaise(val);
-    if (val > MAX_DISCOUNT) {
-      return `Maximum value allowed is ${MAX_DISCOUNT}`;
-    }
-    const flatCashback = rupeesToPaise(flat_cashback);
-    if (val < flatCashback) {
-      return 'Minimum payment is less than discount value';
-    }
-    const maxOrderAmount = rupeesToPaise(max_order_amount);
-    if (maxOrderAmount && maxOrderAmount < val) {
-      return 'Minimum order amount should be less than max order amount';
-    }
-    if (minAmount && val < minAmount) {
-      return `Minimum order amount should be greater than or equal to ₹${minAmount / 100}`;
-    }
+  if (!val && isPercentDiscount) {
     return false;
-  };
+  }
+  if (!val && !isPercentDiscount) return 'Please fill out this field';
+  const decimalPointError = validateDecimalPointValue(val);
+  if (decimalPointError) return decimalPointError;
+
+  val = parseFloat(val);
+  // Converting to value entered in RS to Paise for proper validation
+  val = rupeesToPaise(val);
+  if (val > MAX_DISCOUNT) {
+    return `Maximum value allowed is ${MAX_DISCOUNT}`;
+  }
+  const flatCashback = rupeesToPaise(flat_cashback);
+  if (val < flatCashback) {
+    return 'Minimum payment is less than discount value';
+  }
+  const maxOrderAmount = rupeesToPaise(max_order_amount);
+  if (maxOrderAmount && maxOrderAmount < val) {
+    return 'Minimum order amount should be less than max order amount';
+  }
+  if (minAmount && val < minAmount) {
+    return `Minimum order amount should be greater than or equal to ₹${minAmount / 100}`;
+  }
+  return false;
 }
 
 export function validateMaxCashback(val) {
+  if (!val) return 'Please fill out this field';
   const decimalPointError = validateDecimalPointValue(val);
   if (decimalPointError) return decimalPointError;
 
@@ -263,26 +390,27 @@ export function validateMaxCashback(val) {
   }
   return false;
 }
+export function validateNoOfCycles(val) {
+  if (!val) return 'Please fill out this field';
+  return false;
+}
+export function validateMaxOrderAmount(val, min_amount) {
+  if (!val || val === '') return false;
 
-function validateMaxOrderAmount(min_amount) {
-  return (val) => {
-    if (!val || val === '') return false;
+  const decimalPointError = validateDecimalPointValue(val);
+  if (decimalPointError) return decimalPointError;
 
-    const decimalPointError = validateDecimalPointValue(val);
-    if (decimalPointError) return decimalPointError;
-
-    val = parseFloat(val);
-    // Converting to value entered in RS to Paise for proper validation
-    val = rupeesToPaise(val);
-    if (val > MAX_DISCOUNT) {
-      return `Maximum value allowed is ${MAX_DISCOUNT}`;
-    }
-    const minAmount = rupeesToPaise(min_amount);
-    if (!minAmount || val < minAmount) {
-      return `Maximum order amount should be more than minimum order amount`;
-    }
-    return false;
-  };
+  val = parseFloat(val);
+  // Converting to value entered in RS to Paise for proper validation
+  val = rupeesToPaise(val);
+  if (val > MAX_DISCOUNT) {
+    return `Maximum value allowed is ${MAX_DISCOUNT}`;
+  }
+  const minAmount = rupeesToPaise(min_amount);
+  if (!minAmount || val < minAmount) {
+    return `Maximum order amount should be more than minimum order amount`;
+  }
+  return false;
 }
 
 const DECIMAL_POINT_REGEX = '^[0-9]+(.[0-9][0-9]?)?$';

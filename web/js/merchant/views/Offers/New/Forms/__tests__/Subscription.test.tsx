@@ -10,7 +10,9 @@ jest.mock('common/splitz', () => ({
 }));
 
 const renderApp = () => {
-  return render(<SubscriptionOffersForm />);
+  return render(
+    <SubscriptionOffersForm values={{}} errors={{}} touched={{}} setFieldValue={jest.fn()} />,
+  );
 };
 
 describe('Subscription Form', () => {
@@ -35,21 +37,22 @@ describe('Subscription Form', () => {
   });
 
   it('should disable the form if creation_terms_accepted is not "1"', async () => {
-    const formData = {
-      description: {
-        type: 'instant',
-      },
-      discountType: {
-        redemption_type: 'single',
-      },
-      applicableOn: {
-        applicable_on: 'both',
-      },
-      offerValidity: {},
+    const values = {
+      type: 'instant',
+      redemption_type: 'single',
+      applicable_on: 'both',
       creation_terms_accepted: undefined,
     };
 
-    render(<SubscriptionOffersForm formData={formData} isFormLocked={false} />);
+    render(
+      <SubscriptionOffersForm
+        values={values}
+        isFormLocked={false}
+        errors={{}}
+        touched={{}}
+        setFieldValue={jest.fn()}
+      />,
+    );
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();

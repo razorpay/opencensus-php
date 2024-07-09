@@ -33,7 +33,7 @@ export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
 
   const fieldsToBeDeleted = ['discount_type', 'redemption_type', 'applicable_on', 'no_of_cycles'];
 
-  const checkboxFields = ['default_offer', 'block'];
+  const checkboxFields = ['default_offer', 'block', 'creation_terms_accepted'];
 
   checkboxFields.forEach((field) => {
     transformedFormData[field] = parseInt(formData[field], 10);
@@ -116,6 +116,7 @@ export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
       fieldsToBeDeleted.push(field);
     }
   });
+  fieldsToBeDeleted.push('creation_terms_accepted');
 
   // fields to be deleted
   fieldsToBeDeleted.forEach((field) => {

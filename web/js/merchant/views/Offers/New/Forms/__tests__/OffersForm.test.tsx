@@ -10,7 +10,7 @@ jest.mock('common/splitz', () => ({
 }));
 
 const renderApp = () => {
-  return render(<OffersForm />);
+  return render(<OffersForm errors={{}} touched={{}} values={{}} />);
 };
 
 describe('Offers Form', () => {
@@ -32,15 +32,11 @@ describe('Offers Form', () => {
   });
 
   it('should disable next button if required data not filled', async () => {
-    const formData = {
-      description: {},
-      discountType: {},
-      applicableOn: {},
-      offerValidity: {},
+    const values = {
       creation_terms_accepted: '0',
     };
 
-    render(<OffersForm formData={formData} isFormLocked={false} />);
+    render(<OffersForm values={values} isFormLocked={false} errors={{}} touched={{}} />);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();

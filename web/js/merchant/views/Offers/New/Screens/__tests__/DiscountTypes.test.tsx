@@ -16,7 +16,7 @@ jest.mock('common/splitz', () => ({
 
 describe('DiscountTypes form', () => {
   it('should render instant discount text', async () => {
-    const defaultFormData = {
+    const values = {
       discount_type: '',
       min_amount: 0,
       max_order_amount: 0,
@@ -30,11 +30,13 @@ describe('DiscountTypes form', () => {
     render(
       <DiscountType
         offerType="Instant"
-        formData={defaultFormData}
+        values={values}
         currencySymbol="₹"
         isFormLocked={false}
         hideDiscountType={false}
         showSubscriptionOfferFields={false}
+        errors={{}}
+        touched={{}}
       />,
     );
     await waitFor(() => {
@@ -43,7 +45,7 @@ describe('DiscountTypes form', () => {
   });
 
   it('should render redemption type field when showSubscriptionOfferFields is true', async () => {
-    const defaultFormData = {
+    const values = {
       discount_type: '',
       min_amount: 0,
       max_order_amount: 0,
@@ -57,11 +59,13 @@ describe('DiscountTypes form', () => {
     render(
       <DiscountType
         offerType={undefined}
-        formData={defaultFormData}
+        values={values}
         currencySymbol="₹"
         isFormLocked={false}
         hideDiscountType={false}
         showSubscriptionOfferFields={true}
+        errors={{}}
+        touched={{}}
       />,
     );
 
@@ -71,7 +75,7 @@ describe('DiscountTypes form', () => {
   });
 
   it('should render discount worth fields based on discount type', async () => {
-    const flatDiscountFormData = {
+    const values = {
       discount_type: 'FLAT',
       min_amount: 1000,
       max_order_amount: 5000,
@@ -85,11 +89,13 @@ describe('DiscountTypes form', () => {
     render(
       <DiscountType
         offerType={undefined}
-        formData={flatDiscountFormData}
+        values={values}
         currencySymbol="₹"
         isFormLocked={false}
         hideDiscountType={false}
         showSubscriptionOfferFields={false}
+        errors={{}}
+        touched={{}}
       />,
     );
 
@@ -99,15 +105,15 @@ describe('DiscountTypes form', () => {
   });
 
   it('should validate flat cashback properly', () => {
-    expect(validateFlatCashback(100)('')).toBe('Please enter number upto 2 decimal points');
-    expect(validateFlatCashback(100)('abc')).toBe('Please enter number upto 2 decimal points');
-    expect(validateFlatCashback(100)(10001)).toBe(
+    expect(validateFlatCashback('', 100)).toBe('Please fill out this field');
+    expect(validateFlatCashback('abc', 100)).toBe('Please enter number upto 2 decimal points');
+    expect(validateFlatCashback('10001', 100)).toBe(
       'Discount value cannot be greater than minimum amount',
     );
   });
 
   it('should validate max cashback properly', () => {
-    expect(validateMaxCashback('')).toBe('Please enter number upto 2 decimal points');
+    expect(validateMaxCashback('')).toBe('Please fill out this field');
     expect(validateMaxCashback('abc')).toBe('Please enter number upto 2 decimal points');
     expect(validateMaxCashback(1000001)).toBe(false);
   });
@@ -127,22 +133,22 @@ describe('DiscountTypes form', () => {
   });
 
   it('should return error message if value contains more than 2 decimal points', () => {
-    expect(validateFlatCashback(100)('12.345')).toBe('Please enter number upto 2 decimal points');
+    expect(validateFlatCashback('12.345', 100)).toBe('Please enter number upto 2 decimal points');
   });
 
   it('should return error message if value is greater than max discount', () => {
-    expect(validateFlatCashback(100)('200')).toBe(
+    expect(validateFlatCashback('200', 100)).toBe(
       'Discount value cannot be greater than minimum amount',
     );
   });
 
   it('should return error message if value is greater than minimum amount', () => {
-    expect(validateFlatCashback(100)('150')).toBe(
+    expect(validateFlatCashback('150', 100)).toBe(
       'Discount value cannot be greater than minimum amount',
     );
   });
 
   it('should return false if value is valid', () => {
-    expect(validateFlatCashback(100)('50')).toBe(false);
+    expect(validateFlatCashback('50', 100)).toBe(false);
   });
 });

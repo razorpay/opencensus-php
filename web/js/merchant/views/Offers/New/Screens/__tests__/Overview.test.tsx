@@ -15,30 +15,24 @@ jest.mock('common/splitz', () => ({
 describe('OverView Component', () => {
   const mockFormData = {
     currencySymbol: '$',
-    formData: {
-      creation_terms_accepted: true,
-      description: {
-        type: 'someType',
-        terms: 'someTerms',
-        display_text: 'someDisplayText',
-      },
-      discountType: {
-        discount_type: 'FLAT',
-        flat_cashback: 50,
-        min_amount: 100,
-      },
-      applicableOn: {
-        issuer: 'SomeIssuer',
-        payment_method: 'Card',
-        payment_network: 'Visa',
-        payment_method_type: 'Credit',
-      },
-      offerValidity: {
-        starts_at: null,
-        ends_at: null,
-        redemption_type: null,
-      },
+    values: {
+      creation_terms_accepted: '1',
+      type: 'someType',
+      terms: 'someTerms',
+      display_text: 'someDisplayText',
+      discount_type: 'FLAT',
+      flat_cashback: 50,
+      min_amount: 100,
+      issuer: 'SomeIssuer',
+      payment_method: 'Card',
+      payment_network: 'Visa',
+      payment_method_type: 'Credit',
+      starts_at: null,
+      ends_at: null,
+      redemption_type: null,
     },
+    errors: {},
+    touched: {},
   };
 
   it('should render overview with provided data', () => {
@@ -55,9 +49,9 @@ describe('OverView Component', () => {
     render(<OverView {...mockFormData} />);
     expect(screen.getByText('Terms and Conditions')).toBeInTheDocument();
     expect(
-      screen.getByLabelText(
-        'I understand that the discount/cashback given in this offer will be borne by me and not Razorpay',
-      ),
+      screen.getByRole('checkbox', {
+        name: 'I understand that the discount/cashback given in this offer will be borne by me and not Razorpay.',
+      }),
     ).toBeInTheDocument();
   });
 

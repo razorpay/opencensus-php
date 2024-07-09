@@ -1,11 +1,10 @@
 import React from 'react';
 
 import NoCostOfferActionRow from 'merchant/views/Offers/New/Screens/NoCostEMI/NoCostOfferActionRow';
-import { EMITenureActionProps } from 'merchant/views/Offers/New/Screens/NoCostEMI/types';
 import { render, screen, userEvent, fireEvent } from 'test-utils';
 
-const initProps: EMITenureActionProps = {
-  formData: {
+const initProps = {
+  values: {
     issuer: 'HDFC',
   },
   plan: {
@@ -15,10 +14,12 @@ const initProps: EMITenureActionProps = {
     subvention: 'customer',
     min_amount: 1000,
   },
-  onChange: jest.fn(),
+  handleChange: jest.fn(),
   onOffersChange: jest.fn(),
   key: 1,
   offersData: {},
+  errors: {},
+  touched: {},
 };
 
 describe('<NoCostOfferActionRow>', () => {

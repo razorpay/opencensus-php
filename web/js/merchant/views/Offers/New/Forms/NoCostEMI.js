@@ -15,20 +15,7 @@ const VALID_TABS = [false, false, false, false, false];
 class NoCostEMIForm extends BaseForm {
   constructor(props) {
     super(props);
-
     this.state = {
-      formData: {
-        description: {
-          type: 'instant',
-        },
-        discountType: {
-          discount_type: 'no_cost_emi',
-        },
-        applicableOn: {},
-        offerValidity: {},
-        // HINT: Input.Check don't have validation support
-        creation_terms_accepted: undefined,
-      },
       offersData: {},
       isLoading: true,
       emiData: {},
@@ -48,8 +35,15 @@ class NoCostEMIForm extends BaseForm {
         render: () => (
           <Description
             hideType
-            formData={this.state.formData.description}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -60,9 +54,16 @@ class NoCostEMIForm extends BaseForm {
             hideDiscountType
             isFormLocked={this.props.isFormLocked}
             currencySymbol={this.currencySymbol}
-            offerType={this.state.formData.description.type}
-            formData={this.state.formData.discountType}
+            offerType={this.props.values.type}
             emiData={this.state.emiData}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -75,9 +76,16 @@ class NoCostEMIForm extends BaseForm {
               onChange={this.onFieldChange}
               offersData={this.state.offersData}
               onOffersChange={this.onOffersChange}
-              minAmount={this.state.formData.discountType.min_amount}
-              formData={this.state.formData.applicableOn}
+              minAmount={this.props.values.min_amount}
               isFormLocked={this.props.isFormLocked}
+              values={this.props.values}
+              handleChange={this.props.handleChange}
+              handleBlur={this.props.handleBlur}
+              setFieldTouched={this.props.setFieldTouched}
+              setFieldValue={this.props.setFieldValue}
+              errors={this.props.errors}
+              setErrors={this.props.setErrors}
+              touched={this.props.touched}
             />
           );
         },
@@ -87,8 +95,15 @@ class NoCostEMIForm extends BaseForm {
         render: () => (
           <OfferValidity
             onChange={this.onFieldChange}
-            formData={this.state.formData.offerValidity}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -96,9 +111,16 @@ class NoCostEMIForm extends BaseForm {
         name: 'Overview',
         render: () => (
           <Overview
-            formData={this.state.formData}
             currencySymbol={this.currencySymbol}
             isFormLocked={this.props.isFormLocked}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
           />
         ),
       },
@@ -106,6 +128,11 @@ class NoCostEMIForm extends BaseForm {
   }
 
   componentDidMount() {
+    const { setFieldValue } = this.props;
+    //setting initial values
+    setFieldValue('type', 'instant');
+    setFieldValue('discount_type', 'no_cost_emi');
+
     this.prepareDataForForm();
   }
 
@@ -145,8 +172,8 @@ class NoCostEMIForm extends BaseForm {
 
     const isLowCostEnabled = isLowCostExperimentEnabled(Low_cost_offer);
 
-    const isFormDisabled =
-      this.props.isFormLocked || this.state.formData.creation_terms_accepted !== '1';
+    const { isFormLocked, values } = this.props;
+    const isFormDisabled = isFormLocked || !values.creation_terms_accepted;
     return (
       <Wizard
         error={this.state.error}
@@ -162,6 +189,9 @@ class NoCostEMIForm extends BaseForm {
         offersData={this.state.offersData}
         isLowCostExperimentEnabled={isLowCostEnabled}
         zIndex={9999}
+        values={this.props.values}
+        errors={this.props.errors}
+        setErrors={this.props.setErrors}
       />
     );
   }

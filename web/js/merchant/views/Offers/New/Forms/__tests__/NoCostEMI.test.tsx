@@ -36,7 +36,7 @@ describe('NoCostEMIForm Component', () => {
   });
 
   test('renders form with correct sections', async () => {
-    renderNoCostEMIForm();
+    renderNoCostEMIForm({ errors: {}, touched: {}, values: {}, setFieldValue: jest.fn() });
 
     await waitFor(() => {
       expect(screen.getAllByText('Description').length).toBe(2);
@@ -50,7 +50,13 @@ describe('NoCostEMIForm Component', () => {
 
   test('next button should show', async () => {
     const mockOnNext = jest.fn();
-    renderNoCostEMIForm({ onNext: mockOnNext });
+    renderNoCostEMIForm({
+      onNext: mockOnNext,
+      errors: {},
+      touched: {},
+      values: {},
+      setFieldValue: jest.fn(),
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Next')).toBeInTheDocument();
@@ -63,7 +69,7 @@ describe('NoCostEMIForm Component', () => {
       errors: [{ message: 'Some network error has occurred' }],
     });
 
-    renderNoCostEMIForm();
+    renderNoCostEMIForm({ errors: {}, touched: {}, values: {}, setFieldValue: jest.fn() });
 
     await waitFor(() => {
       expect(screen.getByText(/some network error has occurred/i)).toBeInTheDocument();

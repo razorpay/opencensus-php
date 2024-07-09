@@ -22,8 +22,8 @@ const mockFormData = {
   iins: ['123456', '654321'],
 };
 
-const renderComponent = (props = {}) =>
-  render(<ApplicableOn formData={mockFormData} isFormLocked={false} {...props} />);
+const renderComponent = () =>
+  render(<ApplicableOn values={mockFormData} isFormLocked={false} errors={{}} touched={{}} />);
 
 describe('ApplicableOn Component', () => {
   test('renders without crashing', () => {

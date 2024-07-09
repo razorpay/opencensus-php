@@ -1,5 +1,14 @@
 import React from 'react';
-import Input from 'common/new-ui/Input';
+import {
+  TextInput,
+  Dropdown,
+  DropdownOverlay,
+  SelectInput,
+  ActionList,
+  ActionListItem,
+} from '@razorpay/blade/components';
+
+import { validatePaymentMethod, validateMaxPaymentCount } from 'merchant/views/Offers/New/helpers';
 import {
   PAYMENT_METHODS,
   PaymentMethodsOptions,
@@ -11,13 +20,11 @@ import {
   EMI_CARDS_OPTIONS,
   EMI_DEBIT_CARD_BANK_OPTIONS,
 } from 'merchant/views/Offers/constants';
-import { validatePaymentMethod, validateMaxPaymentCount } from 'merchant/views/Offers/New/helpers';
-
 export default class ApplicableOn extends React.Component {
   state = { selectedPaymentMethodType: '' };
 
   get currentSelectedPaymentMethod() {
-    const { payment_method } = this.props.formData;
+    const { payment_method } = this.props.values;
     const { Card, NetBanking, Wallet, UPI, EMI, PayLater, CardLessEmi } = PAYMENT_METHODS;
     return {
       isCard: payment_method === Card,
@@ -29,30 +36,25 @@ export default class ApplicableOn extends React.Component {
       isCardLessEmi: payment_method === CardLessEmi,
     };
   }
-
+  handleFormChange = (name, value) => {
+    this.props.setFieldTouched(name);
+    this.props.setFieldValue(name, value);
+  };
   onMethodTypeChange = (event) => {
-    const { value } = event.target;
-    this.setState({ selectedPaymentMethodType: value });
+    const { name, values } = event;
+    this.setState({
+      selectedPaymentMethodType: values && values.length > 0 ? values[0] : undefined,
+    });
+    this.handleFormChange(name, values[0]);
   };
 
   render() {
     const { selectedPaymentMethodType } = this.state;
-    const { formData, isFormLocked } = this.props;
-    const {
-      payment_method,
-      issuer,
-      payment_method_type,
-      payment_network,
-      max_payment_count,
-      iins,
-    } = formData;
-    const {
-      isEMI,
-      isWallet,
-      isCard,
-      isNetBanking,
-      isCardLessEmi,
-    } = this.currentSelectedPaymentMethod;
+    const { isFormLocked, values, handleBlur, errors, touched } = this.props;
+
+    const { issuer, payment_network } = values;
+    const { isEMI, isWallet, isCard, isNetBanking, isCardLessEmi } =
+      this.currentSelectedPaymentMethod;
 
     const PaymentMethodTypeOptions = isEMI ? EMI_CARDS_OPTIONS : CREDIT_DEBIT_CARDS_OPTIONS;
     let bankOptions = PaymentIssuersOptions;
@@ -62,107 +64,252 @@ export default class ApplicableOn extends React.Component {
 
     const isAmex = payment_network === 'AMEX';
 
+    errors.payment_method = validatePaymentMethod(values.payment_method);
+    errors.max_payment_count = validateMaxPaymentCount(values.max_payment_count);
+
     return (
       <React.Fragment>
-        <Input.Select
-          required
-          name="payment_method"
-          label="Payment Method"
-          options={PaymentMethodsOptions}
-          placeholder="Select Payment Method"
-          defaultValue={payment_method}
-          validator={validatePaymentMethod}
-          disabled={isFormLocked}
-        />
+        <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7">
+          <SelectInput
+            isRequired
+            necessityIndicator="required"
+            label="Payment Method"
+            placeholder="--Select Payment Method--"
+            name="payment_method"
+            labelPosition="left"
+            value={values.payment_method}
+            onChange={({ name, values }) => {
+              this.handleFormChange(name, values[0]);
+            }}
+            onBlur={handleBlur}
+            validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
+            errorText={errors?.payment_method}
+          />
+          <DropdownOverlay>
+            <ActionList>
+              {Object.values(PaymentMethodsOptions).map((type) => (
+                <ActionListItem
+                  key={type.name}
+                  title={type.label}
+                  value={type.name}
+                  testID={`option-${type.name}`}
+                />
+              ))}
+            </ActionList>
+          </DropdownOverlay>
+        </Dropdown>
 
         {isWallet && (
-          <Input.Select
-            name="issuer"
-            label="Issuer"
-            defaultValue={issuer}
-            placeholder="Select Bank"
-            options={WalletIssuersOptions}
-            disabled={isFormLocked}
-          />
+          <Dropdown isDisabled={isFormLocked} marginTop="spacing.7">
+            <SelectInput
+              label="Issuer"
+              placeholder="--Select Issuers--"
+              name="issuer"
+              labelPosition="left"
+              validationState="none"
+              value={values.issuer}
+              onChange={({ name, values }) => {
+                this.handleFormChange(name, values[0]);
+              }}
+              onBlur={handleBlur}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {Object.values(WalletIssuersOptions).map((type) => (
+                  <ActionListItem
+                    key={type.name}
+                    title={type.label}
+                    value={type.name}
+                    testID={`option-${type.name}`}
+                  />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
         )}
 
         {isCardLessEmi && (
-          <Input.Select
-            name="issuer"
-            label="Issuer"
-            defaultValue={issuer}
-            options={CardLessEmiIssuersOptions}
-            disabled={isFormLocked}
-          />
+          <Dropdown isDisabled={isFormLocked} marginTop="spacing.7">
+            <SelectInput
+              label="Issuer"
+              placeholder="--Select Issuers--"
+              name="issuer"
+              labelPosition="left"
+              defaultValue={issuer}
+              validationState="none"
+              value={values.issuer}
+              onChange={({ name, values }) => {
+                this.handleFormChange(name, values[0]);
+              }}
+              onBlur={handleBlur}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {Object.values(CardLessEmiIssuersOptions).map((type) => (
+                  <ActionListItem
+                    key={type.name}
+                    title={type.label}
+                    value={type.name}
+                    testID={`option-${type.name}`}
+                  />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
         )}
 
         {(isCard || isEMI) && (
           <React.Fragment>
-            <Input.Select
-              name="payment_method_type"
-              label="Card Type"
-              defaultValue={payment_method_type}
-              options={PaymentMethodTypeOptions}
-              disabled={isFormLocked}
-              onChange={this.onMethodTypeChange}
-            />
+            <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7">
+              <SelectInput
+                label="Card Type"
+                name="payment_method_type"
+                labelPosition="left"
+                onChange={(event) => this.onMethodTypeChange(event)}
+                validationState="none"
+                value={values.payment_method_type}
+                onBlur={handleBlur}
+              />
+              <DropdownOverlay>
+                <ActionList>
+                  {Object.values(PaymentMethodTypeOptions).map((type) => (
+                    <ActionListItem
+                      key={type.name}
+                      title={type.label}
+                      value={type.name}
+                      testID={`option-${type.name}`}
+                    />
+                  ))}
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
 
-            <Input.Select
-              name="issuer"
-              label="Bank"
-              placeholder="Select Bank"
-              defaultValue={issuer}
-              disabled={isFormLocked}
-              options={bankOptions}
-            />
+            <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7">
+              <SelectInput
+                label="Bank"
+                placeholder="--Select Issuers--"
+                name="issuer"
+                labelPosition="left"
+                validationState="none"
+                value={values.issuer}
+                onChange={({ name, values }) => {
+                  this.handleFormChange(name, values[0]);
+                }}
+                onBlur={handleBlur}
+              />
+              <DropdownOverlay>
+                <ActionList>
+                  {Object.values(bankOptions).map((type) => (
+                    <ActionListItem
+                      key={type.name}
+                      title={type.label}
+                      value={type.name}
+                      testID={`option-${type.name}`}
+                    />
+                  ))}
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
 
-            <Input.Select
-              label="Network"
-              name="payment_network"
-              placeholder="Select network"
-              defaultValue={payment_network}
-              disabled={isFormLocked}
-              options={PaymentNetworksOptions}
-            />
+            <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7">
+              <SelectInput
+                label="Network"
+                placeholder="--Select Network--"
+                name="payment_network"
+                labelPosition="left"
+                validationState="none"
+                value={values.payment_network}
+                onChange={({ name, values }) => {
+                  this.handleFormChange(name, values[0]);
+                }}
+                onBlur={handleBlur}
+              />
+              <DropdownOverlay>
+                <ActionList>
+                  {Object.values(PaymentNetworksOptions).map((type) => (
+                    <ActionListItem
+                      key={type.name}
+                      title={type.label}
+                      value={type.name}
+                      testID={`option-${type.name}`}
+                    />
+                  ))}
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
 
-            <Input
+            <TextInput
               type="number"
               label="Max Usage Per Card"
+              labelPosition="left"
               name="max_payment_count"
-              defaultValue={max_payment_count}
               placeholder="Max times a card can be used to avail this offer"
-              description={isAmex && 'Max Usage on Amex will not work post tokenisation'}
-              validator={validateMaxPaymentCount}
-              disabled={isFormLocked || isAmex}
+              helpText={isAmex && 'Max Usage on Amex will not work post tokenisation'}
+              validationState={
+                touched.max_payment_count && errors?.max_payment_count ? 'error' : 'none'
+              }
+              errorText={errors?.max_payment_count}
+              isDisabled={isFormLocked || isAmex}
+              marginBottom="spacing.7"
+              value={values.max_payment_count}
+              onChange={({ name, value }) => {
+                this.handleFormChange(name, value);
+              }}
+              onBlur={handleBlur}
             />
 
-            <Input
-              name="iins"
+            <TextInput
               label="IINs"
-              defaultValue={iins}
+              labelPosition="left"
+              name="iins"
               placeholder="6 digit IINs for cards. Separated by comma if more than one"
-              description={
+              helpText={
                 <>
                   <p>
                     {'Note: Bin based offers on Amex saved card will not work post tokenisation.'}
                   </p>
-                  <p>{iins && iins.join(', ')}</p>
+                  {/* <p>{iins && iins.join(', ')}</p> */}
                 </>
               }
-              disabled={isFormLocked}
+              validationState="none"
+              isDisabled={isFormLocked}
+              marginBottom="spacing.7"
+              value={values.iins}
+              onChange={({ name, value }) => {
+                this.handleFormChange(name, value);
+              }}
+              onBlur={handleBlur}
             />
           </React.Fragment>
         )}
 
         {isNetBanking && (
-          <Input.Select
-            label="Issuer"
-            name="issuer"
-            defaultValue={issuer}
-            placeholder="Payment Instrument Issuer/Bank Name"
-            options={PaymentIssuersOptions}
-            disabled={isFormLocked}
-          />
+          <Dropdown isDisabled={isFormLocked}>
+            <SelectInput
+              label="Issuer"
+              placeholder="Payment Instrument Issuer/Bank Name"
+              name="issuer"
+              labelPosition="left"
+              value={values.issuer}
+              validationState="none"
+              onChange={({ name, values }) => {
+                this.handleFormChange(name, values[0]);
+              }}
+              onBlur={handleBlur}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {Object.values(PaymentIssuersOptions).map((type) => (
+                  <ActionListItem
+                    key={type.name}
+                    title={type.label}
+                    value={type.name}
+                    testID={`option-${type.name}`}
+                  />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
         )}
       </React.Fragment>
     );

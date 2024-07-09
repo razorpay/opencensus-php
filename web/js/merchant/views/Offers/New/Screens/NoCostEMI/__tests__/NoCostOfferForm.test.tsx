@@ -5,20 +5,21 @@ import { offerHeaders } from 'merchant/views/Offers/New/Screens/NoCostEMI/consta
 import { render } from 'test-utils';
 
 import { NoCostOfferForm } from '../NoCostOfferForm';
-import { EmiPlanType } from '../types';
 
 jest.mock('merchant/views/Offers/New/Screens/NoCostEMI/NoCostOfferActionRow', () => {
-  return ({ plan, onChange }) => (
+  return ({ plan, handleChange }) => (
     <div data-testid="emi-tenure-action">
       <p>{`Duration: ${plan.duration} Months`}</p>
-      <button onClick={() => onChange({ target: { name: 'emi_durations', value: plan.duration } })}>
+      <button
+        onClick={() => handleChange({ target: { name: 'emi_durations', value: plan.duration } })}
+      >
         Change Duration
       </button>
     </div>
   );
 });
 
-const mockTenure: EmiPlanType[] = [
+const mockTenure = [
   { duration: 3, merchant_payback: '2', subvention: 'merchant', min_amount: 0, interest: 0 },
   { duration: 6, merchant_payback: '4', subvention: 'customer', min_amount: 0, interest: 0 },
 ];
@@ -33,12 +34,13 @@ const mockOffersData = {};
 const renderComponent = (props = {}) =>
   render(
     <NoCostOfferForm
-      formData={mockFormData}
-      onChange={jest.fn()}
+      values={mockFormData}
+      handleChange={jest.fn()}
       onOffersChange={jest.fn()}
       offersData={mockOffersData}
       tenure={mockTenure}
       {...props}
+      errors={{}}
     />,
   );
 
@@ -63,11 +65,11 @@ describe('NoCostOfferForm Component', () => {
   });
 
   test('calls onChange when EMI duration is changed', () => {
-    const mockOnChange = jest.fn();
-    renderComponent({ onChange: mockOnChange });
+    const mockHandleChange = jest.fn();
+    renderComponent({ handleChange: mockHandleChange });
     const buttons = screen.getAllByText('Change Duration');
     fireEvent.click(buttons[0]);
-    expect(mockOnChange).toHaveBeenCalledWith({
+    expect(mockHandleChange).toHaveBeenCalledWith({
       target: { name: 'emi_durations', value: mockTenure[0].duration },
     });
   });
@@ -93,12 +95,12 @@ describe('NoCostOfferForm Component', () => {
   });
 
   test('calls onChange with selected duration when "Change Duration" button is clicked', () => {
-    const mockOnChange = jest.fn();
-    renderComponent({ onChange: mockOnChange });
+    const mockHandleChange = jest.fn();
+    renderComponent({ handleChange: mockHandleChange });
     const changeDurationButtons = screen.getAllByText('Change Duration');
     changeDurationButtons.forEach((button, index) => {
       fireEvent.click(button);
-      expect(mockOnChange).toHaveBeenCalledWith({
+      expect(mockHandleChange).toHaveBeenCalledWith({
         target: { name: 'emi_durations', value: mockTenure[index].duration },
       });
     });
