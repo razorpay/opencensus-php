@@ -5352,7 +5352,9 @@ EOT;
         $insuranceRepo = $this->repo->insurance;
         $paymentRepo = $this->repo->payment;
 
-        $insuranceTable = $insuranceRepo->getTableName();
+        $insuranceTidbNamespace = $this->app->runningUnitTests() ? '' : 'prod_checkout_service.';
+
+        $insuranceTable = $insuranceTidbNamespace . $insuranceRepo->getTableName();
         $insuranceInsuredEntityIdColumn = $insuranceRepo->dbColumn(Insurance\Entity::INSURED_ENTITY_ID);
         $insuranceInsuredEntityTypeColumn = $insuranceRepo->dbColumn(Insurance\Entity::INSURED_ENTITY_TYPE);
 
