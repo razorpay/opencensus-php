@@ -648,7 +648,7 @@ class Core extends Base\Core
                 }
                 else
                 {
-                    $this->trace->info(
+                    $this->trace->debug(
                         TraceCode::SETTLEMENT_PROCESSED_NOTIFICATION_VIA_NSS,
                         [
                             'merchant_id'     => $merchant->getId(),
@@ -1388,6 +1388,12 @@ class Core extends Base\Core
         if (empty($variant))
         {
             return false;
+        }
+
+        // if variant is blacklisted, then also don't send anything
+        if ($variant['name'] === 'blacklisted')
+        {
+            return true;
         }
 
         $variables = $variant['variables'];
