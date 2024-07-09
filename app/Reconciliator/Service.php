@@ -840,7 +840,8 @@ class Service extends Base\Service
 
         $method = $payment->getMethod();
 
-        if($method == Payment\Method::NETBANKING or $method == Payment\Method::WALLET or $method == Payment\Method::CARDLESS_EMI)
+        if($method == Payment\Method::NETBANKING or $method == Payment\Method::WALLET
+            or $method == Payment\Method::CARDLESS_EMI or $method == Payment\Method::PAYLATER)
         {
             return $this->updateNetbankingReconciliationData($input, $payment);
         }
@@ -952,7 +953,15 @@ class Service extends Base\Service
      */
     public function updateCardReconciliationData(array $input, Payment\Entity $payment)
     {
-        (new Validator)->validateUpdateCardReconData($input);
+        switch ($payment->getMethod())
+        {
+            case Payment\Method::CARD;
+                (new Validator)->validateUpdateCardReconData($input);
+                break;
+            case Payment\Method::EMI:
+                (new Validator)->validateUpdateEMIReconData($input);
+                break;
+        }
 
         $paymentId = $input['payment_id'];
 
@@ -1039,6 +1048,9 @@ class Service extends Base\Service
             case Payment\Method::CARDLESS_EMI;
                 (new Validator)->validateUpdateCardlessEmiReconData($input);
                 break;
+            case Payment\Method::PAYLATER;
+                (new Validator)->validateUpdatePaylaterReconData($input);
+                break;
         }
 
         $paymentId = $input['payment_id'];
@@ -1080,6 +1092,9 @@ class Service extends Base\Service
                     break;
                 case Payment\Method::CARDLESS_EMI:
                     $this->updateCardlessEmiGatewayData($input, $payment);
+                    break;
+                case Payment\Method::PAYLATER:
+                    $this->updatePaylaterGatewayData($input, $payment);
                     break;
             }
 
@@ -1376,7 +1391,7 @@ class Service extends Base\Service
                 TraceCode::PAYMENT_TRANSACTION_NOT_FOUND,
                 $input
             );
-            
+
             throw new Exception\BadRequestException(
                 'Payment transaction not found',
                 $input);
@@ -1415,10 +1430,56 @@ class Service extends Base\Service
               $transaction->setGatewayAmount($input['gateway_amount']);
 
               $transaction->setGatewayFee($input['gateway_fee']);
-              
+
               $transaction->setGatewayServiceTax($input['gateway_service_tax']);
           }
-  
+
+
+        //update gateway fee & tax for cardless emi instruments
+        if ($payment->getMethod() === Payment\Method::CARDLESS_EMI)
+        {
+            if (empty($input['cardless_emi']['gateway_amount']) === false)
+            {
+                $transaction->setGatewayAmount($input['cardless_emi']['gateway_amount']);
+            }
+
+            if (empty($input['cardless_emi']['gateway_fee']) === false)
+            {
+                $transaction->setGatewayFee($input['cardless_emi']['gateway_fee']);
+            }
+
+            if (empty($input['cardless_emi']['gateway_service_tax']) === false)
+            {
+                $transaction->setGatewayServiceTax($input['cardless_emi']['gateway_service_tax']);
+            }
+        }
+
+        //update gateway fee & tax for paylater instruments
+        if ($payment->getMethod() === Payment\Method::PAYLATER)
+        {
+            if (empty($input['paylater']['gateway_amount']) === false)
+            {
+                $transaction->setGatewayAmount($input['paylater']['gateway_amount']);
+            }
+
+            if (empty($input['paylater']['gateway_fee']) === false)
+            {
+                $transaction->setGatewayFee($input['paylater']['gateway_fee']);
+            }
+
+            if (empty($input['paylater']['gateway_service_tax']) === false)
+            {
+                $transaction->setGatewayServiceTax($input['paylater']['gateway_service_tax']);
+            }
+
+            if (empty($input['paylater']['arn']) === false)
+            {
+                $payment->setReference1($input['paylater']['arn']);
+
+                $this->repo->saveOrFail($payment);
+            }
+        }
+
         if ($payment->getMethod() !== Payment\Method::UPI && $payment->isMethodCardOrEmi() === false)
         {
             $transaction->setGatewayAmount($input['amount']);
@@ -1954,6 +2015,17 @@ class Service extends Base\Service
         ];
 
         (New NbPlusServiceRecon)->dispatchCardlessEmiDataToNbplusServiceQueue($data);
+    }
+
+    private function updatePaylaterGatewayData(array $input, Payment\Entity $payment)
+    {
+        $data = [
+            'payment_id' => $payment->getId(),
+            CardlessEmi::GATEWAY_REFERENCE_NUMBER => $input['paylater']['gateway_reference_number'] ?? null,
+        ];
+
+        $method = $payment->getMethod();
+        (New NbPlusServiceRecon)->dispatchDataToNbplusServiceQueue($data,$method);
     }
 
     protected function recordGatewayFeeAndServiceTax($transaction , $reconGatewayFee, $reconGatewayServiceTax)

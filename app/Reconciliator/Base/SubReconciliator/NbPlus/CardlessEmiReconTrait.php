@@ -44,4 +44,26 @@ trait CardlessEmiReconTrait
             ]
         );
     }
+
+    public function dispatchDataToNbplusServiceQueue($data, $method)
+    {
+
+        $pushData['entity_name'] = $method;
+        $pushData['recon_data']  = $data;
+
+        $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
+
+        Queue::pushRaw(json_encode($pushData), $queueName);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code'  => Base\InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
+                'queue'      => $queueName,
+                'payment_id' => $data['payment_id'],
+                'batch_id'   => $this->batchId,
+                'gateway'    => $this->gateway
+            ]
+        );
+    }
 }
