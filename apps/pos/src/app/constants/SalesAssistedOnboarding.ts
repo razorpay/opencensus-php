@@ -1,4 +1,4 @@
-import { MerchantRegistrationError } from '../typings/SalesAssistedOnboarding';
+import { MerchantRegistrationError } from '../types/SalesAssistedOnboarding';
 
 export const MERCHANT_REGISTRATION_ERRORS: Record<string, MerchantRegistrationError> = {
   BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS: {

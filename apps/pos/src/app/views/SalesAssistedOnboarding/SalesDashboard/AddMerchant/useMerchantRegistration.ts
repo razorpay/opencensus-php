@@ -5,7 +5,7 @@ import { useToast } from '@razorpay/blade/components';
 
 import { registerMerchant, verifyMerchantOTP } from 'apps/pos/src/app/apis/SalesAssistedOnboarding';
 import { MERCHANT_REGISTRATION_ERRORS } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
-import { APIResponse } from 'apps/pos/src/app/typings/common';
+import { APIResponse } from 'apps/pos/src/app/types/common';
 import {
   AddMerchantErrorResponse,
   MerchantOTPVerifyAPIResponse,
@@ -13,7 +13,7 @@ import {
   MerchantRegisterApiResponse,
   MerchantRegistrationError,
   MerchantRegistrationPhoneNumber,
-} from 'apps/pos/src/app/typings/SalesAssistedOnboarding';
+} from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
 import useMerchantSwitch from 'apps/pos/src/app/utils/hooks/useMerchantSwitch';
 import redirectToEasyOnboarding from 'apps/pos/src/app/utils/redirectToEasyOnboarding';

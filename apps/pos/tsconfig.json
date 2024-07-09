@@ -11,7 +11,13 @@
     "preserveSymlinks": true
   },
   "extends": "../../tsconfig.base.json",
-  "include": ["src", "src/**/*.json", "custom.d.ts", "e2e"],
+  "include": [
+    "src",
+    "src/**/*.json",
+    "custom.d.ts",
+    "e2e",
+    "../../libs/shared-ui/src/components/Forms/DateRangePickerField/index.js"
+  ],
   "exclude": ["node_modules", "**/*.stories.ts", "**/*.stories.tsx", "**/*.stories.jsx", "out"],
   "references": [
     { "path": "../../web" },

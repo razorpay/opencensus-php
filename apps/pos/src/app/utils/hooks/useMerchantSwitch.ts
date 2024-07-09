@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { switchMerchant } from 'apps/pos/src/app/apis/SalesAssistedOnboarding';
-import { SwitchMerchantAPIResponse } from 'apps/pos/src/app/typings/SalesAssistedOnboarding';
-import { APIResponse } from 'apps/pos/src/app/typings/common';
+import { SwitchMerchantAPIResponse } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import { APIResponse } from 'apps/pos/src/app/types/common';
 
 interface UseMerchantSwitchProps {
   onSuccess: (data: SwitchMerchantAPIResponse) => void;

@@ -25,6 +25,9 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
+global.setImmediate =
+  global.setImmediate || ((fn, ...args) => global.setTimeout(() => null, 0, ...args));
+
 jest.mock('merchant/reducers/session', () => {
   return {
     initialState: {

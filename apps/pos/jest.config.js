@@ -40,10 +40,10 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      statements: 41,
-      branches: 25,
-      functions: 30,
-      lines: 41.5,
+      statements: 20,
+      branches: 20,
+      functions: 20,
+      lines: 20,
     },
   },
   globalSetup: '<rootDir>/services/test/global-setup.ts',

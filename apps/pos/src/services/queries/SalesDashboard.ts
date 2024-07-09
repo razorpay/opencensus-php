@@ -16,6 +16,7 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
       status: $status
     ) {
       ... on SalesOnboardedMerchants {
+        __typename
         limit
         offset
         total
@@ -30,6 +31,7 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
         }
       }
       ... on SalesOnboardedMerchantsError {
+        __typename
         code
         success
         message

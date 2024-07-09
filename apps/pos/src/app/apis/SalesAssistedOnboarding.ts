@@ -8,7 +8,7 @@ import {
   MerchantOTPVerifyAPIResponse,
   SwitchMerchantAPIResponse,
   SwitchMerchantArgs,
-} from 'apps/pos/src/app/typings/SalesAssistedOnboarding';
+} from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 
 export const registerMerchant = ({
   contactMobile,
