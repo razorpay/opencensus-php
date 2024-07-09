@@ -519,7 +519,7 @@ class Authenticate
 
         // ideally no business logic should need key entity, will be set only for merchant auth
         // TODO: remove setting key entity object
-        if ((! $this->isPartnerAuth) and ($this->ba->isValidPassportForAppAuth() === false)) {
+        if ((! $this->isPartnerAuth) and ($this->passport->consumer->type !== BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION)) {
             $error = $this->ba->setKeyEntityFromKeyId(false);
             if ($error !== null) {
                 return $error;
