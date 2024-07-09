@@ -139,7 +139,7 @@ jobs:
           changed_files=$(git diff --name-only $base_commit origin/${{ steps.extract_branch.outputs.branch }})
 
           # Check if any of the changed files are in the directories you're interested in
-          if echo "$changed_files" | grep -qE "^apps/|^config/|^environment/|^[^/]*$"
+          if echo "$changed_files" | grep -qE "^app/|^config/|^environment/|^[^/]*$"
           then
             echo "There are changes in the specified files and directories."
             echo "::set-output name=changes::true"
