@@ -6,6 +6,7 @@ use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 use Carbon\Carbon;
@@ -73,5 +74,12 @@ class Canara extends NetbankingBase
         }
 
         return $data['gateway']['bank_payment_id'];
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('2048M');
+        RuntimeManager::setTimeLimit(15 * 60);
+        RuntimeManager::setMaxExecTime(15 * 60);
     }
 }

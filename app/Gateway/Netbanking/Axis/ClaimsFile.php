@@ -7,6 +7,8 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class ClaimsFile extends Base\RefundFile
 {
@@ -58,9 +60,17 @@ class ClaimsFile extends Base\RefundFile
         $totalAmount = 0;
 
         $count = 0;
+        $processedPaymentIds = [];
 
         foreach ($input['data'] as $row)
         {
+            $paymentId = $row['payment']['id'];
+
+            // Check for duplicate payment ID
+            if (in_array($paymentId, $processedPaymentIds)) {
+                continue;
+            }
+
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'], Timezone::IST)
                     ->format('Y-m-d');
@@ -78,11 +88,22 @@ class ClaimsFile extends Base\RefundFile
             $totalAmount += $row['payment']['amount'] / 100;
 
             $count += 1;
+            $processedPaymentIds[] = $paymentId;
+
         }
 
         $initialLine = $this->getInitialLine();
 
         $txt = $this->getTextData($data, $initialLine);
+
+        $this->trace->info(TraceCode::AXIS_NB_DUPLICATE_PAYMENT_ID,
+        [
+            'txt' => $txt, //txt formatted data
+            'totalAmount' => $totalAmount,
+            'count' => $count,
+            'data'=>$data, //filtered data after checking duplicate payment id
+            'input' => $input, // data given for processing
+        ]);
 
         return [$txt, $totalAmount, $count];
     }

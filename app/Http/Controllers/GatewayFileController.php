@@ -5,12 +5,16 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity as E;
+use RZP\Base\RuntimeManager;
 
 class GatewayFileController extends Controller
 {
     public function createGatewayFile()
     {
         $input = Request::all();
+        RuntimeManager::setMemoryLimit('2048M');
+        RuntimeManager::setTimeLimit(15 * 60);
+        RuntimeManager::setMaxExecTime(15 * 60);
 
         $data = $this->service(E::GATEWAY_FILE)->create($input);
 
