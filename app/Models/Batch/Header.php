@@ -728,6 +728,8 @@ class Header
     const MERCHANT_ONBOARDING_EMI_SBI_MID         = 'MerchantID';
     const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID = 'GatewayMID';
     const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID = 'GatewayTID';
+
+    const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_ACQUIRER = 'GatewayAcquirer';
     const MERCHANT_ONBOARDING_EMI_SBI_RZP_TID     = 'TerminalID';
 
     const DIRECT_DEBIT_EMAIL           = 'email';
@@ -3110,6 +3112,7 @@ class Header
                 self::MERCHANT_ONBOARDING_EMI_SBI_MID,
                 self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID,
                 self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_ACQUIRER,
                 self::MERCHANT_ONBOARDING_EMI_SBI_RZP_TID,
             ],
         ],
@@ -6344,6 +6347,16 @@ class Header
             (in_array(self::RECEIPT, $actualHeaders, true) === false))
         {
             $actualHeaders[] = self::RECEIPT;
+        }
+
+        // GatewayAcquirer is also optional. See ^above comments about Notes;
+        // GatewayAcquirer is optional for batch type merchant_onboarding_emi_sbi.
+        //
+        if (($type == Type::MERCHANT_ONBOARDING_EMI_SBI) and
+            (in_array(self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_ACQUIRER, $actualHeaders, true) === true) and
+            (in_array(self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_ACQUIRER, $expectedHeaders, true) === false))
+        {
+            $expectedHeaders[] = self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_ACQUIRER;
         }
 
         //

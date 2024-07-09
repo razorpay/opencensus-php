@@ -300,6 +300,8 @@ class Type
 
     const BVS_BULK_KYC_VERIFICATION = 'bvs_bulk_kyc_verification';
 
+    const MERCHANT_ONBOARDING_EMI_SBI = 'merchant_onboarding_emi_sbi';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't

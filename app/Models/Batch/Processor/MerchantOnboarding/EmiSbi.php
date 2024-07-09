@@ -22,6 +22,7 @@ class EmiSbi extends BaseProcessor
         $merchantId = $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_MID];
         $gatewayMid = $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID];
         $gatewayTid = $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID];
+        $gatewayAcquirer = $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_ACQUIRER];
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
@@ -31,6 +32,11 @@ class EmiSbi extends BaseProcessor
             Terminal\Entity::GATEWAY             => Gateway::EMI_SBI,
             Terminal\Entity::ENABLED             => '1',
         ];
+
+        if(isset($gatewayAcquirer) and empty($gatewayAcquirer) === false)
+        {
+            $createTerminalInput[Terminal\Entity::GATEWAY_ACQUIRER] = $gatewayAcquirer;
+        }
 
         $terminal = (new Terminal\Core)->create($createTerminalInput, $merchant);
 
