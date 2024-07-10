@@ -1628,6 +1628,8 @@ class Core extends Base\Core
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
 
+        $this->handlePGOSL2Submit($merchant, $statusToBeUpdated, $orgId);
+
         if ($isRiskyMerchant === true)
         {
             $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action, $orgId);
@@ -1849,6 +1851,73 @@ class Core extends Base\Core
         $clarificationCore->updateActivationStatusForNoDoc($merchant, $merchantDetails, NeedsClarificationReasonsList::NO_DOC_KYC_FAILURE);
 
         return [];
+    }
+
+    public function handlePGOSL2Submit(Merchant\Entity $merchant, string $statusToBeUpdated, $orgId)
+    {
+        // This is to ensure that final NC form submit is not considered in PGOS L2 submit shadow
+        if ($orgId != null)
+        {
+            return;
+        }
+
+        if((new MerchantCore())->isRegularMerchant($merchant) === false)
+        {
+            return;
+        }
+
+        // not utilising shouldMerchantOnboardViaPGOS function as it would return true for Pos subMerchants also.
+        $isServicePGOS = false;
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
+
+        if (empty($userDeviceDetail) === false)
+        {
+            $merchantOnboardedViaService = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::SERVICE);
+
+            if (empty($merchantOnboardedViaService) === false)
+            {
+                if ($merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS)
+                {
+                    $isServicePGOS = true;
+                }
+            }
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_L2_SUBMIT_SHADOW_FLOW, [
+            "isServicePGOS" => $isServicePGOS
+        ]);
+
+        if ($isServicePGOS === false)
+        {
+            return ;
+        }
+
+        $isPGOSL2SubmitExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.pgos_l2_submit'),
+            ],
+            'shadow'
+        );
+
+        $this->trace->info(TraceCode::MERCHANT_L2_SUBMIT_SHADOW_FLOW, [
+            "isPGOSL2SubmitExpEnabled" => $isPGOSL2SubmitExpEnabled
+        ]);
+
+        if ($isPGOSL2SubmitExpEnabled === false)
+        {
+            return;
+        }
+
+        $pgosPayload = [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::ACTIVATION_STATUS => $statusToBeUpdated,
+        ];
+
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($pgosPayload, $merchant) {
+            $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::L2_SUBMIT_SHADOW, $pgosPayload, $merchant, true);
+        }));
     }
 
 

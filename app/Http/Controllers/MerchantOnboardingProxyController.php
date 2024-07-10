@@ -122,6 +122,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_POS_STATE_LOGS                = 'merchant_pos_state_logs';
     const POST_MERCHANT_CONFIG                   = 'pos_merchant_config';
     const FETCH_SALES_ASSISTED_MERCHANTS         = 'fetch_sales_assisted_merchants';
+    const L2_SUBMIT_SHADOW                       = 'l2_submit_shadow';
 
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
@@ -281,7 +282,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_ACTION_STATE_COUNT                      => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
         self::MERCHANT_POS_STATE_LOGS                       => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
         self::POST_MERCHANT_CONFIG                          => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Onboard',
-        self::FETCH_SALES_ASSISTED_MERCHANTS                => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchants'
+        self::FETCH_SALES_ASSISTED_MERCHANTS                => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchants',
+        self::L2_SUBMIT_SHADOW                              => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/L2SubmitShadow'
     ];
 
     // timeout in seconds
@@ -305,6 +307,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         // https://razorpay.slack.com/archives/C043K5N223F/p1700641894030849?thread_ts=1699005756.802759&cid=C043K5N223F
         self::SEND_OTP                                  => 20,
         self::MERCHANT_WEBSITE_POLICY_VERIFY            => 40,
+        self::L2_SUBMIT_SHADOW                          => 1,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [

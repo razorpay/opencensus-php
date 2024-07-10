@@ -2547,6 +2547,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UPDATION_FORM_SUBMISSION_FAILURE             = 'MERCHANT_UPDATION_FORM_SUBMISSION_FAILURE';
     const MERCHANT_UPDATE_WEBSITE_WORKFLOW_V2                   = 'MERCHANT_UPDATE_WEBSITE_WORKFLOW_V2';
     const MERCHANT_AUTO_UPDATE_ACTIVATION_FLOW                  = 'MERCHANT_AUTO_UPDATE_ACTIVATION_FLOW';
+    const MERCHANT_L2_SUBMIT_SHADOW_FLOW                        = 'MERCHANT_L2_SUBMIT_SHADOW_FLOW';
 
     const MERCHANT_TAGS_ADD                                     = 'MERCHANT_TAGS_ADD';
     const MERCHANT_TAGS_APPEND                                  = 'MERCHANT_TAGS_APPEND';
