@@ -55,7 +55,6 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_CODE              = 'account_code';
     const ACCOUNT_CODE_USED         = 'account_code_used';
     const ERROR_CODE                = 'error_code';
-    const SOURCE_CHANNEL            = 'source_channel';
 
     const ERROR = 'error';
 
@@ -131,7 +130,6 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_CODE_USED,
         self::ERROR_CODE,
         self::PARTNER_DETAILS,
-        self::SOURCE_CHANNEL,
     ];
 
     protected $public = [
@@ -158,7 +156,6 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::ERROR,
         self::PARTNER_DETAILS,
-        self::SOURCE_CHANNEL,
     ];
 
     protected $publicSetters = [
@@ -530,11 +527,6 @@ class Entity extends Base\PublicEntity
     public function setSettlementStatus(string $settlementStatus)
     {
         $this->setAttribute(self::SETTLEMENT_STATUS, $settlementStatus);
-    }
-
-    public function setSourceChannel(string $sourceChannel)
-    {
-        $this->setAttribute(self::SOURCE_CHANNEL, $sourceChannel);
     }
 
     // -------------------- End Setters ---------------------------

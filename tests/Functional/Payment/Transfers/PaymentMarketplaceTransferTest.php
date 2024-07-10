@@ -132,10 +132,9 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->startTest();
 
         $transferEntities = $this->getEntities('transfer', [],true);
+
         $this->assertEquals($this->payment['id'], $transferEntities['items'][0]['source']);
-        $this->assertEquals('online',$transferEntities['items'][0]['source_channel']);
         $this->assertEquals($this->payment['id'], $transferEntities['items'][1]['source']);
-        $this->assertEquals('online',$transferEntities['items'][1]['source_channel']);
     }
 
     public function testTransferPaymentInSync()
@@ -169,7 +168,6 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals('acc_10000000000001', $transfer['recipient']);
         $this->assertEquals('code-007', $transfer['account_code']);
         $this->assertEquals($this->payment['amount'], $transfer['amount']);
-        $this->assertEquals('online', $transfer['source_channel']);
     }
 
     public function testTransferPaymentRazorxDisabledForSyncProcessing()

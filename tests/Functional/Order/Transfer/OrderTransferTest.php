@@ -101,8 +101,6 @@ class OrderTransferTest extends TestCase
         $merchantId = Entity::verifyIdAndStripSign($publicKeyParts[1]);
 
         $this->assertEquals($subMerchantId, $merchantId);
-
-        return $response;
     }
 
     public function testCreateOrderTransferWithOAuthForMarketplace()
@@ -530,15 +528,5 @@ class OrderTransferTest extends TestCase
         $this->assertEquals("Transfer failed as source payment is refunded", $failedTransferEntity['message']);
         $this->assertEquals("BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED", $failedTransferEntity['error_code']);
         $this->assertEquals(4, $failedTransferEntity['attempts']);
-    }
-    public function testTransferSourceChannel()
-    {
-        $response= $this->testCreateOrderTransferWithPartnerAuthForMarketplace();
-
-        $transfer = $this->getDbEntityById('transfer', $response['transfers'][0]['id']);
-
-        $this->assertEquals('online', $transfer['source_channel']);
-
-
     }
 }
