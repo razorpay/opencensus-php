@@ -1072,6 +1072,37 @@ class Service extends Base\Service
 
     public function getSettlementTransactionsSourceDetails($id, $input)
     {
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        // shadow mode experiment
+        $shadow = $this->app->razorx->getTreatment($experimentVariable,
+            Settlement\Constants::RAZORX_SETL_FETCH_SOURCE_DETAILS_FROM_NSS_SHADOW,
+            $this->mode
+        );
+
+        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON) {
+            $nssResponse = app('settlements_dashboard')->settlementTransactionsSourceDetails($id, $input);
+
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            // shadow mode experiment
+            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
+                Settlement\Constants::RAZORX_SETL_FETCH_SOURCE_DETAILS_FROM_NSS_REVERSE_SHADOW,
+                $this->mode
+            );
+
+            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON) {
+                return $nssResponse;
+            }
+            $apiResponse = $this->getSettlementTransactionsSourceDetailsOld($id, $input);
+            $this->compareSettlementsAndLogDifference($apiResponse, $nssResponse['items'], ['method_name' => __FUNCTION__]);
+
+            return $apiResponse;
+        }
+
+        return $this->getSettlementTransactionsSourceDetailsOld($id, $input);
+    }
+
+    public function getSettlementTransactionsSourceDetailsOld($id, $input)
+    {
         $id = Entity::stripDefaultSign($id);
 
         (new Validator())->validateInput('settlement_transaction_source_detail', $input);
@@ -3015,6 +3046,7 @@ class Service extends Base\Service
     public function differenceKeysOfSettlement($apiSettlementArray, $nssSettlementArray) : array
     {
         $responseDiff = [];
+        $ignoreKeys = ["created_at"];
 
         foreach ($apiSettlementArray as $key => $value)
         {
@@ -3033,7 +3065,7 @@ class Service extends Base\Service
                 continue;
             }
 
-            if ((isset($nssSettlementArray[$key]) === true) and ($nssSettlementArray[$key] !== $value))
+            if ((isset($nssSettlementArray[$key]) === true) && ($nssSettlementArray[$key] !== $value) && !in_array($key, $ignoreKeys))
             {
                 $responseDiff[$key]["nss"] = $nssSettlementArray[$key];
                 $responseDiff[$key]["api"] = $value;
@@ -3045,6 +3077,7 @@ class Service extends Base\Service
 
     public function compareSettlementEntityAndLogDifference(array $apiSettlement, array $nssSettlement,bool $nssChecked,array $extraTrace = [])
     {
+        $ignoreKeys = ["created_at"];
         foreach ($apiSettlement as $attribute => $value) {
             if (empty($nssSettlementArray[$attribute]) && empty($value)){
                 continue;
@@ -3063,7 +3096,7 @@ class Service extends Base\Service
                 continue;
             }
 
-            if ($value !== $nssSettlement[$attribute]) {
+            if ($value !== $nssSettlement[$attribute] && !in_array($attribute, $ignoreKeys)) {
                 $differences[$attribute] = [
                     'api_refund' => $value,
                     'nss_refund' => $nssSettlement[$attribute],
