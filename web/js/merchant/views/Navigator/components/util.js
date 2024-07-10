@@ -1536,22 +1536,23 @@ export const gatewayDetailsMapping = {
 };
 
 export const createMappedProviders = (terminalProviders) => {
-  let MAPPED_PROVIDERS = [];
-  MAPPED_PROVIDERS = terminalProviders.map((p) => {
-    if (rzpGateways.includes(p.Gateway)) {
-      return {
-        id: p.Gateway,
-        name: p.Provider_name,
-        value: p.Gateway,
-      };
+  const mappedProviders = [];
+  terminalProviders.forEach((provider) => {
+    if (rzpGateways.includes(provider.Gateway)) {
+      mappedProviders.push({
+        id: provider.Gateway,
+        name: provider.Provider_name,
+        value: provider.Gateway,
+      });
+    } else if (provider?.Status === 'activated') {
+      mappedProviders.push({
+        id: `${provider.Gateway}_${provider.Terminal_id}`,
+        name: provider.Provider_name || provider.Gateway,
+        value: `${provider.Gateway}_${provider.Terminal_id}`,
+      });
     }
-    return {
-      id: `${p.Gateway}_${p.Terminal_id}`,
-      name: p.Provider_name || p.Gateway,
-      value: `${p.Gateway}_${p.Terminal_id}`,
-    };
   });
-  return MAPPED_PROVIDERS;
+  return mappedProviders;
 };
 
 export const getSelectedProviderWithAcquirer = ({ providers, selectedProvider, provider }) => {

@@ -188,6 +188,7 @@ const TERMINAL_PROVIDERS = [
     Currency: ['INR'],
     Gateway_acquirer: 'paytm',
     Terminal_id: 'IPRZ2Vu2SsoN31',
+    Status: 'pending',
   },
   {
     Provider_name: 'HDFC upi mindgate',
@@ -202,6 +203,7 @@ const TERMINAL_PROVIDERS = [
     Currency: ['INR'],
     Gateway_acquirer: 'hdfc',
     Terminal_id: 'ItToeGDgUPERxi',
+    Status: 'activated',
   },
   {
     Provider_name: 'pinelabs_poc',
@@ -216,6 +218,7 @@ const TERMINAL_PROVIDERS = [
     Currency: ['INR'],
     Gateway_acquirer: 'pinelabs',
     Terminal_id: 'Ivm039qfHI0lgx',
+    Status: 'activated',
   },
   {
     Provider_name: 'ingenico_1',
@@ -230,6 +233,42 @@ const TERMINAL_PROVIDERS = [
     Currency: ['INR'],
     Gateway_acquirer: '',
     Terminal_id: 'IwhQmEjXH6qA5v',
+    Status: 'activated',
+  },
+  {
+    Provider_name: '',
+    Description: 'test',
+    Gateway: 'payu',
+    Gateway_details: {
+      Key: 'gtKFFx',
+      Salt: 'eCwWELxi',
+      'Payment Methods': ['card', 'netbanking'],
+    },
+    Currency: ['INR'],
+    Gateway_acquirer: '',
+    Terminal_id: 'IwhQmEjXH6qA5i',
+    Status: 'activated',
+  },
+  {
+    Provider_name: 'test_upi_mindgate',
+    Description: 'test',
+    Gateway: 'upi_mindgate',
+    Gateway_details: {
+      'Payment Methods': ['upi'],
+      Recurring: false,
+      'Response Hash Key': '',
+      'Store PG Merchant ID': 'ui8h',
+      'UPI Features': {
+        tpv: 0,
+      },
+      'VPA Assigned': 'unv8',
+    },
+    Currency: ['INR'],
+    Gateway_acquirer: 'hdfc',
+    Terminal_id: 'JGQR17NvqcYQKF',
+    Status: 'activated',
+    created_at: 1649325583,
+    updated_at: 1701181142,
   },
   {
     Provider_name: 'razorpay',
@@ -259,6 +298,7 @@ const TERMINAL_PROVIDERS = [
     },
     Currency: ['INR'],
     Gateway_acquirer: 'razorpay',
+    Status: '',
   },
 ];
 

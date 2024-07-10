@@ -6,14 +6,9 @@ import {
 import { TERMINAL_PROVIDERS } from 'merchant/views/Navigator/tests/data/mockData';
 
 test('Map providers for dropdown', () => {
-  const MAPPED_PROVIDERS = createMappedProviders(TERMINAL_PROVIDERS);
+  const mappedProviders = createMappedProviders(TERMINAL_PROVIDERS);
 
-  expect(MAPPED_PROVIDERS).toStrictEqual([
-    {
-      id: 'paytm_IPRZ2Vu2SsoN31',
-      name: 'paytm',
-      value: 'paytm_IPRZ2Vu2SsoN31',
-    },
+  expect(mappedProviders).toStrictEqual([
     {
       id: 'upi_mindgate_ItToeGDgUPERxi',
       name: 'HDFC upi mindgate',
@@ -28,6 +23,16 @@ test('Map providers for dropdown', () => {
       id: 'ingenico_IwhQmEjXH6qA5v',
       name: 'ingenico_1',
       value: 'ingenico_IwhQmEjXH6qA5v',
+    },
+    {
+      id: 'payu_IwhQmEjXH6qA5i',
+      name: 'payu',
+      value: 'payu_IwhQmEjXH6qA5i',
+    },
+    {
+      id: 'upi_mindgate_JGQR17NvqcYQKF',
+      name: 'test_upi_mindgate',
+      value: 'upi_mindgate_JGQR17NvqcYQKF',
     },
     {
       id: 'razorpay',
