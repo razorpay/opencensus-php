@@ -25,16 +25,18 @@ describe('test for S0 component', () => {
     );
   });
 
-  test('should return Rzp partner link on passing rzp as custom_code', () => {
+  test('should render contents', () => {
     const props = {
       orgDetails: {
         custom_code: 'rzp',
       },
     };
     renderApp({ props });
-    expect(screen.getByRole('link', { name: 'Learn more about Partner Program' })).toHaveAttribute(
-      'href',
-      'https://razorpay.com/partners/',
-    );
+    expect(screen.getByText('Welcome to your Partner Dashboard')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Get started with referring clients and track all your clients and do more, all directly from your partner dashboard.',
+      ),
+    ).toBeInTheDocument();
   });
 });

@@ -112,6 +112,8 @@ export const PARTNERSHIPS_WEBSITE_LINKS = {
   PG_KYC_DOCS_LINK: 'https://razorpay.com/docs/payments/kyc',
   CAPITAL_ADD_PARTNERS_KNOW_MORE_URL:
     'https://betasite.razorpay.com/docs/razorpay/add-partners-capital-doc/partners/capital/#track-leads-status',
+  PRIVACY_POLICY_URL: 'https://razorpay.com/privacy/',
+  TERMS_AND_CONDITION_URL: 'https://razorpay.com/s/terms/partners',
 };
 
 export const CREATE_BUREAU_COUNTDOWN_TIME = 30000;
