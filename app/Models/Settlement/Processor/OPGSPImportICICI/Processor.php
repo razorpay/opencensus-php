@@ -767,8 +767,14 @@ class Processor extends Base\Core
         try{
 
             $merchantId = $input['merchant_id'];
-            $from = $input['from'] ?? Carbon::yesterday(Timezone::IST)->getTimestamp();
-            $to = $input['to'] ?? Carbon::today(Timezone::IST)->getTimestamp();
+            $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+            $to = $input['to'] ?? Carbon::now(Timezone::IST)->getTimestamp();
+
+            $this->trace->info(TraceCode::OPGSP_IMPORT_INVOICE_UPLOAD_INPUT, [
+                'merchantId' => $merchantId,
+                'from' => $from,
+                'to' => $to,
+            ]);
 
             $settlements = $this->repo->settlement
                 ->getProcessedSettlementsForTimePeriodForMid($merchantId, $from, $to);
