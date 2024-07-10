@@ -25,6 +25,8 @@ final class Metric
 
     const TERMINALS_MISMATCH_ON_COMPARE                       =   'TERMINALS_MISMATCH_ON_COMPARE';
 
+    const TERMINALS_STOP_DUAL_WRITE                          =    'TERMINALS_STOP_DUAL_WRITE';
+
     //Router Related Metric
     const ROUTER_FALLBACK = 'ROUTER_FALLBACK';
 }

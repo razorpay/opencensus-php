@@ -1305,7 +1305,7 @@ class Service extends Base\Service
 
     public function migrateTerminalDelete(string $terminalId, array $options = array())
     {
-        if($this->repo->terminal->stopTerminalsDualWrite(__FUNCTION__))
+        if($this->repo->terminal->stopTerminalsDualWrite($terminalId))
         {
             $this->migrateTerminalDeleteNew($terminalId, $options);
 

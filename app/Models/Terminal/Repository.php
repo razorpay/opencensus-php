@@ -87,7 +87,7 @@ class Repository extends Base\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
-        if($this->stopTerminalsDualWrite(__FUNCTION__))
+        if($this->stopTerminalsDualWrite($entity->getMerchantId()))
         {
             return $this->saveOrFailNew($entity, $options);
         }
@@ -1169,7 +1169,8 @@ class Repository extends Base\Repository
     public function getNonFailedNonDeactivatedByParams(array $params, $proxyTs = true)
     {
 
-        if($this->stopTerminalsDualWrite(__FUNCTION__))
+        if( (isset($params[Terminal\Entity::MERCHANT_ID]) === false) ||
+            (isset($params[Terminal\Entity::MERCHANT_ID]) === true && $this->stopTerminalsDualWrite($params[Terminal\Entity::MERCHANT_ID])) )
         {
             return $this->getNonFailedNonDeactivatedByParamsNew($params);
         }
@@ -2344,7 +2345,7 @@ class Repository extends Base\Repository
     public function deleteOrFail($entity, array $options = array())
     {
 
-        if($this->stopTerminalsDualWrite(__FUNCTION__))
+        if($this->stopTerminalsDualWrite($entity->getId()))
         {
             $this->deleteOrFailNew($entity, $options);
 
@@ -3149,19 +3150,30 @@ class Repository extends Base\Repository
         return $terminals;
     }
 
-    public function stopTerminalsDualWrite($function)
+    public function stopTerminalsDualWrite($id)
     {
         $mode = $this->app['rzp.mode'] ?? 'live';
 
         $result = $this->app['razorx']->getTreatment(
-            $function,
+            $id,
             Terminal\Constants::TERMINALS_DUAL_WRITE_REMOVAL,
             $mode);
 
         if ($result === 'on')
         {
+
+            $this->trace->count(Terminal\Metric::TERMINALS_STOP_DUAL_WRITE, [
+                "route" => $this->fetchRouteName(),
+                "rampup" => "on",
+            ]);
+
             return true;
         }
+
+        $this->trace->count(Terminal\Metric::TERMINALS_STOP_DUAL_WRITE, [
+            "route" => $this->fetchRouteName(),
+            "rampup" => "control",
+        ]);
 
         return false;
     }
