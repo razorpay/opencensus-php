@@ -321,6 +321,7 @@ export const ADDITIONAL_DOCS_LABEL_VALUE_MAP = {
 };
 
 export const EASY_ONBOARDING = 'easy_onboarding';
+export const ASSISTED_ONBOARDING = 'assisted_onboarding';
 
 export const SAMPLE_TICKET = {
   cc_emails: [],

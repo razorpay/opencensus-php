@@ -14,7 +14,7 @@ import {
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import { useApp } from 'common/context/App';
 import * as Messages from './Constants';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const ViewWithBackground = styled(View)`
   background: url('${AcceptPaymentsIcon}') right no-repeat;
@@ -192,7 +192,7 @@ const AcceptPaymentsCard: React.FC = () => {
   const snackbar = useSnackbar();
   const { user, experiments } = useApp();
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { data: internationalWorkflowData } = useQuery({

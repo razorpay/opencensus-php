@@ -13,6 +13,7 @@ import {
 import { convertUnixToDate } from 'common/utils/rzp-utils';
 import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const PRIVATE_LIMITED = 4,
   PUBLIC_LIMITED = 5,
@@ -523,7 +524,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
     pos_activation_status,
   } = activationData;
 
-  const isSignupWithEasyOnboarding = activationData?.user?.signup_campaign === 'easy_onboarding';
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(activationData);
   const tncRequired = !business_website && !merchant_tnc && !isSourceRX() && canGenerateTnCPage;
   const dedupeStatus = isDedupe(activationData);
 

@@ -7,14 +7,14 @@ import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 
 import { isEligibleForFtux } from '../Activation/ActivationUtils';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const EasyOnboardingWrapper = (props) => {
   const { user, children, fetchIsAdminAsMerchant, isAdminAsMerchant } = props;
   const [isRoutingToEasy, setIsRoutingToEasy] = useState(true);
 
   const isEasyMerchant =
-    user?.experiments?.easy_onboarding?.result === 'on' &&
-    user?.user?.signup_campaign === 'easy_onboarding';
+    user?.experiments?.easy_onboarding?.result === 'on' && checkIfSignUpViaEasyOnboarding(user);
   const isEasyL2InComplete =
     isEasyMerchant &&
     (user?.activation_form_milestone === 'L1' || !user?.activation_form_milestone);

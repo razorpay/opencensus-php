@@ -16,8 +16,8 @@ import imgPaymentGeteway from 'assets/product-recommendation/payment-geteway.svg
 import imgPaymentPage from 'assets/product-recommendation/payment-page.svg';
 import imgPaymentButton from 'assets/product-recommendation/payment-button.svg';
 import imgPaymentLink from 'assets/product-recommendation/payment-link.svg';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { useApp } from 'common/context/App';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const WelcomeModal = ({
   onActivate,
@@ -39,7 +39,7 @@ const WelcomeModal = ({
   const isRecommendProduct = isProductRecommendationEnabled && hasRecommendedProduct;
 
   const { user } = useApp();
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   const handleActivationClick = () => {
     onActivate();

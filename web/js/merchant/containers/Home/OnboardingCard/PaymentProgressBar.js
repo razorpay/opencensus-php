@@ -12,14 +12,14 @@ import { formatNumberWithCommas } from 'common/utils/numerals';
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import Time from 'common/ui/Time';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const PaymentProgressBar = ({ user, mode, history, limitBreach, isNcEligibile }) => {
   const [paymentProgress, setPaymentProgress] = useState(0);
   const [lastUpdatedTime, setLastUpdateTime] = useState(0);
   const [content, setContent] = useState(null);
   const [button, setButton] = useState();
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   useEffect(() => {
     if (user.activation_form_milestone === 'L1') {

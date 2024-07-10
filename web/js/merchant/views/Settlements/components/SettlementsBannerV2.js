@@ -14,8 +14,8 @@ import { ALERT_INTENT, SETTLEMENT_RETRY_SLA_IN_HOURS, SETTLEMENT_STATUS } from '
 import moment from 'moment/moment';
 import { getFormattedAmount } from 'common/utils/rzp-utils';
 import { analyticsTrack, analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 export const BannerWrapper = styled.div(
   ({ theme }) => `
@@ -59,7 +59,7 @@ const SettlementsBannerV2 = ({
 
   const activationFormUrl = user?.isActivationFormFullView ? '/kyc' : '/activation';
 
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   const nextSettlement = settlement_amount?.data?.settlement_amount;
 

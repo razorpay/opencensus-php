@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
 import rTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
   if (
@@ -29,7 +29,7 @@ const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
   }
 
   const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   return (
     <div class="MarketPlace--KYC-Required-Modal">

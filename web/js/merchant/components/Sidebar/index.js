@@ -20,7 +20,6 @@ import {
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 
 import ActivationProgress from './ActivationProgress';
@@ -29,6 +28,7 @@ import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
 import { withSplitzService } from 'common/splitz';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -217,7 +217,7 @@ class Sidebar extends Component {
       window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
     } else if (checkEligibilityForFeeBasedGating(user)) {
       handleFeeBasedGatingNavigation({ ctaLocation: 'Sidebar' });
-    } else if (user?.user?.signup_campaign === EASY_ONBOARDING) {
+    } else if (checkIfSignUpViaEasyOnboarding(user)) {
       this.props.trackEvents({
         objectName: 'redirect to easy-dashboard CTA',
         actionName: 'Redirect',

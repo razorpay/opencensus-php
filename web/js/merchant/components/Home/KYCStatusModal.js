@@ -19,13 +19,13 @@ import { activationDuration as predefinedActivationDuration } from 'merchant/hel
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import InstantActivationModal from './InstantActivationModal';
 import { kycModalContent } from './KycStatusModalContent';
 import { isMobileDevice } from './data';
 import { useLatestOrder } from 'merchant/views/POS/hooks';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -68,7 +68,7 @@ const KYCStatusModal = ({
   const navigate = useNavigate();
   const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
   const { latestOrder } = useLatestOrder();
 
   const isNewNc = isNewNcActivationStatus(activationState);

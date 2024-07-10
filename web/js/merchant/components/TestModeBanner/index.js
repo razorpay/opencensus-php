@@ -10,9 +10,9 @@ import { setItem } from 'common/utils/localStorage';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 import { trackLinkClick } from './ga';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 @RTracking(() => window.rzpQ.component('TestModeBanner'))
 class TestModeBanner extends Component {
@@ -80,7 +80,7 @@ class TestModeBanner extends Component {
 
     const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
     const isNewNC = isNcEligibile && user.activation_status === 'needs_clarification';
-    const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+    const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
     return (
       /* For not as we have a seperarte Test Mode banner for m-web which is prominent so hiding this from m-web */

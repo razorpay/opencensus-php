@@ -24,7 +24,6 @@ import {
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 import Divider from './components/Divider';
 import NavLinkItem from './components/NavLinkItem';
@@ -53,6 +52,8 @@ import { getActiveTab, initializeRoutes } from './utils/href';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import { useI18Service } from 'common/i18';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
+import { User } from 'common/typings';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -79,8 +80,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const isExternalRedirect = org?.external_redirect_url_text && org?.external_redirect_url;
   const [isTwoSecondsTimeoutReached, setIsTwoSecondsTimeoutReached] = useState(false);
   const [cachedLeftNavItems, setCacheLeftNavItems] = useState<NavLinkData[]>();
-  const { signup_campaign } = (user?.user as Record<string, unknown>) ?? {};
-  const isSignupWithEasyOnboarding = signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user as unknown as User);
   const merchant = user?.merchants?.[user?.current as string];
 
   useEffect(() => {

@@ -16,7 +16,6 @@ import {
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
 import {
@@ -32,6 +31,7 @@ import * as Messages from './Constants';
 import Info from './Info';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const InlineText = styled.span`
   color: #162f5661;
@@ -61,7 +61,7 @@ const CurrentActivationProgress: React.FC<
   const eligibilityData = useEligibility();
   const isReferredMerchant = referee?.status === 'signup';
   const activationFormUrl = experiments.isActivationFormFullView ? 'kyc' : 'activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
   const isEasyNcEnabled = eligibilityData?.nc_revamp_enabled;
   const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
 

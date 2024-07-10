@@ -9,8 +9,8 @@ import {
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage';
 import { analyticsTrack } from 'common/utils/analytics';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const SettlementsBanner = (props) => {
   const {
@@ -34,7 +34,7 @@ const SettlementsBanner = (props) => {
   const balance = current_balance.data.balance || 0;
 
   const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   const isEsOnDemandBlocked = user.isEsOnDemandBlocked;
   const handleContactSupport = () => {

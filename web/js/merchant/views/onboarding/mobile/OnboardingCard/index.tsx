@@ -14,7 +14,6 @@ import { ProgressBar } from 'common/components/ProgressBar';
 import { useApp } from 'common/context/App';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
@@ -27,6 +26,7 @@ import {
 
 import CurrentActivationProgress from './CurrentActivationProgress';
 import OnboardingCardShimmer from './OnboardingCardShimmer';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const Separator = styled(View)`
   height: 1px;
@@ -70,7 +70,8 @@ interface IOnboardingCardProps {
 }
 const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   const { user, experiments } = useApp();
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
+
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
   const trackEvents = useTrackEvents();

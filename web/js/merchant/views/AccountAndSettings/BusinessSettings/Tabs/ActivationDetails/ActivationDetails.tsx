@@ -18,7 +18,7 @@ import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 import { accountAccessHoverDescription } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const ActivationDetails = (props): JSX.Element => {
   const {
@@ -41,7 +41,7 @@ const ActivationDetails = (props): JSX.Element => {
 
   const isAccountActivation = isAdminAsMerchant.data || !isOrgFeatureExist('hide_activation_form');
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   let activationName = 'KYC';
   /* istanbul ignore else */
@@ -126,7 +126,7 @@ const ActivationDetails = (props): JSX.Element => {
           />
         </ShowWhen>
       ) : (
-        <LoaderDots />
+        <LoaderDots customClass="" />
       )}
 
       {!!user.activated && (
@@ -146,7 +146,7 @@ const ActivationDetails = (props): JSX.Element => {
               <div className="activation-bar-content activation-status-secondary">
                 <div className="activation-bar-text">{user.activation_progress}% Completed</div>
                 <div className="activation-bar">
-                  <ProgressBar type="success" max={100} value={user.activation_progress} />
+                  <ProgressBar type="success" max={100} value={user.activation_progress} color="" />
                 </div>
               </div>
             )

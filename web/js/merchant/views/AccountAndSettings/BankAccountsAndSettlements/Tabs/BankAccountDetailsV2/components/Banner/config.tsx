@@ -7,6 +7,7 @@ import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/B
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import React from 'react';
 import { BannerProps } from './Banner';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 export enum BannerType {
   SUCCESS = 'success',
@@ -211,7 +212,7 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
                 objectName: 'Banner Complete KYC',
                 actionName: 'Clicked',
               });
-              if (window.rzp_user?.user?.signup_campaign === 'easy_onboarding') {
+              if (checkIfSignUpViaEasyOnboarding(window.rzp_user)) {
                 window.location.href = window.EASY_ONBOARDING_URL;
               } else {
                 window.location.href = 'https://dashboard.razorpay.com/app/activation';

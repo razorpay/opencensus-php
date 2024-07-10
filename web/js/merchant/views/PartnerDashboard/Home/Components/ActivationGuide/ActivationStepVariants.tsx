@@ -8,10 +8,10 @@ import {
   StepContentT,
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ActivationStep from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide/ActivationStep';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 import { useApp } from 'common/context/App';
 import { PARTNER_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 interface StartStepT {
   fuxStatus: FUXStatusStateT;
@@ -81,7 +81,7 @@ export const ActivateAccountStep = ({
   const isCompletedStep = activation_status === 'activated';
 
   const { user } = useApp();
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   const stepContent: StepContentT = {
     title: 'Activate Account',
@@ -182,7 +182,7 @@ export const ActivateAccountStep = ({
   return <ActivationStep {...stepProps} />;
 };
 
-interface IntegratingAPIStep {
+interface IntegratingAPIStepProps {
   activation_status: ActivationStatesT;
   fuxStatus: FUXStatusStateT;
   partnerType: PartnerTypeT;
@@ -193,7 +193,7 @@ export const IntegratingAPIStep = ({
   fuxStatus,
   partnerType,
   orgName,
-}: IntegratingAPIStep): JSX.Element | null => {
+}: IntegratingAPIStepProps): JSX.Element | null => {
   if (partnerType === 'reseller') return null;
 
   const isFirstReferralDone = fuxStatus.value?.first_submerchant_added || false;
@@ -255,7 +255,7 @@ export const IntegratingAPIStep = ({
   return <ActivationStep {...stepProps} />;
 };
 
-interface CommissionStep {
+interface CommissionStepProps {
   activation_status: ActivationStatesT;
   fuxStatus: FUXStatusStateT;
   partnerType: PartnerTypeT;
@@ -268,7 +268,7 @@ export const CommissionStep = ({
   partnerType,
   history,
   trackUserEvent,
-}: CommissionStep): JSX.Element | null => {
+}: CommissionStepProps): JSX.Element | null => {
   const isFirstReferralDone = fuxStatus.value?.first_submerchant_added === true;
   const isAccountActivated = activation_status === 'activated';
   const isAPIIntegrationDone = fuxStatus.value?.api_integration === true;

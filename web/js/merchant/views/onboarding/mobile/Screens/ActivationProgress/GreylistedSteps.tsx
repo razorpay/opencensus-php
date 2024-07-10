@@ -12,7 +12,7 @@ import { analyticsTrack } from 'common/services/tracking/segment';
 import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const GreylistedSteps: React.FC<
   RouteComponentProps & {
@@ -54,7 +54,7 @@ const GreylistedSteps: React.FC<
     shallow,
   );
   const activationFormUrl = experiments.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');

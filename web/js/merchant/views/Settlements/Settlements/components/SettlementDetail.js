@@ -10,8 +10,8 @@ import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import SamedayUpselling from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Upselling';
 import { SAMEDAY_MODAL_LOCATIONS } from './Modals/ScheduledModal/constants';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 class SettlementDetail extends Component {
   handleContactSupport = () => {
@@ -171,7 +171,7 @@ class SettlementDetail extends Component {
     const isOnHold = this.isOnHold();
     const isOnTemporaryHold = this.isOnTemporaryHold();
     const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-    const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+    const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(user);
 
     if (
       (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) &&

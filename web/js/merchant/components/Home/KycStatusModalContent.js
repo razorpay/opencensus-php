@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { SAMPLE_TICKET } from 'merchant/views/TicketSupport/components/data';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 export const kycModalContent = (args = {}, navigate) => {
   const activationState = getActivationState(
@@ -18,7 +18,7 @@ export const kycModalContent = (args = {}, navigate) => {
   );
 
   const activationFormUrl = args.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = args?.user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(args?.user);
   const expiryDate = getNcExpiryDate(args.activationData?.kyc_clarification_reasons);
   const latestOrder = args.latestOrder;
 
