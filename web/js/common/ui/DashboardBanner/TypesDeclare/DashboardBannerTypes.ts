@@ -1,5 +1,6 @@
 import { bannerThemes, textStyle } from 'common/ui/DashboardBanner/data';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { User } from 'common/typings';
 
 interface FetchBannersProps {
   fromWhere: string;
@@ -17,7 +18,7 @@ interface BannerButton {
 
 interface BannerContent {
   description: string;
-  type?: (typeof textStyle)[number];
+  type?: typeof textStyle[number];
 }
 interface BannerTextLink {
   url: string;
@@ -42,7 +43,7 @@ interface Banner {
   id: string;
   title: string;
   className?: string;
-  theme: (typeof bannerThemes)[number];
+  theme: typeof bannerThemes[number];
   dismissible: boolean;
   override_priority: boolean;
   buttons?: Array<BannerButton> | null;
@@ -67,6 +68,7 @@ interface DashboardBannerProps extends RouteComponentProps {
   banners: Array<Banner> | [];
   loading: boolean;
   fetchBanners: ({ fromWhere }: FetchBannersProps) => void;
+  user: User;
 }
 
 interface CTA extends BannerButton {

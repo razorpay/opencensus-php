@@ -15,7 +15,12 @@ const DashboardBanner = ({
   banners,
   history,
   location,
+  user,
 }: DashboardBannerProps): React.ReactElement | Array<React.ReactElement> | Array<null> | null => {
+  if (!user.isINCountry) {
+    return null;
+  }
+
   const routeName = routeToRouteNameMap[location.pathname] || location.pathname;
 
   useEffect(() => {
@@ -41,6 +46,7 @@ const DashboardBannerWithCompose = compose<any>(
   connect(
     (state) => ({
       ...(state?.growthService?.banners || []),
+      user: state.session.user,
     }),
     {
       fetchBanners: fetchBannersProp,

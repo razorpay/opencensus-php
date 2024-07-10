@@ -60,6 +60,7 @@ const EditTransactionLimit = (props) => {
     const showTransactionLimit =
       user.role === 'owner' &&
       user.isOrgRZP &&
+      user.isINCountry &&
       user.isTransactionLimitUpdateSelfServeOn &&
       isWorkflowChangeAllowed &&
       isMerchantAllowedToEditLimit;
@@ -68,6 +69,7 @@ const EditTransactionLimit = (props) => {
   }, [
     user.business_category,
     user.isOrgRZP,
+    user.isINCountry,
     user.isTransactionLimitUpdateSelfServeOn,
     user.isUnregisteredBusiness,
     user.role,

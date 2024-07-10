@@ -102,6 +102,11 @@ const HelpSection = ({
     };
   }, []);
 
+  // Don't show support for non indian
+  if (!user.isINCountry) {
+    return null;
+  }
+
   const isOnBoardingRevampScreen =
     history.location.pathname.includes('onboarding') ||
     history.location.pathname.includes('tncform');

@@ -1,14 +1,24 @@
 import React from 'react';
-import { AlertTriangleIcon } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { AlertTriangleIcon, RotateCounterClockWiseIcon } from '@razorpay/blade/components';
 
 import FailedCardIcon from 'assets/transactions/failed-cross.svg';
 import RefundsCardIcon from 'assets/transactions/refund-card.svg';
 import { PaymentTypes } from 'merchant/views/Transactions/v2/Analytics/types';
+import User from 'common/typings/User';
 
-const CardIcon = ({ name }: { name: PaymentTypes }): JSX.Element | null => {
+const CardIcon = ({ name, user }: { name: PaymentTypes; user: User }): JSX.Element | null => {
   switch (name) {
     case PaymentTypes.Refunds:
-      return <img src={RefundsCardIcon} alt="refund details" />;
+      return user.isINCountry ? (
+        <img src={RefundsCardIcon} alt="refund details" />
+      ) : (
+        <RotateCounterClockWiseIcon
+          data-testid="RotateCounterClockWiseIcon"
+          color="interactive.icon.information.normal"
+          size="medium"
+        />
+      );
     case PaymentTypes.Disputes:
       return <AlertTriangleIcon color="feedback.icon.negative.intense" size="medium" />;
     case PaymentTypes.Failed:
@@ -19,4 +29,7 @@ const CardIcon = ({ name }: { name: PaymentTypes }): JSX.Element | null => {
   }
 };
 
-export default CardIcon;
+const mapStateToProps = (state: any) => ({
+  user: state.session.user,
+});
+export default connect(mapStateToProps)(CardIcon);
