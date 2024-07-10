@@ -149,4 +149,6 @@ class Constants
 
     const WITHOUT_AFA_AMOUNT_LIMIT_UPI   = 1500000;
 
+    const RESPAWN = 'respawn';
+
 }

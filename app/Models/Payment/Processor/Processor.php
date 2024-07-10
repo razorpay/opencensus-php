@@ -3421,6 +3421,15 @@ class Processor
                 $paymentData = $this->processPaymentViaPGRouter($input, $startTime);
 
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATE_REQUEST_PROCESSED,  null, null, $meta);
+
+                // return if type is respawn for UPI
+                if (empty($input['type']) === false &&
+                    empty($input['method']) === false &&
+                    $paymentData['type'] === CONSTANTS::RESPAWN &&
+                    $paymentData['method'] === METHOD::UPI)
+                {
+                    return $paymentData;
+                }
             }
             else
             {
