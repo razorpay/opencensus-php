@@ -745,7 +745,7 @@ class Core extends Base\Core
     public function createRefundAndUpdateDispute(Entity $dispute, $acceptedAmount)
     {
         // https://docs.google.com/spreadsheets/d/1znRQjMiV7WFywAo1a7qb5WCHky96D6iycCbcYulyD7s/edit#gid=1471838983&range=C16
-        if ($acceptedAmount > $dispute->payment->getBaseAmountUnRefunded())
+        if ($acceptedAmount > $dispute->payment->getAmountUnRefunded())
         {
             $message = 'Cannot create refund for dispute accept because dispute amount is greater than unrefunded amount';
 
@@ -762,7 +762,7 @@ class Core extends Base\Core
 
         $refundId = (new Payment\Service)->refund(Payment\Entity::getSignedId($dispute->getPaymentId()), $refundCreateInput)[Refund\Entity::ID];
 
-        $dispute->setAmountDeducted($dispute->getBaseAmount() ?? $dispute->getAmount());
+        $dispute->setAmountDeducted($dispute->getAmount() ?? $dispute->getBaseAmount());
 
         $dispute->setInternalStatus(InternalStatus::LOST_MERCHANT_DEBITED);
 
@@ -775,7 +775,7 @@ class Core extends Base\Core
     {
         if ($amount === 0)
         {
-            $amount = $dispute->getBaseAmount() ?: $dispute->getAmount();
+            $amount = $dispute->getAmount() ?: $dispute->getBaseAmount();
         }
 
         $input = [
@@ -876,7 +876,7 @@ class Core extends Base\Core
 
         $dispute->setAmountDeducted($amount);
 
-        $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getBaseAmount(), $newBalance, $dispute);
+        $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getAmount(), $newBalance, $dispute);
     }
 
     protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $shouldResetDeductionSourceAttributes = true)
@@ -995,7 +995,7 @@ class Core extends Base\Core
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
     {
-        $disputeBaseAmount = $dispute->getBaseAmount() ?: $dispute->getAmount();
+        $disputeBaseAmount = $dispute->getAmount() ?: $dispute->getBaseAmount();
 
         if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
         {
