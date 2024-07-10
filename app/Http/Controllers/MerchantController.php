@@ -4492,4 +4492,19 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+  
+   public function createMerchantMethods($merchantId)
+    {
+        $response = $this->service(E::MERCHANT)->createMerchantMethods($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createMerchantBalanceRelatedEntities($merchantId)
+    {
+        $response = $this->service(E::MERCHANT)->createMerchantBalanceEntities($merchantId);
+
+        return ApiResponse::json($response);
+    }
+    
 }

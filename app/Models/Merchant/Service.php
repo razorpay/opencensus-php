@@ -13739,4 +13739,51 @@ class Service extends Base\Service
 
         return $isExperimentEnabled;
     }
+  
+    public function createMerchantMethods($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $response = (new Methods\Core())->setDefaultMethods($merchant);
+
+        if ($response === null) {
+            throw new Exception\ServerErrorException( "failed to create merchant methods",
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $this->trace->info(
+            TraceCode::SAVE_MERCHANT_METHODS,
+            [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+            ]
+        );
+        return $response;
+    }
+
+    public function createMerchantBalanceEntities($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $merchantBalance = (new Merchant\Core())->createBalance($merchant, Mode::LIVE);
+
+        $response = (new Merchant\Core())->createBalanceConfig($merchantBalance, Mode::LIVE);
+
+        if ($response === null) {
+            throw new Exception\ServerErrorException( "failed to create merchant balance entities",
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $this->trace->info(
+            TraceCode::BALANCE_CONFIG_CREATE_SUCCESSFUL,
+            [
+                'merchant_id' => $merchantId,
+                'merchant_balance' => $merchantBalance,
+                'merchant_balance_config' => $response
+            ]
+        );
+
+        return $response;
+    }
+
 }
