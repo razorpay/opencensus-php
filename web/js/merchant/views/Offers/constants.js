@@ -1,5 +1,5 @@
+/* eslint-disable i18n-rules/no-hardcoded-i18n-types */
 export const MAX_DISCOUNT = 2147483647;
-
 export const PAYMENT_NETWORK_MAP = {
   VISA: 'Visa',
   RUPAY: 'RuPay',
@@ -131,7 +131,6 @@ export const PaymentMethodsOptions = [
   { label: 'Pay Later', name: PAYMENT_METHODS.PayLater },
   { label: 'Cardless EMI', name: PAYMENT_METHODS.CardLessEmi },
 ];
-
 export const SUBSCRIPTION_OFFERS_PAYMENT_METHODS = {
   Card: 'card',
   UPI: 'upi',
@@ -264,6 +263,7 @@ export const EMI_DEBIT_CARD_BANK_OPTIONS = [
   { label: 'HDFC Bank', name: 'HDFC' },
   { label: 'INDUSIND Bank', name: 'INDB' },
   { label: 'KOTAK Bank', name: 'KKBK' },
+  { label: 'ICICI Bank', name: 'ICIC' },
 ];
 
 // card network on which offer disable CTA shall be deactivated
