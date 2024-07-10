@@ -25,7 +25,7 @@ function extractPersona() {
     } = {},
     partner: { partner_type: partnerType } = {},
     merchants,
-    merchant: { country_code },
+    merchant: { country_code } = {},
   } = window.rzp_user || {};
 
   return {
