@@ -1148,7 +1148,12 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
 
-        $verify->amountMismatch = (floatval($input[$entity]['amount']) !== floatval($content[ResponseFields::AMOUNT]));
+        // Round both values to the nearest integer before comparison
+        $inputAmount = round(floatval($input[$entity]['amount']));
+        $responseAmount = round(floatval($content[ResponseFields::AMOUNT]));
+
+        $verify->amountMismatch = ($inputAmount !== $responseAmount);
+
     }
 
     protected function createGatewayPaymentEntity($attributes)
