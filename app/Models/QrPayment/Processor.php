@@ -186,7 +186,7 @@ class Processor extends Base\Core
 
         $mutex = App::getFacadeRoot()['api.mutex'];
 
-        $mutex->acquireAndRelease($orderMutex,
+        $mutex->acquireAndReleaseStrict($orderMutex,
             function() use ($qrPayment, $paymentProcessor, $paymentInput, $payment, $shouldCreateQrPayment)
             {
                 $this->repo->transaction(
@@ -234,8 +234,8 @@ class Processor extends Base\Core
                         $this->updateQrCode($qrPayment);
 
                         return $payment;
-                    }, 3);
-            });
+                    }, 2);
+            }, 150);
 
         if (
             $qrPayment->qrCode->isCheckoutQrCode() &&
