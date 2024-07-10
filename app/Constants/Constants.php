@@ -9,5 +9,6 @@ class Constants {
 
     const ROOT_PATH                     = "/";
     const RZP_REFRESH_TOKEN             = 'rzp_refresh_token';
+    const RZP_USER_MERCHANT_REGION      = 'rzp_user_merchant_region';
 
 }

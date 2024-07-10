@@ -2,13 +2,16 @@
 
 namespace Tests\Unit\app\Edge;
 
+use App\Constants\Constants;
 use App\Edge\Middleware\RegionCookieHandler;
+use App\Http\Controllers\UserController;
 use App\Providers\GenericUser;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use function PHPUnit\Framework\assertEquals;
 
 class RegionCookieHandlerTest extends BaseTestCase
 {
@@ -60,6 +63,8 @@ class RegionCookieHandlerTest extends BaseTestCase
 
     public function testRegionCookieSetForMerchantRegion()
     {
+
+        $userController = new UserController();
         $regionCookieHandler = new RegionCookieHandler();
         $request = new Request();
 
@@ -72,6 +77,16 @@ class RegionCookieHandlerTest extends BaseTestCase
         $this->assertCount(1, $cookies);
         $this->assertEquals('rzp_user_merchant_region', $response->headers->getCookies()[0]->getName());
         $this->assertEquals('SG', $response->headers->getCookies()[0]->getValue());
+
+        $userController->getLogout();
+
+        $accessTokenCookie    =  cookie(Constants::RZP_ACCESS_TOKEN);
+        $refreshTokenCookie   = cookie(Constants::RZP_REFRESH_TOKEN);
+        $merchantRegionCookie = cookie(Constants::RZP_USER_MERCHANT_REGION);
+
+        assertEquals($accessTokenCookie->getMaxAge(), 0);
+        assertEquals($refreshTokenCookie->getMaxAge(), 0);
+        assertEquals($merchantRegionCookie->getMaxAge(), 0);
     }
 
     public function testRegionCookieSetDefaultOnError()

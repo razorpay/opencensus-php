@@ -1711,6 +1711,8 @@ class UserController extends Controller
 
         Cookie::expire(AppConstants::RZP_REFRESH_TOKEN, AppConstants::ROOT_PATH);
 
+        Cookie::expire(AppConstants::RZP_USER_MERCHANT_REGION, AppConstants::ROOT_PATH);
+
         return AppResponse::jsonResponse([]);
     }
 
