@@ -308,6 +308,21 @@ class MerchantOnboardingProxyController extends BaseProxyController
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
+        self::POST_MERCHANT_CONFIG,
+        self::MERCHANT_POS_STATE_LOGS,
+        self::FETCH_ACTION_STATE_COUNT,
+        self::UPDATE_ACTION_STATE,
+        self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS,
+        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS,
+        self::MERCHANT_FETCH_POS_ACTIVATION_FLOW,
+        self::MERCHANT_ACTIVATION_SAVE,
+        self::PGOS_FETCH_DEVICE_CONFIG,
+        self::PGOS_CREATE_DEVICE_ORDER,
+        self::PGOS_UPDATE_DEVICE_ORDER,
+        self::PGOS_FETCH_DEVICE_ORDER,
+        self::PGOS_FETCH_ALL_DEVICE_ORDER,
+        self::MERCHANT_POS_PAYMENT_CALLBACK,
+        self::MERCHANT_POS_FETCH_LATEST_ORDER,
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
