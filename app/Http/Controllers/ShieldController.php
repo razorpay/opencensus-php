@@ -23,6 +23,7 @@ class ShieldController extends Controller
     const ADD_DEFAULT_LIST_ITEM_BULK_ROUTE      = 'shield_add_default_list_items';
     const LIST_ITEM_DELETE_ROUTE                = 'shield_list_items_delete';
     const LIST_ITEMS_PURGE_ROUTE                = 'shield_list_items_purge';
+    const BULK_LIST_ITEM_DELETE_ROUTE           = 'shield_bulk_list_items_delete';
 
     const RISK_THRESHOLD_CONFIG_CREATE_ROUTE = 'shield_risk_threshold_config_create';
     const RISK_THRESHOLD_CONFIG_UPDATE_ROUTE = 'shield_risk_threshold_config_update';
@@ -49,6 +50,7 @@ class ShieldController extends Controller
         self::ADD_DEFAULT_LIST_ITEM_BULK_ROUTE,
         self::LIST_ITEM_DELETE_ROUTE,
         self::LIST_ITEMS_PURGE_ROUTE,
+        self::BULK_LIST_ITEM_DELETE_ROUTE,
         self::RISK_THRESHOLD_CONFIG_CREATE_ROUTE,
         self::RISK_THRESHOLD_CONFIG_UPDATE_ROUTE,
         self::RISK_THRESHOLD_CONFIG_DELETE_ROUTE,
@@ -77,7 +79,6 @@ class ShieldController extends Controller
     public function proxyRequest()
     {
         $routeName = Request::route()->getName();
-
         list($requestUri, $method, $payload) = $this->getProxyRequestDetails();
 
         // Check if workflow applicable route
@@ -123,7 +124,6 @@ class ShieldController extends Controller
                 }
             }
         }
-
         $response = $this->app['shield']->sendRequestV2($requestUri, $method, $payload);
 
         return ApiResponse::json($response);
@@ -163,7 +163,6 @@ class ShieldController extends Controller
         $existingPayload = [];
 
         $routeName = Request::route()->getName();
-
         if (in_array($routeName, self::EXISTING_ENTITY_RETRIEVAL_ROUTES) === true)
         {
             $existingPayload = $this->app['shield']->sendRequestV2ForWorkflow($requestUri, 'GET', []);

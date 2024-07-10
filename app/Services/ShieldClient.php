@@ -545,14 +545,12 @@ class ShieldClient implements ExternalService
     public function sendRequestV2(string $path, string $method, array $data = []): array
     {
         $url = $this->getBaseUrl($data, $path) . $path;
-
         $headers = $this->getShieldHeaders();
 
         $options = [
             'auth'    => $this->getAuthHeaders(),
             'timeout' => self::REQUEST_TIMEOUT_ADMIN,
         ];
-
         try
         {
             $content = null;
@@ -601,7 +599,6 @@ class ShieldClient implements ExternalService
     public function sendRequestV2ForWorkflow(string $path, string $method, array $data = []): array
     {
         $url = $this->getBaseUrl($data, $path) . $path;
-
         $headers = $this->getShieldHeaders();
 
         $options = [

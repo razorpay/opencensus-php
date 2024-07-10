@@ -414,6 +414,7 @@ class RouteTeamMap
         'shield_list_items_add_multiple'                  => [self::TEAM_PAYMENTS_RISK],
         'shield_list_items_purge'                         => [self::TEAM_PAYMENTS_RISK],
         'shield_list_items_delete'                        => [self::TEAM_PAYMENTS_RISK],
+        'shield_bulk_list_items_delete'                   => [self::TEAM_PAYMENTS_RISK],
         'shield_settings_ui'                              => [self::TEAM_PAYMENTS_RISK],
         'merchant_risk_alerts_foh_workflow'               => [self::TEAM_PAYMENTS_RISK],
         'merchant_risk_alerts_details'                    => [self::TEAM_PAYMENTS_RISK],

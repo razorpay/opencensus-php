@@ -3011,6 +3011,11 @@ class Route
             'shield/merchants/{merchant_id}/lists/{list_id}/list_items/{list_item_id}',
             'ShieldController@proxyRequest'
         ],
+        'shield_bulk_list_items_delete'       => [
+            'post',
+            'shield/merchants/{merchant_id}/lists/{list_id}/delete_bulk_list_items',
+            'ShieldController@proxyRequest'
+        ],
         'shield_settings_ui' => [
             'get',
             'shield/settings/ui',
@@ -8669,6 +8674,7 @@ class Route
         'shield_add_default_list_items',
         'shield_list_items_purge',
         'shield_list_items_delete',
+        'shield_bulk_list_items_delete',
         'shield_settings_ui',
         'shield_risk_threshold_config_get_multiple',
         'shield_risk_threshold_config_get',
@@ -10304,6 +10310,7 @@ class Route
         'shield_add_default_list_items'               => Permission::ADD_SHIELD_LIST_ITEMS,
         'shield_list_items_purge'                     => Permission::PURGE_SHIELD_LIST_ITEMS,
         'shield_list_items_delete'                    => Permission::DELETE_SHIELD_LIST_ITEM,
+        'shield_bulk_list_items_delete'               => Permission::DELETE_SHIELD_LIST_ITEM,
         'shield_settings_ui'                          => Permission::RETRIEVE_SHIELD_UI_SETTINGS,
         'shield_risk_threshold_config_get_multiple'   => Permission::VIEW_RISK_THRESHOLD_CONFIG,
         'shield_risk_threshold_config_get'            => Permission::VIEW_RISK_THRESHOLD_CONFIG,
@@ -15783,6 +15790,7 @@ class Route
             'shield_list_items_get',
             'shield_list_items_get_multiple',
             'shield_list_items_purge',
+            'shield_bulk_list_items_delete',
             'shield_lists_create',
             'shield_lists_delete',
             'shield_lists_get',
