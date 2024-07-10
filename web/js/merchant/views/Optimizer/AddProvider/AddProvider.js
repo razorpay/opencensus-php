@@ -269,7 +269,7 @@ class AddProvider extends React.Component {
 
     this.setState(
       (prevState) => {
-        const { user, activeProviders } = this.props;
+        const { user, activeProviders, splitz } = this.props;
         const { providers, provider } = prevState;
         const newProviderObj = { ...provider };
         newProviderObj.Gateway = selectedProvider;
@@ -292,7 +292,12 @@ class AddProvider extends React.Component {
           if (user?.isPaytmAutoDebitEnabled) {
             newProviderObj.Gateway_details.ENABLE_AUTO_DEBIT = false;
           }
-          if (providers?.paytm?.['Payment Methods']?.data_value?.indexOf('wallet') !== -1) {
+          const integrationAuditFlow =
+            isIntegrationAuditEnabled(splitz) && isGatewaySupportIntegrationAudit(selectedProvider);
+          if (
+            !integrationAuditFlow &&
+            providers?.paytm?.['Payment Methods']?.data_value?.indexOf('wallet') !== -1
+          ) {
             // enable wallets method by default for paytm
             newProviderObj.Gateway_details['Payment Methods'] = ['wallet'];
             newProviderObj.Gateway_details.wallet_metadata = {
