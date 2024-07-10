@@ -4318,6 +4318,14 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commTransaction['id'], $actualResponse['response']['transaction_id']);
     }
 
+    public function testCreateAndCaptureFromPRTSWithTransactionId()
+    {
+        $actualResponse = $this->doPartnershipsClientAPICalls(false);
+        $commTransaction = $this->getDbEntityById('transaction', 'OQr2zEwSiWidzN');
+        $this->assertTrue($commTransaction->getOnHold());
+        $this->assertEquals('OQr2zEwSiWidzN', $actualResponse['response']['transaction_id']);
+    }
+
     protected function doPartnershipsClientAPICalls($createCommission = false, ?string $function = null)
     {
         $this->createPurePlatFormMerchantAndSubMerchant();

@@ -1193,6 +1193,28 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testCreateAndCaptureFromPRTSWithTransactionId' => [
+        'request' => [
+            'method' => 'POST',
+            'url'    => '/internal/create_and_capture_commission',
+            'content' => [
+                "id" => "Mazh0bq30sJVmu",
+                "payload" => "{\"commission\":{\"id\":\"10ImplicitPlan\",\"source_id\":\"{payment_id}\",\"source_type\":\"payment\",\"partner_id\":\"1000000000plat\",\"partner_config_id\":\"10ImplicitPlan\",\"config_type\":\"partner_config\",\"type\":\"implicit\",\"status\":\"created\",\"debit\":0,\"credit\":3,\"currency\":\"INR\",\"fee\":3,\"tax\":0,\"transaction_id\":\"OQr2zEwSiWidzN\",\"record_only\":0,\"notes\":[],\"model\":\"commission\",\"settlement_id\":\"\",\"settled_at\":0,\"created_at\":1694433789,\"updated_at\":1694433789},\"commission_component\":{\"id\":\"10ImplicitPlan\",\"created_at\":1695326073,\"updated_at\":1695326073,\"commission_id\":\"10ImplicitPlan\",\"pricing_type\":\"variable\",\"pricing_feature\":\"payment\",\"commission_pricing_amount\":109,\"commission_pricing_fixed\":0,\"commission_pricing_percentage\":15,\"commission_pricing_plan_rule_id\":\"JGRAjDX9CxlYoS\",\"merchant_pricing_amount\":1447,\"merchant_pricing_fixed\":0,\"merchant_pricing_percentage\":200,\"merchant_pricing_plan_rule_id\":\"COGRFuwhzSmjqv\"}}",
+                "created_at" => 1694433789,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "id" => "Mazh0bq30sJVmu",
+                "created_at" => 1694433789,
+                "response" => [
+                    "captured" => true,
+                    "transaction_id" => "OQr2zEwSiWidzN",
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
     'testCaptureFromPRTS' => [
         'request' => [
             'method' => 'POST',

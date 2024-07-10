@@ -720,6 +720,8 @@ class Core extends Base\Core
             $payload    = json_decode($payloadStr, true);
 
             $id = $payload['commission'][Entity::ID];
+            $commTxnId = $payload['commission'][Entity::TRANSACTION_ID] ?? null;
+
             $resource   = 'COMMISSION_CREATE_' . $id;
             $commission = $this->app['api.mutex']->acquireAndRelease(
                 $resource, function() use ($input, $payload, $id) {
@@ -775,7 +777,7 @@ class Core extends Base\Core
         }
 
         // capture commission
-        return $this->captureFromPRTS($input, $commission, true);
+        return $this->captureFromPRTS($input, $commission, true, $commTxnId);
     }
 
     /**
@@ -789,7 +791,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function captureFromPRTS(array $input, Entity $commission = null, bool $updateStatus = false): array
+    public function captureFromPRTS(array $input, Entity $commission = null, bool $updateStatus = false, string $commTxnId=null): array
     {
         try
         {
@@ -815,8 +817,8 @@ class Core extends Base\Core
             $resource = 'COMMISSION_CAPTURE_' . $commission->getId();
 
             $txnId = $this->app['api.mutex']->acquireAndRelease(
-                $resource, function() use ($input, $commission, $updateStatus) {
-                return $this->repo->transaction(function() use ($input, $commission, $updateStatus) {
+                $resource, function() use ($input, $commission, $updateStatus, $commTxnId) {
+                return $this->repo->transaction(function() use ($input, $commission, $updateStatus, $commTxnId) {
                     $this->trace->info(
                         TraceCode::COMMISSION_TRANSACTION_CREATE_REQUEST,
                         [
@@ -841,8 +843,8 @@ class Core extends Base\Core
                         return $txn->getKey();
                     }
 
-                    list($txn, $feeSplit) = Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function() use ($commission) {
-                        return (new Transaction\Core)->createTransactionForSource($commission);
+                    list($txn, $feeSplit) = Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function() use ($commission, $commTxnId) {
+                        return (new Transaction\Core)->createTransactionForSource($commission, $commTxnId);
                     });
 
                     $this->repo->saveOrFail($txn);
