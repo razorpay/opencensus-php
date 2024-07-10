@@ -1417,21 +1417,21 @@ class Service extends Base\Service
           //this willonly be updated for defined gateway when method is netbanking
           if ($payment->getMethod() === Payment\Method::NETBANKING && (in_array($payment->getGateway(), Payment\Gateway::UPDATE_NETBANKING_GATEWAY_FEES_TAX_AMOUNT, true) === true))
           {
-              $transaction->setGatewayAmount($input['gateway_amount']);
+            $transaction->setGatewayAmount($input['netbanking']['gateway_amount']);
 
-              $transaction->setGatewayFee($input['gateway_fee']);
+            $transaction->setGatewayFee($input['netbanking']['gateway_fee']);
 
-              $transaction->setGatewayServiceTax($input['gateway_service_tax']);
+            $transaction->setGatewayServiceTax($input['netbanking']['gateway_service_tax']);
 
           }
           //this will only be updated for defined gateway when method is wallet
           if ($payment->getMethod() === Payment\Method::WALLET && (in_array($payment->getGateway(), Payment\Gateway::UPDATE_WALLET_GATEWAY_FEES_TAX_AMOUNT, true) === true) )
           {
-              $transaction->setGatewayAmount($input['gateway_amount']);
+            $transaction->setGatewayAmount($input['wallet']['gateway_amount']);
 
-              $transaction->setGatewayFee($input['gateway_fee']);
+            $transaction->setGatewayFee($input['wallet']['gateway_fee']);
 
-              $transaction->setGatewayServiceTax($input['gateway_service_tax']);
+            $transaction->setGatewayServiceTax($input['wallet']['gateway_service_tax']);
           }
 
 
