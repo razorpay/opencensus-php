@@ -53,6 +53,8 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_AFTER,
         self::CARD_MANDATE_ID,
         self::MERCHANT_ID,
+        self::AMOUNT,
+        self::CURRENCY,
     ];
 
     protected $public = [

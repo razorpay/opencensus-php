@@ -707,7 +707,7 @@ class Core extends Base\Core
         // pushing event to queue for pre-debit notification and delaying it for 60 sec
         try
         {
-            CardRecurringNotificationProcess::dispatch($this->mode, $notification->getId(), $order->getId())->delay(60);
+            CardRecurringNotificationProcess::dispatch($this->mode, $notification->getId())->delay(60);
         }
         catch (\Throwable $e)
         {
@@ -734,6 +734,8 @@ class Core extends Base\Core
         $inputParams[Entity::MERCHANT_ID] = $this->merchant->getMerchantId();
         $inputParams[Entity::TOKEN_ID] = Entity::stripDefaultSign($inputParams['token_id']);
         $inputParams[Entity::CARD_MANDATE_ID] = $token->getCardMandateId();
+        $inputParams[Entity::AMOUNT] = $order->getAmount();
+        $inputParams[Entity::CURRENCY] = $order->getCurrency() ?? 'INR';
 
         return $this->createNotificationForDecoupling($inputParams, $order);
     }
@@ -775,7 +777,7 @@ class Core extends Base\Core
         }
     }
 
-    public function processNotification(Entity $cardMandateNotification, $order)
+    public function processNotification(Entity $cardMandateNotification)
     {
         $this->merchant = $this->repo->merchant->findOrFail($cardMandateNotification->getMerchantId());
 
@@ -791,9 +793,7 @@ class Core extends Base\Core
 
         $input[Entity::DEBIT_AT] = $cardMandateNotification->getPaymentAfter();
 
-        $input[Entity::AMOUNT] = $order->getAmount();
-
-        $paymentInput = $this->createPaymentInputForPDN($token, $cardMandate, $cardMandateNotification, $order);
+        $paymentInput = $this->createPaymentInputForPDN($token, $cardMandate, $cardMandateNotification);
 
         $payment = new Payment\Entity;
         $payment->merchant()->associate($cardMandate->merchant);
@@ -809,8 +809,6 @@ class Core extends Base\Core
         $payment->card()->associate($card);
 
         $payment->token()->associate($token);
-
-        $payment->order()->associate($order);
 
         $payment['recurring_type'] = 'auto';
 
@@ -838,8 +836,6 @@ class Core extends Base\Core
         }
 
         $cardMandateNotification->setNotificationId($notification->getId());
-
-        $cardMandateNotification->setAmount($input[Entity::AMOUNT]);
 
         $currency = empty($input[Entity::CURRENCY]) ? Currency::INR : $input[Entity::CURRENCY];
         $cardMandateNotification->setCurrency($currency);
@@ -894,10 +890,10 @@ class Core extends Base\Core
         }
     }
 
-    public function createPaymentInputForPDN($token, CardMandate\Entity $cardMandate, CardMandate\CardMandateNotification\Entity $cardMandateNotification, $order)
+    public function createPaymentInputForPDN($token, CardMandate\Entity $cardMandate, CardMandate\CardMandateNotification\Entity $cardMandateNotification)
     {
         $input = [
-            'amount' => $order->getAmount(),
+            'amount' => $cardMandateNotification->getAmount(),
             'currency' => 'INR',
             'method' => 'card',
             'order_id' => $cardMandateNotification->getOrderId(),
