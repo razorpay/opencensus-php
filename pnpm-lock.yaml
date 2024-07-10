@@ -196,12 +196,18 @@ importers:
       prop-types:
         specifier: 15.7.2
         version: 15.7.2
+      qrcode:
+        specifier: ^1.5.3
+        version: 1.5.3
       react:
         specifier: 17.0.2
         version: 17.0.2
       react-dom:
         specifier: 17.0.2
         version: 17.0.2(react@17.0.2)
+      react-hook-form:
+        specifier: ^7.52.1
+        version: 7.52.1(react@17.0.2)
       react-router-dom:
         specifier: 6.14.2
         version: 6.14.2(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -878,7 +884,7 @@ importers:
         version: 6.3.1(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@storybook/addon-storyshots':
         specifier: 6.2.9
-        version: 6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)
+        version: 6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)
       '@storybook/addon-viewport':
         specifier: 6.3.1
         version: 6.3.1(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -3602,6 +3608,11 @@ packages:
       react-native-svg: ^12.3.0
       react-native-tab-view: ^3.5.2
       styled-components: ^5
+    peerDependenciesMeta:
+      react-native:
+        optional: true
+      react-native-reanimated:
+        optional: true
 
   '@razorpay/blade@11.10.0':
     resolution: {integrity: sha512-cAxqmtsR/riq51Nx/wEw/Oy3gcgfG+52TfGrMAy9d3St8FLK8jiPOITBReKR0xCWHzQ2QyIytrpnRauJIxUP6A==, tarball: https://npm.pkg.github.com/download/@razorpay/blade/11.10.0/2aca59bdae63afc5a0fab4bf5948382765e62e64}
@@ -6899,6 +6910,9 @@ packages:
   babel-code-frame@6.26.0:
     resolution: {integrity: sha512-XqYMR2dfdGMW+hd0IUZ2PwK+fGeFkOxZJ0wY+JaQAHzt1Zx8LcvpiZD2NiGkEG8qx0CfkAOr5xt76d1e8vG90g==}
 
+  babel-core@6.26.3:
+    resolution: {integrity: sha512-6jyFLuDmeidKmUEb3NM+/yawG0M2bDZ9Z1qbZP59cyHLz8kYGKYwpJP0UwUKKUiTRNvxfLesJnTedqczP7cTDA==}
+
   babel-core@7.0.0-bridge.0:
     resolution: {integrity: sha512-poPX9mZH/5CSanm50Q+1toVci6pv5KSRv/5TWCwtzQS5XEwn40BcCrgIeMFWP9CKKIniKXNxoIOnOq4VVlGXhg==}
     peerDependencies:
@@ -6910,6 +6924,12 @@ packages:
     deprecated: babel-eslint is now @babel/eslint-parser. This package will no longer receive updates.
     peerDependencies:
       eslint: '>= 4.12.1'
+
+  babel-generator@6.26.1:
+    resolution: {integrity: sha512-HyfwY6ApZj7BYTcJURpM5tznulaBvyio7/0d4zFOeMPUmfxkCjHocCuoLa2SAGzBI8AREcH3eP3758F672DppA==}
+
+  babel-helpers@6.24.1:
+    resolution: {integrity: sha512-n7pFrqQm44TCYvrCDb0MqabAF+JUBq+ijBvNMUxpkLjJaAu32faIexewMumrH5KLLJ1HDyT0PTEqRyAe/GwwuQ==}
 
   babel-jest@26.2.2:
     resolution: {integrity: sha512-JmLuePHgA+DSOdOL8lPxCgD2LhPPm+rdw1vnxR73PpIrnmKCS2/aBhtkAcxQWuUcW2hBrH8MJ3LKXE7aWpNZyA==}
@@ -7150,6 +7170,9 @@ packages:
 
   babel-preset-next@1.4.0:
     resolution: {integrity: sha512-+86BkjiV3eGyXg61QLE33KCtXna/ZGoYxGDFhtr9Nqd2tdt+gLIqQrz0NXtZW2vU5RMVISqZEKhrxPK/tFOWEg==}
+
+  babel-register@6.26.0:
+    resolution: {integrity: sha512-veliHlHX06wjaeY8xNITbveXSiI+ASFnOqvne/LaIJIqOWi2Ogmj91KOugEz/hoh/fwMhXNBJPCv8Xaz5CyM4A==}
 
   babel-runtime@6.26.0:
     resolution: {integrity: sha512-ITKNuq2wKlW1fJg9sSW52eepoYgZBggvOAHC0u/CYu/qxQ9EVzThCgR69BnSXLHjy2f7SY5zaQ4yt7H9ZVxY2g==}
@@ -8951,6 +8974,10 @@ packages:
     resolution: {integrity: sha512-DtCOLG98P007x7wiiOmfI0fi3eIKyWiLTGJ2MDnVi/E04lWGbf+JzrRHMm0rgIIZJGtHpKpbVgLWHrv8xXpc3Q==}
     engines: {node: '>=0.10.0'}
 
+  detect-indent@4.0.0:
+    resolution: {integrity: sha512-BDKtmHlOzwI7iRuEkhzsnPoi5ypEhWAJB5RvHWe1kMr06js3uK5B3734i3ui5Yd+wOJV1cpE4JnivPD283GU/A==}
+    engines: {node: '>=0.10.0'}
+
   detect-indent@6.1.0:
     resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
     engines: {node: '>=8'}
@@ -9032,6 +9059,9 @@ packages:
 
   diffie-hellman@5.0.3:
     resolution: {integrity: sha512-kqag/Nl+f3GwyK25fhUMYj81BUOrZ9IuJsjIcDE5icNM9FJHAVm3VcUDxdLPoQtTuUylWm6ZIknYJwwaPxsUzg==}
+
+  dijkstrajs@1.0.3:
+    resolution: {integrity: sha512-qiSlmBq9+BCdCA/L46dw8Uy93mloxsPSbwnm5yrKn2vMPiy8KyAskTF6zuV/j5BMsmOGZDPs7KjU+mjb670kfA==}
 
   dir-glob@2.2.2:
     resolution: {integrity: sha512-f9LBi5QWzIW3I6e//uxZoLBlUt9kcp66qo0sSCxL6YZKc75R1c4MFCoe/LaZiBGmgujvQdxc5Bn3QhfyvK5Hsw==}
@@ -9316,6 +9346,9 @@ packages:
 
   enabled@2.0.0:
     resolution: {integrity: sha512-AKrN98kuwOzMIdAizXGI86UFBoo26CL21UM763y1h/GMSJ4/OHU9k2YlsmBpyScFo/wbLzWQJBMCW4+IO3/+OQ==}
+
+  encode-utf8@1.0.3:
+    resolution: {integrity: sha512-ucAnuBEhUK4boH2HjVYG5Q2mQyPorvv0u/ocS+zhdw0S8AlHYY+GOFhP1Gio5z4icpP2ivFSvhtFjQi8+T9ppw==}
 
   encodeurl@1.0.2:
     resolution: {integrity: sha512-TPJXq8JqFaVYm2CWmPvnP2Iyo4ZSM7/QKcSmuMLDObfpH5fi7RUGmd/rTDf+rut/saiDiQEeVTNgAmJEdAOx0w==}
@@ -11049,6 +11082,10 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
+  home-or-tmp@2.0.0:
+    resolution: {integrity: sha512-ycURW7oUxE2sNiPVw1HVEFsW+ecOpJ5zaj7eC0RlwhibhRBod20muUN8qu/gzx956YrLolVvs1MTXwKgC2rVEg==}
+    engines: {node: '>=0.10.0'}
+
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
@@ -12705,6 +12742,10 @@ packages:
 
   jsesc@0.5.0:
     resolution: {integrity: sha512-uZz5UnB7u4T9LvwmFqXii7pZSouaRPorGs5who1Ip7VO0wxanFvBL7GkM6dTHlgX+jhBApRetaWpnDabOeTcnA==}
+    hasBin: true
+
+  jsesc@1.3.0:
+    resolution: {integrity: sha512-Mke0DA0QjUWuJlhsE0ZPPhYiJkRap642SmI/4ztCFaUs6V2AiH1sfecc+57NgaryfAA2VR3v6O+CSjC1jZJKOA==}
     hasBin: true
 
   jsesc@2.5.2:
@@ -14855,6 +14896,10 @@ packages:
     resolution: {integrity: sha512-NCrCHhWmnQklfH4MtJMRjZ2a8c80qXeMlQMv2uVp9ISJMTt562SbGd6n2oq0PaPgKm7Z6pL9E2UlLIhC+SHL3w==}
     engines: {node: '>=4.0.0'}
 
+  pngjs@5.0.0:
+    resolution: {integrity: sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==}
+    engines: {node: '>=10.13.0'}
+
   pngjs@6.0.0:
     resolution: {integrity: sha512-TRzzuFRRmEoSW/p1KVAmiOgPco2Irlah+bGFCeNfJXxxYGwSw7YwAOAcd7X28K/m5bjBWKsC29KyoMfHbypayg==}
     engines: {node: '>=12.13.0'}
@@ -15285,6 +15330,10 @@ packages:
     resolution: {integrity: sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==}
     engines: {node: '>=6'}
 
+  private@0.1.8:
+    resolution: {integrity: sha512-VvivMrbvd2nKkiG38qjULzlc+4Vx4wm/whI9pQD35YrARNnhxeiRktSOhSukRLFNlzg6Br/cJPet5J/u19r/mg==}
+    engines: {node: '>= 0.6'}
+
   proc-log@3.0.0:
     resolution: {integrity: sha512-++Vn7NS4Xf9NacaU9Xq3URUuqZETPsf8L4j5/ckhaRYsfPeRyzGw+iDjFhV/Jr3uNmTvvddEJFWh5R1gRgUH8A==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
@@ -15445,6 +15494,11 @@ packages:
   q@1.5.1:
     resolution: {integrity: sha512-kV/CThkXo6xyFEZUugw/+pIOywXcDbFYgSct5cT3gqlbkBE1SJdwy6UQoZvodiWF/ckQLZyDE/Bu1M6gVu5lVw==}
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
+
+  qrcode@1.5.3:
+    resolution: {integrity: sha512-puyri6ApkEHYiVl4CFzo1tDkAZ+ATcnbJrJ6RiBM1Fhctdn/ix9MTE3hRph33omisEbC/2fcfemsseiKgBPKZg==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
 
   qs@6.10.4:
     resolution: {integrity: sha512-OQiU+C+Ds5qiH91qh/mg0w+8nwQuLjM4F4M/PbmhDOoYehPh+Fb0bDjtR1sOvy7YKxvj28Y/M0PhP5uVX0kB+g==}
@@ -15753,6 +15807,12 @@ packages:
     peerDependencies:
       react: ^16.6.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.6.0 || ^17.0.0 || ^18.0.0
+
+  react-hook-form@7.52.1:
+    resolution: {integrity: sha512-uNKIhaoICJ5KQALYZ4TOaOLElyM+xipord+Ha3crEFhTntdLvWZqVY49Wqd/0GiVCA/f9NjemLeiNPjG7Hpurg==}
+    engines: {node: '>=12.22.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18 || ^19
 
   react-hot-toast@2.4.1:
     resolution: {integrity: sha512-j8z+cQbWIM5LY37pR6uZR6D4LfseplqnuAO4co4u8917hBUvXlEqyP1ZzqVLcqoyUesZZv/ImreoCeHVDpE5pQ==}
@@ -17028,6 +17088,10 @@ packages:
     engines: {node: ^14.0.0 || ^16.0.0 || >=18.0.0}
     hasBin: true
 
+  slash@1.0.0:
+    resolution: {integrity: sha512-3TYDR7xWt4dIqV2JauJr+EJeW356RXijHeUlO+8djJ+uBXPn8/2dpzBc8yQhh583sVvc9CvFAeQVgijsH+PNNg==}
+    engines: {node: '>=0.10.0'}
+
   slash@2.0.0:
     resolution: {integrity: sha512-ZYKh3Wh2z1PpEXWr0MpSBZ0V6mZHAQfYevttO11c51CaWjGTaadiKZ+wVt1PbMlDV5qhMFslpZCemhwOK7C89A==}
     engines: {node: '>=6'}
@@ -17137,6 +17201,9 @@ packages:
   source-map-resolve@0.6.0:
     resolution: {integrity: sha512-KXBr9d/fO/bWo97NXsPIAW1bFSBOuCnjbNTBMO7N59hsv5i9yzRDfcYwwt0l04+VqnKC+EwzvJZIP/qkuMgR/w==}
     deprecated: See https://github.com/lydell/source-map-resolve#deprecated
+
+  source-map-support@0.4.18:
+    resolution: {integrity: sha512-try0/JqxPLF9nOjvSta7tVondkP5dwgyLDjVoyMDlmjugT2lRZ1OfsrYTkCd2hkDnJTKRbO/Rl3orm8vlsUzbA==}
 
   source-map-support@0.5.13:
     resolution: {integrity: sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==}
@@ -18099,6 +18166,10 @@ packages:
 
   trim-repeated@1.0.0:
     resolution: {integrity: sha512-pkonvlKk8/ZuR0D5tLW8ljt5I8kmxp2XKymhepUeOdCEfKpZaktSArkLHZt76OB1ZvO9bssUsDty4SWhLvZpLg==}
+    engines: {node: '>=0.10.0'}
+
+  trim-right@1.0.1:
+    resolution: {integrity: sha512-WZGXGstmCWgeevgTL54hrCuw1dyMQIzWy7ZfqRJfSmJZBwklI15egmQytFP6bPidmw3M8d5yEowl1niq4vmqZw==}
     engines: {node: '>=0.10.0'}
 
   trim-trailing-lines@1.1.4:
@@ -24674,16 +24745,17 @@ snapshots:
       patch-package: 7.0.0
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       styled-components: 5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2)
       tinycolor2: 1.6.0
       ts-deepmerge: 6.2.0
       use-presence: 1.1.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -27804,7 +27876,7 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@storybook/addon-storyshots@6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)':
+  '@storybook/addon-storyshots@6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)':
     dependencies:
       '@jest/transform': 26.6.2
       '@storybook/addons': 6.2.9(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -27826,7 +27898,7 @@ snapshots:
       regenerator-runtime: 0.13.7
       svelte: 3.59.2
       ts-dedent: 2.2.0
-      vue-jest: 3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16)
+      vue-jest: 3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16)
     optionalDependencies:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
@@ -29360,14 +29432,14 @@ snapshots:
     dependencies:
       '@babel/core': 7.24.4
       postcss: 7.0.39
-      postcss-syntax: 0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@1.6.0)(postcss@8.4.38)
     transitivePeerDependencies:
       - supports-color
 
   '@stylelint/postcss-markdown@0.36.2(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(postcss@7.0.39)':
     dependencies:
       postcss: 7.0.39
-      postcss-syntax: 0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@1.6.0)(postcss@8.4.38)
       remark: 13.0.0
       unist-util-find-all-after: 3.0.2
     transitivePeerDependencies:
@@ -32365,6 +32437,30 @@ snapshots:
       esutils: 2.0.3
       js-tokens: 3.0.2
 
+  babel-core@6.26.3:
+    dependencies:
+      babel-code-frame: 6.26.0
+      babel-generator: 6.26.1
+      babel-helpers: 6.24.1
+      babel-messages: 6.23.0
+      babel-register: 6.26.0
+      babel-runtime: 6.26.0
+      babel-template: 6.26.0
+      babel-traverse: 6.26.0
+      babel-types: 6.26.0
+      babylon: 6.18.0
+      convert-source-map: 1.9.0
+      debug: 2.6.9(supports-color@6.1.0)
+      json5: 0.5.1
+      lodash: 4.17.21
+      minimatch: 3.1.2
+      path-is-absolute: 1.0.1
+      private: 0.1.8
+      slash: 1.0.0
+      source-map: 0.5.7
+    transitivePeerDependencies:
+      - supports-color
+
   babel-core@7.0.0-bridge.0(@babel/core@7.17.8):
     dependencies:
       '@babel/core': 7.17.8
@@ -32378,6 +32474,24 @@ snapshots:
       eslint: 8.27.0
       eslint-visitor-keys: 1.3.0
       resolve: 1.22.8
+    transitivePeerDependencies:
+      - supports-color
+
+  babel-generator@6.26.1:
+    dependencies:
+      babel-messages: 6.23.0
+      babel-runtime: 6.26.0
+      babel-types: 6.26.0
+      detect-indent: 4.0.0
+      jsesc: 1.3.0
+      lodash: 4.17.21
+      source-map: 0.5.7
+      trim-right: 1.0.1
+
+  babel-helpers@6.24.1:
+    dependencies:
+      babel-runtime: 6.26.0
+      babel-template: 6.26.0
     transitivePeerDependencies:
       - supports-color
 
@@ -32874,6 +32988,18 @@ snapshots:
       babel-plugin-react-require: 3.1.3
     transitivePeerDependencies:
       - '@babel/core'
+      - supports-color
+
+  babel-register@6.26.0:
+    dependencies:
+      babel-core: 6.26.3
+      babel-runtime: 6.26.0
+      core-js: 2.6.12
+      home-or-tmp: 2.0.0
+      lodash: 4.17.21
+      mkdirp: 0.5.6
+      source-map-support: 0.4.18
+    transitivePeerDependencies:
       - supports-color
 
   babel-runtime@6.26.0:
@@ -35203,6 +35329,10 @@ snapshots:
 
   detect-file@1.0.0: {}
 
+  detect-indent@4.0.0:
+    dependencies:
+      repeating: 2.0.1
+
   detect-indent@6.1.0: {}
 
   detect-newline@3.1.0: {}
@@ -35292,6 +35422,8 @@ snapshots:
       bn.js: 4.12.0
       miller-rabin: 4.0.1
       randombytes: 2.1.0
+
+  dijkstrajs@1.0.3: {}
 
   dir-glob@2.2.2:
     dependencies:
@@ -35610,6 +35742,8 @@ snapshots:
       react: 17.0.2
 
   enabled@2.0.0: {}
+
+  encode-utf8@1.0.3: {}
 
   encodeurl@1.0.2: {}
 
@@ -38281,6 +38415,11 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
+  home-or-tmp@2.0.0:
+    dependencies:
+      os-homedir: 1.0.2
+      os-tmpdir: 1.0.2
+
   homedir-polyfill@1.0.3:
     dependencies:
       parse-passwd: 1.0.0
@@ -40806,6 +40945,8 @@ snapshots:
       - utf-8-validate
 
   jsesc@0.5.0: {}
+
+  jsesc@1.3.0: {}
 
   jsesc@2.5.2: {}
 
@@ -43697,6 +43838,8 @@ snapshots:
 
   pngjs@3.4.0: {}
 
+  pngjs@5.0.0: {}
+
   pngjs@6.0.0: {}
 
   pnp-webpack-plugin@1.6.4(typescript@4.9.3):
@@ -43776,7 +43919,7 @@ snapshots:
     dependencies:
       htmlparser2: 3.10.1
       postcss: 7.0.39
-      postcss-syntax: 0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@1.6.0)(postcss@8.4.38)
 
   postcss-html@1.6.0:
     dependencies:
@@ -44004,20 +44147,11 @@ snapshots:
       postcss-value-parser: 4.2.0
       svgo: 2.8.0
 
-  postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39):
-    dependencies:
-      postcss: 7.0.39
-    optionalDependencies:
-      postcss-html: 0.36.0(postcss-syntax@0.36.2)(postcss@7.0.39)
-      postcss-less: 3.1.4
-      postcss-scss: 2.1.1
-
   postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38):
     dependencies:
       postcss: 8.4.38
     optionalDependencies:
       postcss-html: 1.6.0
-    optional: true
 
   postcss-unique-selectors@5.1.1(postcss@8.4.38):
     dependencies:
@@ -44129,6 +44263,8 @@ snapshots:
   prismjs@1.27.0: {}
 
   prismjs@1.29.0: {}
+
+  private@0.1.8: {}
 
   proc-log@3.0.0: {}
 
@@ -44365,6 +44501,13 @@ snapshots:
   pure-rand@6.1.0: {}
 
   q@1.5.1: {}
+
+  qrcode@1.5.3:
+    dependencies:
+      dijkstrajs: 1.0.3
+      encode-utf8: 1.0.3
+      pngjs: 5.0.0
+      yargs: 15.3.1
 
   qs@6.10.4:
     dependencies:
@@ -44981,6 +45124,10 @@ snapshots:
       react-dom: 17.0.2(react@17.0.2)
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
+
+  react-hook-form@7.52.1(react@17.0.2):
+    dependencies:
+      react: 17.0.2
 
   react-hot-toast@2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2):
     dependencies:
@@ -46639,6 +46786,8 @@ snapshots:
       nanospinner: 1.1.0
       picocolors: 1.0.0
 
+  slash@1.0.0: {}
+
   slash@2.0.0: {}
 
   slash@3.0.0: {}
@@ -46786,6 +46935,10 @@ snapshots:
     dependencies:
       atob: 2.1.2
       decode-uri-component: 0.2.2
+
+  source-map-support@0.4.18:
+    dependencies:
+      source-map: 0.5.7
 
   source-map-support@0.5.13:
     dependencies:
@@ -47402,7 +47555,7 @@ snapshots:
       postcss-sass: 0.4.4
       postcss-scss: 2.1.1
       postcss-selector-parser: 6.0.16
-      postcss-syntax: 0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@1.6.0)(postcss@8.4.38)
       postcss-value-parser: 4.2.0
       resolve-from: 5.0.0
       slash: 3.0.0
@@ -48008,6 +48161,8 @@ snapshots:
   trim-repeated@1.0.0:
     dependencies:
       escape-string-regexp: 1.0.5
+
+  trim-right@1.0.1: {}
 
   trim-trailing-lines@1.1.4: {}
 
@@ -48770,9 +48925,9 @@ snapshots:
 
   vscode-uri@3.0.8: {}
 
-  vue-jest@3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16):
+  vue-jest@3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16):
     dependencies:
-      babel-core: 7.0.0-bridge.0(@babel/core@7.17.8)
+      babel-core: 6.26.3
       babel-plugin-transform-es2015-modules-commonjs: 6.26.2
       chalk: 2.4.2
       deasync: 0.1.29

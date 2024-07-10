@@ -384,7 +384,6 @@ class App extends Component {
             user,
             abExperiments,
           });
-        console.log('OKK running fine');
         if (isRzpSalesToPosAgentSwitchEnabled && isSalesAgentActingAsMerchant) {
           const merchants = user.user.merchants ?? [];
           const partnerAgent = merchants.find(
