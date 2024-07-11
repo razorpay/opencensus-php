@@ -106,6 +106,8 @@ export const switchToTestMode = async ({ page }) => {
     await modeSwitchToggle.click();
     await page.locator('li[data-test="Test Mode"]').click();
     await page.waitForSelector('a.switch-modes-toggle');
+  } else {
+    throw new Error('Failed to switch to test mode');
   }
 };
 

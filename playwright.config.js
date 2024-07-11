@@ -12,7 +12,7 @@ module.exports = {
   globalSetup: path.resolve(__dirname, './playwright/setup/globalSetup'),
   retries: isCI ? 2 : 0,
   timeout: 6 * 60 * 1000,
-  workers: isCI ? 4 : 4,
+  workers: isCI ? 2 : 4,
   reporter: getReporter(),
   fullyParallel: true,
   // This includes retries also in the maxFailures count (45/3 = 15 unique failures - worst case scenario)
