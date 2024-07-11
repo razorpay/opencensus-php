@@ -8510,6 +8510,8 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
+        // add skip for new QR here
+        // create UPI entity else where
         if ($this->shouldCallGatewayFunction() === false)
         {
             return;

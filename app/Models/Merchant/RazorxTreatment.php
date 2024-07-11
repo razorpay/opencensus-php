@@ -1194,4 +1194,10 @@ final class RazorxTreatment
 
     const HDFC_ECMS_FUND_TRANS = 'hdfc_ecms_fund_trans';
 
+
+    /**
+     * Razorx flags for QR Gateway module separation
+     */
+    const QR_CODE_CREATE_REFACTOR_GATEWAY = 'qr_code_create_refactor_gateway';
+    const QR_PAYMENT_REFACTOR_GATEWAY     = 'qr_payment_refactor_gateway';
 }
