@@ -1024,12 +1024,7 @@ class MerchantController extends Controller
 
     public function getCheckoutPublic()
     {
-        $input = Request::all();
-
-        $data = $this->getCheckoutCommon($input);
-
-        return \View::make('checkout.checkout')
-                    ->with($data);
+        return file_get_contents('https://api-dark.razorpay.com/v1/checkout/public');
     }
 
     public function getPublicEntityReport($entity)

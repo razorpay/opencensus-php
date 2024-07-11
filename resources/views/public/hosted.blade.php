@@ -121,10 +121,10 @@
       }
 
       if(options.__referer) {
-          Razorpay.configure({}, {referer: options.__referer});
+          Razorpay.configure({}, {library: 'hosted',referer: options.__referer});
           delete options.__referer;
       }
-      
+
       var razorpay = Razorpay(options);
       function showCheckout() {
         razorpay.open();

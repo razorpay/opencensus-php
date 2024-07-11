@@ -2203,6 +2203,14 @@ class Constants
      */
     const COLLECTX_ENABLED = 'collectx_enabled';
 
+    const MESSAGE_BANNER_ENABLED = 'message_banner_enabled';
+
+    const SHOW_OFFER_METHOD_AMT = 'show_offer_method_amt';
+
+    const SHOW_TRUST_MARKERS = 'show_trust_markers';
+
+    const SHOW_PG_V3 = 'show_pg_v3';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3056,6 +3064,11 @@ class Constants
 
         self::ONE_CC_ENABLE_FLITS_COINS => true,
         self::PAYROLL_SAV                            => true,
+
+        self::MESSAGE_BANNER_ENABLED                => true,
+        self::SHOW_OFFER_METHOD_AMT                  => true,
+        self::SHOW_TRUST_MARKERS                     => true,
+        self::SHOW_PG_V3                             => true,
     ];
 
     // Entity type constants
@@ -4401,6 +4414,26 @@ class Constants
             'display_name'  => 'HOLD TRANSFER PROCESSING FOR CLS ONBOARDING',
             'documentation' => 'For putting Route transfers on hold until the merchant onboarding on CLS is completed'
         ],
+        self::MESSAGE_BANNER_ENABLED => [
+            'feature'       => self::MESSAGE_BANNER_ENABLED,
+            'display_name'  => 'display message banners on merchant checkout',
+            'documentation' => ''
+        ],
+        self::SHOW_OFFER_METHOD_AMT => [
+            'feature'       => self::SHOW_OFFER_METHOD_AMT,
+            'display_name'  => 'display item-level offer and show landing amount on checkout',
+            'documentation' => ''
+        ],
+        self::SHOW_TRUST_MARKERS => [
+            'feature'       => self::SHOW_TRUST_MARKERS,
+            'display_name'  => 'display trust markers on merchant checkout',
+            'documentation' => ''
+        ],
+        self::SHOW_PG_V3 => [
+            'feature'       => self::SHOW_PG_V3,
+            'display_name'  => 'display new onboarding flow to merchant',
+            'documentation' => ''
+        ]
     ];
 
     /**
