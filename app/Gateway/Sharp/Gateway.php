@@ -12,14 +12,18 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
 use RZP\Models\UpiMandate;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\GooglePay\Action;
 use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Models\Payment\Processor\PayLater;
+use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Gateway extends Base\Gateway
 {
+    use UpiTrait;
+
     const DEFAULT_PAYEE_VPA = 'upi@razopay';
 
     protected $gateway = 'sharp';
@@ -214,6 +218,13 @@ class Gateway extends Base\Gateway
 
                 $this->processTestUpiPaymentCallback($input, $case);
 
+                if ((isset($input['upi']['flow']) === true) and
+                    ($input['upi']['flow'] === 'intent'))
+                {
+                    $response['data']['intent_url']=$this->getIntentRequest($input);
+                    return $response;
+                }
+
                 return $response;
             }
 
@@ -222,7 +233,8 @@ class Gateway extends Base\Gateway
             if ((isset($input['upi']['flow']) === true) and
                 ($input['upi']['flow'] === 'intent'))
             {
-                return $this->getIntentRequest($input);
+                $response['data']['intent_url'] = $this->getIntentRequest($input);
+                return $response;
             }
 
             $request = true;
@@ -392,21 +404,89 @@ class Gateway extends Base\Gateway
         return $this->getIntentRequest($input);
     }
 
+    protected function getRecurrence(array $input)
+    {
+        $frequency = $input['upi_mandate']['frequency'] ?? null;
+
+        switch ($frequency)
+        {
+            case 'as_presented':
+                return [
+                    'recurring_rule' => 'ON',
+                    'recurring_value' => null,
+                    'frequency' => 'ASPRESENTED'
+                ];
+
+            case 'daily':
+                return [
+                    'recurring_rule' => null,
+                    'recurring_value' => null,
+                    'frequency' => 'DAILY'
+                ];
+
+            case 'half_yearly':
+                return [
+                    'recurring_rule' => strtoupper($input['upi_mandate']['recurring_type']),
+                    'recurring_value' => $input['upi_mandate']['recurring_value'],
+                    'frequency' => 'HALFYEARLY'
+                ];
+
+            default:
+                return [
+                    'recurring_rule' => strtoupper($input['upi_mandate']['recurring_type']),
+                    'recurring_value' => $input['upi_mandate']['recurring_value'],
+                    'frequency' => strtoupper($input['upi_mandate']['frequency'])
+                ];
+        }
+    }
+
     protected function getIntentRequest($input)
     {
+        $recurrence = $this->getRecurrence($input);
+
+        if (isset($input['payment'][Payment\Entity::RECURRING_TYPE]) === true and ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
+        {
+            $content = [
+                UpiBase\IntentParams::PAYEE_ADDRESS => self::DEFAULT_PAYEE_VPA,
+                UpiBase\IntentParams::PAYEE_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+                UpiBase\IntentParams::TXN_REF_ID => str_random(15),
+                UpiBase\IntentParams::TXN_NOTE => $this->getPaymentRemark($input),
+                UpiBase\IntentParams::TXN_AMOUNT => number_format($input['upi_mandate']['max_amount'] / 100, 2),
+                UpiBase\IntentParams::FAM  => number_format($input['payment']['amount'] / 100, 2),
+                UpiBase\IntentParams::TXN_CURRENCY => $input['payment']['currency'],
+                UpiBase\IntentParams::MCC => (string) ($input['terminal']['category'] ?? 5411),
+                UpiBase\IntentParams::VALIDITY_START => Carbon::createFromTimestamp($input['upi_mandate']['start_time'], Timezone::IST)->format('dmY'),
+                UpiBase\IntentParams::VALIDITY_END => Carbon::createFromTimestamp($input['upi_mandate']['end_time'], Timezone::IST)->format('dmY'),
+                UpiBase\IntentParams::AMOUNT_RULE => 'MAX',
+                UpiBase\IntentParams::FREQUENCY => $recurrence['frequency'],
+                UpiBase\IntentParams::RECUR_VALUE => $recurrence['recurring_value'],
+                UpiBase\IntentParams::RECUR_TYPE => $recurrence['recurring_rule'],
+                UpiBase\IntentParams::REV  => 'Y',
+                UpiBase\IntentParams::BLOCK  => 'N',
+                UpiBase\IntentParams::TXN_TYPE  => 'CREATE',
+                UpiBase\IntentParams::ORG_ID   => '400011',
+                UpiBase\IntentParams::MODE => '04',
+                UpiBase\IntentParams::PURPOSE  => '14',
+                UpiBase\IntentParams::TRANSACTION_ID  => str_random(15),
+            ];
+            $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+            return  'upi://mandate?' . $query;
+        }
+
         $content = [
-            UpiBase\IntentParams::PAYEE_ADDRESS => self::DEFAULT_PAYEE_VPA,
-            UpiBase\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
-            UpiBase\IntentParams::TXN_REF_ID    => str_random(15),
-            UpiBase\IntentParams::TXN_NOTE      => 'razorpay',
-            UpiBase\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
-            UpiBase\IntentParams::TXN_CURRENCY  => 'INR',
-            UpiBase\IntentParams::MCC           => '5411',
+                UpiBase\IntentParams::PAYEE_ADDRESS => self::DEFAULT_PAYEE_VPA,
+                UpiBase\IntentParams::PAYEE_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+                UpiBase\IntentParams::TXN_REF_ID => str_random(15),
+                UpiBase\IntentParams::TXN_NOTE => 'razorpay',
+                UpiBase\IntentParams::TXN_AMOUNT => $input['payment']['amount'] / 100,
+                UpiBase\IntentParams::TXN_CURRENCY => 'INR',
+                UpiBase\IntentParams::MCC => '5411',
         ];
 
         $query = str_replace(' ', '', urldecode(http_build_query($content)));
 
-        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
+        return  'upi://pay?' . $query;
     }
 
     protected function processTestUpiPayment($payment)
