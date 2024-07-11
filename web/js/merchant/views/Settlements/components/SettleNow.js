@@ -24,15 +24,16 @@ const SettleNow = (props) => {
     fetchOndemandRestrictions,
     isNodalAccountLowBalanceBlocked,
     showLeftBorder = true,
+    odsConfigState,
   } = props;
+  const isLoading = odsConfigState.loading || current_balance.loading;
+  const isOdsDisabled = !!odsConfigState.data?.disable;
 
   const isOnDemandDisabled = () => {
     return restrictedFeatures.some((feature) => user.isFeatureEnabled(feature));
   };
   const settlementRestricted =
-    user.isFeatureEnabled('es_on_demand_restricted') ||
-    isOnDemandDisabled() ||
-    isNodalAccountLowBalanceBlocked;
+    user.isOndemandSettlementsRestricted || isOnDemandDisabled() || isNodalAccountLowBalanceBlocked;
 
   const attemptsLeft =
     settlementRestricted && ondemand_restrictions && ondemand_restrictions.data.attempts_left;
@@ -53,12 +54,13 @@ const SettleNow = (props) => {
   if (balance < 0) {
     balance = Math.abs(balance);
   }
+
   const checkIfSettlementDisabled =
     isSettleNowRestricted ||
-    current_balance.loading ||
     balance < 100 ||
     isOnDemandDisabled() ||
-    isEsOnDemandBlocked;
+    isEsOnDemandBlocked ||
+    isOdsDisabled;
 
   const fetchRestrictionsIfAny = () => {
     if (settlementRestricted) {
@@ -85,14 +87,28 @@ const SettleNow = (props) => {
     });
   };
 
-  const settleNowRestrictionMsg = settleNowRestrictionMsgFn(
-    settlementRestricted,
-    ondemand_restrictions,
-    isOnDemandDisabled,
-    user,
-    isNodalAccountLowBalanceBlocked,
-    isEsOnDemandBlocked,
-  );
+  const getTooltipContent = () => {
+    if (isLoading) {
+      return 'Loading...';
+    }
+    if (isOdsDisabled) {
+      return 'On-demand Settlements are being limited due to high usage. Please try again the next working day.';
+    }
+    if (isEsOnDemandBlocked) {
+      return 'Settle now is temporarily unavailable. Please try again at 8:00 AM tomorrow.';
+    }
+    return null;
+  };
+
+  const tooltipMsg =
+    getTooltipContent() ||
+    settleNowRestrictionMsgFn(
+      settlementRestricted,
+      ondemand_restrictions,
+      isOnDemandDisabled,
+      user,
+      isNodalAccountLowBalanceBlocked,
+    );
 
   useEffect(() => {
     fetchRestrictionsIfAny();
@@ -101,7 +117,8 @@ const SettleNow = (props) => {
   return (
     <div className={showLeftBorder ? 'box-left-pad10-inline' : ''}>
       <SettleNowButton
-        disabled={checkIfSettlementDisabled || isEsOnDemandBlocked}
+        // TODO: Ideally we should use loading indicator instead of disabling CTA(existing pattern used by checkIfSettlementDisabled and SettleNowButton).
+        disabled={isLoading || checkIfSettlementDisabled}
         merchantId={user.current}
         fromWhere="Settlements"
         settlementExists={settlementExists}
@@ -109,13 +126,13 @@ const SettleNow = (props) => {
         showOndemandSettlementForm={showOndemandSettlementForm}
         checkIfFirstEverSettlement={checkIfFirstEverSettlement}
       />
-      {settleNowRestrictionMsg && (
+      {tooltipMsg && (
         <PopoverComponent
           align="top"
           parentQuerySelector=".settle-btn .settle-now--list"
           theme="dark"
         >
-          <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
+          <PopoverBody>{tooltipMsg}</PopoverBody>
         </PopoverComponent>
       )}
     </div>
@@ -128,6 +145,7 @@ const mapStateToProps = (state) => {
     mode: state.session.mode,
     ...state.home,
     ...state.instantSettlements,
+    odsConfigState: state.settlement.settleNowButtonDisabled,
   };
 };
 

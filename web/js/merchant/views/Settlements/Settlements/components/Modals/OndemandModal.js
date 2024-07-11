@@ -670,7 +670,7 @@ class OndemandModal extends Component {
                 />
                 <Box display="flex" flexWrap="wrap" flexDirection="row">
                   <Text size="medium">Maximum amount available:</Text>
-                  <BladeAmount size="body-small" value={MAX_IS_LIMIT} />
+                  <BladeAmount size="small" value={MAX_IS_LIMIT} />
                 </Box>
               </Box>
             ) : (
@@ -693,7 +693,7 @@ class OndemandModal extends Component {
                   </PopoverBody>
                 </Popover>
 
-                <BladeAmount size="body-medium" value={MAX_IS_LIMIT} />
+                <BladeAmount size="medium" value={MAX_IS_LIMIT} />
               </Box>
             )
           ) : null}

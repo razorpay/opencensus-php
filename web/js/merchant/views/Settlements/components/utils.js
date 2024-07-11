@@ -13,20 +13,18 @@ export const featureName = {
   disable_ondemand_for_loan: 'Loan',
 };
 
+//TODO: Use Proper variable names and follow SPOC(Exisiting function).Don't add anything new here, instead use getTooltipContent.
 export const settleNowRestrictionMsgFn = (
   settlementRestricted,
   ondemand_restrictions,
   isOnDemandDisabled,
   user,
   isNodalAccountBalanceLow,
-  isEsOnDemandBlocked,
 ) => {
   if (!settlementRestricted) return null;
   const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
-    ondemand_restrictions.data;
-  if (isEsOnDemandBlocked) {
-    return 'Settle now is temporarily unavailable. Please try again at 8:00 AM tomorrow.';
-  } else if (isOnDemandDisabled()) {
+    ondemand_restrictions?.data || {};
+  if (isOnDemandDisabled()) {
     const restrictedItem = restrictedFeatures
       .filter((feat) => user.isFeatureEnabled(feat))
       .map((feat) => featureName[feat]);

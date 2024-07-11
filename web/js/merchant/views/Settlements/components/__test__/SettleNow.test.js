@@ -150,6 +150,32 @@ describe('SettleNow', () => {
       expect(screen.getByRole('img')).toHaveAttribute('alt', 'settle-now-thunder');
       expect(screen.getByRole('img')).toHaveAttribute('class', 'settlement-icon-thunder');
     });
+
+    test('should disable CTA when global limit breached', () => {
+      const initialState = {
+        ...state,
+        session: {
+          user: {
+            isFeatureEnabled: () => true,
+          },
+          mode: 'live',
+        },
+        settlement: {
+          settleNowButtonDisabled: {
+            loading: false,
+            data: { disable: true },
+          },
+        },
+      };
+      render(<App initialState={initialState} showLeftBorder={false} />);
+      expect(screen.getByRole('button', { name: /settle now/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /settle now/i })).toBeDisabled();
+      expect(
+        screen.getByText(
+          /On-demand Settlements are being limited due to high usage. Please try again the next working day./i,
+        ),
+      ).toBeInTheDocument();
+    });
   });
 
   describe('Restriction Message', () => {
@@ -233,7 +259,8 @@ describe('SettleNow', () => {
         ...state,
         session: {
           user: {
-            isFeatureEnabled: (feature) => feature === 'es_on_demand_restricted',
+            isFeatureEnabled: () => false,
+            isOndemandSettlementsRestricted: true,
           },
           mode: 'live',
         },

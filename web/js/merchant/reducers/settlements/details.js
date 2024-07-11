@@ -111,7 +111,7 @@ const initialState = {
     error: null,
   },
   settleNowButtonDisabled: {
-    loading: true,
+    loading: false,
     data: {},
   },
   timeline: {
@@ -280,6 +280,13 @@ export default (state = initialState, action) => {
           loading: false,
           error: null,
         },
+      });
+
+    case `${ONDEMAND_BLOCKED_FETCH}::PENDING`:
+      return set(state, 'settleNowButtonDisabled', {
+        loading: true,
+        data: initialState.settleNowButtonDisabled.data,
+        error: null,
       });
 
     case `${ONDEMAND_BLOCKED_FETCH}::ERROR`:
