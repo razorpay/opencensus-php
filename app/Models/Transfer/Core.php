@@ -1565,7 +1565,7 @@ class Core extends Base\Core
         $useLedgerOutboxPushQueue = false;
 
         if (($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) ||
-            ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_TRANSFER_ON_HOLD) === true))
+            ($merchant->isFeatureEnabled(Feature\Constants::TRANSFER_ON_HOLD) === true))
         {
             $useLedgerOutboxPushQueue = true;
         }
@@ -2845,5 +2845,17 @@ class Core extends Base\Core
                 'source_id'        => $transfer->getSourceId(),
                 'payment_id'       => $payment->getId(),
             ]);
+    }
+
+    public function isTransferOnHoldFlagEnabled($merchant)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchant->getId());
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSFER_ON_HOLD) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

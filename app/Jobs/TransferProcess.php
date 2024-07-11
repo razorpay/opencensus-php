@@ -178,18 +178,30 @@ class TransferProcess extends Job
 
     private function checkProcessingDelay($payment)
     {
+        $isTransferHoldFlagEnabled =  (new Transfer\Core)->isTransferOnHoldFlagEnabled($payment->merchant);
+
+        if ($isTransferHoldFlagEnabled === true)
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_PROCESS_HOLD_FLAG_ENABLED,
+                [
+                    'payment_id'                  => $this->payment->getId(),
+                    'is_hold_flag_enabled'        => true,
+                ]
+            );
+
+            return true;
+        }
+
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
         {
             $journal = (new ReverseShadow\Payments\Core())->fetchLedgerJournalForPaymentMerchantCapture($payment);
-
-            $isLedgerHoldFlagEnabled = (new ReverseShadow\Transfers\Core())->isLedgerReverseShadowHoldFlagEnabled($payment->merchant);
 
             $this->trace->info(
                 TraceCode::TRANSFER_PROCESS_PAYMENT_JOURNAL_INFO,
                 [
                     'payment_id'                  => $this->payment->getId(),
                     'is_journal_created'          => (empty($journal) === false),
-                    'is_ledger_hold_flag_enabled' => $isLedgerHoldFlagEnabled,
                 ]
             );
 
@@ -216,14 +228,8 @@ class TransferProcess extends Job
                         'payment_id'             => $this->payment->getId(),
                         'txn_created'            => (empty($txn) === false),
                         'balance_updated'        => $isApiTxnBalanceUpdated,
-                        'is_ledger_hold_flag_enabled' => $isLedgerHoldFlagEnabled,
                     ]
                 );
-            }
-
-            if ($isLedgerHoldFlagEnabled === true)
-            {
-                return true;
             }
 
             if ((empty($journal) === false) || ($isApiTxnBalanceUpdated === true))

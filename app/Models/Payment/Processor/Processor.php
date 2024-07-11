@@ -6911,6 +6911,8 @@ class Processor
     {
         $isCustomerWalletTransfer = array_key_exists(TransferToType::CUSTOMER, $input);
 
+        $isTransferHoldFlagEnabled = (new TransferCore())->isTransferOnHoldFlagEnabled($this->merchant);
+
         if ($this->merchant->isFeatureEnabled(Feature::PG_LEDGER_REVERSE_SHADOW) === true)
         {
             $variant = App::getFacadeRoot()->razorx->getTreatment(
@@ -6925,21 +6927,19 @@ class Processor
 
             $isJournalCreated = !(($journal === null));
 
-            $isLedgerHoldFlagEnabled = (new ReverseShadowTransfersCore())->isLedgerReverseShadowHoldFlagEnabled($this->merchant);
-
             $this->trace->info(TraceCode::PAYMENT_TRANSFER_LEDGER_OUTBOX_PUSH_CHECK,
                 [
                     'merchant'                 => $this->merchant->getId(),
                     'isExperimentEnabled'      => $isExperimentEnabled,
                     'isPaymentJournalCreated'  => $isJournalCreated,
                     'customerWalletTransfer'   => $isCustomerWalletTransfer,
-                    'isLedgerHoldFlagEnabled'  => $isLedgerHoldFlagEnabled,
+                    'isTransferHoldFlagEnabled'  => $isTransferHoldFlagEnabled,
                 ]);
 
             if (($isExperimentEnabled === true)
                 and ($isCustomerWalletTransfer === false)
                 and ($isJournalCreated === true)
-                and ($isLedgerHoldFlagEnabled === false))
+                and ($isTransferHoldFlagEnabled === false))
             {
                 return [$isExperimentEnabled, true];
             }
@@ -6968,17 +6968,19 @@ class Processor
 
         $this->trace->info(TraceCode::PAYMENT_TRANSFER_SYNC_PROCESSING_CHECK,
             [
-                'merchant'               => $this->merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'transfersCount'         => $transfersCount,
-                'txnAndBalanceUpdated'   => $txnAndBalanceUpdated,
-                'customerWalletTransfer' => $isCustomerWalletTransfer,
+                'merchant'                 => $this->merchant->getId(),
+                'isExperimentEnabled'      => $isExperimentEnabled,
+                'transfersCount'           => $transfersCount,
+                'txnAndBalanceUpdated'     => $txnAndBalanceUpdated,
+                'customerWalletTransfer'   => $isCustomerWalletTransfer,
+                'isTransferHoldFlagEnabled'  => $isTransferHoldFlagEnabled,
             ]);
 
         if (($transfersCount <= 3)
             and ($isExperimentEnabled === true)
             and ($txnAndBalanceUpdated === true)
-            and ($isCustomerWalletTransfer === false))
+            and ($isCustomerWalletTransfer === false)
+            and ($isTransferHoldFlagEnabled === false))
         {
             return [$isExperimentEnabled, true];
         }

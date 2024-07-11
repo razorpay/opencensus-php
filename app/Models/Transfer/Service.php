@@ -717,6 +717,11 @@ class Service extends Base\Service
             {
                 $payment = $this->repo->payment->findOrFail($paymentId);
 
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::TRANSFER_ON_HOLD) === true)
+                {
+                    continue;
+                }
+
                 if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
                     $core = new ReverseShadow\Transfers\Core();
@@ -766,6 +771,11 @@ class Service extends Base\Service
             try
             {
                 $payment = $this->repo->payment->findOrFail($paymentId);
+
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::TRANSFER_ON_HOLD) === true)
+                {
+                    continue;
+                }
 
                 if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
@@ -918,6 +928,11 @@ class Service extends Base\Service
                         break;
                     }
                 }
+            }
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::TRANSFER_ON_HOLD) === true)
+            {
+                continue;
             }
 
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)

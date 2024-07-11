@@ -1010,7 +1010,20 @@ class Core extends Base\Core
 
                             if($transfer->getStatus() === Transfer\Status::PENDING)
                             {
-                                $transferPaymentId = $this->findTransferPaymentFromNotes($journal);
+                                $transferPaymentId = $this->findTransferPaymentFromNotes($transfer);
+
+                                if ($transferPaymentId === null)
+                                {
+                                    $this->trace->error(TraceCode::TRANSFER_PAYMENT_NOT_FOUND_FOR_TRANSFER, [
+                                        'transfer_id'    => $transfer->getId(),
+                                    ]);
+
+                                    throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                                    null,
+                                    [
+                                        LedgerConstants::TRANSFER_ID      => $transfer->getId(),
+                                    ]);
+                                }
 
                                 $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment,$transferPaymentId);
 
@@ -1984,24 +1997,39 @@ class Core extends Base\Core
             }
     }
 
-    private function findTransferPaymentFromNotes(array $journal)
+    private function findTransferPaymentFromNotes($transfer)
     {
-        $creditJournals = array_filter($journal, function($item)  {
-            return $this->filterByFundAccountTypeAndEntryType($item, 'merchant_balance', 'credit');
-        });
+
+        $payloadName = $this->getPayloadName($transfer->getPublicId(),LedgerConstants::TRANSFER);
+
+        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
+
+        if (count($outboxEntries) == 0)
+        {
+            return null;
+        }
+
+        $outboxEntry = $outboxEntries[0];
+
+        $outboxEntry = base64_decode($outboxEntry->getPayloadSerialized());
+
+        $payload = json_decode($outboxEntry, true);
+
         $paymentID = null;
 
-        if (!empty($creditJournals)) {
-            $firstCreditJournal = reset($creditJournals);
+        $journals = $payload[LedgerConstants::JOURNALS];
 
-            if (!empty($firstCreditJournal[LedgerConstants::LEDGER_ENTRY])) {
-                $firstLedgerEntry = reset($firstCreditJournal[LedgerConstants::LEDGER_ENTRY]);
+        foreach ( $journals as $journal)
+        {
+            if ( !empty($journal[LedgerConstants::NOTES]) && !empty($journal[LedgerConstants::NOTES][LedgerConstants::PAYMENT_ID]))
+            {
+                $paymentID = $journal[LedgerConstants::NOTES][LedgerConstants::PAYMENT_ID];
 
-                if (!empty($firstLedgerEntry[LedgerConstants::NOTES][LedgerConstants::PAYMENT_ID])) {
-                    $paymentID = $firstLedgerEntry[LedgerConstants::NOTES][LedgerConstants::PAYMENT_ID];
-                    $paymentID = substr($paymentID, 4);
-                }
+                $paymentID = substr($paymentID, 4);
+
+                break;
             }
+
         }
 
         return $paymentID;

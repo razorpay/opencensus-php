@@ -1404,7 +1404,7 @@ class Constants
 
     const PG_LEDGER_RAMP_ON_HOLD = "pg_ledger_ramp_on_hold";
 
-    const PG_LEDGER_TRANSFER_ON_HOLD = "pg_ledger_transfer_on_hold";
+    const TRANSFER_ON_HOLD = "transfer_on_hold";
 
     /**
      * If contact number updated via admin dashboard, mark it verified by default if feature present on org
@@ -2743,7 +2743,7 @@ class Constants
         self::PG_LEDGER_JOURNAL_WRITES                     => true,
         self::PG_LEDGER_REVERSE_SHADOW                     => true,
         self::PG_LEDGER_RAMP_ON_HOLD                       => true,
-        self::PG_LEDGER_TRANSFER_ON_HOLD                   => true,
+        self::TRANSFER_ON_HOLD                             => true,
         self::LEDGER_JOURNAL_READS                         => true,
         self::LEDGER_REVERSE_SHADOW                        => true,
         self::ORG_AXIS_PAYPAL                              => true,
@@ -4409,8 +4409,8 @@ class Constants
             'display_name'  => 'PAYROLL SAV',
             'documentation' => 'feature to enable payroll fundloading source account validation'
         ],
-        self::PG_LEDGER_TRANSFER_ON_HOLD => [
-            'feature'       => self::PG_LEDGER_TRANSFER_ON_HOLD,
+        self::TRANSFER_ON_HOLD => [
+            'feature'       => self::TRANSFER_ON_HOLD,
             'display_name'  => 'HOLD TRANSFER PROCESSING FOR CLS ONBOARDING',
             'documentation' => 'For putting Route transfers on hold until the merchant onboarding on CLS is completed'
         ],
@@ -4513,7 +4513,7 @@ class Constants
         self::PG_LEDGER_JOURNAL_WRITES,
         self::PG_LEDGER_REVERSE_SHADOW,
         self::PG_LEDGER_RAMP_ON_HOLD,
-        self::PG_LEDGER_TRANSFER_ON_HOLD,
+        self::TRANSFER_ON_HOLD,
     ];
 
     // Payout service related features
