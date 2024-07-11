@@ -3999,38 +3999,6 @@ class Core extends Base\Core
         return true;
     }
 
-    private function setIsTransactionActive($merchantId)
-    {
-        $redis = $this->app['redis']->Connection();
-
-        $key = 'is_transaction_active_' . $merchantId;
-
-        $redis->set($key, "true", 'ex', 60 * 11);
-    }
-
-    private function setIsTransactionInactive($merchantId)
-    {
-        $redis = $this->app['redis']->Connection();
-
-        $key = 'is_transaction_active_' . $merchantId;
-
-        $redis->del($key);
-    }
-
-    public function getIsTransactionActive($merchantId, $entity): bool
-    {
-        if ($entity !== 'merchant')
-        {
-            return false;
-        }
-
-        $redis = $this->app['redis']->Connection();
-
-        $key = 'is_transaction_active_' . $merchantId;
-
-        return $redis->get($key) === "true";
-    }
-
     /**
      * This function is used for updating merchant activation status
      *
@@ -4214,7 +4182,6 @@ class Core extends Base\Core
             }
         });
 
-        $this->setIsTransactionActive($merchant->getId());
         $this->repo->transactionOnLiveAndTestAndAsv(function() use (
             $rejectionOption,
             $merchantDetails,
@@ -4524,7 +4491,6 @@ class Core extends Base\Core
                 }));
             }
         });
-        $this->setIsTransactionInactive($merchant->getId());
 
         if ($shouldSave === false)
         {

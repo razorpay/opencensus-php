@@ -224,7 +224,6 @@ trait AsvFind
         if ($shouldCallAsv === true) {
             $shouldCacheResults = in_array($this->entity, ["merchant", "merchant_detail"]) === true
                                     && $this->isTransactionActive() === false
-                                    && (new Detail\Core())->getIsTransactionActive($id, $this->entity) === false
                                     && (new AsvRouter())->isCacheDisabledFlow() === false;
 
             if ($shouldCacheResults) {
