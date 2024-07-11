@@ -9,7 +9,7 @@ import * as allFetch from 'merchant/utils/ajax';
 import ProviderView from 'merchant/views/Optimizer/AddProvider/ProviderView';
 import * as utils from 'merchant/views/Optimizer/AddProvider/utils';
 
-describe('Optimizer IntegrationTesting PaymentTesting', () => {
+describe('Optimizer ProviderView V2', () => {
   beforeEach(() => {
     jest
       .spyOn(allFetch, 'merchantFetch')

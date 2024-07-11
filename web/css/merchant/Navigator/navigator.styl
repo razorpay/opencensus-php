@@ -554,6 +554,9 @@ $spacer = 8px
     &.active
       box-shadow: 0 1px 4px #0000001A
 
+    .rule-header
+      padding-right: 15px
+
     .step-text
       color: $darkGray
       text-transform: uppercase
@@ -562,6 +565,17 @@ $spacer = 8px
 
     div.panel-body
       padding: 14px 30px 6px
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1)
+    
+    .panel-body.pt0
+      margin-bottom: 10px
+      border-bottom: 0
+      .content-wrapper
+        padding-top: 0px
+        padding-left: 0px
+        padding-right: 0px
+      p
+        margin-top: -13px
 
     &.active
       border-top: 2px solid #0B70E7DE

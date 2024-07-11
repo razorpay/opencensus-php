@@ -979,22 +979,6 @@ export const splitzConfig: SplitzInitConfig = {
       routesToMatch: [/^(\/optimizer\/(add-provider|update-provider|provider\/[^/]*$))/i],
       abExperiments: [
         {
-          uniqueHashKey: 'add_provider_revamp',
-          experimentId: {
-            beta: 'MuLnzwkynPb089',
-            production: 'MyHpKJDgmv1kXU',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-        {
           uniqueHashKey: 'checkout_dot_com_optimizer_gateway',
           experimentId: {
             beta: 'N8fLuDIZyjWzdy',

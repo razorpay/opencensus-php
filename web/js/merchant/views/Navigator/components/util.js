@@ -1145,7 +1145,7 @@ export const getValue = (type, value) => {
   if (type == 'operator') {
     r = operators;
   }
-  return r.find((p) => p.value == value) || '';
+  return r.find((p) => p.value == value) || { name: '' };
 };
 
 export const isExpressionValid = (expression) => {

@@ -438,8 +438,8 @@ const SmartCollect = lazy(() =>
   import(/* webpackChunkName: "SmartCollect" */ 'merchant/views/SmartCollect/Index'),
 );
 
-const Navigator = lazy(() =>
-  import(/* webpackChunkName: "Navigator" */ 'merchant/views/Navigator/Index'),
+const Optimizer = lazy(() =>
+  import(/* webpackChunkName: "Optimizer" */ 'merchant/views/Optimizer'),
 );
 
 const Offers = lazy(() => import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers'));
@@ -1949,7 +1949,7 @@ class Content extends Component {
             path="optimizer/*"
             element={
               <RouteGuard additionalCondition={(user) => user.isAllowedView('optimizer')}>
-                <Navigator />
+                <Optimizer />
               </RouteGuard>
             }
           />
