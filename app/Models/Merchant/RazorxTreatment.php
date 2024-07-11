@@ -954,6 +954,8 @@ final class RazorxTreatment
 
     const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
+    const ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK = 'enable_yes_bank_terminal_for_6_0_stack';
+
     const HDFC_QR_EXPIRY = 'hdfc_qr_expiry';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.

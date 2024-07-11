@@ -1813,6 +1813,26 @@ class Gateway extends Base\Gateway
 
         $url = $this->getUrlForMozartRequest($input, $prefix, $mode);
 
+        if ($gateway === Payment\Gateway::UPI_YESBANK)
+        {
+            // v3 preprocess expect content in specific format
+            if ($this->action === Action::PRE_PROCESS and isset($input['gateway']['payload']) === true)
+            {
+                $dataArray = json_decode($input['gateway']['payload'],true);
+                if (isset($dataArray['pgMerchantId']) === true)
+                {
+                    $variant = $this->app->razorx->getTreatment($dataArray['pgMerchantId'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+                    if (strtolower($variant) === 'on')
+                    {
+                        $inputBody =$input['gateway']['payload'];
+
+                        $content['gateway']['payload']['body'] = $inputBody;
+
+                    }
+                }
+
+            }
+        }
         // TODO : Once these wallets migrated to Nbplus service, remove this hack
 
         $payment = $input['payment'];
@@ -1979,6 +1999,47 @@ class Gateway extends Base\Gateway
                 $url = $baseUrl . $prefix . '/' . $gateway . '/' . $version . '/' . $this->action;
 
                 return $url;
+            }
+        }
+        if ($gateway === Payment\Gateway::UPI_YESBANK)
+        {
+
+            if ($this->action === Action::PRE_PROCESS and isset($input['gateway']['payload']) === true)
+            {
+                $dataArray = json_decode($input['gateway']['payload'],true);
+                if (isset($dataArray['pgMerchantId']) === true)
+                {
+                    $variant = $this->app->razorx->getTreatment($dataArray['pgMerchantId'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+                    if (strtolower($variant) === 'on')
+                    {
+                       return  $baseUrl . 'upiPayments' . '/' .  $gateway . '/v3/' . $this->action;
+                    }
+                }
+
+            }
+            else
+            {
+                $variant = 'control';
+                if (isset($input['terminal']['gateway_merchant_id']) === true)
+                {
+                    $variant = $this->app->razorx->getTreatment($input['terminal']['gateway_merchant_id'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+                }
+                if (strtolower($variant) === 'on')
+                {
+                    if ($this->action === Action::INTENT_QR)
+                    {
+                        $url =  $baseUrl . $prefix . '/' .  $gateway . '/v2/' . $this->action;
+                    }
+
+                    if ((isset($input[Constants::QR_STATUS_CHECK]) and
+                         $input[Constants::QR_STATUS_CHECK] === true))
+                    {
+                        $url = $baseUrl . $prefix . '/' . $gateway . '/v3/' . $this->action;
+                    }
+
+                    return $url;
+
+                }
             }
         }
         if (($gateway === Payment\Gateway::UPI_YESBANK) or

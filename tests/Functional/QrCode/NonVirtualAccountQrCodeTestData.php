@@ -794,7 +794,32 @@ return [
         ],
     ],
 
+    'testStatusCheckApiVerifyFailedResponse60Yesbank' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/test/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testStatusCheckApiVerifySuccessResponseYesbank' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/test/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testStatusCheckApiVerifySuccessResponse60Yesbank' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/reminders/send/test/qr_code/qr_code_payment_status/',
@@ -808,6 +833,18 @@ return [
     ],
 
     'testStatusCheckApiYesbankErrorResponse' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/test/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testStatusCheckApiYesbank60ErrorResponse' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/reminders/send/test/qr_code/qr_code_payment_status/',

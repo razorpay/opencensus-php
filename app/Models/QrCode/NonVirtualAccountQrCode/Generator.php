@@ -435,7 +435,8 @@ class Generator extends QrCode\Generator
             $gateway = GATEWAY::UPI_ICICI;
             $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $vpa);
         }
-        elseif (str_contains($qrCode['qr_string'], '@yesbank') === true)
+        elseif ((str_contains($qrCode['qr_string'], '@yesbank') === true) or
+                (str_contains($qrCode['qr_string'], '@ypbiz') === true))
         {
             $gateway = GATEWAY::UPI_YESBANK;
             $params  = array(Terminal\Entity::VPA => $vpa);

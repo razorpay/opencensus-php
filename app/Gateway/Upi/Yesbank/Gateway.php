@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Upi\Yesbank;
 
+use DateTime;
 use Request;
 
 use RZP\Exception;
@@ -9,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Gateway\Utility;
 use RZP\Models\BharatQr;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\QrCode;
@@ -90,6 +92,16 @@ class Gateway extends Mindgate\Gateway
             $input[Fields::MERCHANT_REFERENCE] = $input['data']['upi'][Fields::MERCHANT_REFERENCE] ?? '';
             $input[Entity::TYPE]               = Base\Type::PAY;
 
+            if (isset($input['terminal']['gateway_merchant_id']) === true)
+            {
+                $variant = $this->app->razorx->getTreatment($input['terminal']['gateway_merchant_id'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+                if (strtolower($variant) === 'on')
+                {
+                    $input[Fields::YBLREFNO]    = $input['data']['upi'][Fields::GATEWAY_PAYMENT_ID] ?? '';
+                    $input[Fields::NPCI_TXN_ID] = $input['data']['upi'][Fields::NPCI_TXN_ID] ?? '';
+
+                }
+            }
             $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 
             return [
@@ -1167,15 +1179,55 @@ class Gateway extends Mindgate\Gateway
 
         if (empty($inputFields['meta']['response']['content']) === false)
         {
-            $transactionTime = Carbon::createFromFormat('Y:m:d H:i:s', $inputFields['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE],
-                                                        Timezone::IST);
-
-            if ($transactionTime !== false)
+            // For yesbank 6.0 flow the transaction time can of different format and will be in the field txnAuthDate
+            if (isset($inputFields['meta']['response']['content']['txnAuthDate']) === true)
             {
-                $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+                $inputDate = $inputFields['meta']['response']['content']['txnAuthDate'];
+                // format "2024-05-07 06:22:04 PM" this format will be from verify call
+                $date = DateTime::createFromFormat('Y-m-d h:i:s A', $inputDate);
+                if( $date === false)
+                {
+                    // format  "May 9, 2024, 3:06:54 PM" this format will be from callback
+                    $date = DateTime::createFromFormat('F j, Y, g:i:s A', $inputDate);
+                }
+                if( $date !== false)
+                {
+                    $formattedDate = $date->format('Y:m:d H:i:s');
+                    $transactionTime = Carbon::createFromFormat('Y:m:d H:i:s', $formattedDate,
+                                                                Timezone::IST);
+                    if ($transactionTime !== false)
+                    {
+                        $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+                    }
+                }
+
+            }
+            else
+            {
+                // for old flows auth date will be in TransactionAuthDate field
+                if (isset($inputFields['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE]) === true)
+                {
+
+                    $transactionTime = Carbon::createFromFormat('Y:m:d H:i:s', $inputFields['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE],
+                                                                Timezone::IST);
+
+                    if ($transactionTime !== false)
+                    {
+                        $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+                    }
+                }
             }
 
-            $qrData[BharatQr\GatewayResponseParams::NOTES] = $inputFields['meta']['response']['content'][Fields::PAYER_NOTE] ?? '';
+            // for new flow transaction notes comes in txnNote field
+            if (isset($inputFields['meta']['response']['content']['txnNote']) === true)
+            {
+                $qrData[BharatQr\GatewayResponseParams::NOTES] = $inputFields['meta']['response']['content']['txnNote'] ?? '';
+            }
+            else
+            {
+                $qrData[BharatQr\GatewayResponseParams::NOTES] = $inputFields['meta']['response']['content'][Fields::PAYER_NOTE] ?? '';
+            }
+
         }
 
         if (isset($input['data']['meta']) === true)
@@ -1276,6 +1328,7 @@ class Gateway extends Mindgate\Gateway
     public function getQrPaymentStatus($input)
     {
         $input[CoreEntity::QR_CODE][QrEntity::ID] = Constants::QR_CODE_V2_YESBANK_PREFIX . $input[CoreEntity::QR_CODE][QrEntity::ID] . Constants::QR_CODE_V2_TR_SUFFIX;
+        $variant = $this->app->razorx->getTreatment($input[CoreEntity::TERMINAL][Fields::GATEWAY_MERCHANT_ID], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
 
         $request = [
             CoreEntity::PAYMENT             => [
@@ -1286,6 +1339,11 @@ class Gateway extends Mindgate\Gateway
             CoreEntity::TERMINAL            => $input[CoreEntity::TERMINAL],
             Base\Constants::QR_STATUS_CHECK => true
         ];
+
+        if (strtolower($variant) === 'on')
+        {
+            $request[CoreEntity::PAYMENT]['created_at'] = $input[CoreEntity::QR_CODE]['created_at'];
+        }
 
         $this->trace->info(TraceCode::QR_STATUS_CHECK_MOZART_REQUEST, [
             'gateway input' => $request,
@@ -1311,8 +1369,17 @@ class Gateway extends Mindgate\Gateway
 
             if (($result['data'][Fields::STATUS] === Status::VERIFY_SUCCESSFUL))
             {
+                $callbackData = '';
+                if (strtolower($variant) === 'on')
+                {
+                    $callbackData = $this->parseMozartRespV6($result);
+                }
+                else
+                {
+                    $callbackData = $this->parseMozartResp($result);
+                }
                 $response = [
-                    'callbackData' => $this->parseMozartResp($result),
+                    'callbackData' => $callbackData,
                     'gateway'      => $this->gateway
                 ];
 
@@ -1345,6 +1412,28 @@ class Gateway extends Mindgate\Gateway
         $callbackData['data']['meta']['response']['content']['PayeeAadhar']                 = $metaData['PayeeAadhaar'];
         $callbackData['data']['meta']['response']['content']['PayeeAcountNumber']           = $metaData['PayeeAcountNo'];
         $callbackData['data']['meta']['response']['content']['PayerIfscCode']               = $metaData['PayeeAcountNo'];
+
+        $callbackData[Base\Constants::QR_STATUS_CHECK] = true;
+
+        return $callbackData;
+    }
+
+    public function parseMozartRespV6($gatewayData)
+    {
+        $metaData = $gatewayData['data']['meta']['response']['plain'];
+
+        $callbackData                         = $gatewayData;
+        $callbackData['data'][Fields::STATUS] = Status::SUCCESS_STATUS;
+
+        $callbackData['data']['meta']['response']['content'] = $metaData;
+        //convert date format "2024:06:27 08:30:00 AM"  to "2024:06:27 08:30:00"
+        $date = DateTime::createFromFormat('Y-m-d h:i:s A', $metaData['txnAuthDate']);
+        $formattedDate = $date->format('Y:m:d H:i:s');
+
+        $callbackData['data']['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE] = $formattedDate;
+        $callbackData['data']['meta']['response']['content'][Fields::PAYER_NOTE]            = $metaData['txnNote'];
+        $callbackData['data']['meta']['response']['content']['Add3']                        = $metaData['payerAccType'];
+        $callbackData['data']['meta']['response']['content']['PayerIfscCode']               = $metaData['payerifsc'];
 
         $callbackData[Base\Constants::QR_STATUS_CHECK] = true;
 

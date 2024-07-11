@@ -84,6 +84,25 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->runQrCodeEntityAssertions();
     }
 
+    public function testCreateStaticQrWithTerminalForYesbank60() :void
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $this->runQrCodeEntityAssertions();
+    }
+
     public function testCreateStaticQrWithAmount() :void
     {
         $this->createQrCode(

@@ -2,10 +2,13 @@
 
 namespace RZP\Gateway\Upi\Yesbank\Mock;
 
+use RZP\Constants\Entity as CoreEntity;
 use RZP\Exception;
+use RZP\Gateway\Upi\Yesbank\Fields;
 use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Gateway\Upi\Yesbank;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Gateway extends Yesbank\Gateway
 {
@@ -27,6 +30,17 @@ class Gateway extends Yesbank\Gateway
 
     public function getQrPaymentStatus($input)
     {
+        $variant = 'control';
+        if (isset($input['terminal'][Fields::GATEWAY_MERCHANT_ID]) === true)
+        {
+            $variant = $this->app->razorx->getTreatment($input[CoreEntity::TERMINAL][Fields::GATEWAY_MERCHANT_ID], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+        }
+
+        if (strtolower($variant) === 'on')
+        {
+            return $this->getQrPaymentStatusStack60($input);
+        }
+
         $result = [
             'data'              => [
                 '_raw'     => 'raw data',
@@ -125,6 +139,102 @@ class Gateway extends Yesbank\Gateway
                     'npci_reference_id'   => '326836533213',
                     'npci_txn_id'         => 'YBL144231ce5eb64a58998c6e6f14fa263a',
                     'status_code'         => '00',
+                    'vpa'                 => '7747931160@ybl'
+                ]
+            ],
+            'error'             => null,
+            'external_trace_id' => '7f44e3b4c264d0dabc78e9f26972aaf2',
+            'mozart_id'         => 'ck8u2e8t16k08odib4j0',
+            'next'              => [],
+            'success'           => true,
+            'qr_status_check'   => true
+        ];
+
+        return [
+            'callbackData' => $result,
+            'gateway'      => 'upi_yesbank'
+        ];
+    }
+
+    public function getQrPaymentStatusStack60($input)
+    {
+        $result = [
+            'data'              => [
+                '_raw'     => 'raw data',
+                'meta'     => [
+                    'response' => [
+                        'content' => [
+                            'txnNote'        => 'PaymenttoMitasha',
+                            'PayerNote'        => 'PaymenttoMitasha',
+                            'payerAccType'   => 'SAVINGS',
+                            'Add3'   => 'SAVINGS',
+                            'txnType'        => 'COLLECT',
+                            'upiTransRefNo'  => '326836533213',
+                            'errCode'        => '0',
+                            'message'        => 'Payment Successful',
+                            'amount'         => '1.0',
+                            'approvalNumber' => '933462',
+                            'custRefNo'      => '326836533213',
+                            'txnId'          => 'YBL144231ce5eb64a58998c6e6f14fa263a',
+                            'pspRefNo'       => 'RZPY' . $input['qr_code']['id'] . 'qrv2',
+                            'payerName'      => 'ABC',
+                            'payeeVPA'       => 'randomvpa@ypbiz',
+                            'payerRespCode'  => '00',
+                            'payerAccNo'     => 'SCRUBBED_PII (17)',
+                            'payerifsc'      => 'SBIN0012159',
+                            'PayerIfscCode'      => 'SBIN0012159',
+                            'payerVPA'       => '7747931160@ybl',
+                            'payeeRespCode'  => '00',
+                            'status'         => 'S',
+                            'statusCode'     => '0',
+                            'TxnAuthDate'    => '2023-09-25 08:12:13 PM',
+                            'TransactionAuthDate' => '2023:09:25 20:12:13'
+                        ],
+                        'plain' => [
+                            'txnNote'        => 'PaymenttoMitasha',
+                            'payerAccType'   => 'SAVINGS',
+                            'txnType'        => 'COLLECT',
+                            'upiTransRefNo'  => '326836533213',
+                            'errCode'        => '0',
+                            'message'        => 'Payment Successful',
+                            'amount'         => '1.0',
+                            'approvalNumber' => '933462',
+                            'custRefNo'      => '326836533213',
+                            'txnId'          => 'YBL144231ce5eb64a58998c6e6f14fa263a',
+                            'pspRefNo'       => 'RZPY' . $input['qr_code']['id'] . 'qrv2',
+                            'payerName'      => 'ABC',
+                            'payeeVPA'       => 'randomvpa@ypbiz',
+                            'payerRespCode'  => '00',
+                            'payerAccNo'     => 'SCRUBBED_PII (17)',
+                            'payerifsc'      => 'SBIN0012159',
+                            'payerVPA'       => '7747931160@ybl',
+                            'payeeRespCode'  => '00',
+                            'status'         => 'S',
+                            'statusCode'     => '0',
+                            'TxnAuthDate'    => '2023-09-25 08:12:13 PM',
+                        ]
+                    ]
+                ],
+                'payment'  => [
+                    'amount_authorized' => 4000,
+                    'currency'          => 'INR',
+                    'payer_account_type' => 'bank_account'
+                ],
+                'status'   => 'payment_successful',
+                'terminal' => [
+                    'gateway' => 'upi_yesbank',
+                    "gateway_merchant_id" => "YES0000000012026",
+                    'vpa'     => 'randomvpa@ypbiz'
+                ],
+                'upi'      => [
+                    'account_number'      => 'SCRUBBED_PII (17)',
+                    'gateway_payment_id'  => '326836533213',
+                    'gateway_status_code' => '0',
+                    'ifsc'                => 'SBIN0012159',
+                    'merchant_reference'  => 'RZPY' . $input['qr_code']['id'] . 'qrv2',
+                    'npci_reference_id'   => '326836533213',
+                    'npci_txn_id'         => 'YBL144231ce5eb64a58998c6e6f14fa263a',
+                    'status_code'         => '0',
                     'vpa'                 => '7747931160@ybl'
                 ]
             ],

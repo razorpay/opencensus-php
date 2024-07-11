@@ -183,6 +183,8 @@ class Shared
     const NETBANKING_SARASWAT_TERMINAL       = '1000NbSrcbTrmnl';
     const UPI_ICICI_DEDICATED_TERMINAL       = '102IciciDedTml';
     const UPI_YESBANK_DEDICATED_TERMINAL     = '100YesDedTrmnl';
+
+    const UPI_YESBANK_DEDICATED_TERMINAL_60  = '160YesDedTrmnl';
     const UPI_LIVE_YESBANK_DEDICATED_TERMINAL= '100YesLivTrmnl';
     const UPI_KOTAK_DEDICATED_TERMINAL       = '100KotDedTrmnl';
     const UPI_AIRTEL_DEDICATED_TERMINAL       = '100ApbDedTrmnl';

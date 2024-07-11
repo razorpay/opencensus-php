@@ -444,6 +444,10 @@ class Entity extends QrCode\Entity
                 {
                     return 'upi_airtel';
                 }
+                if(isset($vpa[1]) === true && ($vpa[1] === 'ypbiz'))
+                {
+                    return 'upi_yesbank';
+                }
                 return 'upi_' . $vpa[1];
             }
             else if ($this->getProvider() === Provider::BHARAT_QR)
