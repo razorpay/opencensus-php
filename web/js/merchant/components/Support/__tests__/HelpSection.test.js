@@ -1,4 +1,4 @@
-import { render, screen, userEvent } from 'test-utils';
+import { render } from 'test-utils';
 
 import HelpSection from '../HelpSection';
 

@@ -17,15 +17,15 @@ const DashboardBanner = ({
   location,
   user,
 }: DashboardBannerProps): React.ReactElement | Array<React.ReactElement> | Array<null> | null => {
-  if (!user.isINCountry) {
-    return null;
-  }
-
   const routeName = routeToRouteNameMap[location.pathname] || location.pathname;
 
   useEffect(() => {
     fetchBanners({ fromWhere: location.pathname });
   }, [location.pathname]);
+
+  if (!user.isINCountry) {
+    return null;
+  }
 
   let contentToShow: any = null;
 
