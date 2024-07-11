@@ -92,6 +92,8 @@ const PartialBenefitLearnMore = styled(LearnMore)`
   margin-left: 5px !important;
 `;
 
+// Temporary hotfix, so component is not being utilised
+// eslint-disable-next-line no-unused-vars
 const PartialBenefit = ({ modalType, openModal }) => {
   const handleLearnMoreClick = () => {
     openModal({
@@ -152,7 +154,14 @@ const Full = ({ modalType, openModal }) => {
   );
 };
 
-export default function Nudge({ user, amount, settlableAmount, closeOrigin, openModal }) {
+export default function Nudge({
+  user,
+  amount,
+  settlableAmount,
+  closeOrigin,
+  openModal,
+  hidePartialVariant = false,
+}) {
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isFullOndemandSettlementEnabled =
@@ -175,10 +184,10 @@ export default function Nudge({ user, amount, settlableAmount, closeOrigin, open
   if (isFullOndemandSettlementEnabled && !closeOrigin && !getEsNudgeSeen(NUDGE_TYPES.FULL_SUCCESS))
     return <Full openModal={openModal} modalType={modalType} />;
 
-  if (isPartialOndemandSettlementEnabled && closeOrigin === 'OnDemand')
-    return <PartialBenefit openModal={openModal} modalType={partialModalType} />;
+  if (isPartialOndemandSettlementEnabled && closeOrigin === 'OnDemand' && !hidePartialVariant)
+    return <Partial openModal={openModal} modalType={partialModalType} />;
 
-  if (isPartialOndemandSettlementEnabled && isInputAmountGreater)
+  if (isPartialOndemandSettlementEnabled && isInputAmountGreater && !hidePartialVariant)
     return <Partial openModal={openModal} modalType={partialModalType} />;
 
   return null;

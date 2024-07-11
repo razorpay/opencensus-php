@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import ImgDiamond from 'assets/settlements/diamond.svg';
@@ -8,41 +9,38 @@ const BulletListContainer = styled.div`
   margin: 16px 0 20px;
 `;
 
-const BulletListInfo = styled.div`
-  font-size: 14px;
-  line-height: 20px;
-  color: #5d6d86;
-  margin-bottom: 12px;
-`;
-
 const BulletListItem = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   &:not(:last-child) {
-    margin-bottom: 6px;
+    margin-bottom: 12px;
   }
   img {
-    width: 6.75px;
+    width: 8px;
+    margin-top: 6px;
   }
 `;
 
-const BulletListItemLabel = styled.span`
-  font-size: 14px;
-  line-height: 20px;
-  color: #5d6d86;
-`;
-
-export default function List({ label, items }) {
+export default function List({ label, items, labelPosition = 'top' }) {
   return (
     <BulletListContainer>
-      <BulletListInfo>{label}</BulletListInfo>
+      {labelPosition === 'top' ? (
+        <Text color="surface.text.gray.subtle" marginBottom="spacing.5">
+          {label}
+        </Text>
+      ) : null}
       {items.map((item, idx) => (
         <BulletListItem key={idx}>
           <img src={ImgDiamond} alt="diamond bullet" />
-          <BulletListItemLabel>{item}</BulletListItemLabel>
+          <Text color="surface.text.gray.subtle">{item}</Text>
         </BulletListItem>
       ))}
+      {labelPosition === 'bottom' ? (
+        <Text color="surface.text.gray.subtle" marginTop="spacing.5" marginBottom="spacing.8">
+          {label}
+        </Text>
+      ) : null}
     </BulletListContainer>
   );
 }

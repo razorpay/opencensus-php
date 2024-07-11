@@ -39,10 +39,8 @@ test('test close reason modal nudge', () => {
     />,
   );
 
-  expect(
-    screen.queryByText(/You are enjoying early access to Intant Settlements./i),
-  ).toBeInTheDocument();
-  expect(screen.queryByText(/Learn More/i)).toBeInTheDocument();
+  expect(screen.queryByText(/Why can't I settle more money?./i)).toBeInTheDocument();
+  expect(screen.queryByText(/Learn More/i)).not.toBeInTheDocument();
 });
 
 test('test close partial nudge when amount is invalid (> settlableAmount)', () => {

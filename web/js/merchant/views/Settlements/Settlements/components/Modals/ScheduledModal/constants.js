@@ -86,6 +86,11 @@ export const UNLOCK_POINTS = [
   'Minimise bank chargebacks',
 ];
 
+export const DAILY_LIMIT_POINTS = [
+  'Limit assigned to you is available until the next working day',
+  'Everyone including you gets a higher success rate throughout the day ',
+];
+
 export const POST_ENABLE_TYPES = {
   SAMEDAY_PARTIAL_SUCCESS: 'SAMEDAY_PARTIAL_SUCCESS',
   SAMEDAY_FULL_SUCCESS: 'SAMEDAY_FULL_SUCCESS',

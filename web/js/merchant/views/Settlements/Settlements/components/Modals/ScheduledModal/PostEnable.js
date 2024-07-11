@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import { ZapIcon } from '@razorpay/blade/components';
 
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 
@@ -12,6 +13,7 @@ import List from './components/List';
 import Button from './components/Button';
 import {
   UNLOCK_POINTS,
+  DAILY_LIMIT_POINTS,
   POST_ENABLE_TYPES,
   ONDEMAND_FEE_BENEFITS,
   getSamedayBenefits,
@@ -235,19 +237,15 @@ function PostEnable({ user, pricingRate, postModalType, closeModal }) {
         return (
           <>
             <TopSection
-              heading="How much can I settle?"
-              subHeading="You are enjoying early access to Instant Settlements and can settle a part of your balance"
-              badgeLabel={
-                <BadgeLabel>
-                  ✅ &nbsp;<span>60%</span> of your balance <span>upto ₹15,000</span>
-                </BadgeLabel>
-              }
+              emoji={<ZapIcon color="surface.background.cloud.subtle" size="xlarge" />}
+              heading="Instant Settlements now come with a daily settlement limit."
             />
-            <BottomSection heading="While you enjoy your benefits...">
-              <ProgressBar />
+            <BottomSection heading="Daily limits ensure">
+              {/* <ProgressBar /> */}
               <List
-                label="To unlock 100% settlements, keep up your sales cycle and follow the eligibility criteria given below"
-                items={UNLOCK_POINTS}
+                labelPosition="bottom"
+                label="If you require assistance or need to discuss your limit, please contact your Relationship Manager or raise a support ticket here."
+                items={DAILY_LIMIT_POINTS}
               />
               {getUnderstoodButton()}
             </BottomSection>

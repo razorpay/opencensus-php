@@ -43,8 +43,9 @@ import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components
 import { onDemandModalTrackEvents } from 'merchant/views/Settlements/trackEvents';
 import { bindActionCreators } from 'redux';
 import Nudge from './ScheduledModal/components/Nudge';
+import ScheduledModal from './ScheduledModal';
 import { setEsNudgeSeen } from './ScheduledModal/utils';
-import { NUDGE_TYPES } from './ScheduledModal/constants';
+import { NUDGE_TYPES, POST_ENABLE_TYPES } from './ScheduledModal/constants';
 import UpsellBanners from 'merchant/views/Settlements/Settlements/components/UpsellBanners';
 import SettleToLinkedAccounts from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts';
 import EnableScheduledBanner from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/EnableScheduledBanner';
@@ -483,17 +484,20 @@ class OndemandModal extends Component {
         trackEsAmountError();
         this.setState({
           errors: [
-            <>
-              <span>Max amount that can be settled is </span>
-              <Amount
-                parentQuerySelector=".onmdemand-modal"
-                value={this.props.settlableAmount}
-                currency="INR"
-              />
-              <span className="limit-warning">
-                We shall increase and remove the limit based on the usage.
-              </span>
-            </>,
+            <Text key="error" size="small" color="feedback.text.negative.intense">
+              You can withdraw only upto{' '}
+              <BladeAmount
+                size="small"
+                weight="semibold"
+                suffix="humanize"
+                color="feedback.text.negative.intense"
+                value={this.props.settlableAmount / 100}
+              />{' '}
+              Today.{' '}
+              <Link size="small" variant="button" onClick={this.handleShowRestrictedReasonModal}>
+                Why?
+              </Link>
+            </Text>,
           ],
           validAmount: false,
         });
@@ -576,6 +580,16 @@ class OndemandModal extends Component {
     }
   };
 
+  handleShowRestrictedReasonModal = () => {
+    this.props.openModal({
+      component: (
+        <ScheduledModal enabled postModalType={POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS} />
+      ),
+      size: 'small',
+      disableClose: true,
+    });
+  };
+
   successModalHeader = () => {
     return (
       <div>
@@ -603,6 +617,14 @@ class OndemandModal extends Component {
     const { user, settlableAmount, fromWhere, openModal } = this.props;
 
     const MAX_IS_LIMIT = MID_LIMIT[user.current] || 0;
+
+    const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
+    const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
+
+    const isPartialOndemandSettlementEnabled =
+      isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
+    const shouldShowMaxLimit =
+      validAmount && isPartialOndemandSettlementEnabled && settlableAmount > 0;
 
     if (showIsPlusPlusBreakup) {
       return (
@@ -699,8 +721,25 @@ class OndemandModal extends Component {
           ) : null}
         </div>
         <div>
-          {isLoadingBreakup && validAmount && <div className="loader" />}
-          {!isLoadingBreakup && validAmount && (
+          {isLoadingBreakup && validAmount && !shouldShowMaxLimit && <div className="loader" />}
+          {shouldShowMaxLimit ? (
+            <div className="grey-border">
+              <Text size="small" color="surface.text.gray.subtle">
+                You can withdraw only upto{' '}
+                <BladeAmount
+                  size="small"
+                  weight="semibold"
+                  suffix="humanize"
+                  value={settlableAmount / 100}
+                />{' '}
+                Today.{' '}
+                <Link size="small" variant="button" onClick={this.handleShowRestrictedReasonModal}>
+                  Why?
+                </Link>
+              </Text>
+            </div>
+          ) : null}
+          {!isLoadingBreakup && validAmount && !shouldShowMaxLimit && (
             <div className="grey-border">
               <div>
                 <p className="after-deduction"> After Deduction </p>
@@ -719,11 +758,13 @@ class OndemandModal extends Component {
             openModal={openModal}
             amount={amount}
             settlableAmount={settlableAmount}
+            hidePartialVariant
           />
 
           <AsyncBtn.Primary
             className="submit-btn"
-            disabled={isSaving || !validAmount || isLoadingBreakup}
+            disabled={isSaving || !validAmount || (isLoadingBreakup && !shouldShowMaxLimit)}
+            isPending={isLoadingBreakup && shouldShowMaxLimit}
             pendingState="Requesting"
             onClick={wantsISPlusPlus ? this.onShowIsPlusPlusBreakup : this.openConfirmSettlement}
           >
