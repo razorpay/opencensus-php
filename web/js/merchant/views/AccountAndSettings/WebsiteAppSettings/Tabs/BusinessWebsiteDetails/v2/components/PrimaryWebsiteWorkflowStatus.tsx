@@ -52,7 +52,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
 
   const { rejection_reason_message } = businessWebsiteWorkflow ?? {};
 
-  const { status } = getWebsiteWorkflowStatus({
+  const { status, analyticsStatus } = getWebsiteWorkflowStatus({
     businessWebsiteWorkflow,
     websiteUpdateData,
   });
@@ -69,8 +69,10 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
       trackWebsiteRequestStatusBannerLoad({
         contentDisplayed: title,
         statusOfVerification: status,
+        analyticsStatus,
         websiteCount: getWebsiteCount(user),
         newWebsiteLink: websiteUpdateData?.main_page_url,
+        verificationStatus: websiteUpdateData?.website_verification_stage,
       });
       if (status === Status.Success) {
         updateMainPageUrl();
@@ -120,6 +122,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
     trackWebsiteRequestStatusBannerOptionClick({
       contentDisplayed: title,
       statusOfVerification: status,
+      analyticsStatus,
       websiteCount: getWebsiteCount(user),
       newWebsiteLink: websiteUpdateData?.main_page_url,
       followupAction: actionText,

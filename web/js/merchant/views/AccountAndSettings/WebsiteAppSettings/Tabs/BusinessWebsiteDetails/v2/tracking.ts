@@ -119,6 +119,14 @@ export const trackBasicWebsiteCheckCompleteModalLoad = (properties: Properties) 
   });
 };
 
+export const trackBasicWebsiteCheckFailureModalLoad = (properties: Properties) => {
+  track({
+    objectName: 'Basic Website Check Failure Modal',
+    actionName: 'Displayed',
+    properties,
+  });
+};
+
 export const trackWebsiteRequestStatusBannerLoad = (properties: Properties) => {
   track({
     objectName: 'Website Request Status Banner',

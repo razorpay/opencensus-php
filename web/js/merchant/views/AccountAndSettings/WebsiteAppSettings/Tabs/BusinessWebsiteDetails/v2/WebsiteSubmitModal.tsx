@@ -21,6 +21,7 @@ import {
   trackSubmitWebsiteDetailsVerificationRequestClick,
   trackBasicWebsiteCheckCompleteModalLoad,
   trackBasicWebsiteCheckInProgressModalLoad,
+  trackBasicWebsiteCheckFailureModalLoad,
 } from './tracking';
 import {
   Platform,
@@ -123,6 +124,21 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     // old edit flow => here its being used for app submit
     const oldEditFlow = hasKeyAccess || (business_website && isActivated);
 
+    const isCredsFilled = formState.credsUsername.value && formState.credsPassword.value;
+    const analyticsProperties = {
+      loginRequired: formState.requireCreds.value,
+      acceptOn: formState.platform.value,
+      loginCredentialsEntered:
+        // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+        formState.requireCreds.value === 'yes' ? (isCredsFilled ? 'yes' : 'no') : 'na',
+      newWebsiteLink: formState.url.value,
+      websiteCount: getWebsiteCount(user),
+    };
+    trackSubmitWebsiteDetailsVerificationRequestClick({
+      ...analyticsProperties,
+      clickedButton: 'submit',
+    });
+
     if (formState.platform.value === Platform.APP || shouldUseNonActivatedAPI) {
       if (oldEditFlow && !shouldUseNonActivatedAPI) {
         await submitAppForActivated(formState);
@@ -131,19 +147,11 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
       }
     } else {
       // save button
-      const isCredsFilled = formState.credsUsername.value && formState.credsPassword.value;
-      const properties = {
-        loginRequired: formState.requireCreds.value,
-        acceptOn: formState.platform.value,
-        loginCredentialsEntered:
-          // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
-          formState.requireCreds.value === 'yes' ? (isCredsFilled ? 'yes' : 'no') : 'na',
-        newWebsiteLink: formState.url.value,
-        websiteCount: getWebsiteCount(user),
-      };
-      trackSubmitWebsiteDetailsVerificationRequestClick({ ...properties, clickedButton: 'submit' });
       setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_IN_PROGRESS);
-      trackBasicWebsiteCheckInProgressModalLoad({ ...properties, actionFrom: 'websiteFlow' });
+      trackBasicWebsiteCheckInProgressModalLoad({
+        ...analyticsProperties,
+        actionFrom: 'websiteFlow',
+      });
       saveWebsiteUpdate.mutate(
         getWebsiteMainPageSubmitPayload({
           formState,
@@ -158,26 +166,47 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
                 newWebsiteLink: response?.main_page_url,
                 websiteCount: getWebsiteCount(user),
                 actionFrom: 'websiteFlow',
+                isWebsiteLive: true,
               });
               setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS);
             } else {
+              const errorMessage = 'Invalid Response. Please try again.';
+              trackBasicWebsiteCheckFailureModalLoad({
+                basicCheckPassed: 'no',
+                websiteCount: getWebsiteCount(user),
+                actionFrom: 'websiteFlow',
+                errorMessage,
+              });
               showNotification({
                 type: 'error',
-                message: 'Invalid Response. Please try again.',
+                message: errorMessage,
               });
               onDismiss();
             }
           },
           onError: (error) => {
             if ((error as Error)?.message?.includes('liviness')) {
+              trackBasicWebsiteCheckFailureModalLoad({
+                basicCheckPassed: 'no',
+                websiteCount: getWebsiteCount(user),
+                actionFrom: 'websiteFlow',
+                errorMessage: 'Website is not live',
+                isWebsiteLive: false,
+              });
               setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_ERROR);
               return;
             }
-
+            /* @ts-expect-error error-message-check */
+            const errorMessage = error?.message || 'Failed to submit details. Please try again.';
+            trackBasicWebsiteCheckFailureModalLoad({
+              basicCheckPassed: 'no',
+              websiteCount: getWebsiteCount(user),
+              actionFrom: 'websiteFlow',
+              errorMessage,
+            });
             showNotification({
               type: 'error',
-              /* @ts-expect-error error-message-check */
-              message: error?.message || 'Failed to submit details. Please try again.',
+              message: errorMessage,
             });
             onDismiss();
           },
@@ -237,18 +266,32 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
             });
             setCurrentStep(WebsiteSubmitModalSteps.WEBSITE_UPDATE_SUCCESS);
           } else {
+            const errorMessage = 'Invalid Response. Please try again.';
+            trackBasicWebsiteCheckFailureModalLoad({
+              basicCheckPassed: 'no',
+              websiteCount: getWebsiteCount(user),
+              actionFrom: 'policyPages',
+              errorMessage,
+            });
             showNotification({
               type: 'error',
-              message: 'Invalid Response. Please try again.',
+              message: errorMessage,
             });
             onDismiss();
           }
         },
         onError: (error) => {
+          /* @ts-expect-error error-message-check */
+          const errorMessage = error?.message || 'Failed to submit details. Please try again.';
+          trackBasicWebsiteCheckFailureModalLoad({
+            basicCheckPassed: 'no',
+            websiteCount: getWebsiteCount(user),
+            actionFrom: 'policyPages',
+            errorMessage,
+          });
           showNotification({
             type: 'error',
-            /* @ts-expect-error error-message-check */
-            message: error?.message || 'Failed to submit details. Please try again.',
+            message: errorMessage,
           });
           onDismiss();
         },

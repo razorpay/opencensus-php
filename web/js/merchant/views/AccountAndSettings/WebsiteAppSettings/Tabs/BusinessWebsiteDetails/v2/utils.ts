@@ -329,12 +329,14 @@ export enum Status {
 }
 
 type NullableStatus = Status | null;
+type NullableAnalyticsStatus = WebsiteUpdateAutomationStatus | Status | null;
 
 export function getWebsiteWorkflowStatus({
   businessWebsiteWorkflow,
   websiteUpdateData,
 }: WebsiteWorkflowStatusArgs): {
   status: NullableStatus;
+  analyticsStatus: NullableAnalyticsStatus;
 } {
   const {
     workflow_status,
@@ -363,6 +365,7 @@ export function getWebsiteWorkflowStatus({
 
   // status
   let status: NullableStatus = null;
+  let analyticsStatus: NullableAnalyticsStatus = null;
   const isAllPagesVerified =
     website_verification_page_status &&
     Object.values(website_verification_page_status).every(
@@ -378,6 +381,7 @@ export function getWebsiteWorkflowStatus({
     ].includes(current_status) &&
     isWorkflowChangeAllowed(businessWebsiteWorkflow)
   ) {
+    analyticsStatus = current_status;
     status = Status.Success;
   } else if (
     current_status === WebsiteUpdateAutomationStatus.IN_PROGRESS &&
@@ -400,6 +404,7 @@ export function getWebsiteWorkflowStatus({
 
   return {
     status,
+    analyticsStatus: analyticsStatus ?? status,
   };
 }
 
