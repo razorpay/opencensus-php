@@ -180,6 +180,21 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicPaymentIdAttribute(array &$attributes)
+    {
+        if (isset($attributes[self::PAYMENT_ID]) === true)
+        {
+            $paymentId = $attributes[self::PAYMENT_ID];
+
+            $attributes[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
+        }
+    }
+
+    public function setPublicModeAttribute(array &$attributes)
+    {
+        $attributes[self::MODE] = strtoupper($attributes[self::MODE]);
+    }
+
 
 
 

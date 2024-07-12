@@ -1981,10 +1981,7 @@ return [
         'response' => [
             'content' => [
                 'challan_no' => 'aiynu34mmdkd9989rpwbhg61hg612q89rpw89rpw',
-                'expected_amount' =>  1000,
-                'identification_id' => '12345',
                 'currency' =>  'INR',
-                'partial_payment' =>  false,
                 'status' =>  '1',
                 'error' => [
                     'code'        => 'BAD_REQ_ER',

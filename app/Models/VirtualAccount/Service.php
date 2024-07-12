@@ -256,6 +256,27 @@ class Service extends Base\Service
     {
         $setVADefaultExpiryFeatureForMerchant = $this->merchant->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY);
         $setVADefaultExpiryFeatureForORG      = $this->merchant->org->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY);
+
+        if ((isset($input[Entity::RECEIVERS]) === true) and
+            ($input[Entity::RECEIVERS][0] === Receiver::OFFLINE_CHALLAN))
+        {
+            $expirySettingInMinutes = $this->getMerchantChallanExpiry($this->merchant->getMerchantId());
+
+            if($expirySettingInMinutes !== -1)
+            {
+                $createArray[Entity::CLOSE_BY] = Carbon::now(Timezone::IST)
+                                                ->addMinutes($expirySettingInMinutes)
+                                                ->endOfDay()->timestamp;
+
+                $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_CHALLAN_CLOSE_BY,
+                    [
+                        'merchantChallanExpirySettingInMinutes'   => $expirySettingInMinutes,
+                        'close by' => $createArray[Entity::CLOSE_BY],
+                    ]);
+                return;
+            }
+        }
+
         if (($setVADefaultExpiryFeatureForMerchant == true) or ($setVADefaultExpiryFeatureForORG == true))
         {
             $expirySettingInMinutes = $this->getMerchantDefaultVirtualAccountExpiry();
@@ -1690,27 +1711,6 @@ class Service extends Base\Service
         $response = $this->checkIdentificationIdForBankRequest($order,$input,$response);
 
         $response = $this->checkOrderAmountForBankRequest($order,$input,$response);
-
-        $expirySettingInMinutes = $this->getMerchantChallanExpiry($virtualAccount['merchant_id']);
-
-        if($expirySettingInMinutes !== -1)
-        {
-            $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-            $challanExpiryTimestamp =  Carbon::createFromTimestamp($virtualAccount['created_at'], Timezone::IST)
-                                                ->addMinutes($expirySettingInMinutes)->endOfDay()->timestamp;
-
-            $isChallanExpired =  $currentTimestamp > $challanExpiryTimestamp;
-
-            if($isChallanExpired === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,null,[
-                    'response' => $response ,
-                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED
-                ]);
-            }
-        }
 
         $response['status'] = '0';
 

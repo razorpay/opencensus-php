@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
-use DB;
 use Hash;
 use Cache;
 use Queue;
@@ -3811,6 +3810,14 @@ class VirtualAccountTest extends TestCase
 
         $this->createVirtualAccountForOfflineOrder($orderId, $input);
 
+        $this->ba->privateAuth();
+
+        $response = $this->closeVirtualAccountsByCloseBy();
+
+        $this->assertEquals($response['success'] , 0);
+
+        $this->assertEquals($response['failure'] , 0);
+
         $this->ba->hdfcOtcAuth();
 
         $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
@@ -3862,13 +3869,21 @@ class VirtualAccountTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData['testVirtualAccountMerchantChallanExpirySetting']);
 
-        $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, $input);
+        $this->createVirtualAccountForOfflineOrder($orderId, $input);
 
-        $beforeTenDays =  Carbon::today(Timezone::IST)->subDays(10)->timestamp;
+        $nextFiveDays =  Carbon::today(Timezone::IST)->addDays(5)->timestamp;
 
-        $this->fixtures->edit('virtual_account', $virtualAccount['id'], ['created_at' => $beforeTenDays]);
+        $fixedTime = (new Carbon())->timestamp($nextFiveDays);
 
-        $this->fixtures->edit('virtual_account', $virtualAccount['id'], ['updated_at' => $beforeTenDays]);
+        Carbon::setTestNow($fixedTime);
+
+        $this->ba->privateAuth();
+
+        $response = $this->closeVirtualAccountsByCloseBy();
+
+        $this->assertEquals($response['success'] , 1);
+
+        $this->assertEquals($response['failure'] , 0);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -3877,6 +3892,8 @@ class VirtualAccountTest extends TestCase
         $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
 
         $this->startTest($testData);
+
+        Carbon::setTestNow();
     }
 
     public function testOfflinePaymentCreditWithMerchantChallan()
@@ -3955,9 +3972,9 @@ class VirtualAccountTest extends TestCase
     {
         $this->testValidateOfflineChallan();
 
-        $offlineChallans = DB::select('select * from offline_challans')[0];
+        $offlineChallans = $this->getDbLastEntityPublic('offline_challan');
 
-        $challanNumber = $offlineChallans->challan_number;
+        $challanNumber = $offlineChallans['challan_number'];
 
         $content = $this->createPricingPlan();
 
@@ -4028,9 +4045,9 @@ class VirtualAccountTest extends TestCase
     {
         $this->testValidateOfflineChallan();
 
-        $offlineChallans = DB::select('select * from offline_challans')[0];
+        $offlineChallans = $this->getDbLastEntityPublic('offline_challan');
 
-        $challanNumber = $offlineChallans->challan_number;
+        $challanNumber = $offlineChallans['challan_number'];
 
         $content = $this->createPricingPlan();
 
@@ -4086,13 +4103,13 @@ class VirtualAccountTest extends TestCase
 
         $this->startTest();
 
-        $offlinePayment = DB::select('select * from offline_payments')[0];
+        $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
 
         // Verifying new added  column SOURCE in offline_payments entity.
 
-        $this->assertEquals('captured', $offlinePayment->status);
+        $this->assertEquals('captured', $offlinePayment['status']);
 
-        $this->assertEquals('file', $offlinePayment->source);
+        $this->assertEquals('file', $offlinePayment['source']);
 
     }
 
@@ -4199,13 +4216,13 @@ class VirtualAccountTest extends TestCase
 
         $this->startTest();
 
-        $offlinePayment = DB::select('select * from offline_payments')[0];
+        $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
 
         // Verifying newly added column SOURCE in offline_payments entity.
 
-        $this->assertEquals('failed', $offlinePayment->status);
+        $this->assertEquals('failed', $offlinePayment['status']);
 
-        $this->assertEquals('file', $offlinePayment->source);
+        $this->assertEquals('file', $offlinePayment['source']);
 
     }
 
@@ -4297,7 +4314,7 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
-    public function testOfflinePaymentCreditAfterChallanExpiryWithExpirySuccessByBatch(){
+    public function testOfflinePaymentCreditAfterChallanExpiryWithFailureByBatch(){
 
         $requestContent = [
             'amount' => 1000,
@@ -4309,10 +4326,10 @@ class VirtualAccountTest extends TestCase
             'source' => 'file'
         ];
 
-        $this->testOfflinePaymentCreditAfterChallanExpiryWithExpirySuccess($requestContent);
+        $this->testOfflinePaymentCreditAfterChallanExpiryWithFailure($requestContent);
 
     }
-    public function testOfflinePaymentCreditAfterChallanExpiryWithExpirySuccess($functionalPaymentRequest = null,
+    public function testOfflinePaymentCreditAfterChallanExpiryWithFailure($functionalPaymentRequest = null,
                                                                                 $functionalPaymentResponse = null, $challanNo = null)
     {
 
@@ -4328,9 +4345,9 @@ class VirtualAccountTest extends TestCase
 
         $this->testValidateOfflineChallan();
 
-        $offlineChallans = DB::select('select * from offline_challans')[0];
+        $offlineChallans = $this->getDbLastEntityPublic('offline_challan');
 
-        $challanNumber = $offlineChallans->challan_number;
+        $challanNumber = $offlineChallans['challan_number'];
 
         $content = $this->createPricingPlan();
 
@@ -4377,19 +4394,38 @@ class VirtualAccountTest extends TestCase
             'content' => $paymentData,
         ];
 
-        $this->ba->hdfcOtcAuth();
-
         $nextTenDays =  Carbon::today(Timezone::IST)->addDays(10)->timestamp;
 
         $fixedTime = (new Carbon())->timestamp($nextTenDays);
 
         Carbon::setTestNow($fixedTime);
 
+        $this->ba->privateAuth();
+
+        $response = $this->closeVirtualAccountsByCloseBy();
+
+        $this->assertEquals($response['success'] , 1);
+
+        $this->assertEquals($response['failure'] , 0);
+
+        $this->getDbEntityById('virtual_account', $offlineChallans['virtual_account_id']);
+
+        $this->ba->hdfcOtcAuth();
+
         $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
 
         $this->testData[__FUNCTION__]['response']['content'] = $functionalPaymentResponse ??  [
                 'challan_no' => $challanNumber,
-                'status' => 0
+                'status' => 1,
+                'error' => [
+                    'code' => 'BAD_REQ_ER',
+                    'description' =>  'REFUND_OR_CAPTURE_PAYMENT_FAILED',
+                    'field' => '',
+                    'source' => 'business',
+                    'step' => null,
+                    'reason' =>  'REFUND_OR_CAPTURE_PAYMENT_FAILED',
+                    'metadata' => [],
+                ],
         ];
 
         $this->startTest();
