@@ -274,6 +274,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CREDIT);
     }
 
+    public function getReference3()
+    {
+        return $this->getAttribute(self::REFERENCE3);
+    }
+
     public function getDebit()
     {
         return $this->getAttribute(self::DEBIT);

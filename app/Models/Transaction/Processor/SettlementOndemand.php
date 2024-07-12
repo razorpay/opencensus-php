@@ -51,6 +51,8 @@ class SettlementOndemand extends Base
         $this->txn->fill($txnData);
 
         $this->txn[Transaction\Entity::TYPE] = Transaction\Type::SETTLEMENT_ONDEMAND;
+
+        parent::tidbStreamingMakeshiftLogic();
     }
 
     public function calculateFees()

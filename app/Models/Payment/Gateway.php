@@ -2977,6 +2977,11 @@ class Gateway
         Gateway::ENACH_RBL,
     ];
 
+    const GATEWAY_CONTROLLER_NOT_SCROOGE_FILE_BASED_REFUNDS = [
+        self::NETBANKING_JSB,
+        self::NETBANKING_AUSF
+    ];
+
     const GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING = [
         self::CHECKOUT_DOT_COM => [Currency::USD],
         self::EMERCHANTPAY => [Currency::EUR,Currency::GBP,Currency::AUD],

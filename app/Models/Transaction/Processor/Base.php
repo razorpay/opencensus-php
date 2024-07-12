@@ -343,30 +343,6 @@ abstract class Base extends BaseCore
 
         $this->txn->setAmount($amount);
 
-        $properties = [
-            'request_data' => json_encode([
-                "merchant_id" => $this->source->merchant->getId()
-            ]),
-            'id'            => $this->source->merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
-        ];
-
-        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
-        $isReverseShadowEnabled = $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
-
-        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
-        {
-            if ($enableTidbStreaming === false)
-            {
-                $this->txn->setReference3("enabled");
-            }
-            else
-            {
-                $this->txn->setReference3("disabled");
-            }
-        }
-
         $this->trace->debug(TraceCode::FILLED_TRANSACTION_DETAILS,
             [
                 'transaction_id'            => $this->txn->getId(),
@@ -375,7 +351,6 @@ abstract class Base extends BaseCore
                 'transaction_amount'        => $this->txn->getAmount(),
                 'transaction_fee_model'     => $this->txn->getFeeModel(),
                 'transaction_fee_bearer'    => $this->txn->getFeeBearer(),
-                'enable_tidb_streaming'     => $enableTidbStreaming
             ]
         );
     }
@@ -395,6 +370,39 @@ abstract class Base extends BaseCore
         ];
 
         $this->txn->fill($txnData);
+
+        $this->tidbStreamingMakeshiftLogic();
+    }
+
+    public function tidbStreamingMakeshiftLogic() {
+        $merchant = $this->txn->merchant;
+
+        $properties = [
+            'request_data' => json_encode([
+                "merchant_id" => $merchant->getId()
+            ]),
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
+        ];
+
+        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            if ($enableTidbStreaming === false)
+            {
+                $this->txn->setReference3("enabled");
+            }
+            else
+            {
+                $this->txn->setReference3("disabled");
+            }
+
+            $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
+                "txnReference3"        => $this->txn->getReference3(),
+                "enableTidbStreaming"   => $enableTidbStreaming
+            ]);
+        }
     }
 
     public function setFeeDefaults()

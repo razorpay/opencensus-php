@@ -15,6 +15,7 @@ use RZP\Models\Ledger\Constants;
 use RZP\Models\Feature;
 use RZP\Models\Currency;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction\ReconciledType;
@@ -547,6 +548,33 @@ class Core extends Base\Core
 
         $txn->setBalanceUpdated(false);
 
+        $properties = [
+            'request_data' => json_encode([
+                "merchant_id" => $merchant->getId()
+            ]),
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
+        ];
+
+        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            if ($enableTidbStreaming === false)
+            {
+                $txn->setReference3("enabled");
+            }
+            else
+            {
+                $txn->setReference3("disabled");
+            }
+        }
+
+        $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
+            "txnReference3"        => $txn->getReference3(),
+            "enableTidbStreaming"   => $enableTidbStreaming
+        ]);
+
         $this->repo->saveOrFail($txn);
 
         $this->repo->saveOrFail($transfer);
@@ -602,6 +630,35 @@ class Core extends Base\Core
         $txn->setAttribute(Transaction\Entity::ON_HOLD, $onHold);
 
         $txn->setBalanceUpdated(false);
+
+        $merchant = $txn->merchant;
+
+        $properties = [
+            'request_data' => json_encode([
+                "merchant_id" => $merchant->getId()
+            ]),
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
+        ];
+
+        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            if ($enableTidbStreaming === false)
+            {
+                $txn->setReference3("enabled");
+            }
+            else
+            {
+                $txn->setReference3("disabled");
+            }
+        }
+
+        $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
+            "txnReference3"        => $txn->getReference3(),
+            "enableTidbStreaming"   => $enableTidbStreaming
+        ]);
 
         $this->repo->saveOrFail($txn);
 

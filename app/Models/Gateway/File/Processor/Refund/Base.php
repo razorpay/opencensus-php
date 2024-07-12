@@ -662,17 +662,22 @@ class Base extends BaseProcessor
                 return true;
             }
         }
+        //have added this to ensure for these two gateways the flow goes throgh scrooge
 
-        $variant = $this->app->razorx->getTreatment(static::GATEWAY, self::FETCH_REFUNDS_DATA_FROM_SCROOGE, $this->mode);
+        if (in_array(static::GATEWAY,Payment\Gateway::GATEWAY_CONTROLLER_NOT_SCROOGE_FILE_BASED_REFUNDS,true)=== true){
 
-        $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, [
-            'gateway'    => static::GATEWAY,
-            'variant'    => $variant,
-            'experiment' => self::FETCH_REFUNDS_DATA_FROM_SCROOGE,
-            'mode'       => $this->mode,
-        ]);
+            return true;
+        }
+        // $variant = $this->app->razorx->getTreatment(static::GATEWAY, self::FETCH_REFUNDS_DATA_FROM_SCROOGE, $this->mode);
 
-        return $variant === 'on';
+        // $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, [
+        //     'gateway'    => static::GATEWAY,
+        //     'variant'    => $variant,
+        //     'experiment' => self::FETCH_REFUNDS_DATA_FROM_SCROOGE,
+        //     'mode'       => $this->mode,
+        // ]);
+
+        // return $variant === 'on';
     }
 
     /**
