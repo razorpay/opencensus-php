@@ -9,11 +9,47 @@ use RZP\Models\Base;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Base\UniqueIdEntity;
 
 
 class Service extends Base\Service
 {
     public function getSettlementDetails($id)
+    {
+
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        // shadow mode experiment
+        $shadow = $this->app->razorx->getTreatment($experimentVariable,
+            Settlement\Constants::RAZORX_SETL_GET_DETAILS_FROM_NSS_SHADOW,
+            $this->mode
+        );
+
+        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON) {
+            $nssResponse = app('settlements_dashboard')->settlementGetDetails($id);
+
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            // reverse shadow mode experiment
+            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
+                Settlement\Constants::RAZORX_SETL_GET_DETAILS_FROM_NSS_REVERSE_SHADOW,
+                $this->mode
+            );
+
+            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+            {
+                return $nssResponse;
+            }
+
+            $apiResponse = $this->getSettlementDetailsOld($id);
+
+            (new Settlement\Service())->compareSettlementsAndLogDifference($apiResponse["items"], $nssResponse["items"], ['method_name' => __FUNCTION__], Settlement\Details\Entity::COMPONENT);
+
+            return $apiResponse;
+        }
+
+        return $this->getSettlementDetailsOld($id);
+    }
+
+    public function getSettlementDetailsOld($id)
     {
         Settlement\Entity::verifyIdAndStripSign($id);
 

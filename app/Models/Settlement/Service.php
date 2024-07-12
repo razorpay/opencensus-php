@@ -98,7 +98,41 @@ class Service extends Base\Service
         return (new Processor)->createSettlementEntry($input);
     }
 
-    public function getMerchantSettlementAmount($input)
+    public function getMerchantSettlementAmount($input){
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        // shadow mode experiment
+        $shadow = $this->app->razorx->getTreatment($experimentVariable,
+            Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_SHADOW,
+            $this->mode
+        );
+
+        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
+        {
+            $nssResponse = app('settlements_dashboard')->settlementAmount($input);
+
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            // reverse shadow mode experiment
+            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
+                Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_REVERSE_SHADOW,
+                $this->mode
+            );
+
+            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+            {
+                return $nssResponse;
+            }
+
+            $apiResponse = $this->getMerchantSettlementAmountOld($input);
+
+            $this->compareSettlementEntityAndLogDifference($apiResponse, $nssResponse, false, ['method_name' => __FUNCTION__]);
+
+            return $apiResponse;
+        }
+
+        return $this->getMerchantSettlementAmountOld($input);
+    }
+
+    public function getMerchantSettlementAmountOld($input)
     {
         (new Validator)->validateInput('settlement_amount', $input);
 
@@ -2976,7 +3010,7 @@ class Service extends Base\Service
         return (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON);
     }
 
-    public function compareSettlementsAndLogDifference(array $apiData, array $nssData, array $extraTrace = [])
+    public function compareSettlementsAndLogDifference(array $apiData, array $nssData, array $extraTrace = [], string $identifier=Settlement\Entity::ID)
     {
         // Compare nss and api response
         $inconsistentParams = [];
@@ -2995,9 +3029,9 @@ class Service extends Base\Service
 
                 foreach ($nssData as $nssSettlementArray)
                 {
-                    $nssSettlementId = $nssSettlementArray[Settlement\Entity::ID] ?? '';
+                    $nssSettlementId = $nssSettlementArray[$identifier] ?? '';
 
-                    if ($apiSettlementData[Settlement\Entity::ID] === $nssSettlementId)
+                    if ($apiSettlementData[$identifier] === $nssSettlementId)
                     {
                         $diff = $this->differenceKeysOfSettlement($apiSettlementData, $nssSettlementArray);
 
@@ -3012,7 +3046,7 @@ class Service extends Base\Service
                     $idx += 1;
                 }
 
-                // null value here means that the refund is not present in nss but is present in the API monolith
+                // null value here means that the settlement is not present in nss but is present in the API monolith
                 if ($idx === count($nssData))
                 {
                     $inconsistentParams[$apiSettlementData[Settlement\Entity::ID]] = null;
@@ -3078,6 +3112,7 @@ class Service extends Base\Service
     public function compareSettlementEntityAndLogDifference(array $apiSettlement, array $nssSettlement,bool $nssChecked,array $extraTrace = [])
     {
         $ignoreKeys = ["created_at"];
+        $differences = [];
         foreach ($apiSettlement as $attribute => $value) {
             if (empty($nssSettlementArray[$attribute]) && empty($value)){
                 continue;
@@ -3088,8 +3123,8 @@ class Service extends Base\Service
                 if ($nssSettlement[$attribute] != $value)
                 {
                     $differences[$attribute] = [
-                        'api_refund' => $apiSettlement->$value,
-                        'nss_refund' => $nssSettlement[$attribute],
+                        'api_settlement' => $apiSettlement->$value,
+                        'nss_settlement' => $nssSettlement[$attribute],
                     ];
                 }
 
@@ -3098,8 +3133,8 @@ class Service extends Base\Service
 
             if ($value !== $nssSettlement[$attribute] && !in_array($attribute, $ignoreKeys)) {
                 $differences[$attribute] = [
-                    'api_refund' => $value,
-                    'nss_refund' => $nssSettlement[$attribute],
+                    'api_settlement' => $value,
+                    'nss_settlement' => $nssSettlement[$attribute],
                 ];
             }
 
@@ -3107,7 +3142,7 @@ class Service extends Base\Service
 
         if($nssChecked === false)
         {
-            $differences = $this->compareSettlementEntityAndLogDifference($nssSettlement,$apiSettlement,true,$extraTrace);
+            $differences += $this->compareSettlementEntityAndLogDifference($nssSettlement,$apiSettlement,true,$extraTrace);
         }
 
         if (empty($differences) === false)

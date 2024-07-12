@@ -77,6 +77,8 @@ class Dashboard extends Base
     const SETTLEMENTS_FETCH_SOURCE_DETAILS = '/v1/settlements/%s/transaction_source_details';
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
     const PASSPORT_AUD = 'settlements';
+    const SETL_GET_DETAILS = '/details';
+    const SETL_AMOUNT = '/v1/settlements/amount';
 
     public function __construct($app)
     {
@@ -664,5 +666,19 @@ class Dashboard extends Base
     {
         $this->addPassportToken();
         return $this->makeRequest(sprintf(self::SETTLEMENTS_FETCH_SOURCE_DETAILS, $id), $input, self::SERVICE_DASHBOARD, null, Requests::POST);
+    }
+
+    public function settlementGetDetails($id)
+    {
+        $url = self::SETTLEMENTS_FETCH . "/" . $id . self::SETL_GET_DETAILS;
+        $this->addPassportToken();
+        return $this->makeRequest($url, [], self::SERVICE_DASHBOARD, null, Requests::GET);
+    }
+
+    public function settlementAmount($input)
+    {
+        $url = self::SETL_AMOUNT;
+        $this->addPassportToken();
+        return $this->makeRequest($url, $input, self::SERVICE_DASHBOARD, null, Requests::GET);
     }
 }

@@ -52,5 +52,11 @@ class Constants {
     const RAZORX_SETL_FETCH_SOURCE_DETAILS_FROM_NSS_SHADOW = 'setl_fetch_source_details_from_nss_shadow';
     const RAZORX_SETL_FETCH_SOURCE_DETAILS_FROM_NSS_REVERSE_SHADOW = 'setl_fetch_source_details_from_nss_reverse_shadow';
 
+    const RAZORX_SETL_GET_DETAILS_FROM_NSS_SHADOW = 'setl_get_details_from_nss_shadow';
+    const RAZORX_SETL_GET_DETAILS_FROM_NSS_REVERSE_SHADOW = 'setl_get_details_from_nss_reverse_shadow';
+
+    const RAZORX_SETL_AMOUNT_FROM_NSS_SHADOW = 'setl_amount_from_nss_shadow';
+    const RAZORX_SETL_AMOUNT_FROM_NSS_REVERSE_SHADOW = 'setl_amount_from_nss_reverse_shadow';
+
     const RAZORX_VARIANT_ON = 'on';
 }
