@@ -10515,6 +10515,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HDFC_CHECKOUT_2_RAZORX_ERROR                      = 'HDFC_CHECKOUT_2_RAZORX_ERROR';
     const RENDER_HDFC_CHECKOUT_2                            = 'RENDER_HDFC_CHECKOUT_2';
     const HDFC_CHECKOUT_2_META_ERROR                        = 'HDFC_CHECKOUT_2_META_ERROR';
+    const API_STORK_BANKING_EMAIL                           = 'API_STORK_BANKING_EMAIL';
 
     const IMPORT_FLOW_MISSING_RISK_VALIDATION               = 'IMPORT_FLOW_MISSING_RISK_VALIDATION';
     const IMPORT_FLOW_ON_HOLD_CLEAR_FAILED                  = 'IMPORT_FLOW_ON_HOLD_CLEAR_FAILED';

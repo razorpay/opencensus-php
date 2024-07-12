@@ -4307,6 +4307,36 @@ return [
         ],
     ],
 
+    'testPasswordResetMailWithCustomOnboadingViaStork' => [
+        'request' => [
+            'url'     => '/users/reset-password',
+            'method'  => 'post',
+            'content' => [
+                'email' => 'resetpass@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
+
+    'testPasswordResetMailWithoutCustomOnboadingViaStork' => [
+        'request' => [
+            'url'     => '/users/reset-password',
+            'method'  => 'post',
+            'content' => [
+                'email' => 'resetpass@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
+
     'testPasswordResetMailCaseInsensitive' => [
         'request' => [
             'url'     => '/users/reset-password',

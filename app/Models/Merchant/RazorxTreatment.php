@@ -1159,7 +1159,7 @@ final class RazorxTreatment
 
     // Razorx for checkout 2.0
     const HDFC_CHECKOUT_2 = 'hdfc_checkout_2';
-
+    const API_STORK_BANKING_EMAIL = 'api_stork_banking_mail';
     const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
 
     const FETCH_ORDER_ASSOCIATIONS_FROM_API = 'fetch_order_associations_from_api';

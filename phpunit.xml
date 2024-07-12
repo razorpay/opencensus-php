@@ -625,6 +625,9 @@
             <directory>./tests/Functional/PayoutLink/</directory>
             <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
         </testsuite>
+        <testsuite name="UT_Banking_Test-1_Suite">
+            <file>./tests/Functional/User/BankingUserTest.php</file>
+        </testsuite>
         <testsuite name="UT_NoCode_Test_Suite">
             <directory>./tests/Functional/Invoice/</directory>
             <directory>./tests/Functional/Item/</directory>

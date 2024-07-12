@@ -5,6 +5,9 @@ namespace RZP\Mail\User;
 use RZP\Mail\Base;
 use RZP\Models\User;
 use RZP\Constants\Product;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class PasswordReset extends Base\Mailable
 {
@@ -91,33 +94,143 @@ class PasswordReset extends Base\Mailable
 
         return $this;
     }
-    //The email should be sent via stork only if the product is banking.
-    protected function shouldSendEmailViaStork(): bool
+
+    protected function isStorkSupported($user, $org)
     {
-        $isProductBanking = $this->product === Product::BANKING;
-
-        return $isProductBanking;
-    }
-
-    protected function getParamsForStork(): array
-    {
-        $storkParams = [
-            'template_namespace'            => 'razorpayx_payouts_core',
-            'template_name'                 => 'razorpayx.password_reset',
-            'params'                        => [
-                'password_reset_url'    => 'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
-                                            .'/forgot-password#token='. $this->token . '&email=' . $this->user['email'],
-                'display_name'          => $this->org['display_name'],
-                'login_logo_url'        => $this->org['login_logo_url'],
-            ]
-        ];
-
-        if ($this->org['showAxisSupportUrl'] !== true)
+        try
         {
-            $storkParams['template_name'] = 'razorpayx.password_reset.show_axis_support_url';
+            $app = \App::getFacadeRoot();
+            $mode = $app['rzp.mode'] ?? Mode::LIVE;
+            $userID = $user['id'];
+            $orgID = $org['id'];
+            $razorxFeature = RazorxTreatment::API_STORK_BANKING_EMAIL .'_reset_password';
+            $traceCode = TraceCode::API_STORK_BANKING_EMAIL;
+
+            // check the experiment
+            $userVariant = $app['razorx']->getTreatment($userID,
+            $razorxFeature, $mode);
+
+            $orgVariant = $app['razorx']->getTreatment($orgID,
+            $razorxFeature, $mode);
+
+            $app['trace']->info($traceCode, [
+                'mode' => $mode,
+                'userID' => $userID,
+                'orgID' => $orgID,
+                'userVariant' => $userVariant,
+                'orgVariant' => $orgVariant
+            ]);
+
+
+            if (strtolower($userVariant) === 'on' or strtolower($orgVariant) === 'on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                $traceCode
+            );
         }
 
-        return $storkParams;
+        return false;
+    }
+
+    //The email should be sent via stork only if the product is banking.
+    public function shouldSendEmailViaStork(): bool
+    {
+        $app = \App::getFacadeRoot();
+        $trace = $app['trace'];
+        $isExperimentEnabled = $this->isStorkSupported($this->user, $this->org);
+        $isProductBanking = $this->product === Product::BANKING;
+
+        return $isProductBanking or $isExperimentEnabled;
+    }
+
+    public function getParamsForStork(): array
+    {
+        $isProductBanking = $this->product === Product::BANKING;
+        if ($isProductBanking === true)
+        {
+            $storkParams = [
+                'template_namespace' => 'razorpayx_payouts_core',
+                'template_name' => 'razorpayx.password_reset',
+                'params' => [
+                    'password_reset_url' =>
+                        'https://' .
+                        parse_url(
+                            config('applications.banking_service_url'),
+                            PHP_URL_HOST
+                        ) .
+                        '/forgot-password#token=' .
+                        $this->token .
+                        '&email=' .
+                        $this->user['email'],
+                    'display_name' => $this->org['display_name'],
+                    'login_logo_url' => $this->org['login_logo_url'],
+                ],
+            ];
+
+            if ($this->org['showAxisSupportUrl'] !== true)
+            {
+                $storkParams['template_name'] =
+                    'razorpayx.password_reset.show_axis_support_url';
+            }
+
+            return $storkParams;
+        }
+        else
+        {
+            $isUnified = $this->unified_hostname !== null;
+            $showContactUs =
+                $this->org['showAxisSupportUrl'] !== true &&
+                $this->org['isCustomOnboardingEmail'] !== true;
+            $storkParams = [
+                'template_name' => 'banking_mail_reset_password',
+                'template_namespace' => 'payments_banking',
+                'params' => [
+                    'org' => $this->org,
+                    'showContactUs' => $showContactUs,
+                ],
+            ];
+
+            if ($isUnified === true)
+            {
+                $storkParams['params']['password_reset_url'] =
+                    $this->unified_hostname .
+                    '/forgotpwd/#token=' .
+                    $this->token .
+                    '&email=' .
+                    urlencode($this->user['email']);
+            }
+            elseif ($isProductBanking === true)
+            {
+                $storkParams['params']['password_reset_url'] =
+                    'https://' .
+                    parse_url(
+                        config('applications.banking_service_url'),
+                        PHP_URL_HOST
+                    ) .
+                    '/forgot-password#token=' .
+                    $this->token .
+                    '&email=' .
+                    $this->user['email'];
+            }
+            else
+            {
+                $storkParams['params']['password_reset_url'] =
+                    'https://' .
+                    $this->org['hostname'] .
+                    '/#/access/resetpassword?email=' .
+                    urlencode($this->user['email']) .
+                    '&token=' .
+                    $this->token;
+            }
+            return $storkParams;
+        }
     }
 }
 
