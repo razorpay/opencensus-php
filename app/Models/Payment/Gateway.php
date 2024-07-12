@@ -2098,6 +2098,7 @@ class Gateway
         IFSC::SHIX,
         IFSC::SIBL,
         IFSC::SPCB,
+        IFSC::SRCB,
         IFSC::STCB,
         IFSC::SURY,
         IFSC::TMBL,
