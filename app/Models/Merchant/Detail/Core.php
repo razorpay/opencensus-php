@@ -4164,20 +4164,20 @@ class Core extends Base\Core
                     {
                         // If merchant gets Activated, onboarding WF's should get auto-approved
                         (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
-                            $merchant->getId(), 'merchant_detail', State\Name::APPROVED);
+                            $merchant->getId(), 'merchant_detail', State\Name::APPROVED, $merchant->getOrgId());
                     }
                     break;
                 case Status::NEEDS_CLARIFICATION:
 
                     // If merchant goes to NC, onboarding WF's should get auto-rejected
                     (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
-                        $merchant->getId(), 'merchant_detail', State\Name::REJECTED);
+                        $merchant->getId(), 'merchant_detail', State\Name::REJECTED, $merchant->getOrgId());
                     break;
                 case Status::REJECTED:
 
                     // If merchant gets Rejected, onboarding WF's should get auto-closed
                     (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
-                        $merchant->getId(), 'merchant_detail', State\Name::CLOSED);
+                        $merchant->getId(), 'merchant_detail', State\Name::CLOSED, $merchant->getOrgId());
                     break;
             }
         });

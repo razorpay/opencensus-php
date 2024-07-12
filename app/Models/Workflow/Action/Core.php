@@ -1015,10 +1015,10 @@ class Core extends Base\Core
      * @param string $entityType
      * @param string $action
      */
-    public function handleOnboardingWorkflowActionIfOpen(string $entityId, string $entityType, string $action)
+    public function handleOnboardingWorkflowActionIfOpen(string $entityId, string $entityType, string $action, string $orgId = null)
     {
         $actions = $this->fetchOpenActionOnEntityOperationWithPermissionList(
-            $entityId, $entityType, Constants::ONBOARDING_WORKFLOWS);
+            $entityId, $entityType, Constants::ONBOARDING_WORKFLOWS, $orgId);
 
         // If there are any action in progress
         if (empty($actions) === false)
