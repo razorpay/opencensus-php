@@ -11651,6 +11651,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST            = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_REQUEST';
     const UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED          = 'UPI_TURBO_CUSTOMER_RECORD_CONSENT_PROCESSED';
 
+    const PAYMENT_CAPTURE_EVENT = 'PAYMENT_CAPTURE_EVENT';
+    const PAYMENT_CAPTURE_EVENT_ERROR = 'PAYMENT_CAPTURE_EVENT_ERROR';
+    const PAYMENT_CAPTURE_EVENT_FAILED = 'PAYMENT_CAPTURE_EVENT_FAILED';
+
     const ONBOARDING_API_BMC_SAVED                             = 'ONBOARDING_API_BMC_SAVED';
 
     // --------------------------- Axis IDAM trace codes -----------------------------------------------

@@ -13,6 +13,10 @@ class Constant
 
     const JPMC_IMPORT_FLOW_GOODS_DESCRIPTION_DEFAULT_OTHER = 'Other';
 
+    const PAYMENT_CAPTURE_EVENTS = 'payment-capture-events-';
+
+    const PAYMENT_CAPTURED = 'payment_captured';
+
     const ERROR_MONEY_IMPLICATION = 'error_money_implication';
 
     const ERROR_NEXT_STEP         = 'error_next_step';

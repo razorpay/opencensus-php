@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Terminal;
@@ -772,6 +773,8 @@ class ApiEventSubscriber extends Base\Core
         $payload = $this->getPaymentPayload($payment);
         $this->setContextForEntity($payment->getMerchantId(), "payment", $payment->getId());
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchPaymentCaptureEvent($payment);
     }
 
     protected function isForNocodeApps(Payment\Entity $payment): bool
@@ -2422,5 +2425,84 @@ class ApiEventSubscriber extends Base\Core
                 'event_type'  => 'partnership'
             ];
         }
+    }
+
+    public function dispatchPaymentCaptureEvent(Payment\Entity $payment): void
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $topic =  Payment\Constant::PAYMENT_CAPTURE_EVENTS . $mode;
+        try
+        {
+            $message = [
+                'name' => Payment\Constant::PAYMENT_CAPTURED,
+                'data' => [
+                    'payment' => [
+                        'id' => $payment->getId(),
+                        'captured_at' => $payment->getCapturedAt(),
+                        'amount' => $payment->getAmount(),
+                        'base_amount' => $payment->getBaseAmount(),
+                        'fee_data' => [
+                            'fee_breakup' => $this->getFeeBreakupForPayment($payment),
+                        ],
+                    ],
+                    'merchant' => [
+                        'id' => $payment->getMerchantId(),
+                        'email' => $payment->merchant->merchantDetail?->getContactEmail(),
+                        'contact' => $payment->merchant->merchantDetail?->getContactMobile(),
+                        'name' => $payment->merchant->getName(),
+                        'brand_name' => $payment->merchant->getFilteredDba(),
+                        'category2' => $payment->merchant->getCategory2(),
+                    ],
+                    'customer' => [
+                        'contact' => $payment->getContact(),
+                    ],
+                ],
+            ];
+
+            if (isset($payment->order)) {
+                $message['data']['order'] = [
+                    'id' => $payment->order->getId(),
+                ];
+            }
+
+            $this->trace->info(
+                TraceCode::PAYMENT_CAPTURE_EVENT,
+                [
+                    'payment_id' => $payment->getId(),
+                ]
+            );
+
+            (new KafkaProducer($topic, stringify($message)))->Produce();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CAPTURE_EVENT_FAILED,
+                [
+                    'error' => $e->getMessage(),
+                    'error_code' => $e->getCode(),
+                    'payment_id' => $payment->getId(),
+                    'topic' => $topic,
+                ]
+            );
+        }
+    }
+
+    protected function getFeeBreakupForPayment($payment): array
+    {
+        $transactionId = $payment->getTransactionId();
+        if (empty($transactionId)) {
+            return [];
+        }
+
+        $feeBreakup = $this->repo->fee_breakup->fetchByTransactionId($transactionId);
+
+        return $feeBreakup->map(function ($fee) {
+            return [
+                'name' => $fee->getName(),
+                'amount' => $fee->getAmount(),
+            ];
+        })->all();
     }
 }
