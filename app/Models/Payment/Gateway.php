@@ -477,6 +477,7 @@ class Gateway
             self::ACQUIRER_ICIC     => self::FIRST_DATA,
         ],
         self::EASEBUZZ_OPTIMIZER    => self::EASEBUZZ_OPTIMIZER,
+        self::BT_AXIS               => self::AXIS,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -518,6 +519,7 @@ class Gateway
         self::FIRST_DATA            => self::FIRST_DATA,
         self::EASEBUZZ_OPTIMIZER    => self::EASEBUZZ_OPTIMIZER,
         self::RZPXPOSTPAID          => self::RZPXPOSTPAID,
+        self::BT_AXIS               => self::AXIS,
     ];
 
 
