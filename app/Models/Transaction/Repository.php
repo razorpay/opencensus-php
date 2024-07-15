@@ -1859,7 +1859,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         return $query->whereIn(Entity::ID, $transactionIds)
@@ -2047,7 +2047,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         $query = $query->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount"))
@@ -2117,7 +2117,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
 	    // The filter on channel is dropped since we have a new index which works without it. WEF Feb 2020.
@@ -2302,7 +2302,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         return $query->select($balanceTypeColumn)
@@ -2340,7 +2340,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         if($fetchAllIds === true)
@@ -2567,7 +2567,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         $query = $query->select($transactionMerchantId, $transactionSettledAt)
@@ -2627,7 +2627,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         return $query->select($selectedColumns)
@@ -2901,7 +2901,7 @@ class Repository extends Base\Repository
 
             if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
             {
-                $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
             }
 
             return $query
@@ -2923,7 +2923,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         return $query->where(Entity::SETTLEMENT_ID, $settlementId)
@@ -2939,7 +2939,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         return $query->where(Entity::SETTLEMENT_ID, $settlementId)
@@ -2953,7 +2953,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         return $query->selectRaw('COUNT(' . $this->dbColumn(Entity::ID) . ') AS count, SUM(' . $this->dbColumn(Entity::CREDIT) . ') AS total_credit')
@@ -2972,7 +2972,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         }
 
         return $query->where(Entity::MERCHANT_ID, $merchantId)
@@ -2995,7 +2995,7 @@ class Repository extends Base\Repository
 
             if ($this->isExperimentEnabledForId(self::TRANSACTION_READ_MIGRATION, __FUNCTION__) === true)
             {
-                $query = $this->newQueryWithConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
             }
 
             $transactionSettlementIdCol = $this->repo->transaction->dbColumn(Entity::SETTLEMENT_ID);
