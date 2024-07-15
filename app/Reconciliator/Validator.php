@@ -276,6 +276,7 @@ class Validator extends Base\Core
         'wallet'                        => 'sometimes',
         'card'                          => 'sometimes',
         'cardless_emi'                  => 'sometimes',
+        'paylater'                      => 'sometimes',
     ];
 
     const UPDATE_BANK_TRANSFER_RECON_DATA_RULES = [
@@ -289,6 +290,7 @@ class Validator extends Base\Core
         'card'                          => 'sometimes',
         'upi'                           => 'sometimes',
         'cardless_emi'                  => 'sometimes',
+        'paylater'                      => 'sometimes',
     ];
 
     const UPDATE_NETBANKING_RECON_DATA_RULES = [
@@ -308,6 +310,7 @@ class Validator extends Base\Core
         'netbanking.additional_data'                       => 'sometimes',
         'netbanking.additional_data.credit_account_number' => 'sometimes',
         'netbanking.additional_data.customer_id'           => 'sometimes',
+        'paylater'                                         => 'sometimes',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'reconciled_at'                                    => 'required|filled|epoch',
@@ -330,6 +333,7 @@ class Validator extends Base\Core
         'card.gateway_fee'                                 => 'required|string',
         'card.gateway_service_tax'                         => 'required|string',
         'card.gateway_reference_id2'                       => 'sometimes|string',
+        'paylater'                                         => 'sometimes',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'card.gateway_fee'                                 => 'required',
@@ -349,6 +353,7 @@ class Validator extends Base\Core
         'card.rrn'                                         => 'sometimes|string',
         'card.arn'                                         => 'sometimes|string',
         'card.gateway_reference_id2'                       => 'sometimes|string',
+        'paylater'                                         => 'sometimes',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'card.gateway_fee'                                 => 'sometimes|string',
@@ -368,6 +373,7 @@ class Validator extends Base\Core
         'wallet.gateway_fee'                               => 'sometimes',
         'wallet.gateway_service_tax'                       => 'sometimes',
         'wallet.gateway_amount'                            => 'sometimes',
+        'paylater'                                         => 'sometimes',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'reconciled_at'                                    => 'required|filled|epoch',
@@ -387,6 +393,7 @@ class Validator extends Base\Core
         'cardless_emi'                                     => 'required|array',
         'cardless_emi.additional_data'                     => 'sometimes',
         'cardless_emi.additional_data.cash_outflow_amount' => 'sometimes',
+        'paylater'                                         => 'sometimes',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'reconciled_at'                                    => 'required|filled|epoch',
@@ -399,6 +406,7 @@ class Validator extends Base\Core
         'card'                                             => 'sometimes',
         'wallet'                                           => 'sometimes',
         'gateway_settled_at'                               => 'sometimes',
+        'cardless_emi'                                     => 'sometimes',
         'paylater'                                         => 'required|array',
         'paylater.additional_data'                         => 'sometimes',
         'reconciled_type'                                  => 'required|string',
