@@ -1006,8 +1006,8 @@ class Service extends Base\Service
                 {
                     $modularPayload = [
                         'field_data' => [
-                            Entity::CONTACT_MOBILE => Country::getCountryCallingCode($countryCode) . $input[Entity::CONTACT_MOBILE],
-                            DeviceDetailConstants::SIGNUP_SOURCE =>  $input[DeviceDetailConstants::MOBILE],
+                            Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
+                            DeviceDetailConstants::SIGNUP_SOURCE =>  DeviceDetailConstants::MOBILE
                         ]
                     ];
                     // this response is not used in this flow
