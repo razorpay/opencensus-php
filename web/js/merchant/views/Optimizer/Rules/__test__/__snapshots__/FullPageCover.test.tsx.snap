@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FullPageCover should render 1`] = `
+<div>
+  <div>
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <div
+          class="cover-full-page-container"
+        >
+          <div>
+            FullPageCover
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="layerTestId"
+    id="layerHost"
+  />
+</div>
+`;

@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ClickOutside should render 1`] = `
+<div>
+  <div>
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <div
+          history="[object Object]"
+          location="[object Object]"
+          match="[object Object]"
+          params="[object Object]"
+        >
+          <div>
+            ClickOutside
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="layerTestId"
+    id="layerHost"
+  />
+</div>
+`;
