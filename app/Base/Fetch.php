@@ -37,9 +37,11 @@ class Fetch
     const TYPE_OBJECT          = 'object';
 
     const FIELD_MERCHANT_ID         = 'merchant_id';
+
     const FIELD_BALANCE_ID          = 'balance_id';
     const FIELD_GATEWAY             = 'gateway';
     const FIELD_PAYMENT_ID          = 'payment_id';
+
     const FIELD_PAYMENT_STATUS      = 'payment_status';
     const FIELD_METHOD              = 'method';
     const FIELD_WALLET              = 'wallet';

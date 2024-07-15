@@ -234,8 +234,8 @@ class CardPaymentService
         $mode = $this->app['rzp.mode'];
 
         $url = $this->config['url'][$mode];
-
         return $url;
+
     }
 
     protected function getRequestHooks()

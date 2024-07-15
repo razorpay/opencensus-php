@@ -1350,6 +1350,26 @@ class AdminFetch
                     ],
                 ],
             ],
+            Entity::PAYMENTS_CARDS_EMI_GATEWAY => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'gateway_transaction_id'    => [
+                    Fetch::LABEL => 'Gateway Transaction Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'success',
+                        'failed',
+                        'error'
+                    ],
+                ],
+            ],
 
             Entity::PAYMENTS_CARDS_CAPTURE  => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,

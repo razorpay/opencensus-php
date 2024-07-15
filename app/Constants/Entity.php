@@ -512,6 +512,8 @@ class Entity
 
     const PAYMENTS_CARDS_AUTHORIZATION  = 'payments_cards.authorization';
     const PAYMENTS_CARDS_AUTHENTICATION = 'payments_cards.authentication';
+    const PAYMENTS_CARDS_EMI_GATEWAY = 'payments_cards.emi_gateway';
+
     const PAYMENTS_CARDS_CAPTURE        = 'payments_cards.capture';
 
     const SUBSCRIPTION_OFFERS_MASTER     = 'subscription_offers_master';
@@ -1713,6 +1715,8 @@ class Entity
         self::BATCH_SERVICE                 => \RZP\Services\BatchMicroService::class,
         self::BATCH_FILE_STORE              => \RZP\Services\BatchMicroService::class,
         self::PAYMENTS_CARDS_AUTHENTICATION => \RZP\Services\CardPaymentService::class,
+        self::PAYMENTS_CARDS_EMI_GATEWAY => \RZP\Services\CardPaymentService::class,
+
         self::PAYMENTS_CARDS_AUTHORIZATION  => \RZP\Services\CardPaymentService::class,
         self::PAYMENTS_CARDS_CAPTURE        => \RZP\Services\CardPaymentService::class,
         self::SUBSCRIPTIONS_SUBSCRIPTION    => \RZP\Models\Plan\Subscription\Service::class,
