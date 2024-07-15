@@ -349,6 +349,9 @@ class Constants
         "aweyes hassen dahir",
         "aweys sheikh hassan dahir",
         "aweys ahmed dahir",
-        "hassan tahir uways"
+        "hassan tahir uways",
+        "vivek ashok pandey",
+        "Sandeep singh Choudhary",
+        "mssandrar"
     ];
 }
