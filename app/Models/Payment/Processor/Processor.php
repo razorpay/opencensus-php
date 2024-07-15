@@ -5644,11 +5644,12 @@ class Processor
     protected function preProcessRecurring(& $input): void
     {
         if (isset($input[Payment\Entity::RECURRING]) and
-            ($input[Payment\Entity::RECURRING] === '1'))
+            ($input[Payment\Entity::RECURRING] === '1') and
+            ($input[Payment\Entity::METHOD] === Method::EMANDATE))
         {
             // Temp experiment for the ramp-up of feature
             $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
+                'id'            => $this->merchant->getMerchantId(),
                 'experiment_id' => $this->app['config']->get('app.' . Merchant\RazorxTreatment::RECURRING_CUSTOMER_CONTACT_REUSE),
                 'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
             ];
