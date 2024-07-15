@@ -12818,34 +12818,31 @@ class Core extends Base\Core
     public function fetchMerchantPosActivationStatus(Entity $merchantDetails)
     {
 
-        $shouldMerchantOnboardViaPGOS = $this->app['MerchantOnboardingProxyController']->shouldMerchantOnboardViaPGOS($merchantDetails->getMerchantId());
-
         $merchantId = $merchantDetails->getMerchantId();
 
         try
         {
-            if ($shouldMerchantOnboardViaPGOS === true)
-            {
 
-                $payload = [
-                    "merchant_id"        => $merchantId
-                ];
 
-                $this->trace->info(TraceCode::PGOS_FETCH_POS_ACTIVATION_STATUS_REQUEST, [
-                    '$payload' => $payload,
-                ]);
+            $payload = [
+                "merchant_id" => $merchantId
+            ];
 
-                $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_pgos_fetch_activation_status',
-                                                                                $payload, $merchantDetails->merchant, true);
+            $this->trace->info(TraceCode::PGOS_FETCH_POS_ACTIVATION_STATUS_REQUEST, [
+                '$payload' => $payload,
+            ]);
 
-                $this->trace->info(TraceCode::PGOS_FETCH_POS_ACTIVATION_STATUS_RESPONSE, [
-                    'merchant_id' => $merchantId,
-                    'response'    => $response,
-                ]);
+            $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_pgos_fetch_activation_status',
+                                                                                                 $payload, $merchantDetails->merchant, true);
 
-                return $response[DetailConstants::POS_ACTIVATION_STATUS];
-            }
+            $this->trace->info(TraceCode::PGOS_FETCH_POS_ACTIVATION_STATUS_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response'    => $response,
+            ]);
+
+            return $response[DetailConstants::POS_ACTIVATION_STATUS];
         }
+
         catch (\Throwable $exception)
         {
             // this should not introduce error counts as it is running in shadow mode
@@ -12863,38 +12860,34 @@ class Core extends Base\Core
 
         $merchantId = $merchantDetails->getMerchantId();
 
-        $shouldMerchantOnboardViaPGOS = $this->app['MerchantOnboardingProxyController']->shouldMerchantOnboardViaPGOS($merchantId);
-
         try
         {
-            if ($shouldMerchantOnboardViaPGOS === true)
-            {
 
-                $payload = [
-                    "merchant_id"        => $merchantId,
-                    "pos_activation_status" => $posActivationStatus
-                ];
+            $payload = [
+                "merchant_id"           => $merchantId,
+                "pos_activation_status" => $posActivationStatus
+            ];
 
-                $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_REQUEST, [
-                    '$payload' => $payload,
-                ]);
+            $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_REQUEST, [
+                '$payload' => $payload,
+            ]);
 
-                $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_pgos_update_activation_status',
-                                                                                $payload, $merchantDetails->merchant, true);
+            $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_pgos_update_activation_status',
+                                                                                                 $payload, $merchantDetails->merchant, true);
 
-                $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_RESPONSE, [
-                    'merchant_id' => $merchantId,
-                    'response'    => $response,
-                ]);
+            $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response'    => $response,
+            ]);
 
-                return $response[DEConstants::POS_ACTIVATION_STATUS];
-            }
+            return $response[DEConstants::POS_ACTIVATION_STATUS];
         }
+
         catch (\Throwable $exception)
         {
             // this should not introduce error counts as it is running in shadow mode
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                'merchant_id' => $merchantId,
+                'merchant_id'   => $merchantId,
                 'error_message' => $exception->getMessage()
             ]);
         }

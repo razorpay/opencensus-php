@@ -618,6 +618,22 @@ class Service extends Base\Service
 
         $this->saveMerchantEligibilityForCategoriesV3Revamp($merchantId, $input, $merchant);
 
+        if ($isPosDetailsSubmitted === true and  isset($merchantDetails) === true)
+        {
+            $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
+
+            $this->trace->info(TraceCode::PGOS_POS_SUBMIT, [
+                'pos_activation_flow' => $posActivationFlow
+            ]);
+
+            if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
+
+                $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
+
+                $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
+            }
+        }
+
         // check if merchant is to be onboarded via PGOS
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
 
@@ -625,22 +641,6 @@ class Service extends Base\Service
         {
             try
             {
-                if ($isPosDetailsSubmitted === true and  isset($merchantDetails) === true)
-                {
-                    $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
-
-                    $this->trace->info(TraceCode::PGOS_POS_SUBMIT, [
-                        'pos_activation_flow' => $posActivationFlow
-                    ]);
-
-                    if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
-
-                        $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
-
-                        $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
-                    }
-                }
-
                 $input['merchantId'] = $merchantId;
 
                 $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
