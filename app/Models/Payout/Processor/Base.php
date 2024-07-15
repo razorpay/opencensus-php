@@ -4301,6 +4301,24 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
+                $check = [
+                    Payout\Entity::PURPOSE => $input[Payout\Entity::PURPOSE],
+                    Payout\Entity::MERCHANT_ID => $this->merchant->getId(),
+                ] ;
+
+                $payoutViaMicroservice = $this->isPayoutServiceApplicableForRzpFeesPayout($check);
+
+                if ($payoutViaMicroservice === false)
+                {
+
+                    $this->trace->info(TraceCode::PAYOUT_SERVICE_RZP_FEES_PAYOUT_VIA_API_MONOLITH,
+                        [
+                            'merchant_id' => $this->merchant->getMerchantId(),
+                            'purpose' => $input[Payout\Entity::PURPOSE]
+                        ]);
+                    return false;
+                }
+
                 if ($this->balance->getAccountType() === AccountType::DIRECT) {
 
                     $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
@@ -4359,6 +4377,22 @@ class Base extends BaseCore
         }
 
         return false;
+    }
+
+    public function isPayoutServiceApplicableForRzpFeesPayout(array $check) : bool
+    {
+        if ($check[Payout\Entity::PURPOSE] === Payout\Purpose::RZP_FEES)
+        {
+            $variant = $this->app['razorx']->getTreatment($check[Payout\Entity::MERCHANT_ID ],
+                RazorxTreatment::ENABLE_CA_RZP_FEES_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+
+            if ($variant != 'on')
+            {
+                return false;
+            }
+
+        }
+        return true;
     }
 
     /**

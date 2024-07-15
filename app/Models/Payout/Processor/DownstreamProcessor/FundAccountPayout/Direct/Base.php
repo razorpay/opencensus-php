@@ -19,6 +19,7 @@ use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Mode as ConstantMode;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Payout\Processor\Base as ProcessorBase;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
@@ -228,7 +229,30 @@ class Base extends FundAccountPayout\Base
             throw new BadRequestValidationFailureException(self::NON_ZERO_PRICING_ERROR_MESSAGE);
         }
 
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false)
+        if ($payout->getPurpose() === Purpose::RZP_FEES &&
+            $payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED))
+        {
+            $fees = 0;
+            $tax = 0;
+
+            $this->trace->info(
+                TraceCode::SETTING_FEES_TAXES_TO_ZERO_FOR_PS_CA_RZP_FEES_PAYOUT,
+                [
+                    'payout_id'     => $payout->getId(),
+                    'fees'          => $fees,
+                    'tax'           => $tax,
+                    'pricing_rule'  => $pricingRuleId,
+                ]);
+        }
+
+        //This is for processing Payout Service RZP Fees Payout Via API Monolith
+        $check = [
+            Payout\Entity::PURPOSE => $payout->getPurpose(),
+            Payout\Entity::MERCHANT_ID => $payout->getMerchantId(),
+        ];
+
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false
+        || !(new ProcessorBase)->isPayoutServiceApplicableForRzpFeesPayout($check))
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
         }
@@ -238,6 +262,16 @@ class Base extends FundAccountPayout\Base
         $payout->setTax($tax);
 
         $payout->setPricingRuleId($pricingRuleId);
+
+        $this->trace->info(
+            TraceCode::DIRECT_ACCOUNT_PAYOUT_FEES_TAXES,
+            [
+                'payout_id'     => $payout->getId(),
+                'fees'          => $payout->getFees(),
+                'tax'           => $payout->getTax(),
+                'pricing_rule'  => $payout->getPricingRuleId(),
+            ]);
+
     }
 
     protected function calculateFeesAndTaxForPayouts(Entity $payout)

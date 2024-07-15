@@ -28,6 +28,8 @@ class Create extends Base
     // payout create service name for singleton class
     const PAYOUT_SERVICE_CREATE = 'payout_service_create';
 
+    const CREATE_RZP_FEES_PAYOUT_URI                 = '/payouts/rzp_fees_payout';
+
     /**
      * @param array $input
      * @param string $merchantId
@@ -57,6 +59,11 @@ class Create extends Base
         elseif ($this->app['basicauth']->isAppAuth() === true)
         {
             $uri = self::CREATE_PAYOUT_INTERNAL_SERVICE_URI;
+        }
+
+        if ($input[Payout\Entity::PURPOSE] === Payout\Purpose::RZP_FEES)
+        {
+            $uri = self::CREATE_RZP_FEES_PAYOUT_URI;
         }
 
         $request = $this->createRequestBody($input, $merchantId, $extraInfo);
