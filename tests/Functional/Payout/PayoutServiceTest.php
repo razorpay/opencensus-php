@@ -2350,8 +2350,6 @@ class PayoutServiceTest extends TestCase
                 self::assertEquals('/transfer', $endpoint);
                 self::assertEquals('POST', $method);
 
-                self::assertNull($input['transfer']['request_meta']);
-
                 return [
                     'body' => [
                         'status'           => 'initiated',
@@ -2380,13 +2378,6 @@ class PayoutServiceTest extends TestCase
         $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutServiceFtaCreation'];
 
         $payout = $this->testCreatePayoutEntry($mode, false);
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
-
-            ], 'control'
-        );
 
         $this->fixtures->edit('merchant_detail', '10000000000000', [
             Detail\Entity::COMPANY_PAN                    => "companyPAN",
@@ -2448,7 +2439,7 @@ class PayoutServiceTest extends TestCase
                     'merchant_detail' => [
                         'merchant_name'     =>  'businessNAME',
                         'merchant_pan'      =>  'companyPAN',
-                        'merchant_address'  => 'Line 1 Address, Line 2 Address, Bhubaneswar, India - 751490'
+                        'merchant_address'  => 'Line 1 Address, Line 2 Address, Bhubaneswar - 751490'
                     ],
                 ], $input['transfer']['request_meta']);
 

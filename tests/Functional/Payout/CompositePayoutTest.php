@@ -625,7 +625,6 @@ class CompositePayoutTest extends TestCase
                     self::assertEquals('m2p', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
                     self::assertArrayHasKey(FTSConstants::REQUEST_META, $input[FTSConstants::TRANSFER]);
                     self::assertArraySubset($mockRequestMetaFTSBlock, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
-                    self::assertCount(6, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
 
                     $ftsSuccess = true;
 

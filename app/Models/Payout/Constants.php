@@ -40,6 +40,8 @@ class Constants
 
     public const MERCHANT_ADDRESS           = "merchant_address";
 
+    const REMITTER_DETAILS                  = 'remitter_details';
+
     public const ATTACHMENT_FILE_URL        = 'attachment_file_url';
 
     public const PAYOUT_ATTACHMENT_METRO_TOPIC = 'payout_attachments';

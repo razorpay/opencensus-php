@@ -27,6 +27,7 @@ class Entity extends PublicEntity
     const TDS_AMOUNT_KEY        = 'tds_amount';
     const SUBTOTAL_AMOUNT_KEY   = 'subtotal_amount';
     const ATTACHMENTS_KEY       = 'attachments';
+    const MERCHANT_DETAIL       = 'merchant_detail';
 
     // Input/output w.r.t cohesive payouts
     const TDS                   = 'tds';
@@ -163,6 +164,26 @@ class Entity extends PublicEntity
             if (array_key_exists(self::ATTACHMENTS_KEY, $infoJson))
             {
                 return $infoJson[self::ATTACHMENTS];
+            }
+        }
+
+        return [];
+    }
+
+    public function getRemitterDetailsAttribute()
+    {
+        if (array_key_exists(self::ADDITIONAL_INFO, $this->attributes) === false)
+        {
+            return null;
+        }
+
+        $infoJson = $this->getAdditionalInfo();
+
+        if (empty($infoJson) === false)
+        {
+            if (array_key_exists(self::MERCHANT_DETAIL, $infoJson))
+            {
+                return $infoJson[self::MERCHANT_DETAIL];
             }
         }
 

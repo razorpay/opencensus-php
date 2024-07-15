@@ -2758,7 +2758,10 @@ class Base extends BaseCore
 
         $isSubTotalAmountPresent = (isset($input[PayoutsDetailsEntity::SUBTOTAL_AMOUNT]) === true);
 
-        return ($isQueuePayoutParamApplicable or $isTdsPresent or $isAttachmentPresent or $isSubTotalAmountPresent);
+        $isRemitterDetailsPresent = (isset($input[Payout\Constants::REMITTER_DETAILS]) === true);
+
+        return ($isQueuePayoutParamApplicable or $isTdsPresent or $isAttachmentPresent or $isSubTotalAmountPresent or
+                $isRemitterDetailsPresent);
     }
 
     protected function setPayoutQueueFlag(array $input, Payout\Entity $payout)
@@ -2815,6 +2818,17 @@ class Base extends BaseCore
         {
             $additionalInfo[PayoutsDetailsEntity::MASTER_BALANCE_ID] = $payout->getMasterBalance()->getId();
             $additionalInfo[PayoutsDetailsEntity::MASTER_MERCHANT_ID] = $payout->getMasterBalance()->getMerchantId();
+        }
+
+        if (isset($input[Payout\Constants::REMITTER_DETAILS]) === true)
+        {
+            $remitterDetails = $input[Payout\Constants::REMITTER_DETAILS];
+
+            $additionalInfo[PayoutsDetailsEntity::MERCHANT_DETAIL] = [
+                Payout\Constants::MERCHANT_NAME     => $remitterDetails[Payout\Constants::MERCHANT_NAME],
+                Payout\Constants::MERCHANT_PAN      => $remitterDetails[Payout\Constants::MERCHANT_PAN],
+                Payout\Constants::MERCHANT_ADDRESS  => $remitterDetails[Payout\Constants::MERCHANT_ADDRESS],
+            ];
         }
 
         if (empty($additionalInfo) === false)

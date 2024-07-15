@@ -712,8 +712,6 @@ final class RazorxTreatment
 
     const NON_RZP_TOKENISED_IR = "non_rzp_tokenised_ir";
 
-    const AXIS_COMPLIANCE_REMITTER_DETAILS = "axis_compliance_remitter_details";
-
     /** Experiment to enable custom access control */
     public const RX_CUSTOM_ACCESS_CONTROL_ENABLED = "rx_custom_access_control_enabled";
 

@@ -205,7 +205,8 @@ class Validator extends Base\Validator
         Entity::ORIGIN               => 'sometimes|filled',
         PayoutDetailsEntity::TDS              => 'sometimes|filled|array',
         PayoutDetailsEntity::ATTACHMENTS      => 'sometimes|filled|array',
-        PayoutDetailsEntity::SUBTOTAL_AMOUNT  => 'sometimes|integer'
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT  => 'sometimes|integer',
+        PayoutConstants::REMITTER_DETAILS     => 'sometimes|array',
     ];
 
     /**
@@ -235,6 +236,7 @@ class Validator extends Base\Validator
         PayoutDetailsEntity::TDS                                   => 'sometimes|filled|array',
         PayoutDetailsEntity::ATTACHMENTS                           => 'sometimes|filled|array',
         PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer',
+        PayoutConstants::REMITTER_DETAILS                          => 'sometimes|array',
         Entity::PG_MERCHANT_ID                                     => 'sometimes|unsigned_id',
     ];
 
@@ -299,7 +301,8 @@ class Validator extends Base\Validator
         Entity::ORIGIN                          => 'sometimes|filled',
         PayoutDetailsEntity::TDS                => 'sometimes|filled|array',
         PayoutDetailsEntity::ATTACHMENTS        => 'sometimes|filled|array',
-        PayoutDetailsEntity::SUBTOTAL_AMOUNT    => 'sometimes|integer'
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT    => 'sometimes|integer',
+        PayoutConstants::REMITTER_DETAILS       => 'sometimes|array',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -324,7 +327,8 @@ class Validator extends Base\Validator
         Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT               => 'sometimes|boolean',
         PayoutDetailsEntity::TDS                                   => 'sometimes|filled|array',
         PayoutDetailsEntity::ATTACHMENTS                           => 'sometimes|filled|array',
-        PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer'
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer',
+        PayoutConstants::REMITTER_DETAILS                          => 'sometimes|array',
     ];
 
     protected static $beforeSmartRoutingPayoutRules = [
@@ -361,7 +365,8 @@ class Validator extends Base\Validator
         Entity::ORIGIN                       => 'sometimes|filled|in:' . Entity::DASHBOARD,
         PayoutDetailsEntity::TDS             => 'sometimes|array',
         PayoutDetailsEntity::ATTACHMENTS_KEY => 'sometimes|array',
-        PayoutDetailsEntity::SUBTOTAL_AMOUNT => 'sometimes|integer'
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT => 'sometimes|integer',
+        PayoutConstants::REMITTER_DETAILS    => 'sometimes|array',
     ];
 
     protected static $bulkUpdateAttachmentsRules = [
@@ -383,6 +388,7 @@ class Validator extends Base\Validator
         'tds_details',
         'attachments',
         'notes',
+        'remitter_details',
     ];
 
     protected static $beforeSmartRoutingPayoutValidators = [
@@ -1560,6 +1566,27 @@ class Validator extends Base\Validator
             $this->validatePrioritySequence($input[Entity::SOURCE_DETAILS]);
 
             $this->validateIfCardDetailsReceivedForScroogeAppOnly($input);
+        }
+    }
+
+    protected function validateRemitterDetails($input)
+    {
+        if ((new Payout\Service())->isRemitterDetailsExpectedInPayload() === true)
+        {
+            /*
+             * In first phase we will just log if any expected internal service is not passing this info.
+             * In the 2nd phase we will start failing the request.
+             */
+            if ((empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_NAME]) === true) or
+                ((empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_PAN]) === true) and
+                    (empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_ADDRESS]) === true))) {
+
+                $this->getTrace()->info(TraceCode::MERCHANT_DETAIL_NOT_PRESENT_IN_REMITTER_DETAILS, [
+                    'is_merchant_name_empty'    => empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_NAME]),
+                    'is_merchant_pan_empty'     => empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_PAN]),
+                    'is_merchant_address_empty' => empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_ADDRESS]),
+                ]);
+            }
         }
     }
 

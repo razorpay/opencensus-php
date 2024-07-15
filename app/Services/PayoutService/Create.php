@@ -186,6 +186,11 @@ class Create extends Base
             $requestBody[PayoutsDetails\Entity::SUBTOTAL_AMOUNT] = $input[PayoutsDetails\Entity::SUBTOTAL_AMOUNT];
         }
 
+        if (empty($input[Payout\Constants::REMITTER_DETAILS]) === false)
+        {
+            $requestBody[Payout\Constants::REMITTER_DETAILS] = $input[Payout\Constants::REMITTER_DETAILS];
+        }
+
         return $requestBody;
     }
 

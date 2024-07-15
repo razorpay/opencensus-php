@@ -884,6 +884,25 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         ];
     }
 
+    public function getBusinessRegisteredAddressWithCountryAsText(string $delimiter = PHP_EOL)
+    {
+        return Address\Utility::formatAddressAsText(
+            $this->getBusinessAddressWithCountry(),
+            $delimiter);
+    }
+
+    public function getBusinessAddressWithCountry(): array
+    {
+        return [
+            Address\Entity::LINE1   => $this->getBusinessRegisteredAddress(),
+            Address\Entity::LINE2   => $this->getBusinessRegisteredAddressLine2(),
+            Address\Entity::CITY    => $this->getBusinessRegisteredCity(),
+            Address\Entity::STATE   => $this->getBusinessRegisteredStateName(),
+            Address\Entity::COUNTRY => $this->getBusinessRegisteredCountry(),
+            Address\Entity::ZIPCODE => $this->getBusinessRegisteredPin(),
+        ];
+    }
+
     public function hasBusinessRegisteredAddress(): bool
     {
         $city  = $this->getBusinessRegisteredCity();

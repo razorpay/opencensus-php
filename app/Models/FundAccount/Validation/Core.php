@@ -1384,30 +1384,21 @@ class Core extends Base\Core
                     $request = $this->createRequestBodyFromFavForFTS($fav);
                 }
 
-                $variant = $this->app->razorx->getTreatment(
-                    $merchantId,
-                    RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS,
-                    ModeConstants::LIVE
-                );
+                $this->addRequestMetaForMerchantDetails($request, $merchantId);
 
-                if ($variant === 'on')
+                $requestMetaObject = $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META];
+
+                if ((isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_NAME]) === false) or
+                    (isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_PAN]) === false) or
+                    (isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_ADDRESS]) === false))
                 {
-                    $this->addRequestMetaForMerchantDetails($request, $merchantId);
-
-                    $requestMetaObject = $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META];
-
-                    if ((isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_NAME]) === false) or
-                        (isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_PAN]) === false) or
-                        (isset($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_ADDRESS]) === false))
-                    {
-                        $this->trace->info(TraceCode::MERCHANT_DETAIL_NOT_PRESENT_IN_FTS_REQUEST, [
-                            'fav_id'                    => $favId,
-                            'merchant_id'               => $merchantId,
-                            'is_merchant_name_empty'    => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_NAME]),
-                            'is_merchant_pan_empty'     => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_PAN]),
-                            'is_merchant_address_empty' => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_ADDRESS]),
-                        ]);
-                    }
+                    $this->trace->info(TraceCode::MERCHANT_DETAIL_NOT_PRESENT_IN_FTS_REQUEST, [
+                        'fav_id'                    => $favId,
+                        'merchant_id'               => $merchantId,
+                        'is_merchant_name_empty'    => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_NAME]),
+                        'is_merchant_pan_empty'     => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_PAN]),
+                        'is_merchant_address_empty' => empty($requestMetaObject[Constants::MERCHANT_DETAIL][Constants::MERCHANT_ADDRESS]),
+                    ]);
                 }
 
                 $ftsClient = new FTS\Transfer\Client($this->app);
@@ -1422,34 +1413,43 @@ class Core extends Base\Core
 
     protected function addRequestMetaForMerchantDetails(&$request, $merchantId): void
     {
-        $requestMeta = [];
+        try {
+            $requestMeta = [];
 
-        if (empty($requestMeta) === true)
-        {
-            /* @var Detail\Entity $merchantDetails*/
-            $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+            if (empty($requestMeta) === true) {
 
-            if (empty($merchantDetails) === true)
-            {
-                return;
+                /* @var Detail\Entity $merchantDetails */
+                $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+                if (empty($merchantDetails) === true) {
+                    return;
+                }
+
+                $requestMeta[Constants::MERCHANT_NAME] = $merchantDetails->getBusinessName();
+                $requestMeta[Constants::MERCHANT_PAN] = $merchantDetails->getPan();
+                $requestMeta[Constants::MERCHANT_ADDRESS] = $merchantDetails->getBusinessRegisteredAddressWithCountryAsText(', ');
             }
 
-            $requestMeta[Constants::MERCHANT_NAME] = $merchantDetails->getBusinessName();
-            $requestMeta[Constants::MERCHANT_PAN] = $merchantDetails->getPan();
-            $requestMeta[Constants::MERCHANT_ADDRESS] = $merchantDetails->getBusinessRegisteredAddressAsText(', ');
+            if (isset($request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META]) === true) {
+                $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META] += [
+                    Constants::MERCHANT_DETAIL => $requestMeta
+                ];
+            } else {
+                $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META] = [
+                    Constants::MERCHANT_DETAIL => $requestMeta
+                ];
+            }
         }
-
-        if (isset($request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META]) === true)
+        catch (\Throwable $exception)
         {
-            $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META] += [
-                Constants::MERCHANT_DETAIL => $requestMeta
-            ];
-        }
-        else
-        {
-            $request[FtsConstants::TRANSFER][FtsConstants::REQUEST_META] = [
-                Constants::MERCHANT_DETAIL => $requestMeta
-            ];
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::MERCHANT_DETAIL_FETCH_EXCEPTION,
+                [
+                    'type' => 'fav',
+                    'input' => $request,
+                ]);
         }
     }
 

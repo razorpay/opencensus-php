@@ -7,6 +7,7 @@ use RZP\Models\Payout;
 use RZP\Constants\Country;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\FundAccount\Entity as FaEntity;
+use RZP\Models\Payout\Constants as PayoutConstants;
 
 class Validator extends Base\Validator
 {
@@ -33,6 +34,7 @@ class Validator extends Base\Validator
         Payout\Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Payout\Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Payout\Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
+        PayoutConstants::REMITTER_DETAILS   => 'sometimes|filled|array',
     ];
 
     // This copies from Payout\Validator
@@ -50,6 +52,7 @@ class Validator extends Base\Validator
         Payout\Entity::FUND_ACCOUNT                                => 'required|filled|array|custom',
         Payout\Entity::FUND_ACCOUNT . "." . FaEntity::ACCOUNT_TYPE => 'required|filled|in:bank_account,vpa,wallet',
         Payout\Entity::FUND_ACCOUNT . "." . Payout\Entity::CONTACT => 'required|filled|array',
+        PayoutConstants::REMITTER_DETAILS                          => 'sometimes|array',
     ];
 
     protected function validatePayouts($attribute, $input)

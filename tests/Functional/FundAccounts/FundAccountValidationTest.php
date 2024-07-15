@@ -936,13 +936,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
-
-            ], 'control'
-        );
-
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $this->createFAVBankingPricingPlan();
@@ -1031,7 +1024,7 @@ class FundAccountValidationTest extends TestCase
                     'merchant_detail' => [
                         'merchant_name'     =>  'businessNAME',
                         'merchant_pan'      =>  'companyPAN',
-                        'merchant_address'  =>  'Line 1 Address, Line 2 Address, Bhubaneswar, India - 751490'
+                        'merchant_address'  =>  'Line 1 Address, Line 2 Address, Bhubaneswar - 751490'
                     ],
                 ], $input['transfer']['request_meta']);
 
@@ -1070,13 +1063,6 @@ class FundAccountValidationTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
-
-            ], 'control'
-        );
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
@@ -1191,13 +1177,6 @@ class FundAccountValidationTest extends TestCase
 
         Queue::fake();
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
-
-            ], 'control'
-        );
-
         $this->ba->payoutInternalAppAuth();
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
@@ -1253,7 +1232,7 @@ class FundAccountValidationTest extends TestCase
                     'merchant_detail' => [
                         'merchant_name'     =>  'businessNAME',
                         'merchant_pan'      =>  'companyPAN',
-                        'merchant_address'  => 'Line 1 Address, Line 2 Address, Bhubaneswar, India - 751490'
+                        'merchant_address'  => 'Line 1 Address, Line 2 Address, Bhubaneswar - 751490'
                     ],
                 ], $input['transfer']['request_meta']);
 
@@ -1283,13 +1262,6 @@ class FundAccountValidationTest extends TestCase
         $this->testData[__FUNCTION__] = $this->testData['testValidateTypeBankAccountInternal'];
 
         Queue::fake();
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::AXIS_COMPLIANCE_REMITTER_DETAILS => 'on',
-
-            ], 'control'
-        );
 
         $this->ba->payoutInternalAppAuth();
 

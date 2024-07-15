@@ -19219,6 +19219,170 @@ return [
         ],
     ],
 
+    'testRemitterDetailsInPayloadForXPayroll'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantNAME',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantADDRESS',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCompositePayoutRemitterDetailsInPayloadForXPayroll'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account'   => [
+                    'account_type' => 'vpa',
+                    'vpa' => [
+                        'address'  => 'mehulisa10xdev@razorpay',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantNAME',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantADDRESS',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'UPI',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testRemitterDetailsInPayloadForNonXPayroll'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'payout',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testPayoutPricingForXpayroll'=>  [
         'request'  => [
             'method'  => 'POST',

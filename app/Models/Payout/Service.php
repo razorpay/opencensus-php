@@ -910,6 +910,27 @@ class Service extends Base\Service
         return $this->auth->isXperienceApp();
     }
 
+    public function isRemitterDetailsExpectedInPayload(): bool
+    {
+        if ($this->isAllowedInternalApp() === false)
+        {
+            return false;
+        }
+
+        return (
+            ($this->auth->isPayoutLinkApp() === false) and
+            ($this->auth->isAccountsReceivableApp() === false) and
+            ($this->auth->isBusinessReportingApp() === false) and
+            ($this->auth->isVendorPaymentApp() === false) and
+            ($this->auth->isSettlementsApp() === false) and
+            ($this->auth->isScroogeApp() === false) and
+            ($this->auth->isChargeCollectionsApp() === false) and
+            ($this->auth->isCapitalCollectionsApp() === false) and
+            ($this->auth->isFTSApp() === false) and
+            ($this->auth->isXperienceApp() === false)
+        );
+    }
+
     public function approveIciciCaFundAccountPayout(array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_ICICI_CA_APPROVE_REQUEST, ['input' => $input]);
