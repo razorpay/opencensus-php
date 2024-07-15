@@ -49,6 +49,8 @@ class Processor extends Base\Core
 
     protected $mailAddress = MailConstants::MAIL_ADDRESSES[MailConstants::CROSS_BORDER_TECH];
 
+    protected $cbImportInternalMailAddress = MailConstants::MAIL_ADDRESSES[MailConstants::CROSS_BORDER_TECH_IMPORT_INTERNAL];
+
 
     public function generateSettlementFileForICICIOpgspImport($input)
     {
@@ -741,12 +743,14 @@ class Processor extends Base\Core
             // In seconds
             $timelines = [];
 
+            $recipient = ($jobName === $this->invoicesJobNameProd) ? $this->cbImportInternalMailAddress : $this->mailAddress;
+
             $mailInfo = [
                 'fileInfo'  => $fileInfo,
                 'channel'   => 'settlements',
                 'filetype'  => $filetype,
                 'subject'   => 'File Send failure',
-                'recipient' => $this->mailAddress,
+                'recipient' => $recipient,
             ];
 
             $this->app['beam']->beamPush($data, $timelines, $mailInfo);
