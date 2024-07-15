@@ -9,12 +9,16 @@ final class AsvFlows
         'merchant_activation_status' => true,
         'merchant_activation_save' => true,
         'merchant_fetch_internal_users' => true,
+        'merchant_submit_internal' => true,
+        'merchant_activation_update' => true
     );
 
     public const CacheDisabledFlows = array(
         'worker:update_merchant_context' => true,
         'merchant_activation_status' => true,
         'merchant_activation_save' => true,
+        'merchant_submit_internal' => true,
+        'merchant_activation_update' => true
     );
 
     public static function isExclusionFLow(string $flow): bool
