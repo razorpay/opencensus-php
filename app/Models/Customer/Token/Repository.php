@@ -890,6 +890,28 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function isEmandateTokenFetchFromTidbEnabled($function = null): bool
+    {
+        $variant = $this->app['razorx']->getTreatment(
+            $function,
+            Merchant\RazorxTreatment::FETCH_EMANDATE_TOKENS_FROM_TIDB,
+            $this->app['rzp.mode']
+        );
+
+        $this->trace->info(TraceCode::FETCH_TOKENS_FROM_TIDB_RAZORX,
+            [
+                "variant"  => $variant,
+                "function" => $function
+            ]);
+
+        if ($variant === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @throws ServerErrorException
      */
@@ -911,19 +933,50 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        $tokens = $this->newQueryOnPaymentFetchReplica(600000, $to)
-                        ->select($selectCols, 'payments.id as payment_id')
-                        ->from(\DB::raw('`tokens`, `payments`'))
-                        ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
-                        ->whereBetween($paymentCreatedAtColumn, [$from, $to])
-                        ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
-                        ->where($paymentRecurringColumn, '=', 1)
-                        ->where($paymentMethodColumn, '=', Method::NACH)
-                        ->where($paymentGatewayColumn, '=', $gateway)
-                        ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
-                        ->where($tokenRecurringColumn, '!=', 1)
-                        ->with(['customer', 'merchant'])
-                        ->get();
+        if($this->isEmandateTokenFetchFromTidbEnabled(__FUNCTION__) === true)
+        {
+            $this->trace->info(TraceCode::EMANDATE_TOKEN_QUERY_CONNECTION,
+                [
+                    "database"  => "tidb",
+                ]);
+
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $tokens = $this->newQueryWithConnection($connectionType)
+                ->select($selectCols, 'payments.id as payment_id')
+                ->from(\DB::raw('`tokens`, `payments`'))
+                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+                ->where($paymentRecurringColumn, '=', 1)
+                ->where($paymentMethodColumn, '=', Method::NACH)
+                ->where($paymentGatewayColumn, '=', $gateway)
+                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+                ->where($tokenRecurringColumn, '!=', 1)
+                ->with(['customer', 'merchant'])
+                ->get();
+        }
+        else
+        {
+            $this->trace->info(TraceCode::EMANDATE_TOKEN_QUERY_CONNECTION,
+                [
+                    "database"  => "replica",
+                ]);
+
+            $tokens = $this->newQueryOnPaymentFetchReplica(600000, $to)
+                ->select($selectCols, 'payments.id as payment_id')
+                ->from(\DB::raw('`tokens`, `payments`'))
+                ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+                ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+                ->where($paymentRecurringColumn, '=', 1)
+                ->where($paymentMethodColumn, '=', Method::NACH)
+                ->where($paymentGatewayColumn, '=', $gateway)
+                ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+                ->where($tokenRecurringColumn, '!=', 1)
+                ->with(['customer', 'merchant'])
+                ->get();
+        }
 
         return (new Entity)->mapIFSC($tokens);
     }
