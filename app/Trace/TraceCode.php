@@ -4457,6 +4457,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const B2B_FEATURE_FLAG_ADDED                                = 'B2B_FEATURE_FLAG_ADDED';
     const B2B_SETTLEMENT_ENABLE_FEATURE_FLAG_ADDED              = 'B2B_SETTLEMENT_ENABLE_FEATURE_FLAG_ADDED';
     const B2B_NOTIFICATION_REPORT                               = 'B2B_NOTIFICATION_REPORT';
+    const PACB_BANK_TRANSFER_PAYMENT_CAPTURE                    = 'PACB_BANK_TRANSFER_PAYMENT_CAPTURE';
+    const PACB_BANK_TRANSFER_PAYMENT_CAPTURE_FAILED             = 'PACB_BANK_TRANSFER_PAYMENT_CAPTURE_FAILED';
+    const PACB_BANK_TRANSFER_EMPTY_ORDER_META                   = 'PACB_BANK_TRANSFER_EMPTY_ORDER_META';
     const ES_FEATURE_FLAG_DISABLED                              = 'ES_FEATURE_FLAG_DISABLED';
     const FPX_EMAIL_SUPPRESS                                    = 'FPX_EMAIL_SUPPRESS';
     const WALLET_EMAIL_SUPPRESS                                 = 'WALLET_EMAIL_SUPPRESS';

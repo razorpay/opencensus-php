@@ -2403,8 +2403,6 @@ trait Authorize
                 ]
             );
         }
-
-//
     }
 
     protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)

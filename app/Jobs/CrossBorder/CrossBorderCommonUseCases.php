@@ -83,6 +83,7 @@ class CrossBorderCommonUseCases extends Job
     const DISABLE_ON_DEMAND_SETTLEMENT = 'DISABLE_ON_DEMAND_SETTLEMENT';
 
     const UPDATE_PAYMENT_STATUS = 'update_payment_status';
+    const CAPTURE_PACB_BANK_TRANSFER_PAYMENT = 'capture_pacb_bank_transfer_payment';
     /**
      * @var string
      */
@@ -179,6 +180,9 @@ class CrossBorderCommonUseCases extends Job
                     break;
                 case self::DISABLE_ON_DEMAND_SETTLEMENT:
                     $this->disableODSForOpgspMerchant($this->payload['mode'],$this->payload['merchant_id']);
+                    break;
+                case self::CAPTURE_PACB_BANK_TRANSFER_PAYMENT:
+                    (new BankTransfer\Service())->capturePACBBankTransferPayments($this->payload['body']);
                     break;
                 default:
                     $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_INVALID_ACTION,[
@@ -593,7 +597,7 @@ class CrossBorderCommonUseCases extends Job
             $txn = (new Payment\Service())->createVirtualPaymentTxnFromLedger($payment);
 
             $txn->setOnHold(false);
-            
+
             return $txn;
         }
 

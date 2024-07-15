@@ -1147,7 +1147,7 @@ class Core extends Base\Core
 
     }
 
-    public function capturePaymentForB2B($input,$payment)
+    public function capturePaymentForB2B($payment, $input = [])
     {
             if($payment->isAuthorized())
             {

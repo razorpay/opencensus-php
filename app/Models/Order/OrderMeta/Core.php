@@ -32,6 +32,9 @@ class Core extends Base\Core
      */
     protected $mutex;
 
+    const FIELDSTODECRYPT = ['name', 'line1', 'line2', 'city', 'state', 'country', 'zipcode'];
+
+
     public function __construct()
     {
         parent::__construct();
@@ -583,4 +586,81 @@ class Core extends Base\Core
             throw $e;
         }
     }
+
+    public function getOrderIdForPayment($data)
+    {
+        $orderIds = [];
+
+        foreach ($data as $datum)
+        {
+            array_push($orderIds, $datum['order_id']);
+        }
+
+        return $orderIds;
+    }
+
+    public function getOrderIdToOrderMetaMap($data)
+    {
+        $orderIdToOrderMetaMap = array();
+
+        foreach ($data as $datum)
+        {
+            $orderIdToOrderMetaMap[$datum['order_id']] = $datum;
+        }
+
+        return $orderIdToOrderMetaMap;
+    }
+
+    public function decryptCartInfo($cartInfo, $encryptionKey)
+    {
+        $decryptedCartInfo = [];
+        if (!isset($cartInfo) || !isset($cartInfo['customer_details'])) {
+            return [];
+        }
+        $shippingAddress = $cartInfo['customer_details']['shipping_address'] ?? null;
+        $billingAddress = $cartInfo['customer_details']['billing_address'] ?? null;
+        if (isset($shippingAddress)) {
+            foreach (self::FIELDSTODECRYPT as $field) {
+                if (isset($shippingAddress[$field])) {
+                    $shippingAddress[$field] = $this->decryptValue($shippingAddress[$field], $encryptionKey);
+                }
+            }
+        }
+        if (isset($billingAddress)) {
+            foreach (self::FIELDSTODECRYPT as $field) {
+                if (isset($billingAddress[$field])) {
+                    $billingAddress[$field] = $this->decryptValue($billingAddress[$field], $encryptionKey);
+                }
+            }
+        }
+        $decryptedCartInfo['customer_details'] = [];
+        $decryptedCartInfo['customer_details']['shipping_address'] = $shippingAddress;
+        $decryptedCartInfo['customer_details']['billing_address'] = $billingAddress;
+        $decryptedCartInfo['customer_details']['name'] = $this->decryptValue($cartInfo['customer_details']['name'], $encryptionKey);
+        $decryptedCartInfo['customer_details']['email'] = $this->decryptValue($cartInfo['customer_details']['email'], $encryptionKey);
+        $decryptedCartInfo['customer_details']['contact'] = $this->decryptValue($cartInfo['customer_details']['contact'], $encryptionKey);
+        return $decryptedCartInfo;
+    }
+
+    protected function decryptValue($decryptedValue, $key)
+    {
+        if(!isset($decryptedValue)) {
+            return null;
+        }
+        $nonceLength = 12;
+        $tagLength = 16;
+
+        // Convert hexadecimal string to binary
+        $binaryData = hex2bin($decryptedValue);
+
+        // Extract nonce, tag, and ciphertext
+        $nonce = substr($binaryData, 0, $nonceLength);
+        $tag = substr($binaryData, -$tagLength);
+        $ciphertext = substr($binaryData, $nonceLength, -$tagLength);
+
+        // Decrypt the ciphertext
+        return openssl_decrypt($ciphertext, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag);
+    }
+
+
 }

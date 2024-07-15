@@ -321,7 +321,7 @@ class Core extends Base\Core
                 $commissionAmount = null;
                 $commissionConversionAmount = null;
 
-                if ($payment->isB2BExportCurrencyCloudPayment())
+                if ($payment->isB2BExportCurrencyCloudPayment() or $payment->isBankTransfer())
                 {
                     $commissionAmount = $payment->getMccMarkDownCommisionAmount() + $txn->getFee();
                     $commissionConversionAmount = (new \RZP\Models\Currency\Core())->convertAmount($commissionAmount, Currency::INR, Currency::USD);

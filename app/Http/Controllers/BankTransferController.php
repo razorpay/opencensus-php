@@ -915,6 +915,15 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function captureCronForPACBBankTransferPayments()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->captureCronForPACBBankTransferPayments($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function settlementFromCurrencyCloud()
     {
         $input = Request::all();

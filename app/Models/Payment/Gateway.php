@@ -226,7 +226,6 @@ class Gateway
     const INDUSIND_DEBIT_EMI = 'indusind_debit_emi';
     const ICICI_DEBIT_EMI    = 'icici_debit_emi';
     const CURRENCY_CLOUD     = 'currency_cloud';
-
     const PING_PONG     = 'ping_pong';
 
     const VA_SWIFT = 'swift';
@@ -597,7 +596,8 @@ class Gateway
 
     const ADDRESS_NAME_REQUIRED_GATEWAYS = [
         self::EMERCHANTPAY,
-        self::CURRENCY_CLOUD
+        self::CURRENCY_CLOUD,
+        self::PING_PONG
     ];
 
     /**
@@ -2989,6 +2989,7 @@ class Gateway
         self::CHECKOUT_DOT_COM => [Currency::USD],
         self::EMERCHANTPAY => [Currency::EUR,Currency::GBP,Currency::AUD],
         self::CURRENCY_CLOUD => [Currency::USD, Currency::EUR, Currency::GBP, Currency::AUD, Currency::CAD],
+        self::PING_PONG => [Currency::USD],
     ];
 
     const WALLET_PAYMENT = 'walletPayments';
@@ -5383,6 +5384,7 @@ class Gateway
         self::EMERCHANTPAY,
         self::CURRENCY_CLOUD,
         self::CHECKOUT_DOT_COM,
+        self::PING_PONG,
     ];
 
     public static function isNonTerminalGateway(string $gateway)

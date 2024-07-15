@@ -3443,13 +3443,10 @@ class Processor
                 $this->convert3ds2BrowserDetails($input);
 
                 $payment = $this->buildPaymentEntity($input);
-
-                if ($isPACBPartnerExportFlow) {
+                if ($isPaCbPartnerPayment) {
                     $payment->setInternational();
                     $payment->setGateway(Payment\Gateway::PING_PONG);
                 }
-
-
 
                 $this->preProcessForSubscriptionsIfApplicable($input, $payment);
 

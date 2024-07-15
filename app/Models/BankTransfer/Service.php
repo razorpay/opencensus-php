@@ -1375,6 +1375,10 @@ class Service extends Base\Service
                     'error_code' => 'BAD_REQUEST_ERROR',
                 ]);
         }
+        return $this->saveBillingAddress($payment, $input);
+    }
+
+    private function saveBillingAddress($payment, $input) {
 
         $formattedAddress = [
             'type' => Address\Type::BILLING_ADDRESS,
@@ -1388,6 +1392,7 @@ class Service extends Base\Service
 
         return (new Address\Core)->create($payment, $payment->getEntity(), $formattedAddress);
     }
+
 
     public function getAddressEntityForB2B($paymentId = '')
     {
@@ -1799,7 +1804,7 @@ class Service extends Base\Service
 
         $this->repo->payment->saveOrFail($payment);
 
-        $payment = $this->core->capturePaymentForB2B($input, $payment);
+        $payment = $this->core->capturePaymentForB2B($payment, $input);
     }
 
     protected function paymentReleasedFlowFromCurrencyCloud($input)
@@ -2239,6 +2244,77 @@ class Service extends Base\Service
             }
         }
         return ["success" => true];
+    }
+
+    public function captureCronForPACBBankTransferPayments($input) {
+
+        if ($this->app['env'] != Environment::TESTING) {
+            $this->app['rzp.mode'] = Mode::LIVE;
+        }
+        $payload = [
+            'action' => CrossBorderCommonUseCases::CAPTURE_PACB_BANK_TRANSFER_PAYMENT,
+            'mode' => $this->app['rzp.mode'],
+            'body' => $input
+        ];
+
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
+    }
+
+    public function capturePACBBankTransferPayments($input) {
+        if ($this->app['env'] != Environment::TESTING) {
+            $this->app['rzp.mode'] = Mode::LIVE;
+        }
+
+        $payments = $this->repo->payment->getIntlBankTransferPayments( $input, Payment\Status::AUTHORIZED, Gateway::PING_PONG);
+        $encryptionKey = $this->app['config']['app']['cross_border_handle']['aes_encryption_key'];
+        $orderIds = (new \RZP\Models\Order\OrderMeta\Core())->getOrderIdForPayment($payments);
+
+        $orderMetas = $this->repo->order_meta->fetchByOrderIdsAndTypeFromTiDB($orderIds, \RZP\Models\Order\OrderMeta\Type::CART_INFO);
+        $orderIdToOrderMetaMap = (new \RZP\Models\Order\OrderMeta\Core())->getOrderIdToOrderMetaMap($orderMetas);
+
+        foreach ($payments as $payment) {
+            try {
+                $orderMeta =$orderIdToOrderMetaMap[$payment->order->getId()] ?? null;
+
+                if (!$orderMeta) {
+                    $this->trace->info(TraceCode::PACB_BANK_TRANSFER_EMPTY_ORDER_META, [
+                        'payment_id' => $payment->getId(),
+                        'order_id' => $payment->order->getId(),
+                    ]);
+                    continue;
+                }
+
+                $decryptedCartInfo = (new \RZP\Models\Order\OrderMeta\Core())->decryptCartInfo($orderMeta['value'], $encryptionKey);
+
+                $formattedAddress = [
+                    'name' => $decryptedCartInfo["customer_details"]["name"],
+                    'zipcode' => $decryptedCartInfo["customer_details"]["billing_address"]["zipcode"],
+                    'line1' => $decryptedCartInfo["customer_details"]["billing_address"]["line1"],
+                    'line2' => $decryptedCartInfo["customer_details"]["billing_address"]["line2"],
+                    'city' => $decryptedCartInfo["customer_details"]["billing_address"]["city"],
+                    'country' => $decryptedCartInfo["customer_details"]["billing_address"]["country"] ,
+                    'state' => $decryptedCartInfo["customer_details"]["billing_address"]["state"],
+                ];
+
+                $this->saveBillingAddress($payment, $formattedAddress);
+                $payment = $this->repo->payment->findOrFail($payment->getId());
+                $payment->setGatewayCaptured(true);
+                $this->repo->payment->saveOrFail($payment);
+                $this->core->capturePaymentForB2B($payment);
+
+            } catch (\Exception $ex) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::PACB_BANK_TRANSFER_PAYMENT_CAPTURE_FAILED,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'status'=> $payment->getStatus(),
+                        'message' => $ex->getMessage()
+                    ]
+                );
+            }
+        }
     }
 
 }

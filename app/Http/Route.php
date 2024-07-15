@@ -2721,6 +2721,9 @@ class Route
         'notifications_for_b2b'                => ['post',     'international/virtual_accounts/payment/create',     'BankTransferController@notificationsFromCurrencyCloud'                         ],
         'settlement_cron_for_b2b_payments'     => ['post',     'b2b/payments/settlement',                           'BankTransferController@settlementFromCurrencyCloud'                               ],
 
+        'capture_pacb_bank_transfer_payments'  => ['post',     'pacb/bank-transfer/capture',                         'BankTransferController@captureCronForPACBBankTransferPayments'                   ],
+
+
         //Global Bank account solution
 
         'fetch_balance_international_virtual_account'       => ['get',     'international/virtual_accounts/balance/{va_currency}',         'BankTransferController@getBalanceForMerchantVA'          ],
@@ -5720,6 +5723,7 @@ class Route
         'merchant_onboarding_crons',
         'merchant_risk_crons',
         'capture_cron_for_b2b_payments',
+        'capture_pacb_bank_transfer_payments',
         'settlement_cron_for_b2b_payments',
         'setl_internal_fetch',
         'setl_adj_add',
@@ -16710,6 +16714,7 @@ class Route
             'payment_page_cds_billing_update_cron',
             'merchant_popular_products_cron',
             'capture_cron_for_b2b_payments',
+            'capture_pacb_bank_transfer_payments',
             'settlement_cron_for_b2b_payments',
             'merchant_onboarding_crons',
             'merchant_risk_crons',

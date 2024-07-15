@@ -5227,6 +5227,29 @@ EOT;
         return $query->get();
     }
 
+    public function getIntlBankTransferPayments($input, $status, $gateway)
+    {
+        $limit = isset($input['limit']) ? $input['limit'] : 100;
+
+        $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+        $to = $input['to'] ?? Carbon::now(Timezone::IST)->getTimestamp();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::INTERNATIONAL, 1)
+            ->where(Entity::METHOD, Method::BANK_TRANSFER)
+            ->where(Entity::GATEWAY, $gateway)
+            ->where(Entity::STATUS, $status)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit);
+
+        if (isset($input['merchant_ids']) && sizeof($input['merchant_ids']) > 0) {
+            $query = $query->whereIn(Entity::MERCHANT_ID, $input['merchant_ids']);
+        }
+
+        return $query->get();
+    }
+
     //select * from `payments`
     // where `payments`.`token_id` = JtXT7fDRwqDzP3
     // and `payments`.`token_id` is not null
