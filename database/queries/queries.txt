@@ -7242,3 +7242,6 @@ ALTER TABLE offline_payments ADD COLUMN source varchar(20) DEFAULT NULL ;
 
 ALTER TABLE credit_transaction
     ADD column tidb_stream VARCHAR(14) DEFAULT NULL;
+
+ALTER TABLE transfers ADD COLUMN source_channel varchar(15) DEFAULT 'online';
+

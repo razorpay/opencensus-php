@@ -569,6 +569,28 @@ class Core extends Base\Core
 
         $this->setAccountCodeIfApplicable($transfer);
 
+        $sourceChannel = null;
+
+        if($source instanceof Payment\Entity)
+        {
+            $sourceChannel = $source->getSourceChannel();
+        }
+
+        if($source instanceof Order\Entity){
+
+            $payment = $this->fetchPaymentEntityFromOrder($source);
+
+            if($payment !== null )
+            {
+                $sourceChannel = $payment->getSourceChannel();
+            }
+        }
+
+        if( $sourceChannel !== null) {
+
+            $transfer->setSourceChannel($sourceChannel);
+        }
+
         return $transfer;
     }
 
@@ -2857,5 +2879,27 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function fetchPaymentEntityFromOrder(Order\Entity $order)
+    {
+        $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($order->getId(), $order->getMerchantId());
+
+        $rearchPayments = $this->app['pg_router']->fetchOrderPayments($order->getId(), $order->getMerchantId());
+
+        $allPayments = $apiPayments->merge($rearchPayments);
+
+        $payment = null;
+
+        foreach ($allPayments as $singlePayment)
+        {
+            if (($singlePayment->getStatus() === Payment\Status::CAPTURED))
+            {
+                $payment = $singlePayment;
+
+                break;
+            }
+        }
+        return $payment;
     }
 }

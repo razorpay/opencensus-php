@@ -85,9 +85,20 @@ trait Transfer
             $processViaLedgerReverseShadow = true;
         }
 
+        $sourceChannel = null;
+
+        if ($originPayment !== null)
+        {
+             $sourceChannel = $originPayment->getSourceChannel();
+        }
+
         if ($processViaLedgerReverseShadow === true)
         {
             // Skip transaction creation for reverse shadow mode
+            if ($sourceChannel !== null)
+            {
+                $transferPayment[Payment\Entity::SOURCE_CHANNEL] = $sourceChannel;
+            }
             return $transferPayment;
         }
 
@@ -106,6 +117,11 @@ trait Transfer
         }
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
+
+        if ($sourceChannel !== null)
+        {
+            $transferPayment[Payment\Entity::SOURCE_CHANNEL] = $sourceChannel;
+        }
 
         return $transferPayment;
     }
