@@ -1,0 +1,107 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProviderShimmer should render the fields 1`] = `
+<div>
+  <div>
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <div
+          class="providers-shimmer"
+        >
+          <div
+            class="primary-shimmer col-xs-3 gateway-provider-col"
+          >
+            <div
+              class="img-holder"
+            >
+              <span
+                class="shimmer-loader gateway-icon"
+              />
+            </div>
+            <div
+              class="side-space"
+            >
+              <span
+                class="shimmer-loader first-sec"
+              />
+              <span
+                class="shimmer-loader second-sec"
+              />
+            </div>
+          </div>
+          <div
+            class="primary-shimmer col-xs-3 gateway-provider-col"
+          >
+            <div
+              class="img-holder"
+            >
+              <span
+                class="shimmer-loader gateway-icon"
+              />
+            </div>
+            <div
+              class="side-space"
+            >
+              <span
+                class="shimmer-loader first-sec"
+              />
+              <span
+                class="shimmer-loader second-sec"
+              />
+            </div>
+          </div>
+          <div
+            class="primary-shimmer col-xs-3 gateway-provider-col"
+          >
+            <div
+              class="img-holder"
+            >
+              <span
+                class="shimmer-loader gateway-icon"
+              />
+            </div>
+            <div
+              class="side-space"
+            >
+              <span
+                class="shimmer-loader first-sec"
+              />
+              <span
+                class="shimmer-loader second-sec"
+              />
+            </div>
+          </div>
+          <div
+            class="primary-shimmer col-xs-3 gateway-provider-col"
+          >
+            <div
+              class="img-holder"
+            >
+              <span
+                class="shimmer-loader gateway-icon"
+              />
+            </div>
+            <div
+              class="side-space"
+            >
+              <span
+                class="shimmer-loader first-sec"
+              />
+              <span
+                class="shimmer-loader second-sec"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="layerTestId"
+    id="layerHost"
+  />
+</div>
+`;

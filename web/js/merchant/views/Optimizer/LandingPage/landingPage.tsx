@@ -9,16 +9,17 @@ import DataTable from 'common/ui/Table/DataTable';
 import { idItem } from 'common/ui/item/id';
 import DocsLink from 'merchant/components/DocsLink';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
-import ProviderNewView from 'merchant/views/Navigator/components/ProviderNewView';
-import { ProviderShimmer } from 'merchant/views/Navigator/components/ProviderShimmer';
+import { trackOptimizerEvents } from 'merchant/views/Optimizer/track';
 import {
   getValue,
   getRuleStatus,
   removeMid,
   uniqueArray,
   findProviderName,
-} from 'merchant/views/Navigator/components/util';
-import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
+} from 'merchant/views/Optimizer/utils';
+
+import { ProviderView } from './ProviderView';
+import { ProviderShimmer } from './ProviderShimmer';
 
 const LandingPage = (props): JSX.Element => {
   const [redirectURL, setRedirectURL] = useState('');
@@ -116,7 +117,7 @@ const LandingPage = (props): JSX.Element => {
             ) : (
               terminalProviders
                 .slice(0, isCollapsed ? 4 : terminalProviders.length)
-                ?.map((provider, index) => <ProviderNewView provider={provider} key={index} />)
+                ?.map((provider, index) => <ProviderView provider={provider} key={index} />)
             )}
           </div>
         </div>
@@ -161,7 +162,7 @@ const LandingPage = (props): JSX.Element => {
       </div>
 
       <div className="panel gateway-list">
-        <div className="panel-header rule-header" style={{ paddingRight: '15px' }}>
+        <div className="panel-header rule-header">
           <h2 className="payment-gateway-title all-custom-rule-title">
             <span className="provider-title">All Custom Rules</span>
             <Link to="/optimizer/create-rule" className="pull-right">

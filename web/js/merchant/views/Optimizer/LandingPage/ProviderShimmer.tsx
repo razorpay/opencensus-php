@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const ProviderShimmer = () => {
+export const ProviderShimmer = (): JSX.Element => {
   return (
     <div className="providers-shimmer">
       {[1, 2, 3, 4].map((val) => (
