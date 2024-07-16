@@ -293,4 +293,23 @@ class Repository extends Base\Repository
         }
 
     }
+
+    public function findManyWithRelations($ids, $relations, $columns = array('*'), $useWarehouse = false)
+    {
+        if ($useWarehouse === false)
+        {
+            $query = $this->newQuery();
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));;
+        }
+
+        if (count($relations) > 0)
+        {
+            $query->with($relations);
+        }
+
+        return $query->findMany($ids, $columns);
+    }
 }
