@@ -1,4 +1,7 @@
 import React from 'react';
+import * as graphqlUtils from '@dashboard/shared-utils/graphql/graphql';
+import SalesDashboard from '../SalesDashboard';
+import { getSalesMappedMerchantsHandler } from './mocks/handlers';
 import {
   render,
   screen,
@@ -8,9 +11,6 @@ import {
   waitForElementToBeRemoved,
   within,
 } from 'apps/pos/src/services/test/test-utils';
-import SalesDashboard from '../SalesDashboard';
-import { getSalesMappedMerchantsHandler } from './mocks/handlers';
-import * as graphqlUtils from '@dashboard/shared-utils/graphql/graphql';
 
 jest.mock('@dashboard/shared-ui/components/Forms/DateRangePickerField', () => {
   return {

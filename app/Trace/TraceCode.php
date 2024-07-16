@@ -13,6 +13,7 @@ class TraceCode
 
     const SAML_LOGIN                                = 'SAML_LOGIN';
     const SAML_LOGIN_EXCEPTION                      = 'SAML_LOGIN_EXCEPTION';
+    const SAML_CALLBACK                             = 'SAML_CALLBACK';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';

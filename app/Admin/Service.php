@@ -259,11 +259,7 @@ class Service extends Base\Service
     {
         $ssoBuiltUrl = $this->auth->login(null, array(), false, false, true);
 
-        $_SESSION['AuthNRequestID'] = $this->auth->getLastRequestID();
-
-        $this->trace->info(TraceCode::SAML_LOGIN, [
-            'val' =>$_SESSION['AuthNRequestID']
-        ]);
+        Session::put('AuthNRequestID', $this->auth->getLastRequestID());
 
         return $ssoBuiltUrl;
     }
@@ -277,10 +273,12 @@ class Service extends Base\Service
 
         $_POST['SAMLResponse'] = $input['SAMLResponse'] ?? null;
 
-        if (isset($_SESSION['AuthNRequestID']) === true) {
-            $requestID = $_SESSION['AuthNRequestID'];
-        } else {
-            $requestID = null;
+        $requestID = Session::get('AuthNRequestID') ?? null;
+
+        if ($requestID === null) {
+            $this->trace->info(TraceCode::SAML_LOGIN, [
+                'msg' => 'SAML Login: AuthNRequestID is null'
+            ]);
         }
 
         $this->auth->processResponse($requestID);
@@ -306,8 +304,9 @@ class Service extends Base\Service
 
         $attributes = $this->auth->getAttributes();
 
-        $this->trace->info(TraceCode::SAML_LOGIN, [
+        $this->trace->info(TraceCode::SAML_CALLBACK, [
             '$errors' => $errors,
+            '$attributes' => $attributes,
         ]);
 
         $data = $this->getApiRequest($attributes);
@@ -324,7 +323,7 @@ class Service extends Base\Service
         {
             $response = [
                 'success' => false,
-                'errors'  => [self::ADFS_ERROR],
+                'errors'  => $response[0],
             ];
         }
 
@@ -349,8 +348,6 @@ class Service extends Base\Service
                 $requestMap['email'] = strtolower($requestMap['email']);
         }
 
-        $requestMap['userrole'] = ["role_G2ctRSTCZ3O0be"]; //hard coding for now
-
         return $requestMap;
     }
 
@@ -364,7 +361,10 @@ class Service extends Base\Service
 
             list($error, $data) = $request->processInput($input)->send('admins/saml/login', 'POST');
 
-            $this->trace->info(TraceCode::SAML_LOGIN, $data);
+            $this->trace->info(TraceCode::SAML_LOGIN, [
+                '$data' => $data ?? 'null',
+                '$error' => $error ?? 'null'
+            ]);
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
