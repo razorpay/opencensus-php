@@ -44,9 +44,13 @@ export function createCartDiscountPayload({
   }
   const activeDate = moment(
     `${couponValidity.startDate} ${couponValidity.startTime}`,
+    'YYYY-M-D h:m a',
   ).toISOString();
 
-  const expiryDate = moment(`${couponValidity.endDate} ${couponValidity.endTime}`).toISOString();
+  const expiryDate = moment(
+    `${couponValidity.endDate} ${couponValidity.endTime}`,
+    'YYYY-M-D h:m a',
+  ).toISOString();
   const couponPayload = {
     type: 'amount_off_order',
     code: couponDetails.code,

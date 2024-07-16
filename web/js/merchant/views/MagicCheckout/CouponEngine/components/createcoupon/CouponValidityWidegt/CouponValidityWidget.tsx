@@ -34,8 +34,8 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
   const handleFormValidations = ({ startDate, startTime, endDate, endTime }) => {
     validateCouponDateTime({
       setErrorStates,
-      startDateTime: moment(`${startDate} ${startTime}`).toISOString(),
-      endDateTime: moment(`${endDate} ${endTime}`).toISOString(),
+      startDateTime: moment(`${startDate} ${startTime}`, 'YYYY-M-D h:m a').toISOString(),
+      endDateTime: moment(`${endDate} ${endTime}`, 'YYYY-M-D h:m a').toISOString(),
       isEndDateRequired: widgetsData.couponValidity.isLimitedUsage,
       flowName: flow,
       couponStatus: widgetsData.status,

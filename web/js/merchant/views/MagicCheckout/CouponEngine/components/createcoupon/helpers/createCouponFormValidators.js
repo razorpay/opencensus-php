@@ -314,10 +314,12 @@ export const globalValidator = async ({
         validator({
           startDateTime: moment(
             `${widgetsData.couponValidity.startDate} ${widgetsData.couponValidity.startTime}`,
+            'YYYY-M-D h:m a',
           ).toISOString(),
           isEndDateRequired: widgetsData.couponValidity.isLimitedUsage,
           endDateTime: moment(
             `${widgetsData.couponValidity.endDate} ${widgetsData.couponValidity.endTime}`,
+            'YYYY-M-D h:m a',
           ).toISOString(),
           setErrorStates,
           flowName,
