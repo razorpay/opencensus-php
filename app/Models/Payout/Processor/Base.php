@@ -4711,8 +4711,8 @@ class Base extends BaseCore
         $accessor->save();
     }
 
-    protected function shieldEvaluatePayoutsRequest(Entity $payout): bool {
-
+    protected function shieldEvaluatePayoutsRequest(Entity $payout): bool
+    {
         try{
 
             $razorxResponse = $this->app['razorx']->getTreatment($this->merchant->getId(),
@@ -4761,6 +4761,17 @@ class Base extends BaseCore
 
     protected function prepareShieldPayoutEvaluateRequest(Entity $payout): array
     {
+        $onboardingTime = (new Payout\Core)->getOnboardingTimeFromBasIfApplicable($payout);
+
+        if ($onboardingTime === null)
+        {
+            $this->trace->info(
+                TraceCode::EVALUATE_PAYOUT_SHIELD_REQUEST_NULL_BANKING_ACCOUNT,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+        }
+
         $requestBody = [
             Payout\Entity::PAYOUT_ID         => $payout->getId(),
             Payout\Entity::AMOUNT            => $payout->getAmount(),
@@ -4778,7 +4789,7 @@ class Base extends BaseCore
             ],
             Merchant\Entity::MERCHANT_DETAIL    => [
                 Merchant\Entity::ID             => $this->merchant->getId(),
-                self::ONBOARDING_DATETIME       => $payout->bankingAccount->getCreatedAt(),
+                self::ONBOARDING_DATETIME       => $onboardingTime,
                 self::MCC                       => $this->merchant->getCategory(),
             ]
         ];

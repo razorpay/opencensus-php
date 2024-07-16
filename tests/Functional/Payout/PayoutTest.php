@@ -310,8 +310,27 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', $fund_account->toArrayPublic()['contact_id']);
 
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], ['status'=> 'migrated']);
+
+        $bankingAccountServiceMock = Mockery::mock('RZP\Services\BankingAccountService', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mockedBankingAccount = [
+            'created_at' => time() * 1000 // Simulate current time in milliseconds
+        ];
+
+        $bankingAccountServiceMock->shouldReceive('fetchBankingAccountByAccountNumberAndChannel')
+            ->andReturn($mockedBankingAccount)
+            ->once();
+
+        $this->app->instance('banking_account_service', $bankingAccountServiceMock);
+
         $shieldMock->shouldReceive('makeRequestAndGetContent')
-            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact) {
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact, $mockedBankingAccount) {
+
+                $expectedOnboardingTime = intdiv($mockedBankingAccount['created_at'], 1000);
 
                 $this->assertNotNull("10000000000000", $input['payout_id']);
                 $this->assertEquals(2000000, $input['amount']);
@@ -329,6 +348,10 @@ class PayoutTest extends OAuthTestCase
                 $this->assertEquals($contact->getEmail(), $input['fund_account']['contact']['email']);
                 $this->assertEquals($contact->getContact(), $input['fund_account']['contact']['contact']);
                 $this->assertEquals($contact->getCreatedAt(), $input['fund_account']['contact']['created_at']);
+
+                // Assert that the onboarding time is included in the request
+                $this->assertArrayHasKey('onboarding_datetime', $input['merchant_detail']);
+                $this->assertEquals($expectedOnboardingTime, $input['merchant_detail']['onboarding_datetime']);
 
                 $this->assertEquals('/payouts/shield/evaluate', $action);
 
@@ -393,8 +416,10 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', $fund_account->toArrayPublic()['contact_id']);
 
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
         $shieldMock->shouldReceive('makeRequestAndGetContent')
-            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact) {
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact, $bankingAccount) {
 
                 $this->assertNotNull("10000000000000", $input['payout_id']);
                 $this->assertEquals(2000000, $input['amount']);
@@ -412,6 +437,10 @@ class PayoutTest extends OAuthTestCase
                 $this->assertEquals($contact->getEmail(), $input['fund_account']['contact']['email']);
                 $this->assertEquals($contact->getContact(), $input['fund_account']['contact']['contact']);
                 $this->assertEquals($contact->getCreatedAt(), $input['fund_account']['contact']['created_at']);
+
+                // Assert that the onboarding time is included in the request
+                $this->assertArrayHasKey('onboarding_datetime', $input['merchant_detail']);
+                $this->assertEquals($bankingAccount->getCreatedAt(), $input['merchant_detail']['onboarding_datetime']);
 
                 $this->assertEquals('/payouts/shield/evaluate', $action);
 
@@ -472,8 +501,27 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', $fund_account->toArrayPublic()['contact_id']);
 
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], ['status'=> 'migrated']);
+
+        $bankingAccountServiceMock = Mockery::mock('RZP\Services\BankingAccountService', [$this->app])
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mockedBankingAccount = [
+            'created_at' => time() * 1000 // Simulate current time in milliseconds
+        ];
+
+        $bankingAccountServiceMock->shouldReceive('fetchBankingAccountByAccountNumberAndChannel')
+            ->andReturn($mockedBankingAccount)
+            ->once();
+
+        $this->app->instance('banking_account_service', $bankingAccountServiceMock);
+
         $shieldMock->shouldReceive('makeRequestAndGetContent')
-            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact) {
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($fund_account, $contact, $mockedBankingAccount) {
+
+                $expectedOnboardingTime = intdiv($mockedBankingAccount['created_at'], 1000);
 
                 $this->assertNotNull("10000000000000", $input['payout_id']);
                 $this->assertEquals(2000000, $input['amount']);
@@ -491,6 +539,10 @@ class PayoutTest extends OAuthTestCase
                 $this->assertEquals($contact->getEmail(), $input['fund_account']['contact']['email']);
                 $this->assertEquals($contact->getContact(), $input['fund_account']['contact']['contact']);
                 $this->assertEquals($contact->getCreatedAt(), $input['fund_account']['contact']['created_at']);
+
+                // Assert that the onboarding time is included in the request
+                $this->assertArrayHasKey('onboarding_datetime', $input['merchant_detail']);
+                $this->assertEquals($expectedOnboardingTime, $input['merchant_detail']['onboarding_datetime']);
 
                 $this->assertEquals('/payouts/shield/evaluate', $action);
 
@@ -525,8 +577,10 @@ class PayoutTest extends OAuthTestCase
         $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
             ->shouldAllowMockingProtectedMethods()->makePartial();
 
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
         $shieldMock->shouldReceive('makeRequestAndGetContent')
-            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) {
+            ->andReturnUsing(function(array $input, string $action, string $method, array $headers = []) use($bankingAccount) {
 
                 $this->assertNotNull("10000000000000", $input['payout_id']);
                 $this->assertEquals(2000000, $input['amount']);
@@ -541,6 +595,10 @@ class PayoutTest extends OAuthTestCase
                 $this->assertNotNull($input['fund_account']['contact']['email']);
                 $this->assertNotNull($input['fund_account']['contact']['contact']);
                 $this->assertNotNull($input['fund_account']['contact']['created_at']);
+
+                // Assert that the onboarding time is included in the request
+                $this->assertArrayHasKey('onboarding_datetime', $input['merchant_detail']);
+                $this->assertEquals($bankingAccount->getCreatedAt(), $input['merchant_detail']['onboarding_datetime']);
 
                 $this->assertEquals('/payouts/shield/evaluate', $action);
 

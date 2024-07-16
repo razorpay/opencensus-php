@@ -576,6 +576,35 @@ class Core extends Base\Core
         return $ftsResponse;
     }
 
+    public function getOnboardingTimeFromBasIfApplicable(Entity $payout)
+    {
+        try{
+
+            $bankingAccount = $payout->bankingAccount;
+            $onboardingTime = optional($bankingAccount)->getCreatedAt();
+
+            // In case of Merchants Onboarded on BAS flow, bankingAcc needs to be retrived from BAS
+            if ($bankingAccount === null)
+            {
+                $basResponse = $this->app['banking_account_service']->fetchBankingAccountByAccountNumberAndChannel(
+                    $payout->balance->getMerchantId(),
+                    $payout->balance->getAccountNumber(),
+                    $payout->balance->getChannel());
+
+                if ($basResponse !== null)
+                {
+                    $onboardingTime = intdiv($basResponse['created_at'], 1000); // CreatedAt is in Milliseconds in BAS
+                }
+            }
+
+            return $onboardingTime;
+        }
+        catch (\Throwable $ex)
+        {
+            return null;
+        }
+    }
+
     protected function getAmountInfoFromInput(array $input)
     {
         $amountInfo = [];
