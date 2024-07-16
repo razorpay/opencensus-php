@@ -42073,8 +42073,141 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('low_balance', $existingPayout->getQueuedReason());
     }
 
+    /*
+     * Feature flag enabled.
+     * Idempotency Key header sent.
+     * Success, idempotency key checked.
+     */
+    public function testPayoutCreatePrivateMandatoryIdempotencyKeyScenario1()
+    {
+        $this->liveSetUp();
 
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED]);
 
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $iKey = $this->getDbEntity('idempotency_key', ['source_id' => $payout->id]);
+
+        $this->assertNotNull($iKey);
+    }
+
+    /*
+     * Feature flag enabled.
+     * Idempotency Key header not sent.
+     * Bad request error.
+     */
+    public function testPayoutCreatePrivateMandatoryIdempotencyKeyScenario2()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED]);
+
+        $this->ba->privateAuth();
+
+        try {
+            $this->startTest();
+        } catch (\Throwable $e) {
+            $errorResponse = $this->testData[__FUNCTION__]['error_response'];
+
+            $this->assertEquals($errorResponse['code'], $e->getCode());
+            $this->assertEquals($errorResponse['description'], $e->getMessage());
+        }
+    }
+
+    /*
+     * Feature flag not enabled.
+     * Idempotency Key header sent.
+     * Success, idempotency key checked.
+     */
+    public function testPayoutCreatePrivateMandatoryIdempotencyKeyScenario3()
+    {
+        $this->liveSetUp();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $iKey = $this->getDbEntity('idempotency_key', ['source_id' => $payout->id]);
+
+        $this->assertNotNull($iKey);
+    }
+
+    /*
+     * Feature flag not enabled.
+     * Idempotency Key header not sent.
+     * Success, idempotency key not checked.
+     */
+    public function testPayoutCreatePrivateMandatoryIdempotencyKeyScenario4()
+    {
+        $this->liveSetUp();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $iKey = $this->getDbEntity('idempotency_key', ['source_id' => $payout->id]);
+
+        $this->assertNull($iKey);
+    }
+
+    public function testMiddlewareIdempotencyKeyMandatoryCheck()
+    {
+        // Enable feature
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+        $feature = $this->fixtures->on('test')->create('feature', [
+            'entity_id'   => $merchant->id,
+            'entity_type' => 'merchant',
+            'name'        => Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED]);
+
+        // Scenarios
+        $scenarios = $this->testData[__FUNCTION__]['scenarios'];
+        foreach ($scenarios as $scenario)
+        {
+            if ($scenario['feature_flag_enabled'] === true)
+            {
+                $this->fixtures->on('test')->edit('feature', $feature->id, ['entity_id' => $merchant->id]);
+            }
+            else
+            {
+                $this->fixtures->on('test')->edit('feature', $feature->id, ['entity_id' => '']);
+            }
+            $merchant->refresh();
+
+            $authMock = $this->getMockBuilder(\RZP\Http\BasicAuth\BasicAuth::class)
+                             ->setConstructorArgs([$this->app])
+                             ->setMethods(['getMerchant'])
+                             ->getMock();
+            $authMock->method('getMerchant')->willReturn($merchant);
+            $this->app->instance('basicauth', $authMock);
+
+            $routeMock = $this->getMockBuilder(\RZP\Http\Route::class)
+                              ->setConstructorArgs([$this->app])
+                              ->setMethods(['getCurrentRouteName'])
+                              ->getMock();
+            $routeMock->method('getCurrentRouteName')->willReturn($scenario['route']);
+            $this->app->instance('api.route', $routeMock);
+
+            $idempotencyHandler = new \RZP\Http\Middleware\MerchantIdempotencyHandler($this->app);
+            $idempotencyHandlerReflectionObj = new \ReflectionObject($idempotencyHandler);
+            $method = $idempotencyHandlerReflectionObj->getMethod('isIdempotencyKeyMandatory');
+
+            try {
+                $result = $method->invoke($idempotencyHandler);
+                $this->assertEquals($scenario['result'], $result);
+            }
+            catch (\ReflectionException $e) {
+                $this->assertNull($e);
+            }
+        }
+    }
 
     /*
  * -------------------HELPER FUNCTIONS-------------------

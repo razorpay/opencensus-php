@@ -626,6 +626,7 @@ class ErrorCode
     const BAD_REQUEST_NO_ACTIVE_VIRTUAL_ACCOUNT_FOUND                               = 'BAD_REQUEST_NO_ACTIVE_VIRTUAL_ACCOUNT_FOUND';
 
     const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                               = 'BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST';
+    const BAD_REQUEST_MISSING_IDEM_KEY                                              = 'BAD_REQUEST_MISSING_IDEM_KEY';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';

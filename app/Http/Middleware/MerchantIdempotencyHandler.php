@@ -17,6 +17,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
 use RZP\Models\IdempotencyKey\Entity;
+use RZP\Models\IdempotencyKey\Metric;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\Payout\Core as PayoutCore;
@@ -117,6 +118,24 @@ class MerchantIdempotencyHandler
 
         if (empty($idempotencyKey) === true)
         {
+            if ($this->isIdempotencyKeyMandatory() === true)
+            {
+                $this->trace->count(
+                    Metric::IDEMPOTENCY_CHECK_ERRORS,
+                    [
+                        'error_code' => ErrorCode::BAD_REQUEST_MISSING_IDEM_KEY,
+                        'route_name' => $this->route->getCurrentRouteName(),
+                    ]
+                );
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_MISSING_IDEM_KEY,
+                    $idempotencyHeader,
+                    null,
+                    "Idempotency key is missing. Include idempotency header and key in the request."
+                );
+            }
+
             return $next($request);
         }
 
@@ -237,6 +256,14 @@ class MerchantIdempotencyHandler
 
         if (hash_equals($storedRequestHash, $requestBodyHash) === false)
         {
+            $this->trace->count(
+                Metric::IDEMPOTENCY_CHECK_ERRORS,
+                [
+                    'error_code' => ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
+                    'route_name' => $this->route->getCurrentRouteName(),
+                ]
+            );
+
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
                 null,
@@ -361,6 +388,14 @@ class MerchantIdempotencyHandler
                         'ps_idempotency_key_id' => $psIdempotencyEntity->getId(),
                     ]);
 
+                $this->trace->count(
+                    Metric::IDEMPOTENCY_CHECK_ERRORS,
+                    [
+                        'error_code' => ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_UNMAPPED,
+                        'route_name' => $this->route->getCurrentRouteName(),
+                    ]
+                );
+
                 throw new LogicException(
                     'Payout service idempotency key has no source mapped',
                     ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_UNMAPPED,
@@ -386,6 +421,14 @@ class MerchantIdempotencyHandler
                         'ps_idempotency_key_id' => $psIdempotencyEntity->getId(),
                         'source_id'             => $psSourceId,
                     ]);
+
+                $this->trace->count(
+                    Metric::IDEMPOTENCY_CHECK_ERRORS,
+                    [
+                        'error_code' => ErrorCode::SERVER_ERROR_PAYOUT_SERVICE_IDEM_KEY_SOURCE_NOT_FOUND,
+                        'route_name' => $this->route->getCurrentRouteName(),
+                    ]
+                );
 
                 throw new LogicException(
                     'Payout service idempotency key source not found in payouts db',
@@ -427,5 +470,32 @@ class MerchantIdempotencyHandler
         }
 
         return null;
+    }
+
+    /**
+     * Check if the idempotency key is mandatory.
+     *
+     * @return bool
+     */
+    protected function isIdempotencyKeyMandatory(): bool
+    {
+        if ($this->route->getMandatoryFlagForIdempotencyRequest() === false)
+        {
+            return false;
+        }
+
+        $featureFlag = $this->route->getFeatureFlagForIdempotencyRequest();
+        if (empty($featureFlag) === false)
+        {
+            $merchant = $this->basicauth->getMerchant();
+            if ($merchant === null)
+            {
+                return false;
+            }
+
+            return $merchant->isFeatureEnabled($featureFlag);
+        }
+
+        return false;
     }
 }

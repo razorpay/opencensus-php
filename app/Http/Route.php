@@ -18513,36 +18513,45 @@ class Route
      */
     public static $idempotentRoutesConfig = [
         'payout_create' => [
-            IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
-            IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE                        => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY                         => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY                  => true,
+            IdempotencyKey\Constants::FEATURE_FLAG_FOR_MANDATORY_IKEY => Feature::PAYOUT_IDEM_KEY_REQUIRED,
         ],
         'payout_create_internal' => [
-            IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
-            IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ],
         'payout_create_2FA_internal' => [
-            IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
-            IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ],
         'payouts_batch_create' => [
-            IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUTS_BATCH,
-            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_BATCH_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUTS_BATCH,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_BATCH_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ],
         'payout_create_on_internal_contact' => [
-            IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUT,
-            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ],
         'transfer_create' => [
-            IdempotencyKey\Entity::SOURCE_TYPE => Entity::TRANSFER,
-            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_TRANSFER_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::TRANSFER,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_TRANSFER_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ],
         'payout_links_create' => [
-            IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUT_LINK,
-            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_LINKS_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT_LINK,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_LINKS_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ],
         'composite_payout_internal' => [
-            IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUT,
-            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ]
     ];
     /**
@@ -20433,6 +20442,20 @@ class Route
         $routeName = $this->getCurrentRouteName();
 
         return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::HEADER_KEY] ?? null;
+    }
+
+    public function getMandatoryFlagForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Constants::IKEY_MANDATORY] ?? false;
+    }
+
+    public function getFeatureFlagForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Constants::FEATURE_FLAG_FOR_MANDATORY_IKEY] ?? null;
     }
 
     public function httpStatusCodeConflictForIdempotency()

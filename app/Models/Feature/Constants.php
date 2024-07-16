@@ -2213,6 +2213,11 @@ class Constants
 
     const SHOW_PG_V3 = 'show_pg_v3';
 
+    /**
+     * Feature flag to make idempotency key mandatory for the merchant while creating payouts.
+     */
+    const PAYOUT_IDEM_KEY_REQUIRED = 'payout_idem_key_required';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3071,6 +3076,8 @@ class Constants
         self::SHOW_OFFER_METHOD_AMT                  => true,
         self::SHOW_TRUST_MARKERS                     => true,
         self::SHOW_PG_V3                             => true,
+
+        self::PAYOUT_IDEM_KEY_REQUIRED        => true,
     ];
 
     // Entity type constants
@@ -4440,6 +4447,11 @@ class Constants
             'feature'       => self::SHOW_PG_V3,
             'display_name'  => 'display new onboarding flow to merchant',
             'documentation' => ''
+        ],
+        self::PAYOUT_IDEM_KEY_REQUIRED => [
+            'feature'       => self::PAYOUT_IDEM_KEY_REQUIRED,
+            'display_name'  => 'Payout Idempotency Key Required',
+            'documentation' => 'Feature flag to make idempotency key mandatory for the merchant while creating payouts',
         ]
     ];
 

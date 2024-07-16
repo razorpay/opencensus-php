@@ -23806,4 +23806,195 @@ return [
             ],
         ],
     ],
+
+    'testPayoutCreatePrivateMandatoryIdempotencyKeyScenario1' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server'  => [
+                'HTTP_X-Payout-Idempotency' => 'idempotency_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ]
+            ],
+        ],
+    ],
+
+    'testPayoutCreatePrivateMandatoryIdempotencyKeyScenario2' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server'  => [],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'error_response' => [
+            'code'        => ErrorCode::BAD_REQUEST_MISSING_IDEM_KEY,
+            'description' => 'Idempotency key is missing. Include idempotency header and key in the request.',
+        ]
+    ],
+
+    'testPayoutCreatePrivateMandatoryIdempotencyKeyScenario3' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server'  => [
+                'HTTP_X-Payout-Idempotency' => 'idempotency_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ]
+            ],
+        ],
+    ],
+
+    'testPayoutCreatePrivateMandatoryIdempotencyKeyScenario4' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server'  => [],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ]
+            ],
+        ],
+    ],
+
+    'testMiddlewareIdempotencyKeyMandatoryCheck' => [
+        'scenarios' => [
+            [
+                'route' => 'payout_create',
+                'feature_flag_enabled' => true,
+                'result' => true
+            ],
+            [
+                'route' => 'payout_create',
+                'feature_flag_enabled' => false,
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_internal',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_internal',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_2FA_internal',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+            [
+                'route' => 'payouts_batch_create',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+            [
+                'route' => 'payout_create_on_internal_contact',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+            [
+                'route' => 'transfer_create',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+            [
+                'route' => 'payout_links_create',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+            [
+                'route' => 'composite_payout_internal',
+                'feature_flag_enabled' => true,
+                'result' => false
+            ],
+        ]
+    ]
 ];
