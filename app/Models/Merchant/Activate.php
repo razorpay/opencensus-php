@@ -462,12 +462,23 @@ class Activate extends Base\Core
                             FeatureEntity::NAME => Constants::PG_LEDGER_REVERSE_SHADOW,
                         ]);
                 }
+                else
+                {
+                    $this->trace->debug(TraceCode::LEDGER_ONBOARDING_ACCOUNT_CREATION_FAILED, [
+                        "merchantId" => $merchant->getId(),
+                        "response"   => $response
+                    ]);
+                }
 
                 $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT, [
                     "merchantId" => $merchant->getId(),
                     "response" => $response,
                     "feature" => Constants::PG_LEDGER_REVERSE_SHADOW,
                 ]);
+
+                $merchantIdsArr = [$merchant->getId()];
+
+                (new Feature\Service())->invalidatePGRouterCachePostMerchantOnboarding($merchantIdsArr);
             });
         }
     }

@@ -1877,6 +1877,36 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function invalidatePGRouterCachePostMerchantOnboarding(array $merchantIds)
+    {
+        try
+        {
+            $input = [
+                "data" => implode(",", $merchantIds)
+            ];
+
+            $this->app['pg_router']->invalidatePGRouterCache($input);
+
+            $this->trace->info(
+                TraceCode::PGROUTER_CACHE_INVALIDATED,
+                [
+                    Constants::MERCHANT_ID => $merchantIds,
+                ]
+            );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::PGROUTER_CACHE_INVALIDATION_FAILED,
+                [
+                    "exception"             => $e,
+                    "message"               => $e->getMessage(),
+                    Constants::MERCHANT_ID  => $merchantIds,
+                ]
+            );
+        }
+    }
+
     /**
      * Onboards merchant to pg ledger reverse shadow mode
      * Syncs api balances of merchant with ledger balance
