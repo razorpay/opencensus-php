@@ -3087,4 +3087,35 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testSamlAuthLoginWithoutUserRole()
+    {
+        $org = $this->createOrg();
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $org->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+    }
+
 }

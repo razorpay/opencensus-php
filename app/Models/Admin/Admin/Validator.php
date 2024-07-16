@@ -118,7 +118,7 @@ class Validator extends Base\Validator
         Entity::EMAIL               => 'required|max:255|email',
         Entity::AD_ID               => 'required|string',
         Entity::USERNAME            => 'required|string',
-        Entity::USERROLE            => 'required|array|filled',
+        Entity::USERROLE            => 'sometimes|array|filled',
         Entity::EXPIRY_DATE         => 'sometimes'
 
     ];

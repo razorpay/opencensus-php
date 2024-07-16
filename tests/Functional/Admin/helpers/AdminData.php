@@ -2517,4 +2517,24 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSamlAuthLoginWithoutUserRole' => [
+        'request' => [
+            'url' => '/admins/saml/login',
+            'method' => 'post',
+            'content' => [
+                'email'             => 'testadmin@axis.com',
+                'ad_id'             => 'xv6vxwe7',
+                'username'          => 'testadmin',
+                'expiry_date'       => '1721053732',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
 ];
