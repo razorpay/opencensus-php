@@ -1,5 +1,6 @@
 import CreateCouponModal from 'merchant/views/MagicCheckout/CouponEngine/components/CreateCouponModal/CreateCouponModal';
 import { render, screen, userEvent } from 'test-utils';
+import { storeWithInitialState } from 'merchant/store';
 
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
@@ -35,4 +36,18 @@ describe('coupon Modal', () => {
       await userEvent.click(screen.getByText(couponVariant));
     },
   );
+
+  test('Should not render Free Shipping Coupon Option for MagicX', () => {
+    const initState = {
+      magicCheckout: {
+        rcod: true,
+      },
+    };
+    render(<CreateCouponModal />, {
+      reduxStore: storeWithInitialState({ ...initState }),
+    });
+    expect(screen.queryByText('Free shipping')).not.toBeInTheDocument();
+    //Other coupon options should be rendered
+    expect(screen.getByText('Amount discounted on orders')).toBeInTheDocument();
+  });
 });

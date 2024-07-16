@@ -18,7 +18,7 @@ import {
 import { getAvailableCouponTypes } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 import { closeModal } from 'merchant_common/reducers/modals';
 
-const CreateCouponModal = ({ closeModal }) => {
+const CreateCouponModal = ({ closeModal, isRcodEnabled }) => {
   const navigate = useNavigate();
   const { abExperiments } = useSplitzService();
 
@@ -28,9 +28,11 @@ const CreateCouponModal = ({ closeModal }) => {
     // close the modal to select the coupon type
     closeModal();
   };
-
+  /**
+   * For MagicX , Free shipping coupon type is not available
+   */
   const shouldShowFreeShippingCoupon =
-    abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
+    !isRcodEnabled && abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
 
   const AVAILABLE_COUPON_TYPES = getAvailableCouponTypes(shouldShowFreeShippingCoupon);
 
@@ -58,6 +60,10 @@ const CreateCouponModal = ({ closeModal }) => {
   );
 };
 
+const mapStateToProps = (state) => ({
+  isRcodEnabled: state.magicCheckout.rcod,
+});
+
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
@@ -66,4 +72,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(CreateCouponModal);
+export default connect(mapStateToProps, mapDispatchToProps)(CreateCouponModal);

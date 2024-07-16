@@ -182,4 +182,5 @@ export interface GenericCouponsProps {
   initialFilters: any;
   tabName?: string;
   showNotification: (notification: any) => void;
+  isRcodEnabled: boolean;
 }

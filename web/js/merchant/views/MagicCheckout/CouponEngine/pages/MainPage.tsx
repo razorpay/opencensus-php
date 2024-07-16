@@ -24,7 +24,7 @@ import {
 import 'merchant/views/MagicCheckout/css/coupon-engine/promotional-banner.styl';
 
 // constant imports
-import { getNavItems } from 'merchant/views/MagicCheckout/CouponEngine/constants';
+import { getNavItems, COUPON_NAMES } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 const initialFiltersState = {
   type: 'all',
   code: '',
@@ -40,12 +40,14 @@ interface MainPageProps {
   merchantId: string;
   initialCouponEngineEnabled: boolean;
   updatedCouponEngineEnabled: boolean | null | undefined;
+  isRcodEnabled: boolean;
 }
 
 const MainPage: React.FC<MainPageProps> = ({
   merchantId,
   initialCouponEngineEnabled,
   updatedCouponEngineEnabled,
+  isRcodEnabled,
 }) => {
   const { abExperiments } = useSplitzService();
 
@@ -88,7 +90,10 @@ const MainPage: React.FC<MainPageProps> = ({
       ) {
         setActiveNavAndCouponsList(0, []);
       } else {
-        setActiveNavAndCouponsList(1, couponsData.coupons);
+        const couponsList = isRcodEnabled
+          ? couponsData.coupons.filter((coupon) => coupon?.type !== COUPON_NAMES.FREE_SHIPPING)
+          : couponsData.coupons;
+        setActiveNavAndCouponsList(1, couponsList);
       }
       const syncStatus = isStatusSuccess
         ? statusData
@@ -174,6 +179,7 @@ const mapStateToProps = (state: {
   merchantId: state.config?.config?.id || '',
   initialCouponEngineEnabled: state.magicCheckout.one_cc_coupon_engine,
   updatedCouponEngineEnabled: state.magic_settings.one_cc_coupon_engine,
+  isRcodEnabled: state.magicCheckout.rcod,
 });
 
 export default connect(mapStateToProps, null)(MainPage);

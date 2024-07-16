@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { connect } from 'react-redux';
 import { useSplitzService } from 'common/splitz';
 
 // ui imports
@@ -23,9 +24,14 @@ import { classList } from 'common/utils/rzp-utils';
 interface CouponDetailsProps {
   couponName: string;
   flow: string;
+  isRcodEnabled: boolean;
 }
 
-const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'created' }) => {
+const CouponDetails: React.FC<CouponDetailsProps> = ({
+  couponName,
+  flow = 'created',
+  isRcodEnabled,
+}) => {
   const { widgetsData, setWidgetsData, errorStates, setErrorStates } = useContext(ModalContext);
   const { abExperiments } = useSplitzService();
   const shouldShowCheckoutV2Changes = abExperiments?.checkout_v2?.variables?.result === 'on';
@@ -132,18 +138,21 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
                 </CheckboxLabelWithInfo>
               </CheckboxGroup>
             )}
-
-            <CheckboxGroup>
-              <Input.Check
-                checked={widgetsData.couponDetails.prepaidMethodsOnly}
-                type="checkbox"
-                name="prepaidMethodsOnly"
-                onChange={(e) => handleInputChange(e, 'prepaidMethodsOnly')}
-                autoRender
-              />
-              <span>Enable this coupon code only for Prepaid Payment methods</span>
-            </CheckboxGroup>
-
+            {/**
+             * For MagicX , Enabling Coupon Code for Prepaid Payment methods is not available
+             */}
+            {!isRcodEnabled && (
+              <CheckboxGroup>
+                <Input.Check
+                  checked={widgetsData.couponDetails.prepaidMethodsOnly}
+                  type="checkbox"
+                  name="prepaidMethodsOnly"
+                  onChange={(e) => handleInputChange(e, 'prepaidMethodsOnly')}
+                  autoRender
+                />
+                <span>Enable this coupon code only for Prepaid Payment methods</span>
+              </CheckboxGroup>
+            )}
             {/* Intentionally commented out, will uncomment in coupon engine v2 */}
             {/* <CheckboxGroup>
               <Input.Check
@@ -162,4 +171,8 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
   );
 };
 
-export default CouponDetails;
+const mapStateToProps = (state) => ({
+  isRcodEnabled: state.magicCheckout.rcod,
+});
+
+export default connect(mapStateToProps, null)(CouponDetails);

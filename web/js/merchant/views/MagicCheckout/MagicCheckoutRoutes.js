@@ -85,6 +85,7 @@ const routes = [
     tabName: 'Coupons',
     path: '/magic/coupons',
     Component: CouponEngine,
+    onRCOD: true,
     condition: (_user, abExperiments, platform) =>
       abExperiments?.magic_coupon_engine?.variables?.result === 'on' &&
       platform === PLATFORMS.VALUES.SHOPIFY,

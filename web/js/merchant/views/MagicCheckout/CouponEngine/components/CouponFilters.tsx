@@ -33,6 +33,7 @@ interface CouponFiltersProps {
   onSubmitHandler: (formData: FormData) => void;
   resetHandler: () => void;
   tabName?: string;
+  isRcodEnabled: boolean;
 }
 
 const initialFiltersState: FormData = {
@@ -51,11 +52,15 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
   onSubmitHandler,
   resetHandler,
   tabName = 'all',
+  isRcodEnabled,
 }) => {
   const [formData, setFormData] = useState<FormData>(initialFiltersState);
   const { abExperiments } = useSplitzService();
+  /**
+   * For MagicX , Free shipping coupon type is not available
+   */
   const shouldShowFreeShippingCoupon =
-    abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
+    !isRcodEnabled && abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
 
   const COUPON_TYPES = getCouponTypesList(shouldShowFreeShippingCoupon);
 

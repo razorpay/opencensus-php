@@ -29,10 +29,13 @@ import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context'
 // type imports
 import { GenericCouponsProps, CheckedItem } from 'merchant/views/MagicCheckout/CouponEngine/types';
 
+import { COUPON_NAMES } from 'merchant/views/MagicCheckout/CouponEngine/constants';
+
 const GenericCoupons: React.FC<GenericCouponsProps> = ({
   showNotification,
   initialFilters,
   tabName = '',
+  isRcodEnabled,
 }) => {
   const [checkedIds, setCheckedIds] = useState<CheckedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +53,14 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
       setCheckedIds([]);
       setAllCouponsList([]);
       const res = await listCoupons(filters);
-      setAllCouponsList(res.data.coupons || []);
+      const coupons = res?.data?.coupons;
+      /**
+       * For MagicX , Free shipping coupon type is not available
+       */
+      const couponsList = isRcodEnabled
+        ? coupons?.filter((coupon) => coupon?.type !== COUPON_NAMES.FREE_SHIPPING)
+        : coupons;
+      setAllCouponsList(couponsList || []);
     } catch (err) {
       showNotification({
         type: 'error',
@@ -123,6 +133,7 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
             onSubmitHandler={handleSubmit}
             resetHandler={handleReset}
             tabName={tabName}
+            isRcodEnabled={isRcodEnabled}
           />
           <MultiSelectHeader
             onSelect={onMultiSelect}
@@ -161,6 +172,10 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
   );
 };
 
+const mapStateToProps = (state) => ({
+  isRcodEnabled: state.magicCheckout.rcod,
+});
+
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
@@ -169,4 +184,4 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(GenericCoupons);
+export default connect(mapStateToProps, mapDispatchToProps)(GenericCoupons);

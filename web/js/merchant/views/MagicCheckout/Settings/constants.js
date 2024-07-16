@@ -114,6 +114,7 @@ export const TABS = {
       Component: CouponEngineSettingsTab,
       condition: (_, abExperiments) =>
         abExperiments?.magic_coupon_engine?.variables?.result === 'on',
+      onRCOD: true,
     },
     {
       className: 'magic-checkout-settings',
@@ -204,7 +205,7 @@ export const TABS = {
 };
 
 export const CONFIG_TABS = Object.keys(PLATFORMS).reduce((_TABS, _platform) => {
-  let platform = PLATFORMS[_platform];
+  const platform = PLATFORMS[_platform];
   _TABS[platform] = convertMagicRoutesToConfigurationFlow(TABS[platform]);
   return _TABS;
 }, {});
