@@ -44,7 +44,7 @@ import { IPaymentDetails, ApplicationDetails } from './types';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
 import { noop } from 'common/utils/rzp-utils';
-
+import PaymentSplitItems from './PaymentSplitItems';
 const PaymentReceipt = lazy(
   () =>
     import(
@@ -170,6 +170,19 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
 
   const posGatewayId = gateway_terminal_id || payee_vpa;
   const posDeviceSerialNumber = device_id || device_detail;
+
+  const isPaymentSplitSectionAllowed = (hashValue: string) => {
+    const allowedModules = [
+      'paymentpages',
+      'paymentbuttons',
+      'subscription_buttons',
+      'stores',
+      'storefront',
+    ];
+    return allowedModules.includes(hashValue);
+  };
+
+  const hash = location.hash;
   return (
     <Box testID="payment-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
@@ -400,6 +413,26 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Notes" value={getNotes({ notes, isStorefront })} />
               </RowsWrapper>
+
+              {hash && isPaymentSplitSectionAllowed(hash.substring(1)) ? (
+                <>
+                  <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                  <RowWrapper>
+                    <Text
+                      variant="body"
+                      size="medium"
+                      weight="regular"
+                      color="surface.text.gray.subtle"
+                    >
+                      Payment Split
+                    </Text>
+                  </RowWrapper>
+                  <RowWrapper>
+                    <PaymentSplitItems order_id={paymentDetails.order_id} />
+                  </RowWrapper>
+                </>
+              ) : null}
+
               {!isConfigTagEnabled('payment_transfer.transfers') && (
                 <PaymentTransfers paymentDetails={paymentDetails} />
               )}

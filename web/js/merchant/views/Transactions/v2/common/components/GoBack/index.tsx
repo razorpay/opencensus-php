@@ -14,7 +14,7 @@ const { PAYMENTS } = TransactionsEntityRoute;
 
 const GoBack = ({ onClickCb }: GoBackProps) => {
   const navigate = useNavigate();
-  const { pathname, state } = useLocation();
+  const { pathname, state, hash = '' } = useLocation();
   const { prevPath, prevSearch } = state ?? {};
 
   const goBack = (): void => {
@@ -37,11 +37,18 @@ const GoBack = ({ onClickCb }: GoBackProps) => {
           ? {
               pathname: prevPath,
               search: prevSearch,
+              hash,
             }
-          : prevPath,
+          : {
+              pathname: prevPath,
+              hash,
+            },
       );
     } else {
-      navigate(PAYMENTS);
+      navigate({
+        pathname: PAYMENTS,
+        hash,
+      });
     }
   };
 
