@@ -5618,6 +5618,121 @@ class PaymentLedgerTest extends TestCase
         return $payment;
     }
 
+    public function testCronRetryFailedReverseShadowCustomerTransfer()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'marketplace', 'openwallet']);
+
+        $customer = $this->fixtures->customer->create([
+            'name'          => 'Customer ABC',
+            'contact'       => '9999999999',
+            'email'         => 'example@gmail.com',
+        ]);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $transfer = $this->transferPaymentInReverseShadow($payment['id'], [
+            'customer' => 'cust_' . $customer['id'],
+            'amount'      => 2000,
+            'currency'    => 'INR',
+        ]);
+
+        $ledgerOutboxEntities = $this->getDbLastEntity('ledger_outbox');
+
+        $this->assertNotNull($ledgerOutboxEntities);
+
+        $this->assertEquals('customer_transfer',$ledgerOutboxEntities['type']);
+
+        $createdAtTimestamp = (int)((millitime()-3600000)/1000);
+
+        $this->fixtures->edit('ledger_outbox', $ledgerOutboxEntities[0]['id'], ['created_at' => $createdAtTimestamp]);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(1)
+            ->andReturnValues([
+                [
+                    'code' => 200,
+                    'body' => [
+                        "id"=> "LLy5PLL9cCZhnr",
+                        "created_at"=> 1677609963,
+                        "updated_at"=> 1677609963,
+                        "amount"=> "2000",
+                        "base_amount"=> "2000",
+                        "currency"=> "INR",
+                        "tenant"=> "PG",
+                        "transactor_id"=> 'trf_'.$transfer['id'],
+                        "transactor_event"=> "customer_wallet_loading",
+                        "transaction_date"=> 1677609961,
+                        "ledger_entry"=> [
+                            [
+                                "id"=> "LLy5PLSaxfb3Or",
+                                "created_at"=> 1677609963,
+                                "updated_at"=> 1677609963,
+                                "merchant_id"=> "10000000000000",
+                                "journal_id"=> "LLy5PLL9cCZhnr",
+                                "account_id"=> "Iu0hzNwbmQ6D1n",
+                                "amount"=> "2000",
+                                "base_amount"=> "2000",
+                                "type"=> "debit",
+                                "currency"=> "INR",
+                                "account_entities"=> [
+                                    "account_type"=> [
+                                        "payable"
+                                    ],
+                                    "fund_account_type"=> [
+                                        "merchant_balance"
+                                    ]
+                                ]
+                            ],
+                            [
+                                "id"=> "LLy5PLSaxfb3Os",
+                                "created_at"=> 1677609963,
+                                "updated_at"=> 1677609963,
+                                "merchant_id"=> "10000000000000",
+                                "journal_id"=> "LLy5PLL9cCZhns",
+                                "account_id"=> "Iu0hzNwbmQ6D1o",
+                                "amount"=> "2000",
+                                "base_amount"=> "2000",
+                                "type"=> "credit",
+                                "currency"=> "INR",
+                                "account_entities"=> [
+                                    "account_type"=> [
+                                        "payable"
+                                    ],
+                                    "fund_account_type"=> [
+                                        "customer_wallet"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                ]
+            ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $transfer['id'].'-'.'customer_transfer']);
+
+        $this->assertEquals($txn['entity_id'], $transfer['id']);
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+
+        $this->assertEquals($ledgerOutboxEntity['retry_count'], 1);
+
+        $this->assertEquals($ledgerOutboxEntity['entity_type'],'customer_transfer');
+
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+    }
+
     public function testCronRetrySuccessForPaymentMerchantCaptureEvent()
     {
         $this->app['config']->set('applications.ledger.enabled', true);
@@ -6396,5 +6511,4 @@ class PaymentLedgerTest extends TestCase
 
         $this->app->instance('sns', $sns);
     }
-
 }

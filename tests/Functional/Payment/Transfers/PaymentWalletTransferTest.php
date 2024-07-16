@@ -287,6 +287,17 @@ class PaymentWalletTransferTest extends TestCase
 
     public function testTransferAndVerifyCustomerBalanceOnReverseShadow()
     {
+        $this->mockSplitzTreatment([
+            "experiment_id" => "OXHTK1FMuGzsTG",
+            "id" => "10000000000000",
+        ], [
+            "response" => [
+                "variant" => [
+                    "name" => 'disabled',
+                ]
+            ]
+        ]);
+
         $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => 14000]);
 
         $this->fixtures->merchant->addFeatures(['openwallet']);
@@ -316,5 +327,136 @@ class PaymentWalletTransferTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transaction);
+    }
+
+    public function testCustomerTransferReverseShadowV2()
+    {
+        $this->mockSplitzTreatment([
+            "experiment_id" => "OXHTK1FMuGzsTG",
+            "id" => "10000000000000",
+        ], [
+            "response" => [
+                "variant" => [
+                    "name" => 'enabled',
+                ]
+            ]
+        ]);
+
+        $this->app['config']->set('application.ledger.enabled',true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                "body" => [
+                    "accounts"  => [
+                        [
+                            "id"                => "sampleAccountID",
+                            "name"              => "test name",
+                            "status"            => "ACTIVATED",
+                            "balance"           => "10000.000000",
+                            "min_balance"       => "0.000000",
+                            "merchant_id"       => "sampleMerchant",
+                            "created_at"        => "1634027277",
+                            "updated_at"        => "1634027277",
+                            "entities"          => [
+                                "account_type"      => ["payable"],
+                                "fund_account_type" => ["merchant_balance"]
+                            ]
+                        ],
+                        [
+                            "id"                => "sampleAccountID",
+                            "name"              => "test name",
+                            "status"            => "ACTIVATED",
+                            "balance"           => "0.000000",
+                            "min_balance"       => "0.000000",
+                            "merchant_id"       => "sampleMerchant",
+                            "created_at"        => "1634027277",
+                            "updated_at"        => "1634027277",
+                            "entities"          => [
+                                "account_type"      => ["payable"],
+                                "fund_account_type" => ["merchant_fee_credits"]
+                            ]
+
+                        ],
+                        [
+                            "id"                => "sampleAccountID",
+                            "name"              => "test name",
+                            "status"            => "ACTIVATED",
+                            "balance"           => "0.000000",
+                            "min_balance"       => "0.000000",
+                            "merchant_id"       => "sampleMerchant",
+                            "created_at"        => "1634027277",
+                            "updated_at"        => "1634027277",
+                            "entities"          => [
+                                "account_type"      => ["payable"],
+                                "fund_account_type" => ["reward"]
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => 14000]);
+
+        $this->fixtures->merchant->addFeatures(['openwallet']);
+
+        $customerPublicId = $customerBalance->customer->getPublicId();
+
+        $oldBalanceAmount = $customerBalance->getBalance();
+
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
+
+        $this->startTest();
+
+        $customerBalance = $this->getLastEntity('customer_balance', true);
+
+        $this->assertSame($customerPublicId, $customerBalance['customer_id']);
+
+        $this->assertSame($oldBalanceAmount + $amount, $customerBalance['balance']);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals($amount, $transfer['amount']);
+
+        $this->assertNull($transfer['transaction_id']);
+
+        $outboxEntry = $this->getLastEntity('ledger_outbox', true);
+
+        $this->assertEquals($transfer['id'], 'trf_' . $outboxEntry['entity_id']);
+
+        $this->assertEquals('customer_transfer', $outboxEntry['entity_type']);
+
+        $actualLedgerOutboxEntry = json_decode(base64_decode($outboxEntry['payload_serialized']), true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "customer_wallet_loading",
+            "money_params" => [
+                "base_amount" => "1000000",
+                "merchant_balance_amount" => "1000000",
+                "tax" => "0",
+                "amount" => "1000000",
+                "customer_wallet_amount" => "1000000",
+                "transfer_commission"=> "0",
+            ],
+            "additional_params" => NULL,
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 }

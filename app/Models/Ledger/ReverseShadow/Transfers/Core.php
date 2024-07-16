@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\AsyncBalanceUpdateForTransfer;
+use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Ledger\Constants;
@@ -383,9 +384,34 @@ class Core extends Base\Core
         }
     }
 
+    public function createReverseShadowEntriesForCustomerWalletLoadingV2(Transfer\Entity $transfer)
+    {
+        $transactionMessage = $this->createTransactionMessageForCustomerWalletLoadingV2($transfer);
+
+        $transactorId = $transactionMessage[LedgerConstants::TRANSACTOR_ID];
+
+        $transactorEvent = $transactionMessage[LedgerConstants::TRANSACTOR_EVENT];
+
+        $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
+
+        $outboxPayload = $this->prepareOutboxPayload($payloadName, $transactionMessage);
+
+        $outboxPayload->setEntityType(LedgerOutboxConstants::CUSTOMER_TRANSFER);
+
+        $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+
+        $this->trace->info(TraceCode::TRANSACTION_MESSAGE_CREATED_IN_REVERSE_SHADOW,
+            [
+                'transactor_id'               => $transactorId,
+                'transactor_event'            =>$transactorEvent,
+                'payload_name'                => $payloadName,
+            ]);
+    }
+
     public function createTransactionMessageForCustomerWalletLoading(Transfer\Entity $transfer): array
     {
         $debitTransaction = $transfer->transaction;
+
         $merchant = $debitTransaction->merchant;
 
         $transactionMessage = [
@@ -399,6 +425,7 @@ class Core extends Base\Core
         ];
 
         $additionalParams = $this->fetchRulesForTransferCredits($debitTransaction);
+
         $additionalParams = (count($additionalParams) > 0) ? $additionalParams : null;
 
         $moneyParams = $this->generateMoneyParamsForCustomerWalletLoadingDebit($debitTransaction);
@@ -411,6 +438,33 @@ class Core extends Base\Core
         ];
 
         return array_merge($transactionMessage, $transferData);
+    }
+
+    public function createTransactionMessageForCustomerWalletLoadingV2(Transfer\Entity $transfer)
+    {
+        $ledgerService = $this->app['ledger'];
+
+        $merchantAccountBalances = $this->getMerchantAccountBalances($ledgerService, $transfer->getMerchantId());
+
+        list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
+
+        $moneyParams = $this->generateMoneyParamsForCustomerWalletLoadingDebitV2($transfer, $merchantAccountBalances, $fee, $tax);
+
+        $additionalParams = $this->fetchRulesForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
+
+        $journalData = array(
+            Constants::TRANSACTOR_ID                 => $transfer->getPublicId(),
+            Constants::TRANSACTOR_EVENT              => Constants::CUSTOMER_WALLET_LOADING,
+            Constants::MONEY_PARAMS                  => $moneyParams,
+            Constants::ADDITIONAL_PARAMS             => (count($additionalParams) > 0) ? $additionalParams : null,
+            Constants::LEDGER_INTEGRATION_MODE       => Constants::REVERSE_SHADOW,
+            Constants::IDEMPOTENCY_KEY               => Uuid::uuid1(),
+            Constants::TENANT                        => Constants::TENANT_PG,
+        );
+
+        $transactionMessage = $this->generateBaseForJournalEntry($transfer);
+
+        return array_merge($transactionMessage, $journalData);
     }
 
     public function fetchRulesForTransferCredits(Transaction\Entity $transaction)
@@ -461,6 +515,46 @@ class Core extends Base\Core
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $fee + $tax);
             $moneyParams[Constants::TAX]                        = strval($tax);
             $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($fee);
+        }
+
+        return $moneyParams;
+    }
+
+    public function generateMoneyParamsForCustomerWalletLoadingDebitV2(Transfer\Entity $transfer, $merchantAccountBalances, $transferCommission, $tax): array
+    {
+        $moneyParams = [];
+
+        $feeCredits = $merchantAccountBalances[LedgerConstants::MERCHANT_FEE_CREDITS];
+
+        $amountCredits = $merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS];
+
+        $amount = $transfer->getAmount();
+
+        $moneyParams[Constants::AMOUNT]                         = strval($amount);
+
+        $moneyParams[Constants::BASE_AMOUNT]                    = strval($amount);
+
+        if($amountCredits > 0)
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
+        }
+        else if ($this->isFeeCredits($feeCredits, $transferCommission + $tax))
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($transferCommission);
+            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $transferCommission);
+        }
+        // Normal transfer debit scenario (commissions considered)
+        else
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $transferCommission + $tax);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($transferCommission);
         }
 
         return $moneyParams;

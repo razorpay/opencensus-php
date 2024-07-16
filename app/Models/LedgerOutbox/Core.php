@@ -9,9 +9,12 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Metric;
+use RZP\Constants\Timezone;
 use RZP\Diag\EventCode;
+use RZP\Models\Admin\Admin\Constant;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Adjustment;
@@ -889,6 +892,38 @@ class Core extends Base\Core
                     LedgerConstants::JOURNAL_ID         => $journalId,
                     LedgerConstants::API_TRANSACTION_ID => $txn->getId(),
                 ]);
+
+            return $txn;
+        }
+        else if(($transactionType === Constants::TRANSFER) && ($transactorEvent === LedgerConstants::CUSTOMER_WALLET_LOADING))
+        {
+            $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
+
+            $resource = $this->getTransactionMutexresource($transfer);
+
+            $txn = $this->mutex->acquireAndRelease(
+                $resource,
+                function () use ($transfer,$journal, $journalId)
+                {
+                    $this->repo->transaction(function () use ($transfer,$journal, $journalId) {
+
+                        $txnCore = new Transaction\Core();
+
+                        list($txn, $feeSplit) = $txnCore->createFromTransfer($transfer, $journalId, false);
+
+                        $transfer->transaction()->associate($txn);
+
+                        $transfer->save();
+
+                        $this->trace->info(TraceCode::CUSTOMER_TRANSFER_TRANSACTION_CREATED,
+                            [
+                                'transaction_id' => $txn->getId(),
+                            ]);
+
+                        return $txn;
+                    });
+                }
+            );
 
             return $txn;
         }
@@ -1902,7 +1937,7 @@ class Core extends Base\Core
         (new Transfer\Core())->eventTransferFailed($transfer);
     }
 
-    private function dispatchToSettlementFromJournalIfApplicable($journal)
+    public function dispatchToSettlementFromJournalIfApplicable($journal)
     {
         $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
@@ -1926,6 +1961,19 @@ class Core extends Base\Core
                 {
                 $bucketCore->publishForSettlement($virtualPaymentTransaction);
                 }
+            }
+        }
+        else if ($transactorEvent === LedgerConstants::CUSTOMER_WALLET_LOADING)
+        {
+            $bucketCore = new Bucket\Core;
+
+            $txn = $this->transformJournalResponseToTransactionEntityForCustomerTransfer($journal);
+
+            $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
+
+            if ($status === true)
+            {
+                $bucketCore->publishForSettlement($txn);
             }
         }
     }

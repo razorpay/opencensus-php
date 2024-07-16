@@ -32,6 +32,9 @@ class LedgerOutboxController extends Controller {
             case Constants::ONDEMAND_SETTLEMENT:
                 $data = $this->service()->retryFailedReverseShadowSettlementOndemandTransactions($input);
                 break;
+            case Constants::CUSTOMER_TRANSFER:
+                $data = $this->service()->retryFailedReverseShadowCustomerTransfer($input);
+                break;
             default: // All other types
                 $data = $this->service()->retryFailedReverseShadowTransactions($input);
                 break;

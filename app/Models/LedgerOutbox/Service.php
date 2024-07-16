@@ -193,6 +193,19 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function retryFailedReverseShadowCustomerTransfer(array $input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
+
+        $maxRetryCount = $input['retry_count'] ?? ReverseShadow\Constants::MAX_RETRY_COUNT_TRANSFER_CRON;
+
+        $response = (new LedgerOutbox\Cron\CustomerTransfer\Core())->retryFailedReverseShadowCustomerTransfer($limit,$maxRetryCount);
+
+        return $response;
+    }
+
     public function updatePaymentJournalPayloadInOutbox(array $input)
     {
         $response = new Base\Collection();

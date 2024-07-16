@@ -338,4 +338,12 @@ class Constants
     const BALANCE_UPDATED                              = 'balance_updated';
 
     const MERCHANT_INVOICE                             = 'merchant_invoice';
+
+    const SUCCESSFUL_ENTRIES_COUNT                     =  'successful_entries_count';
+
+    const SUCCESSFUL_IDS                               =  'successful_ids';
+
+    const FAILED_ENTRIES_COUNT                         =  'failed_entries_count';
+
+    const FAILED_IDS                                   =  'failed_ids';
 }

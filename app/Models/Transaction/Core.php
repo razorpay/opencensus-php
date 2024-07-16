@@ -950,7 +950,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function createFromTransfer(Transfer\Entity $transfer, $txnId = null)
+    public function createFromTransfer(Transfer\Entity $transfer, $txnId = null, $dispatchForSettlement = true)
     {
         $txn = new Transaction\Entity;
 
@@ -1062,7 +1062,11 @@ class Core extends Base\Core
             $this->updateBalances($txn, false, true);
         }
 
-        $this->dispatchForSettlementBucketing($txn);
+        // we dispatch during journal ack in reverse shadow, so dispatch again is not required.
+        if ($dispatchForSettlement == true)
+        {
+            $this->dispatchForSettlementBucketing($txn);
+        }
 
         return [$txn, $feesSplit];
     }

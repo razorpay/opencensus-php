@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const ENTITY_TYPE           = 'entity_type';
     const ENTITY_ID             = 'entity_id';
+    const MAX_RETRY_COUNT      = 'max_retry_count';
 
     protected $entity = 'ledger_outbox';
 

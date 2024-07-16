@@ -13,6 +13,7 @@ use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Feature;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
@@ -30,6 +31,8 @@ use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\LedgerOutbox\Entity as LedgerOutboxEntity;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
+use RZP\Models\Transfer;
+
 use function PHPUnit\Framework\assertCount;
 
 trait ReverseShadowTrait
@@ -975,6 +978,27 @@ trait ReverseShadowTrait
         $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $baseTransactionEntity->setSettledAt($settledAt);
+
+        return $baseTransactionEntity;
+    }
+
+    public function transformJournalResponseToTransactionEntityForCustomerTransfer($journal, Transfer\Entity $transfer)
+    {
+        $baseTransactionEntity = $this->transformJournalResponseToTransactionEntityBase($journal);
+
+        $commissionLedgerEntry =$this->getCommissionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
+
+        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journal,LedgerConstants::PAYABLE, LedgerConstants::RZP_GST);
+
+        $apiFee = $commissionLedgerEntry['amount'] + $taxBalanceLedgerEntry['amount'];
+
+        $baseTransactionEntity->setFee($apiFee);
+
+        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $baseTransactionEntity->setSettledAt($settledAt);
+
+        $baseTransactionEntity->setChannel($transfer->merchant->getChannel());
 
         return $baseTransactionEntity;
     }

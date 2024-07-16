@@ -72,5 +72,18 @@ return [
         ]
     ],
 
+    'testCronRetryFailedReverseShadowCustomerTransfer' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => [
+                'type'=> 'customer_transfer'
+            ]
+        ],
+        'response' => [
+            'successful_entries_count'=> 1,
+            'failed_entries_count'=> 0,
+        ],
+    ],
 ];
 

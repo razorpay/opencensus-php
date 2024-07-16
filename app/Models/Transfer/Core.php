@@ -18,6 +18,7 @@ use RZP\Jobs\TransferProcessDedicatedQueueThree;
 use RZP\Jobs\TransferProcessDedicatedQueueFour;
 use RZP\Jobs\TransferProcessDedicatedQueueFive;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Order;
 use RZP\Models\Admin;
 use RZP\Trace\Tracer;
@@ -541,7 +542,8 @@ class Core extends Base\Core
         $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
 
         // Create transfer transaction only if reverse shadow is not enabled or if method is customer wallet loading
-        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false or (isset($input[ToType::CUSTOMER]) === true))
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false or
+            (isset($input[ToType::CUSTOMER]) === true))
         {
             return $this->createTransactionForTransfer($transfer);
         }
@@ -778,7 +780,26 @@ class Core extends Base\Core
                    ->customer
                    ->findByPublicIdAndMerchant($customerId, $merchant);
 
-        if ($asyncTransfer === true)
+        if ($this->shouldUseCustomerTransferReverseShadowV2Flow())
+        {
+            $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
+
+            $transfer->setStatus(Status::CREATED);
+
+            $this->repo->saveOrFail($transfer);
+
+            (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);
+
+            (new Customer\Transaction\Core)->createForCustomerCredit($transfer,
+                $transfer->getAmount(),
+                $to->getId(),
+                $merchant);
+
+            (new ReverseShadowTransfersCore())->createReverseShadowEntriesForCustomerWalletLoadingV2($transfer);
+
+            return $transfer;
+        }
+        else if ($asyncTransfer === true)
         {
             $transfer = Tracer::inSpan(['name' => 'payment.transfer.create.make_transfer.customer_transfer.build'], function() use ($source, $to, $input, $merchant)
             {
@@ -826,6 +847,32 @@ class Core extends Base\Core
 
             return $transfer;
         }
+    }
+
+    protected function shouldUseCustomerTransferReverseShadowV2Flow()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            return false;
+        }
+
+
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.customer_transfer_reverse_shadow_v2'),
+        ];
+
+        $reverseShadowV2Enabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enabled');
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TRANSFER_REVERSE_SHADOW_EXP,
+            [
+                'merchant_id'           => $this->merchant->getId(),
+                'enabled'     => $reverseShadowV2Enabled,
+                'experiment_id' => $properties['experiment_id']
+            ]);
+
+        return $reverseShadowV2Enabled;
     }
 
     public function createLedgerEntriesForCustomerTransferReverseShadow(Transfer\Entity $transfer)
