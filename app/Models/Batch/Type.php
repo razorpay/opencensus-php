@@ -253,7 +253,7 @@ class Type
 
     const VENDOR_ONBOARDING           = 'vendor_onboarding';
 
-
+    const OTC_PAYMENT_CREDIT          = 'otc_payment_credit';
 
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
@@ -390,7 +390,8 @@ class Type
         self::EZETAP_SETTLEMENT,
         self::MERCHANT_UPLOAD_MIQ,
         self::UPDATE_MIQ,
-        self::BVS_BULK_KYC_VERIFICATION
+        self::BVS_BULK_KYC_VERIFICATION,
+        self::OTC_PAYMENT_CREDIT
     ];
 
     /**
@@ -490,7 +491,8 @@ class Type
         self::MERCHANT_UPLOAD_MIQ,
         self::UPDATE_MIQ,
         self::TOKEN_HQ_CHARGE,
-        self::PAYMENT_PAGE
+        self::PAYMENT_PAGE,
+        self::OTC_PAYMENT_CREDIT
     ];
 
     /**
@@ -733,7 +735,8 @@ class Type
         self::CREATE_BULK_GIFT_CARDS,
         self::CREATE_BULK_GIFT_CARDS,
         self::GCMS_UPLOAD_BULK_EMAILS,
-        self::BVS_BULK_KYC_VERIFICATION
+        self::BVS_BULK_KYC_VERIFICATION,
+        self::OTC_PAYMENT_CREDIT
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -838,6 +841,7 @@ class Type
         self::BVS_BULK_KYC_VERIFICATION               => Name::ADMIN_BATCH_CREATE,
         self::S2P_GROUPS_ONBOARDING                   => Name::ADMIN_BATCH_CREATE,
         self::S2P_USERS_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
+        self::OTC_PAYMENT_CREDIT                      => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

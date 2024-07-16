@@ -6327,6 +6327,12 @@ class Header
         if ($type === Type::TALLY_PAYOUT) {
             return;
         }
+        
+        // Header validation is not possible for otc_payment_Credit batch
+        if ($type === Type::OTC_PAYMENT_CREDIT) 
+        {
+           $expectedHeaders[0] = 'CLIENT|PRODUCT|ARRANGEMENT|DEPSLIPNUM|BATCHNUM|SCHNO|CLGLOC|PICKUPLOC|PICKUPPOINT|DRAWEEBANK|INSTNUM|INSTAMT|INSTDATE|DEPDATE|DRAWERCODE|DRAWERDES|LIQDATE|LIQTYPE|RETURNRES|ACTIVATIONDATE|VALDATE|INTERNALINSTNMBR|MICRCODE|ENTRYREJRMKS|DEPOSITBRANCH|E1|E2|E3|E4|E5|E6|E7|E8|E9|E10|E11|E12|E13|E14|E15|E16|E17|E18|E19|E20|E21';
+        }
         //
         // Speed is also optional. See ^above comments about Notes;
         // Speed is optional for batch type refunds.
