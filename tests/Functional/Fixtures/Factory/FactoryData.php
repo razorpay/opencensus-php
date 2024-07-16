@@ -269,6 +269,14 @@ final class FactoryData
                                                         ]
         );
 
+        $factory(Models\Admin\AdminsMeta\Entity::class, [
+                                                            'id'                => $faker->uniqueid,
+                                                            'admin_id'          => $faker->uniqueid,
+                                                            'unique_identifier' => $faker->uniqueid,
+                                                            'auth_mode'         => 'adfs'
+                                                        ]
+        );
+
         $factory(\RZP\Models\Card\Entity::class, [
                                                    'id'                => $faker->uniqueid,
                                                    'merchant_id'       => '10000000000000',

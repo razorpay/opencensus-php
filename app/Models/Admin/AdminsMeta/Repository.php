@@ -103,4 +103,12 @@ class Repository extends Base\Repository
         return DB::table('role_map')->whereIn('role_id', $arrIndex)->delete();
     }
 
+    public function fetchByAdminIdAndUniqueIdentifier(string $id, string $uid)
+    {
+        return $this->newQuery()
+            ->where(Entity::ADMIN_ID, '=', $id)
+            ->where(Entity::UNIQUE_IDENTIFIER, '=', $uid)
+            ->first();
+    }
+
 }

@@ -77,6 +77,25 @@ class AdminTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
+        $this->adfsorg = $this->fixtures->create('org', [
+            'email'         => 'randomadmin123@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type'     => 'adfs',
+        ]);
+
+        $this->adfsorgId = $this->adfsorg->getId();
+
+        $this->hostName = 'adfstesting.testing.com';
+
+        $this->adfsorgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $this->adfsorgId,
+            'hostname'      => $this->hostName,
+        ]);
+
+        $this->adfsAuthToken = $this->getAuthTokenForOrg($this->adfsorg);
+
+        $this->ba->adminAuth('test', $this->adfsAuthToken, $this->adfsorg->getPublicId());
+
         $this->repo = (new Admin\Repository);
 
         $this->esDao = new EsDao();
@@ -401,7 +420,7 @@ class AdminTest extends TestCase
             'email' => 'testadmin@rzp.com',
             'org_id' => $this->org->getId(),
             'password' => 'Heimdall!234',
-           'wrong_2fa_attempts' => 4,
+            'wrong_2fa_attempts' => 4,
         ]);
         $result = $this->startTest();
         $this->assertArrayHasKey('email', $result);
@@ -418,7 +437,7 @@ class AdminTest extends TestCase
             'password' => 'Heimdall!23',
             'wrong_2fa_attempts' => 4,
         ]);
-         $this->startTest();
+        $this->startTest();
     }
 
     public function testAdminResend2faFlagOtp()
@@ -1146,16 +1165,16 @@ class AdminTest extends TestCase
         $request = $this->testData['testConfigKeysSet']['request'];
 
         $this->assertArraySelectiveEquals(
-                $this->testData['testConfigKeysSet']['response'],
-                $this->makeRequestAndGetContent($request)
-            );
+            $this->testData['testConfigKeysSet']['response'],
+            $this->makeRequestAndGetContent($request)
+        );
 
         $request = $this->testData['testConfigKeysFetch']['request'];
 
         $this->assertArraySelectiveEquals(
-                $this->testData['testConfigKeysFetch']['response'],
-                $this->makeRequestAndGetContent($request)
-            );
+            $this->testData['testConfigKeysFetch']['response'],
+            $this->makeRequestAndGetContent($request)
+        );
     }
 
     /**
@@ -1261,8 +1280,8 @@ class AdminTest extends TestCase
     public function testTaxPaymentAdminRouteHitsServiceMethod()
     {
         $token = $this->createAdminWithRedisConfigPermissions([
-                                                                  'tax_payment_admin_auth_execute'
-                                                              ]);
+            'tax_payment_admin_auth_execute'
+        ]);
 
         $this->ba->adminAuth('test', $token);
 
@@ -1280,8 +1299,8 @@ class AdminTest extends TestCase
     public function testTaxPaymentAdminRouteFailsWithoutPermission()
     {
         $token = $this->createAdminWithRedisConfigPermissions([
-                                                                  'some_other_permission'
-                                                              ]);
+            'some_other_permission'
+        ]);
 
         $this->ba->adminAuth('test', $token);
 
@@ -1416,13 +1435,13 @@ class AdminTest extends TestCase
         $store = Cache::store('redis');
 
         Cache::shouldReceive('store')
-             ->withAnyArgs()
-             ->andReturn($store);
+            ->withAnyArgs()
+            ->andReturn($store);
 
         Cache::shouldReceive('get')
-             ->zeroOrMoreTimes()
-             ->with(ConfigKey::TENANT_ROLES_ENTITY)
-             ->andReturn([E::PAYMENT => [Role\TenantRoles::ENTITY_PAYMENTS]]);
+            ->zeroOrMoreTimes()
+            ->with(ConfigKey::TENANT_ROLES_ENTITY)
+            ->andReturn([E::PAYMENT => [Role\TenantRoles::ENTITY_PAYMENTS]]);
 
         $result = $this->startTest();
 
@@ -1438,13 +1457,13 @@ class AdminTest extends TestCase
         $store = Cache::store('redis');
 
         Cache::shouldReceive('store')
-             ->withAnyArgs()
-             ->andReturn($store);
+            ->withAnyArgs()
+            ->andReturn($store);
 
         Cache::shouldReceive('get')
-             ->once()
-             ->with(ConfigKey::TENANT_ROLES_ENTITY)
-             ->andReturn([E::PAYMENT => [Role\TenantRoles::ENTITY_PAYMENTS]]);
+            ->once()
+            ->with(ConfigKey::TENANT_ROLES_ENTITY)
+            ->andReturn([E::PAYMENT => [Role\TenantRoles::ENTITY_PAYMENTS]]);
 
         $token = $this->createRazorpayOrgAdminForTenantRoleChecks([Permission::VIEW_ALL_ENTITY]);
         $this->ba->adminAuth('test', $token);
@@ -1463,13 +1482,13 @@ class AdminTest extends TestCase
         $store = Cache::store('redis');
 
         Cache::shouldReceive('store')
-             ->withAnyArgs()
-             ->andReturn($store);
+            ->withAnyArgs()
+            ->andReturn($store);
 
         Cache::shouldReceive('get')
-             ->once()
-             ->with(ConfigKey::TENANT_ROLES_ENTITY)
-             ->andReturn([E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS]]);
+            ->once()
+            ->with(ConfigKey::TENANT_ROLES_ENTITY)
+            ->andReturn([E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS]]);
 
         $token = $this->createRazorpayOrgAdminForTenantRoleChecks([Permission::VIEW_ALL_ENTITY], [TenantRoles::ENTITY_PAYMENTS]);
         $this->ba->adminAuth('test', $token);
@@ -1488,13 +1507,13 @@ class AdminTest extends TestCase
         $store = Cache::store('redis');
 
         Cache::shouldReceive('store')
-             ->withAnyArgs()
-             ->andReturn($store);
+            ->withAnyArgs()
+            ->andReturn($store);
 
         Cache::shouldReceive('get')
-             ->once()
-             ->with(ConfigKey::TENANT_ROLES_ENTITY)
-             ->andReturn([E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS, TenantRoles::ENTITY_PAYMENTS_EXTERNAL]]);
+            ->once()
+            ->with(ConfigKey::TENANT_ROLES_ENTITY)
+            ->andReturn([E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS, TenantRoles::ENTITY_PAYMENTS_EXTERNAL]]);
 
         $token = $this->createRazorpayOrgAdminForTenantRoleChecks([Permission::VIEW_ALL_ENTITY], [TenantRoles::ENTITY_PAYMENTS_EXTERNAL]);
         $this->ba->adminAuth('test', $token);
@@ -1536,12 +1555,12 @@ class AdminTest extends TestCase
     public function testFetchSoftDeletedEntityForAdmin()
     {
         $org = $this->fixtures
-                    ->org
-                    ->create(
-                        [
-                            'auth_type'  => 'google_auth',
-                            'deleted_at' => time(),
-                        ]);
+            ->org
+            ->create(
+                [
+                    'auth_type'  => 'google_auth',
+                    'deleted_at' => time(),
+                ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -1576,13 +1595,13 @@ class AdminTest extends TestCase
     public function testFindSoftDeletedEntityForAdmin()
     {
         $org = $this->fixtures
-                    ->org
-                    ->create(
-                        [
-                            'id'         => '10000000000001',
-                            'auth_type'  => 'google_auth',
-                            'deleted_at' => time(),
-                        ]);
+            ->org
+            ->create(
+                [
+                    'id'         => '10000000000001',
+                    'auth_type'  => 'google_auth',
+                    'deleted_at' => time(),
+                ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -1788,17 +1807,17 @@ class AdminTest extends TestCase
         $netbankingId = Db::connection('test')->table('netbanking')->first()->id;
 
         DB::connection('test')->table('bank_transfers')->insert([
-           'id'             => UniqueIdEntity::generateUniqueId(),
-           'merchant_id'    => '10000000000000',
-           'payee_account'  => '123',
-           'payee_ifsc'     => 'SBIN00001',
-           'gateway'        => 'bt_icic',
-           'amount'         => 123,
-           'mode'           => 0,
-           'utr'            => '123',
-           'time'           => time(),
-           'created_at'     => time(),
-           'updated_at'     => time(),
+            'id'             => UniqueIdEntity::generateUniqueId(),
+            'merchant_id'    => '10000000000000',
+            'payee_account'  => '123',
+            'payee_ifsc'     => 'SBIN00001',
+            'gateway'        => 'bt_icic',
+            'amount'         => 123,
+            'mode'           => 0,
+            'utr'            => '123',
+            'time'           => time(),
+            'created_at'     => time(),
+            'updated_at'     => time(),
         ]);
 
         $bankTransferId = Db::connection('test')->table('bank_transfers')->first()->id;
@@ -2618,6 +2637,7 @@ class AdminTest extends TestCase
         $this->assertNull($result['last_login_at']);
     }
 
+
     public function testCreateOrgAdminWithWrongOrgIdInHeader()
     {
 
@@ -2628,6 +2648,7 @@ class AdminTest extends TestCase
 
         $this->startTest($testData);
     }
+
 
     public function testCreateOrgAdminWithWrongEmailHostname()
     {
@@ -2749,6 +2770,7 @@ class AdminTest extends TestCase
             ]);
     }
 
+
     private function createIDAMAdminAndGetAdminToken(string $orgId): string
     {
 
@@ -2827,6 +2849,7 @@ class AdminTest extends TestCase
         return $now->getTimestamp();
     }
 
+
     public function testMultipleOrgAdmin()
     {
         $org = $this->createOrg();
@@ -2859,9 +2882,10 @@ class AdminTest extends TestCase
         //s($startTest);
     }
 
+
+
     public function testUpdateOrgAdmin()
-    {
-        $org = $this->createOrg();
+    {$org = $this->createOrg();
 
         // create IDAM admin who can only access this routes
         $idamAdminToken = $this->createIDAMAdminAndGetAdminToken($org->getId());
@@ -2904,17 +2928,140 @@ class AdminTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testSamlAuthLogin()
+    {
+        $org = $this->createOrg();
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $org->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testSamlAuthLoginWithoutExpiryDate()
+    {
+        $org = $this->createOrg();
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['headers']['x-org-id'] = "org_" . $org->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testSamlAuthLoginMissingRequiredField()
+    {
+        $org = $this->createOrg();
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $org->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
+
+    public function testSamlAuthLoginWithInvalidFields()
+    {
+        $org = $this->createOrg();
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createAdmin($org->getId(), $expireAt);
+
+        $role = $this->fixtures->create('role', ['org_id' => $org->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = 'testadmin$axis.com';
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $org->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testGetOrgAdminInValidDate()
     {
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->expressAuth('test', 'rzp_test_10000000000000');
 
-       $this->startTest($testData);
+        $this->startTest($testData);
     }
+
     public function testUpdateOrgAdminInValidExpireAt()
     {
-
         $org = $this->createOrg();
 
         // create IDAM admin who can only access this routes
@@ -2927,6 +3074,17 @@ class AdminTest extends TestCase
         $this->ba->expressAuth('test', 'rzp_test_10000000000000');
 
         $this->startTest($testData);
+    }
+
+
+    public function testAdminADFSResetPasswordDisable()
+    {
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->adfsorgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+        $this->ba->dashboardGuestAppAuth($this->hostName);
+
+        $this->startTest();
     }
 
 }

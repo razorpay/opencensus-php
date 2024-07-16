@@ -876,7 +876,7 @@ return [
             'status_code' => 200,
         ],
     ],
-    
+
     'testCreateOrgWithMerchantSessionTimeoutWithoutSplitz' => [
         'request'  => [
             'url'     => '/orgs',
@@ -1121,4 +1121,71 @@ return [
         ],
     ],
 
+    'testCreateOrgForADFSAuthType' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'post',
+            'content' => [
+                'hostname'      => 'axis.com',
+                'email_domains' => ['axis.com'],
+                'allow_sign_up' => 0,
+                'email'         => 'test@axis.com',
+                'type'          => 'restricted',
+                'display_name'  => 'AXIS Bank',
+                'business_name' => 'Axis Bank',
+                'auth_type'     => 'adfs',
+                'custom_code'   => 'test custom code',
+                'admin'         => [
+                    'name'                  => 'superadmin',
+                    'branch_code'           => 'a',
+                    'employee_code'         => 'a',
+                    'location_code'         => 'a',
+                    'department_code'       => 'a',
+                    'supervisor_code'       => 'a',
+                    'username'              => 'xyz93',
+                    'password'              => 'xYZ123!@#',
+                    'password_confirmation' => 'xYZ123!@#',
+                ],
+                'merchant_styles' => [
+                    'color_code1' => '123',
+                    'color_code2' => '345'
+                ],
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditOrgForADFSAuthType' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['axis.com'],
+                'hostname'      => 'test1.com',
+                'email'         => 'test@axis.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'Axis Bank',
+                'business_name' => 'Axis Bank',
+                'auth_type'     => 'adfs',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

@@ -6,4 +6,5 @@ class AuthType
 {
     const PASSWORD    = 'password';
     const GOOGLE_AUTH = 'google_auth';
+    const ADFS        = 'adfs';
 }

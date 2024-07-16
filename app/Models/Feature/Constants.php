@@ -2203,6 +2203,8 @@ class Constants
      */
     const COLLECTX_ENABLED = 'collectx_enabled';
 
+    const BANK_ADMIN_ADFS_LOGIN = 'bank_admin_adfs_login';
+
     const MESSAGE_BANNER_ENABLED = 'message_banner_enabled';
 
     const SHOW_OFFER_METHOD_AMT = 'show_offer_method_amt';
@@ -3064,7 +3066,7 @@ class Constants
 
         self::ONE_CC_ENABLE_FLITS_COINS => true,
         self::PAYROLL_SAV                            => true,
-
+        self::BANK_ADMIN_ADFS_LOGIN                  => true,
         self::MESSAGE_BANNER_ENABLED                => true,
         self::SHOW_OFFER_METHOD_AMT                  => true,
         self::SHOW_TRUST_MARKERS                     => true,
@@ -4408,6 +4410,11 @@ class Constants
             'feature'       => self::PAYROLL_SAV,
             'display_name'  => 'PAYROLL SAV',
             'documentation' => 'feature to enable payroll fundloading source account validation'
+        ],
+        self::BANK_ADMIN_ADFS_LOGIN => [
+            'feature'       => self::BANK_ADMIN_ADFS_LOGIN,
+            'display_name'  => 'org level Feature for IDAM dashboard',
+            'documentation' => ''
         ],
         self::TRANSFER_ON_HOLD => [
             'feature'       => self::TRANSFER_ON_HOLD,

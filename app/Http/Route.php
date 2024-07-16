@@ -1928,7 +1928,8 @@ class Route
         'admin_resend_otp_2fa'                     => ['post',     'admins/2fa/otp_resend',                          'OrganizationController@resendOtp'                                  ],
         'admin_verify_second_factor_auth'          => ['post',     'admins/2fa/verify',                              'OrganizationController@verifyAdminSecondFactorAuth'                ],
         'admin_trigger_2fa_otp'                    => ['post',    'admins/2fa',                                     'OrganizationController@change2faSetting'                           ],
-        'admin_account_lock_unlock'                     => ['put',      'admins/account/{id}/{action}',                   'OrganizationController@accountLockUnlock'                          ],
+        'admin_account_lock_unlock'                => ['put',      'admins/account/{id}/{action}',                   'OrganizationController@accountLockUnlock'                          ],
+        'admin_saml_authenticate'                  => ['post',     'admins/saml/login',                             'OrganizationController@samlAuthLogin'                          ],
         'terminal_bank_bulk'                       => ['put',      'terminals/banks/bulk',                           'TerminalController@updateTerminalsBank'                            ],
         'merchant_poc_update'                      => ['post',     'admin/poc_update',                               'AdminController@updateMerchantPoc'                                 ],
         'merchant_poc_update_with_time'            => ['post',     'admin/poc_update_with_time',                     'AdminController@updateMerchantPocWithTimeStamp'                    ],
@@ -5871,6 +5872,7 @@ class Route
         'admin_lead_verify',
         'merchant_invitation_verify',
         'admin_authentication',
+        'admin_saml_authenticate',
         // route to support 2fa for admin dashboard
         'admin_verify_second_factor_auth',
         'admin_resend_otp_2fa',
@@ -8110,7 +8112,6 @@ class Route
         'pos_fetch_all_device_orders',
         'pos_fetch_latest_order',
         'setl_fetch_multiple_proxy',
-
         'org_admin_create',
         'org_admin_update',
         'org_admin_get',
@@ -16598,6 +16599,7 @@ class Route
         // We create a new app because these routes when hit
         // won't have any merchant or admin in context.
         'dashboard_guest' => [
+            'admin_saml_authenticate',
             'm2m_referral_link_get_public',
             'user_login',
             'check_user_exists',

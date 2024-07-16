@@ -2780,7 +2780,7 @@ class ErrorCode
 
     const BAD_REQUEST_CHANGE_PASSWORD_THRESHOLD_EXHAUSTED                           = 'BAD_REQUEST_CHANGE_PASSWORD_THRESHOLD_EXHAUSTED';
     const SERVER_ERROR_CHANGE_PASSWORD_REDIS_ERROR                                  = 'SERVER_ERROR_CHANGE_PASSWORD_REDIS_ERROR';
-
+    const BAD_REQUEST_RESET_PASSWORD_DISABLED                                       = 'BAD_REQUEST_RESET_PASSWORD_DISABLED';
     const BAD_REQUEST_RESET_PASSWORD_THRESHOLD_EXHAUSTED                            = 'BAD_REQUEST_RESET_PASSWORD_THRESHOLD_EXHAUSTED';
     const SERVER_ERROR_RESET_PASSWORD_REDIS_ERROR                                   = 'SERVER_ERROR_RESET_PASSWORD_REDIS_ERROR';
 
@@ -3128,6 +3128,8 @@ class ErrorCode
 
     //payouts shield error
     const BAD_REQUEST_SUSPICIOUS_TRANSACTION                          = 'BAD_REQUEST_SUSPICIOUS_TRANSACTION';
+    const BANK_ADMIN_ADFS_LOGIN_FEATURE_ENABLED                        = 'BANK_ADMIN_ADFS_LOGIN_FEATURE_ENABLED';
+    const BAD_REQUEST_ADMIN_EXPIRED                                    = 'BAD_REQUEST_ADMIN_EXPIRED';
 
     static function getConstants()
     {

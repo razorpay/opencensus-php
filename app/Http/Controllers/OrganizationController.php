@@ -632,6 +632,17 @@ class OrganizationController extends Controller
 
         return ApiResponse::json($response);
     }
+    // --------------------- END CRUD for Org Admins ---------------------------------------
+
+    public function samlAuthLogin()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::ADMIN)->samlAuthlogin($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getMultipleOrgAdmins()
     {
         $input = Request::all();

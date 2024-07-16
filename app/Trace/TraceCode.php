@@ -895,6 +895,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_FETCH_VIA_GUEST_AUTH                             = 'USER_FETCH_VIA_GUEST_AUTH';
 
     const USER_PASSWORD_RESET_REQUEST                           = 'USER_PASSWORD_RESET_REQUEST';
+
+    const DISABLED_PASSWORD_RESET_REQUEST                       = 'DISABLED_PASSWORD_RESET_REQUEST';
+
     const USER_PASSWORD_RESET_TOKEN_GENERATE                    = 'USER_PASSWORD_RESET_TOKEN_GENERATE';
 
     const USER_REGISTER                                         = 'USER_REGISTER';
@@ -3878,6 +3881,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADMIN_GOOGLE_OAUTH_ERROR                              = 'ADMIN_GOOGLE_OAUTH_ERROR';
     const ADMIN_GOOGLE_OAUTH_VERIFY_SUCCESS                     = 'ADMIN_GOOGLE_OAUTH_VERIFY_SUCCESS';
     const ADMIN_GOOGLE_OAUTH_VERIFY_FAIL                        = 'ADMIN_GOOGLE_OAUTH_VERIFY_FAIL';
+    const USER_SAML_AUTHENTICATION_SUCCESS                      = 'USER_SAML_AUTHENTICATION_SUCCESS';
+    const USER_SAML_AUTHENTICATION_FAIL                         = 'USER_SAML_AUTHENTICATION_FAIL';
+    const INVALID_USER_DATA                                     = 'INVALID_USER_DATA';
     const GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE';
     const GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS';
     const GOOGLE_OAUTH_INVALID_ID_TOKEN                         = 'GOOGLE_OAUTH_INVALID_ID_TOKEN';

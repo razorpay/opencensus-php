@@ -27,8 +27,10 @@ class Entity extends Base\Entity
     use RevisionableTrait;
 
     const ORG_ID                = 'org_id';
+    const AD_ID                 = 'ad_id';
     const NAME                  = 'name';
     const USERNAME              = 'username';
+    const USERROLE              = 'userrole';
     const EMAIL                 = 'email';
     const PASSWORD              = 'password';
     const PASSWORD_CONFIRMATION = 'password_confirmation';
@@ -63,6 +65,7 @@ class Entity extends Base\Entity
 
     const NEXT_PASSWORD_EXPIRY_DATE = 'next_password_expiry_date';
     const PASSWORD_EXPIRY_DAYS = '+30 days';
+    const EXPIRY_DATE          = 'expiry_date';
 
 
     protected $dontKeepRevisionOf = [

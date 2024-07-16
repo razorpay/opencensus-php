@@ -114,6 +114,15 @@ class Validator extends Base\Validator
         Entity::OLD_PASSWORD          => 'required|string',
     ];
 
+    protected static $samlLoginRules= [
+        Entity::EMAIL               => 'required|max:255|email',
+        Entity::AD_ID               => 'required|string',
+        Entity::USERNAME            => 'required|string',
+        Entity::USERROLE            => 'required|array|filled',
+        Entity::EXPIRY_DATE         => 'sometimes'
+
+    ];
+
     protected static $createValidators = [
         Entity::PASSWORD
     ];

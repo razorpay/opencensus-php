@@ -40,6 +40,114 @@ return [
         ]
     ],
 
+    'testSamlAuthLogin' => [
+        'request' => [
+            'url' => '/admins/saml/login',
+            'method' => 'post',
+            'content' => [
+                'email'             => 'testadmin@axis.com',
+                'ad_id'             => 'xv6vxwe7',
+                'username'          => 'testadmin',
+                'userrole'          => ['NlNowXA3YsT7ve'],
+                'expiry_date'       => '1710226642',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testSamlAuthLoginWithoutExpiryDate'  => [
+        'request' => [
+            'url' => '/admins/saml/login',
+            'method' => 'post',
+            'content' => [
+                'email'             => 'testadmin@axis.com',
+                'ad_id'             => 'xv6vxwe7',
+                'username'          => 'testadmin',
+                'userrole'          => ['NlNowXA3YsT7ve'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testSamlAuthLoginMissingRequiredField' => [
+        'request' => [
+            'url' => '/admins/saml/login',
+            'method' => 'post',
+            'content' => [
+                'email'             => 'testadmin@axis.com',
+                'username'          => 'testadmin',
+                'userrole'          => ['NlNowXA3YsT7ve'],
+                'expiry_date'       => '1710226642',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testSamlAuthLoginWithInvalidFields' => [
+        'request' => [
+            'url' => '/admins/saml/login',
+            'method' => 'post',
+            'content' => [
+                'email'             => 'testadmin$axis.com',
+                'ad_id'             => 'testadmin',
+                'username'          => '123456',
+                'userrole'          => ['NlNowXA3YsT7ve'],
+                'expiry_date'       => '1710226642',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testAdminADFSResetPasswordDisable' => [
+        'request' => [
+            'url' => '/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_RESET_PASSWORD_DISABLED,
+        ],
+
+    ],
+
+
     'testCreateAdminESAfterDenialOfApproval' => [
         'request' => [
             'url' => '/admins',
