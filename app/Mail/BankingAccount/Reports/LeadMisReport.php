@@ -45,7 +45,7 @@ class LeadMisReport extends Base
     protected function addHtmlView()
     {
        $this->view('emails.banking_account.lead_mis_report');
-    
+
        return $this;
     }
 
@@ -83,6 +83,7 @@ class LeadMisReport extends Base
     {
         // For testing only
         $this->cc('umakant.vashishtha@razorpay.com', 'Umakant Vashishtha');
+        $this->cc('lakshmish.hegde@razorpay.com', 'Lakshmish S Hegde');
         // $this->cc('apurva.ankleshwaria@razorpay.com', 'Apurva Ankleshwaria');
 
         return $this;
