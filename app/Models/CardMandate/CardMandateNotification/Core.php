@@ -470,7 +470,23 @@ class Core extends Base\Core
                 "data" => "block request in function updateNotificationFromCallbackResponse()",
                 "card_mandate_notification_id" => $cardMandateNotification->getId(),
                 "order_id" => $cardMandateNotification->getOrderId(),
+                "isNotified" => $isNotified,
+                "notified_at" => $cardMandateNotification->getNotifiedAt(),
             ]);
+
+            if (($isNotified === true) and
+                (empty($cardMandateNotification->getNotifiedAt()) === true))
+            {
+                $cardMandateNotification->setNotifiedAt(Carbon::now()->getTimestamp());
+                $cardMandateNotification->saveOrFail();
+
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    "data" => "added notified at in updateNotificationFromCallbackResponse()",
+                    "card_mandate_notification_id" => $cardMandateNotification->getId(),
+                    "order_id" => $cardMandateNotification->getOrderId(),
+                    "notified_at" => $cardMandateNotification->getNotifiedAt(),
+                ]);
+            }
 
             return $cardMandateNotification;
         }
