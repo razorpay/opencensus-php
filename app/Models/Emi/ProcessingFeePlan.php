@@ -110,27 +110,27 @@ class ProcessingFeePlan
                 '6' => [
                     self::TYPE => self::FIXED,
                     self::AMOUNT => 9900,
-                    self::MIN_AMOUNT => 1250000
+                    self::MIN_AMOUNT => 1600000
                 ],
                 '9' => [
                     self::TYPE => self::FIXED,
                     self::AMOUNT => 9900,
-                    self::MIN_AMOUNT => 900000
+                    self::MIN_AMOUNT => 1100000
                 ],
                 '12' => [
                     self::TYPE => self::FIXED,
                     self::AMOUNT => 9900,
-                    self::MIN_AMOUNT => 700000
+                    self::MIN_AMOUNT => 850000
                 ],
                 '18' => [
                     self::TYPE => self::FIXED,
                     self::AMOUNT => 19900,
-                    self::MIN_AMOUNT => 1000000
+                    self::MIN_AMOUNT => 1750000
                 ],
                 '24' => [
                     self::TYPE => self::FIXED,
                     self::AMOUNT => 19900,
-                    self::MIN_AMOUNT => 1000000
+                    self::MIN_AMOUNT => 1600000
 
                 ],
                 self:: DEFAULT => []
