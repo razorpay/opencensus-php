@@ -510,7 +510,9 @@ class ApiEventSubscriber extends Base\Core
 
         if(strtolower($variant) === 'on')
         {
-            $isInternationalRecurringAuto = (($payment->isInternational() === true) and ($payment->isRecurringTypeAuto() === true));
+            $country = $this->merchant->getCountry();
+            $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
+            and ($payment->isRecurringTypeAuto() === true));
 
             if (($payment->hasSubscription() === true) and
                 ($payment->isApiBasedEmandateAsyncPayment() === false) and
