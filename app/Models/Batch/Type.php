@@ -74,6 +74,11 @@ class Type
 
     const SUB_MERCHANT              = 'sub_merchant';
 
+    const RECURRING_TOKEN_DELETE    = 'recurring_token_delete';
+
+    const CANCEL_DORMANT_MANDATES    = 'cancel_dormant_mandates';
+
+
     /**
      * This type is used to automate merchant and pricing plan in bulk for vas merchants.
      */

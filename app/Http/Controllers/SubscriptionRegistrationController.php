@@ -94,6 +94,15 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($invoice);
     }
 
+    public function deleteRecurringToken(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->deleteRecurringToken($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function chargeToken(string $id)
     {
         $input = Request::all();
@@ -112,6 +121,13 @@ class SubscriptionRegistrationController extends Controller
         $response = $this->service()->chargeTokenBulk($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function createBatchForTokenDelete()
+    {
+        $result = $this->service()->createBatchForTokenDelete($this->input);
+
+        return ApiResponse::json($result);
     }
 
     public function postProcessAutoCharges()

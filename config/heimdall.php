@@ -1591,6 +1591,14 @@ return [
             Permission::TOKEN_REGISTRATION_ACTIONS => [
                 'description' => 'Token registration authenticate and associate',
                 'assignable'  => true
+            ],
+            Permission::DELETE_RECURRING_BULK_TOKENS => [
+                'description' => 'Recurring Tokens Delete in bulk from admin dashboard',
+                'assignable'  => true
+            ],
+            Permission::DELETE_RECURRING_TOKEN => [
+                'description' => 'Recurring Token Delete from admin dashboard',
+                'assignable'  => true
             ]
         ],
 

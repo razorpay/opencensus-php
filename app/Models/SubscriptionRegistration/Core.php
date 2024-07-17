@@ -8,6 +8,10 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\Batch\Entity as BatchEntity;
+use RZP\Models\Batch\Metric as BatchMetric;
+use RZP\Models\Batch\Type as BatchType;
+use RZP\Models\Batch\Validator;
 use RZP\Models\Order;
 use RZP\Trace\Tracer;
 use RZP\Models\Invoice;
@@ -33,6 +37,7 @@ use RZP\Models\Order\Product\Core as ProductCore;
 use RZP\Models\Payment\Processor\Upi as UpiPayment;
 use \RZP\Models\UpiMandate\Frequency as UpiFrequency;
 use \RZP\Models\UpiMandate\Validator as UpiValidator;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
 use RZP\Models\Terminal;
 
@@ -1195,6 +1200,72 @@ class Core extends Base\Core
         return $token->toArrayPublic();
     }
 
+    public function deleteRecurringToken(string $id, array $input): array
+    {
+        $isDormant = $input["is_dormant"] ?? false;
+
+        $this->trace->info(TraceCode::DELETE_RECURRING_TOKEN_REQUEST,
+            [
+                'token_id' => $id,
+                'is_dormant' => $isDormant
+            ]);
+
+        $token = $this->repo->token->findByPublicId($id);
+
+        if($isDormant === true)
+        {
+             $this->validateDormantMandate($token);
+        }
+
+        if ($token->hasCardMandate() === true)
+        {
+            (new CardMandate\Core)->cancelMandateBeforeTokenDeletion($token->cardMandate);
+        }
+
+        $token = $this->repo->token->deleteOrFail($token);
+
+        $this->trace->info(TraceCode::DELETE_RECURRING_TOKEN_RESPONSE,
+            [
+                'token_id'   => $id,
+                'is_dormant' => $isDormant,
+                'deleted'    => true
+            ]);
+
+        if ($token === null)
+        {
+            return ['deleted' => true];
+        }
+
+        return $token->toArrayPublic();
+    }
+
+    public function validateDormantMandate(Token\Entity $token)
+    {
+        $currentTime = Carbon::now();
+
+        // If token used at is null then we will check token created at.
+        $tokenUsedAt = $token->getUsedAt() ?? $token->getCreatedAt();
+
+        $tokenLastUsedAtTime = Carbon::createFromTimestamp($tokenUsedAt);
+
+        $differenceInMonths = $tokenLastUsedAtTime->diffInMonths($currentTime);
+
+        $this->trace->info(TraceCode::DELETE_RECURRING_TOKEN_DORMANT_VALIDATION,
+            [
+                'token_id' => $token->getId(),
+                'current_time' => $currentTime,
+                'token_used_at' => $tokenLastUsedAtTime,
+                'diff' => $differenceInMonths
+            ]);
+
+        if($differenceInMonths < 6)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'token cannot be delete as used_at/created_at is less than 6 months'
+            );
+        }
+    }
+
     public function validateTokenInput(array $input)
     {
         $validator = new Validator();
@@ -1379,5 +1450,42 @@ class Core extends Base\Core
 
             $bankInput[BankAccount\Entity::BENEFICIARY_NAME] = $beneficiaryName;
         }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function createBatchForTokenDelete(array $input, Merchant\Entity $merchant): BatchEntity
+    {
+        $type = $input["type"];
+
+        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST_EMANDATE_TOKEN_DELETE, $input);
+
+        if (in_array($type, [BatchType::CANCEL_DORMANT_MANDATES, BatchType::RECURRING_TOKEN_DELETE]) === true)
+        {
+            $input[Batch\Entity::TYPE] = $type;
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid batch type ' . $type . " is provided"
+            );
+        }
+
+        $batch = (new BatchEntity)->build($input);
+
+        $batch->merchant()->associate($merchant);
+
+        $processor = Batch\Processor\Factory::get($batch);
+
+        $ufhFile = $processor->storeInputFileAndSaveBatchWithSettings($input);
+
+        $dimensions = $batch->getMetricDimensions();
+
+        $batchResponse = $this->app->batchService->forwardToBatchServiceRequest($input, $merchant, $ufhFile);
+
+        $this->trace->count(BatchMetric::BATCH_REQUESTS_TOTAL, $dimensions);
+
+        return (new Batch\ResponseEntity)->fill($batchResponse);
     }
 }

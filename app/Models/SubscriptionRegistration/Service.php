@@ -316,6 +316,11 @@ class Service extends Base\Service
         return $this->core->deleteToken($id, $this->merchant);
     }
 
+    public function deleteRecurringToken(String $id, array $input): array
+    {
+        return $this->core->deleteRecurringToken($id, $input);
+    }
+
     public function chargeToken(String $id, array $input, String $idempotent_key=null): array
     {
         $this->trace->count(Metric::AUTH_LINK_CHARGE_TOKEN_INITIATED, ['mode' => $this->mode]);
@@ -422,6 +427,15 @@ class Service extends Base\Service
         }
 
         return $chargeTokenBatch->toArrayWithItems();
+    }
+
+    public function createBatchForTokenDelete(array $input)
+    {
+        $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+        $batch = $this->core->createBatchForTokenDelete($input, $sharedMerchant);
+
+        return $batch->toArrayPublic();
     }
 
     public function processAutoCharges(array $input)

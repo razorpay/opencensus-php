@@ -373,6 +373,8 @@ class Name
     const RAZORX_APPROVERS                    = 'razorx_approvers';
     const USER_PASSWORD_RESET                 = 'user_password_reset';
     const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';
+    const DELETE_RECURRING_BULK_TOKENS        = 'delete_recurring_bulk_tokens';
+    const DELETE_RECURRING_TOKEN              = 'delete_recurring_token';
     const VIEW_OPERATIONS_REPORT              = 'view_operations_report';
     const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
     const SETTLEMENT_RELEASE_HOLD_PAYMENT     = 'settlement_release_hold_payment';

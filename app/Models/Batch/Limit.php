@@ -36,6 +36,8 @@ class Limit
         'emandate_debit_enach_npci_netbanking'      => 200000,
         'emandate_debit_enach_nb_icici'             => 100000,
         'emandate_debit_sbi'                        => 200000,
+        Type::CANCEL_DORMANT_MANDATES               => 50,
+        Type::RECURRING_TOKEN_DELETE                => 50,
         Type::BANKING_ACCOUNT_ACTIVATION_COMMENTS   => 10000,
         Type::ICICI_STP_MIS                         => 10000,
         Type::S2P_GROUPS_ONBOARDING                 => 10000,

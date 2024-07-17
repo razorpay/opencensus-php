@@ -280,6 +280,7 @@ class Header
     //
     const MERCHANT_IDS  = 'merchant_ids';
 
+    const TOKEN_ID       = 'token_id';
     //
     // Batch recurring payments
     //
@@ -3190,6 +3191,26 @@ class Header
                 self::RECURRING_CHARGE_PAYMENT_ID,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::RECURRING_TOKEN_DELETE => [
+            self::INPUT => [
+                self::TOKEN_ID,
+            ],
+            self::OUTPUT => [
+                self::TOKEN_ID,
+                self::STATUS,
+            ],
+        ],
+
+        Type::CANCEL_DORMANT_MANDATES => [
+            self::INPUT => [
+                self::TOKEN_ID,
+            ],
+            self::OUTPUT => [
+                self::TOKEN_ID,
+                self::STATUS,
             ],
         ],
 

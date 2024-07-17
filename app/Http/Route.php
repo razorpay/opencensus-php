@@ -3668,6 +3668,9 @@ class Route
         'subscription_registration_charge_token_bulk'   => ['post',     'subscription_registration/tokens/charge_bulk',        'SubscriptionRegistrationController@chargeTokenBulk'                ],
         'subscription_registration_auto_charge'         => ['post',     'subscription_registration/auto_charge',               'SubscriptionRegistrationController@postProcessAutoCharges'         ],
         'token_registration_token_associate'            => ['post',     'token.registration/{id}/token_associate',             'SubscriptionRegistrationController@associateToken'                 ],
+        'recurring_bulk_token_delete'                   => ['post',     'subscription_registration/bulk_token_delete',         'SubscriptionRegistrationController@createBatchForTokenDelete'            ],
+        'recurring_token_delete'                        => ['delete',   'recurring/token/{id}',                                'SubscriptionRegistrationController@deleteRecurringToken'           ],
+        'internal_recurring_token_delete'               => ['post',     'recurring/token/{id}',                                'SubscriptionRegistrationController@deleteRecurringToken'           ],
         'token_registration_tokens_authenticate'        => ['post',     'token.registration/tokens_authenticate',              'SubscriptionRegistrationController@authenticateTokens'             ],
         'auth_link_paper_mandate_authenticate'          => ['post',     'token.registration/paper_mandate/authenticate',       'SubscriptionRegistrationController@paperMandateAuthenticate'       ],
         'auth_link_paper_mandate_authenticate_proxy'    => ['post',     'token.registration/paper_mandate/authenticate/proxy', 'SubscriptionRegistrationController@paperMandateAuthenticateProxy'  ],
@@ -6366,6 +6369,7 @@ class Route
 
         'nach_batch_process',
         'emandate_batch_process',
+        'internal_recurring_token_delete',
 
         'loc_cron',
         'los_cron',
@@ -8818,6 +8822,9 @@ class Route
 
         'vault_token_create',
 
+        'recurring_bulk_token_delete',
+        'recurring_token_delete',
+
         //Admin route for fixing subscriptio data
         'subscription_update_data',
         'subscription_payment_process',
@@ -9574,6 +9581,7 @@ class Route
         'payment_create_fees'
     ];
 
+    // if we add permission in the current route for admin dashboard access, will it affect the merchant dashboard access as well?
     public static $routePermission = [
         'register_merchant_verify_otp'                    => Permission::EDIT_MERCHANT,
         'barricade_set_config' => Permission::BARRICADE_DCS_CONFIG_SET,
@@ -10484,6 +10492,8 @@ class Route
         'subscription_payment_process'             => Permission::MODIFY_SUBSCRIPTION_DATA,
         'subscription_charge_cycle'                => Permission::MODIFY_SUBSCRIPTION_DATA,
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
+        'recurring_bulk_token_delete'              => Permission::DELETE_RECURRING_BULK_TOKENS,
+        'recurring_token_delete'                   => Permission::DELETE_RECURRING_TOKEN,
 
         'merchant_partners_fetch'                  => Permission::VIEW_PARTNERS,
 
@@ -15891,6 +15901,8 @@ class Route
             'subscription_view_test',
             'subscription_view_test_post',
             'subscriptions_overview',
+            'recurring_bulk_token_delete',
+            'recurring_token_delete',
             'sub_virtual_account_create',
             'sub_virtual_account_list_admin',
             'sub_virtual_account_enable_disable',
@@ -17524,6 +17536,7 @@ class Route
             'payout_links_batch_process',
             'nach_batch_process',
             'emandate_batch_process',
+            'internal_recurring_token_delete',
             'health_checker',
             'dispute_automation',
             'create_exec_risk_action',
