@@ -74,7 +74,6 @@ class ApplicableOn extends React.Component {
       offersData,
       values,
       handleChange,
-      handleBlur,
       setFieldTouched,
       setFieldValue,
       errors,
@@ -111,7 +110,6 @@ class ApplicableOn extends React.Component {
             onChange={({ name, values }) => {
               onFormChange(name, values[0]);
             }}
-            onBlur={handleBlur}
             validationState={touched.issuer && errors?.issuer ? 'error' : 'none'}
             errorText={errors?.issuer}
           />
@@ -136,7 +134,6 @@ class ApplicableOn extends React.Component {
                 offersData={offersData}
                 values={values}
                 handleChange={handleChange}
-                handleBlur={handleBlur}
                 setFieldTouched={setFieldValue}
                 setFieldValue={setFieldValue}
                 errors={errors}

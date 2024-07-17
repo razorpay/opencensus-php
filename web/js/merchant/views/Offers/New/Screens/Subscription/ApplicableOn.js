@@ -32,7 +32,7 @@ export default class ApplicableOn extends React.Component {
     this.props.setFieldValue(name, value);
   };
   render() {
-    const { isFormLocked, values, handleBlur, errors, touched } = this.props;
+    const { isFormLocked, values, errors, touched } = this.props;
     const { payment_method_type, iins } = values;
     const { isCard } = this.currentSelectedPaymentMethod;
 
@@ -58,7 +58,6 @@ export default class ApplicableOn extends React.Component {
             onChange={({ name, values }) => {
               this.handleFormChange(name, values[0]);
             }}
-            onBlur={handleBlur}
             validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
             errorText={errors?.payment_method}
           />
@@ -88,7 +87,6 @@ export default class ApplicableOn extends React.Component {
                 onChange={({ name, value }) => {
                   this.handleFormChange(name, value);
                 }}
-                onBlur={handleBlur}
               />
               <DropdownOverlay>
                 <ActionList>
@@ -115,7 +113,6 @@ export default class ApplicableOn extends React.Component {
                 onChange={({ name, value }) => {
                   this.handleFormChange(name, value);
                 }}
-                onBlur={handleBlur}
               />
               <DropdownOverlay>
                 <ActionList>
@@ -142,7 +139,6 @@ export default class ApplicableOn extends React.Component {
                 onChange={({ name, value }) => {
                   this.handleFormChange(name, value);
                 }}
-                onBlur={handleBlur}
               />
               <DropdownOverlay>
                 <ActionList>
@@ -174,7 +170,6 @@ export default class ApplicableOn extends React.Component {
               onChange={({ name, value }) => {
                 this.handleFormChange(name, value);
               }}
-              onBlur={handleBlur}
             />
 
             <TextInput
@@ -190,7 +185,6 @@ export default class ApplicableOn extends React.Component {
               onChange={({ name, value }) => {
                 this.handleFormChange(name, value);
               }}
-              onBlur={handleBlur}
             />
           </React.Fragment>
         )}

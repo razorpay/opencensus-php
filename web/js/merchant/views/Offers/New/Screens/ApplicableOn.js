@@ -50,7 +50,7 @@ export default class ApplicableOn extends React.Component {
 
   render() {
     const { selectedPaymentMethodType } = this.state;
-    const { isFormLocked, values, handleBlur, errors, touched } = this.props;
+    const { isFormLocked, values, errors, touched } = this.props;
 
     const { issuer, payment_network } = values;
     const { isEMI, isWallet, isCard, isNetBanking, isCardLessEmi } =
@@ -81,7 +81,6 @@ export default class ApplicableOn extends React.Component {
             onChange={({ name, values }) => {
               this.handleFormChange(name, values[0]);
             }}
-            onBlur={handleBlur}
             validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
             errorText={errors?.payment_method}
           />
@@ -111,7 +110,6 @@ export default class ApplicableOn extends React.Component {
               onChange={({ name, values }) => {
                 this.handleFormChange(name, values[0]);
               }}
-              onBlur={handleBlur}
             />
             <DropdownOverlay>
               <ActionList>
@@ -141,7 +139,6 @@ export default class ApplicableOn extends React.Component {
               onChange={({ name, values }) => {
                 this.handleFormChange(name, values[0]);
               }}
-              onBlur={handleBlur}
             />
             <DropdownOverlay>
               <ActionList>
@@ -168,7 +165,6 @@ export default class ApplicableOn extends React.Component {
                 onChange={(event) => this.onMethodTypeChange(event)}
                 validationState="none"
                 value={values.payment_method_type}
-                onBlur={handleBlur}
               />
               <DropdownOverlay>
                 <ActionList>
@@ -195,7 +191,6 @@ export default class ApplicableOn extends React.Component {
                 onChange={({ name, values }) => {
                   this.handleFormChange(name, values[0]);
                 }}
-                onBlur={handleBlur}
               />
               <DropdownOverlay>
                 <ActionList>
@@ -222,7 +217,6 @@ export default class ApplicableOn extends React.Component {
                 onChange={({ name, values }) => {
                   this.handleFormChange(name, values[0]);
                 }}
-                onBlur={handleBlur}
               />
               <DropdownOverlay>
                 <ActionList>
@@ -255,7 +249,6 @@ export default class ApplicableOn extends React.Component {
               onChange={({ name, value }) => {
                 this.handleFormChange(name, value);
               }}
-              onBlur={handleBlur}
             />
 
             <TextInput
@@ -278,7 +271,6 @@ export default class ApplicableOn extends React.Component {
               onChange={({ name, value }) => {
                 this.handleFormChange(name, value);
               }}
-              onBlur={handleBlur}
             />
           </React.Fragment>
         )}
@@ -295,7 +287,6 @@ export default class ApplicableOn extends React.Component {
               onChange={({ name, values }) => {
                 this.handleFormChange(name, values[0]);
               }}
-              onBlur={handleBlur}
             />
             <DropdownOverlay>
               <ActionList>

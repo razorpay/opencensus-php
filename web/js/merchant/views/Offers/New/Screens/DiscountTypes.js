@@ -31,7 +31,6 @@ export default function DiscountType({
   showSubscriptionOfferFields,
   emiData = {},
   values,
-  handleBlur,
   setFieldTouched,
   setFieldValue,
   errors,
@@ -114,7 +113,6 @@ export default function DiscountType({
               onChange={({ name, values }) => {
                 handleFormChange(name, values[0]);
               }}
-              onBlur={handleBlur}
               validationState={
                 touched.redemption_type && errors?.redemption_type ? 'error' : 'none'
               }
@@ -149,7 +147,6 @@ export default function DiscountType({
               onChange={({ name, value }) => {
                 handleFormChange(name, value);
               }}
-              onBlur={handleBlur}
               validationState={touched.no_of_cycles && errors?.no_of_cycles ? 'error' : 'none'}
               errorText={errors?.no_of_cycles}
             />
@@ -171,7 +168,6 @@ export default function DiscountType({
               onChange={({ name, values }) => {
                 handleFormChange(name, values[0]);
               }}
-              onBlur={handleBlur}
               validationState={touched.discount_type && errors?.discount_type ? 'error' : 'none'}
               errorText={errors?.discount_type}
             />
@@ -208,7 +204,6 @@ export default function DiscountType({
             onChange={({ name, value }) => {
               handleFormChange(name, value);
             }}
-            onBlur={handleBlur}
           />
         )}
 
@@ -225,7 +220,6 @@ export default function DiscountType({
             onChange={({ name, value }) => {
               handleFormChange(name, value);
             }}
-            onBlur={handleBlur}
             validationState={
               touched.max_order_amount && errors?.max_order_amount ? 'error' : 'none'
             }
@@ -251,7 +245,6 @@ export default function DiscountType({
             onChange={({ name, value }) => {
               handleFormChange(name, value);
             }}
-            onBlur={handleBlur}
           />
         )}
 
@@ -274,7 +267,6 @@ export default function DiscountType({
               onChange={({ name, value }) => {
                 handleFormChange(name, value);
               }}
-              onBlur={handleBlur}
             />
 
             <TextInput
@@ -293,7 +285,6 @@ export default function DiscountType({
               onChange={({ name, value }) => {
                 handleFormChange(name, value);
               }}
-              onBlur={handleBlur}
             />
           </React.Fragment>
         )}

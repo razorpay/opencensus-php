@@ -15,7 +15,6 @@ export default ({
   isFormLocked,
   hideType,
   values,
-  handleBlur,
   setFieldTouched,
   setFieldValue,
   errors,
@@ -36,9 +35,9 @@ export default ({
   errors.name = validateName(values.name);
   errors.display_text = validateDisplayText(values.display_text);
   errors.terms = validateTerms(values.terms);
-  errors = hideType
-    ? Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'type'))
-    : { ...errors, type: validateDiscountType(values.type) };
+  !hideType
+    ? (errors.type = validateDiscountType(values.type))
+    : Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'type'));
 
   return (
     <React.Fragment>
@@ -56,7 +55,6 @@ export default ({
         onChange={({ name, value }) => {
           handleFormChange(name, value);
         }}
-        onBlur={handleBlur}
         value={values.name}
         validationState={touched.name && errors.name ? 'error' : 'none'}
         errorText={errors?.name}
@@ -77,7 +75,6 @@ export default ({
         onChange={({ name, value }) => {
           handleFormChange(name, value);
         }}
-        onBlur={handleBlur}
         value={values.display_text}
       />
 
@@ -97,7 +94,6 @@ export default ({
         onChange={({ name, value }) => {
           handleFormChange(name, value);
         }}
-        onBlur={handleBlur}
         value={values.terms}
       />
 
@@ -115,7 +111,6 @@ export default ({
             onChange={({ name, values }) => {
               handleFormChange(name, values[0]);
             }}
-            onBlur={handleBlur}
             validationState={touched?.type && errors?.type ? 'error' : 'none'}
             errorText={errors?.type}
           />

@@ -21,6 +21,7 @@ const PAYMENT_FAILURE_OPTIONS = [
 ];
 
 // TODO: FIX: ends_at default value should be null fix it
+// eslint-disable-next-line no-undef
 export default class OfferValidity extends React.Component {
   handleDate = (name, handleChange) => {
     return (value) => {
@@ -43,7 +44,6 @@ export default class OfferValidity extends React.Component {
       showSubscriptionOfferFields,
       values,
       handleChange,
-      handleBlur,
 
       errors,
       touched,
@@ -61,7 +61,6 @@ export default class OfferValidity extends React.Component {
           class="Input--vTop"
           onChange={(value) => this.handleDate('starts_at', handleChange)(value)}
           disabled={isFormLocked}
-          onBlur={handleBlur}
         />
 
         <Input.DateTime
@@ -73,7 +72,6 @@ export default class OfferValidity extends React.Component {
           validator={validatesEndsAt(values.start_at)}
           onChange={(value) => this.handleDate('ends_at', handleChange)(value)}
           disabled={isFormLocked}
-          onBlur={handleBlur}
         />
 
         <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7" marginTop="spacing.7">
@@ -86,7 +84,6 @@ export default class OfferValidity extends React.Component {
             labelPosition="left"
             helpText="What happens at times of failure of offer validation for customer?"
             value={values.block}
-            onBlur={handleBlur}
             onChange={({ name, values }) => {
               this.handleFormChange(name, values[0]);
             }}
@@ -124,7 +121,6 @@ export default class OfferValidity extends React.Component {
           onChange={({ name, value }) => {
             this.handleFormChange(name, value);
           }}
-          onBlur={handleBlur}
         />
 
         <CheckboxGroup
