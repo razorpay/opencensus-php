@@ -122,6 +122,33 @@ class NeedsClarificationMetaData
         DocumentType::UBO                                   => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::SHOP_INTERIOR_IMAGE                   => [ReasonList::ILLEGIBLE_DOC,
                                                                 ReasonList::STOCK_NOT_MATCHES_WITH_MCC_CODE],
+        DocumentType::UTILITY_BILLS                         => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::IMPORT_EXPORT_CERTIFICATE             => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::PARTNERSHIP_DEED                      => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::HUF_DEED                              => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SOCIETY_REGISTRATION_CERTIFICATE      => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::POWER_OF_ATTORNEY                     => [ReasonList::ILLEGIBLE_DOC],
+
+        // Curlec documents
+        DocumentType::FIMM_OR_SC_REGISTRATION_FORM                          => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::COI_DOCUMENT                                          => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::ALCOHOL_LICENSE                                       => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::LESEN_PEMEGANG_PAJAK_GADAI                            => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::LICENSE_FROM_MINISTRY_OF_EDUCATION                    => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::LICENSE_FROM_MINISTRY_OF_HOUSING_AND_LOCAL_GOVERNMENT => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::FIMM_OR_BNM_REGISTRATION_FORM                         => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::SC_CAPITAL_MARKETS_SERVICES_LICENSE                   => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::REGISTERED_MARKET_OPERATOR_SCREENSHOT                 => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::BNM_OR_SC_LICENSE                                     => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::BNM_LICENSE                                           => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::PUBLIC_OR_BEER_HOUSE_LICENSE                          => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::LICENSE_OR_PERMIT_UNDER_THE_POISONS_ACT_1952          => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::LISTING_ON_MINISTRY_OF_HEALTHS_WEBSITE                => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::PRACTICING_CERTIFICATE                                => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::LICENSE_OR_PERMIT_FROM_MINISTRY_OF_HEALTH             => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::BAR_COUNCIL_DOCUMENT                                  => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::AJL_LICENSE_OR_PROOF_OF_MEMBERSHIP_WITH_DSAM          => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::MOTAC_LICENSE                                         => [ReasonList::ILLEGIBLE_DOC],
     ];
 
     const MERCHANT_REASON_MAPPING = [

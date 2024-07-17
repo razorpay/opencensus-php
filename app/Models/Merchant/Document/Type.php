@@ -85,6 +85,10 @@ class Type
     const INCOME_TAX_RETURNS                 = 'income_tax_returns';
     const CERTIFICATION_REGISTRATION_BY_TAX_AUTH    = 'certificate_registration_by_tax_auth';
     const UTILITY_BILLS                             = 'utility_bills';
+    const IMPORT_EXPORT_CERTIFICATE                 = 'import_export_certificate';
+    const PARTNERSHIP_DEED                          = 'partnership_deed';
+    const HUF_DEED                                  = 'huf_deed';
+    const SOCIETY_REGISTRATION_CERTIFICATE          = 'society_registration_certificate';
     const MOA                                       = 'moa';
     const AOA                                       = 'aoa';
     const DARPAN_PORTAL                             = 'darpan_portal';
@@ -160,6 +164,28 @@ class Type
     const BAR_COUNCIL_CERTIFICATE           = 'bar_council_certificate';
     const BOARD_RESOLUTION_LETTER           = 'board_resolution_letter';
     const PGI_CERTIFICATE                   = "pgi_certificate";
+    const POWER_OF_ATTORNEY                 = "power_of_attorney";
+
+    // Curlec documents
+    const FIMM_OR_SC_REGISTRATION_FORM                          = "fimm_or_sc_registration_form";
+    const COI_DOCUMENT	                                        = "coi_document";
+    const ALCOHOL_LICENSE	                                    = "alcohol_license";
+    const LESEN_PEMEGANG_PAJAK_GADAI	                        = "lesen_pemegang_pajak_gadai";
+    const LICENSE_FROM_MINISTRY_OF_EDUCATION                    = "license_from_ministry_of_education";
+    const LICENSE_FROM_MINISTRY_OF_HOUSING_AND_LOCAL_GOVERNMENT = "license_from_ministry_of_housing_and_local_government";
+    const FIMM_OR_BNM_REGISTRATION_FORM	                        = "fimm_or_bnm_registration_form";
+    const SC_CAPITAL_MARKETS_SERVICES_LICENSE                   = "sc_capital_markets_services_license";
+    const REGISTERED_MARKET_OPERATOR_SCREENSHOT	                = "registered_market_operator_screenshot";
+    const BNM_OR_SC_LICENSE	                                    = "bnm_or_sc_license";
+    const BNM_LICENSE                                           = "bnm_license";
+    const PUBLIC_OR_BEER_HOUSE_LICENSE	                        = "public_or_beer_house_license";
+    const LICENSE_OR_PERMIT_UNDER_THE_POISONS_ACT_1952          = "license_or_permit_under_the_poisons_act_1952";
+    const LISTING_ON_MINISTRY_OF_HEALTHS_WEBSITE                = "listing_on_ministry_of_healths_website";
+    const PRACTICING_CERTIFICATE	                            = "practicing_certificate";
+    const LICENSE_OR_PERMIT_FROM_MINISTRY_OF_HEALTH	            = "license_or_permit_from_ministry_of_health";
+    const BAR_COUNCIL_DOCUMENT	                                = "bar_council_document";
+    const AJL_LICENSE_OR_PROOF_OF_MEMBERSHIP_WITH_DSAM          = "ajl_license_or_proof_of_membership_with_dsam";
+    const MOTAC_LICENSE	                                        = "motac_license";
 
     const WEBSITE_SCREENSHOTS_ADDITIONAL     = 'website_screenshots_additional';
 
@@ -231,12 +257,43 @@ class Type
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
         self::PGI_CERTIFICATE,
+
+        // Curlec documents
+        self::FIMM_OR_SC_REGISTRATION_FORM,
+        self::COI_DOCUMENT,
+        self::ALCOHOL_LICENSE,
+        self::LESEN_PEMEGANG_PAJAK_GADAI,
+        self::LICENSE_FROM_MINISTRY_OF_EDUCATION,
+        self::LICENSE_FROM_MINISTRY_OF_HOUSING_AND_LOCAL_GOVERNMENT,
+        self::FIMM_OR_BNM_REGISTRATION_FORM,
+        self::SC_CAPITAL_MARKETS_SERVICES_LICENSE,
+        self::REGISTERED_MARKET_OPERATOR_SCREENSHOT,
+        self::BNM_OR_SC_LICENSE,
+        self::BNM_LICENSE,
+        self::PUBLIC_OR_BEER_HOUSE_LICENSE,
+        self::LICENSE_OR_PERMIT_UNDER_THE_POISONS_ACT_1952,
+        self::LISTING_ON_MINISTRY_OF_HEALTHS_WEBSITE,
+        self::PRACTICING_CERTIFICATE,
+        self::LICENSE_OR_PERMIT_FROM_MINISTRY_OF_HEALTH,
+        self::BAR_COUNCIL_DOCUMENT,
+        self::AJL_LICENSE_OR_PROOF_OF_MEMBERSHIP_WITH_DSAM,
+        self::MOTAC_LICENSE,
+
         self::UDYAM_CERTIFICATE,
         self::INCORPORATION_CERTIFICATE,
         self::TRUST_DEED,
         self::MOA,
         self::AOA,
         self::UBO,
+        self::GST_CERTIFICATE,
+        self::UTILITY_BILLS,
+        self::SHOP_ESTABLISHMENT_CERTIFICATE,
+        self::IMPORT_EXPORT_CERTIFICATE,
+        self::MSME_CERTIFICATE,
+        self::PARTNERSHIP_DEED,
+        self::HUF_DEED,
+        self::SOCIETY_REGISTRATION_CERTIFICATE,
+        self::POWER_OF_ATTORNEY,
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -301,12 +358,43 @@ class Type
         self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter",
         self::WEBSITE_SCREENSHOTS_ADDITIONAL    => "Website Screenshots Additional",
         self::PGI_CERTIFICATE                   => "PGI Certificate",
+
+        // Curlec documents
+        self::FIMM_OR_SC_REGISTRATION_FORM                          => "FIMM or SC Registration Form",
+        self::COI_DOCUMENT                                          => "Certificate of Incorporation Document",
+        self::ALCOHOL_LICENSE                                       => "Alcohol License",
+        self::LESEN_PEMEGANG_PAJAK_GADAI                            => "Lesen Pemegang Pajak Gadai",
+        self::LICENSE_FROM_MINISTRY_OF_EDUCATION                    => "License From Ministry Of Education",
+        self::LICENSE_FROM_MINISTRY_OF_HOUSING_AND_LOCAL_GOVERNMENT => "License From Ministry Of Housing And Local Government",
+        self::FIMM_OR_BNM_REGISTRATION_FORM                         => "FIMM Or BNM Registration Form",
+        self::SC_CAPITAL_MARKETS_SERVICES_LICENSE                   => "SC Capital Markets Services License",
+        self::REGISTERED_MARKET_OPERATOR_SCREENSHOT                 => "Registered Market Operator Screenshot",
+        self::BNM_OR_SC_LICENSE                                     => "BNM Or SC License",
+        self::BNM_LICENSE                                           => "BNM License",
+        self::PUBLIC_OR_BEER_HOUSE_LICENSE                          => "Public Or Beer House License",
+        self::LICENSE_OR_PERMIT_UNDER_THE_POISONS_ACT_1952          => "License Or Permit Under The Poisons Act 1952",
+        self::LISTING_ON_MINISTRY_OF_HEALTHS_WEBSITE                => "Listing On Ministry Of Healths Website",
+        self::PRACTICING_CERTIFICATE                                => "Practicing Certificate",
+        self::LICENSE_OR_PERMIT_FROM_MINISTRY_OF_HEALTH             => "License Or Permit From Ministry Of Health",
+        self::BAR_COUNCIL_DOCUMENT                                  => "Bar Council Document",
+        self::AJL_LICENSE_OR_PROOF_OF_MEMBERSHIP_WITH_DSAM          => "Ajl License Or Proof Of Membership With Dsam",
+        self::MOTAC_LICENSE                                         => "Motac License",
+
         self::UDYAM_CERTIFICATE                 => "Udyam Certificate",
         self::INCORPORATION_CERTIFICATE         => "Incorporation Certificate",
         self::TRUST_DEED                        => "Trust Deed",
         self::MOA                               =>  "MOA",
         self::AOA                               =>  "AOA",
         self::UBO                               =>  "UBO",
+        self::GST_CERTIFICATE                   =>  "GST Certificate",
+        self::UTILITY_BILLS                     =>  "Utility Bills",
+        self::SHOP_ESTABLISHMENT_CERTIFICATE    =>  "Shop Establishment Certificate",
+        self::IMPORT_EXPORT_CERTIFICATE         =>  "Import Export Certificate",
+        self::MSME_CERTIFICATE                  =>  "MSME Certificate",
+        self::PARTNERSHIP_DEED                  =>  "Partnership Deed",
+        self::HUF_DEED                          =>  "HUF Deed",
+        self::SOCIETY_REGISTRATION_CERTIFICATE  =>  "Society Registration Certificate",
+        self::POWER_OF_ATTORNEY                 =>  "Power Of Attorney",
     ];
 
     const PROOF_TYPES = [
@@ -404,6 +492,11 @@ class Type
         self::UDYAM_CERTIFICATE,
         self::INCORPORATION_CERTIFICATE,
         self::TRUST_DEED,
+        self::IMPORT_EXPORT_CERTIFICATE,
+        self::PARTNERSHIP_DEED,
+        self::HUF_DEED,
+        self::SOCIETY_REGISTRATION_CERTIFICATE,
+        self::POWER_OF_ATTORNEY,
 
         self::FIRS_ICICI_FILE,
         self::FIRS_ICICI_ZIP,
@@ -475,6 +568,27 @@ class Type
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
         self::PGI_CERTIFICATE,
+
+        // Curlec documents
+        self::FIMM_OR_SC_REGISTRATION_FORM,
+        self::COI_DOCUMENT,
+        self::ALCOHOL_LICENSE,
+        self::LESEN_PEMEGANG_PAJAK_GADAI,
+        self::LICENSE_FROM_MINISTRY_OF_EDUCATION,
+        self::LICENSE_FROM_MINISTRY_OF_HOUSING_AND_LOCAL_GOVERNMENT,
+        self::FIMM_OR_BNM_REGISTRATION_FORM,
+        self::SC_CAPITAL_MARKETS_SERVICES_LICENSE,
+        self::REGISTERED_MARKET_OPERATOR_SCREENSHOT,
+        self::BNM_OR_SC_LICENSE,
+        self::BNM_LICENSE,
+        self::PUBLIC_OR_BEER_HOUSE_LICENSE,
+        self::LICENSE_OR_PERMIT_UNDER_THE_POISONS_ACT_1952,
+        self::LISTING_ON_MINISTRY_OF_HEALTHS_WEBSITE,
+        self::PRACTICING_CERTIFICATE,
+        self::LICENSE_OR_PERMIT_FROM_MINISTRY_OF_HEALTH,
+        self::BAR_COUNCIL_DOCUMENT,
+        self::AJL_LICENSE_OR_PROOF_OF_MEMBERSHIP_WITH_DSAM,
+        self::MOTAC_LICENSE,
     ];
 
     const VALID_POS_DOCUMENTS = [
@@ -560,6 +674,28 @@ class Type
         self::AMFI_CERTIFICATE                  => self::ADDITIONAL_DOCUMENTS,
         self::BOARD_RESOLUTION_LETTER           => self::ADDITIONAL_DOCUMENTS,
         self::PGI_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
+        self::POWER_OF_ATTORNEY                 => self::ADDITIONAL_DOCUMENTS,
+
+        // Curlec documents
+        self::FIMM_OR_SC_REGISTRATION_FORM                          => self::ADDITIONAL_DOCUMENTS,
+        self::COI_DOCUMENT                                          => self::ADDITIONAL_DOCUMENTS,
+        self::ALCOHOL_LICENSE                                       => self::ADDITIONAL_DOCUMENTS,
+        self::LESEN_PEMEGANG_PAJAK_GADAI                            => self::ADDITIONAL_DOCUMENTS,
+        self::LICENSE_FROM_MINISTRY_OF_EDUCATION                    => self::ADDITIONAL_DOCUMENTS,
+        self::LICENSE_FROM_MINISTRY_OF_HOUSING_AND_LOCAL_GOVERNMENT => self::ADDITIONAL_DOCUMENTS,
+        self::FIMM_OR_BNM_REGISTRATION_FORM                         => self::ADDITIONAL_DOCUMENTS,
+        self::SC_CAPITAL_MARKETS_SERVICES_LICENSE                   => self::ADDITIONAL_DOCUMENTS,
+        self::REGISTERED_MARKET_OPERATOR_SCREENSHOT                 => self::ADDITIONAL_DOCUMENTS,
+        self::BNM_OR_SC_LICENSE                                     => self::ADDITIONAL_DOCUMENTS,
+        self::BNM_LICENSE                                           => self::ADDITIONAL_DOCUMENTS,
+        self::PUBLIC_OR_BEER_HOUSE_LICENSE                          => self::ADDITIONAL_DOCUMENTS,
+        self::LICENSE_OR_PERMIT_UNDER_THE_POISONS_ACT_1952          => self::ADDITIONAL_DOCUMENTS,
+        self::LISTING_ON_MINISTRY_OF_HEALTHS_WEBSITE                => self::ADDITIONAL_DOCUMENTS,
+        self::PRACTICING_CERTIFICATE                                => self::ADDITIONAL_DOCUMENTS,
+        self::LICENSE_OR_PERMIT_FROM_MINISTRY_OF_HEALTH             => self::ADDITIONAL_DOCUMENTS,
+        self::BAR_COUNCIL_DOCUMENT                                  => self::ADDITIONAL_DOCUMENTS,
+        self::AJL_LICENSE_OR_PROOF_OF_MEMBERSHIP_WITH_DSAM          => self::ADDITIONAL_DOCUMENTS,
+        self::MOTAC_LICENSE                                         => self::ADDITIONAL_DOCUMENTS,
 
         self::SLA_SEBI_REGISTRATION_CERTIFICATE  => self::ADDITIONAL_DOCUMENTS,
         self::SLA_IRDAI_REGISTRATION_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
@@ -617,6 +753,11 @@ class Type
         self::MOA                       => self::ADDITIONAL_DOCUMENTS,
         self::AOA                       => self::ADDITIONAL_DOCUMENTS,
         self::UBO                       => self::ADDITIONAL_DOCUMENTS,
+        self::IMPORT_EXPORT_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
+        self::PARTNERSHIP_DEED          => self::ADDITIONAL_DOCUMENTS,
+        self::HUF_DEED                  => self::ADDITIONAL_DOCUMENTS,
+
+        self::SOCIETY_REGISTRATION_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
 
         self::FIRS_ICICI_FILE => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_ICICI_ZIP  => self::ADDITIONAL_DOCUMENTS,
