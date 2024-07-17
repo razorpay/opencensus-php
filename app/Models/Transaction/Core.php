@@ -22,6 +22,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\Ledger\SettlementJournalEvents;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
@@ -1116,6 +1117,36 @@ class Core extends Base\Core
         $txn->merchant()->associate($reversal->merchant);
 
         $txn->sourceAssociate($reversal);
+
+        $merchant = $txn->merchant;
+
+        $properties = [
+            'request_data' => json_encode([
+                "merchant_id" => $merchant->getId()
+            ]),
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
+        ];
+
+        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            if ($enableTidbStreaming === false)
+            {
+                $txn->setReference3("enabled");
+            }
+            else
+            {
+                $txn->setReference3("disabled");
+            }
+
+            $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
+                "txn_id"                => $txn->getId(),
+                "txnReference3"         => $txn->getReference3(),
+                "enableTidbStreaming"   => $enableTidbStreaming
+            ]);
+        }
 
         $this->updateBalances($txn, false);
 

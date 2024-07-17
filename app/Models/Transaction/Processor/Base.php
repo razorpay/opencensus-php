@@ -374,7 +374,8 @@ abstract class Base extends BaseCore
         $this->tidbStreamingMakeshiftLogic();
     }
 
-    public function tidbStreamingMakeshiftLogic() {
+    public function tidbStreamingMakeshiftLogic()
+    {
         $merchant = $this->txn->merchant;
 
         $properties = [
@@ -399,7 +400,8 @@ abstract class Base extends BaseCore
             }
 
             $this->trace->info(TraceCode::TIDB_STREAMING_MAKESHIFT_LOGIC, [
-                "txnReference3"        => $this->txn->getReference3(),
+                "txn_id"                => $this->txn->getId(),
+                "txnReference3"         => $this->txn->getReference3(),
                 "enableTidbStreaming"   => $enableTidbStreaming
             ]);
         }
