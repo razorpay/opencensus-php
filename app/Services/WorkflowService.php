@@ -24,6 +24,7 @@ class WorkflowService
 
     const EMAIL_HEADER          = 'X-User-Email';
     const CONTENT_TYPE_HEADER   = 'Content-Type';
+    const X_TASK_ID             = 'X-Task-Id';
 
     const WORKFLOW_SERVICE_REQUEST_MILLISECONDS = "WORKFLOW_SERVICE_REQUEST_MILLISECONDS";
 
@@ -71,6 +72,7 @@ class WorkflowService
             [
                 self::CONTENT_TYPE_HEADER           => 'application/json',
                 self::EMAIL_HEADER                  => $this->getActorEmail(),
+                self::X_TASK_ID                     => $this->app['request']->getTaskId(),
                 'timeout'                           => self::REQUEST_TIMEOUT,
                 'connect_timeout'                   => self::REQUEST_CONNECT_TIMEOUT,
             ],
