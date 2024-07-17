@@ -15,6 +15,7 @@ const prodCommitIdFetchURLMap = {
   pgos: 'https://pgos.concierge.razorpay.com/commit.txt',
   splitz: 'https://splitz.dev.razorpay.in/commit.txt',
   subscriptions: 'https://subscriptions.razorpay.com/commit.txt',
+  partnerships: 'https://partnerships-live.dev.razorpay.in/commit.txt',
   // razorx: 'https://razorx.dev.razorpay.in/commit.txt', // not updated with prod
 };
 
