@@ -1776,30 +1776,46 @@ class Service extends Base\Service
         }
     }
 
+    private function checkMerchantWithSameEmail(array $input, string $originalEmail)
+    {
+        if ($originalEmail === "")
+        {
+            return ;
+        }
+        
+        //  This check is added to prevent changing email of any Partner merchant's User email when following criteria are met,
+        //  1. Merchant changing email has the same email as partner, and has NO user account of own, Or
+        //  2. Merchant changing email has same email as any other merchant, and has NO user account of own.
+        
+        $merchantIdsWithSameEmail = $this->repo->merchant->fetchMerchantIdsWithSameEmail($originalEmail);
+    
+        if (count($merchantIdsWithSameEmail) > 1)
+        {
+            $this->trace->info(TraceCode::MERCHANT_EMAIL_EDIT_FAILED, [
+                'input'                     => $input,
+                'original_email'            => $originalEmail,
+                'merchant_ids_same_email'   => $merchantIdsWithSameEmail,
+            ]);
+        
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Same email exist with other merchant");
+        }
+    }
+    
+    /**
+     * @throws BadRequestException
+     */
     public function editEmail($id, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $originalEmail = $merchant->getEmail();
 
-//        This check is added to prevent changing email of any Partner merchant's User email when following criteria are met,
-//        1. Merchant changing email has the same email as partner, and has NO user account of own, Or
-//        2. Merchant changing email has same email as any other merchant, and has NO user account of own.
-        $merchantIdsWithSameEmail = $this->repo->merchant->fetchMerchantIdsWithSameEmail($originalEmail);
-
-        if (count($merchantIdsWithSameEmail) > 1)
+        if ($originalEmail !== null)
         {
-            $this->trace->info(TraceCode::MERCHANT_EMAIL_EDIT_FAILED, [
-                                        'input'                     => $input,
-                                        'original_email'            => $originalEmail,
-                                        'merchant_ids_same_email'    => $merchantIdsWithSameEmail,
-            ]);
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
-                                          null,
-                                          null,
-                                          "Same email exist with other merchant");
-
+            $this->checkMerchantWithSameEmail($input, $originalEmail);
         }
 
         $newEmail = $input[Merchant\Entity::EMAIL];
