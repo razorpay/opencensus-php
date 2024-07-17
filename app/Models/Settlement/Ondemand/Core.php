@@ -640,13 +640,22 @@ class Core extends Base\Core
 
         $odsGlobalLimit = (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0);
 
-        $key = $this->getTotalODSSettledRedisKey();
+        [$key, $keyTimeStamp]  = $this->getTotalODSSettledRedisKey();
 
-        $totalOdsSettled = (int) ConfigKey::get($key, 0);
+        $totalOdsSettled = ConfigKey::get($key);
+
+
+        // Fetch the settled ods amount according to the current working day
+        if($totalOdsSettled === null) {
+            $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimeStamp);
+            // ttl set for 6 hours in seconds
+            ConfigKey::set($key, $totalOdsSettled, 21600);
+        }
 
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY, [
             'merchantId'    => $merchantId,
             'key'           => $key,
+            'keyTimeStamp'  => $keyTimeStamp,
             'totalSettled'  => $totalOdsSettled,
         ]);
 
@@ -915,30 +924,34 @@ class Core extends Base\Core
         return $baseTransactionEntity;
     }
 
-    public function updateRedisKeyForTotalOdsSettled($amount)
+    public function updateRedisKeyForTotalOdsSettled($merchantId, $amount)
     {
-        $key = $this->getTotalODSSettledRedisKey();
-        $totalOdsSettled = (int) ConfigKey::get($key, 0);
+        [$key, $keyTimeStamp] = $this->getTotalODSSettledRedisKey();
+        $totalOdsSettled = ConfigKey::get($key);
 
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY, [
+            'merchantId'    => $merchantId,
             'key'           => $key,
+            'keyTimeStamp'  => $keyTimeStamp,
             'totalSettled'  => $totalOdsSettled,
         ]);
 
         // If key does not exist
-        if($totalOdsSettled == 0)
-            $totalOdsSettled = $amount;
-        else
-            $totalOdsSettled += $amount;
+        if($totalOdsSettled === null)
+            $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimeStamp);
 
-        // ttl set for 7 days in seconds
-        ConfigKey::set($key, $totalOdsSettled, 604800);
+        $totalOdsSettled += $amount;
+
+        // ttl set for 6 hours in seconds
+        ConfigKey::set($key, $totalOdsSettled, 21600);
     }
 
     public function getTotalODSSettledRedisKey()
     {
         // Redis key computation logic wrt current working day
         $today = Carbon::today(Timezone::IST);
+        $keyTimeStamp = $today->getTimeStamp();
+
         if(Holidays::isWorkingDay($today))
         {
             $year = $today->year;
@@ -948,6 +961,7 @@ class Core extends Base\Core
         else
         {
             $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
+            $keyTimeStamp = $lastWorkingDay->getTimeStamp();
             $year = $lastWorkingDay->year;
             $month = $lastWorkingDay->month;
             $day = $lastWorkingDay->day;
@@ -955,6 +969,6 @@ class Core extends Base\Core
 
         $keyDateSuffix = $year . '-' . $month . '-' . $day;
 
-        return 'total_ods_settled_' . $keyDateSuffix;
+        return ['total_ods_settled_' . $keyDateSuffix, $keyTimeStamp];
     }
 }

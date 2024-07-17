@@ -72,4 +72,18 @@ class Repository extends Base\Repository
             ->where(Entity::ID, $settlementOndemandId)
             ->first();
     }
+
+    public function findAllFromTimeStamp($timeStamp)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT,'>=', $timeStamp)
+                    ->where(function ($query) {
+                        $query->where(Entity::STATUS, '=', Status::CREATED)
+                            ->orwhere(Entity::STATUS, '=', Status::INITIATED)
+                            ->orWhere(Entity::STATUS, '=', Status::PARTIALLY_PROCESSED)
+                            ->orWhere(Entity::STATUS, '=', Status::PROCESSED);
+                    })
+                    ->sum(Entity::AMOUNT);
+    }
+
 }

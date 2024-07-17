@@ -191,7 +191,7 @@ class Service extends Base\Service
                     $this->handleJobPushPostTransactionCreation($settlementOndemand,$settlementOndemandPayouts,$this->mode,$this->merchant->getId());
                 }
 
-                $this->updateRedisKeyForTotalOdsSettled($amount);
+                $this->updateRedisKeyForTotalOdsSettled($this->merchant->getId(), $amount);
 
                 if (isset($input['expand']) === true && boolval($input['expand']) === true)
                 {
@@ -336,9 +336,9 @@ class Service extends Base\Service
         }
     }
 
-    public function updateRedisKeyForTotalOdsSettled($amount)
+    public function updateRedisKeyForTotalOdsSettled($merchantId, $amount)
     {
-        $this->core()->updateRedisKeyForTotalOdsSettled($amount);
+        $this->core()->updateRedisKeyForTotalOdsSettled($merchantId, $amount);
     }
 
     public function validateIfOndemandRouteMerchant($merchantId)
