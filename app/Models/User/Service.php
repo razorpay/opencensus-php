@@ -903,14 +903,17 @@ class Service extends Base\Service
         }
 
         // TODO Phantom Onboarding should also go to PGOS
-        if ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING)
+        if (in_array($signupCampaign, DeviceDetail\Constants::PGOS_ENABLED_SIGNUP_CAMPAIGNS))
         {
             $shouldOnboardViaPGOS = true;
         }
-        if ($signupCampaign === DeviceDetail\Constants::I18N_MY_SIGNUP)
+        if (empty(DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign]) === false)
         {
-            $shouldOnboardViaPGOS = true;
+            $input[DeviceDetail\Constants::PRODUCT] = $input[DeviceDetail\Constants::PRODUCT] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? '');
+            $input[DeviceDetail\Constants::PLATFORM] = $input[DeviceDetail\Constants::PLATFORM] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PLATFORM] ?? '');
+            $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? '');
         }
+
         if ($workflowType === DeviceDetail\Constants::MODULAR_ONBOARDING)
         {
             $shouldOnboardViaPGOS = true;
@@ -963,6 +966,8 @@ class Service extends Base\Service
             $shouldOnboardViaPGOS = false;
         }
 
+        $workflowId = $response['workflow_id'] ?? '';
+
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
         if ($shouldOnboardViaPGOS === false)
@@ -1007,8 +1012,10 @@ class Service extends Base\Service
                     $modularPayload = [
                         'field_data' => [
                             Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
-                            DeviceDetailConstants::SIGNUP_SOURCE =>  DeviceDetailConstants::MOBILE
-                        ]
+                            DeviceDetailConstants::SIGNUP_SOURCE => DeviceDetailConstants::MOBILE,
+                        ],
+                        'workflow_id' => $workflowId,
+                        DeviceDetail\Constants::PRODUCT  => $input[DeviceDetail\Constants::PRODUCT] ?? '',
                     ];
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
@@ -1064,6 +1071,12 @@ class Service extends Base\Service
         {
             return;
         }
+        if (empty(DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign]) === false)
+        {
+            $input[DeviceDetail\Constants::PRODUCT] = $input[DeviceDetail\Constants::PRODUCT] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? '');
+            $input[DeviceDetail\Constants::PLATFORM] = $input[DeviceDetail\Constants::PLATFORM] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PLATFORM] ?? '');
+            $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? '');
+        }
 
         // Create OBS Workflow For Merchant via PGOS.
         // Workflow will only be created for merchants who will be onboarded via PGOS
@@ -1106,6 +1119,8 @@ class Service extends Base\Service
         {
             $shouldOnboardViaPGOS = false;
         }
+
+        $workflowId = $response['workflow_id'] ?? '';
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
@@ -1152,7 +1167,9 @@ class Service extends Base\Service
                         'field_data' => [
                             'contact_email' => $input[Entity::EMAIL],
                             DeviceDetailConstants::SIGNUP_SOURCE => Entity::EMAIL
-                        ]
+                        ],
+                        'workflow_id' => $workflowId,
+                        DeviceDetail\Constants::PRODUCT  => $input[DeviceDetail\Constants::PRODUCT] ?? '',
                     ];
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);

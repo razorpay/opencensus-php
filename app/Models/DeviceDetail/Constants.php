@@ -41,4 +41,19 @@ class Constants
     const SIGNUP_SOURCE = "signup_source";
 
     const MODULAR_ONBOARDING = 'MODULAR_ONBOARDING';
+
+    const RIZE_INCORPORATION = 'rize_incorporation';
+
+    const PLATFORM_PG = 'pg';
+
+
+    const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION];
+
+    const SIGNUP_CAMPAIGN_ONBOARDING_MAPPING = [
+        self::RIZE_INCORPORATION => [
+            self::PLATFORM => self::PLATFORM_PG,
+            self::PRODUCT => self::RIZE_INCORPORATION,
+            self::WORKFLOW_TYPE => self::MODULAR_ONBOARDING
+        ],
+    ];
 }

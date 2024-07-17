@@ -46,6 +46,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     // modular onboarding APIs
     const ONBOARDING_GET      = 'onboarding_get';
     const ONBOARDING_SAVE     = 'onboarding_save';
+    const ONBOARDING_CREATE_OR_FETCH = 'onboarding_create_or_fetch';
 
     const MERCHANT_ACTIVATION_FETCH_INTERNAL    = 'merchant_activation_fetch_internal';
 
@@ -124,6 +125,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const FETCH_SALES_ASSISTED_MERCHANTS         = 'fetch_sales_assisted_merchants';
     const L2_SUBMIT_SHADOW                       = 'l2_submit_shadow';
 
+    const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH];
+
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
         'contact_name',
@@ -191,7 +194,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SEND_SMS_OTP,
         self::VERIFY_OTP,
         self::ONBOARDING_GET,
-        self::ONBOARDING_SAVE
+        self::ONBOARDING_SAVE,
+        self::ONBOARDING_CREATE_OR_FETCH,
     ];
 
     const ADMIN_ROUTES = [
@@ -239,6 +243,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantDocumentMetadata',
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CheckMerchantDocumentDetailsValidity',
         self::ONBOARDING_GET                   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingGet',
+        self::ONBOARDING_CREATE_OR_FETCH       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingCreateOrFetch',
         self::ONBOARDING_SAVE                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingSave',
         self::MERCHANT_WEBSITE_POLICY_VERIFY           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantIndividualPolicyVerification',
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
@@ -573,7 +578,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         {
             $routeName = $request->route()->getName();
 
-            if ($routeName === self::ONBOARDING_GET or $routeName === self::ONBOARDING_SAVE)
+            if (in_array($routeName, self::ONBOARDING_ROUTES))
             {
                 $routeKey = $routeName;
             }

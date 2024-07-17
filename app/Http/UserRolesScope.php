@@ -46,6 +46,7 @@ class UserRolesScope
             'fetch_sales_assisted_merchants'                       => [Role::POS_SALES_ADMIN, Role::PARTNER_AGENT],
 
             'onboarding_get'                                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
+            'onboarding_create_or_fetch'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'onboarding_save'                                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER,Role::RAZORPAY_SALES],
             'merchant_bmc_response_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_bmc_response_fetch_admin'                    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
