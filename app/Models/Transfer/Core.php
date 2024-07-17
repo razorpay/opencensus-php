@@ -518,7 +518,18 @@ class Core extends Base\Core
             return [$transfer, $payment];
         });
 
-        $this->dispatchForSettlementService($payment);
+        $paymentService = new Payment\Service();
+        $isExpEnabled = $paymentService->checkIfTransactionOnholdWriteRemovalEnabled($payment->merchant);
+
+        // only if exp is not enabled keep old flow else new flow
+        if ($isExpEnabled === false)
+        {
+            $this->dispatchForSettlementService($payment);
+        }
+        else
+        {
+            $this->dispatchForSettlementServiceNew($payment);
+        }
 
         return $transfer;
     }
@@ -647,12 +658,20 @@ class Core extends Base\Core
 
         $txnCore = new Transaction\Core;
 
-        //Note : payment txn could be null if there is a delay in txn creation in reverse shadow mode
-        if ($payment->transaction !== null)
-        {
-            $txn = $txnCore->updateOnHoldToggle($payment);
+        $paymentService = new Payment\Service();
 
-            $this->repo->saveOrFail($txn);
+        $isExpEnabled = $paymentService->checkIfTransactionOnholdWriteRemovalEnabled($payment->merchant);
+
+        // only if exp is not enabled do a write to transaction
+        //Note : payment txn could be null if there is a delay in txn creation in reverse shadow mode
+        if ($isExpEnabled === false)
+        {
+            if ($payment->transaction !== null)
+            {
+                $txn = $txnCore->updateOnHoldToggle($payment);
+
+                $this->repo->saveOrFail($txn);
+            }
         }
 
         $this->repo->saveOrFail($payment);
@@ -1332,6 +1351,20 @@ class Core extends Base\Core
         {
             (new Transaction\Core)->dispatchForSettlementBucketing($txn);
         }
+    }
+
+    public function dispatchForSettlementServiceNew($payment)
+    {
+        $bucketCore = new Bucket\Core;
+
+        $reason = null;
+
+        if($payment->getOnHold() === true)
+        {
+            $reason = 'transfer put on hold';
+        }
+
+        $bucketCore->settlementServiceToggleTransactionHold([$payment->getTransactionId()], $reason);
     }
 
     protected function addAccountFromAccountCodeIfApplicable(array & $transfers)
