@@ -8038,7 +8038,7 @@ class Service extends Base\Service
                 $fileStorage = 'api/' . $input['file']->getClientOriginalName();
                 $uploadResponse = (new UfhService($this->app))->uploadFileAndGetResponse($input['file'], $fileStorage, $input['purpose'], $merchant);
                 $paymentDocument = $this->repo->invoice->findOrFail($paymentDocument->getId());
-                $paymentDocument->setRefNum(substr($uploadResponse['id'], 4));
+                $paymentDocument->setRefNum(substr($uploadResponse['id'], 5));
                 $paymentDocument->setStatus(Invoice\Status::PAID);
                 $this->repo->invoice->saveOrFail($paymentDocument);
 
