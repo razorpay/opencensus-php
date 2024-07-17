@@ -784,8 +784,6 @@ class Core extends Base\Core
         {
             $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
 
-            $transfer->setStatus(Status::CREATED);
-
             $this->repo->saveOrFail($transfer);
 
             (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);

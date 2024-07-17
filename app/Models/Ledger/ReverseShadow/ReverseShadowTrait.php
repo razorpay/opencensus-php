@@ -13,7 +13,6 @@ use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Feature;
-use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
@@ -988,7 +987,7 @@ trait ReverseShadowTrait
 
         $commissionLedgerEntry =$this->getCommissionLedgerEntryForTransactionTypeFromJournal($journal, Transaction\Type::TRANSFER);
 
-        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journal,LedgerConstants::PAYABLE, LedgerConstants::RZP_GST);
+        $taxBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journal,Constants::PAYABLE, Constants::RZP_GST);
 
         $apiFee = $commissionLedgerEntry['amount'] + $taxBalanceLedgerEntry['amount'];
 
