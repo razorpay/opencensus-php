@@ -17,8 +17,8 @@
             and payment or as per the delivery date agreed at the time of order confirmation. Delivery
             of all orders will be to the address provided by the buyer. Delivery of our services will
             be confirmed on your mail ID as specified during registration. For any issues in utilizing
-            our services you may contact our helpdesk on {{$data['website_detail']['additional_data.support_contact_number']}}
-            or {{$data['website_detail']['additional_data.support_email']}}
+            our services you may contact our helpdesk on {{$data['website_detail']['additional_data']['support_contact_number']}}
+            or {{$data['website_detail']['additional_data']['support_email']}}
         </p>
     @endif
 
