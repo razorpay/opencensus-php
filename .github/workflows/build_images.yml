@@ -17,6 +17,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: Validate PHP Syntax
     steps:
@@ -45,6 +47,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: Validate PHP Syntax - Misc
     steps:

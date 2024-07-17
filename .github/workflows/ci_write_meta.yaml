@@ -22,6 +22,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: write and push routes meta file
     steps:

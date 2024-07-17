@@ -12,6 +12,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: Smart Collect Test Suite
     steps:
@@ -378,6 +380,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -387,6 +391,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -394,6 +400,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   QR-Payment:
     runs-on:
       - api-public
@@ -405,6 +413,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: QR Payment Test Suite
     steps:
@@ -805,6 +815,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -814,6 +826,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -821,6 +835,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   SMEP-Partnerships:
     runs-on:
       - self-hosted
@@ -832,6 +848,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: SMEP Partnerships Test Suite
     steps:
@@ -895,6 +913,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -904,6 +924,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -911,6 +933,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   Route:
     runs-on:
       - api-public
@@ -922,6 +946,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: Route Test Suite
     steps:
@@ -1197,6 +1223,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1206,6 +1234,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1213,6 +1243,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   PaymentPage:
     runs-on:
       - api-public
@@ -1224,6 +1256,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: Payment Page test suite
     steps:
@@ -1287,6 +1321,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1296,6 +1332,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1303,6 +1341,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   RxPayouts:
     runs-on:
       - api-public
@@ -1314,6 +1354,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: RX Test Suite Payouts
     steps:
@@ -1377,6 +1419,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1386,6 +1430,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1393,6 +1439,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   RxCore:
     runs-on:
       - api-public
@@ -1404,6 +1452,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: RX Test Suite Core
     steps:
@@ -1467,6 +1517,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1476,6 +1528,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1483,6 +1537,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   EsOndemand:
     runs-on:
       - api-public
@@ -1494,6 +1550,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: ES Ondemand Test Suite
     steps:
@@ -1546,6 +1604,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1555,6 +1615,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1562,6 +1624,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   OnboardingAPIs:
     runs-on:
       - api-public
@@ -1573,6 +1637,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: Onboarding APIs Test Suite
     steps:
@@ -1637,6 +1703,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1646,6 +1714,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -1653,4 +1723,5 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-
+        volumes:
+          - /etc/hosts:/etc/hosts

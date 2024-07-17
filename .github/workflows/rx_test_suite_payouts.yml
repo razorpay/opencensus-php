@@ -15,6 +15,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: UT_Rx_Test_Suite-1_Payouts
     steps:
@@ -121,6 +123,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -130,6 +134,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -137,6 +143,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   UT_rx_test_suite-2_payouts:
     runs-on:
       - api-public
@@ -147,6 +155,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: UT_Rx_Test_Suite-2_Payouts
     steps:
@@ -253,6 +263,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -262,6 +274,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -269,6 +283,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   UT_rx_test_suite-3_payouts:
     runs-on:
       - api-public
@@ -279,6 +295,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: UT_Rx_Test_Suite-3_Payouts
     steps:
@@ -385,6 +403,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -394,6 +414,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -401,6 +423,8 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
   UT_rx_test_suite-4_payouts:
     runs-on:
       - api-public
@@ -411,6 +435,8 @@ jobs:
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
         password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
     continue-on-error: false
     name: UT_Rx_Test_Suite-4_Payouts
     steps:
@@ -517,6 +543,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        volumes:
+          - /etc/hosts:/etc/hosts
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -526,6 +554,8 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        volumes:
+          - /etc/hosts:/etc/hosts
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -533,3 +563,5 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+        volumes:
+          - /etc/hosts:/etc/hosts
