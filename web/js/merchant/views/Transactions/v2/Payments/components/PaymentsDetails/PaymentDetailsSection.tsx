@@ -23,7 +23,6 @@ import { withSplitzService } from 'common/splitz';
 import { SpiltzContextState } from 'common/splitz/types';
 import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
-import fileDownload from 'common/utils/file-download';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
 import { openModal } from 'merchant_common/reducers/modals';
@@ -42,7 +41,7 @@ import {
 } from './styled';
 import { IPaymentDetails, ApplicationDetails } from './types';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-import { isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
+import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
 import { noop } from 'common/utils/rzp-utils';
 import PaymentSplitItems from './PaymentSplitItems';
 const PaymentReceipt = lazy(
@@ -146,11 +145,20 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   const isOmniChannelMerchant =
     isPosTransaction(source_channel) &&
     (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
+
   const onDownloadClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       const response = await fetchEncodedPaymentReceipt(id);
-      fileDownload(response.receipt_encoded_image, `${id}.png`, 'image/png');
+      if (response?.receipt_encoded_image) {
+        const base64EncodedImage = `data:image/png;base64,${response.receipt_encoded_image}`;
+        imageDownload({
+          base64EncodedImage,
+          imageName: id,
+        });
+      } else {
+        showNotification({ type: 'error', message: 'No Charge Slip found.' });
+      }
     } catch (err) {
       showNotification({ type: 'error', message: 'No Charge Slip found.' });
     }

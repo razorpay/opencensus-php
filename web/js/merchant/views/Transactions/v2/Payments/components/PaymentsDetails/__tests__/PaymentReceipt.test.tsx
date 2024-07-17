@@ -1,12 +1,15 @@
 import React from 'react';
 
-import fileDownload from 'common/utils/file-download';
 import PaymentReceipt from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentReceipt';
 import { render, screen, fireEvent, waitFor, server } from 'test-utils';
 
 import { mockFetchEncodedPaymentReceipt } from './mocks/handlers';
+import { imageDownload } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils';
 
 jest.mock('common/utils/file-download', () => jest.fn());
+jest.mock('merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils', () => ({
+  imageDownload: jest.fn(),
+}));
 
 const defaultProps = {
   id: 'testPaymentId123',
@@ -43,7 +46,7 @@ describe('PaymentReceipt component', () => {
     renderApp();
     await waitFor(() => {
       fireEvent.click(screen.getByText('Download'));
-      expect(fileDownload).toHaveBeenCalled();
+      expect(imageDownload).toHaveBeenCalled();
     });
   });
 });

@@ -13,7 +13,7 @@ export interface HandleDetailsClickParams {
   prevPath: TransactionsEntityRoute;
   isButton?: boolean;
   isDisabled?: boolean;
-  rowData?: { receiverType?: string; sourceChannel?: string };
+  rowData?: { paymentMethod?: string; sourceChannel?: string };
 }
 
 export type DetailsProps = HandleDetailsClickParams;

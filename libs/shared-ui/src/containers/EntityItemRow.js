@@ -12,14 +12,14 @@ class EntityItemRow extends Component {
       item,
       isDisabled,
     } = this.props;
-    const receiverType = item?.receiver_type || '';
+    const paymentMethod = item?.method || '';
     const sourceChannel = item?.source_channel || '';
     return (
       <tr
         onClick={() => {
           onRowClick?.({
             id,
-            rowData: { receiverType, sourceChannel },
+            rowData: { paymentMethod, sourceChannel },
           });
         }}
         className={`${luminateRowId === id ? 'luminate' : ''}${

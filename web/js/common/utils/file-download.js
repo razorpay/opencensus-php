@@ -28,7 +28,7 @@ export default function fileDownload(data, filename, mime, bom) {
     tempLink.click();
 
     // Fixes "webkit blob resource error 1"
-    setTimeout(function() {
+    setTimeout(function () {
       document.body.removeChild(tempLink);
       window.URL.revokeObjectURL(blobURL);
     }, 0);

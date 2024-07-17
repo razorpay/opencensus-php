@@ -653,3 +653,36 @@ export const isPosTransaction = (source_channel?: string) => {
   if (source_channel === POS_TRANSACTION_CHANNEL) return true;
   return false;
 };
+
+export const imageDownload = ({
+  base64EncodedImage,
+  imageName,
+}: {
+  base64EncodedImage: string;
+  imageName: string;
+}) => {
+  try {
+    if (!base64EncodedImage || typeof base64EncodedImage !== 'string') {
+      throw new Error('Invalid base64 encoded image string');
+    }
+
+    if (!imageName || typeof imageName !== 'string') {
+      throw new Error('Invalid image name');
+    }
+
+    const prefix = 'data:image/png;base64,';
+    if (!base64EncodedImage.startsWith(prefix)) {
+      throw new Error('Base64 string does not contain the correct prefix');
+    }
+
+    const link = document.createElement('a');
+    link.href = base64EncodedImage;
+    link.download = `${imageName}.png`;
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error('Image download failed:', (error as Error).message);
+  }
+};

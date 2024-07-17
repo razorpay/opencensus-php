@@ -31,7 +31,7 @@ export const handleDetailsClick = ({
   if (hash) {
     url += hash;
   }
-  if (rowData?.sourceChannel === POS_TRANSACTION_CHANNEL && rowData?.receiverType === 'qr_code') {
+  if (rowData?.sourceChannel === POS_TRANSACTION_CHANNEL && rowData?.paymentMethod === 'upi') {
     url += '&dashboard_flag=qr_device_detail';
   }
 

@@ -16,7 +16,7 @@ import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { withSplitzService } from 'common/splitz';
 import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
-import fileDownload from 'common/utils/file-download';
+import { imageDownload } from './utils';
 
 interface IPaymentReceipt {
   showNotification: (payload: { type: 'error' | 'success'; message: string }) => void;
@@ -51,7 +51,10 @@ const PaymentReceipt = ({ closeModal, id, showNotification }: IPaymentReceipt) =
   }, []);
 
   const handleDownload = () => {
-    return fileDownload(encodedImage, `${id}.png`, 'image/png');
+    if (encodedImage) {
+      const base64EncodedImage = `data:image/png;base64,${encodedImage}`;
+      imageDownload({ base64EncodedImage, imageName: id });
+    }
   };
 
   const handlePrint = () => {

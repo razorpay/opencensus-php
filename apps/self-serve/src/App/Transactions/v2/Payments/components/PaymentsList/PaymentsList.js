@@ -148,14 +148,14 @@ class PaymentsList extends ListContainer {
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
           isOmniView={isOmniView}
-          onRowClick={({ id, receiverType, sourceChannel }) =>
+          onRowClick={({ id, paymentMethod, sourceChannel }) =>
             handleDetailsClick({
               navigate,
               itemId: id,
               baseUrl: TransactionsEntityRoute.PAYMENTS,
               initiatePage: TransactionsPagesMap[pathname],
               prevPath: pathname,
-              receiverType,
+              paymentMethod,
               sourceChannel,
             })
           }
