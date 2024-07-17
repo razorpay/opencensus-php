@@ -73,24 +73,6 @@ class PartnerWebhookEventHandlerJob extends Job
             {
                 $applicationId = (new Core())->getOriginForEntity($input[Entity::ENTITY_TYPE], $input[Entity::ENTITY_ID], $partnerId);
 
-                try
-                {
-                    if(empty($applicationId)){
-                        $applicationId = $this->getEntityOriginFromPublicKey($input, $partnerId);
-                    }
-                }
-                catch (\Throwable $e )
-                {
-                    $this->trace->error(TraceCode::FETCH_ENTITY_ORIGIN_V1_REQUEST_FAILED,
-                        [
-                            'message' => $e->getMessage(),
-                            'entity_type' =>$input[Entity::ENTITY_TYPE],
-                            'entity_id' => $input[Entity::ENTITY_ID],
-                            'partner_id' => $partnerId,
-                            'stack_trace' => $e->getTraceAsString(),
-                        ]);
-                }
-
                 if (!empty($applicationId) && $applicationId === $input[EntityOriginConstants::APPLICATION_ID])
                 {
                     $this->handleEvent($input, $applicationId, $partnerId);
@@ -222,37 +204,5 @@ class PartnerWebhookEventHandlerJob extends Job
     private function getEventNameFromPayload(array $payload) : string
     {
         return $payload['event']['name'] ?? "";
-    }
-
-    private function getEntityOriginFromPublicKey(array $input, string $partnerId){
-        $app = App::getFacadeRoot();
-
-        $result = $app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::FETCH_ENTITY_ORIGIN_VIA_FALLBACK,
-            'live');
-
-        if($result === 'on')
-        {
-            $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_REQUEST,
-                [
-                    'entity_type' =>$input[Entity::ENTITY_TYPE],
-                    'entity_id' => $input[Entity::ENTITY_ID],
-                    'partner_id' => $partnerId
-                ]);
-
-            $entityOriginCore = new \RZP\Models\EntityOrigin\Core();
-            $entity = $entityOriginCore->fetchEntityByType($input[Entity::ENTITY_TYPE], $input[Entity::ENTITY_ID]);
-
-            $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
-            $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_RESPONSE,
-                [
-                    'entity' =>$entity,
-                    'entityOrigin' => $entityOrigin,
-                ]);
-
-            return $entityOrigin->getOriginId();
-        }
-        return null;
     }
 }

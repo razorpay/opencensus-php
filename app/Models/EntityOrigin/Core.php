@@ -5,7 +5,10 @@ namespace RZP\Models\EntityOrigin;
 use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Application as OAuthApp;
 
+use App;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -682,6 +685,25 @@ class Core extends Base\Core
             'origin_id'         => $originId,
         ]);
 
+        try
+        {
+            if(empty($entityOrigin))
+            {
+                $entityOrigin = $this->getEntityOriginFromPublicKey($entityType, $entityId, $partnerId);
+            }
+        }
+        catch (\Throwable $e )
+        {
+            $this->trace->error(TraceCode::FETCH_ENTITY_ORIGIN_V1_REQUEST_FAILED,
+                [
+                    'message' => $e->getMessage(),
+                    'entity_type' =>$entityType,
+                    'entity_id' => $entityId,
+                    'partner_id' => $partnerId,
+                    'stack_trace' => $e->getTraceAsString(),
+                ]);
+        }
+
         $cachedValue = $this->getEntityOriginIdToBeCached($entityOrigin);
 
         $this->updateEntityOriginInCache($entityType, $entityId, $cachedValue);
@@ -726,5 +748,38 @@ class Core extends Base\Core
     private function getTTLInSeconds() : int
     {
         return Constants::ENTITY_ORIGIN_CACHE_TTL_IN_DAYS * 24 * 60 * 60;
+    }
+
+    private function getEntityOriginFromPublicKey(string $entityType, string $entityId, string $partnerId)
+    {
+        $app = App::getFacadeRoot();
+
+        $result = $app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::FETCH_ENTITY_ORIGIN_VIA_FALLBACK,
+            'live');
+
+        if($result === 'on')
+        {
+            $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_REQUEST,
+                [
+                    'entity_type' =>$entityType,
+                    'entity_id' => $entityId,
+                    'partner_id' => $partnerId
+                ]);
+
+            $entityOriginCore = new \RZP\Models\EntityOrigin\Core();
+            $entity = $entityOriginCore->fetchEntityByType($entityType, $entityId);
+
+            $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
+            $this->trace->info(TraceCode::FETCH_ENTITY_ORIGIN_V1_RESPONSE,
+                [
+                    'entity' =>$entity,
+                    'entityOrigin' => $entityOrigin,
+                ]);
+
+            return $entityOrigin;
+        }
+        return null;
     }
 }
