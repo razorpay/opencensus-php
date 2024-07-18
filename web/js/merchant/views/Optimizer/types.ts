@@ -7,6 +7,13 @@ export interface Operator {
   value: string;
 }
 
+export interface LogicalOperator {
+  name: string;
+  description: string;
+  value: string;
+  id: number;
+}
+
 export interface Parameter {
   name: string;
   value: string;
@@ -67,6 +74,80 @@ export interface Parameter {
   description: string;
   type: string;
   id: number;
+}
+
+export interface Rule {
+  id?: string;
+  name: string;
+  description?: string;
+  default_expression?: null | undefined | any;
+  expression: {
+    type: string;
+    value: string;
+    operands: {
+      type: string;
+      value: string;
+      operands: {
+        type: string;
+        value: string;
+        operands: null | undefined;
+      }[];
+    }[];
+  };
+  score?: number | undefined;
+  skip_on_failure: boolean;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+  additional_attribute: {
+    name: string;
+    value: string;
+  }[];
+  indexable?: boolean;
+  mode?: null | undefined;
+  canary?: {
+    use_canary: boolean;
+    rule: null | undefined;
+    ramp_percent: number;
+  };
+}
+
+export interface Operands {
+  type: string | null;
+  value: string;
+  operands:
+    | {
+        type: string;
+        value: string;
+        operands: null | undefined;
+      }[]
+    | null;
+}
+
+export interface Precondition {
+  type: string | null;
+  value: string;
+  operands: Operands[] | Operands;
+}
+
+export interface RuleGroup {
+  id: string;
+  name: string;
+  description: string;
+  outcome_type: string;
+  strategy: string;
+  mandatory_attributes: any[];
+  additional_attributes: {
+    name: string;
+    type: string;
+    values: string[];
+  }[];
+  precondition: Precondition;
+  rules: Rule[];
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  current?: boolean;
 }
 
 export interface Provider {

@@ -1,4 +1,4 @@
-import { Parameter, Operator, Provider } from './types';
+import { Parameter, Operator, LogicalOperator, Provider } from './types';
 
 export const OPERATORS: Operator[] = [
   {
@@ -88,6 +88,21 @@ export const OPERATORS: Operator[] = [
     id: 11,
     value: '<=',
     type: 'comparator',
+  },
+];
+
+export const LOGICAL_OPERATORS: LogicalOperator[] = [
+  {
+    name: 'AND',
+    description: 'All conditions must match',
+    value: '&&',
+    id: 1,
+  },
+  {
+    name: 'OR',
+    description: 'At least one condition must match',
+    value: '||',
+    id: 2,
   },
 ];
 
@@ -1129,6 +1144,18 @@ export const getValue = (type, value) => {
     r = OPERATORS;
   }
   return r.find((p) => p.value == value) || { name: '' };
+};
+
+export const mapRulesArrayToObject = (rules) => {
+  const rulesObj = {};
+  rules.forEach((r) => {
+    const provider_priority = r.additional_attribute[0].value;
+    if (!rulesObj[provider_priority]) {
+      rulesObj[provider_priority] = [];
+    }
+    rulesObj[provider_priority].push(r);
+  });
+  return rulesObj;
 };
 
 export const removeMid = (value: string): string => {
