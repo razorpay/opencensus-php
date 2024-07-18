@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { titleCase, classList } from 'common/utils/rzp-utils';
-
-import Time from 'common/ui/Time';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import Time from 'common/ui/Time';
+import { titleCase, classList } from 'common/utils/rzp-utils';
+import SupportButton from 'merchant/components/Home/SupportButton';
 
 const statusMap = {
   activated: {
@@ -14,6 +14,7 @@ const statusMap = {
     description: '',
     tooltipCta: '',
     tooltipMessage: 'Activated on ',
+    showContactSupport: false,
   },
   not_activated: {
     labelClass: 'label-muted',
@@ -23,6 +24,7 @@ const statusMap = {
     description: '',
     tooltipCta: 'Open Activation Form',
     tooltipMessage: 'Please complete and submit the activation form to activate this account.',
+    showContactSupport: false,
   },
   verification_pending: {
     labelClass: 'label-pending',
@@ -33,6 +35,7 @@ const statusMap = {
     tooltipCta: '',
     tooltipMessage:
       'We are still in the process to verify the bank account details.  It can take up to 30 mins to verify the details.',
+    showContactSupport: false,
   },
   verification_failed: {
     labelClass: 'label-danger',
@@ -42,11 +45,31 @@ const statusMap = {
     description: '', // from backend
     tooltipCta: 'Update Details',
     tooltipMessage: '', // from backend
+    showContactSupport: false,
   },
   suspended: {
     labelClass: 'label-danger',
     showToolTip: false,
     showCtaAsButton: false,
+    showContactSupport: false,
+  },
+  needs_clarification: {
+    labelClass: 'label-muted',
+    showToolTip: false,
+    showCtaAsButton: false,
+    showContactSupport: true,
+  },
+  under_review: {
+    labelClass: 'label-muted',
+    showToolTip: false,
+    showCtaAsButton: false,
+    showContactSupport: true,
+  },
+  rejected: {
+    labelClass: 'label-danger',
+    showToolTip: false,
+    showCtaAsButton: false,
+    showContactSupport: false,
   },
 };
 
@@ -103,15 +126,25 @@ const AccountStatusListView = React.memo(
       return '-';
     }
 
-    const { labelClass, showToolTip, tooltipCta, tooltipMessage } = statusMap[status];
+    const { labelClass, showToolTip, tooltipCta, tooltipMessage, showContactSupport } =
+      statusMap[status];
     const isCtaDisabled = isCreationDisabled;
 
     return (
-      <small class="help-content">
-        <span>
-          <span class={classList('ModeIndicator', labelClass)} />
-          {titleCase(status)}
-        </span>
+      <small className="help-content">
+        {showContactSupport ? (
+          <SupportButton
+            type="anchor"
+            buttonLabel="Contact Support"
+            category="merchant"
+            openSection="account-activation"
+          />
+        ) : (
+          <span>
+            <span className={classList('ModeIndicator', labelClass)} />
+            {titleCase(status)}
+          </span>
+        )}
         {showToolTip ? (
           <Popover align="top" theme="dark">
             <PopoverBody>
@@ -121,7 +154,7 @@ const AccountStatusListView = React.memo(
                 <br />
                 {tooltipCta && (
                   <button
-                    class="btn-link tooltip-cta"
+                    className="btn-link tooltip-cta"
                     onClick={showActivationForm}
                     disabled={isCtaDisabled}
                   >
