@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { NavLink, Navigate, Routes, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -13,37 +13,41 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import NestedVerticalTabItem from 'merchant/views/MagicCheckout/Settings/containers/NestedVerticalTabItem';
 import { StyledTabsWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
 
-import { ROUTES, DEFAULT_ROUTES } from 'merchant/views/MagicCheckout/Settings/constants';
-
-import { RoutesConfig, Platform, GenericRecord } from 'merchant/views/MagicCheckout/types';
-
-export const PLATFORMS = {
-  SHOPIFY: 'shopify',
-  WOOCOMMERCE: 'woocommerce',
-  NATIVE: 'native',
-};
+import {
+  Platform,
+  User,
+  GenericRecord,
+  RoutesConfig,
+  RouteItem,
+} from 'merchant/views/MagicCheckout/types';
 
 interface NestedVerticalTabProps {
+  PATH_PREFIX: string;
+  NAV_ITEMS: RoutesConfig;
+  customRouteCheck: (item: RouteItem, user: User) => boolean;
   settings: GenericRecord;
   magicCheckout: GenericRecord;
-  user: GenericRecord;
+  user: User;
 }
 
-const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({ settings, magicCheckout, user }) => {
-  const { platform, showTabHeading, one_click_checkout = true } = settings;
-  const { cod_order_control: isCODOrderControlEnabled, rcod: isRCOD } = magicCheckout;
+/**
+ * Common Component to render all L2 Navigations(vertical Navbar) and its respective
+ * content in a container as part of magic dashboard revamp
+ */
+const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
+  settings,
+  magicCheckout,
+  customRouteCheck,
+  user,
+  PATH_PREFIX,
+  NAV_ITEMS,
+}) => {
+  const { platform, showTabHeading } = settings;
+  const { rcod: isRCOD } = magicCheckout;
 
   const { abExperiments } = useSplitzService();
 
   let redirectPath;
-
-  const NAV_ITEMS: RoutesConfig = useMemo(() => {
-    return platform === PLATFORMS?.NATIVE || one_click_checkout
-      ? { ...ROUTES }
-      : { ...DEFAULT_ROUTES };
-  }, [platform, one_click_checkout]);
-
-  const PATH_PREFIX = '/magic/setup-settings/';
 
   return (
     <SuspenseWithLoader type="center">
@@ -51,11 +55,7 @@ const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({ settings, magicCh
         <div className="magic-settings-tabs display-flex">
           <div className="tabs-container display-flex flex--column">
             {NAV_ITEMS[platform as Platform].map((item, index) => {
-              if (
-                item.label === 'COD Review Workflow' &&
-                (!isCODOrderControlEnabled || !user.isMagicCODOrderAutomationEnabled)
-              )
-                return null;
+              if (!customRouteCheck(item, user)) return null;
 
               if (!isRouteAuthorised(item, user, abExperiments, isRCOD as boolean)) return null;
 
@@ -76,7 +76,7 @@ const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({ settings, magicCh
           <Routes>
             {NAV_ITEMS[platform as Platform].map((item) => {
               if (!isRouteAuthorised(item, user, abExperiments, isRCOD as boolean)) return null;
-              if (item.label === 'COD Review Workflow' && !isCODOrderControlEnabled) return null;
+              if (!customRouteCheck(item, user)) return null;
               return (
                 <Route
                   path={`${item.path.replace(PATH_PREFIX, '')}/*`}

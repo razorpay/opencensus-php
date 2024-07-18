@@ -339,6 +339,8 @@ export const DEFAULT_ROUTES = {
   ],
 };
 
+export const PATH_PREFIX = '/magic/setup-settings/';
+
 export const ROUTES = {
   [PLATFORMS?.NATIVE]: [
     {
@@ -439,6 +441,7 @@ export const ROUTES = {
       className: 'magic-checkout-settings',
       label: 'Coupon Setup',
       path: '/magic/setup-settings/coupon-setup',
+      onRCOD: true,
       Component: () => (
         <CardCTA
           redirectUrl="/magic/coupons"
@@ -483,8 +486,8 @@ export const ROUTES = {
     },
     {
       className: 'magic-checkout-settings',
-      path: '/magic/settings',
-      label: 'Checkout Settings',
+      path: '/magic/setup-settings/checkout-setup',
+      label: 'Checkout Setup',
       Component: WoocCoupons,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
@@ -496,7 +499,7 @@ export const ROUTES = {
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
     },
     {
-      path: '/magic/setup-settings/rto-reduction-setup/',
+      path: '/magic/setup-settings/rto-reduction-setup',
       label: 'RTO Reduction Setup',
       Component: RTOReductionSetupV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),

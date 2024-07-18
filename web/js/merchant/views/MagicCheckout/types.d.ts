@@ -8,6 +8,22 @@ type Platform = keyof typeof PLATFORMS;
 
 type GenericRecord = Record<string, unknown>;
 
+type User = {
+  role: string;
+  isMagicOrderAnalyticsCREnabled: boolean;
+  isMagicCODEngineEnabled: boolean;
+  isMagicPrepayCODEnabled: boolean;
+  isMagicOrderAnalyticsEnabled: boolean;
+  isCODOrderControlEnabled: boolean;
+  isCODIntelligenceEnabled: boolean;
+  isMagicRTOAnalyticsV3Enabled: boolean;
+  merchant: {
+    id: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
 export interface RouteItem {
   className?: string;
   id?: string;
@@ -15,7 +31,7 @@ export interface RouteItem {
   label: string;
   tabHeading?: string;
   Component: React.ComponentType;
-  condition?: (user?: GenericRecord, abExperiments?: GenericRecord) => boolean;
+  condition?: (user: User, abExperiments?: GenericRecord) => boolean;
   onRCOD?: boolean;
   onRCODOnly?: boolean;
 }

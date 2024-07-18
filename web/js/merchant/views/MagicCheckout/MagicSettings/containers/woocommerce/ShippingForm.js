@@ -15,7 +15,13 @@ import {
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
 import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
-import { DEFAULT_RULE, FEE_RULES } from 'merchant/views/MagicCheckout/constants';
+import {
+  DEFAULT_RULE,
+  FEE_RULES,
+  MAGIC_DASHBOARD_REVAMP_EXPERIMENT,
+} from 'merchant/views/MagicCheckout/constants';
+
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
 const ShippingForm = ({ settings, updateSettings }) => {
   const [formValid, setFormValid] = useState(false);
@@ -118,9 +124,10 @@ const ShippingForm = ({ settings, updateSettings }) => {
             updateUserFeeRule={updateRule}
             feeRule={feeRule}
           />
-          {shippingSettings.map((setting) => (
-            <SettingsToggle key={setting.label} setting={setting} onToggle={onToggle} />
-          ))}
+          {!useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) &&
+            shippingSettings.map((setting) => (
+              <SettingsToggle key={setting.label} setting={setting} onToggle={onToggle} />
+            ))}
         </div>
         <AsyncBtn.Primary
           type="button"

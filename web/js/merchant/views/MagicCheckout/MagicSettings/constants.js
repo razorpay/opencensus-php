@@ -338,6 +338,15 @@ export const CHECKOUT_SETTINGS_CONFIG = [
   },
 ];
 
+export const CHECKOUT_SETTINGS_CAPTURE_BILLING = [
+  {
+    label: 'Capture billing address',
+    value: false,
+    key: 'one_cc_capture_billing_address',
+    description: 'Ask customers to enter billing address separately',
+  },
+];
+
 export const ADDITIONAL_WOOC_SETTINGS_CONFIG = [
   {
     label: 'Buy now button',

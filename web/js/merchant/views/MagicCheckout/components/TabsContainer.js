@@ -13,12 +13,15 @@ import {
 } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 import magicCheckoutRoutesV1 from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
+import magicCheckoutRoutesV2 from 'merchant/views/MagicCheckout/MagicCheckoutRoutesV2';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
-let redirectPath;
-let magicCheckoutRoutes = magicCheckoutRoutesV1;
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
+let redirectPath, magicCheckoutRoutes;
 /**
  * configFlag represents if we are on magic configuration flow which will render Magic Checkout on new route.
  * If this flag is true , we will render Tabs with updated paths that supports configuration flow.
@@ -45,11 +48,13 @@ const RouteContainer = ({
   dashboardView,
 }) => {
   const { abExperiments } = useSplitzService();
+  const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
 
   useEffect(() => {
+    magicCheckoutRoutes = isMagicDashboardV2Enabled ? magicCheckoutRoutesV2 : magicCheckoutRoutesV1;
     if (configFlag)
       magicCheckoutRoutes = convertMagicRoutesToConfigurationFlow(magicCheckoutRoutes);
-  }, [configFlag]);
+  }, [isMagicDashboardV2Enabled, configFlag]);
 
   const renderNav = useCallback(
     (item) => {
@@ -59,6 +64,16 @@ const RouteContainer = ({
         (!user.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled)
       )
         return null;
+
+      //If checks for both Order Analytics and RTO Analytics fail , we do not render Reports & Analytics
+      if (
+        item.tabName === 'Reports & Analytics' &&
+        !isCODIntelligenceEnabled &&
+        (!user?.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled) &&
+        !user.isMagicOrderAnalyticsEnabled
+      )
+        return null;
+
       if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
       if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
         return null;

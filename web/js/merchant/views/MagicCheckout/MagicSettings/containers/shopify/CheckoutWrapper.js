@@ -1,6 +1,12 @@
 import { useEffect, useCallback } from 'react';
+
 import Card from 'merchant/views/MagicCheckout/MagicSettings/components/shopify/Card';
 import Form from 'merchant/views/MagicCheckout/MagicSettings/components/shopify/Form';
+
+import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
+
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
 import {
   FETCH_STATUS,
   CHECKOUT_FORM,
@@ -8,7 +14,8 @@ import {
   CHECKOUT_SETTINGS,
   SHOPIFY_CHECKOUT_SETTINGS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
+
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 const CheckoutWrapper = ({
   settings,
@@ -26,6 +33,21 @@ const CheckoutWrapper = ({
     one_cc_capture_order_instructions,
     one_cc_hide_cod_when_disabled,
   } = settings;
+
+  const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
+
+  /**
+   * We will be moving international shipping from checkout setup to
+   * shipping settings as part of Dashboard revamp.
+   */
+  useEffect(() => {
+    if (isMagicDashboardV2Enabled) {
+      let index = SHOPIFY_CHECKOUT_SETTINGS?.findIndex(
+        (Setting) => Setting.key === 'one_cc_international_shipping',
+      );
+      SHOPIFY_CHECKOUT_SETTINGS?.splice(index, 1);
+    }
+  }, [isMagicDashboardV2Enabled]);
 
   useEffect(() => {
     if (nestedTabsStatus !== FETCH_STATUS.LOADING) {

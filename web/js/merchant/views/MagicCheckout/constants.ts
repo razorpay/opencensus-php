@@ -23,5 +23,15 @@ export const DEFAULT_RULE = {
   slabs: [{ gte: 0, lte: 0, fee: 0 }],
 };
 
+export const PLATFORMS: Record<string, string> = {
+  SHOPIFY: 'shopify',
+  WOOCOMMERCE: 'woocommerce',
+  NATIVE: 'native',
+};
+
+export const ACCESS_ROLES = ['owner', 'admin'];
+
 export const MAGIC_DOC_LINK =
   'https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/magic-checkout/';
+
+export const MAGIC_DASHBOARD_REVAMP_EXPERIMENT = 'magic_dashboard_revamp';

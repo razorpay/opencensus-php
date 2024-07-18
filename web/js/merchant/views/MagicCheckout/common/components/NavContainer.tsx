@@ -7,23 +7,27 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 
 import { useSplitzService } from 'common/splitz';
 
-import { RoutesConfig, Platform, RouteItem } from 'merchant/views/MagicCheckout/types';
-
 import { isRouteAuthorised } from 'merchant/views/MagicCheckout/utils/genericRouteCheck';
+
+import { RoutesConfig, Platform, RouteItem, User } from 'merchant/views/MagicCheckout/types';
 
 interface NavContainerProps {
   routes: RoutesConfig;
   path: string;
-  user: Record<string, unknown>;
+  handleNavClick?: (item: RouteItem) => unknown;
+  user: User;
   platform: Platform;
   isRCOD: boolean;
 }
 
-//Common component to render horizantal navbar(L3) and its respective content in a container
+/**
+ * Common Component to render all L3 Navigations(Horizantal Navbar) and its respective
+ * content in a container as part of magic dashboard revamp
+ */
 const NavContainer: React.FC<NavContainerProps> = (props) => {
   let redirectPath = '';
   const { abExperiments } = useSplitzService();
-  const { routes: ROUTES, path } = props; //props from parent
+  const { routes: ROUTES, path, handleNavClick } = props; //props from parent
   const { user, platform, isRCOD } = props; // props from store
 
   const renderNav = (item: RouteItem) => {
@@ -36,7 +40,8 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
         end
         key={item.path}
         to={item.path}
-        className="tabs-items pointer padding-16 font-bold"
+        className="tabs-items pointer padding-8 font-bold"
+        onClick={() => handleNavClick && handleNavClick(item)}
       >
         {item.label}
       </NavLink>
@@ -62,9 +67,7 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
                         isRouteAuthorised(item, user, abExperiments, isRCOD)
                       }
                     >
-                      <div className={item?.className}>
-                        <item.Component />
-                      </div>
+                      <item.Component />
                     </RouteGuard>
                   }
                 />

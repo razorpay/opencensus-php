@@ -1,8 +1,8 @@
-import { RouteItem, GenericRecord } from 'merchant/views/MagicCheckout/types';
+import { RouteItem, GenericRecord, User } from 'merchant/views/MagicCheckout/types';
 
 export const isRouteAuthorised = (
   item: RouteItem,
-  user: GenericRecord,
+  user: User,
   abExperiments: GenericRecord,
   isRCOD: boolean,
 ): boolean => {

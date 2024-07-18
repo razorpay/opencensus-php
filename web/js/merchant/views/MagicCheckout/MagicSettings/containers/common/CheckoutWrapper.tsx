@@ -1,7 +1,13 @@
-import { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
+
 import Card from 'merchant/views/MagicCheckout/MagicSettings/components/common/Card';
 import Form from 'merchant/views/MagicCheckout/MagicSettings/components/common/Form';
+
+import { useSplitzService } from 'common/splitz';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
+
 import {
   FETCH_STATUS,
   CHECKOUT_FORM,
@@ -9,9 +15,9 @@ import {
   CHECKOUT_SETTINGS,
   CHECKOUT_SETTINGS_CONFIG,
   ADDITIONAL_WOOC_SETTINGS_CONFIG,
+  CHECKOUT_SETTINGS_CAPTURE_BILLING,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
-import { useSplitzService } from 'common/splitz';
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 const CheckoutWrapper = ({
   settings,
@@ -27,12 +33,15 @@ const CheckoutWrapper = ({
     one_cc_capture_gstin,
     one_cc_capture_order_instructions,
     one_cc_hide_cod_when_disabled,
+    one_cc_capture_billing_address,
   } = settings;
 
   const { isMagicWoocEnabled } = user;
   const { abExperiments } = useSplitzService();
+
   const isHideCodWhenDisabledExperimentEnabled =
     abExperiments?.magic_hide_cod_when_disabled?.variables?.result === 'on';
+  const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
 
   useEffect(() => {
     if (nestedTabsStatus !== FETCH_STATUS.LOADING) {
@@ -48,6 +57,12 @@ const CheckoutWrapper = ({
 
       if (settings.platform === 'woocommerce' && isMagicWoocEnabled) {
         checkoutSettings = [...CHECKOUT_SETTINGS_CONFIG, ...ADDITIONAL_WOOC_SETTINGS_CONFIG];
+      }
+      /**
+       * We will be moving capture billing address to checkout setup from wooc shipping settings
+       */
+      if (isMagicDashboardV2Enabled) {
+        checkoutSettings = [...checkoutSettings, ...CHECKOUT_SETTINGS_CAPTURE_BILLING];
       }
 
       if (!isHideCodWhenDisabledExperimentEnabled) {
@@ -70,6 +85,8 @@ const CheckoutWrapper = ({
     settings,
     one_cc_hide_cod_when_disabled,
     isHideCodWhenDisabledExperimentEnabled,
+    one_cc_capture_billing_address,
+    isMagicDashboardV2Enabled,
   ]);
 
   const onToggleCheckout = useCallback((checked, label) => {

@@ -28,10 +28,13 @@ import PreventDeleteModal from 'merchant/views/MagicCheckout/common/components/P
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
 import { ShippingSettingsWrapper, ShippingToggle } from './styles';
 import { verifyIfProfilesAreConfigured } from './helpers';
 
 import { StyledRCODShippingNoteWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 const ShippingSettings = lazy(
   () =>
@@ -50,9 +53,15 @@ const ShippingSettingsTab = ({
   fetchSummary,
   isRCOD,
 }) => {
-  const { shipping_engine, platform, shop_id } = settings;
+  const { shipping_engine, platform, shop_id, one_cc_international_shipping } = settings;
   const [shippingSettings, setShippingSettings] = useState(shipping_engine || false);
+  const [internationalShipping, setInternationalShipping] = useState(
+    one_cc_international_shipping || false,
+  );
+  const [isIntlShippingLoading, setIntlShippingLoading] = useState(false);
   const { shipping_profiles, isLoading } = shippingEngine as ShippingEngineStore;
+  const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
+
   useEffect(() => {
     fetchSummary();
   }, []);
@@ -125,9 +134,58 @@ const ShippingSettingsTab = ({
       ),
     });
   };
+
+  const handleInternationalShipping = () => {
+    setIntlShippingLoading(true);
+    const params: Record<string, unknown> = {
+      one_cc_international_shipping: !internationalShipping,
+      platform,
+      shop_id,
+    };
+    const modalState = !internationalShipping ? 'enabled' : 'disabled';
+    updateSettings(params)
+      .then(() => {
+        showNotification({
+          type: 'success',
+          message: () => (
+            <DisplayNotificationTxt
+              notificationTxt={`International shipping ${modalState} successfully`}
+            />
+          ),
+        });
+        setInternationalShipping((prevState) => {
+          return !prevState;
+        });
+      })
+      .catch((res) => {
+        showNotification({
+          type: 'error',
+          message: () => <DisplayNotificationTxt notificationTxt={res?.errors?.join('')} />,
+        });
+      })
+      .finally(() => {
+        setIntlShippingLoading(false);
+      });
+  };
+
   return (
     <ShippingSettingsWrapper>
       <Heading size="medium">Shipping Settings </Heading>
+      {isMagicDashboardV2Enabled &&
+        (isIntlShippingLoading ? (
+          <Spinner center={false} />
+        ) : (
+          <ShippingToggle>
+            <SettingsToggle
+              setting={{
+                label: 'International Shipping ',
+                value: internationalShipping,
+                description: 'Allow customers to select international pin code for delivery',
+              }}
+              onToggle={handleInternationalShipping}
+            />
+          </ShippingToggle>
+        ))}
       <Text size="medium" marginTop="spacing.4" color="surface.text.gray.muted">
         {!isRCOD ? SHIPPING_SETTINGS_INFO : RCOD_SHIPPING_SETTINGS_INFO}
       </Text>

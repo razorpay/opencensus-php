@@ -40,6 +40,11 @@ const RTOHistory = lazy(
     ),
 );
 
+const DeliveryStatus = lazy(
+  () =>
+    import(/* webpackChunkName: "DeliveryStatus" */ 'merchant/views/MagicCheckout/OrderStatusTab'),
+);
+
 export const RTO_REDUCTION_ROUTES: RoutesConfig = {
   [PLATFORMS.NATIVE]: [
     {
@@ -54,6 +59,12 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
       path: '/magic/setup-settings/rto-reduction-setup/delivery-tracking',
       onRCOD: true,
       Component: ShipRocketWrapper,
+    },
+    {
+      label: 'Delivery Data Upload',
+      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      onRCOD: true,
+      Component: DeliveryStatus,
     },
     {
       label: 'Allow List',
@@ -93,6 +104,12 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
       Component: ShipRocketWrapper,
       className: 'shipping-service',
       onRCOD: true,
+    },
+    {
+      label: 'Delivery Data Upload',
+      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      onRCOD: true,
+      Component: DeliveryStatus,
     },
     {
       label: 'Allow List',
@@ -138,6 +155,12 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: BlockList,
       onRCOD: true,
+    },
+    {
+      label: 'Delivery Data Upload',
+      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      onRCOD: true,
+      Component: DeliveryStatus,
     },
     {
       label: 'RTO History',

@@ -1,16 +1,22 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useCallback } from 'react';
+
 import CodIntelligenceToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/CodIntelligenceToggle';
 import MagicIntelligence from 'merchant/views/MagicCheckout/MagicIntelligence';
 import ManualReviewToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/ManualReviewToggle';
 import ConfirmationModal, {
   DisplayNotificationTxt,
 } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
+
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
 import { analyticsTrack } from 'common/utils/analytics';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
   PLATFORMS,
   MANUAL_REVIEW_MODAL,
@@ -229,7 +235,9 @@ const MagicIntelligenceTab = ({
         </div>
       </div>
       <div className="magic-intelligence-shiprocket">
-        <MagicIntelligence isRCOD={rcodEnabled} />
+        {!useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) && (
+          <MagicIntelligence isRCOD={rcodEnabled} />
+        )}
       </div>
     </div>
   );

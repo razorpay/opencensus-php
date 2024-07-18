@@ -23,11 +23,16 @@ import {
   CardContent,
 } from 'merchant/views/MagicCheckout/CouponEngine/pages/EnableCouponTab/EnableCouponTabStyles';
 
+import EnableCouponsOnCheckout from 'merchant/views/MagicCheckout/CouponEngine/pages/EnableCouponTab/EnableCouponsOnCheckout';
+
 // helper imports
 import { openCreateCouponModal } from 'merchant/views/MagicCheckout/CouponEngine/helpers';
 import { openModal } from 'merchant_common/reducers/modals';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
+
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 const ShopifySyncModal = lazy(
   () =>
@@ -76,6 +81,7 @@ const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal, org }) =
 
   return (
     <ContentWrapper className="content-wrapper">
+      {useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) && <EnableCouponsOnCheckout />}
       <Title>Create and sync coupons on Magic checkout</Title>
       <SettingsCard className="settings-card">
         <CardWidget className="settings-card-widget">

@@ -2,8 +2,12 @@ import { useCallback } from 'react';
 import { Box, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
 import SettingsCard from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsCard';
 import FeeDetails from 'merchant/views/MagicCheckout/common/components/FeeDetails';
+
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 const ShippingCard = ({
   settings: {
@@ -30,14 +34,21 @@ const ShippingCard = ({
         <div className="platform-settings-card bg-white">
           <div className="platform-settings-card-info flex--column flex gap--12 p--14">
             <SettingsCard.Item label="API For Shipping Info" value={shipping_info} />
-            <SettingsCard.Item
-              label="International Shipping"
-              value={getSettingValue(one_cc_international_shipping)}
-            />
-            <SettingsCard.Item
-              label="Capture Billing Address"
-              value={getSettingValue(one_cc_capture_billing_address)}
-            />
+            {/**
+             * We will be removing Capture Billing(moving to checkout setup) & International Shipping(Shipping Setup) from wooc specific shipping
+             */}
+            {!useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) && (
+              <>
+                <SettingsCard.Item
+                  label="International Shipping"
+                  value={getSettingValue(one_cc_international_shipping)}
+                />
+                <SettingsCard.Item
+                  label="Capture Billing Address"
+                  value={getSettingValue(one_cc_capture_billing_address)}
+                />
+              </>
+            )}
             <div className="platform-settings-edit pointer" onClick={onEdit}>
               <i className="i i-edit_board platform-settings-edit-icon" />
               Edit

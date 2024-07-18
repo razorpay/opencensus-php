@@ -1,21 +1,20 @@
 import lazy from 'merchant/routes/LazyLoader';
 
-import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
-import MagicSettingsV2 from 'merchant/views/MagicCheckout/Settings/containers/NestedVerticalTabV2';
-import RTOAnalytics from 'merchant/views/MagicCheckout/RTOAnalytics';
-import OrderStatusUpload from 'merchant/views/MagicCheckout/OrderStatusUpload';
+import SetupAndSettings from 'merchant/views/MagicCheckout/Settings/containers/SetupAndSettings';
+import ReportsAndAnalytics from 'merchant/views/MagicCheckout/ReportsAndAnalyticsV2';
 import ShopifyOrderEditing from 'merchant/views/MagicCheckout/ShopifyOrderEditing';
 import CODToPrepaidLinks from 'merchant/views/MagicCheckout/CODToPrepaid/CODToPrepaidLinks';
-import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics';
 
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
-const CouponEngine = lazy(() =>
-  /* webpackChunkName: 'MagicCouponEngine' */ import('merchant/views/MagicCheckout/CouponEngine'),
+const CouponEngine = lazy(
+  () =>
+    /* webpackChunkName: 'MagicCouponEngine' */ import('merchant/views/MagicCheckout/CouponEngine'),
 );
 
-const CODOrdersTab = lazy(() =>
-  import(/* webpackChunkName: "MagicCODOrdersTab" */ 'merchant/views/MagicCheckout/CODOrdersTab'),
+const CODOrdersTab = lazy(
+  () =>
+    import(/* webpackChunkName: "MagicCODOrdersTab" */ 'merchant/views/MagicCheckout/CODOrdersTab'),
 );
 
 const routesV2 = [
@@ -23,33 +22,17 @@ const routesV2 = [
     tabName: 'Setup & Settings',
     path: '/magic/setup-settings',
     condition: (_user) => _user.isMagicSettingsEnabled,
-    Component: MagicSettingsV2,
+    Component: SetupAndSettings,
     onRCOD: true,
   },
   {
-    tabName: 'Address',
-    path: '/magic/address',
-    condition: (_user) => _user.isBulkAddressUploadEnabled,
-    Component: BulkAddressUpload,
+    tabName: 'Reports & Analytics',
+    path: '/magic/reports-analytics',
+    Component: ReportsAndAnalytics,
     onRCOD: true,
-  },
-  {
-    tabName: 'Delivery Status',
-    path: '/magic/delivery-status',
-    Component: OrderStatusUpload,
-    onRCOD: true,
-  },
-  {
-    tabName: 'RTO Analytics',
-    path: '/magic/analytics',
-    Component: RTOAnalytics,
-  },
-  {
-    tabName: 'Order Analytics',
-    path: '/magic/order-analytics',
-    condition: (_user) => _user.isMagicOrderAnalyticsEnabled,
-    Component: OrderAnalytics,
-    onRCOD: true,
+    /**
+     * Checks are done at TabsContainer(L1 Renderer) , Reports & Analytics Component due to complexities involved
+     */
   },
   {
     tabName: 'COD Orders',
@@ -73,6 +56,7 @@ const routesV2 = [
     tabName: 'Coupons',
     path: '/magic/coupons',
     Component: CouponEngine,
+    onRCOD: true,
     condition: (_user, abExperiments, platform) =>
       abExperiments?.magic_coupon_engine?.variables?.result === 'on' &&
       platform === PLATFORMS.VALUES.SHOPIFY,
