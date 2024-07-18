@@ -1,0 +1,86 @@
+name: Trigger UTs 1-10 Common Job
+
+on:
+  workflow_dispatch:
+    inputs:
+      t1:
+        type: boolean
+        description: "Affordibility UT"
+      t2:
+        type: boolean
+        description: "Application UT"
+      t3:
+        type: boolean
+        description: "Auth UT"
+      t4:
+        type: boolean
+        description: "Banking UT"
+      t5:
+        type: boolean
+        description: "CI Write Meta"
+      t6:
+        type: boolean
+        description: "Cross Border UT"
+      t7:
+        type: boolean
+        description: "Enterprise Apps UT"
+      t8:
+        type: boolean
+        description: "Features 2 UT"
+      t9:
+        type: boolean
+        description: "Features 3 UT"
+      t10:
+        type: boolean
+        description: "Features 4 UT"
+
+jobs:
+  affordibility_test_suite:
+    if: ${{ inputs.t1 }}
+    uses: ./.github/workflows/affordibility_test_suite.yml
+    secrets: inherit
+
+  application_test_suite:
+    if: ${{ inputs.t2 }}
+    uses: ./.github/workflows/application_test_suite.yml
+    secrets: inherit
+
+  auth_test_suite:
+    if: ${{ inputs.t3 }}
+    uses: ./.github/workflows/Auth_Test_Suite.yml
+    secrets: inherit
+
+  banking_test_suite:
+    if: ${{ inputs.t4 }}
+    uses: ./.github/workflows/banking_test_suite.yml
+    secrets: inherit
+
+  ci_write_meta:
+    if: ${{ inputs.t5 }}
+    uses: ./.github/workflows/ci_write_meta.yaml
+    secrets: inherit
+
+  cross_border_test_suite:
+    if: ${{ inputs.t6 }}
+    uses: ./.github/workflows/cross_border_test_suite.yml
+    secrets: inherit
+
+  enterprise_apps_test_suite:
+    if: ${{ inputs.t7 }}
+    uses: ./.github/workflows/enterprise_apps_test_suite.yml
+    secrets: inherit
+
+  features_2_test_suite:
+    if: ${{ inputs.t8 }}
+    uses: ./.github/workflows/features_2_test_suite.yml
+    secrets: inherit
+
+  features_3_test_suite:
+    if: ${{ inputs.t9 }}
+    uses: ./.github/workflows/features_3_test_suite.yml
+    secrets: inherit
+
+  features_4_test_suite:
+    if: ${{ inputs.t10 }}
+    uses: ./.github/workflows/features_4_test_suite.yml
+    secrets: inherit
