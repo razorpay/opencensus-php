@@ -5,8 +5,7 @@ on:
       - master
   push:
     branches:
-      - master
-      - hotfix**
+      - master  
   workflow_dispatch:
 
 concurrency:
