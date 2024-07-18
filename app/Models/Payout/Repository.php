@@ -621,7 +621,7 @@ class Repository extends Base\Repository
     }
 
     // get list of merchant ids who have done payouts in given time period.
-    public function getCAMerchantIdsWithAtleastOnePayout(string $channel, int $startTime, int $endTime, int $limit)
+    public function getCAMerchantIdsWithAtleastOnePayout(string $channel, int $startTime, int $endTime, int $limit, $blacklistedMerchantIds = [])
     {
         $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
         $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
@@ -632,18 +632,24 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn  = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQuery()
-                    ->select($payoutMerchantIdColumn)
-                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
-                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
-                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::DIRECT)
-                    ->where($balanceChannelColumn, '=', $channel)
-                    ->whereBetween($payoutInitiatedAtColumn, [$startTime, $endTime])
-                    ->distinct()
-                    ->limit($limit)
-                    ->get()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
+        $query = $this->newQuery()
+                        ->select($payoutMerchantIdColumn)
+                        ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+                        ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                        ->where($balanceAccountTypeColumn, '=', Balance\AccountType::DIRECT)
+                        ->where($balanceChannelColumn, '=', $channel)
+                        ->whereBetween($payoutInitiatedAtColumn, [$startTime, $endTime]);
+
+        if (empty($blacklistedMerchantIds) === false)
+        {
+            $query = $query->whereNotIn($payoutMerchantIdColumn, $blacklistedMerchantIds);
+        }
+
+        return $query->distinct()
+                        ->limit($limit)
+                        ->get()
+                        ->pluck(Entity::MERCHANT_ID)
+                        ->toArray();
     }
 
     public function getOnHoldPayoutsWithBeneBankUp(array $beneBanksDownList = [])

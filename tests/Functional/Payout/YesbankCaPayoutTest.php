@@ -280,6 +280,30 @@ class YesbankCaPayoutTest extends TestCase
         Queue::assertPushed(ConnectedBankingAccountGatewayBalanceUpdate::class, 1);
     }
 
+    public function testBalanceFetchWithBlacklistedMerchants()
+    {
+        Queue::fake();
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/yesbank/balance',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'blacklisted_merchant_ids' => ['10000000000000']
+                ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        Queue::assertNotPushed(ConnectedBankingAccountGatewayBalanceUpdate::class);
+    }
+
     public function testProcessGatewayBalanceUpdate()
     {
         /** @var Details\Entity $basDetailsBeforeCronRuns */

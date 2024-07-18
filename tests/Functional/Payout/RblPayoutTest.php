@@ -1281,6 +1281,47 @@ class RblPayoutTest extends TestCase
         $this->assertEmpty($response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
     }
 
+    public function testBalanceFetchWithBlacklistedMerchantIds()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(),
+            [Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now()->subMinute()->getTimestamp()]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance',
+            'content' => [
+                'blacklisted_merchant_ids' => ['10000000000000']
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        // since we have blacklisted the MIds, no merchant should be selected for balance fetch
+        $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+
+        Queue::assertNotPushed(RblBankingAccountGatewayBalanceUpdate::class);
+    }
+
     protected function getMozartServiceSuccessResponse(int $amount = 1)
     {
         $response = [

@@ -2303,6 +2303,13 @@ class Core extends Base\Core
             return $response;
         }
 
+        $blacklistedMerchantIds = [];
+
+        if (isset($input[Constants::BLACKLISTED_MERCHANT_IDS]) === true)
+        {
+            $blacklistedMerchantIds = $input[Constants::BLACKLISTED_MERCHANT_IDS];
+        }
+
         $isPriorityBalanceUpdate = false;
 
         if (isset($input[Constants::IS_PRIORITY_BALANCE_UPDATE]) === true)
@@ -2320,13 +2327,13 @@ class Core extends Base\Core
 
         if (strtolower($variant) === 'on')
         {
-            return $this->dispatchGatewayBalanceUpdateForMerchantsV2($channel, $isPriorityBalanceUpdate);
+            return $this->dispatchGatewayBalanceUpdateForMerchantsV2($channel, $isPriorityBalanceUpdate, $blacklistedMerchantIds);
         }
 
-        return $this->dispatchGatewayBalanceUpdateForMerchantsV1($channel, $isPriorityBalanceUpdate);
+        return $this->dispatchGatewayBalanceUpdateForMerchantsV1($channel, $isPriorityBalanceUpdate, $blacklistedMerchantIds);
     }
 
-    public function dispatchGatewayBalanceUpdateForMerchantsV1(string $channel, bool $isPriorityBalanceUpdate = false)
+    public function dispatchGatewayBalanceUpdateForMerchantsV1(string $channel, bool $isPriorityBalanceUpdate = false, $blacklistedMerchantIds = [])
     {
         if ($isPriorityBalanceUpdate === true)
         {
@@ -2338,7 +2345,7 @@ class Core extends Base\Core
 
         // get list of merchants based upon channel and balance last fetched at
         $merchantIds = $this->repo->banking_account_statement_details
-                                  ->getMerchantIdsByChannel($channel, $limit);
+                                  ->getMerchantIdsByChannel($channel, $limit, $blacklistedMerchantIds);
 
         foreach ($merchantIds as $merchantId)
         {
@@ -2355,7 +2362,7 @@ class Core extends Base\Core
     }
 
     // tech spec for this dispatch logic: https://docs.google.com/document/d/1rqTkDsnoYamSFDsEnnmgG_0aNf6jA8Y9Bglu6c_1tXM/edit#heading=h.lc0fi15c803g
-    protected function dispatchGatewayBalanceUpdateForMerchantsV2(string $channel, bool $isPriorityBalanceUpdate = false)
+    protected function dispatchGatewayBalanceUpdateForMerchantsV2(string $channel, bool $isPriorityBalanceUpdate = false, $blacklistedMerchantIds = [])
     {
         switch ($channel)
         {
@@ -2398,12 +2405,17 @@ class Core extends Base\Core
         $currentTime = Carbon::now()->getTimestamp();
 
         // get list of distinct merchant ids who have done payouts in last $timePeriod seconds.
-        $merchantIdsToDispatch[self::MADE_PAYOUT_RULE] = $this->repo->payout->getCAMerchantIdsWithAtleastOnePayout($channel, $currentTime - $timePeriod, $currentTime, $limitForPayoutMadeRule);
+        $merchantIdsToDispatch[self::MADE_PAYOUT_RULE] = $this->repo->payout->getCAMerchantIdsWithAtleastOnePayout(
+            $channel,
+            $currentTime - $timePeriod,
+            $currentTime,
+            $limitForPayoutMadeRule,
+            $blacklistedMerchantIds);
 
         // List of merchants whose balance update is done on priority
         $priorityMerchants = $this->getPriorityBalanceMerchantList($channel);
 
-        $basDetails = $this->repo->banking_account_statement_details->fetchByChannelOrderByBalanceLastFetchedAt($channel, $priorityMerchants);
+        $basDetails = $this->repo->banking_account_statement_details->fetchByChannelOrderByBalanceLastFetchedAt($channel, $priorityMerchants, blacklistedMerchantIds: $blacklistedMerchantIds);
 
         /** @var BASDetails\Entity $basDetailsEntity */
         foreach ($basDetails as $basDetailsEntity)

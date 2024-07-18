@@ -91,4 +91,6 @@ class Constants
     const BANKING_ACCOUNT_IDS = 'banking_account_ids';
 
     const RESPONSE = 'response';
+
+    const BLACKLISTED_MERCHANT_IDS = 'blacklisted_merchant_ids';
 }

@@ -82,7 +82,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByChannelOrderByBalanceLastFetchedAt(string $channel, array $merchantIdsExcluded = [], string $accountType = AccountType::DIRECT)
+    public function fetchByChannelOrderByBalanceLastFetchedAt(string $channel,
+                                                              array $merchantIdsExcluded = [],
+                                                              string $accountType = AccountType::DIRECT,
+                                                              $blacklistedMerchantIds = [])
     {
         $channelColumn = $this->dbColumn(Entity::CHANNEL);
 
@@ -108,10 +111,15 @@ class Repository extends Base\Repository
             $query = $query->whereNotIn($merchantIdColumn, $merchantIdsExcluded);
         }
 
+        if (empty($blacklistedMerchantIds) === false)
+        {
+            $query = $query->whereNotIn($merchantIdColumn, $blacklistedMerchantIds);
+        }
+
         return $query->get();
     }
 
-    public function getMerchantIdsByChannel($channel, $limit)
+    public function getMerchantIdsByChannel($channel, $limit, $blacklistedMerchantIds = [])
     {
         $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
         $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
@@ -122,14 +130,20 @@ class Repository extends Base\Repository
 
         $statusList = Status::getStatusesForActiveCaFlows();
 
-        return $this->newQuery()
-                    ->select($basDetailsAttr)
-                    ->where($channelColumn, '=', $channel)
-                    ->whereIn(Entity::STATUS, $statusList)
-                    ->where($accountTypeColumn, '=', AccountType::DIRECT)
-                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
-                    ->limit($limit)
-                    ->pluck($merchantIdColumn);
+        $query = $this->newQuery()
+            ->select($basDetailsAttr)
+            ->where($channelColumn, '=', $channel)
+            ->whereIn(Entity::STATUS, $statusList)
+            ->where($accountTypeColumn, '=', AccountType::DIRECT);
+
+        if (empty($blacklistedMerchantIds) === false)
+        {
+            $query = $query->whereNotIn($merchantIdColumn, $blacklistedMerchantIds);
+        }
+
+        return $query->oldest(Entity::BALANCE_LAST_FETCHED_AT)
+                     ->limit($limit)
+                     ->pluck($merchantIdColumn);
     }
 
     public function getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, string $channel)
