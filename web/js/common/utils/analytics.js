@@ -90,7 +90,7 @@ export const initAnalytics = () => {
           return function fn(...args) {
             const e = Array.prototype.slice.call(args);
             e.unshift(t);
-            analytics?.push(e);
+            analytics?.push?.(e);
             return analytics;
           };
         };

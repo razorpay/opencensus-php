@@ -122,7 +122,7 @@ export const getCommonSegmentProperties = (user = window.rzp_user, config = {}) 
     return {};
   }
 
-  const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+  const mode = localStorage?.getItem?.(`rzp_mode--${user.id}`);
 
   const { addUserProperties = false } = config;
 
