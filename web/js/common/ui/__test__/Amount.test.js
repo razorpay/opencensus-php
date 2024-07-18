@@ -11,7 +11,7 @@ describe('Amount', () => {
   const positiveAmountProps = [
     { value: 1234567.579, currency: 'INR', hidePaisa: true, renderedOutput: '₹ 12,345' },
     { value: 1234567.579, currency: 'MYR', hidePaisa: false, renderedOutput: 'RM 12,345.68' },
-    { value: 1234567.579, currency: 'SGD', hidePaisa: false, renderedOutput: '$ 12,345.68' },
+    { value: 1234567.579, currency: 'SGD', hidePaisa: false, renderedOutput: 'S$ 12,345.68' },
     { value: 1234567.579, currency: 'USD', hidePaisa: false, renderedOutput: '$ 12,345.68' },
   ];
 

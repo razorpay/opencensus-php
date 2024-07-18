@@ -6,7 +6,7 @@ import { getMaskedContact } from 'merchant/components/Mask/utils/masking';
 import { storeWithInitialState } from 'merchant/store';
 
 const contact = '+911234567890';
-const maskedContact = getMaskedContact(contact);
+const maskedContact = getMaskedContact(getI18FormattedPhoneNumber(contact));
 
 describe('merchant/components/Mask/Contact', () => {
   const App = ({ initialState, ...rest }) => {
@@ -22,7 +22,7 @@ describe('merchant/components/Mask/Contact', () => {
       <App initialState={{ session: { user: { isHidePIDetails: false } } }} contact={contact} />,
     );
 
-    expect(screen.getByText(contact)).toBeInTheDocument();
+    expect(screen.getByText(getI18FormattedPhoneNumber(contact))).toBeInTheDocument();
   });
 
   test('should render masked contact when isHidePIDetails is true', () => {
