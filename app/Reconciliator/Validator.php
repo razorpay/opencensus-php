@@ -232,7 +232,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_BOB,
         RequestProcessor\Base::NETBANKING_KOTAK_V2,
         RequestProcessor\Base::NETBANKING_SIB,
-        RequestProcessor\Base::ATOM
+        RequestProcessor\Base::ATOM,
+        RequestProcessor\Base::HDFC_DEBIT_EMI
     ];
 
     const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com", "reconciliate@mg.razorpay.com"];

@@ -376,6 +376,15 @@ class Mailgun extends Base
                 "destination" => "recon/input/atom/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
+        ],
+        self::HDFC_DEBIT_EMI => [
+            [
+                "from" => "emailintimation@hdfcbank.com",
+                "subject_pattern" => "/^DCEMI Reconciliation & Payment Summary Report/",
+                "filename_pattern" => "/(?i)Razorpay/",
+                "destination" => "recon/input/affordability_hdfc_debit_emi/bank_payment_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
         ]
     ];
 

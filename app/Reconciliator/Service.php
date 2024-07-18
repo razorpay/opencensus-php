@@ -104,7 +104,8 @@ class Service extends Base\Service
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::NETBANKING_BOB,
         RequestProcessor\Base::NETBANKING_KOTAK_V2,
-        RequestProcessor\Base::ATOM
+        RequestProcessor\Base::ATOM,
+        RequestProcessor\Base::HDFC_DEBIT_EMI
     ];
 
     protected $core;
