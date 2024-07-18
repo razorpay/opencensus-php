@@ -213,6 +213,13 @@ app/Models/Settlement                               @razorpay/TechSettlements
 app/Http/Controllers/SettlementController.php       @razorpay/TechSettlements
 app/Services/Settlements                            @razorpay/TechSettlements
 
+# Blocking PR merge on ondemand settlement files
+# Any update in these files will require explicit approval from capital team
+app/Models/Settlement/Ondemand                          @razorpay/Capital_BE
+app/Models/Settlement/OndemandFundAccount               @razorpay/Capital_BE
+app/Models/Settlement/OndemandPayout                    @razorpay/Capital_BE
+app/Http/Controllers/SettlementOndemandController.php   @razorpay/Capital_BE
+
 
 #
 # Nocode Entities
