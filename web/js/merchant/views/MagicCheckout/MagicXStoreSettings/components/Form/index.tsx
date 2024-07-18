@@ -46,6 +46,11 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
     });
   };
 
+  const getShopifyDomain = () =>
+    settings.shop_id?.includes('myshopify.com')
+      ? settings.shop_id
+      : `${settings.shop_id}.myshopify.com`;
+
   const handleSubmit = () => {
     const errorMessage = validateForm(formState);
     if (errorMessage) {
@@ -62,7 +67,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         updateSopcMetafields(transformedData);
         showNotification({ type: 'success', message: 'Settings saved successfully' });
         if (transformedData.status === 'live') {
-          const themeAppExtensionDeepLink = `${settings.domain_url}/admin/themes/current/editor?context=apps&activateAppId=c13c688d-5c45-4054-b95f-1edd63faa705/magicx-script`;
+          const themeAppExtensionDeepLink = `https://${getShopifyDomain()}/admin/themes/current/editor?context=apps&activateAppId=c13c688d-5c45-4054-b95f-1edd63faa705/magicx-script`;
           window.open(themeAppExtensionDeepLink, '_blank', 'noopener, noreferrer');
         }
       })
