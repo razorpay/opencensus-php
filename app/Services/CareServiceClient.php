@@ -15,10 +15,15 @@ class CareServiceClient
 {
     protected $app;
     protected $config;
+    protected $ba;
 
     const CONTENT_TYPE                     = 'Content-Type';
     const AUTHORIZATION                    = 'Authorization';
     const X_REQUEST_ID                     = 'X-Request-Id';
+    const USER_AGENT                       = 'User-Agent';
+    const X_IP_ADDRESS                     = 'X-IP-Address';
+    const X_RZP_MODE                       = 'X-Rzp-Mode';
+    const X_USER_ID                        = 'x-user-id';
     const TIMEOUT                          = 'timeout';
     const DEFAULT_TIMEOUT_DURATION_SECONDS = 200;   // As we have 180 timeout while requeting from care to FD
 
@@ -45,8 +50,18 @@ class CareServiceClient
     const DASHBOARD_WEBSITE_UPDATE = 'DashboardWebsiteUpdate';
 
     const DASHBOARD_WEBSITE_STATUS_FETCH = 'DashboardWebsiteStatusFetch';
-
-
+    
+    const DASHBOARD_WEBSITE_SAVE_POLICY_COMPLIANCE_DETAIL = 'DashboardWebsiteSavePolicyComplianceDetail';
+    
+    const DASHBOARD_WEBSITE_GET_POLICY_COMPLIANCE_DETAIL = 'DashboardWebsiteGetPolicyComplianceDetail';
+    
+    const DASHBOARD_WEBSITE_GET_POLICY_PREVIEW = 'DashboardWebsiteGetPolicyPreview';
+    
+    const DASHBOARD_WEBSITE_PUBLISH_POLICY_PAGE = 'DashboardWebsitePublishPolicyPage';
+    
+    const DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE = 'DashboardWebsiteMerchantConsentSave';
+    
+    
     const ROUTES_URL_MAP  = [
         self::MERCHANT_POPULAR_PRODUCTS_CRON => 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/PostMerchantPopularProducts',   // 5mins
         self::MERCHANT_NOTIFY_CSM_CHANGED_CRON => 'twirp/rzp.care.csm.v1.CsmService/NotifyMerchantsWithCsmChange',
@@ -55,6 +70,11 @@ class CareServiceClient
         self::SAV_FETCH_TICKET_FOR_ANALYSIS => 'twirp/rzp.care.sav.v1.TicketAnalysisService/FetchTicketIdsForAnalysis',
         self::DASHBOARD_WEBSITE_UPDATE => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/UpdateMerchantWebsite',
         self::DASHBOARD_WEBSITE_STATUS_FETCH => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsiteVerificationStatus',
+        self::DASHBOARD_WEBSITE_SAVE_POLICY_COMPLIANCE_DETAIL => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/SaveMerchantPolicyComplianceDetails',
+        self::DASHBOARD_WEBSITE_GET_POLICY_COMPLIANCE_DETAIL => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantPolicyComplianceDetails',
+        self::DASHBOARD_WEBSITE_GET_POLICY_PREVIEW => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsitePolicyPreview',
+        self::DASHBOARD_WEBSITE_PUBLISH_POLICY_PAGE => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/PublishMerchantPolicySection',
+        self::DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE => 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/MerchantConsentsSave',
     ];
 
     const PATH_TIMEOUT_MAP  = [
@@ -67,6 +87,11 @@ class CareServiceClient
         self::SAV_FETCH_TICKET_FOR_ANALYSIS => 300,
         self::DASHBOARD_WEBSITE_UPDATE => 300,
         self::DASHBOARD_WEBSITE_STATUS_FETCH => 300,
+        self::DASHBOARD_WEBSITE_SAVE_POLICY_COMPLIANCE_DETAIL => 300,
+        self::DASHBOARD_WEBSITE_GET_POLICY_COMPLIANCE_DETAIL => 300,
+        self::DASHBOARD_WEBSITE_GET_POLICY_PREVIEW => 300,
+        self::DASHBOARD_WEBSITE_PUBLISH_POLICY_PAGE => 300,
+        self::DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE => 300,
     ];
 
     public function __construct($app = null)
@@ -77,7 +102,9 @@ class CareServiceClient
         }
 
         $this->app = $app;
-
+    
+        $this->ba = $this->app['basicauth'];
+        
         $this->setConfig();
     }
 
@@ -204,7 +231,7 @@ class CareServiceClient
     {
         return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
     }
-
+    
     protected function sendRequestAndProcessResponse($path, $method, $content)
     {
         $this->app['trace']->info(TraceCode::CARE_SERVICE_REQUEST, [
@@ -290,6 +317,10 @@ class CareServiceClient
             self::CONTENT_TYPE  => 'application/json',
             self::AUTHORIZATION => $this->getAuthorizationHeader(),
             self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
+            self::USER_AGENT    => $this->app['request']->header('User-Agent'),
+            self::X_USER_ID     => optional($this->ba->getUser())->getId() ?? '',
+            self::X_IP_ADDRESS  => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+            self::X_RZP_MODE    => $this->ba->getMode(),
         ];
     }
 

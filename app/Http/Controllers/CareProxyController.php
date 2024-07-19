@@ -189,7 +189,17 @@ class CareProxyController extends Controller
     const DASHBOARD_WEBSITE_UPDATE = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/UpdateMerchantWebsite';
 
     const DASHBOARD_WEBSITE_STATUS_FETCH = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsiteVerificationStatus';
-
+    
+    const DASHBOARD_WEBSITE_SAVE_POLICY_COMPLIANCE_DETAIL = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/SaveMerchantPolicyComplianceDetails';
+    
+    const DASHBOARD_WEBSITE_GET_POLICY_COMPLIANCE_DETAIL = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantPolicyComplianceDetails';
+    
+    const DASHBOARD_WEBSITE_GET_POLICY_PREVIEW = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsitePolicyPreview';
+    
+    const DASHBOARD_WEBSITE_PUBLISH_POLICY_PAGE = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/PublishMerchantPolicySection';
+    
+    const DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/MerchantConsentsSave';
+    
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -297,6 +307,11 @@ class CareProxyController extends Controller
         self::DASHBOARD_HOME_PAGE_MERCHANT_PAYMENT_YEARLY_RECAP,
         self::DASHBOARD_WEBSITE_UPDATE,
         self::DASHBOARD_WEBSITE_STATUS_FETCH,
+        self::DASHBOARD_WEBSITE_SAVE_POLICY_COMPLIANCE_DETAIL,
+        self::DASHBOARD_WEBSITE_GET_POLICY_COMPLIANCE_DETAIL,
+        self::DASHBOARD_WEBSITE_GET_POLICY_PREVIEW,
+        self::DASHBOARD_WEBSITE_PUBLISH_POLICY_PAGE,
+        self::DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE,
     ];
 
     const MERCHANT_GET_ROUTES = [
