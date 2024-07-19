@@ -35,6 +35,17 @@ class Server extends Base\Mock\Server
         return $this->getCallbackRequest($content);
     }
 
+    public function getCallback60(array $upiEntity, array $payment)
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = $this->callbackResponseContent60($upiEntity, $payment);
+
+        $this->content($content, 'callback');
+
+        return $this->getCallbackRequest60($content);
+    }
+
     protected function getCallbackRequest($data)
     {
         $action = $this->action;
@@ -135,6 +146,37 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
+    protected function getCallbackRequest60($data)
+    {
+
+        $content = json_encode($data);
+
+        $content = $this->encrypt($content);
+
+        $url = '/callback/upi_yesbank';
+
+        $method = 'post';
+        $body   = [
+            'pgMerchantId' => 'razorpayupi',
+            'requestMsg'   => $content
+        ];
+
+        $body = json_encode($body);
+
+        $raw = $body;
+
+        $server = [
+            'CONTENT_TYPE' => 'application/xml',
+        ];
+
+        return [
+            'url'    => $url,
+            'method' => $method,
+            'raw'    => $raw,
+            'server' => $server,
+        ];
+    }
+
     protected function getUnexpectedCallbackContent()
     {
         $status = Status::SUCCESS;
@@ -183,6 +225,55 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
+    protected function callbackResponseContent60(array $upiEntity, array $payment)
+    {
+        $status     = 'SUCCESS';
+        $respCode   = '00';
+        $errorCode  = 'NA';
+        $amount     = $payment['amount'];
+        $statusDesc = 'Transaction Success';
+
+        switch ($payment['description'])
+        {
+            case 'callback_failed_v2':
+                $respCode   = 'U30';
+                $errorCode  = 'U30';
+                $status     = Status::FAILURE;
+                $statusDesc = 'Transaction Fail';
+                break;
+
+            case 'callback_amount_mismatch_v2':
+                $amount = $payment['amount'] + 100;
+                break;
+
+        }
+
+        $content = [
+            'upiTransRefNo'  => '107611570997',
+            'pspRefNo'       => $upiEntity['merchant_reference'],
+            'txnId'          => $upiEntity['npci_txn_id'],
+            'custRefNo'      => '107611570997',
+            'amount'         => $amount,
+            'txnAuthDate'    => 'May 9, 2024, 3:06:54 PM',
+            'payerRespCode'  => $respCode,
+            'payeeRespCode'  => $respCode,
+            'approvalNumber' => '609050',
+            'status'         => $status,
+            'statusDesc'     => $statusDesc,
+            'payerVPA'       => 'aakansha402@yesu',
+            'payeeVPA'       => 'testvpa@ypbiz',
+            'txnType'        => 'COLLECT',
+            'txnNote'        => 'PaymenttoMitasha',
+            'payerName'      => 'ABC',
+            'payeeName'      => 'RazorpayPayments',
+            'payerAccNo'     => 'SCRUBBED_PII (17)',
+            'payerAccType'   => 'SAVINGS',
+            'payeeAccNo'     => 'SCRUBBED_PII (17)'
+        ];
+
+        return $content;
+    }
+
     /**
      * Get unexpected callback response
      */
@@ -224,6 +315,20 @@ class Server extends Base\Mock\Server
         $res = $this->decrypt($encryptedInput);
 
         $arr = explode('|', $res);
+
+        return $arr;
+    }
+
+    public function decryptInput60($input)
+    {
+
+        $inputArr = json_decode($input['payload'], true);
+
+        $encryptedInput = $inputArr['requestMsg'];
+
+        $res = $this->decrypt($encryptedInput);
+
+        $arr = json_decode($res, true);
 
         return $arr;
     }

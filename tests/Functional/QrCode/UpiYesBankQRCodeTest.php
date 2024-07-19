@@ -84,7 +84,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->runQrCodeEntityAssertions();
     }
 
-    public function testCreateStaticQrWithTerminalForYesbank60() :void
+    public function testCreateStaticQrWithTerminalForYesbank60(): void
     {
         $this->setMockRazorxTreatment(
             [
@@ -133,6 +133,32 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->runQrPaymentEntityAssertions();
     }
 
+    public function testPaymentForStaticQrCodeForYesbank60(): void
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity             = $this->getLastEntity('qr_code', true);
+        $upiEntity['npci_txn_id'] = 'YES25356b6cf2664d5c9448912701c54c61';
+        $this->makeUpiYesBankPayment60($qrCodeEntity, [], $upiEntity);
+        $paymentRequestEntity['description'] = 'PaymenttoMitasha';
+        $this->runQrPaymentEntityAssertions(true, $paymentRequestEntity);
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertEquals($upi['npci_txn_id'], $upiEntity['npci_txn_id']);
+
+    }
+
     public function testPaymentOnDynamicQrCode() :void
     {
         $this->createQrCode(
@@ -150,6 +176,34 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->runQrPaymentEntityAssertions();
     }
+
+    public function testPaymentOnDynamicQrCodeForYesbank60(): void
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+        );
+
+        $qrCodeEntity             = $this->getLastEntity('qr_code', true);
+        $upiEntity['npci_txn_id'] = 'YES25356b6cf2664d5c9448912701c54c61';
+        $this->makeUpiYesBankPayment60($qrCodeEntity, [], $upiEntity);
+        $paymentRequestEntity['description'] = 'PaymenttoMitasha';
+        $this->runQrPaymentEntityAssertions(true, $paymentRequestEntity);
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertEquals($upi['npci_txn_id'], $upiEntity['npci_txn_id']);
+    }
+
 
     public function testQrPaymentOnIntentSubType() :void
     {
@@ -214,6 +268,44 @@ class UpiYesBankQRCodeTest extends TestCase
         //Payment made before Closing Time so, we will accept this Callback
         $refund = $this->getDbLastEntity('refund');
         $this->assertNull($refund,'Refund Entity should be null');
+    }
+
+    public function testPaymentForClosedQrCodeForYesbank60(): void
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $qrCodeId = $qrCodeEntity['id'];
+
+        $qrCode = $this->closeQrCode($qrCodeId);
+
+        $this->assertEquals('closed', $qrCode['status']);
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $upiEntity['npci_txn_id'] = 'YES25356b6cf2664d5c9448912701c54c61';
+        $this->makeUpiYesBankPayment60($qrCodeEntity, [], $upiEntity);
+        $paymentRequestEntity['description'] = 'PaymenttoMitasha';
+        $this->runQrPaymentEntityAssertions(true, $paymentRequestEntity);
+        $upi = $this->getLastEntity('upi', true);
+        $this->assertEquals($upi['npci_txn_id'], $upiEntity['npci_txn_id']);
+
+        //Payment made before Closing Time so, we will accept this Callback
+        $refund = $this->getDbLastEntity('refund');
+        $this->assertNull($refund, 'Refund Entity should be null');
     }
 
     public function testPaymentForInvalidQrCode()
@@ -284,6 +376,44 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals(null, $payment);
     }
 
+    public function testPaymentForUnsuccessfulStatusCallbackForYesbank60(): void
+    {
+        //Note: Callbacks with failed status are not processed but qr_payment_request entity is saved in DB
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $payment = [
+            'amount'      => '300',
+            'description' => 'callback_failed_v2',
+            'vpa'         => 'testvpa@yesb',
+        ];
+
+        $upiEntity['npci_txn_id'] = 'YES25356b6cf2664d5c9448912701c54c61';
+
+        $this->makeUpiYesBankPayment60($qrCodeEntity, $payment, $upiEntity);
+
+        $qrPayment        = $this->getDbLastEntity('qr_payment');
+        $payment          = $this->getLastEntity('payment', true);
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true);
+
+        $this->assertEquals('failed callback', $qrPaymentRequest['failure_reason']);
+        $this->assertEquals(null, $qrPayment);
+        $this->assertEquals(null, $payment);
+    }
+
     public function testMultiplePaymentsForStaticQR(): void
     {
         $this->createQrCode(
@@ -306,6 +436,27 @@ class UpiYesBankQRCodeTest extends TestCase
             [
                 'usage' => 'single_use',
                 'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+        );
+
+        $this->runQrCodeEntityAssertions();
+    }
+
+    public function testCreateDynamicQrCodeForYesbank60(): void
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal_60');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
                 'fixed_amount'   => true,
                 'payment_amount' => 300,
             ],

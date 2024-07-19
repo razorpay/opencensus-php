@@ -150,11 +150,33 @@ class MozartUpiResponse extends Collection
         return $this;
     }
 
+    public function setPayerNote60(array $input)
+    {
+        $data = $this->getData();
+
+        $data['meta']['response']['content']['txnNote'] = $input['txnNote'];
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
     public function setTransactionAuthDate(array $input)
     {
         $data = $this->getData();
 
         $data['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE] = $input[4];
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
+    public function setTransactionAuthDate60(array $input)
+    {
+        $data = $this->getData();
+
+        $data['meta']['response']['content']['txnAuthDate'] = $input['txnAuthDate'];
 
         $this->put(self::DATA, $data);
 

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use \RZP\Gateway\Upi\Sbi\Mock\Server as Sbi;
@@ -57,8 +58,33 @@ class PreProcess extends Base\Mock\Server
         return $response->toArray();
     }
 
+    public function isYesbank60preprocess($entities)
+    {
+        if (isset($entities['gateway']['payload']) === true)
+        {
+            $inputArr = json_decode($entities['gateway']['payload'], true);
+            if (isset($inputArr['pgMerchantId']) === true)
+            {
+                $variant = $this->app->razorx->getTreatment($inputArr['pgMerchantId'], RazorxTreatment::ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK, $this->mode);
+
+                if (strtolower($variant) === 'on')
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function upi_yesbank($entities)
     {
+
+        if ($this->isYesbank60preprocess($entities) === true)
+        {
+            return $this->upi_yesbank60($entities);
+        }
+
         $input = (new Yesbank())->decryptInput($entities['gateway']);
 
         $response = MozartUpiResponse::getDefaultInstanceForV2();
@@ -102,6 +128,57 @@ class PreProcess extends Base\Mock\Server
                 'gateway_status_code'       =>  200,
                 'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
             ]);
+        }
+
+        return $response->toArray();
+    }
+
+    public function upi_yesbank60($entities)
+    {
+        $input = (new Yesbank())->decryptInput60($entities['gateway']);
+
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $vpa = empty($input['payerVPA']) === false ? $input['payerVPA'] : 'customer@okicici';
+
+        $response->mergeUpi([
+                                UpiEntity::VPA                => $vpa,
+                                UpiEntity::STATUS_CODE        => $input['payeeRespCode'],
+                                UpiEntity::NPCI_REFERENCE_ID  => $input['upiTransRefNo'],
+                                UpiEntity::NPCI_TXN_ID        => $input['txnId'],
+                                UpiEntity::GATEWAY_PAYMENT_ID => $input['custRefNo'],
+                                UpiEntity::MERCHANT_REFERENCE => $input['pspRefNo'],
+                            ]);
+
+        $response->setPayment([
+                                  Payment\Entity::CURRENCY          => 'INR',
+                                  Payment\Entity::AMOUNT_AUTHORIZED => $input['amount'],
+                              ]);
+
+        $response->setStatus(true);
+
+        $response->setTerminal([
+                                   Terminal\Entity::VPA     => $input['payeeVPA'],
+                                   Terminal\Entity::GATEWAY => 'upi_yesbank',
+                               ]);
+
+        $response->setPayerNote60($input);
+
+        $response->setTransactionAuthDate60($input);
+
+        if ($input['payerRespCode'] !== '00')
+        {
+            $response->setSuccess(false);
+
+            $response->setStatus(false);
+
+            $response->setError([
+                                    'description'               => 'Debit has been failed',
+                                    'gateway_error_code'        => 'U30',
+                                    'gateway_error_description' => 'Debit has been failed',
+                                    'gateway_status_code'       => 200,
+                                    'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+                                ]);
         }
 
         return $response->toArray();
