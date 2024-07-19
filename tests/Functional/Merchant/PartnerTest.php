@@ -219,6 +219,8 @@ class PartnerTest extends OAuthTestCase
         // Create a merchant request
         $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, true);
 
+        $this->mockPartnershipsServiceTreatment([], [], 'onboardPartnerToLedgerEvent');
+
         $merchant = $merchantRequest->merchant;
 
         $app = ['id'=>'8ckeirnw84ifke'];
@@ -267,6 +269,8 @@ class PartnerTest extends OAuthTestCase
     {
         // Create a merchant request
         $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, true);
+
+        $this->mockPartnershipsServiceTreatment([], [], 'onboardPartnerToLedgerEvent');
 
         $merchant = $merchantRequest->merchant;
 

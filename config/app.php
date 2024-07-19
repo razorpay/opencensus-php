@@ -663,6 +663,8 @@ return array(
 
     'prts_commission_shadow_phase_exp_id' => env('PRTS_COMMISSION_SHADOW_PHASE_EXP_ID'),
 
+    'prts_onboard_new_partner_to_ledger_exp_id' => env('PRTS_ONBOARD_NEW_PARTNER_TO_LEDGER_EXP_ID'),
+
     'partnership_service_commission_shadow_phase_exp_id' => env('PARTNERSHIP_SERVICE_COMMISSION_SHADOW_PHASE_EXP_ID'),
 
     'prts_commission_reverse_shadow_exp_id' => env('PRTS_COMMISSION__REVERSE_SHADOW_EXP_ID'),

@@ -2270,6 +2270,8 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->mockAuthServiceCreateApplication($merchant, $app);
 
+        $this->mockPartnershipsServiceTreatment([], [], 'onboardPartnerToLedgerEvent');
+
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
         $this->ba->proxyAuth();

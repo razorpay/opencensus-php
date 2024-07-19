@@ -3963,7 +3963,7 @@ class Core extends Base\Core
 
         $mutexKey = Constants::MARK_AS_PARTNER_IN_PROGRESS.$merchant->getId();
 
-        return $mutex->acquireAndRelease(
+        $merchant = $mutex->acquireAndRelease(
             $mutexKey,
             function() use ($merchant, $partnerType)
             {
@@ -3971,6 +3971,11 @@ class Core extends Base\Core
             },
             Constants::MARK_AS_PARTNER_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS);
+
+        //send create_ledger event to PRTS
+        $this->app['partnerships']->onboardPartnerToLedgerEvent($merchant->getId());
+
+        return $merchant;
     }
 
     public function invalidateCache(string $entityName, string $merchantId): void

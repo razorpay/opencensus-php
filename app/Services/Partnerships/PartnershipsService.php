@@ -555,6 +555,76 @@ class PartnershipsService extends Base\Service
         }
     }
 
+    /**
+     * Dispatch onboard ledger event to partnership service to onboard partner to CLS
+     *
+     * @param string $merchantId
+     * @return void
+     */
+    public function onboardPartnerToLedgerEvent(string $merchantId)
+    {
+        try
+        {
+            if ($this->isOnboardPartnerToLedgerExpEnabled($merchantId) === false)
+            {
+                return;
+            }
+
+            $payload = [
+                'merchant_id'       => $merchantId,
+            ];
+            $jobPayload = [
+                'payload'     => json_encode($payload),
+                'event_name'  => 'ONBOARD_PARTNER_TO_LEDGER',
+            ];
+            \Event::dispatch(new TransactionalClosureEvent(function() use ($jobPayload) {
+                try
+                {
+                    // Job will be dispatched only after the transaction commits.
+                    $this->trace->info(TraceCode::PRTS_ONBOARD_PARTNER_TO_LEDGER_DISPATCHING,
+                        [
+                            'mode'     => $this->mode,
+                            'payload'  => $jobPayload,
+                        ]
+                    );
+                    $messageId = $this->pushRawJob($jobPayload, 'prts_common');
+                    $this->trace->info(TraceCode::PRTS_ONBOARD_PARTNER_TO_LEDGER_DISPATCHED, [
+                        'payload'   => $jobPayload,
+                        'messageId' => $messageId
+                    ]);
+                    $this->trace->count(Metric::PRTS_ONBOARD_PARTNER_TO_LEDGER_PUSH,['success'=> true]);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->error(TraceCode::PRTS_ONBOARD_PARTNER_TO_LEDGER_DISPATCHING_ERROR, [
+                        'error'      => $ex->getMessage(),
+                        'job_payload' => $jobPayload,
+                    ]);
+                    $this->trace->count(Metric::PRTS_ONBOARD_PARTNER_TO_LEDGER_PUSH,['success'=> false]);
+                }
+            }));
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::PRTS_ONBOARD_PARTNER_TO_LEDGER_DISPATCHING_ERROR, [
+                'error'      => $ex->getMessage(),
+            ]);
+            $this->trace->count(Metric::PRTS_ONBOARD_PARTNER_TO_LEDGER_PUSH,['success'=> false]);
+        }
+    }
+
+    private function isOnboardPartnerToLedgerExpEnabled(string $merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.prts_onboard_new_partner_to_ledger_exp_id'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable(
+            $properties, 'enable'
+        );
+    }
+
     public function createSubMSignupSource(string $partnerId, string $merchantId, string $product)
     {
         try

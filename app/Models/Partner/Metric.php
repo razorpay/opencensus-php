@@ -79,6 +79,7 @@ final class Metric
     const PRTS_COMMISSION_INVOICE_PUSH                = 'prts_commission_invoice_push';
     const PRTS_CREATE_SIGNUP_SOURCE_PUSH              = 'prts_create_signup_source_push';
     const PRTS_UPSERT_OAUTH_REFERRAL_LINK_PUSH        = 'prts_upsert_oauth_referral_link_push';
+    const PRTS_ONBOARD_PARTNER_TO_LEDGER_PUSH         = 'prts_onboard_partner_to_ledger_push';
 
     // PRTS service metrics and dimensions
     const PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH = 'prts_commissions_shadow_phase_event_dispatch';
