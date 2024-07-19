@@ -34,6 +34,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\QrCode\Constants as Constants;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\QrGatewayModule\QrGatewayModule;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Gateway\Upi\Icici\Gateway as IciciGateway;
@@ -1068,6 +1069,20 @@ class Generator extends QrCode\Generator
             {
                 try
                 {
+                    if
+                    (
+                        strtolower(
+                            $this->app->razorx->getTreatment(
+                                $terminal->getGateway(),
+                                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
+                                $this->mode
+                            )
+                        ) === RazorxTreatment::RAZORX_VARIANT_ON
+                    )
+                    {
+                        return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
+                    }
+
                     $vpa = $this->getDedicatedTerminalVpaForQr($qrCode, $terminal);
 
                     if ($vpa !== null)
@@ -1221,5 +1236,18 @@ class Generator extends QrCode\Generator
         $timeAfter7Days = Carbon::now(Timezone::IST)->addDays(7)->timestamp;
 
         return ($closeBy < $timeAfter7Days);
+    }
+
+    protected function generateQrIntentUrlViaGatewayModule(Entity $qrCode, mixed $terminal)
+    {
+        $response = (new QrGatewayModule($this->app))->generateIntentQr($qrCode, $terminal);
+
+        //TODO: This change to be taken later
+        // if (empty($response[EntityConstants::QR_CODE][Entity::REFERENCE]) === false)
+        // {
+        //    $qrCode->setReference($response[EntityConstants::QR_CODE][Entity::REFERENCE]);
+        // }
+
+        return $response[EntityConstants::QR_CODE][Entity::QR_STRING];
     }
 }
