@@ -2092,9 +2092,10 @@ class Service extends Base\Service
         }
 
         // dashboard_guest is blocked as temp solution for SIBB-161
+        //if logged in user is PARTNER_AGENT then fetch $user object from id which is created while creating user for merchant
         if ($this->auth->isAdminAuth() === true or
             ($this->auth->isPrivilegeAuth() === true and
-             $allowGuestAppIDOR === true) or ($this->auth->getInternalApp() === 'merchant_dashboard' and $this->auth->getUserRole()==Role::PARTNER_AGENT))
+             $allowGuestAppIDOR === true) or  $this->auth->getUserRole()==Role::PARTNER_AGENT)
         {
             $user = $this->repo->user->findOrFailPublic($id);
         }

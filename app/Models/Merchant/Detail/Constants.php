@@ -289,6 +289,7 @@ class Constants
     const EASY_ELIGIBLE_SIGNUP_CAMPAIGNS = [
         DDConstants::EASY_ONBOARDING,
         DDConstants::PHANTOM_ONBOARDING,
+        DDConstants::ASSISTED_ONBOARDING,
     ];
 
     const DOCUMENTS_LIST_FOR_NEEDS_CLARIFICATION_NOTIFICATION = [
