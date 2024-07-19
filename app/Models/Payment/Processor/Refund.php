@@ -10,6 +10,7 @@ use Exception as defaultException;
 use RZP\Constants\Environment;
 use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Ledger\Constants as LedgerConstants;
@@ -1943,6 +1944,11 @@ trait Refund
                 {
                     $this->payment->setAttribute(RefundConstants::REFUND_AUTHORIZED_PAYMENT, $isRefundForAuthorizedPayment);
                     $this->payment->setAttribute(RefundConstants::CAPTURE_REFUNDED_PAYMENT, true);
+                }
+
+                if ($isRefundForAuthorizedPayment === true && $payment->getStatus() != Payment\Status::AUTHORIZED)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS, null,null, 'Payment status should be authorized but here the status is '. $payment->getStatus());
                 }
 
                 $this->trace->info(
