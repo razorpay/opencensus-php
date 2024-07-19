@@ -33,6 +33,7 @@ class UserRolesScope
     {
         $this->routeUserRoleMap = [
             'register_merchant_verify_otp'                         => [Role::PARTNER_AGENT],
+            'merchant_activation_details_sales'                    => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
             'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY],
             'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY],
             'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
