@@ -63,14 +63,34 @@ class Sbi extends Base
     // redis key format: emi:sbi_emi_ref_no_<payment_id>
     const REDIS_KEY_FMT = 'emi:sbi_emi_ref_no_%s';
 
+    const AMOUNT = 'amount';
+
+    const MIN_AMOUNT = 'min_amount';
     //processing fee
     const PROCESSING_FEES = [
-        3  => '0000',
-        6  => '9900',
-        9  => '9900',
-        12 => '9900',
-        18 => '1990',
-        24 => '1990',
+        3  => [
+            self::AMOUNT => '0000',
+        ],
+        6  => [
+            self::AMOUNT => '9900',
+            self::MIN_AMOUNT => 1600000
+        ],
+        9  => [
+            self::AMOUNT => '9900',
+            self::MIN_AMOUNT => 1100000
+        ],
+        12 => [
+            self::AMOUNT => '9900',
+            self::MIN_AMOUNT => 850000
+        ],
+        18 => [
+            self::AMOUNT => '19900',
+            self::MIN_AMOUNT => 1750000
+        ],
+        24 => [
+            self::AMOUNT => '19900',
+            self::MIN_AMOUNT => 1600000
+        ],
     ];
 
     //processing fee flag
@@ -298,7 +318,7 @@ class Sbi extends Base
 
                     $tenure = $emiPlan->getDuration();
 
-                    $processingFees = self::PROCESSING_FEES[$tenure];
+                    $processingFees = $this->getProcessingFee($principalAmount, $tenure);
 
                     $businessName = $this->getBusinessName($merchantDetail);
 
@@ -386,6 +406,20 @@ class Sbi extends Base
         $textRows = array_merge($header, $body);
 
         return implode("\r\n", $textRows);
+    }
+
+    protected function getProcessingFee($amount, $tenure)
+    {
+        $feePlan = self::PROCESSING_FEES[$tenure];
+
+        $processingFees = '0000';
+
+        if(isset($feePlan[self::MIN_AMOUNT]) === false or $amount > $feePlan[self::MIN_AMOUNT])
+        {
+            $processingFees = $feePlan[self::AMOUNT];
+        }
+
+        return $processingFees;
     }
 
     protected function getTerminalsByGateway($terminals)
