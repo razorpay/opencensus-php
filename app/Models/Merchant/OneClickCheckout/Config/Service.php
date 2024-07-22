@@ -317,6 +317,10 @@ class Service extends Base\Service
                     if (in_array($key, Constants::WOOC_SPECIFIC_CONFIGS) === true && $updatePlatform == Constants::WOOCOMMERCE) {
                         $this->add1ccConfigFlags($input, $key);
                     }
+
+                    if (in_array($key, Constants::COUPON_CONFIGS, true)) {
+                        $this->add1ccConfigFlags($input, $key);
+                    }
                 }
 
                 if (isset($input[Type::DOMAIN_URL])) {

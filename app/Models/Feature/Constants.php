@@ -1592,6 +1592,9 @@ class Constants
     const PUBLIC_SETTERS_VIA_OAUTH = 'public_setters_via_oauth';
 
     const ONE_CC_COUPONS = 'one_cc_coupons';
+    const ONE_CC_COUPON_ENGINE = 'one_cc_coupon_engine';
+    const ONE_CC_MULTI_COUPONS = 'one_cc_multi_coupons';
+    const ONE_CC_AUTO_APPLY_COUPONS = 'one_cc_auto_apply_coupons';
 
     // Deprecated
     const BENE_EMAIL_NOTIFICATION = 'bene_email_notification';
@@ -2269,6 +2272,9 @@ class Constants
         self::ONE_CC_CONSENT_DEFAULT,
         self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
+        self::ONE_CC_COUPON_ENGINE,
+        self::ONE_CC_MULTI_COUPONS,
+        self::ONE_CC_AUTO_APPLY_COUPONS,
         self::ONE_CC_DISABLE_EMAIL_COOKIE,
         DcsConstants::EmailOptionalOnCheckout,
         DcsConstants::ShowEmailOnCheckout,
@@ -2314,6 +2320,10 @@ class Constants
         self::ONE_CC_CONSENT_DEFAULT,
         self::ONE_CC_CONSENT_NOTDEFAULT,
         self::ONE_CC_COUPON_DISABLE_COD,
+        self::ONE_CC_COUPONS,
+        self::ONE_CC_COUPON_ENGINE,
+        self::ONE_CC_MULTI_COUPONS,
+        self::ONE_CC_AUTO_APPLY_COUPONS,
         self::ONE_CC_DISABLE_EMAIL_COOKIE,
         self::ONE_CC_ADDRESS_SYNC_OFF,
         self::ONE_CC_SHOPIFY_ACC_CREATE,
@@ -2797,6 +2807,9 @@ class Constants
         self::ONE_CC_MANDATORY_LOGIN                       => true,
         self::ONE_CC_MERCHANT_DASHBOARD                    => true,
         self::ONE_CC_COUPONS                               => true,
+        self::ONE_CC_COUPON_ENGINE                         => true,
+        self::ONE_CC_AUTO_APPLY_COUPONS                    => true,
+        self::ONE_CC_MULTI_COUPONS                         => true,
         self::ONE_CC_GA_ANALYTICS                          => true,
         self::ONE_CC_FB_ANALYTICS                          => true,
         self::ONBOARD_TOKENIZATION                         => true,
@@ -3850,6 +3863,24 @@ class Constants
             'feature'       => self::ONE_CC_COUPONS,
             'display_name'  => 'One click checkout',
             'documentation' => '',
+        ],
+        self::ONE_CC_COUPON_ENGINE => [
+            'feature' => self::ONE_CC_COUPON_ENGINE,
+            'display_name'  => 'One Click Checkout Coupon-Engine',
+            'documentation' => 'This feature will be used to give the merchant access to coupon-engine flows/features',
+        ],
+        self::ONE_CC_AUTO_APPLY_COUPONS => [
+            'feature' => self::ONE_CC_AUTO_APPLY_COUPONS,
+            'display_name'  => 'One Click Checkout Auto-Apply Coupons',
+            'documentation' => 'This feature will be used to give the merchant ' .
+                'auto-apply best auto-applicable coupons functionality. Only works ' .
+                'if one_cc_coupon_engine is enabled.',
+        ],
+        self::ONE_CC_MULTI_COUPONS => [
+            'feature' => self::ONE_CC_MULTI_COUPONS,
+            'display_name'  => 'One Click Checkout Multi-Coupons',
+            'documentation' => 'This feature will be used to give the merchant ' .
+                'multi-coupons functionality. Only works if one_cc_coupon_engine is enabled.',
         ],
         self::ONE_CC_MERCHANT_DASHBOARD => [
             'feature'       => self::ONE_CC_MERCHANT_DASHBOARD,

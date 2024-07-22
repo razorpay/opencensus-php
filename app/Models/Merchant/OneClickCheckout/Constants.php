@@ -44,7 +44,35 @@ class Constants
     const COD_ENGINE                        = 'cod_engine';
     const COD_ENGINE_TYPE                   = 'cod_engine_type';
     const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
+
+    // Coupon-Engine OneCC Config controls whether the merchant wants to use
+    // coupon-engine's features (or) not.
+    // Coupon-Engine flows/features include:
+    // 1. Coupon settings and coupon tab on merchant dashboard
+    // 2. Manual one-time sync coupon button/tab on merchant dashboard
+    // 3. Auto-Sync coupons from Shopify
+    // 4. Fallback to Shopify in coupon apply/evaluate failure
+    // NOTE: Whether we (RZP) want to give the merchant this feature (or) not
+    // is controlled by a feature flag i.e. if feature flag is false then this
+    // config being true has no effect and merchant won't be able to use
+    // coupon-engine features.
     const ONE_CC_COUPON_ENGINE              = 'one_cc_coupon_engine';
+
+    // Auto-Apply Coupons OneCC Config controls whether the merchant wants to use
+    // auto-apply the best auto-applicable coupons on checkout feature (or) not.
+    // NOTE: Whether we (RZP) want to give the merchant this feature (or) not
+    // is controlled by a feature flag i.e. if feature flag is false then this
+    // config being true has no effect and merchant won't be able to use
+    // auto-apply coupons feature.
+    const ONE_CC_AUTO_APPLY_COUPONS         = 'one_cc_auto_apply_coupons';
+
+    // Multi-Coupons OneCC Config controls whether the merchant wants to use
+    // multiple combinable coupons feature (or) not.
+    // NOTE: Whether we (RZP) want to give the merchant this feature (or) not
+    // is controlled by a feature flag i.e. if feature flag is false then this
+    // config being true has no effect and merchant won't be able to use
+    // multi-coupons feature.
+    const ONE_CC_MULTI_COUPONS              = 'one_cc_multi_coupons';
 
     // Shipping, serviceability and cod engine settings in MCS.
 
@@ -211,6 +239,8 @@ class Constants
         self::COD_ENGINE,
         self::ONE_CC_PREPAY_COD_CONVERSION,
         self::ONE_CC_COUPON_ENGINE,
+        self::ONE_CC_MULTI_COUPONS,
+        self::ONE_CC_AUTO_APPLY_COUPONS,
         self::RETARGETING_SETTINGS,
         self::SHIPPING_ENGINE,
         self::ONE_CC_SHIPPING_USING_CHECKOUT,
@@ -266,6 +296,12 @@ class Constants
        self::SHIPPING_ENGINE,
        self::ONE_CC_COUPON_ENGINE,
        self::ONE_CC_HIDE_COD_WHEN_DISABLED,
+    ];
+
+    public const COUPON_CONFIGS = [
+        self::ONE_CC_AUTO_APPLY_COUPONS,
+        self::ONE_CC_COUPON_ENGINE,
+        self::ONE_CC_MULTI_COUPONS,
     ];
 
     const INTELLIGENCE_CONFIGS = [
