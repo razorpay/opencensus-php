@@ -5678,7 +5678,6 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
-        'merchant_fetch_users',
         'internal_workflow_create',
         'internal_post_website_update',
         'otpelf_iin_flow_enable',
@@ -17907,7 +17906,6 @@ class Route
         ],
 
         'pgos' => [
-            'merchant_fetch_users',
             'merchant_entities_info',
             'merchant_submit_internal',
             'merchant_assign_pricing_internal',
