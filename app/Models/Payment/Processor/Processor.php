@@ -12452,6 +12452,18 @@ class Processor
             return false;
         }
 
+        // If the feature flag "banking_upi_rearch" and the razorx experiment for the merchant ID are enabled,
+        // route the UPI traffic of that org via rearch as part of API decomposition.
+
+        $razorxResult = $this->app->razorx->getTreatment($this->merchant->getId(), Features::BANKING_UPI_REARCH, $this->mode);
+
+        $featureResult = $this->merchant->org->isFeatureEnabled(Features::BANKING_UPI_REARCH);
+
+        if (($razorxResult === 'on') and ($featureResult === true))
+        {
+            return true;
+        }
+
         $orgId = $this->merchant->getMerchantOrgId();
 
         $feature = self::ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS . '_org_' . $orgId;

@@ -2218,6 +2218,12 @@ class Constants
      */
     const PAYOUT_IDEM_KEY_REQUIRED = 'payout_idem_key_required';
 
+    /**If this feature is enabled on an org we'll be routing the upi traffic of that org via rearch as a part of
+     * api decomposition. The feature will be accompanied with a razorx flag for rampup on the orgs , however the
+     * end goal here is to only have the flag as a check for banking upi rearch
+    */
+    const BANKING_UPI_REARCH = 'banking_upi_rearch';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3078,6 +3084,7 @@ class Constants
         self::SHOW_PG_V3                             => true,
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
+        self::BANKING_UPI_REARCH                     => true,
     ];
 
     // Entity type constants
