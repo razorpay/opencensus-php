@@ -39,6 +39,8 @@ class RouteTeamMap
     protected static $routeTeamMap = [
         'register_merchant_verify_otp'             =>[self::TEAM_OMNI_ACQUISITION],
         'merchant_activation_details_sales'        =>[self::TEAM_OMNI_ACQUISITION],
+        'onboarding_get_sales'                     =>[self::TEAM_OMNI_ACQUISITION],
+        'onboarding_save_sales'                    =>[self::TEAM_OMNI_ACQUISITION],
         'workflow_action_get_multiple'             => [self::TEAM_PAYMENTS_CARE],
         'merchant_submit_support_call_request'     => [self::TEAM_PAYMENTS_CARE],
         'fd_reserve_balance_ticket'                => [self::TEAM_PAYMENTS_CARE],

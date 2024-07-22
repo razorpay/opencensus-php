@@ -1482,6 +1482,8 @@ class Route
         'ocr_admin_proxy'                          => ['get',      'ocr/admin/{path?}',                              'OcrAdminProxyController@handleAdminRequests'                       ],
 
         // PGOS Proxy Routes
+        'onboarding_get_sales'                              => ['get',      'pg/onboarding/onboarding_get_sales',                           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'onboarding_save_sales'                             => ['post',     'pg/onboarding/onboarding_save_sales',                          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_bmc_response_fetch'                       => ['get',      'pg/onboarding/get_merchant_bmc_response',                      'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_bmc_response_fetch_admin'                 => ['get',      'pg/onboarding/{id}/get_merchant_bmc_response',                 'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_bmc_response_save'                        => ['post',     'pg/onboarding/save_merchant_bmc_response',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
@@ -6908,6 +6910,8 @@ class Route
 
     public static $proxy = [
         'merchant_activation_details_sales',
+        'onboarding_get_sales',
+        'onboarding_save_sales',
         'register_merchant_verify_otp',
         'merchant_fetch_customer_eligibility',
         'payouts_merchant_smart_routing_summary',
@@ -9589,6 +9593,8 @@ class Route
     // if we add permission in the current route for admin dashboard access, will it affect the merchant dashboard access as well?
     public static $routePermission = [
         'merchant_activation_details_sales'               =>Permission::VIEW_MERCHANT,
+        'onboarding_get_sales'                            =>Permission::VIEW_MERCHANT,
+        'onboarding_save_sales'                           =>Permission::EDIT_MERCHANT,
         'register_merchant_verify_otp'                    => Permission::EDIT_MERCHANT,
         'barricade_set_config' => Permission::BARRICADE_DCS_CONFIG_SET,
         'barricade_get_config' => Permission::BARRICADE_DCS_CONFIG_GET,
@@ -12307,6 +12313,8 @@ class Route
 
         'merchant_dashboard' => [
             'merchant_activation_details_sales',
+            'onboarding_get_sales',
+            'onboarding_save_sales',
             'register_merchant_verify_otp',
             'merchant_fetch_customer_eligibility',
             'fetch_payment_notes_keys_columns',

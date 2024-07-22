@@ -123,10 +123,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_POS_STATE_LOGS                = 'merchant_pos_state_logs';
     const POST_MERCHANT_CONFIG                   = 'pos_merchant_config';
     const FETCH_SALES_ASSISTED_MERCHANTS         = 'fetch_sales_assisted_merchants';
+    const MERCHANT_ACTIVATION_DETAILS_SALES      = 'merchant_activation_details_sales';
+    const ONBOARDING_GET_SALES                   = 'onboarding_get_sales';
+    const ONBOARDING_SAVE_SALES                  = 'onboarding_save_sales';
     const L2_SUBMIT_SHADOW                       = 'l2_submit_shadow';
 
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH];
-    const MERCHANT_ACTIVATION_DETAILS_SALES      = 'merchant_activation_details_sales';
 
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
@@ -290,7 +292,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::POST_MERCHANT_CONFIG                          => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Onboard',
         self::FETCH_SALES_ASSISTED_MERCHANTS                => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchants',
         self::L2_SUBMIT_SHADOW                              => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/L2SubmitShadow',
-        self::MERCHANT_ACTIVATION_DETAILS_SALES             => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchantActivationDetails'
+        self::MERCHANT_ACTIVATION_DETAILS_SALES             => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchantActivationDetails',
+        self::ONBOARDING_GET_SALES                          => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingGet',
+        self::ONBOARDING_SAVE_SALES                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingSave',
     ];
 
     // timeout in seconds
