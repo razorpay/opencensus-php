@@ -615,6 +615,111 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
     }
 
+    public function testPaymentTransferReverseShadowOutboxPushWithAmountCreditsPositiveButInsufficientForTransfer()
+    {
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+
+        $this->initialiseLedger(1000000, 0, 10000);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+        $this->fixtures->merchant->addFeatures([ 'pg_ledger_reverse_shadow'], '10000000000001');
+
+        $oldMarketBalance = $this->getAccountBalance('10000000000000');
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 50000,
+            'currency'=> 'INR',
+        ];
+
+        $expected = [
+            'count' => 1,
+            'items' => [
+                [
+                    'source'          => $this->payment['id'],
+                    'recipient'       => 'acc_10000000000001',
+                    'amount'          => 50000,
+                    'amount_reversed' => 0,
+                    'status' => 'pending',
+                ],
+            ],
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+        $this->assertNotNull($content);
+        $this->assertArraySelectiveEquals($expected, $content);
+        $this->assertCount(1, $content['items']);
+
+        $transferResponse = $content['items'][0];
+        $transferId = $transferResponse['id'];
+
+        // payment txn exists
+        $paymentTxn = $this->getDbLastEntity('transaction');
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals($this->payment['id'], sprintf('pay_%s',$paymentTxn['entity_id']));
+
+        // transfer entity exists
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertNotNull($transfer);
+        $this->assertEquals($transferId, sprintf('trf_%s',$transfer['id']));
+
+        // dummy payment entity exists
+        $transferPayment = $this->getDbEntity('payment', ['transfer_id' => $transferId]);
+        $this->assertNull($transferPayment);
+
+        // transfer txn and dummy payment txn not created
+        $this->assertNull($transfer['transaction_id']);
+        $this->assertNull($transferPayment['transaction_id']);
+        $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
+        $this->assertNull($transferTxn);
+
+        $expectedLedgerOutboxEntry = [
+            "currency" => "INR",
+            "transactor_event" =>  "transfer_processed",
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG",
+            "journals" =>[
+                [
+                    "merchant_id"=>"10000000000000",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "50000",
+                        "base_amount" => "50000",
+                        "merchant_payable_amount" => "50000",
+                        "merchant_balance_amount" => "50000",
+                    ],
+                    "additional_params"=>["entry_type"=>"debit", "credit_accounting" => "amount_credits_redemption"]
+                ],
+                [
+                    "merchant_id"=>"10000000000001",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "50000",
+                        "base_amount" => "50000",
+                        "merchant_payable_amount" => "50000",
+                        "merchant_balance_amount" => "50000",
+                    ],
+                    "additional_params"=>["entry_type"=>"credit"]
+                ]
+            ],
+        ];
+
+        // fetch transfer journal payload from ledger_outbox
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntity);
+        $this->assertEquals( sprintf('%s-transfer_processed', $transferId),$ledgerOutboxEntity['payload_name']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($transferId, $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
+
+    }
+
     public function testPaymentTransferReverseShadowOutboxPushWithFeeCreditsDeduction()
     {
         $this->assertNotNull($this->payment);

@@ -108,7 +108,7 @@ class Core extends Base\Core
         $moneyParams[LedgerConstants::AMOUNT]                         = strval($amount);
         $moneyParams[LedgerConstants::BASE_AMOUNT]                    = strval($amount);
 
-        if ($amountCredits > 0)
+        if ($amountCredits > 0 && $amountCredits >= $transfer->getAmount())
         {
             $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
             $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
