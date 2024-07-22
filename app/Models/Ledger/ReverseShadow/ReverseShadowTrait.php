@@ -999,6 +999,8 @@ trait ReverseShadowTrait
 
         $baseTransactionEntity->setChannel($transfer->merchant->getChannel());
 
+        $baseTransactionEntity->sourceAssociate($transfer);
+
         return $baseTransactionEntity;
     }
 

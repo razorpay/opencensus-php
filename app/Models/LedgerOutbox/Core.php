@@ -1964,7 +1964,11 @@ class Core extends Base\Core
         {
             $bucketCore = new Bucket\Core;
 
-            $txn = $this->transformJournalResponseToTransactionEntityForCustomerTransfer($journal);
+            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+
+            $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
+
+            $txn = $this->transformJournalResponseToTransactionEntityForCustomerTransfer($journal, $transfer);
 
             $status = $bucketCore->shouldProcessViaNewService($txn->getMerchantId());
 
