@@ -99,7 +99,7 @@ class Service extends Base\Service
     }
 
     public function getMerchantSettlementAmount($input){
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        $experimentVariable = $this->merchant->getId();
         // shadow mode experiment
         $shadow = $this->app->razorx->getTreatment($experimentVariable,
             Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_SHADOW,
@@ -110,7 +110,7 @@ class Service extends Base\Service
         {
             $nssResponse = app('settlements_dashboard')->settlementAmount($input);
 
-            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            $experimentVariable = $this->merchant->getId();
             // reverse shadow mode experiment
             $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
                 Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_REVERSE_SHADOW,
@@ -3053,7 +3053,7 @@ class Service extends Base\Service
                 }
             }
 
-            if (empty($inconsistentParams) === false)
+            if (empty($inconsistentParams) === false && count($inconsistentParams)>0)
             {
                 $this->trace->info(TraceCode::NSS_AND_API_SETTLEMENT_INCONSISTENCY, [
                     'diff'        => $inconsistentParams,
@@ -3145,7 +3145,7 @@ class Service extends Base\Service
             $differences += $this->compareSettlementEntityAndLogDifference($nssSettlement,$apiSettlement,true,$extraTrace);
         }
 
-        if (empty($differences) === false)
+        if (empty($differences) === false && count($differences)>0)
         {
             $this->trace->info(TraceCode::NSS_AND_API_SETTLEMENT_INCONSISTENCY, [
                 'diff'        => $differences,
