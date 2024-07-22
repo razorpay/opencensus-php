@@ -1965,6 +1965,29 @@ class Validator extends Base\Validator
         {
             $this->validateUpiBlockForOtm($input);
         }
+
+        if (($this->isUpiRecurringPayment($input) === true) and
+            (isset($input['upi']['vpa']) === true))
+        {
+            $vpa = $this->getUpiVpa($input);
+
+            $this->validateVpaForAutoPay($vpa);
+        }
+    }
+
+    protected function validateVpaForAutoPay($vpa)
+    {
+        $isUnSupportedVpa = ProviderCode::validateAutoPayPsp($vpa);
+
+        if ($isUnSupportedVpa === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_AUTO_PAY_NOT_SUPPORTED,
+                Entity::VPA,
+                [
+                    'vpa' => $vpa
+                ],"App not Supported for Upi AutoPay");
+        }
     }
 
     protected function validateUpiBlockForAutoPay($vpa)

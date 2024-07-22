@@ -491,6 +491,13 @@ class ProviderCode
     ];
 
     /**
+     * @var array Blocked PSP Handles
+     */
+    protected static $blockedAutoPayPsp = [
+        self::PAYTM,
+    ];
+
+    /**
      * @see https://www.bhimupi.org.in/list-banks-and-apps-live-upi-autopay
      * @var array Psp Provider supporting AutoPay
      */
@@ -719,6 +726,13 @@ class ProviderCode
         }
 
         return (array_search($psp, self::$validAutoPayPspProvider) !== false);
+    }
+
+    public static function validateAutoPayPsp(string $vpa)
+    {
+        $handle = substr($vpa, (strpos($vpa, '@') + 1));
+
+        return (array_search($handle, self::$blockedAutoPayPsp) !== false);
     }
 
     /**
