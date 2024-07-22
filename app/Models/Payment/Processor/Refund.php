@@ -836,6 +836,8 @@ trait Refund
         $refundInput[RefundEntity::TRANSACTION_ID]  = $input[RefundEntity::TRANSACTION_ID] ?? null;
         $refundInput[RefundEntity::BASE_AMOUNT]     = $input[RefundEntity::BASE_AMOUNT] ?? null;
         $refundInput[RefundEntity::SPEED_DECISIONED]= $input[RefundEntity::SPEED_DECISIONED] ?? null;
+        $refundInput[RefundEntity::FEE]             = $input[RefundEntity::FEE] ?? null;
+        $refundInput[RefundEntity::TAX]             = $input[RefundEntity::TAX] ?? null;
 
         // set isScrooge
         $refundInput[RefundEntity::IS_SCROOGE]      = true;
