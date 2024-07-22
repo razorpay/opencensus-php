@@ -91,6 +91,13 @@ class Processor extends VirtualAccount\Processor
                 }
             );
 
+            $payment = $upiTransfer->payment;
+
+            if($payment->isCollectXPayment() === true)
+            {
+                $this->triggerActionsPostAutoCaptureForCollectXPayment($payment);
+            }
+
             Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_CAPTURE_OR_REFUND], function() use ($upiTransfer)
             {
                 $this->refundOrCapturePayment($upiTransfer);
@@ -109,6 +116,29 @@ class Processor extends VirtualAccount\Processor
 
             throw $ex;
         }
+    }
+
+    protected function triggerActionsPostAutoCaptureForCollectXPayment(Payment\Entity $payment): void
+    {
+        $this->trace->info(
+            TraceCode::POST_PAYMENT_AUTO_CAPTURE_ACTIONS_TRIGGERED,
+            [
+                'payment' => $payment,
+            ]);
+
+        $virtualAccountCore = new VirtualAccount\Core;
+
+        if($payment->isUpiTransfer() === true)
+        {
+            $virtualAccount = $payment->upiTransfer->virtualAccount;
+        }
+
+        if (($virtualAccount->hasAmountExpected() === true) and ($virtualAccount->getAmountPaid() >= $virtualAccount->getAmountExpected()))
+        {
+            $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::PAID);
+        }
+
+        $virtualAccountCore->eventVirtualAccountCredited($payment);
     }
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $entity)

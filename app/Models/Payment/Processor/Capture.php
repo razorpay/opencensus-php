@@ -1419,6 +1419,11 @@ trait Capture
             return;
         }
 
+        if($payment->isCollectXPayment() === true)
+        {
+            return;
+        }
+
         // Skip event trigger if receiver is an instance of QRv2
         if ($payment->getReceiverType() === VirtualAccount\Receiver::POS or $payment->isQrV2Payment() === true)
         {
@@ -1847,6 +1852,13 @@ trait Capture
 
     protected function updateVirtualAccountStatusIfApplicable(Payment\Entity $payment)
     {
+        if ($payment->isCollectXPayment() === true)
+        {
+            // Not updating the VA for collectX payments since in auto capture flow, VA is not yet linked to payment
+            // and should be updated outside the VA, payment entities transaction block
+            return;
+        }
+
         if ($payment->qrPayment !== null)
         {
             return;

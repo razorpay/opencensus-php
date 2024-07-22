@@ -10097,6 +10097,15 @@ class Processor
 
         if ($payment->isUpiTransfer() === true)
         {
+            if ($payment->isCollectXPayment() === true and $payment->getGateway() === "upi_yesbank")
+            {
+                $response['should_auto_capture'] = true;
+
+                $response['reason'] = Constants::COLLECTX_PAYMENT;
+
+                return $response;
+            }
+
             $response['should_auto_capture'] = false;
 
             $response['reason'] = Constants::UPI_TRANSFER_PAYMENT;
