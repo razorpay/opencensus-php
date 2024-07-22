@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT           = 'amount';
     const CURRENCY         = 'currency';
     const TRANSACTION_ID   = 'transaction_id';
+    const API_ID           = 'api_id';
 
     protected $fillable = [
         self::ID,

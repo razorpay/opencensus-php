@@ -896,6 +896,25 @@ class Core extends Base\Core
         return $isExperimentEnabled;
     }
 
+    public function checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForLoc($merchant): bool
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_LOC,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_EXP_CHECK_FOR_LOC,
+            [
+                'merchant'               => $merchant->getId(),
+                'isExperimentEnabled'    => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
+    }
+
     public function transformJournalResponseToTransactionEntity($journalResponse)
     {
 

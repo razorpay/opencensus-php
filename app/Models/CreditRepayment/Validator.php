@@ -9,5 +9,6 @@ class Validator
         Entity::AMOUNT      => 'required|int|min:1',
         Entity::CURRENCY    => 'required|string|in:INR',
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+        Entity::API_ID      => 'sometimes'
     ];
 }

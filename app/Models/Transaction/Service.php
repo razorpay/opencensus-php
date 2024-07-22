@@ -84,7 +84,7 @@ class Service extends Base\Service
 
         $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST);
         $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST, $input);
-
+        
         (new JitValidator)->rules(\RZP\Models\CreditRepayment\Validator::$createTransactionInput)
                             ->caller($this)
                             ->input($input)
@@ -101,7 +101,6 @@ class Service extends Base\Service
         try
         {
             $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($creditRepayment);
-
             $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED);
             $this->trace->debug(TraceCode::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED, $input);
             // $scope->close();
@@ -123,7 +122,9 @@ class Service extends Base\Service
             {
                 return $this->repo->transaction(function () use ($creditRepayment, $input)
                 {
-                    [$txn, $feesplit] = (new Transaction\Processor\CreditRepayment($creditRepayment))->createTransaction();
+                    $txnId = $input["api_id"];
+
+                    [$txn, $feesplit] = (new Transaction\Processor\CreditRepayment($creditRepayment))->createTransaction($txnId);
 
                     $this->repo->saveOrFail($txn);
 

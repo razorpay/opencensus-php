@@ -1049,6 +1049,8 @@ final class RazorxTreatment
      */
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_ODS = 'early_dispatch_of_txns_for_settlements_using_journal_ods';
 
+    const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_LOC = 'early_dispatch_of_txns_for_settlements_using_journal_loc';
+
     const RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE = 'recon_unexpected_qr_payment_via_upi_route';
 
 

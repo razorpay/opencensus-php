@@ -256,6 +256,15 @@ abstract class Base extends BaseCore
                     $shouldDispatchSettlementBucket = false;
                 }
             }
+            if ($this->txn->getType() === Transaction\Type::CREDIT_REPAYMENT)
+            {
+                $isExpEnabledForLoc = (new Core())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForLoc($this->txn->merchant);
+
+                if (($isExpEnabledForLoc === true) and  ($this->txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+                {
+                    $shouldDispatchSettlementBucket = false;
+                }
+            }
             if  ($shouldDispatchSettlementBucket === true)
             {
                 (new Transaction\Core)->dispatchForSettlementBucketing($this->txn);
