@@ -471,10 +471,11 @@ class Core extends Base\Core
                 "card_mandate_notification_id" => $cardMandateNotification->getId(),
                 "order_id" => $cardMandateNotification->getOrderId(),
                 "isNotified" => $isNotified,
-                "notified_at" => $cardMandateNotification->getNotifiedAt(),
+                "status" => $status,
+                "notified_at" => empty($cardMandateNotification->getNotifiedAt()),
             ]);
 
-            if (($isNotified === true) and
+            if (($status === Status::NOTIFIED) and
                 (empty($cardMandateNotification->getNotifiedAt()) === true))
             {
                 $cardMandateNotification->setNotifiedAt(Carbon::now()->getTimestamp());
