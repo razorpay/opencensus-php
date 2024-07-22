@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use RZP\Constants\Entity;
+use RZP\Constants\Mode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Feature\Constants;
@@ -1994,13 +1995,13 @@ class PaymentCreateDCCTest extends TestCase
         $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
         $paymentMetaEntity->payment()->associate($payment);
         $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
-        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
+        $this->mockRazorxTreatmentV2('send_dcc_indicator', 'on');
         $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
         $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
         $payment->merchant = $mockService;
         $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
         $methodRepoMock->shouldReceive('toArray')->andReturn([]);
-
+        $this->app->instance('rzp.mode', Mode::TEST);
         $data = $payment->toArrayGateway();
         //ASSERTION
 
@@ -2024,13 +2025,14 @@ class PaymentCreateDCCTest extends TestCase
         $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
         $paymentMetaEntity->payment()->associate($payment);
         $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods()->makePartial();
-        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
+        $this->mockRazorxTreatmentV2('send_dcc_indicator', 'on');
         $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
         $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
+        $mockService->shouldReceive('getId')->andReturn("MerchantId1234");
         $payment->merchant()->associate($mockService);
         $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
         $methodRepoMock->shouldReceive('toArray')->andReturn([]);
-
+        $this->app->instance('rzp.mode', Mode::TEST);
         $data = $payment->toArrayGateway();
         //ASSERTION
 
@@ -2054,13 +2056,14 @@ class PaymentCreateDCCTest extends TestCase
         $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
         $paymentMetaEntity->payment()->associate($payment);
         $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods()->makePartial();
-        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
+        $this->mockRazorxTreatmentV2('send_dcc_indicator', 'on');
         $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
         $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
+        $mockService->shouldReceive('getId')->andReturn("MerchantId1234");
         $payment->merchant()->associate($mockService);
         $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
         $methodRepoMock->shouldReceive('toArray')->andReturn([]);
-
+        $this->app->instance('rzp.mode', Mode::TEST);
         $data = $payment->toArrayGateway();
         //ASSERTION
 
@@ -2083,13 +2086,13 @@ class PaymentCreateDCCTest extends TestCase
         $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
         $paymentMetaEntity->payment()->associate($payment);
         $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
-        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(false);
+        $this->mockRazorxTreatmentV2('send_dcc_indicator', 'off');
         $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
         $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
         $payment->merchant = $mockService;
         $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
         $methodRepoMock->shouldReceive('toArray')->andReturn([]);
-
+        $this->app->instance('rzp.mode', Mode::TEST);
         //act
         $data = $payment->toArrayGateway();
 

@@ -7852,10 +7852,14 @@ class Processor
 
         $merchant = $payment->merchant;
 
+        $variantFlag = $this->app['razorx']->getTreatment($this->merchant->getId(),
+            RazorxTreatment::SEND_DCC_INDICATOR,
+            $this->app['rzp.mode']);
         $data['merchant'] = [
             'is_vas_merchant' => $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VAS_MERCHANT),
-            'send_dcc_compliance' => $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::SEND_DCC_COMPLIANCE)
+            'send_dcc_compliance' => $variantFlag === "on" ? true : false,
         ];
+
 
         $authorisation = $this->app['card.payments']->fetchEntity('authorization', $payment->getId());
 

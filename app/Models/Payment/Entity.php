@@ -5343,7 +5343,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
             $merchant = $this->merchant;
-            if($merchant->isFeatureEnabled(Feature\Constants::SEND_DCC_COMPLIANCE) === true){
+            $app = \App::getFacadeRoot();
+            $variantFlag = $app['razorx']->getTreatment($this->merchant->getId(),
+                RazorxTreatment::SEND_DCC_INDICATOR,
+                $app['rzp.mode']);
+            if($variantFlag === "on"){
                 $data['dcc'] = $this->isDCC();
 
                 // the field 'merchant_currency' is added so that router service can select terminals

@@ -1124,6 +1124,12 @@ final class RazorxTreatment
      */
     const NON_TWO_DECIMAL_CURRENCY_VALIDATION   = 'non_two_decimal_currency_validation';
 
+    /*
+     * Razorx flag to send dcc indicator value to gateway
+     */
+    const SEND_DCC_INDICATOR                    = 'send_dcc_indicator';
+
+
     /**
      * Razorx flag to stop sending order data from API to PG-Router
      */
