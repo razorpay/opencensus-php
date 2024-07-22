@@ -3931,6 +3931,13 @@ class Base extends BaseCore
 
                    $status = $payout->getStatus();
 
+                   $this->trace->info(
+                       TraceCode::PAYOUT_SERVICE_PAYOUT_STATUS_BEFORE_FTA_CREATION,
+                       [
+                           'status'    => $status,
+                           'payout_id' => $payoutId,
+                       ]);
+
                    if ((in_array($status, [Status::CREATED, Status::INITIATED], true) === true) and
                        (is_null($fta) === true) and
                        ((is_null($payout->getTransactionId()) === false) or
@@ -3946,6 +3953,8 @@ class Base extends BaseCore
                            $this->fundTransferDestination);
 
                        $downstreamProcessor->processCreateFundTransferAttempt();
+
+                       $this->makeFeeRecoveryOfTypeDebitForPSCAPayout($payout);
 
                        // Make sync call to FTS.
                        $this->syncFTSFundTransfer($payout);
@@ -3981,6 +3990,41 @@ class Base extends BaseCore
                 Entity::STATUS         => null,
                 Entity::ERROR          => $exception->getMessage(),
             ];
+        }
+    }
+
+    public function makeFeeRecoveryOfTypeDebitForPSCAPayout(Entity $payout)
+    {
+        try
+        {
+            if ( $payout->isBalanceAccountTypeDirect() === true)
+            {
+                $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
+                    RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+
+                if ($variant === 'on')
+                {
+                    (new DualWrite\Processor)->feeRecoveryForPSCAPayout($payout);
+                }
+                $this->trace->info(TraceCode::PS_CA_FEE_RECOVERY_CREATION_AFTER_FTA_CREATION,
+                    [
+                        'merchant_id'         => $payout->getMerchantId(),
+                        'payout_id'           => $payout->getId(),
+                        'account_type_direct' => $payout->isBalanceAccountTypeDirect(),
+                    ]);
+
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PS_CA_FEE_RECOVERY_FAILED_AFTER_FTA_CREATION,
+                [
+                    'entity_id' => $payout->getId(),
+                    'entity_type' => Payout\Entity::PAYOUT,
+                ]);
         }
     }
 

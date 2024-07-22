@@ -498,6 +498,22 @@ return [
         ],
     ],
 
+    'testCreatePayoutServiceFtaCreationWithFeeRecoveryCreation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_fta/Gg7sgBZgvYjlSB',
+            'content' => [
+                "id" => "Gg7sgBZgvYjlSB",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+                'error'  => null
+            ],
+        ],
+    ],
+
     'testPayoutServiceFtaCreationWithoutPayoutInAPI' => [
         'request'  => [
             'method'  => 'POST',

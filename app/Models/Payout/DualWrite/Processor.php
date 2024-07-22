@@ -10,6 +10,7 @@ use RZP\Models\Transaction;
 use RZP\Models\FeeRecovery;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Purpose;
 use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -171,7 +172,8 @@ class Processor
         try
         {
             if (($payout->isBalanceAccountTypeDirect() === true) and
-                ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE))
+                ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
+                ($payout->getPurpose() !== Purpose::RZP_CHARGE_COLLECTIONS))
             {
                 $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($payout->merchant);
 
