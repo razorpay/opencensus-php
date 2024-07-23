@@ -11,7 +11,6 @@ use RZP\Models\Batch;
 use RZP\Models\Batch\Entity as BatchEntity;
 use RZP\Models\Batch\Metric as BatchMetric;
 use RZP\Models\Batch\Type as BatchType;
-use RZP\Models\Batch\Validator;
 use RZP\Models\Order;
 use RZP\Trace\Tracer;
 use RZP\Models\Invoice;
