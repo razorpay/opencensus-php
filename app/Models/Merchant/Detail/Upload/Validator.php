@@ -17,7 +17,7 @@ class Validator extends Base\Validator
 {
     const HTTPS_RULE = '/^https(.)+$/';
     const COMPANY_CIN_REGEX = '/^[ulUL]{1}[0-9]{5}[A-Z|a-z]{2}[0-9]{4}[A-Z|a-z]{3}[0-9]{6}$/';
-    const COMPANY_LLPIN_REGEX = '/^[A-Z|a-z]{3}[0-9]{4}$/';
+    const COMPANY_LLPIN_REGEX = '/^[A-Z|a-z]{3}-[0-9]{4}$/';
     const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
     const COMPANY_PAN_NUMBER_REGEX  = '/^[A-Za-z]{3}[CcHhFfAaTtBbLlJjGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
 

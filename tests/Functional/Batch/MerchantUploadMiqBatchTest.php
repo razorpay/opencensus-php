@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Config;
+use RZP\Constants\Mode;
 use RZP\Models\Batch\Header;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -554,6 +555,29 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
 
+    public function testCreateMerchantUploadMIQSuccessMIQCIN()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'llp';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'ABC-1234';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+    }
 
     public function testCreateMerchantUploadMIQInvalidPAN()
     {
@@ -1396,6 +1420,8 @@ class MerchantUploadMiqBatchTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $this->app->instance("rzp.mode", Mode::TEST);
+
         $this->fixtures->create('feature', [
             'name'          => Feature::SKIP_KYC_VERIFICATION,
             'entity_id'     => "100000razorpay",
@@ -1433,6 +1459,8 @@ class MerchantUploadMiqBatchTest extends TestCase
     public function testCreateMerchantUploadMIQBvsKYCValidationsFailure()
     {
         $this->ba->appAuth();
+
+        $this->app->instance("rzp.mode", Mode::TEST);
 
         $this->fixtures->create('feature', [
             'name'          => Feature::SKIP_KYC_VERIFICATION,
