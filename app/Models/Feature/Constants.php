@@ -2227,6 +2227,11 @@ class Constants
     */
     const BANKING_UPI_REARCH = 'banking_upi_rearch';
 
+    /**
+     * Feature flag to hiding aggregator fields.
+     */
+    const HIDE_AGGREGATOR_FIELDS = 'hide_aggregator_fields';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3098,6 +3103,8 @@ class Constants
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
         self::BANKING_UPI_REARCH                     => true,
+        self::HIDE_AGGREGATOR_FIELDS         => true
+
     ];
 
     // Entity type constants
