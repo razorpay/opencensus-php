@@ -2379,6 +2379,7 @@ EOT;
                 ->whereNull(Terminal\Constants::TS_DELETED_AT)
                 ->where($pBankCode, $bankCode)
                 ->with($relations)
+                ->distinct()
                 ->get();
         }
 
@@ -2393,6 +2394,7 @@ EOT;
                 ->whereNotNull($pAuthorizedAt)
                 ->where($pBankCode, $bankCode)
                 ->with($relations)
+                ->distinct()
                 ->get();
     }
 
