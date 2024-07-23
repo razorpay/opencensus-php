@@ -1348,10 +1348,10 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->getPreferences();
 
-        $this->assertEquals(6, count($response['methods']['cardless_emi']));
+        $this->assertEquals(7, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('kkbk', $response['methods']['cardless_emi']);
-//        $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
 //        $this->assertArrayHasKey('barb', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('cshe', $response['methods']['cardless_emi']);
@@ -3985,7 +3985,8 @@ class CheckoutPreferencesTest extends TestCase
             ->andReturnUsing(function (array $input) use ($output)
             {
                 $cardlessEmiWhitelistExperiments = [
-                    $this->app['config']->get('app.zestmoney_whitelisted_merchants_experiment_id')
+                    $this->app['config']->get('app.zestmoney_whitelisted_merchants_experiment_id'),
+                    $this->app['config']->get('app.hdfc_cardless_emi_whitelisted_merchants_experiment_id')
                 ];
 
                 foreach ($input as $experimentData)
@@ -4061,6 +4062,20 @@ class CheckoutPreferencesTest extends TestCase
         $output[] = [
             "experiment" => [
                 "id" => $this->app['config']->get('app.zestmoney_whitelisted_merchants_experiment_id'),
+            ],
+            "variant"    => [
+                "variables" => [
+                    [
+                        "key" => "result",
+                        "value" => "on"
+                    ]
+                ]
+            ],
+        ];
+
+        $output[] = [
+            "experiment" => [
+                "id" => $this->app['config']->get('app.hdfc_cardless_emi_whitelisted_merchants_experiment_id'),
             ],
             "variant"    => [
                 "variables" => [

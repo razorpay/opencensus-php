@@ -4345,7 +4345,7 @@ class Processor
 
     protected function preProcessPaymentInputsForCardlessEmi($input, $payment)
     {
-        $this->verifyCardlessEmiEnabled();
+        $this->verifyCardlessEmiEnabled($payment);
 
         if ((empty($input['ott']) === false) and
             (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input['provider']) === false))

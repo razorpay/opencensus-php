@@ -10767,7 +10767,7 @@ trait Authorize
         }
     }
 
-    protected function verifyCardlessEmiEnabled()
+    protected function verifyCardlessEmiEnabled(Payment\Entity $payment)
     {
         $merchantMethods = $this->methods;
 
@@ -10776,6 +10776,29 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);
+        }
+
+        $cardlessEmiProviders = $merchantMethods->getEnabledCardlessEmiProviders();
+
+        $wallet = $payment[Payment\Entity::WALLET];
+
+        if(isset($wallet) === true and
+            ($wallet === EMI\CardlessEmiProvider::HDFC) and
+            (isset($cardlessEmiProviders[$wallet]) === false or $cardlessEmiProviders[$wallet] == 0))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED);
+        }
+
+        $whitelistedInstruments = (new MerchantCore())->getWhitelistedCardlessEMIInstruments($payment->merchant);
+        $isExperimentCheckRequired = array_key_exists($wallet, CardlessEmiProvider::$experimentCheckRequiredCardlessEmiProviders);
+
+        if(isset($wallet) === true and
+            (in_array($wallet, Emi\CardlessEmiProvider::$disabledInstruments, true) or
+                ($isExperimentCheckRequired === true and !in_array($wallet,$whitelistedInstruments))))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED);
         }
     }
 
@@ -13733,7 +13756,7 @@ trait Authorize
                 break;
 
             case Payment\Method::CARDLESS_EMI:
-                $this->verifyCardlessEmiEnabled();
+                $this->verifyCardlessEmiEnabled($payment);
                 break;
 
             case Payment\Method::PAYLATER:
