@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -200,12 +201,14 @@ class Repository extends Base\Repository
 
         $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        if($balance->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        if(($balance->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and $balance->getType() === BalanceType::PRIMARY)
         {
-
-            if ($enableTidbStreaming === false) {
+            if ($enableTidbStreaming === false)
+            {
                 $balance->setName("enabled");
-            } else {
+            }
+            else
+            {
                 $balance->setName("disabled");
             }
         }

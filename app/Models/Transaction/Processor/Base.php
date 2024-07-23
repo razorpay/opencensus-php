@@ -397,7 +397,18 @@ abstract class Base extends BaseCore
 
         $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        if ((in_array($this->txn->getType(), [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL]) === true) and
+            (isset($this->txn->source->balance)=== true) and
+            ($this->txn->source->balance->getType() !== Balance\Type::PRIMARY))
+        {
+            return;
+        }
+
+        if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+            (in_array($this->txn->getType(),[Transaction\Type::PAYMENT, Transaction\Type::ADJUSTMENT,
+                    Transaction\Type::DISPUTE, Transaction\Type::REFUND, Transaction\Type::REVERSAL,
+                    Transaction\Type::SETTLEMENT, Transaction\Type::TRANSFER, Transaction\Type::BUNDLE_FEE,
+                    Transaction\Type::PRODUCT_CHARGE,Transaction\Type::SETTLEMENT_TRANSFER, Transaction\Type::SETTLEMENT_ONDEMAND]) === true))
         {
             if ($enableTidbStreaming === false)
             {
