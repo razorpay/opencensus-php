@@ -42,7 +42,14 @@ class Repository extends Base\Repository
     {
         $payoutIdColumn = $this->repo->payout_source->dbColumn(Entity::PAYOUT_ID);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $connectionType = $this->getReportingReplicaConnection();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getSlaveConnection();
+        }
+
+        return $this->newQueryWithConnection($connectionType)
                     ->where($payoutIdColumn, $payoutId)
                     ->get();
     }
