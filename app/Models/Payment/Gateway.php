@@ -132,6 +132,7 @@ class Gateway
     const UPI_KOTAK              = 'upi_kotak';
     const UPI_RZPRBL             = 'upi_rzprbl';
     const UPI_RZPAPB             = 'upi_rzpapb';
+    const UPI_MINDEED            = 'upi_mindeed';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';

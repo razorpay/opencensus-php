@@ -55,6 +55,8 @@ class RecoveryMethod
         Gateway::UPI_YESBANK,
         Gateway::UPI_RBL,
         Gateway::UPI_JUSPAY,
+        Gateway::UPI_RZPAPB,
+        Gateway::UPI_MINDEED,
     ];
 
     const WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS = [
