@@ -263,12 +263,7 @@ class Service extends Base\Service
             $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
         }
 
-        $isPACBPartnerSubMerchant = (new Merchant\AccessMap\Core())->isPACBPartnerSubMerchant($this->merchant->getId());
 
-        if ($isPACBPartnerSubMerchant)
-        {
-            $response[FeatureConstants::PACB_EXPORT_PARTNER_FLOW] = true;
-        }
 
         return $response;
     }

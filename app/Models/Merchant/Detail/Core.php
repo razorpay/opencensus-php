@@ -6147,6 +6147,22 @@ class Core extends Base\Core
                 'error' => $e,
             ]);
         }
+        try
+        {
+            $isPACBPartnerSubMerchant = (new Merchant\AccessMap\Core())->isPACBPartnerSubMerchant($merchant->getId());
+
+            if ($isPACBPartnerSubMerchant)
+            {
+                $response[FeatureConstants::PACB_EXPORT_PARTNER_FLOW] = true;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::PACB_SUB_MERCHANT_FLOW, [
+                'error' => $e,
+            ]);
+        }
+
 
         $this->trace->info(TraceCode::MERCHANT_CREATE_RESPONSE_LATENCY, [
             'merchant_id' => $merchantDetails->getId(),
