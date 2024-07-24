@@ -2073,13 +2073,13 @@ class Gateway extends Base\Gateway
 
         if($isBajajFinserv === true)
         {
-            $variant = $this->app->razorx->getTreatment($input['merchant']['id'], self::BAJAJ_FINSERV_REST_API, $this->mode);
+            $variant = $this->app->razorx->getTreatment($input['merchant']['id'], RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode);
             if(strtolower($variant) === 'v2')
             {
                 $url =  $baseUrl . $prefix . '/' .  $gateway . '/v2/' . $this->action;
             }
             else {
-                $url =  $baseUrl . $prefix . '/' .  $gateway . '/v1/' . $this->action;
+                $url =  $baseUrl . $prefix . '/' .  $gateway . '/v3/' . $this->action;
             }
         }
 

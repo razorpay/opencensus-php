@@ -1872,7 +1872,9 @@ trait Authorize
             $card = $payment->card;
             $redirectUrl = null;
 
-            if (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false)
+            if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false) or
+                ($payment->getGateway() === Payment\Gateway::BAJAJ and
+                    strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v3'))
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -9911,7 +9913,11 @@ trait Authorize
                 if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true) and
                     ($payment->isEmi() === true))
                 {
-                    return true;
+                    if ($payment->getGateway() !== Payment\Gateway::BAJAJ or
+                        strtolower($this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::BAJAJ_FINSERV_REDIRECT_FLOW, $this->mode)) === 'v2')
+                    {
+                        return true;
+                    }
                 }
 
                 if ($payment->getAuthType() === Payment\AuthType::IVR)
@@ -12721,8 +12727,6 @@ trait Authorize
                 if (isset($input['skip'])){
                     $inputDetails['skip'] = $input['skip'];
                 }
-
-
 
                 /*
                  * In double redirect scenario terminal will be set
