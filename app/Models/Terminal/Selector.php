@@ -979,8 +979,7 @@ class Selector extends Base\Core
 
         // for cash on delivery payments, there is no gateway involved, hence we can bypass
         // routing logic
-        if (($payment->isCoD() === true) or
-            ($payment->isOffline() === true))
+        if ($payment->isCoD() === true)
         {
             return false;
         }
