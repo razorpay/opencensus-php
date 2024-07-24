@@ -1720,6 +1720,8 @@ class Constants
 
     const CUSTOM_TXN_TAB_VIEW =  'custom_txn_tab_view';
 
+    const EXTERNAL_PA_TOKENISATION =  'external_pa_tokenisation';
+
     const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
 
     const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
@@ -2863,6 +2865,7 @@ class Constants
         self::ENABLE_MERCHANT_EXPIRY_PP                    => true,
         self::DYNAMIC_PL_OFFSET                            => true,
         self::CUSTOM_TXN_TAB_VIEW                          => true,
+        self::EXTERNAL_PA_TOKENISATION                     => true,
         self::ENABLE_PAYMENT_LINK_SIGN                     => true,
         self::NOTIFY_VIA_WHATSAPP_PLINK                    => true,
         self::PL_V2_DISABLE_ALL_SMS                        => true,
