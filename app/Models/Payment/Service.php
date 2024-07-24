@@ -330,10 +330,10 @@ class Service extends Base\Service
         //     return (new Payment\Refund\Service())->scroogeRefundCreate($id, $input);
         // }
 
-        if ($this->merchant->isFeatureEnabled(Features::COLLECTX_ENABLED))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUNDS_UNAVAILABLE_FOR_COLLECTX);
-        }
+        // if ($this->merchant->isFeatureEnabled(Features::COLLECTX_ENABLED))
+        // {
+        //     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUNDS_UNAVAILABLE_FOR_COLLECTX);
+        // }
 
         $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
