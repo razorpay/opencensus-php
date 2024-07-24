@@ -220,6 +220,26 @@ class Repository extends Base\Repository
     {
         assertTrue($this->isTransactionActive());
 
+        $properties = [
+            'request_data' => json_encode([
+                "merchant_id" => $balance->merchant->getId()
+            ]),
+            'id'            => $balance->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.ledger_makeshift_dual_write_enabled'),
+        ];
+
+        $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($balance->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+
+            if ($enableTidbStreaming === false) {
+                $balance->setName("enabled");
+            } else {
+                $balance->setName("disabled");
+            }
+        }
+
         return $this->newQuery()
                     ->where(Entity::ID, $balance->getId())
                     ->where(Entity::BALANCE, $oldBalance)

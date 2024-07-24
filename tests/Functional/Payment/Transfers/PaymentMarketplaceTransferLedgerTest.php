@@ -691,7 +691,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
                         "merchant_payable_amount" => "50000",
                         "merchant_balance_amount" => "50000",
                     ],
-                    "additional_params"=>["entry_type"=>"debit", "credit_accounting" => "amount_credits_redemption"]
+                    "additional_params"=>["entry_type"=>"debit"]
                 ],
                 [
                     "merchant_id"=>"10000000000001",
@@ -3510,8 +3510,6 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         ];
 
         $this->mockSns($debitTxnPayload, $creditTxnPayload);
-
-        $this->mockRazorxTreatmentV2(RazorxTreatment::EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_LEDGER_JOURNAL, 'on');
 
         $debitJID = 'LsqR14zUg9dbDB' ;
         $creditJID = 'LsqR157oYgCrCR';

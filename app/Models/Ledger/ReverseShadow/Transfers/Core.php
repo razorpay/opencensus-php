@@ -158,7 +158,7 @@ class Core extends Base\Core
 
         $rule = [];
 
-        if ($amountCredits > 0)
+        if ($amountCredits > 0 && $amountCredits >= $transfer->getAmount())
         {
             $rule[LedgerConstants::CREDIT_ACCOUNTING] = LedgerConstants::AMOUNT_CREDITS_REDEMPTION;
         }
@@ -251,30 +251,21 @@ class Core extends Base\Core
                 ]);
         }
 
-        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabled($transfer->merchant);
+        $filteredDebitJournal = array_filter($journalResponse, function ($item) use ($debitJournalId) {
+            return $item['id'] === $debitJournalId;
+        });
 
-        if ($isExpEnabled === true)
-        {
-            $filteredDebitJournal = array_filter($journalResponse, function ($item) use ($debitJournalId) {
-                return $item['id'] === $debitJournalId;
-            });
+        $filteredCreditJournal = array_filter($journalResponse, function ($item) use ($creditJournalId) {
+            return $item['id'] === $creditJournalId;
+        });
 
-            $filteredCreditJournal = array_filter($journalResponse, function ($item) use ($creditJournalId) {
-                return $item['id'] === $creditJournalId;
-            });
+        $debitJournal = reset($filteredDebitJournal);
 
-            $debitJournal = reset($filteredDebitJournal);
+        $creditJournal = reset($filteredCreditJournal);
 
-            $creditJournal = reset($filteredCreditJournal);
-
-            // create txns without balance update and dispatch for settlement if experiment is enabled
-            // balance update is done asynchronously via Kafka for sync journal creates
-            $this->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
-        }
-        else
-        {
-            $this->pushTransferDataToKafkaForAPITransactionCreation($transfer, $transferPayment,$creditJournalId, $debitJournalId);
-        }
+        // create txns without balance update and dispatch for settlement if experiment is enabled
+        // balance update is done asynchronously via Kafka for sync journal creates
+        $this->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
 
         return [$fee, $tax];
     }

@@ -1093,28 +1093,11 @@ class Core extends Base\Core
 
                                 $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
 
-                                $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabled($transfer->merchant);
+                                // create txns without balance update and dispatch for settlement
+                                // balance update is done asynchronously via AsyncBalanceUpdateForTransfer job
+                                $reverseShadowTransfersCore = new ReverseShadow\Transfers\Core();
 
-                                if ($isExpEnabled === true)
-                                {
-                                    // create txns without balance update and dispatch for settlement if experiment is enabled
-                                    // balance update is done asynchronously via AsyncBalanceUpdateForTransfer job
-                                    $reverseShadowTransfersCore = new ReverseShadow\Transfers\Core();
-
-                                    $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
-                                }
-                                else
-                                {
-                                    // dispatch to queue again for creating txns asynchronously
-                                    $input = [
-                                        LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
-                                        LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
-                                        LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
-                                        LedgerConstants::SOURCE                => $source,
-                                    ];
-
-                                    $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
-                                }
+                                $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
 
                                 $this->trace->info(
                                     TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
@@ -1122,7 +1105,6 @@ class Core extends Base\Core
                                         LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
                                         LedgerConstants::FEES  => $transfer->getFees(),
                                         LedgerConstants::TAX  => $transfer->getTax(),
-                                        'transfer_input_to_queue'     => $input
                                     ]);
                             }
                             else
