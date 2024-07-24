@@ -7302,6 +7302,26 @@ return [
         ],
     ],
 
+    'testAddingMetadataToUsersEntityFromInvitation'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'vendorportal@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'invitation'            => 'set_from_test',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'source'                => 'vendor_portal_v2'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'login' => true,
+            ],
+        ],
+    ],
+
 
     'testUserRegisterFoBankPocRole'  => [
         'request'  => [

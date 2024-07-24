@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         Entity::IS_DRAFT           => 'sometimes|boolean|',
         Entity::INVITATIONTYPE     => 'sometimes|string',
         Entity::INVITATION_DETAILS => 'sometimes|array|custom',
+        Entity::METADATA           => 'sometimes|array',
     ];
 
     protected static $productRules = [
@@ -62,6 +63,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::ROLE        => 'required|string|bail|custom',
         Entity::IS_DRAFT    => 'sometimes|boolean|',
+        Entity::METADATA    => 'sometimes|array',
     ];
 
     protected static $resendRules = [

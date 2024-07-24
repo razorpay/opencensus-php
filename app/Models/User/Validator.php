@@ -66,6 +66,7 @@ class Validator extends Base\Validator
     protected static $createRules = self::CREATE_COMMON_RULES + [
         Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
+        Entity::METADATA                        => 'sometimes|array',
     ];
 
     protected static $createWithoutCaptchaRules = self::CREATE_COMMON_RULES;
@@ -166,6 +167,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
 //        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::SETTINGS              => 'nullable|associative_array',
+        Entity::METADATA              => 'sometimes|array',
     ];
 
     protected static $editUserInternalRules = [

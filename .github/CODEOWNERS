@@ -281,8 +281,8 @@ app/Models/QrPaymentRequest                         @razorpay/qr-code-devs
 #
 # Blocking PR merge on user entity as they are owned by platform identity team.
 # Any update on these files, will require explicit approval from platform identity team.
-app/Models/User/                                    @razorpay/identity-core @razorpay/spine-edge
-app/Http/Controllers/UserController.php             @razorpay/identity-core @razorpay/spine-edge
+app/Models/User/                                     @razorpay/spine-edge
+app/Http/Controllers/UserController.php              @razorpay/spine-edge
 
 
 #

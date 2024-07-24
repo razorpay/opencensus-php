@@ -116,6 +116,7 @@ class Entity extends Base\PublicEntity
     const MEDIUM_SMS                    = 'sms';
     const MEDIUM_EMAIL                  = 'email';
     const SETTINGS                      = 'settings';
+    const METADATA                      = 'metadata';
 
     // Settings keys
     const SETTINGS_SKIP_CONTACT_MOBILE_VERIFY = 'skip_contact_mobile_verify';
@@ -146,7 +147,8 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_RESET_EXPIRY,
         self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
         self::SIGNUP_VIA_EMAIL,
-        self::AUDIT_ID
+        self::AUDIT_ID,
+        self::METADATA,
     ];
 
     protected $public = [
@@ -165,6 +167,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_LOCKED,
         self::CREATED_AT,
         self::SIGNUP_VIA_EMAIL,
+        self::METADATA,
     ];
 
 
@@ -190,13 +193,15 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::CONTACT_MOBILE_VERIFIED => 0,
+        self::METADATA                => null
     ];
 
     protected $casts = [
         self::CONTACT_MOBILE_VERIFIED       => 'bool',
         self::SECOND_FACTOR_AUTH            => 'bool',
         self::ACCOUNT_LOCKED                => 'bool',
-        self::OLD_PASSWORDS                 => 'array'
+        self::OLD_PASSWORDS                 => 'array',
+        self::METADATA                      => 'array'
     ];
 
     protected $generateIdOnCreate = true;

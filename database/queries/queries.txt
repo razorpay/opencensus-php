@@ -7245,3 +7245,5 @@ ALTER TABLE credit_transaction
 
 ALTER TABLE transfers ADD COLUMN source_channel varchar(15) DEFAULT 'online';
 
+ALTER TABLE invitations ADD COLUMN metadata JSON DEFAULT NULL;
+ALTER TABLE users ADD COLUMN metadata JSON DEFAULT NULL;

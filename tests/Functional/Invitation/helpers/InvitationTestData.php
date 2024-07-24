@@ -165,6 +165,32 @@ return [
     ],
 
 
+    'testAddingMetadataToInvitationEntityForPartnerAgent' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'partner_agent',
+                'sender_name' => 'partner_name',
+                'metadata' => [
+                    'employee_code' => '133456',
+                    'city' => 'Khalilabad',
+                    'hiring_manager'=>'Udit Mishra',
+                    'team'=>'omni_acquisition',
+                    'contact_mobile'=> '73555206348',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1000InviteMerc',
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'partner_agent'
+            ]
+        ]
+    ],
+
 
     'testPostSendInvitationToNewCurlecUser' => [
         'request' => [

@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const ROLE_NAME    = 'role_name';
     const DELETED_AT   = 'deleted_at';
     const PRODUCT      = 'product';
+    const METADATA     = 'metadata';
 
     const INVITATIONTYPE = 'invitation_type';
     const INVITATION_DETAILS = 'invitation_details';
@@ -45,7 +46,8 @@ class Entity extends Base\PublicEntity
         self::PRODUCT,
         self::MERCHANT_ID,
         self::IS_DRAFT,
-        self::ROLE_NAME
+        self::ROLE_NAME,
+        self::METADATA,
     ];
 
     protected $fillable = [
@@ -54,6 +56,15 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::PRODUCT,
         self::IS_DRAFT,
+        self::METADATA,
+    ];
+
+    protected $casts = [
+        self::METADATA                  => 'array',
+    ];
+
+    protected $defaults = [
+        self::METADATA                       => null
     ];
 
     protected $hidden = [
@@ -183,4 +194,4 @@ class Entity extends Base\PublicEntity
     {
         return $this->incrementing;
     }
-}
+   }

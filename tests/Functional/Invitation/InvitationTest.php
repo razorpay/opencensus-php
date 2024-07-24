@@ -338,6 +338,35 @@ class InvitationTest extends TestCase
         });
     }
 
+    public function testAddingMetadataToInvitationEntityForPartnerAgent()
+    {
+        Mail::fake();
+
+        $response = $this->startTest();
+        
+        $metadata = $response['metadata'];
+
+        $this->assertNotNull($metadata);
+        $this->assertEquals('133456', $metadata['employee_code']);
+        $this->assertEquals('Khalilabad', $metadata['city']);
+        $this->assertEquals('Udit Mishra', $metadata['hiring_manager']);
+        $this->assertEquals('omni_acquisition', $metadata['team']);
+        $this->assertEquals('73555206348', $metadata['contact_mobile']);
+
+        Mail::assertQueued(InvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('sender_name', $viewData);
+            $this->assertArrayHasKey('merchant_name', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+
+            $this->assertEquals('emails.invitation.new', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testPostSendInvitationToExistingUser()
     {
         Mail::fake();

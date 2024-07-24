@@ -12450,6 +12450,67 @@ class UserTest extends TestCase
         $this->assertNotNull($user);
     }
 
+
+    public function testAddingMetadataToUsersEntityFromInvitation()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+            'metadata' => [
+                'employee_code' => '133456',
+                'city' => 'Khalilabad',
+                'hiring_manager'=>'Udit Mishra',
+                'team'=>'omni_acquisition',
+                'contact_mobile'=> '7355206348',
+            ]
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invitation'] = $invitation['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        // Validate that invitation is accepted and deleted
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+        $this->assertNull($invite);
+
+
+        // User is created for given email
+        $user = \DB::table('users')
+            ->where('email', '=', 'vendorportal@razorpay.com')
+            ->first();
+
+        // Decode the JSON string into an associative array
+        $metadata = json_decode($user->metadata, true);
+
+        $this->assertNotNull($metadata);
+        $this->assertEquals('133456', $metadata['employee_code']);
+        $this->assertEquals('Khalilabad', $metadata['city']);
+        $this->assertEquals('Udit Mishra', $metadata['hiring_manager']);
+        $this->assertEquals('omni_acquisition', $metadata['team']);
+
+        // Test if contact mobile and contact mobile verified is updated in $user from invitations's metadata
+        $this->assertEquals('7355206348',  $user->contact_mobile);
+        $this->assertEquals(false, $user->contact_mobile_verified);
+        $this->assertNotNull($user);
+
+    }
+
+
     public function testUserRegisterFoBankPocRole()
     {
         Mail::fake();

@@ -116,6 +116,11 @@ class Core extends Base\Core
             $invitation->user()->associate($invitedUser);
         }
 
+        // Handle saving the invitation entity, including metadata
+        if (empty($input['metadata']) == false) {
+            $invitation->metadata = $input['metadata'];
+        }
+
         $this->repo->saveOrFail($invitation);
 
         $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());

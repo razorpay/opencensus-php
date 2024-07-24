@@ -771,6 +771,9 @@ class Core extends Base\Core
             $this->validateAccountCreation($input);
         }
 
+        //Fetch Metadata from invitation entity
+        $metadata = $input['invitation']['metadata'];
+
         unset($input[MerchantEntity::SIGNUP_SOURCE]);
 
         unset($input[MerchantEntity::COUNTRY_CODE]);
@@ -782,6 +785,21 @@ class Core extends Base\Core
         unset($input[UConstants::ONLY_DS_UPLOAD_MIQ]);
 
         $user = $this->getUserEntity()->build($input, $operation);
+
+        // If metadata fetched from invitations entity is not empty set same metadata to user's Metadata
+        if (empty($metadata) == false) {
+
+            //If contact mobile is present inside metadata then set same contact mobile to user->contactMobile and mark setContactMobileVerified as false(Not verified)
+            if (empty($metadata['contact_mobile'] == false)){
+                $user->setContactMobile($metadata['contact_mobile']);
+                $user->setContactMobileVerified(false);
+            }
+
+           // Removing contact mobile from metadata before setting it to users metadata
+            unset($metadata['contact_mobile']);
+
+            $user->metadata = $metadata;
+        }
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {
