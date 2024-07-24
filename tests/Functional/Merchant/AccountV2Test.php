@@ -486,6 +486,37 @@ class AccountV2Test extends TestCase
         $this->assertTrue($metricCaptured);
     }
 
+    public function testEditAccountV2ProfileAddressCT()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $output["response"]["variant"]["name"] = "enable";
+
+        $this->mockSplitExperimentForPaymentAcceptanceAttributes($output);
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequestAddressCT'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
+
     public function testEditAccountV2OtherDetails()
     {
         $this->setUpPartnerWithKycHandled();
@@ -666,6 +697,39 @@ class AccountV2Test extends TestCase
         $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $response = $this->startTest($testData);
+
+        // check that stakeholder is not yet created
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        $stakeholders = $this->getDbEntities('stakeholder', ['merchant_id' => $accountId])->toArray();
+
+        $this->assertEmpty($stakeholders);
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testCreateAccountV2ByPlatformPartnerAddressCT()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockStorkService();
+
+        $this->app['stork_service']->shouldReceive('publishOnSns')->twice()->andReturn(null);
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequestAddressCT'];
 
         $response = $this->startTest($testData);
 

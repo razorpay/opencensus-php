@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 use Request;
 use RZP\Exception;
 use Lib\PhoneBook;
+use RZP\Models\BankingAccount\Activation\Detail\Region;
 use RZP\Models\DeviceDetail;
 use RZP\Models\User;
 use RZP\Trace\Tracer;
@@ -69,7 +70,8 @@ class Core extends Merchant\Core
             $requestedProduct = ProductConstants::CAPITAL;
         }
 
-        $input = $this->transformInputIfApplicable($input);
+        $input = $this->transformInputForCrossBorderMerchant($input);
+        $input = $this->transformInputForDomesticMerchant($input);
 
         (new Validator)->validateCreateAccount($input, $requestedProduct);
 
@@ -140,7 +142,7 @@ class Core extends Merchant\Core
         return $account;
     }
 
-    protected function transformInputIfApplicable($input)
+    protected function transformInputForCrossBorderMerchant($input)
     {
         if (!$this->merchant->isFeatureEnabled(Feature\Constants::PACB_EXPORT_PARTNER_FLOW)) {
             return $input;
@@ -245,7 +247,8 @@ class Core extends Merchant\Core
 
         $subMerchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);
 
-        $input = $this->transformInputIfApplicable($input);
+        $input = $this->transformInputForCrossBorderMerchant($input);
+        $input = $this->transformInputForDomesticMerchant($input);
 
         if (empty($subMerchantDetails) === false && $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
         {
@@ -1113,4 +1116,31 @@ class Core extends Merchant\Core
         return $this->merchantOnboardingApiV2ProxyController;
     }
 
+    protected function transformInputForDomesticMerchant(array $input): array
+    {
+        // if correct chhattisgarh spelling is present
+        // then convert it to existing incorrect one used internally
+        // FIXME: fix the typo issue at it's core instead of hacky solution
+        if (isset($input[Constants::PROFILE]) and isset($input[Constants::PROFILE][Constants::ADDRESSES]))
+        {
+            $addresses = [];
+            foreach($input[Constants::PROFILE][Constants::ADDRESSES] as $addressType => $address)
+            {
+                if (!isset($address[Constants::STATE]) || $address[Constants::STATE] === null) {
+                    $addresses[$addressType] = $address;
+                    continue;
+                }
+
+                $state = strtolower($address[Constants::STATE]);
+
+                if ($state == Region::Chhattisgarh) {
+                    $state = Region::Chattisgarh;
+                    $address[Constants::STATE] = $state;
+                }
+                $addresses[$addressType] = $address;
+            }
+            $input[Constants::PROFILE][Constants::ADDRESSES] = $addresses;
+        }
+        return $input;
+    }
 }
