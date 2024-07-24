@@ -9918,6 +9918,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($user);
 
+        $user->setContactMobileVerified(true);
+
+        $this->repo->saveOrFail($user);
+
         $primaryOwnerMerchantIdList = $user->getPrimaryMerchantIds();
 
         $this->trace->info(TraceCode::PRIMARY_OWNER_MERCHANT_IDS_LIST, [

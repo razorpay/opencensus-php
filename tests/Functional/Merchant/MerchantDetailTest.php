@@ -9929,6 +9929,8 @@ Team Razorpay',
         $user = $this->getDbEntityById('user', $userId);
 
         $this->assertEquals($user->getContactMobile() , '8722627189');
+
+        $this->assertEquals($user->isContactMobileVerified() , true);
     }
 
     private function validateBusinessWebsiteWorkflowApprove($merchantId , $workflowActionId)
