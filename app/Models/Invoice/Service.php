@@ -47,6 +47,7 @@ class Service extends Base\Service
     protected $userRole = null;
 
     const TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY = 50;
+    const LIVE_NOCODEAPP_MAX_CREATIONS_PER_DAY = 10000;
 
     public function __construct()
     {
@@ -864,16 +865,20 @@ class Service extends Base\Service
     public function shouldLimitNoCodeAppCreation(string $appType): bool {
         try
         {
-            if ($this->mode !== Mode::TEST) {
-                return false;
-            }
-
             $merchantId = $this->merchant->getId();
+
+            // No limit for live mode registered merchants
+            if (
+                $this->mode === Mode::LIVE &&
+                !$this->merchant->merchantDetail->isUnregisteredBusiness()
+            ) {
+               return false;
+            }
 
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.nocodeapps_ratelimit_experiment_id'),
-                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+                'request_data'  => json_encode(['merchant_id' => $merchantId, 'mode' => $this->mode]),
             ];
 
             $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -885,11 +890,13 @@ class Service extends Base\Service
 
             $date = Carbon::now()->format('d-m-Y');
 
-            $redisKey = sprintf('%s_%s_count_%s', $appType, $merchantId, $date);
+            $redisKey = sprintf('%s_%s_%s_count_%s', $appType, $merchantId, $this->mode, $date);
 
             $count = $this->app['cache']->get($redisKey) ?? 0;
 
-            if ($count >= self::TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY) {
+            $merchantAllowedCreationCount = ($this->mode === Mode::TEST) ? self::TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY : self::LIVE_NOCODEAPP_MAX_CREATIONS_PER_DAY;
+
+            if ($count >= $merchantAllowedCreationCount) {
                 $this->trace->info(TraceCode::NOCODEAPP_CREATION_RATELIMITED, [
                     'appType'       => $appType,
                     'merchantId'    => $merchantId,
@@ -901,8 +908,10 @@ class Service extends Base\Service
 
             $count += 1;
 
-            /** @var $ttl - ttl of 1 day */
-            $ttl = 24 * 60 * 60;
+            /** @var $ttl - ttl till EOD*/
+            $currentTime = time();
+            $endOfDay = Carbon::now()->endOfDay()->timestamp;
+            $ttl = $endOfDay - $currentTime;
 
             $this->app['cache']->put($redisKey, $count, $ttl);
 
