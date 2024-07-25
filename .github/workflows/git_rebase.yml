@@ -10,18 +10,21 @@ concurrency:
 
 jobs:
   workflow_rebase:
-    - name: Checkout workflow
-      uses: actions/checkout@v4
-      with:
-        sparse-checkout: |
-          .github
+    name: Workflow rebase
+    runs-on: ['api-micro-arm']
+    steps:
+      - name: Checkout workflow
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
 
-    - name: Merge Master into current branch
-      id: backmerge
-      uses: devmasx/merge-branch@master
-      with:
-        type: now
-        from_branch: master
-        message: Merged `master` into `${{ github.event.pull_request.head.ref || github.ref }}` branch
-        target_branch: ${{ github.event.pull_request.head.ref || github.ref }}
-        github_token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Merge Master into current branch
+        id: backmerge
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          from_branch: master
+          message: Merged `master` into `${{ github.event.pull_request.head.ref || github.ref }}` branch
+          target_branch: ${{ github.event.pull_request.head.ref || github.ref }}
+          github_token: ${{ secrets.CI_BOT_TOKEN }}
