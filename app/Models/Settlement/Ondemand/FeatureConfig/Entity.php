@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const PRICING_PERCENT_SCALE_FACTOR    = 'pricing_percent_scale_factor';
     const ES_PRICING_PERCENT              = 'es_pricing_percent';
     const ES_PRICING_PERCENT_SCALE_FACTOR = 'es_pricing_percent_scale_factor';
+    const MAX_LIMIT_PER_WORKING_DAY       = 'max_limit_per_working_day';
 
     const FULL_ACCESS                     = 'full_access';
     const AMOUNT                          = 'amount';
@@ -47,7 +48,8 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENTS_COUNT_LIMIT,
         self::MAX_AMOUNT_LIMIT,
         self::PRICING_PERCENT,
-        self::ES_PRICING_PERCENT
+        self::ES_PRICING_PERCENT,
+        self::MAX_LIMIT_PER_WORKING_DAY,
     ];
 
     public function getMerchantId()
@@ -103,5 +105,10 @@ class Entity extends Base\PublicEntity
     public function setEsPricingPercent($esPricingPercent)
     {
         $this->setAttribute(Entity::ES_PRICING_PERCENT, $esPricingPercent);
+    }
+
+    public function setMaxLimitPerWorkingDay($maxLimitPerWorkingDay)
+    {
+        $this->setAttribute(Entity::MAX_LIMIT_PER_WORKING_DAY, $maxLimitPerWorkingDay);
     }
 }

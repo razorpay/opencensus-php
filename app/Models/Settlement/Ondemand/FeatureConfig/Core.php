@@ -19,6 +19,11 @@ class Core extends Base\Core
             Entity::ES_PRICING_PERCENT           => $input[Entity::ES_PRICING_PERCENT]
         ];
 
+        if(isset($input[Entity::MAX_LIMIT_PER_WORKING_DAY]) && $input[Entity::MAX_LIMIT_PER_WORKING_DAY] !== "")
+        {
+            $data[Entity::MAX_LIMIT_PER_WORKING_DAY] = $input[Entity::MAX_LIMIT_PER_WORKING_DAY];
+        }
+
         $featureConfig = (new Entity)->build($data);
 
         $featureConfig->generateId();
@@ -53,6 +58,11 @@ class Core extends Base\Core
         if (isset($input[Entity::ES_PRICING_PERCENT]) === true)
         {
             $featureConfig->setEsPricingPercent($input[Entity::ES_PRICING_PERCENT]);
+        }
+
+        if (isset($input[Entity::MAX_LIMIT_PER_WORKING_DAY]) === true && $input[Entity::MAX_LIMIT_PER_WORKING_DAY] !== "")
+        {
+            $featureConfig->setMaxLimitPerWorkingDay($input[Entity::MAX_LIMIT_PER_WORKING_DAY]);
         }
 
         $this->repo->saveOrFail($featureConfig);

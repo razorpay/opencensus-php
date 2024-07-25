@@ -19,7 +19,8 @@ class Validator extends Base\Validator
         Entity::ES_PRICING_PERCENT              => 'sometimes|integer',
         Entity::ES_PRICING_PERCENT_SCALE_FACTOR => 'sometimes|integer',
         Entity::FULL_ACCESS                     => 'required|in:yes,no',
-        Entity::MAX_AMOUNT_LIMIT                => 'required|integer'
+        Entity::MAX_AMOUNT_LIMIT                => 'required|integer',
+        Entity::MAX_LIMIT_PER_WORKING_DAY       => 'sometimes|integer'
     ];
 
     protected static $createRules = [
@@ -30,6 +31,7 @@ class Validator extends Base\Validator
         Entity::PRICING_PERCENT                 => 'required|integer',
         Entity::PRICING_PERCENT_SCALE_FACTOR    => 'sometimes|integer',
         Entity::ES_PRICING_PERCENT              => 'sometimes|integer',
-        Entity::ES_PRICING_PERCENT_SCALE_FACTOR => 'sometimes|integer'
+        Entity::ES_PRICING_PERCENT_SCALE_FACTOR => 'sometimes|integer',
+        Entity::MAX_LIMIT_PER_WORKING_DAY       => 'sometimes|integer'
     ];
 }

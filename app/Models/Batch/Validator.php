@@ -862,7 +862,8 @@ class Validator extends Base\Validator
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT_SCALE_FACTOR     => 'sometimes|integer',
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT               => 'sometimes|integer',
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT_SCALE_FACTOR  => 'sometimes|integer',
-        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                      => 'required|in:yes,no'
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                      => 'required|in:yes,no',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY        => 'sometimes|integer'
     ];
 
     protected static $capitalMerchantEligibilityConfigTypeRowRules = [
