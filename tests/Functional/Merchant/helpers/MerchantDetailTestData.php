@@ -3567,6 +3567,44 @@ return [
         ],
     ],
 
+    'testL2SubmissionChangesForAssistedOnboardingOfRazorPaySalesRole' => [
+        'request'   => [
+            'content' => [
+                'activation_form_milestone' => 'L2',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'verification' => [
+                    'status'          => 'pending',
+                ],
+                'can_submit'   => true,
+                'submitted' => true,
+                'activation_form_milestone' => 'L2',
+                'activation_status' => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testShopDetailsSubmissionChangesForAssistedOnboardingOfRazorPaySalesRole' => [
+        'request'   => [
+            'content' => [
+                'is_pos_details_submitted' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'is_pos_details_submitted' => '1',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBlacklistActivationFlowEasyOnboarding' => [
         'request'   => [
             'content' => [
@@ -3587,6 +3625,29 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testL2SubmissionChangesForAssistedOnboardingOfOwnerRole' => [
+        'request'   => [
+            'content' => [
+                'activation_form_milestone' => 'L2',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'verification' => [
+                    'status'          => 'pending',
+                ],
+                'can_submit'   => true,
+                'submitted' => true,
+                'activation_form_milestone' => 'L2',
+                'activation_status' => 'under_review',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 
     'testBlacklistActivationFlowCanSubmit' => [
         'request'   => [

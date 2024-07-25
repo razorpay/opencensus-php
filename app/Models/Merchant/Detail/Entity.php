@@ -697,7 +697,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         $this->setAttribute(self::ARCHIVED_AT, $archived_at);
     }
-
+    public function submitActivationForm()
+    {
+        $this->setAttribute(self::SUBMITTED, true);
+        $this->setAttribute(self::SUBMITTED_AT, time());
+    }
     public function hasBankAccountDetails(): bool
     {
         $ifscCode      = $this->getBankBranchIfsc();

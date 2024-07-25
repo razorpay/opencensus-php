@@ -436,8 +436,29 @@ class Core extends Base\Core
                         'response'                    => $response,
                     ]);
 
-                    if ($this->canSubmit($input, $response, $activationFormMilestone) === true)
+                    $loggedInUserRole = $this->app['basicauth']->getUserRole();
+
+                    //if l2 submission is done by sales then mark milestone as l2 but not submit activation form and not create cmma case as well
+                    if($loggedInUserRole === UserRole::RAZORPAY_SALES and
+                       $this->canSubmit($input, $response, $activationFormMilestone) === true)
                     {
+                        $this->validateEmailVerificationIfApplicable($merchant);
+                        // blacklisted merchant should not be allowed to submit l2 form
+                        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
+                        $merchantDetails = $this->getMerchantDetails($merchant);
+                        $merchantDetails->submitActivationForm();
+                        $merchantDetails->setActivationFormMilestone(DetailConstants::L2_SUBMISSION);
+                        $merchantDetails->setActivationProgress($this->getActivationProgress($merchantDetails));
+                        $this->repo->saveOrFail($merchantDetails);
+
+                        $response['activation_progress'] = $this->getActivationProgress($merchantDetails);
+                        $response['activation_form_milestone'] = DetailConstants::L2_SUBMISSION;
+                        $response['submitted'] = true;
+
+                    }
+                    //if l2 submission is not done by sales user then create online case and submit activation form
+                    else if ($this->canSubmit($input, $response, $activationFormMilestone) === true){
                         $this->validateEmailVerificationIfApplicable($merchant);
 
                         // blacklisted merchant should not be allowed to submit l2 form
@@ -12369,8 +12390,9 @@ class Core extends Base\Core
             );
 
             $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
+            $asssitedOnboarding = $merchant->isSignupCampaign(DDConstants::ASSISTED_ONBOARDING);
 
-            if ($phantomOnboarding === true)
+            if ($phantomOnboarding === true or $asssitedOnboarding === true)
             {
                 return [
                     "fee_based_gating" => [

@@ -613,13 +613,24 @@ class Service extends Base\Service
 
         $this->saveMerchantEligibilityForCategoriesV3Revamp($merchantId, $input, $merchant);
 
-        if ($isPosDetailsSubmitted === true and  isset($merchantDetails) === true)
+        $loggedInUserRole=$this->auth->getUserRole();
+
+        if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and  $loggedInUserRole != User\Role::RAZORPAY_SALES)
         {
             $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
 
             $this->trace->info(TraceCode::PGOS_POS_SUBMIT, [
                 'pos_activation_flow' => $posActivationFlow
             ]);
+
+            //if l3 submission is not done by sales user then we should treat it as self serve merchant and create pos case and create online case as well if it was not created at l2 submission(only possible if l2 is submitted by sales user)
+            // TODO: Maintain 'pos_submission' and 'pos_submitted_at' timestamps.
+            // TODO: Implement 'pos_form_locked' flag.
+            // TODO: Add validation to prevent edits to POS fields based on 'pos_form_locked' statu
+            if($merchantDetails->getActivationStatus() === null){
+                $input[Entity::ACTIVATION_FORM_MILESTONE] = DEConstants::L2_SUBMISSION;
+                $this->saveMerchantDetails($input, $merchant);
+            }
 
             if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
 
@@ -5608,5 +5619,11 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+    protected function isPosDetailsSubmitted($isPosDetailsSubmitted)
+    {
+        return (($isPosDetailsSubmitted === '1') or
+            ($isPosDetailsSubmitted === 1) or
+            ($isPosDetailsSubmitted === true));
     }
 }
