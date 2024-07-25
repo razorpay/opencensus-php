@@ -35,9 +35,7 @@ const LandingPage = (props): JSX.Element => {
         setRedirectURL(`/optimizer/rules/${id}`);
       }, 1000);
     }
-    if (terminalProviders?.length <= 0) {
-      fetchTerminalProviders();
-    }
+    fetchTerminalProviders();
   }, []);
 
   const collapse = () => {

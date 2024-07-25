@@ -115,7 +115,13 @@ export const TPV_OPTIONS = {
   2: 'Both (TPV and Non TPV)',
 };
 
-export const HAS_UPI_FEATURES = ['upi_mindgate', 'upi_icici', 'upi_axis', 'billdesk_optimizer'];
+export const HAS_UPI_FEATURES = [
+  'upi_mindgate',
+  'upi_icici',
+  'upi_axis',
+  'billdesk_optimizer',
+  'pay10',
+];
 export const HAS_NETBANKING_FEATURES = ['atom', 'netbanking_axis', 'billdesk_optimizer'];
 
 export const ACCOUNT_TYPE_OPTIONS = [

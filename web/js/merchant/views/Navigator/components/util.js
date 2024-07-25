@@ -1340,6 +1340,7 @@ export const gatewayLogos = {
   checkout_dot_com_optimizer: require('assets/optimizer/cko.png'),
   easebuzz_optimizer: require('assets/optimizer/easebuzz_optimizer.png'),
   wallet_payzapp: require('assets/optimizer/payzapp.png'),
+  pay10: require('assets/optimizer/pay10.png'),
 };
 
 export const mapRulesObjectToArray = (e) => {
@@ -1532,6 +1533,11 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://www.hdfcbank.com/sme/pay/payments-and-collections/payzapp-for-business',
     dashboardUrlLabel: 'payzapp-for-business',
+  },
+  pay10: {
+    dashboardImg: null,
+    dashboardUrl: 'https://www.pay10.com/contact-us.php',
+    dashboardUrlLabel: 'pay10.com',
   },
 };
 

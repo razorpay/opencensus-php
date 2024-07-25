@@ -7,6 +7,7 @@ import { CommonPoints } from './CommonPoints';
 import { CybersourcePoints } from './CybersourcePoints';
 import { HdfcPoints } from './HdfcPoints';
 import { IngenicoPoints } from './IngenicoPoints';
+import { Pay10Points } from './Pay10Points';
 import { PayZappPoints } from './PayZappPoints';
 import { PaytmPoints } from './PaytmPoints';
 import { PayuPoints } from './PayuPoints';
@@ -46,6 +47,8 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <UpiIciciPoints />;
     case 'wallet_payzapp':
       return <PayZappPoints />;
+    case 'pay10':
+      return <Pay10Points />;
     default:
       return (
         <ol>

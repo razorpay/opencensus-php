@@ -499,7 +499,7 @@ const ProviderView = (props) => {
                     </>
                   )}
                   {upiFeatures?.tpv ? (
-                    <TPVDetails tpv={netbankingFeatures?.tpv} />
+                    <TPVDetails tpv={upiFeatures?.tpv} />
                   ) : netbankingFeatures?.tpv ? (
                     <TPVDetails tpv={netbankingFeatures?.tpv} />
                   ) : null}

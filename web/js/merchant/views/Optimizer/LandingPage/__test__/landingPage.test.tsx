@@ -1,79 +1,85 @@
 import React from 'react';
 import { render } from 'test-utils';
 
+import * as reducers from 'merchant/reducers/navigator/details';
+
 import LandingPage from '../landingPage';
+
+const initialState = {
+  navigator: {
+    rules: [],
+    loading: false,
+    default_rule: {},
+    providers_loading: false,
+    terminalProviders: [
+      {
+        Provider_name: 'payu_token_testing',
+        Description: 'Payu Token testing',
+        Gateway: 'payu',
+        Gateway_details: {
+          Key: 'rrlwpu',
+          'Payment Methods': ['card'],
+          Recurring: false,
+          Salt: '',
+          Sodexo: false,
+          optimizer_seamless_disabled: false,
+        },
+        Currency: ['INR'],
+        Gateway_acquirer: 'payu',
+        Terminal_id: 'JeWAMAcySy4Thr',
+        Status: 'activated',
+        created_at: 1654585928,
+        updated_at: 1677732969,
+      },
+      {
+        Provider_name: 'razorpay',
+        Description: 'Razorpay provider',
+        Gateway: 'razorpay',
+        Gateway_details: {
+          'Payment Methods': ['card', 'netbanking', 'upi', 'wallet'],
+          wallet_metadata: {
+            wallets: [
+              'jiomoney',
+              'payzapp',
+              'amazonpay',
+              'payumoney',
+              'mcash',
+              'boost',
+              'touchngo',
+              'grabpay',
+              'freecharge',
+              'razorpaywallet',
+              'phonepe',
+              'paypal',
+              'paytm',
+              'mobikwik',
+              'airtelmoney',
+              'bajajpay',
+              'sbibuddy',
+              'olamoney',
+              'mpesa',
+              'openwallet',
+              'phonepeswitch',
+            ],
+          },
+        },
+        Currency: ['INR'],
+        Gateway_acquirer: 'razorpay',
+        Status: '',
+        created_at: 0,
+        updated_at: 0,
+      },
+    ],
+  },
+};
+
+const fetchTerminals = jest
+  .spyOn(reducers, 'fetchTerminalProviders')
+  .mockImplementation(() => ({ type: 'FETCH_TERMINAL_PROVIDERS', payload: [] }));
 
 describe('Optimizer Landing Page', () => {
   const renderApp = () => {
-    return render(<LandingPage />, {
-      initialState: {
-        navigator: {
-          rules: [],
-          loading: false,
-          default_rule: {},
-          providers_loading: false,
-          terminalProviders: [
-            {
-              Provider_name: 'payu_token_testing',
-              Description: 'Payu Token testing',
-              Gateway: 'payu',
-              Gateway_details: {
-                Key: 'rrlwpu',
-                'Payment Methods': ['card'],
-                Recurring: false,
-                Salt: '',
-                Sodexo: false,
-                optimizer_seamless_disabled: false,
-              },
-              Currency: ['INR'],
-              Gateway_acquirer: 'payu',
-              Terminal_id: 'JeWAMAcySy4Thr',
-              Status: 'activated',
-              created_at: 1654585928,
-              updated_at: 1677732969,
-            },
-            {
-              Provider_name: 'razorpay',
-              Description: 'Razorpay provider',
-              Gateway: 'razorpay',
-              Gateway_details: {
-                'Payment Methods': ['card', 'netbanking', 'upi', 'wallet'],
-                wallet_metadata: {
-                  wallets: [
-                    'jiomoney',
-                    'payzapp',
-                    'amazonpay',
-                    'payumoney',
-                    'mcash',
-                    'boost',
-                    'touchngo',
-                    'grabpay',
-                    'freecharge',
-                    'razorpaywallet',
-                    'phonepe',
-                    'paypal',
-                    'paytm',
-                    'mobikwik',
-                    'airtelmoney',
-                    'bajajpay',
-                    'sbibuddy',
-                    'olamoney',
-                    'mpesa',
-                    'openwallet',
-                    'phonepeswitch',
-                  ],
-                },
-              },
-              Currency: ['INR'],
-              Gateway_acquirer: 'razorpay',
-              Status: '',
-              created_at: 0,
-              updated_at: 0,
-            },
-          ],
-        },
-      },
-    });
+    return render(<LandingPage />, { initialState });
   };
 
   it('should render without any errors', () => {
@@ -82,6 +88,7 @@ describe('Optimizer Landing Page', () => {
 
   it('should render the landing page', () => {
     const { getByText, queryByText, getByRole, queryAllByText } = renderApp();
+    expect(fetchTerminals).toHaveBeenCalled();
     expect(getByText('Payment Provider')).toBeInTheDocument();
     expect(getByText('2')).toBeInTheDocument();
     const documentation = queryByText('Documentation');
