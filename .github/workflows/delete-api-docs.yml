@@ -2,7 +2,7 @@ name: Delete Api docs
 
 on:
   push:
-  delete:
+  # delete:
 
 jobs:
   delete-temporary-api-details-files:
