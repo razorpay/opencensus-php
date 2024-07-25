@@ -17,7 +17,7 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
     case 'pending':
       return (
         <Badge icon={ClockIcon} color="information" size={size}>
-          In Progress
+          Pending
         </Badge>
       );
     case 'under_review':
@@ -36,6 +36,12 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
       return (
         <Badge icon={CheckIcon} color="primary" size={size}>
           KYC Qualified
+        </Badge>
+      );
+    case 'completed':
+      return (
+        <Badge icon={CheckIcon} color="positive" size={size}>
+          Completed
         </Badge>
       );
     default:

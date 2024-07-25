@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableHeader,
@@ -16,9 +17,10 @@ import {
   Heading,
 } from '@razorpay/blade/components';
 import moment from 'moment';
-import { SalesOnboardedMerchants } from '@dashboard/shared-utils/graphql/graph-types';
+import { SalesOnboardedMerchants } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import StatusBadge from 'apps/pos/src/app/components/StatusBadge/StatusBadge';
+import { ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 
 interface DashboardTableProps {
   pages: SalesOnboardedMerchants[];
@@ -38,6 +40,7 @@ const SalesTable: React.FC<DashboardTableProps> = ({
   handlePageChange,
 }) => {
   const { isMobile } = useScreen();
+  const navigate = useNavigate();
   const merchants = (isFetching && !pages[page] ? [...pages, ...pages.slice(-1)] : pages)
     .map((page) => page.merchants)
     .flat();
@@ -48,6 +51,10 @@ const SalesTable: React.FC<DashboardTableProps> = ({
 
   if (page === 0 && tableData.length === 0 && !isLoading && !isFetching)
     return <Text>No data available</Text>;
+
+  const handleOnDetailsClick = (merchantId: string): void => {
+    navigate(`${ONBOARDING_ROUTE}/${merchantId}`);
+  };
 
   return (
     <Table
@@ -156,6 +163,7 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                           icon={ChevronRightIcon}
                           variant="anchor"
                           size="medium"
+                          onClick={() => handleOnDetailsClick(tableItem.merchantId as string)}
                         >
                           Details
                         </Link>

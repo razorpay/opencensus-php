@@ -2,7 +2,7 @@ export const MERCHANT_OTP_VERIFY_SUCCESS = {
   status_code: 200,
   success: true,
   data: {
-    token: 'abc1234',
+    token: 'mock_token_123',
   },
 };
 
@@ -53,15 +53,4 @@ export const MERCHANT_ID_REGISTER_ERROR = {
       description: 'Something went wrong',
     },
   ],
-};
-
-export const MERCHANT_SWITCH_SUCCESS_RESPONSE = {
-  status_code: 200,
-  success: true,
-};
-
-export const MERCHANT_SWITCH_SUCCESS_ERROR = {
-  status_code: 400,
-  success: false,
-  errors: ['Something went wrong'],
 };

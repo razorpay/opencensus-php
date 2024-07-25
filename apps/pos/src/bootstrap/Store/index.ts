@@ -1,30 +1,7 @@
 import create from 'zustand';
-import { CartDeviceType, PosAppStateType } from '../../app/types';
+import { OnboardingStoreState } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 
-const posStore = (set) => {
-  const state: PosAppStateType = {
-    selectedDevices: [],
-    addDevice: (device: CartDeviceType) => {
-      set((prevState) => structuredClone(prevState).push(device));
-    },
-    removeDevice: (deviceIdx: number) => {
-      set((prevState) => {
-        const newState = structuredClone(prevState);
-        delete newState[deviceIdx];
-        return newState;
-      });
-    },
-    editDevice: (device: CartDeviceType, deviceIdx: number) => {
-      set((prevState) => {
-        const newState = structuredClone(prevState);
-        newState[deviceIdx] = device;
-        return newState;
-      });
-    },
-  };
-  return state;
-};
+// Create the Zustand store with types
+const useOnboardingStore = create<OnboardingStoreState>(() => ({}));
 
-const usePosStore = create(posStore);
-
-export default usePosStore;
+export default useOnboardingStore;

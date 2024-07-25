@@ -57,7 +57,7 @@ export interface MerchantOTPVerifySuccessResponse {
   email: string;
   merchants: {
     id: string;
-    role: string; //TODO: To be replaced with Merchant roles from graph-types
+    role: string;
   }[];
 }
 

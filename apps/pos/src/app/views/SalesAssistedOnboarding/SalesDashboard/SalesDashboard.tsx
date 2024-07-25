@@ -1,19 +1,28 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
-import { Box, Button, CloseIcon, Heading, Text, useToast } from '@razorpay/blade/components';
+import {
+  Box,
+  Button,
+  CloseIcon,
+  Heading,
+  PlusIcon,
+  Text,
+  useToast,
+} from '@razorpay/blade/components';
 
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { graphqlRequest } from '@dashboard/shared-utils/graphql/graphql';
 import moment from 'moment';
-import {
-  SalesOnboardedMerchants,
-  SalesOnboardedMerchantsError,
-} from '@dashboard/shared-utils/graphql/graph-types';
+import { useNavigate } from 'react-router-dom';
+
 import SalesTable from './SalesTable';
 import StatusFilter from './StatusFilter';
-import AddMerchant from 'apps/pos/src/app/views/SalesAssistedOnboarding/SalesDashboard/AddMerchant';
 import { SALES_ONBOARDED_MERCHANTS } from 'apps/pos/src/services/queries/SalesDashboard';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
-import { STATUS_FILTERS } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import {
+  SalesOnboardedMerchants,
+  STATUS_FILTERS,
+} from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import { GraphQLErrorResponseType } from 'apps/pos/src/app/types/common';
 
 interface Filters {
   status: STATUS_FILTERS;
@@ -56,8 +65,9 @@ const SalesDashboard = (): JSX.Element => {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const queryCache = useQueryClient();
   const toast = useToast();
+  const navigate = useNavigate();
 
-  const handleError = (response: SalesOnboardedMerchantsError): void => {
+  const handleError = (response: GraphQLErrorResponseType): void => {
     toast.show({
       color: 'negative',
       content: (
@@ -74,14 +84,14 @@ const SalesDashboard = (): JSX.Element => {
 
   const { data, fetchNextPage, isLoading, isFetching } = useInfiniteQuery<
     SalesOnboardedMerchants | null,
-    SalesOnboardedMerchantsError
+    GraphQLErrorResponseType
   >({
     queryKey: [QUERY_KEY],
     queryFn: async ({ pageParam = 0 }) => {
       const { salesOnboardedMerchants: response } = await graphqlRequest<
         'salesOnboardedMerchants',
         SalesOnboardedMerchants,
-        SalesOnboardedMerchantsError
+        GraphQLErrorResponseType
       >({
         document: SALES_ONBOARDED_MERCHANTS,
         variables: {
@@ -93,10 +103,12 @@ const SalesDashboard = (): JSX.Element => {
         },
       });
 
-      if (response?.__typename === 'SalesOnboardedMerchants') return response;
+      if (response?.__typename === 'SalesOnboardedMerchants')
+        return response as SalesOnboardedMerchants;
       else if (response?.__typename === 'SalesOnboardedMerchantsError') {
-        handleError(response);
+        handleError(response as GraphQLErrorResponseType);
       }
+
       return null;
     },
     getNextPageParam: (lastPage) => {
@@ -146,6 +158,10 @@ const SalesDashboard = (): JSX.Element => {
     }
   };
 
+  const handleOnAddMerchantClick = (): void => {
+    navigate('onboarding/new');
+  };
+
   useEffect(() => {
     handleOnApplyFilter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,8 +180,20 @@ const SalesDashboard = (): JSX.Element => {
           <Heading color="surface.text.gray.normal" size="xlarge">
             Merchant Details
           </Heading>
-          <Box>
-            <AddMerchant />
+          <Box
+            display="flex"
+            justifyContent="center"
+            position="fixed"
+            bottom="0px"
+            padding="spacing.4"
+            backgroundColor="surface.background.gray.intense"
+            left="0px"
+            right="0px"
+            zIndex="1"
+          >
+            <Button icon={PlusIcon} size="large" onClick={handleOnAddMerchantClick} isFullWidth>
+              Add Merchant
+            </Button>
           </Box>
         </Box>
         <Suspense fallback={null}>

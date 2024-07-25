@@ -4,9 +4,9 @@ declare global {
   }
 }
 
-const redirectToEasyOnboarding = (): void => {
+const redirectToEasyOnboarding = (replace = false): void => {
   const url = window.EASY_ONBOARDING_URL;
-  window.location.assign(url);
+  replace ? window.location.replace(url) : window.location.assign(url);
 };
 
 export default redirectToEasyOnboarding;

@@ -16,12 +16,14 @@ interface UseMrchantSwitch {
 
 const useMerchantSwitch = ({ onSuccess, onError }: UseMerchantSwitchProps): UseMrchantSwitch => {
   const [merchantId, setMerchantId] = useState<string>('');
-  const { isLoading } = useQuery<SwitchMerchantAPIResponse, APIResponse<null, string>>(
-    ['merchantSwitch'],
+  const { isLoading, fetchStatus } = useQuery<SwitchMerchantAPIResponse, APIResponse<null, string>>(
+    ['merchantSwitch', merchantId],
     () => switchMerchant({ merchantId }),
     {
       enabled: !!merchantId,
       cacheTime: 0,
+      staleTime: Infinity,
+      retry: false,
       onSuccess: (data) => {
         setMerchantId('');
         onSuccess?.(data);
@@ -34,7 +36,7 @@ const useMerchantSwitch = ({ onSuccess, onError }: UseMerchantSwitchProps): UseM
   );
 
   return {
-    isLoading,
+    isLoading: isLoading && fetchStatus !== 'idle', // https://github.com/TanStack/query/issues/3975#issuecomment-1244075132
     handleSwitchMerchant: (merchantId: string) => setMerchantId(merchantId),
   };
 };

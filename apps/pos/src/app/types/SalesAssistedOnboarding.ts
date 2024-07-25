@@ -57,7 +57,7 @@ export interface MerchantOTPVerifySuccessResponse {
   email: string;
   merchants: {
     id: string;
-    role: string; //TODO: To be replaced with Merchant roles from graph-types
+    role: string;
   }[];
 }
 
@@ -85,3 +85,32 @@ export type STATUS_FILTERS =
   | 'rejected'
   | 'needs_clarification'
   | 'kyc_qualified_stb';
+
+export type OnboardingStoreState = {};
+
+export enum SalesMerchantActivationStatusEnum {
+  ACTIVATED = 'ACTIVATED',
+  KYC_QUALIFIED_STB = 'KYC_QUALIFIED_STB',
+  NEEDS_CLARIFICATION = 'NEEDS_CLARIFICATION',
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+}
+
+export interface SalesOnboardedMerchant {
+  createdAt: string;
+  merchantId: string;
+  merchantMobile: string;
+  merchantName?: string;
+  progressCompletion: string;
+  status?: SalesMerchantActivationStatusEnum;
+}
+
+export interface SalesOnboardedMerchants {
+  hasMore: boolean;
+  limit: number;
+  merchants: SalesOnboardedMerchant;
+  offset: number;
+  total: number;
+  __typename?: string;
+}

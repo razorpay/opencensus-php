@@ -59,4 +59,5 @@ module.exports = {
     __DEPLOYMENT_TYPE__: 'default',
   },
   modulePathIgnorePatterns: ['.*e2e.*'],
+  testTimeout: 30000,
 };

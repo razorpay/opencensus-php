@@ -10,7 +10,7 @@ export const MERCHANT_REGISTRATION_ERRORS: Record<string, MerchantRegistrationEr
     description: 'Please enter a valid phone number',
   },
   GENERIC_ERROR: {
-    title: 'Something went wrong',
-    description: 'Please try again',
+    title: 'Error occured',
+    description: 'Something went wrong. Please try again',
   },
 };
