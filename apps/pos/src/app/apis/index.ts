@@ -6,6 +6,7 @@ interface SalesFetchProps<T> {
   mode: 'live' | 'test';
   data?: T;
   isAbsUrl?: boolean;
+  headers?: Record<string, string>;
 }
 
 export const salesFetch = <SalesFetchArgs, APIResponse>({
@@ -14,6 +15,7 @@ export const salesFetch = <SalesFetchArgs, APIResponse>({
   mode,
   data,
   isAbsUrl,
+  headers,
 }: SalesFetchProps<SalesFetchArgs>): Promise<APIResponse> =>
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   merchantFetch({
@@ -22,4 +24,5 @@ export const salesFetch = <SalesFetchArgs, APIResponse>({
     mode,
     data,
     absUrl: isAbsUrl ? url : undefined,
+    ...(headers ? headers : {}),
   });

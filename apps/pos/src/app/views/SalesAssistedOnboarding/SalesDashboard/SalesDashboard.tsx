@@ -150,7 +150,6 @@ const SalesDashboard = (): JSX.Element => {
     handleOnApplyFilter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
-
   return (
     <Box display="flex" flexDirection="column" width="100%">
       <Box margin="spacing.5">
@@ -169,7 +168,6 @@ const SalesDashboard = (): JSX.Element => {
             <AddMerchant />
           </Box>
         </Box>
-
         <Suspense fallback={null}>
           <Box display="flex" alignItems="flex-start" flexWrap="wrap">
             <Box
