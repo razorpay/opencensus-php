@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unsafe */
 import { Box, MenuIcon } from '@razorpay/blade/components';
 import React, { Component } from 'react';
-import { Ray } from '@razorpay/frontend-care';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
@@ -41,9 +40,25 @@ import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { RayWrapper } from './styled';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
+import { importRemote } from 'merchant/utils/dynamic-remotes';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
+);
+
+// eslint-disable-next-line require-await
+const loadModule = async ({ module, scope }) =>
+  importRemote({
+    url: window.cdnDashboardAssetsUrl,
+    scope,
+    module,
+  });
+
+const RayChat = lazyLoader(() =>
+  /**  webpackChunkName: "Raychat" */ loadModule({
+    module: 'raychat',
+    scope: 'ray',
+  }),
 );
 
 // number of times to show MTU offer
@@ -85,17 +100,10 @@ class HeaderNav extends Component {
   };
 
   isRAYEnabled() {
-    if (!this.props.user.isINCountry) {
-      return false;
-    }
+    const { user: { isINCountry } = {}, splitz: { abExperiments: { ray_ai } = {} } = {} } =
+      this.props;
 
-    const { abExperiments } = this.props.splitz || {
-      abExperiments: { ray_ai: undefined },
-    };
-
-    if (abExperiments?.ray_ai?.variables?.result !== 'on') return false;
-
-    return true;
+    return isINCountry && ray_ai?.variables?.result === 'on';
   }
 
   isRTUXHomepage() {
@@ -379,16 +387,18 @@ class HeaderNav extends Component {
                     {this.isRAYEnabled() ? (
                       <RayWrapper>
                         <ErrorBoundary
-                          rank={Ranks.P0}
+                          rank={Ranks.P1}
                           team={Teams.CARE}
                           FallbackComponent={() => <></>}
                         >
-                          <Ray
-                            user={user}
-                            onRAYOpen={this.onRAYOpenCallback}
-                            onRAYClose={this.onRAYCloseCallback}
-                            isDrawerVisible={openedCareWidget === 'RAY'}
-                          />
+                          <SuspenseWithLoader>
+                            <RayChat
+                              user={user}
+                              onRAYOpen={this.onRAYOpenCallback}
+                              onRAYClose={this.onRAYCloseCallback}
+                              isDrawerVisible={openedCareWidget === 'RAY'}
+                            />
+                          </SuspenseWithLoader>
                         </ErrorBoundary>
                       </RayWrapper>
                     ) : null}
