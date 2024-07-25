@@ -16,6 +16,7 @@ use Mockery\Matcher\AnyArgs;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Merchant\Detail\Entity as DE;
 use RZP\Tests\Functional\Fixtures\Entity\Workflow;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
@@ -5911,6 +5912,201 @@ class CoreTest extends TestCase
         $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         $expectedOutput = [];
         $this->assertEquals($error_codes, $expectedOutput);
+    }
+
+    public function testValidateBusinessSubcategoryForCategoryForEasyOnboarding()
+    {
+        $merchantId = '1T4hRFHFx4SPDK';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_subcategory' => "fashion_and_lifestyle",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+        ]);
+
+        $categoryData = [
+            DE::BUSINESS_CATEGORY    => "ecommerce",
+            DE::BUSINESS_SUBCATEGORY => "fashion_and_lifestyle",
+        ];
+
+        $validator = new Validator($merchantDetail);
+
+        try {
+            $validator->validateBusinessSubcategoryForCategory($categoryData);
+            $this->assertTrue(true);
+        } catch (BadRequestValidationFailureException $e) {
+            $this->assertStringContainsString(Validator::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY, $e->getMessage());
+            $this->assertTrue(false);
+        }
+    }
+
+    public function testOldOnboardingInvalidBusinessSubcategory()
+    {
+        $merchantId = '1T4hRFHFx4UiST';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_subcategory' => "fashion_and_lifestyle",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'old_onboarding',
+        ]);
+        // If category is not `others` and subcategory is not valid
+        $categoryData = [
+            DE::BUSINESS_CATEGORY    => "ecommerce",
+            DE::BUSINESS_SUBCATEGORY => "coaching",
+        ];
+
+        $validator = new Validator($merchantDetail);
+
+        try {
+            $validator->validateBusinessSubcategoryForCategory($categoryData);
+            $this->assertTrue(false);
+        } catch (BadRequestValidationFailureException $e) {
+            $this->assertStringContainsString(Validator::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY, $e->getMessage());
+            $this->assertTrue(true);
+        }
+    }
+
+    public function testCategoryAndSubcategoryNullForOldOnboarding()
+    {
+        $merchantId = '1T4hRFHFx4UiPK';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_subcategory' => "fashion_and_lifestyle",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'old_onboarding',
+        ]);
+       // If category and subcategory are not set
+        $categoryData = [
+            DE::BUSINESS_CATEGORY    => null,
+            DE::BUSINESS_SUBCATEGORY => null,
+        ];
+
+        $validator = new Validator($merchantDetail);
+
+        try {
+            $validator->validateBusinessSubcategoryForCategory($categoryData);
+            $this->assertTrue(true);
+        } catch (BadRequestValidationFailureException $e) {
+            $this->assertStringContainsString(Validator::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY, $e->getMessage());
+            $this->assertTrue(false);
+        }
+    }
+
+    public function testValidateIfCategoryIsNullForOldOnboarding()
+    {
+        $merchantId = '1T4hRFHFx4SPDK';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_subcategory' => "fashion_and_lifestyle",
+        ]);
+        
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'old_onboarding',
+        ]);
+
+        $categoryData = [
+            DE::BUSINESS_CATEGORY    => null,
+            DE::BUSINESS_SUBCATEGORY => "fashion_and_lifestyle",
+        ];
+
+        $validator = new Validator($merchantDetail);
+
+        try {
+            $validator->validateBusinessSubcategoryForCategory($categoryData);
+            $this->assertTrue(false);
+        } catch (BadRequestValidationFailureException $e) {
+            $this->assertStringContainsString(Validator::BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY, $e->getMessage());
+            $this->assertTrue(true);
+        }
+    }
+    
+    public function testOldOnboardingCategoryAndSubcategoryEmptyValidation()
+    {
+        $merchantId = '1T4hRFHFx4SFTU';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_subcategory' => "fashion_and_lifestyle",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'old_onboarding',
+        ]);
+
+        $categoryData = [
+            DE::BUSINESS_CATEGORY    => "",
+            DE::BUSINESS_SUBCATEGORY => "",
+        ];
+
+        $validator = new Validator($merchantDetail);
+
+        try {
+            $validator->validateBusinessSubcategoryForCategory($categoryData);
+            $this->assertTrue(true);
+        } catch (BadRequestValidationFailureException $e) {
+            $this->assertStringContainsString(Validator::BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY, $e->getMessage());
+            $this->assertTrue(false);
+        }
     }
 
     public function testFetchVerificationErrorCodesMatchDescriptionStatusFailedBankAccount()
