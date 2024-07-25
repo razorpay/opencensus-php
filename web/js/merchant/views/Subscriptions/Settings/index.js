@@ -44,6 +44,27 @@ const enableDisableMap = {
   0: 'disable',
 };
 
+const methodToAlertCTAMap = {
+  [PAYMENT_METHODS.CARD]: 'Enable cards recurring',
+  [PAYMENT_METHODS.UPI]: 'Enable UPI autopay',
+  [PAYMENT_METHODS.EMANDATE]: 'Enable eMandate',
+  // no CTA for Touch 'n Go Wallet as it is by defalt always enabled as payment method
+};
+
+const methodToTitleMap = {
+  [PAYMENT_METHODS.CARD]: 'Card recurring',
+  [PAYMENT_METHODS.UPI]: 'UPI autopay',
+  [PAYMENT_METHODS.EMANDATE]: 'eMandate',
+  [PAYMENT_METHODS.TOUCH_N_GO_WALLET]: "Touch 'n Go Wallet", // Touch 'n Go Wallet is by defalt always enabled as payment method. Only added for notification text
+};
+
+const methodToRoutesMap = {
+  [PAYMENT_METHODS.CARD]: ROUTES_INFO.CARDS,
+  [PAYMENT_METHODS.UPI]: ROUTES_INFO.UPI_QR,
+  [PAYMENT_METHODS.EMANDATE]: ROUTES_INFO.NETBANKING,
+  // no route for Touch 'n Go Wallet as it is by defalt always enabled as payment method
+};
+
 const isToggleEnabled = (methodName) => (settings) => {
   const paymentMethod = findBy(settings.items, 'name', methodName) || {};
   return paymentMethod.setting_enabled === '1';
@@ -158,7 +179,9 @@ class SubscriptionsSettings extends React.Component {
         });
         this.props.showNotification({
           type: 'success',
-          message: `Payment method ${methodName} ${checked ? 'disabled' : 'enabled'} successfully`,
+          message: `${methodToTitleMap[methodName]} as a subscriptions payment method has been ${
+            checked ? 'disabled' : 'enabled'
+          } successfully`,
         });
       })
       .catch(({ errors }) => {
@@ -416,24 +439,6 @@ class SubscriptionsSettings extends React.Component {
     );
   }
 }
-
-const methodToAlertCTAMap = {
-  [PAYMENT_METHODS.CARD]: 'Enable cards recurring',
-  [PAYMENT_METHODS.UPI]: 'Enable UPI autopay',
-  [PAYMENT_METHODS.EMANDATE]: 'Enable eMandate',
-};
-
-const methodToTitleMap = {
-  [PAYMENT_METHODS.CARD]: 'Card recurring',
-  [PAYMENT_METHODS.UPI]: 'UPI autopay',
-  [PAYMENT_METHODS.EMANDATE]: 'eMandate',
-};
-
-const methodToRoutesMap = {
-  [PAYMENT_METHODS.CARD]: ROUTES_INFO.CARDS,
-  [PAYMENT_METHODS.UPI]: ROUTES_INFO.UPI_QR,
-  [PAYMENT_METHODS.EMANDATE]: ROUTES_INFO.NETBANKING,
-};
 
 const ToggleCard = ({
   title,

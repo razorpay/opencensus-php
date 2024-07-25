@@ -133,14 +133,14 @@ describe('Subscription Settings', () => {
     await userEvent.click(cardBtn);
     await waitFor(() => {
       expect(screen.getByTestId('Notification--success')).toHaveTextContent(
-        'Payment method card disabled successfully',
+        'Card recurring as a subscriptions payment method has been disabled successfully',
       );
     });
 
     await userEvent.click(cardBtn);
     await waitFor(() => {
       expect(screen.getByTestId('Notification--success')).toHaveTextContent(
-        'Payment method card enabled successfully',
+        'Card recurring as a subscriptions payment method has been enabled successfully',
       );
     });
   });
