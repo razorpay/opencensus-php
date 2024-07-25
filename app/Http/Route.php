@@ -2693,6 +2693,8 @@ class Route
         // Fetch user via OAuth (Private Auth)
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
+        // this route is a replica of the above 2 routes except that auth is done via app auth on edge
+        'fetch_users_internal'                     => ['get',      'users/internal/{id}',                            'UserController@getUser'                                            ],
         'multiple_users_fetch_internal'            => ['post',     'users_internal',                                 'UserController@getMultipleUsers'                                   ],
         'user_fetch_entity'                        => ['get',      'users_entity/{id}',                              'UserController@getUserEntity'                                      ],
         'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
@@ -5865,6 +5867,7 @@ class Route
         'vendor_payment_verify_otp',
         'payout_fetch_by_id_internal',
         'user_fetch_internal',
+        'fetch_users_internal',
         'fetch_actor_info_internal',
         'on_hold_merchant_slas_internal',
         'user_verify_second_factor_auth',
@@ -17910,7 +17913,7 @@ class Route
             'merchant_submit_internal',
             'merchant_assign_pricing_internal',
             'check_user_exists',
-            'user_fetch'
+            'fetch_users_internal'
         ],
 
         'disputes' => [
