@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
 import { useMobile } from 'common/hooks/useMobile';
 import { Environments, ShowNotificationType, User as UserType } from 'common/typings';
 import User from 'merchant/models/User';
@@ -10,8 +9,10 @@ import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/redu
 import { merchantFetch } from 'merchant/utils/ajax';
 import { closeModal as closeModalReducer } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
-
 import Loader from './components/Loader';
+import CompletedPolicyPages from './components/CompletedPolicyPages';
+import Questionnaire from './components/Questionaire';
+import PreviewPages from './components/PreviewPolicyPages';
 import WebsiteFixModal from './components/WebsiteFixModal';
 import WebsiteInputModal from './components/WebsiteInputModal';
 import useBusinessWebsiteData from './hooks/useBusinessWebsiteData';
@@ -22,6 +23,7 @@ import {
   trackBasicWebsiteCheckCompleteModalLoad,
   trackBasicWebsiteCheckInProgressModalLoad,
   trackBasicWebsiteCheckFailureModalLoad,
+  track,
 } from './tracking';
 import {
   Platform,
@@ -29,6 +31,10 @@ import {
   WebsiteUpdateAutomationStatus,
   PolicyPageFormData,
   MainPageFormData,
+  PolicyPagesSelection,
+  WebsiteVerificationStatus,
+  PolicyPageToBeMade,
+  WebsitePolicyPages,
 } from './types';
 import {
   getWebsiteCount,
@@ -59,6 +65,8 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   const isMobile = useMobile();
   const saveWebsiteUpdate = useSaveWebsiteUpdate();
   const { currentStep, setCurrentStep, websiteUpdateData } = useBusinessWebsiteData();
+  const [policyPagesToBeMade, setPolicyPagesToBeMade] = useState<PolicyPageToBeMade>([]);
+  const [pagesBeingVerified, setPagesBeingVerified] = useState<WebsitePolicyPages[]>([]);
 
   async function submitAppForActivated(formState) {
     try {
@@ -217,11 +225,13 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
 
   const handlePolicyPageSubmit = (formState: PolicyPageFormData) => {
     // save button
-    // TODO: Check for validation logic before firing this event
-    const pagesFilled: Array<string> = [];
+    const pagesFilled: Array<Partial<WebsitePolicyPages>> = [];
+    const newPolicyPagesToBeMade: PolicyPageToBeMade = [];
     Object.entries(formState).forEach(([key, data]) => {
-      if (data.value) {
-        pagesFilled.push(key);
+      if (data.radioValue === PolicyPagesSelection.YES) {
+        pagesFilled.push(key as WebsitePolicyPages);
+      } else if (data.radioValue === PolicyPagesSelection.NO) {
+        newPolicyPagesToBeMade.push(key as WebsitePolicyPages);
       }
     });
     const properties = {
@@ -230,6 +240,26 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
       newWebsiteLink: websiteUpdateData?.main_page_url,
     };
     trackWebsitePrivacyPolicyModalRequestClicked({ ...properties, clickedButton: 'submit' });
+
+    setPagesBeingVerified(Object.keys(formState) as WebsitePolicyPages[]);
+
+    track({
+      objectName: 'Policy Page Continue Option',
+      properties: {
+        policyPageCountTotal: Object.keys(formState).length,
+        websiteCount: getWebsiteCount(user),
+        policyPageRZPCreate: Object.values(formState).filter(
+          ({ radioValue }) => radioValue === PolicyPagesSelection.NO,
+        ).length,
+      },
+    });
+
+    // if no user provided links exist, then directly go to the policy pages creation step
+    if (pagesFilled.length === 0) {
+      setPolicyPagesToBeMade(newPolicyPagesToBeMade);
+      setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+      return;
+    }
     setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_SUBMIT_IN_PROGRESS);
     trackBasicWebsiteCheckInProgressModalLoad({
       ...properties,
@@ -243,8 +273,18 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
       }),
       {
         onSuccess: (response) => {
-          const { current_status, main_page_url } = response;
-          if (current_status === WebsiteUpdateAutomationStatus.WORKFLOW_IN_PROGRESS) {
+          const { current_status, main_page_url, website_verification_page_status } = response;
+          if (current_status === WebsiteUpdateAutomationStatus.IN_PROGRESS) {
+            pagesFilled.forEach((page) => {
+              if (
+                website_verification_page_status &&
+                website_verification_page_status[page]?.verified !==
+                  WebsiteVerificationStatus.PASSED
+              ) {
+                newPolicyPagesToBeMade.push(page);
+              }
+            });
+            setPolicyPagesToBeMade(newPolicyPagesToBeMade);
             trackBasicWebsiteCheckCompleteModalLoad({
               basicCheckPassed: 'no',
               newWebsiteLink: main_page_url,
@@ -253,7 +293,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               isWorkflowRaised: true,
               actionFrom: 'policyPages',
             });
-            setCurrentStep(WebsiteSubmitModalSteps.MANUAL_WF_RAISED);
+            setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
           } else if (current_status === WebsiteUpdateAutomationStatus.COMPLETED) {
             updateMainPageUrl();
             trackBasicWebsiteCheckCompleteModalLoad({
@@ -305,15 +345,12 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     const properties = {
       websiteCount: getWebsiteCount(user),
     };
-    // TODO: Maybe convert it to a controlled component?
     if (actionFrom === 'websiteFlow') {
       trackSubmitWebsiteDetailsVerificationRequestClick({
         ...properties,
-        // TODO: check if additional details required on cancel button
         clickedButton: 'cancel',
       });
     } else {
-      // TODO: check if additional details required on cancel button
       trackWebsitePrivacyPolicyModalRequestClicked({ ...properties, clickedButton: 'cancel' });
     }
   };
@@ -356,6 +393,13 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     }
   }
 
+  const onCreateAllPolicyPagesButtonClick = (formState: PolicyPageFormData) => {
+    const newPolicyPagesToBeMade = Object.keys(formState) as PolicyPageToBeMade;
+
+    setPolicyPagesToBeMade(newPolicyPagesToBeMade);
+    setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+  };
+
   switch (currentStep) {
     case WebsiteSubmitModalSteps.ADD_MAIN_PAGE:
       return (
@@ -375,12 +419,43 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           onDismiss={handleCancel.bind(null, 'policyPages')}
           handlePolicyPageSubmit={handlePolicyPageSubmit}
           user={user}
+          onCreateAllPolicyPagesButtonClick={onCreateAllPolicyPagesButtonClick}
+        />
+      );
+    case WebsiteSubmitModalSteps.POLICY_PAGES_CREATION:
+      return (
+        <Questionnaire
+          isMobile={isMobile}
+          isOpen={isOpen}
+          setCurrentStep={setCurrentStep}
+          policyPagesToBeMade={policyPagesToBeMade}
+          mode={mode}
+          showNotification={showNotification}
+        />
+      );
+    case WebsiteSubmitModalSteps.POLICY_PAGES_PREVIEW:
+      return (
+        <PreviewPages
+          isMobile={isMobile}
+          isOpen={isOpen}
+          setCurrentStep={setCurrentStep}
+          policyPagesToBeMade={policyPagesToBeMade}
+          mode={mode}
+          showNotification={showNotification}
+        />
+      );
+    case WebsiteSubmitModalSteps.POLICY_PAGES_COMPLETE:
+      return (
+        <CompletedPolicyPages
+          isMobile={isMobile}
+          isOpen={isOpen}
+          onDismiss={onDismiss}
+          pagesBeingVerified={pagesBeingVerified}
         />
       );
     case WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_IN_PROGRESS:
     case WebsiteSubmitModalSteps.POLICY_PAGES_SUBMIT_IN_PROGRESS:
     case WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS:
-    case WebsiteSubmitModalSteps.MANUAL_WF_RAISED:
     case WebsiteSubmitModalSteps.WEBSITE_UPDATE_SUCCESS:
     case WebsiteSubmitModalSteps.MAIN_PAGE_ERROR:
       return (

@@ -27,6 +27,7 @@ import useBusinessWebsiteData from './hooks/useBusinessWebsiteData';
 import { trackEditWebsiteIconClick, trackWebsiteAppDetailsButtonClick } from './tracking';
 import { AddWebsiteClickArgs, WebsiteSubmitModalSteps, WebsiteUpdateActionOn } from './types';
 import { getCTACondition, getWebsiteCount } from './utils';
+import UpdateWebsiteDetails from 'merchant/views/Account/Profile/components/WebsiteSelfServe/UpdateWebsiteDetails';
 
 interface BusinessWebsiteDetailsProps {
   user: User;
@@ -50,7 +51,7 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
   org,
 }) => {
   const isMobile = useMobile(mobileBreakoints);
-  const [isOpen, setIsOpen] = useState(false);
+  const [openModalName, setOpenModalName] = useState('');
 
   const {
     setCurrentStep,
@@ -108,12 +109,16 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
           {...(actionOn === WebsiteUpdateActionOn.ADDITIONAL_WEBSITE
             ? {
                 flowType: FLOWS.ADDITIONAL_WEBSITE,
-              }
-            : {
-                flowType: FLOWS.MAIN_WEBSITE,
                 openNewModal: () => {
                   closeModal();
-                  setIsOpen(true);
+                  setOpenModalName(FLOWS.ADDITIONAL_WEBSITE);
+                },
+              }
+            : {
+                flowType: FLOWS.BUSINESS_WEBSITE,
+                openNewModal: () => {
+                  closeModal();
+                  setOpenModalName(FLOWS.BUSINESS_WEBSITE);
                 },
               })}
         />
@@ -133,15 +138,20 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
     }
   }
 
+  const onDismissModal = () => {
+    fetchWorkflows([WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE]);
+    setOpenModalName('');
+  };
+
   const onDismiss = () => {
     fetchWorkflows([WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE]);
-    setIsOpen(false);
+    setOpenModalName('');
     setCurrentStep(WebsiteSubmitModalSteps.ADD_MAIN_PAGE);
   };
 
   const onFixMissingPages = () => {
     setCurrentStep(WebsiteSubmitModalSteps.ADD_MISSING_POLICY_PAGES);
-    setIsOpen(true);
+    setOpenModalName(FLOWS.BUSINESS_WEBSITE);
   };
 
   useEffect(() => {
@@ -211,7 +221,15 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
           ctaDisabledReason={ctaDisabledReason}
         />
       </Box>
-      <WebsiteSubmitModal isOpen={isOpen} onDismiss={onDismiss} />
+      <WebsiteSubmitModal isOpen={openModalName === FLOWS.BUSINESS_WEBSITE} onDismiss={onDismiss} />
+      {openModalName === FLOWS.ADDITIONAL_WEBSITE ? (
+        <UpdateWebsiteDetails
+          flowType={FLOWS.ADDITIONAL_WEBSITE}
+          isOpen={true}
+          shouldShowV2={true}
+          onDismiss={onDismissModal}
+        />
+      ) : null}
     </Box>
   );
 };

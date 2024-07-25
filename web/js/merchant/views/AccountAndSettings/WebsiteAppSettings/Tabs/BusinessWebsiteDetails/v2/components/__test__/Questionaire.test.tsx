@@ -1,0 +1,134 @@
+import React from 'react';
+import { render, screen, waitFor, userEvent } from 'test-utils';
+
+import Questionaire, {
+  QuestionareProps,
+} from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/components/Questionaire';
+import { WebsitePolicyPages } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/types';
+
+const defaultProps: QuestionareProps = {
+  isMobile: false,
+  isOpen: true,
+  policyPagesToBeMade: [],
+  mode: 'live',
+  showNotification: jest.fn(),
+  setCurrentStep: jest.fn(),
+};
+
+jest.mock(
+  'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/utils',
+  () => {
+    const originalModule = jest.requireActual(
+      'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/utils',
+    );
+    return {
+      __esModule: true,
+      ...originalModule,
+      getWebsiteCount: jest.fn(() => {
+        return 0;
+      }),
+    };
+  },
+);
+
+const renderApp = (props = defaultProps) => {
+  const renderOutput = render(<Questionaire {...props} />);
+  return renderOutput;
+};
+
+describe('Questionaire', () => {
+  describe('Render questionaire for TnC', () => {
+    const policyPagesToBeMade = [WebsitePolicyPages.TERMS];
+    const appProps = { ...defaultProps, policyPagesToBeMade };
+
+    it('should render no further details required', () => {
+      renderApp(appProps);
+
+      expect(
+        screen.getByText(
+          `We’ll be creating the ‘Terms and Conditions’ page using your given details`,
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('Render questionaire for Shipping', () => {
+    const policyPagesToBeMade = [WebsitePolicyPages.SHIPPING];
+    const appProps = { ...defaultProps, policyPagesToBeMade };
+
+    it('should render shipping questionaire', () => {
+      renderApp(appProps);
+
+      const shippingPeriod = screen.getByTestId('question-shipping_period');
+      const supportEmail = screen.getByTestId('support-email');
+      const supportContact = screen.getByTestId('support-contact-number');
+      const questionChips = screen.getByTestId('chips-shipping_period');
+
+      expect(shippingPeriod).toBeInTheDocument();
+      expect(supportContact).toBeInTheDocument();
+      expect(supportEmail).toBeInTheDocument();
+      expect(questionChips).toBeInTheDocument();
+    });
+  });
+
+  describe('Render questionaire for Refund', () => {
+    const policyPagesToBeMade = [WebsitePolicyPages.REFUND];
+    const appProps = { ...defaultProps, policyPagesToBeMade };
+
+    it('should render refund questionaire', () => {
+      renderApp(appProps);
+
+      const refundRequestPeriod = screen.getByTestId('question-refund_request_period');
+      const refundProcessPeriod = screen.getByTestId('question-refund_process_period');
+      const refundRequestPeriodChips = screen.getByTestId('chips-refund_request_period');
+      const refundProcessPeriodChips = screen.getByTestId('chips-refund_process_period');
+
+      expect(refundRequestPeriod).toBeInTheDocument();
+      expect(refundProcessPeriod).toBeInTheDocument();
+      expect(refundRequestPeriodChips).toBeInTheDocument();
+      expect(refundProcessPeriodChips).toBeInTheDocument();
+    });
+
+    it('should render error msg on submit click without selection', async () => {
+      renderApp(appProps);
+
+      const submitButton = screen.getByRole('button', { name: 'Submit' });
+
+      expect(submitButton).toBeInTheDocument();
+      await userEvent.click(submitButton);
+
+      await waitFor(() => {
+        const errorMsg = screen.getAllByText('Please select an option');
+        expect(errorMsg).toHaveLength(2);
+      });
+    });
+  });
+
+  describe('Render questionaire for Contact Us', () => {
+    const policyPagesToBeMade = [WebsitePolicyPages.CONTACT];
+    const appProps = { ...defaultProps, policyPagesToBeMade };
+
+    it('should render Contact Us questionaire', () => {
+      renderApp(appProps);
+
+      const supportEmail = screen.getByTestId('support-email');
+      const supportContact = screen.getByTestId('support-contact-number');
+
+      expect(supportContact).toBeInTheDocument();
+      expect(supportEmail).toBeInTheDocument();
+    });
+  });
+
+  describe('Render questionaire for Privacy', () => {
+    const policyPagesToBeMade = [WebsitePolicyPages.PRIVACY];
+    const appProps = { ...defaultProps, policyPagesToBeMade };
+
+    it('should render Privacy questionaire', () => {
+      renderApp(appProps);
+
+      const supportEmail = screen.getByTestId('support-email');
+
+      expect(supportEmail).toBeInTheDocument();
+    });
+  });
+});

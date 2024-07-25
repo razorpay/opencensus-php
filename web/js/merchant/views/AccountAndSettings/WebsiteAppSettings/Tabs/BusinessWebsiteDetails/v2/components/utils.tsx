@@ -18,8 +18,8 @@ import MainPageSubmitInProgress from './assets/lottie/MainPageSubmitInProgress.j
 import PolicyPagesSubmitInProgress from './assets/lottie/PolicyPagesSubmitInProgress.json';
 import { PolicyPagesSuggestionsList } from './constants';
 import {
-  FormFieldType,
   InitialPolicyPagesFormStateData,
+  MissingPagesFormFieldType,
   PolicyPageFormData,
   SuggestionSteps,
   ValidationState,
@@ -28,7 +28,6 @@ import {
   WebsiteVerificationPageStatus,
   WebsiteVerificationStatus,
 } from '../types';
-import { getUnderReviewETA } from '../utils';
 
 export const playStoreRegex = /^https?:\/\/play\.google\.com\/store\/apps\/.*/;
 
@@ -48,31 +47,38 @@ export const getInitialPolicyPagesFormState = (
       value: websiteUpdateStatusData?.contact?.url,
       verified: websiteUpdateStatusData?.contact?.verified,
       valid: ValidationState.NONE,
+      radioValue: undefined,
     },
     [WebsitePolicyPages.SHIPPING]: {
       value: websiteUpdateStatusData?.shipping?.url,
       verified: websiteUpdateStatusData?.shipping?.verified,
       valid: ValidationState.NONE,
+      radioValue: undefined,
     },
     [WebsitePolicyPages.TERMS]: {
       value: websiteUpdateStatusData?.terms?.url,
       verified: websiteUpdateStatusData?.terms?.verified,
       valid: ValidationState.NONE,
+      radioValue: undefined,
     },
     [WebsitePolicyPages.REFUND]: {
       value: websiteUpdateStatusData?.refund?.url,
       verified: websiteUpdateStatusData?.refund?.verified,
       valid: ValidationState.NONE,
+      radioValue: undefined,
     },
     [WebsitePolicyPages.PRIVACY]: {
       value: websiteUpdateStatusData?.privacy?.url,
       verified: websiteUpdateStatusData?.privacy?.verified,
       valid: ValidationState.NONE,
+      radioValue: undefined,
     },
   };
 
-  const verifiedPages: Record<WebsitePolicyPages, FormFieldType> = {} as PolicyPageFormData;
-  const missingPages: Record<WebsitePolicyPages, FormFieldType> = {} as PolicyPageFormData;
+  const verifiedPages: Record<WebsitePolicyPages, MissingPagesFormFieldType> =
+    {} as PolicyPageFormData;
+  const missingPages: Record<WebsitePolicyPages, MissingPagesFormFieldType> =
+    {} as PolicyPageFormData;
   const verifiedPagesKeys: WebsitePolicyPages[] = [];
   const missingPagesKeys: WebsitePolicyPages[] = [];
 
@@ -91,6 +97,39 @@ export const getInitialPolicyPagesFormState = (
         };
         missingPagesKeys.push(policyPageKey);
       }
+    }
+  }
+
+  return { verifiedPages, missingPages, verifiedPagesKeys, missingPagesKeys };
+};
+
+interface FormField {
+  value: string;
+}
+
+type ReviewPageType = Record<WebsitePolicyPages, FormField>;
+
+export const getReviewPagesData = (
+  websiteUpdateStatusData: WebsiteVerificationPageStatus | undefined,
+  pagesBeingVerified: Array<WebsitePolicyPages>,
+) => {
+  const verifiedPages: ReviewPageType = {} as ReviewPageType;
+  const missingPages: ReviewPageType = {} as ReviewPageType;
+  const verifiedPagesKeys: WebsitePolicyPages[] = [];
+  const missingPagesKeys: WebsitePolicyPages[] = [];
+
+  for (const page of Object.keys(websiteUpdateStatusData || {})) {
+    const pageData = websiteUpdateStatusData?.[page];
+    if (pagesBeingVerified.includes(page as WebsitePolicyPages)) {
+      missingPages[page] = {
+        value: pageData?.url,
+      };
+      missingPagesKeys.push(page as WebsitePolicyPages);
+    } else {
+      verifiedPages[page] = {
+        value: pageData?.url,
+      };
+      verifiedPagesKeys.push(page as WebsitePolicyPages);
     }
   }
 
@@ -158,27 +197,6 @@ export const loaderVariant = {
       </>
     ),
   },
-  [WebsiteSubmitModalSteps.MANUAL_WF_RAISED]: {
-    lottieAnimation: CheckTick,
-    Content: ({ onClick }) => (
-      <>
-        <Heading size="large" textAlign="center">
-          Your website is submitted for verification
-        </Heading>
-        <Box>
-          <Text textAlign="center" color="surface.text.gray.subtle">
-            We’re verifying your details and will share an update by
-          </Text>
-          <Text textAlign="center" weight="medium" color="surface.text.gray.subtle">
-            {getUnderReviewETA({
-              offset: 48 * 60 * 60 * 1000,
-            })}
-          </Text>
-        </Box>
-        <Button onClick={onClick}>Okay, got it</Button>
-      </>
-    ),
-  },
   [WebsiteSubmitModalSteps.WEBSITE_UPDATE_SUCCESS]: {
     lottieAnimation: CheckTick,
     img: CheckTick,
@@ -231,64 +249,64 @@ export const suggestionBoxVariants = {
       Provide a ‘Test account’ for us to verify your website
     </Text>
   ),
-  [SuggestionSteps.MISSING_POLICY_PAGES_terms]: (
-    <>
-      <Text color="surface.text.gray.subtle" wordBreak="break-word">
-        A <b>Terms and Conditions page</b> outlines the conditions of use for your website or app.
-      </Text>
-      <Text color="surface.text.gray.subtle" weight="medium">
-        Details required:
-      </Text>
-      <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_terms} />
-    </>
-  ),
-  [SuggestionSteps.MISSING_POLICY_PAGES_privacy]: (
-    <>
-      <Text color="surface.text.gray.subtle" wordBreak="break-word">
-        A <b>Privacy Policy page</b> discloses how your company will handle and protect user
-        information.
-      </Text>
-      <Text color="surface.text.gray.subtle" weight="medium">
-        Details required:
-      </Text>
-      <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_privacy} />
-    </>
-  ),
-  [SuggestionSteps.MISSING_POLICY_PAGES_contact]: (
-    <>
-      <Text color="surface.text.gray.subtle" wordBreak="break-word">
-        A <b>Contact Us page</b> should contain information through which customers can reach you.
-      </Text>
-      <Text color="surface.text.gray.subtle" weight="medium">
-        Details required:
-      </Text>
-      <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_contact} />
-    </>
-  ),
-  [SuggestionSteps.MISSING_POLICY_PAGES_refund]: (
-    <>
-      <Text color="surface.text.gray.subtle" wordBreak="break-word">
-        A <b>Cancellations and Refunds page</b> outlines rules about how customers can return and
-        exchange products/services they purchased.
-      </Text>
-      <Text color="surface.text.gray.subtle" weight="medium">
-        Details required:
-      </Text>
-      <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_refund} />
-    </>
-  ),
-  [SuggestionSteps.MISSING_POLICY_PAGES_shipping]: (
-    <>
-      <Text color="surface.text.gray.subtle" wordBreak="break-word">
-        A <b>Shipping Policy</b> contains information about rules, timelines, and processes for
-        shipped items.
-      </Text>
-      <Text color="surface.text.gray.subtle" weight="medium">
-        Details required:
-      </Text>
-      <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_shipping} />
-    </>
-  ),
+  // [SuggestionSteps.MISSING_POLICY_PAGES_terms]: (
+  //   <>
+  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
+  //       A <b>Terms and Conditions page</b> outlines the conditions of use for your website or app.
+  //     </Text>
+  //     <Text color="surface.text.gray.subtle" weight="medium">
+  //       Details required:
+  //     </Text>
+  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_terms} />
+  //   </>
+  // ),
+  // [SuggestionSteps.MISSING_POLICY_PAGES_privacy]: (
+  //   <>
+  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
+  //       A <b>Privacy Policy page</b> discloses how your company will handle and protect user
+  //       information.
+  //     </Text>
+  //     <Text color="surface.text.gray.subtle" weight="medium">
+  //       Details required:
+  //     </Text>
+  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_privacy} />
+  //   </>
+  // ),
+  // [SuggestionSteps.MISSING_POLICY_PAGES_contact]: (
+  //   <>
+  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
+  //       A <b>Contact Us page</b> should contain information through which customers can reach you.
+  //     </Text>
+  //     <Text color="surface.text.gray.subtle" weight="medium">
+  //       Details required:
+  //     </Text>
+  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_contact} />
+  //   </>
+  // ),
+  // [SuggestionSteps.MISSING_POLICY_PAGES_refund]: (
+  //   <>
+  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
+  //       A <b>Cancellations and Refunds page</b> outlines rules about how customers can return and
+  //       exchange products/services they purchased.
+  //     </Text>
+  //     <Text color="surface.text.gray.subtle" weight="medium">
+  //       Details required:
+  //     </Text>
+  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_refund} />
+  //   </>
+  // ),
+  // [SuggestionSteps.MISSING_POLICY_PAGES_shipping]: (
+  //   <>
+  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
+  //       A <b>Shipping Policy</b> contains information about rules, timelines, and processes for
+  //       shipped items.
+  //     </Text>
+  //     <Text color="surface.text.gray.subtle" weight="medium">
+  //       Details required:
+  //     </Text>
+  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_shipping} />
+  //   </>
+  // ),
 };
 
 export const policySuggestionStep = {
@@ -306,3 +324,10 @@ export function isWebsiteRecentlyUpdated(current_status_updated_at) {
 
   return !(diff > 7 * 24 * 60 * 60 * 1000);
 }
+
+export const isPolicyPageCreatedByRazorpay = (policyPageUrl: string) => {
+  const isProd = window.APP_ENV === 'production';
+  let regexToMatch = /sme-dashboard\.dev\.razorpay\.in/;
+  if (isProd) regexToMatch = /merchant\.razorpay\.com/;
+  return regexToMatch.test(policyPageUrl);
+};

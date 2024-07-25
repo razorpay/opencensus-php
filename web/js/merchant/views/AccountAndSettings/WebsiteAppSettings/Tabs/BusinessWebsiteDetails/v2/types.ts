@@ -17,6 +17,11 @@ export enum RequireCredsValues {
   NO = 'no',
 }
 
+export enum PolicyPagesSelection {
+  YES = 'yes',
+  NO = 'no',
+}
+
 export type FormFieldType = {
   value: string;
   valid: ValidationState;
@@ -46,11 +51,19 @@ export enum WebsitePolicyPages {
   REFUND = 'refund',
 }
 
-export type PolicyPageFormData = Record<WebsitePolicyPages, FormFieldType>;
+export type PolicyPageToBeMade = Array<Partial<WebsitePolicyPages>>;
+
+export interface MissingPagesFormFieldType extends FormFieldType {
+  radioValue: PolicyPagesSelection.YES | PolicyPagesSelection.NO | undefined;
+}
+
+export type PolicyPageFormData = Record<WebsitePolicyPages, MissingPagesFormFieldType>;
+
+export type PolicyPageCreationFormFieldType = Record<WebsitePolicyPagesDetailsKeys, FormFieldType>;
 
 export interface InitialPolicyPagesFormStateData {
   verifiedPages: Record<WebsitePolicyPages, FormFieldType>;
-  missingPages: Record<WebsitePolicyPages, FormFieldType>;
+  missingPages: Record<WebsitePolicyPages, MissingPagesFormFieldType>;
   verifiedPagesKeys: WebsitePolicyPages[];
   missingPagesKeys: WebsitePolicyPages[];
 }
@@ -68,13 +81,18 @@ export enum WebsiteSubmitModalSteps {
   ADD_MAIN_PAGE = 'ADD_MAIN_PAGE',
   ADD_MISSING_POLICY_PAGES = 'ADD_MISSING_POLICY_PAGES',
 
+  // Loading, success, error state - Main website
   MAIN_PAGE_SUBMIT_IN_PROGRESS = 'MAIN_PAGE_SUBMIT_IN_PROGRESS',
-  POLICY_PAGES_SUBMIT_IN_PROGRESS = 'POLICY_PAGES_SUBMIT_IN_PROGRESS',
   MAIN_PAGE_SUBMIT_SUCCESS = 'MAIN_PAGE_SUBMIT_SUCCESS',
   MAIN_PAGE_ERROR = 'MAIN_PAGE_ERROR',
 
-  MANUAL_WF_RAISED = 'MANUAL_WF_RAISED',
+  // Loading, success, error state - Missing Pages
+  POLICY_PAGES_SUBMIT_IN_PROGRESS = 'POLICY_PAGES_SUBMIT_IN_PROGRESS',
   WEBSITE_UPDATE_SUCCESS = 'WEBSITE_UPDATE_SUCCESS',
+  // Multiple error steps
+  POLICY_PAGES_CREATION = 'POLICY_PAGES_CREATION',
+  POLICY_PAGES_PREVIEW = 'POLICY_PAGES_PREVIEW',
+  POLICY_PAGES_COMPLETE = 'POLICY_PAGES_COMPLETE',
 }
 
 export enum SuggestionSteps {
@@ -118,6 +136,14 @@ export interface WebsiteVerificationStage {
   bvs_single_page_check_status?: WebsiteVerificationStatus;
 }
 
+export enum WebsitePolicyPagesDetailsKeys {
+  SUPPORT_CONTACT_NUMBER = 'support_contact_number',
+  SUPPORT_EMAIL = 'support_email',
+  SHIPPING_PERIOD = 'shipping_period',
+  REFUND_REQUEST_PERIOD = 'refund_request_period',
+  REFUND_PROCESS_PERIOD = 'refund_process_period',
+}
+
 export interface WebsiteVerificationPageStatus {
   [WebsitePolicyPages.TERMS]?: WebsitePolicyPageVerificationStatus;
   [WebsitePolicyPages.PRIVACY]?: WebsitePolicyPageVerificationStatus;
@@ -132,6 +158,16 @@ export interface WebsiteUpdateApiData {
   main_page_url?: string;
   website_verification_stage?: WebsiteVerificationStage;
   website_verification_page_status?: WebsiteVerificationPageStatus;
+}
+
+export interface PolicyPagesDetails {
+  additional_data: {
+    [WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER]: string;
+    [WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL]: string;
+  };
+  [WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD]: string;
+  [WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD]: string;
+  [WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD]: string;
 }
 
 export interface BusinessWebsiteWorkflow {
@@ -169,6 +205,41 @@ export interface WebsiteUpdateApiPayload {
       url: string;
     };
   };
+}
+
+export type MerchantWebsiteDetails = Record<WebsitePolicyPages, { section_status: 3 }>;
+
+interface WebsitePolicyPagesDataPayload extends PolicyPagesDetails {
+  merchant_website_details: MerchantWebsiteDetails;
+}
+
+export interface WebsitePolicyPagesCreationPayload {
+  mode: Environments;
+  data: WebsitePolicyPagesDataPayload;
+}
+
+export interface PolicyPagesConsentPayload {
+  mode: Environments;
+  consents: Array<{
+    type: 'Policy Creation Terms';
+    is_provided: boolean;
+  }>;
+  event: 'WebsitePolicyWizard';
+}
+
+export interface PolicyPagesConsentResponse {
+  success: boolean;
+}
+
+export interface PolicyPagesPreviewResponse {
+  data: Array<{
+    section: WebsitePolicyPages;
+    html_content: string;
+  }>;
+}
+export interface PolicyPagesPublishPayload {
+  mode: Environments;
+  sections: Array<Partial<WebsitePolicyPages>>;
 }
 
 export enum BusinessWebsiteCardBadgeStatus {

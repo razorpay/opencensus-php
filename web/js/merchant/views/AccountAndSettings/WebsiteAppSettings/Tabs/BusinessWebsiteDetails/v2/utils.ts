@@ -1,6 +1,6 @@
 import { User } from 'common/typings';
 import { autoPrefixUrls } from 'common/utils/rzp-utils';
-import { isUrlLenient } from 'common/utils/validators';
+import { isEmail, isPhone, isUrlLenient } from 'common/utils/validators';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 
@@ -18,6 +18,12 @@ import {
   BusinessWebsiteCardData,
   GetCtaConditionArgs,
   GetCtaConditionData,
+  MissingPagesFormFieldType,
+  PolicyPagesSelection,
+  PolicyPageCreationFormFieldType,
+  WebsitePolicyPagesDetailsKeys,
+  WebsitePolicyPages,
+  MerchantWebsiteDetails,
 } from './types';
 
 export const WEBSITE_UPDATE_API_BASE_URL =
@@ -176,15 +182,57 @@ export const mainPageFormValidator = (formState): boolean => {
   return true;
 };
 
-export const policyPageFormValidator = (formState): boolean => {
-  for (const field in formState) {
-    if (formState.hasOwnProperty(field)) {
-      if (formState[field].value && validators.url(formState[field].value)) {
-        return true;
+export const policyPageFormValidator = (formState): { isValid: boolean; formState: any } => {
+  const newFormState = { ...formState };
+  let hasError = false;
+  for (const field in newFormState) {
+    if (newFormState.hasOwnProperty(field)) {
+      const { value, radioValue } = newFormState[field] as MissingPagesFormFieldType;
+      if (radioValue === PolicyPagesSelection.YES && value && validators.url(value)) {
+        newFormState[field].valid = ValidationState.NONE;
+      } else if (radioValue === PolicyPagesSelection.NO) {
+        newFormState[field].valid = ValidationState.NONE;
+      } else {
+        hasError = true;
+        newFormState[field].valid = ValidationState.ERROR;
       }
     }
   }
-  return false;
+  return { isValid: !hasError, formState: newFormState };
+};
+
+export const policyPageFormCreationValidator = (
+  formState: PolicyPageCreationFormFieldType,
+  questionaireMapping: Record<WebsitePolicyPagesDetailsKeys, boolean>,
+): { isValid: boolean; formState: PolicyPageCreationFormFieldType } => {
+  const newFormState = { ...formState };
+  let hasError = false;
+  for (const field in newFormState) {
+    if (newFormState.hasOwnProperty(field) && questionaireMapping[field]) {
+      const radioButtonsKeys = [
+        WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD,
+        WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD,
+        WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD,
+      ];
+      if (radioButtonsKeys.includes(field as WebsitePolicyPagesDetailsKeys)) {
+        if (!newFormState[field].value) {
+          hasError = true;
+          newFormState[field].valid = ValidationState.ERROR;
+        }
+      } else if (field === WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL) {
+        if (!newFormState[field].value || !isEmail(newFormState[field].value)) {
+          hasError = true;
+          newFormState[field].valid = ValidationState.ERROR;
+        }
+      } else if (field === WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER) {
+        if (!newFormState[field].value || !isPhone(newFormState[field].value)) {
+          hasError = true;
+          newFormState[field].valid = ValidationState.ERROR;
+        }
+      }
+    }
+  }
+  return { isValid: !hasError, formState: newFormState };
 };
 
 export const isMainPageSubmitPayloadValid = (formState, userBusinessWebsite): [boolean, string] => {
@@ -277,9 +325,11 @@ export const getWebsitePolicyPagesSubmitPayload = ({
   mode,
 }): WebsiteUpdateApiPayload => {
   const policy_pages = Object.keys(formState).reduce((acc, key) => {
-    acc[key] = {
-      url: autoPrefixUrls(formState[key].value),
-    };
+    if (formState[key].radioValue === PolicyPagesSelection.YES) {
+      acc[key] = {
+        url: autoPrefixUrls(formState[key].value),
+      };
+    }
     return acc;
   }, {});
   return {
@@ -386,6 +436,8 @@ export function getWebsiteWorkflowStatus({
   } else if (
     current_status === WebsiteUpdateAutomationStatus.IN_PROGRESS &&
     website_verification_stage?.bvs_check_status === WebsiteVerificationStatus.FAILED &&
+    website_verification_stage?.negative_keyword_check_status ===
+      WebsiteVerificationStatus.PASSED &&
     !isAllPagesVerified
   ) {
     status = Status.BvsNeedsClarification;
@@ -534,4 +586,12 @@ export const getBusinessWebsitesToShow = ({
   }
 
   return websites;
+};
+
+export const getMerchantWebsiteDetailsPayload = (policyPagesToBeMade) => {
+  const result: MerchantWebsiteDetails = {} as MerchantWebsiteDetails;
+  policyPagesToBeMade.forEach((page: WebsitePolicyPages) => {
+    result[page] = { section_status: 3 };
+  });
+  return result;
 };

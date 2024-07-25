@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 
 import { WebsiteUpdateApiData } from '../types';
+
 import { WEBSITE_UPDATE_API_BASE_URL } from '../utils';
 
 const getWebsiteUpdate = async (mode): Promise<WebsiteUpdateApiData> => {

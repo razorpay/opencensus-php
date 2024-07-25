@@ -50,10 +50,10 @@ describe('Business website automation - Loader', () => {
 
   it('should show manual workflow raised modal', async () => {
     renderApp({
-      variant: WebsiteSubmitModalSteps.MANUAL_WF_RAISED,
+      variant: WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS,
     });
     expect(
-      screen.getByTestId(`loader-${WebsiteSubmitModalSteps.MANUAL_WF_RAISED}`),
+      screen.getByTestId(`loader-${WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS}`),
     ).toBeInTheDocument();
     expect(screen.getByText('Your website is submitted for verification')).toBeInTheDocument();
     const button = screen.getByRole('button', { name: 'Okay, got it' });

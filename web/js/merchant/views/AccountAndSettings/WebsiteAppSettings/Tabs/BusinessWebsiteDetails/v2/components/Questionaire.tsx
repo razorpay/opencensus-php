@@ -1,0 +1,314 @@
+import React, { useEffect, useState } from 'react';
+import { Box, Button, Text, Heading, Chip, ChipGroup, TextInput } from '@razorpay/blade/components';
+import { Environments, ShowNotificationType } from 'common/typings';
+import {
+  PolicyPageCreationQuestionaire,
+  defaultPolicyPageCreationFormField,
+  getQuestionaireDetailsFromPolicyPagesToBeGenerated,
+} from './constants';
+import useModalComponents from '../hooks/useModalComponents';
+import { usePolicyPagesDetails } from '../hooks/usePolicyPagesDetails';
+import {
+  BladeFormInputOnEvent,
+  PolicyPageCreationFormFieldType,
+  PolicyPageToBeMade,
+  ValidationState,
+  WebsitePolicyPagesDetailsKeys,
+  WebsiteSubmitModalSteps,
+} from '../types';
+import {
+  snapPoints,
+  policyPageFormCreationValidator,
+  getMerchantWebsiteDetailsPayload,
+  getWebsiteCount,
+} from '../utils';
+import styled from 'styled-components';
+import { track as analyticsTrack } from '../tracking';
+
+const sensitiveKeys = [
+  WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER,
+  WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL,
+] as Array<string>;
+
+export interface QuestionareProps {
+  isMobile: boolean;
+  isOpen: boolean;
+  setCurrentStep: (step: WebsiteSubmitModalSteps) => void;
+  policyPagesToBeMade: PolicyPageToBeMade;
+  mode: Environments;
+  showNotification: ShowNotificationType;
+}
+
+const ErrorMessage = styled.span`
+  color: hsla(4, 74%, 49%, 1);
+  font-family: 'Inter', 'Inter Fallback Arial', Arial;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  font-style: italic;
+  -webkit-text-decoration-line: none;
+  text-decoration-line: none;
+  line-height: 1rem;
+  -webkit-letter-spacing: 0px;
+  -moz-letter-spacing: 0px;
+  -ms-letter-spacing: 0px;
+  letter-spacing: 0px;
+  margin: 0;
+  padding: 0;
+`;
+
+function Questionare({
+  isOpen,
+  setCurrentStep,
+  isMobile,
+  policyPagesToBeMade,
+  mode,
+  showNotification,
+}: QuestionareProps): JSX.Element {
+  const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
+  const { mutate: savePolicyPagesMutate, isPosting } = usePolicyPagesDetails();
+  const [formState, setFormState] = useState<PolicyPageCreationFormFieldType>(
+    defaultPolicyPageCreationFormField,
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      analyticsTrack({
+        objectName: 'Create Website Pages Modal',
+        actionName: 'Displayed',
+        properties: {
+          websiteCount: getWebsiteCount(window.rzp_user),
+        },
+      });
+    }
+  }, [isOpen]);
+
+  const onChipChange = ({ name, values }) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      [name]: {
+        value: values[0],
+        valid: ValidationState.NONE,
+      },
+    }));
+  };
+
+  const handleTextInputChange = ({ name, value }: BladeFormInputOnEvent) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      [name as string]: {
+        value,
+        valid: ValidationState.NONE,
+      },
+    }));
+  };
+
+  const { isEmpty, questionaireMapping } =
+    getQuestionaireDetailsFromPolicyPagesToBeGenerated(policyPagesToBeMade);
+
+  const questionareCTAtrack = (properties) =>
+    analyticsTrack({
+      objectName: 'Create Website Pages Details',
+      actionName: 'Filled',
+      properties: {
+        websiteCount: getWebsiteCount(window.rzp_user),
+        details: Object.entries(formState).reduce((acc, [key, value]) => {
+          const isQuestionShown = questionaireMapping[key];
+          if (isQuestionShown) {
+            acc[key] = sensitiveKeys.includes(key) ? Boolean(value?.value) : value?.value;
+          }
+          return acc;
+        }, {}),
+        ...properties,
+      },
+    });
+
+  const onGoBack = () => {
+    questionareCTAtrack({ clickedButton: 'cancel' });
+    setCurrentStep(WebsiteSubmitModalSteps.ADD_MISSING_POLICY_PAGES);
+  };
+
+  const onContinueClick = () => {
+    questionareCTAtrack({ clickedButton: 'submit' });
+    savePolicyPagesMutate({
+      mode,
+      data: {
+        additional_data: {
+          [WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER]:
+            formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].value,
+          [WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL]:
+            formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].value,
+        },
+        [WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD]:
+          formState[WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD].value,
+        [WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD]:
+          formState[WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD].value,
+        [WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD]:
+          formState[WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD].value,
+        merchant_website_details: getMerchantWebsiteDetailsPayload(policyPagesToBeMade),
+      },
+    })
+      .then((response) => {
+        setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_PREVIEW);
+      })
+      .catch((error) => {
+        showNotification({
+          type: 'error',
+          message: error?.message || 'Failed to submit details. Please try again.',
+        });
+      });
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onDismiss={onGoBack}
+      snapPoints={snapPoints}
+      size="medium"
+      zIndex={99999}
+    >
+      <ModalHeader />
+      <ModalBody padding="spacing.5">
+        <>
+          <Box>
+            <Heading
+              size="medium"
+              weight="semibold"
+              color="surface.text.gray.normal"
+              marginBottom="spacing.2"
+            >
+              Create policy pages with Razorpay
+            </Heading>
+            <Text
+              size="medium"
+              color="surface.text.gray.muted"
+              weight="semibold"
+              marginBottom="spacing.8"
+            >
+              {isEmpty
+                ? `We’ll be creating the ‘Terms and Conditions’ page using your given details`
+                : `Awesome! We’ll need a couple of details from you to create this page for you`}
+            </Text>
+          </Box>
+          {isEmpty ? null : (
+            <Box
+              width="100%"
+              display="flex"
+              flexDirection="column"
+              // height="75%"
+              overflow="scroll"
+              gap="spacing.7"
+              paddingLeft="spacing.1"
+              paddingBottom="spacing.1"
+              marginBottom="spacing.7"
+            >
+              <>
+                {PolicyPageCreationQuestionaire.map((question) => {
+                  return (
+                    questionaireMapping[question.questionId] && (
+                      <Box key={question.questionId}>
+                        <Text
+                          size="small"
+                          variant="body"
+                          weight="semibold"
+                          color="surface.text.gray.subtle"
+                          marginBottom="spacing.4"
+                          testID={`question-${question.questionId}`}
+                        >
+                          {question.value}
+                        </Text>
+                        <ChipGroup
+                          accessibilityLabel="Test"
+                          onChange={onChipChange}
+                          value={formState[question.questionId].value}
+                          selectionType="single"
+                          name={question.questionId}
+                          size="xsmall"
+                          testID={`chips-${question.questionId}`}
+                          // TODO: Upgrade to https://github.com/razorpay/blade/releases/tag/%40razorpay%2Fblade%4011.16.0
+                          // validationState={formState[question.questionId].valid}
+                          // errorText="Please select an option"
+                        >
+                          {question.options.map((option) => {
+                            return (
+                              <Chip value={option.value} key={option.value}>
+                                {option.value}
+                              </Chip>
+                            );
+                          })}
+                        </ChipGroup>
+                        {/* TODO: temporary workaround - remove after blade upgrade */}
+                        {formState[question.questionId].valid === ValidationState.ERROR && (
+                          <ErrorMessage>Please select an option</ErrorMessage>
+                        )}
+                      </Box>
+                    )
+                  );
+                })}
+                {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER] && (
+                  <Box width="50%">
+                    <TextInput
+                      label="Support contact number"
+                      placeholder="Phone number"
+                      type="telephone"
+                      name={WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER}
+                      onChange={handleTextInputChange}
+                      value={formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].value}
+                      validationState={
+                        formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].valid
+                      }
+                      errorText="Please enter a valid contact number"
+                      testID="support-contact-number"
+                    />
+                  </Box>
+                )}
+                {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL] && (
+                  <Box width="50%">
+                    <TextInput
+                      label="Support Email ID"
+                      placeholder="Email ID"
+                      type="email"
+                      name={WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL}
+                      onChange={handleTextInputChange}
+                      value={formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].value}
+                      validationState={formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].valid}
+                      errorText="Please enter a valid email id"
+                      testID="support-email"
+                    />
+                  </Box>
+                )}
+              </>
+            </Box>
+          )}
+        </>
+      </ModalBody>
+      <ModalFooter>
+        <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
+          {!isMobile && (
+            <Button variant="tertiary" onClick={onGoBack}>
+              Go back
+            </Button>
+          )}
+          <Button
+            isFullWidth={isMobile}
+            onClick={() => {
+              const { isValid, formState: newFormState } = policyPageFormCreationValidator(
+                formState,
+                questionaireMapping,
+              );
+              if (!isValid) {
+                setFormState(newFormState);
+                return;
+              }
+              onContinueClick();
+            }}
+            isDisabled={isPosting}
+          >
+            {isMobile ? `Proceed${isPosting ? 'ing' : ''}` : `Submit${isPosting ? 'ting' : ''}`}
+          </Button>
+        </Box>
+      </ModalFooter>
+    </Modal>
+  );
+}
+
+export default Questionare;

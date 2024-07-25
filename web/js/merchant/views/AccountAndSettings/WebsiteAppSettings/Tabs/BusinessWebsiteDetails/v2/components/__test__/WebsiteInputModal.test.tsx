@@ -9,6 +9,22 @@ import WebsiteInputModal from '../WebsiteInputModal';
 const mockOnDismiss = jest.fn();
 const mockHandleMainPageSubmit = jest.fn();
 
+jest.mock(
+  'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/utils',
+  () => {
+    const originalModule = jest.requireActual(
+      'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/utils',
+    );
+    return {
+      __esModule: true,
+      ...originalModule,
+      getWebsiteCount: jest.fn(() => {
+        return 0;
+      }),
+    };
+  },
+);
+
 const defaultProps = {
   isMobile: false,
   isOpen: true,

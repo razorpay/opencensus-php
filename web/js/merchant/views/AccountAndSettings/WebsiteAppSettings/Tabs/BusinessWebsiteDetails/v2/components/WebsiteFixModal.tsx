@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Text, Link, TextInput } from '@razorpay/blade/components';
+import { ArrowRightIcon, Box, Button, Text } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
-import { isUrlLenient } from 'common/utils/validators';
 
+import EditableCard from './EditableCard';
 import SuggestionsBox from './SuggestionsBox';
 import VerifiedPolicyPageCard from './VerifiedPolicyPageCard';
-import { PolicyPageContent, getInitialPolicyPagesFormState, policySuggestionStep } from './utils';
+import { PolicyPageContent, getInitialPolicyPagesFormState } from './utils';
 import useBusinessWebsiteData from '../hooks/useBusinessWebsiteData';
 import useModalComponents from '../hooks/useModalComponents';
 import { trackWebsitePrivacyPolicyModalLoaded } from '../tracking';
@@ -15,6 +15,7 @@ import {
   ValidationState,
   WebsitePolicyPages,
   PolicyPageFormData,
+  PolicyPagesSelection,
 } from '../types';
 import { policyPageFormValidator, snapPoints, getWebsiteCount } from '../utils';
 
@@ -24,6 +25,7 @@ interface WebsiteFixModalProps {
   onDismiss: () => void;
   handlePolicyPageSubmit: (formState: PolicyPageFormData) => void;
   user: User;
+  onCreateAllPolicyPagesButtonClick: (formState: PolicyPageFormData) => void;
 }
 
 const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
@@ -32,6 +34,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
   onDismiss,
   handlePolicyPageSubmit,
   user,
+  onCreateAllPolicyPagesButtonClick,
 }) => {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
   const { websiteUpdateData: { website_verification_page_status } = {} } = useBusinessWebsiteData();
@@ -51,7 +54,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
   );
   const [formState, setFormState] = useState<PolicyPageFormData>(missingPages);
 
-  const [activeField, setActiveField] = useState<WebsitePolicyPages>(missingPagesKeys[0]);
+  const [activeField, setActiveField] = useState<WebsitePolicyPages | undefined>(undefined);
 
   const onChange = ({ name, value }: BladeFormInputOnEvent) => {
     /* istanbul ignore next */
@@ -60,6 +63,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
       return {
         ...formState,
         [name]: {
+          ...formState[name],
           value,
           // clear error while typing
           valid: ValidationState.NONE,
@@ -67,55 +71,63 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
       };
     });
   };
-
+  const handleFocusOnNext = (page: WebsitePolicyPages) => {
+    const currentIndex = missingPagesKeys.indexOf(page);
+    // if currentIndex is not found or outside the array, set activeField to null
+    if (currentIndex === missingPagesKeys.length - 1) {
+      setActiveField(undefined);
+      return;
+    }
+    setActiveField(missingPagesKeys[currentIndex + 1]);
+  };
   return (
     <Modal
       isOpen={isOpen}
       onDismiss={onDismiss}
       snapPoints={snapPoints}
-      size="medium"
+      size="large"
       zIndex={99999}
     >
-      <ModalHeader title="Submit details for verification" />
+      <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box display="flex" flexDirection="row" minHeight={isMobile ? 'none' : '400px'}>
           <Box
-            padding={isMobile ? 'none' : 'spacing.6'}
+            paddingX={isMobile ? 'none' : 'spacing.8'}
             display="flex"
             flexDirection="column"
             flex="2"
             gap="spacing.8"
+            paddingY={isMobile ? 'none' : 'spacing.7'}
           >
             <Box display="flex" flexDirection="column" gap="spacing.4">
-              <Box>
+              <Box marginBottom="spacing.4" marginTop="spacing.2">
                 <Text size="large" weight="medium">
                   Required policy pages on your website
                 </Text>
                 <Text size="small" color="surface.text.gray.subtle">
-                  Kindly update your website pages/details{' '}
-                  <Link
-                    size="small"
-                    target="_blank"
-                    href="https://razorpay.com/docs/payments/dashboard/account-settings/profile/#add-or-update-website-or-app-details"
-                  >
-                    Know more
-                  </Link>
+                  If you don’t have any of these required pages/details, we'll help you create them.
                 </Text>
               </Box>
-              {missingPagesKeys.map((page) => (
-                <TextInput
-                  label={`${PolicyPageContent[page].title} link`}
-                  labelPosition="top"
-                  name={page}
-                  onChange={onChange}
-                  type="url"
-                  validationState={formState[page].valid}
-                  value={formState[page].value}
-                  errorText="Enter valid website link"
-                  key={page}
-                  onFocus={() => setActiveField(page as WebsitePolicyPages)}
-                />
-              ))}
+              {missingPagesKeys.map((page) => {
+                const { Icon, title } = PolicyPageContent[page];
+                const { value, valid, radioValue } = formState[page];
+                return (
+                  <EditableCard
+                    key={page}
+                    page={page}
+                    activeField={activeField}
+                    setActiveField={setActiveField}
+                    title={title}
+                    radioValue={radioValue}
+                    setFormState={setFormState}
+                    onChange={onChange}
+                    valid={valid}
+                    value={value}
+                    handleFocusOnNext={handleFocusOnNext}
+                    Icon={Icon}
+                  />
+                );
+              })}
             </Box>
             {verifiedPagesKeys.length ? (
               <Box gap="spacing.4" display="flex" flexDirection="column">
@@ -149,11 +161,32 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
             <Box
               padding="spacing.6"
               backgroundColor="surface.background.sea.subtle"
-              flex="1.5"
+              flex="1.3"
               display="flex"
               justifyContent="center"
             >
-              <SuggestionsBox step={policySuggestionStep[activeField]} />
+              <SuggestionsBox type="ADD_MISSING">
+                <Box display="flex" flexDirection="column" gap="spacing.4" marginTop="spacing.4">
+                  <Text
+                    color="surface.text.gray.subtle"
+                    size="medium"
+                    weight="semibold"
+                    variant="body"
+                  >
+                    In case you don’t have these details, we can create these policy pages for you!
+                  </Text>
+                </Box>
+                <Button
+                  variant="primary"
+                  size="small"
+                  onClick={() => onCreateAllPolicyPagesButtonClick(formState)}
+                  iconPosition="right"
+                  icon={ArrowRightIcon}
+                  marginTop="spacing.4"
+                >
+                  Create Policy Pages
+                </Button>
+              </SuggestionsBox>
             </Box>
           )}
         </Box>
@@ -168,20 +201,13 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
           <Button
             isFullWidth={isMobile}
             onClick={() => {
-              const isValid = policyPageFormValidator(formState);
+              const { isValid, formState: newFormState } = policyPageFormValidator(formState);
               if (!isValid) {
-                const newFormState = { ...formState };
-                Object.keys(newFormState).forEach((key) => {
-                  if (!isUrlLenient(formState[key].value)) {
-                    newFormState[key].valid = ValidationState.ERROR;
-                  }
-                });
                 setFormState(newFormState);
                 return;
               }
-              handlePolicyPageSubmit(formState);
+              handlePolicyPageSubmit(newFormState);
             }}
-            // isDisabled={!policyPageFormValidator(formState)}
           >
             {isMobile ? 'Proceed' : 'Submit'}
           </Button>
