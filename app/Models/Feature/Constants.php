@@ -1734,6 +1734,12 @@ class Constants
 
     const PL_V2_DISABLE_REMINDER_EMAIL = 'pl_v2_disable_rmndr_email';
 
+    /**
+     * Merchants who have this feature present will be charged with a fee based on the nocodeapp feature rule
+     * present in their plan or the fallback plan whenever they use nocodeapp products in the pricing module.
+     */
+    const NOCODEAPP_FEE_APPLICABLE = 'nocodeapp_fee_applicable';
+
     // form builder
 
     const FILE_UPLOAD_PP = 'file_upload_pp';
@@ -2872,6 +2878,7 @@ class Constants
         self::PL_V2_DISABLE_ALL_EMAIL                      => true,
         self::PL_V2_DISABLE_REMINDER_SMS                   => true,
         self::PL_V2_DISABLE_REMINDER_EMAIL                 => true,
+        self::NOCODEAPP_FEE_APPLICABLE                     => true,
         self::WEBSITE_AUTOMATED_CHECKS_FEATURE             => true,
         self::ENABLE_CREATE_OWN_TEMPLATE                   => true,
         self::ENABLE_CUSTOMER_AMOUNT                       => true,
