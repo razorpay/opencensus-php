@@ -522,12 +522,11 @@ class Core extends Base\Core
 
             $data['recurring'][Entity::NACH] = $methods->isNachEnabled();
 
-            $recurringIdVariant = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(), RazorxTreatment::TNG_RECURRING);
-
-            if($recurringIdVariant === true)
+            if ($merchant->getCountry() === 'MY')
             {
                 $data['recurring'][Payment\Method::WALLET][Entity::TOUCHNGO] = $methods->isTouchngoEnabled();
             }
+
         }
 
         if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
