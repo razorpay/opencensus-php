@@ -102,4 +102,40 @@ class BankCodes
         self::UOB                               => "UOVBMYKL",
         self::TNG_DIGITAL                       => "TNGDMYNB",
     ];
+
+    const SWIFTCODE_TO_BANK_CODE_MAPPING = [
+        "PHBMMYKL" => self::AFFIN_BANK, // or self::AFFIN_ISLAMIC_BANK
+        "AGOBMYKL" => self::AGROBANK,
+        "MFBBMYKL" => self::ALLIANCE_BANK, // or self::ALLIANCE_ISLAMIC_BANK
+        "RJHIMYKL" => self::AL_RAJHI_BANKING,
+        "ARBKMYKL" => self::AMBANK, // or self::AMISLAMIC_BANK
+        "BKKBMYKL" => self::BANGKOK_BANK,
+        "BIMBMYKL" => self::BANK_ISLAM,
+        "BMMBMYKL" => self::BANK_MUAMALAT,
+        "BOFAMY2X" => self::BANK_OF_AMERICA,
+        "BKCHMYKL" => self::BANK_OF_CHINA,
+        "BKRMMYKL" => self::BANK_RAKYAT,
+        "BSNAMYK1" => self::BANK_SIMPANAN_NASIONAL,
+        "BNPAMYKL" => self::BNP_PARIBAS,
+        "PCBCMYKL" => self::CHINA_CONSTRUCTION_BANK,
+        "CIBBMYKL" => self::CIMB_BANK, // or self::CIMB_ISLAMIC_BANK
+        "CITIMYKL" => self::CITIBANK,
+        "DEUTMYKL" => self::DEUTSCHE_BANK,
+        "HLBBMYKL" => self::HONG_LEONG_BANK, // or self::HONG_LEONG_ISLAMIC_BANK
+        "HBMBMYKL" => self::HSBC_AMANAH, // or self::HSBC_BANK
+        "ICBKMYKL" => self::ICBC,
+        "CHASMYKX" => self::JP_MORGAN_CHASE_BANK,
+        "KFHOMYKL" => self::KUWAIT_FINANCE_HOUSE,
+        "MBBEMYKL" => self::MALAYAN_BANKING, // or self::MAYBANK_ISLAMIC
+        "AFBQMYKL" => self::MBSB_BANK,
+        "MHCBMYKA" => self::MIZUHO_BANK,
+        "BOTKMYKX" => self::MUFG_BANK,
+        "OCBCMYKL" => self::OCBC_AL_AMIN_BANK, // or self::OCBC_BANK
+        "PBBEMYKL" => self::PUBLIC_BANK, // or self::PUBLIC_ISLAMIC_BANK
+        "RHBBMYKL" => self::RHB_BANK, // or self::RHB_ISLAMIC_BANK
+        "SCBLMYKX" => self::STANDARD_CHARTERED_BANK, // or self::STANDARD_CHARTERED_SAADIQ_BANK
+        "SMBCMYKL" => self::SUMITOMO_MITSUI_BANK,
+        "UOVBMYKL" => self::UOB,
+        "TNGDMYNB" => self::TNG_DIGITAL,
+    ];
 }

@@ -354,6 +354,16 @@ class Entity extends Base\PublicEntity
     public function getBankNameAttribute()
     {
         $ifsc = $this->getAttribute(self::IFSC_CODE);
+        $swift = $this->getAttribute(self::BANK_IDENTIFIER);
+
+        if ($swift !== null & $swift !== '')
+        {
+          $name = BankCodes::SWIFTCODE_TO_BANK_CODE_MAPPING[$swift];
+            if ($name !== null)
+            {
+                return $name;
+            }
+        }
 
         if ($ifsc === null)
         {
