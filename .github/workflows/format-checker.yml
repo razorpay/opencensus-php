@@ -1,5 +1,5 @@
 name: Format Checker Workflow
-on: push
+on: pull_request
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -42,10 +42,14 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v9.3
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
-            .(js|json|jsx|ts|tsx)$
+            **/*.js
+            **/*.json
+            **/*.jsx
+            **/*.ts
+            **/*.tsx
 
       - name: Get branch names
         id: branch-name
@@ -57,7 +61,8 @@ jobs:
           !(
             startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
             startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
-          )
+          ) &&
+          steps.changed-files.outputs.all_changed_files != ''
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
           # base=$base pnpm validate-lint
@@ -66,7 +71,7 @@ jobs:
           --no-error-on-unmatched-pattern \
           --format json \
           --ext .js,.jsx,.ts,.tsx \
-          ${{ steps.changed-files.outputs.all_modified_files }}
+          ${{ steps.changed-files.outputs.all_changed_files }}
         continue-on-error: true
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -80,7 +85,8 @@ jobs:
           !(
             startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
             startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
-          )
+          ) &&
+          steps.changed-files.outputs.all_changed_files != ''
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
@@ -88,10 +94,13 @@ jobs:
 
       - name: Get changed Stylus files
         id: changed-stylus-files
-        uses: tj-actions/changed-files@v9.3
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
-            .(styl)$
+            **/*.styl
+          path: web
+          diff_relative: true
+
 
       - name: Stylelint PR Check
         id: stylelint-check
@@ -102,14 +111,13 @@ jobs:
             startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
             startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
           ) &&
-          steps.changed-stylus-files.outputs.all_modified_files != ''
+          steps.changed-stylus-files.outputs.all_changed_files != ''
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
-          npx stylelint \
-          --custom-formatter stylelint-formatter.js \
-          --config .stylelintrc-stylus.js \
-          -o stylelint-report.json \
-          ${{ steps.changed-stylus-files.outputs.all_modified_files }}
+          pnpm lint:stylelint \
+          --custom-formatter ../stylelint-formatter.js \
+          -o ../stylelint-report.json \
+          ${{ steps.changed-stylus-files.outputs.all_changed_files }}
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
@@ -122,7 +130,7 @@ jobs:
             startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
             startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
           ) &&
-          steps.changed-stylus-files.outputs.all_modified_files != ''
+          steps.changed-stylus-files.outputs.all_changed_files != ''
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "stylelint-report.json"
