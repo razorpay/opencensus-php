@@ -267,6 +267,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function isCollectXUpiTransferRequest()
+    {
+        return $this->getAttribute(self::GATEWAY_MERCHANT_ID) === "COLLECTX";
+    }
+
     public function getUnexpectedReason()
     {
         return $this->getAttribute(self::UNEXPECTED_REASON);

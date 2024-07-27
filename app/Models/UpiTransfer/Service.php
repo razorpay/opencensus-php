@@ -94,7 +94,7 @@ class Service extends Base\Service
     private function formatGatewayResponseDataForCollectX($input, $gateway)
     {
         // Since this route is only being used for CollectX Yesbank UPI transfer callbacks
-        $transferData[Entity::PAYEE_VPA] = $input['bene_account_no'] . "@yesbankltd";
+        $transferData[Entity::PAYEE_VPA] = strtolower($input['bene_account_no'] . "@yesbankltd");
 
         $transferData[Entity::GATEWAY] = $gateway;
 

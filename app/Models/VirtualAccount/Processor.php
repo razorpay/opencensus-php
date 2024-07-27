@@ -106,7 +106,7 @@ abstract class Processor extends Base\Core
         {
             return false;
         }
-        
+
         if ($this->virtualAccount->hasAmountExpected() === true)
         {
             $expectedAmount = $this->virtualAccount->getAmountExpected();
@@ -182,6 +182,10 @@ abstract class Processor extends Base\Core
                     throw new LogicException(TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR);
 
                 case Constants\Entity::UPI_TRANSFER:
+                    if ($entity->isCollectXUpiTransferRequest())
+                    {
+                        throw new LogicException(TraceCode::COLLECTX_UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION);
+                    }
                     throw new LogicException(TraceCode::UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION);
 
                 case Constants\Entity::BHARAT_QR:
