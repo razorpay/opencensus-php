@@ -109,17 +109,17 @@ const WebsitePolicyPagesDetailsOptions = [
 export const PolicyPageCreationQuestionaire = [
   {
     questionId: WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD,
-    value: 'Shipping time',
+    value: 'What is your shipping time?',
     options: WebsitePolicyPagesDetailsOptions,
   },
   {
     questionId: WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD,
-    value: 'Cancellation / Refund request time',
+    value: 'What is your cancellation/refund request time?',
     options: WebsitePolicyPagesDetailsOptions,
   },
   {
     questionId: WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD,
-    value: 'Refund processing time',
+    value: 'What is your refund processing time?',
     options: WebsitePolicyPagesDetailsOptions,
   },
 ];

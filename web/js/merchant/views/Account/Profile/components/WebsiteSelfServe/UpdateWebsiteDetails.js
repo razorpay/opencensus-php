@@ -340,6 +340,7 @@ function UpdateWebsiteDetails(props) {
       screen: 'My account',
       properties: {
         flow: user.has_key_access ? 'Website edit' : 'Website add',
+        isWebsiteUpdateV2: props.shouldShowV2,
         currentWebsite: `${user.business_website}`,
         urlDetails,
         ...getCommonAnalyticsProperties(window.rzp_user),
@@ -371,6 +372,7 @@ function UpdateWebsiteDetails(props) {
           screen: 'My account',
           properties: {
             flow: user.has_key_access ? 'Website edit' : 'Website add',
+            isWebsiteUpdateV2: props.shouldShowV2,
             result: `Success`,
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
@@ -388,6 +390,7 @@ function UpdateWebsiteDetails(props) {
         screen: 'My account',
         properties: {
           flow: user.has_key_access ? 'Website edit' : 'Website add',
+          isWebsiteUpdateV2: props.shouldShowV2,
           result: `Failure`,
           failureReason: `${errors}`,
           ...getCommonAnalyticsProperties(window.rzp_user),
@@ -516,6 +519,7 @@ function UpdateWebsiteDetails(props) {
         actionName: 'Toggled',
         screen: 'My account',
         properties: {
+          isWebsiteUpdateV2: props.shouldShowV2,
           flow: 'Website add',
           urlType: `${typeValue}`,
           ...getCommonAnalyticsProperties(window.rzp_user),
@@ -632,17 +636,24 @@ function UpdateWebsiteDetails(props) {
       zIndex={99999}
     >
       <BladeModalHeader title="Update Website/App" />
-      <ModalBody padding="spacing.0">
+      <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <form onSubmit={save}>
           <Box height={isMobile ? 'auto' : '550px'} overflowY="auto" display="flex">
-            <Box padding="spacing.6" display="flex" flexDirection="column" flex="2" gap="spacing.8">
-              <Box display="flex" flexDirection="row">
+            <Box
+              paddingX={isMobile ? 'spacing.0' : 'spacing.8'}
+              paddingTop={isMobile ? 'spacing.0' : 'spacing.7'}
+              display="flex"
+              flexDirection="column"
+              flex="2"
+              gap="spacing.8"
+            >
+              <Box display="flex" flexDirection="row" padding="spacing.1">
                 <Box
-                  padding={isMobile ? 'none' : 'spacing.6'}
                   display="flex"
                   flexDirection="column"
                   flex="2"
                   gap="spacing.6"
+                  paddingBottom={isMobile ? 'spacing.5' : 'spacing.7'}
                 >
                   <RadioGroup
                     label="Do you wish to integrate your website or app?"

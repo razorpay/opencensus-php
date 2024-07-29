@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getWebsiteCount } from './utils';
 
 export interface Track {
   objectName: string;
@@ -15,7 +16,7 @@ export const track = ({
   objectName,
   actionName = 'Clicked',
   screen = SCREEN,
-  properties,
+  properties = {},
 }: Track): void => {
   analyticsTrack({
     objectName,
@@ -140,6 +141,22 @@ export const trackWebsiteRequestStatusBannerOptionClick = (properties: Propertie
     objectName: 'Website Request Status Banner Option',
     actionName: 'Clicked',
     properties,
+  });
+};
+
+export const trackPreviewPolicyPages = (actionName = 'clicked', properties: Properties = {}) => {
+  track({
+    objectName: 'Preview Policy Pages',
+    actionName,
+    properties: { ...properties, websiteCount: getWebsiteCount(window.rzp_user) },
+  });
+};
+
+export const trackQuestionaire = (actionName = 'clicked', properties: Properties = {}) => {
+  track({
+    objectName: 'Create Website Pages Modal',
+    actionName,
+    properties: { ...properties, websiteCount: getWebsiteCount(window.rzp_user) },
   });
 };
 

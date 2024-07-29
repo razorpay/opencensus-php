@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowRightIcon, Box, Button, Text } from '@razorpay/blade/components';
+import { ArrowRightIcon, Box, Button, Heading, Text } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
 
@@ -15,7 +15,6 @@ import {
   ValidationState,
   WebsitePolicyPages,
   PolicyPageFormData,
-  PolicyPagesSelection,
 } from '../types';
 import { policyPageFormValidator, snapPoints, getWebsiteCount } from '../utils';
 
@@ -90,7 +89,13 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
     >
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
-        <Box display="flex" flexDirection="row" minHeight={isMobile ? 'none' : '400px'}>
+        <Box
+          display="flex"
+          flexDirection="row"
+          minHeight={isMobile ? 'none' : '400px'}
+          height="560px"
+          overflowY="auto"
+        >
           <Box
             paddingX={isMobile ? 'none' : 'spacing.8'}
             display="flex"
@@ -99,12 +104,17 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
             gap="spacing.8"
             paddingY={isMobile ? 'none' : 'spacing.7'}
           >
-            <Box display="flex" flexDirection="column" gap="spacing.4">
+            <Box
+              display="flex"
+              flexDirection="column"
+              gap="spacing.6"
+              paddingBottom={verifiedPagesKeys.length || isMobile ? 'spacing.0' : 'spacing.7'}
+            >
               <Box marginBottom="spacing.4" marginTop="spacing.2">
-                <Text size="large" weight="medium">
+                <Heading size="small" weight="semibold">
                   Required policy pages on your website
-                </Text>
-                <Text size="small" color="surface.text.gray.subtle">
+                </Heading>
+                <Text size="medium" color="surface.text.gray.muted">
                   If you don’t have any of these required pages/details, we'll help you create them.
                 </Text>
               </Box>
@@ -130,7 +140,12 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               })}
             </Box>
             {verifiedPagesKeys.length ? (
-              <Box gap="spacing.4" display="flex" flexDirection="column">
+              <Box
+                gap="spacing.4"
+                display="flex"
+                flexDirection="column"
+                paddingBottom={isMobile ? 'spacing.0' : 'spacing.7'}
+              >
                 <Box>
                   <Text size="large" weight="medium">
                     Policy pages found on your website
@@ -164,9 +179,12 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               flex="1.3"
               display="flex"
               justifyContent="center"
+              paddingTop="65px"
+              position="sticky"
+              top="spacing.0"
             >
               <SuggestionsBox type="ADD_MISSING">
-                <Box display="flex" flexDirection="column" gap="spacing.4" marginTop="spacing.4">
+                <Box display="flex" flexDirection="column" gap="spacing.4">
                   <Text
                     color="surface.text.gray.subtle"
                     size="medium"

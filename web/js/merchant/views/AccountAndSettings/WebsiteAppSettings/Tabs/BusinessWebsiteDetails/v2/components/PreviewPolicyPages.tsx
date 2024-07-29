@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -19,6 +19,7 @@ import {
   AlertTriangleIcon,
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
+import { trackPreviewPolicyPages } from '../tracking';
 
 import { Environments, ShowNotificationType } from 'common/typings';
 
@@ -36,7 +37,7 @@ const SkeletonWrapper = styled.div(
   ({ theme }) => `
   display: flex;
   flex-direction: column;
-  gap: ${theme.spacing[4]}px;
+  gap: ${theme.spacing[5]}px;
   max-width: 400px;
 `,
 );
@@ -80,12 +81,24 @@ function PreviewPages({
   const [isConsentChecked, setIsConsentChecked] = useState(true);
   const [isFormError, setIsFormError] = useState(false);
 
+  const commonProperties = {
+    policyPageRZPCreate: policyPagesToBeMade.length,
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      trackPreviewPolicyPages('Displayed', commonProperties);
+    }
+  }, [isOpen]);
+
   const onGoBack = () => {
+    trackPreviewPolicyPages('Filled', { ...commonProperties, clickedButton: 'cancel' });
     setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
   };
 
   const onContinueClick = () => {
     // submit details to API and go to next step
+    trackPreviewPolicyPages('Filled', { ...commonProperties, clickedButton: 'submit' });
     consentMutation
       .mutateAsync({
         mode,
@@ -107,31 +120,40 @@ function PreviewPages({
             })
             .then((res) => {
               if (res.current_status === WebsiteUpdateAutomationStatus.COMPLETED) {
+                trackPreviewPolicyPages('Success', commonProperties);
                 setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_COMPLETE);
               } else {
+                const message = 'Something went wrong. Please try again.';
+                trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
                 showNotification({
                   type: 'error',
-                  message: 'Something went wrong. Please try again.',
+                  message,
                 });
               }
             })
             .catch((error) => {
+              const message = error?.message || 'Failed to submit details. Please try again.';
+              trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
               showNotification({
                 type: 'error',
-                message: error?.message || 'Failed to submit details. Please try again.',
+                message,
               });
             });
         } else {
+          const message = 'Failed to provide consent. Please try again';
+          trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
           showNotification({
             type: 'error',
-            message: 'Failed to provide consent. Please try again',
+            message,
           });
         }
       })
       .catch((error) => {
+        const message = error?.message || 'Failed to submit details. Please try again.';
+        trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
         showNotification({
           type: 'error',
-          message: error?.message || 'Failed to submit details. Please try again.',
+          message,
         });
       });
   };
@@ -147,123 +169,121 @@ function PreviewPages({
       zIndex={99999}
     >
       <ModalHeader />
-      <ModalBody padding="spacing.5">
-        <Box>
-          <Heading
-            size="medium"
-            weight="semibold"
-            color="surface.text.gray.normal"
-            marginBottom="spacing.2"
-          >
-            Please review the policy pages created for your business
-          </Heading>
-          <Text
-            size="medium"
-            color="surface.text.gray.muted"
-            weight="semibold"
-            marginBottom="spacing.8"
-          >
-            We have created these pages based on your given details in the previous step.
-          </Text>
-        </Box>
-        <Box backgroundColor="transparent" width="100%" overflow="scroll">
-          <Box
-            display="flex"
-            flexDirection="row"
-            gap="spacing.3"
-            alignItems="center"
-            marginBottom="spacing.7"
-          >
-            <Badge icon={CheckIcon} color="information">
-              Created by Razorpay
-            </Badge>
-            <Divider thickness="thick" />
+      <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
+        <Box
+          paddingX={isMobile ? 'none' : 'spacing.8'}
+          paddingY={isMobile ? 'none' : 'spacing.7'}
+          height="560px"
+        >
+          <Box>
+            <Heading size="small" weight="semibold">
+              Please review the policy pages created for your business
+            </Heading>
+            <Text size="medium" color="surface.text.gray.muted" marginBottom="spacing.7">
+              We have created these pages based on your given details.
+            </Text>
           </Box>
-        </Box>
-        {isFetching || isError ? (
-          <SkeletonWrapper>
-            {policyPagesToBeMade.map((item) => (
-              <Card key={`${item}-wrapper`}>
-                <CardBody>
-                  {isFetching ? (
-                    <Box
-                      marginBottom="spacing.4"
-                      display="flex"
-                      flexDirection="column"
-                      gap="spacing.4"
-                    >
-                      <Skeleton width="100%" height="24px" borderRadius="medium" />
-                      <Skeleton width="50%" height="20px" borderRadius="medium" />
-                    </Box>
-                  ) : (
-                    <Box display="flex" gap="spacing.4">
-                      <AlertIconWrapper>
-                        <AlertTriangleIcon color="feedback.icon.negative.intense" />
-                      </AlertIconWrapper>
-                      <Box>
-                        <Text
-                          color="surface.text.gray.subtle"
-                          weight="semibold"
-                          variant="body"
-                          size="medium"
-                        >
-                          Preview couldn’t be loaded
-                        </Text>
-                        <Link onClick={() => retryPreviewAPI()} variant="button">
-                          Retry
-                        </Link>
-                      </Box>
-                    </Box>
-                  )}
-                </CardBody>
-              </Card>
-            ))}
-          </SkeletonWrapper>
-        ) : (
-          <>
-            <Box display="flex" flexDirection="column" gap="spacing.4">
-              {data &&
-                data.data.map((item) => {
-                  return (
-                    <Accordion
-                      onExpandChange={function noRefCheck() {}}
-                      variant="filled"
-                      key={`${item.html_content}-accordian`}
-                    >
-                      <AccordionItem>
-                        <AccordionItemHeader title={item.section} />
-                        <AccordionItemBody>
-                          <div dangerouslySetInnerHTML={{ __html: item.html_content }} />
-                        </AccordionItemBody>
-                      </AccordionItem>
-                    </Accordion>
-                  );
-                })}
-            </Box>
+          <Box backgroundColor="transparent" width="100%" overflow="scroll">
             <Box
               display="flex"
-              flexDirection="column"
-              justifyContent="flex-end"
-              padding="spacing.4"
-              position="relative"
+              flexDirection="row"
               gap="spacing.3"
+              alignItems="center"
+              marginBottom="spacing.7"
             >
-              <Checkbox
-                size="medium"
-                onChange={(e) => {
-                  setIsConsentChecked(e.isChecked);
-                  setIsFormError(false);
-                }}
-                validationState={isFormError ? ValidationState.ERROR : ValidationState.NONE}
-                errorText="Please agree to the terms to proceed"
-                isChecked={isConsentChecked}
-              >
-                I understand that the content provided is not legal advice, and by using them I
-                agree to this disclaimer
-              </Checkbox>
+              <Badge icon={CheckIcon} color="information">
+                Created by Razorpay
+              </Badge>
+              <Divider thickness="thick" variant="subtle" />
             </Box>
-          </>
-        )}
+          </Box>
+          {isFetching || isError ? (
+            <SkeletonWrapper>
+              {policyPagesToBeMade.map((item) => (
+                <Card key={`${item}-wrapper`} elevation="none">
+                  <CardBody>
+                    {isFetching ? (
+                      <Box
+                        marginBottom="spacing.4"
+                        display="flex"
+                        flexDirection="column"
+                        gap="spacing.4"
+                      >
+                        <Skeleton width="100%" height="20px" borderRadius="medium" />
+                        <Skeleton width="50%" height="16px" borderRadius="medium" />
+                      </Box>
+                    ) : (
+                      <Box display="flex" gap="spacing.4">
+                        <AlertIconWrapper>
+                          <AlertTriangleIcon color="feedback.icon.negative.intense" />
+                        </AlertIconWrapper>
+                        <Box>
+                          <Text
+                            color="surface.text.gray.subtle"
+                            weight="semibold"
+                            variant="body"
+                            size="medium"
+                          >
+                            Preview couldn’t be loaded
+                          </Text>
+                          <Link onClick={() => retryPreviewAPI()} variant="button">
+                            Retry
+                          </Link>
+                        </Box>
+                      </Box>
+                    )}
+                  </CardBody>
+                </Card>
+              ))}
+            </SkeletonWrapper>
+          ) : (
+            <>
+              <Box display="flex" flexDirection="column" gap="spacing.4">
+                {data &&
+                  data.data.map((item) => {
+                    return (
+                      <Accordion
+                        variant="filled"
+                        key={`${item.html_content}-accordian`}
+                        size="medium"
+                      >
+                        <AccordionItem>
+                          <AccordionItemHeader title={item.section} />
+                          <AccordionItemBody>
+                            <Box height="200px" overflow="scroll">
+                              <div dangerouslySetInnerHTML={{ __html: item.html_content }} />
+                            </Box>
+                          </AccordionItemBody>
+                        </AccordionItem>
+                      </Accordion>
+                    );
+                  })}
+              </Box>
+              <Box
+                display="flex"
+                flexDirection="column"
+                justifyContent="flex-end"
+                padding="spacing.4"
+                position="relative"
+                gap="spacing.3"
+              >
+                <Checkbox
+                  size="medium"
+                  onChange={(e) => {
+                    setIsConsentChecked(e.isChecked);
+                    setIsFormError(false);
+                  }}
+                  validationState={isFormError ? ValidationState.ERROR : ValidationState.NONE}
+                  errorText="Please agree to the terms to proceed"
+                  isChecked={isConsentChecked}
+                >
+                  I understand that the content provided is not legal advice, and by using them I
+                  agree to this disclaimer
+                </Checkbox>
+              </Box>
+            </>
+          )}
+        </Box>
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">

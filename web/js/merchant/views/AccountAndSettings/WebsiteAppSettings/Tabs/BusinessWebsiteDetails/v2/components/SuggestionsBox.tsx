@@ -24,7 +24,7 @@ const SuggestionsBox: React.FC<SuggestionsBoxProps> = (props) => {
         backgroundColor="surface.background.gray.intense"
         borderRadius="medium"
         elevation="none"
-        padding="spacing.7"
+        padding="spacing.5"
         width="100%"
       >
         <CardBody>{children}</CardBody>
@@ -38,7 +38,7 @@ const SuggestionsBox: React.FC<SuggestionsBoxProps> = (props) => {
         backgroundColor="surface.background.gray.intense"
         borderRadius="medium"
         elevation="none"
-        padding="spacing.7"
+        padding="spacing.5"
       >
         <CardBody>
           <Box display="flex" flexDirection="column" gap="spacing.4">
@@ -56,7 +56,7 @@ const SuggestionsBox: React.FC<SuggestionsBoxProps> = (props) => {
         backgroundColor="surface.background.gray.intense"
         borderRadius="medium"
         elevation="none"
-        padding="spacing.7"
+        padding="spacing.5"
       >
         <CardBody>
           <Box display="flex" flexDirection="column" gap="spacing.4">

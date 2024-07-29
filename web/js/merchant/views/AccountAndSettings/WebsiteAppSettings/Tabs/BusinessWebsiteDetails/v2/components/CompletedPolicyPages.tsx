@@ -55,31 +55,21 @@ function CompletedPolicyPages({
     >
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
-        <Box display="flex" flexDirection="row" minHeight={isMobile ? 'none' : '400px'}>
-          <Box
-            padding={isMobile ? 'none' : 'spacing.6'}
-            display="flex"
-            flexDirection="column"
-            flex="2"
-            gap="spacing.8"
-          >
+        <Box
+          display="flex"
+          flexDirection="row"
+          minHeight={isMobile ? 'none' : '400px'}
+          paddingX={isMobile ? 'none' : 'spacing.8'}
+          paddingY={isMobile ? 'none' : 'spacing.7'}
+        >
+          <Box display="flex" flexDirection="column" flex="2" gap="spacing.8">
             <Box display="flex" flexDirection="column" gap="spacing.4" testID="completed-pages">
-              <Box>
-                <Heading
-                  size="medium"
-                  weight="semibold"
-                  color="surface.text.gray.normal"
-                  marginBottom="spacing.2"
-                >
-                  You are all set!
+              <Box marginBottom="spacing.7">
+                <Heading size="small" weight="semibold">
+                  You are all done! 🙌
                 </Heading>
-                <Text
-                  size="medium"
-                  color="surface.text.gray.muted"
-                  weight="semibold"
-                  marginBottom="spacing.8"
-                >
-                  Here are the links to your policy pages.
+                <Text size="medium" color="surface.text.gray.muted">
+                  Please find the links to your policy pages below.
                 </Text>
               </Box>
               {missingPagesKeys.map((page) => {

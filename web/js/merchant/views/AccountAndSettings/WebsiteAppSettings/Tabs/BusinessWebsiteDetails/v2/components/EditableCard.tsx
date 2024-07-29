@@ -12,7 +12,6 @@ import {
   Text,
   CheckIcon,
   Link,
-  IconButton,
   EditIcon,
   Theme,
 } from '@razorpay/blade/components';
@@ -35,16 +34,28 @@ const StyledRadioGroup = styled.div(
   }
 `,
 );
-const CardWrapper = styled.div<{ isActive: boolean }>(
-  ({ theme, isActive }) => `
-  & > div {
-    border: 1px solid ${isActive ? theme.colors.surface.border.primary.normal : 'none'};
-    & > div {
-      background: ${isActive ? theme.colors.surface.background.primary.subtle : 'unset'};
-    }
-  }
-`,
-);
+
+const CardWrapper = styled.div<{ isActive: boolean }>(({ theme, isActive }) => ({
+  padding: `${theme.spacing[5]}px`,
+  border: `1px solid ${
+    isActive ? theme.colors.surface.border.primary.normal : theme.colors.surface.border.gray.subtle
+  }`,
+  background: `${
+    isActive
+      ? theme.colors.surface.background.primary.subtle
+      : theme.colors.surface.background.gray.intense
+  }`,
+  borderRadius: `${theme.border.radius.medium}px`,
+  '&:hover': {
+    ...(isActive
+      ? {}
+      : {
+          background: `${theme.colors.surface.background.gray.moderate}`,
+          border: `solid 1px ${theme.colors.surface.border.gray.normal}`,
+          cursor: 'pointer',
+        }),
+  },
+}));
 
 export default function EditableCard({
   page,
@@ -96,132 +107,119 @@ export default function EditableCard({
       isActive={isActiveField}
       onFocus={() => setActiveField(page as WebsitePolicyPages)}
     >
-      <Card elevation="none" padding="spacing.5" marginY="spacing.3">
-        <CardBody>
-          <Box display="flex" gap="spacing.4">
-            <Icon color="surface.icon.gray.normal" size="large" />
-            <Box display="inline-flex" gap="spacing.4" flexDirection="column" flex={1}>
-              <Box display="inline-flex" gap="spacing.3">
-                <Text
-                  variant="body"
-                  size="medium"
-                  weight="semibold"
-                  color="surface.text.gray.normal"
+      <Box display="flex" gap="spacing.4">
+        <Icon color="surface.icon.gray.normal" size="large" />
+        <Box display="inline-flex" gap="spacing.4" flexDirection="column" flex={1}>
+          <Box display="inline-flex" gap="spacing.3">
+            <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
+              {title}
+            </Text>
+            {getTag()}
+          </Box>
+          {isEditing ? (
+            <>
+              <StyledRadioGroup>
+                <RadioGroup
+                  helpText=""
+                  label=""
+                  name={page}
+                  value={radioValue}
+                  validationState={
+                    isError && !isRadioSelected ? ValidationState.ERROR : ValidationState.NONE
+                  }
+                  errorText="Please select an option"
+                  onChange={({ name, value }: { name: any; value: any }) => {
+                    setFormState((formState) => {
+                      return {
+                        ...formState,
+                        [name]: {
+                          ...formState[name],
+                          radioValue: value as PolicyPagesSelection,
+                        },
+                      };
+                    });
+                    // on clicking no, directly go the next step (As there is no continue button)
+                    if (value === PolicyPagesSelection.NO) {
+                      handleFocusOnNext(page);
+                    }
+                    track({
+                      objectName: 'Policy Page Toggle Option',
+                      properties: {
+                        ...commonAnalyticsProperties,
+                        toggleRZPCreate:
+                          value === PolicyPagesSelection.NO
+                            ? PolicyPagesSelection.YES
+                            : PolicyPagesSelection.NO,
+                      },
+                    });
+                  }}
                 >
-                  {title}
-                </Text>
-                {getTag()}
-              </Box>
-              {isEditing ? (
-                <>
-                  <StyledRadioGroup>
-                    <RadioGroup
-                      helpText=""
+                  <Radio value={PolicyPagesSelection.YES} testID="merchant-link">
+                    Yes I have the link for this
+                  </Radio>
+                  <Radio value={PolicyPagesSelection.NO} testID="create-via-rzp">
+                    No, create this page for me
+                  </Radio>
+                </RadioGroup>
+              </StyledRadioGroup>
+
+              {radioValue === PolicyPagesSelection.YES &&
+                (activeField === page || (isError && isRadioSelected)) && (
+                  <>
+                    <TextInput
                       label=""
+                      labelPosition="top"
                       name={page}
-                      value={radioValue}
+                      onChange={onChange}
+                      type="url"
                       validationState={
-                        isError && !isRadioSelected ? ValidationState.ERROR : ValidationState.NONE
+                        isError && isRadioSelected ? ValidationState.ERROR : ValidationState.NONE
                       }
-                      errorText="Please select an option"
-                      onChange={({ name, value }: { name: any; value: any }) => {
-                        setFormState((formState) => {
-                          return {
-                            ...formState,
-                            [name]: {
-                              ...formState[name],
-                              radioValue: value as PolicyPagesSelection,
-                            },
-                          };
-                        });
-                        // on clicking no, directly go the next step (As there is no continue button)
-                        if (value === PolicyPagesSelection.NO) {
-                          handleFocusOnNext(page);
-                        }
+                      value={value}
+                      errorText="Enter valid website link"
+                      key={page}
+                      testID="webpage-link"
+                    />
+                    <Button
+                      variant="primary"
+                      alignSelf="flex-start"
+                      onClick={() => {
+                        handleFocusOnNext(page);
                         track({
-                          objectName: 'Policy Page Toggle Option',
+                          objectName: 'Policy Page Save Option',
                           properties: {
                             ...commonAnalyticsProperties,
-                            toggleRZPCreate:
-                              value === PolicyPagesSelection.NO
-                                ? PolicyPagesSelection.YES
-                                : PolicyPagesSelection.NO,
+                            policyPageUrl: value,
                           },
                         });
                       }}
                     >
-                      <Radio value={PolicyPagesSelection.YES} testID="merchant-link">
-                        Yes I have the link for this
-                      </Radio>
-                      <Radio value={PolicyPagesSelection.NO} testID="create-via-rzp">
-                        No, create this page for me
-                      </Radio>
-                    </RadioGroup>
-                  </StyledRadioGroup>
-
-                  {radioValue === PolicyPagesSelection.YES &&
-                    (activeField === page || (isError && isRadioSelected)) && (
-                      <>
-                        <TextInput
-                          label=""
-                          labelPosition="top"
-                          name={page}
-                          onChange={onChange}
-                          type="url"
-                          validationState={
-                            isError && isRadioSelected
-                              ? ValidationState.ERROR
-                              : ValidationState.NONE
-                          }
-                          value={value}
-                          errorText="Enter valid website link"
-                          key={page}
-                          testID="webpage-link"
-                        />
-                        <Button
-                          variant="primary"
-                          alignSelf="flex-start"
-                          onClick={() => {
-                            handleFocusOnNext(page);
-                            track({
-                              objectName: 'Policy Page Save Option',
-                              properties: {
-                                ...commonAnalyticsProperties,
-                                policyPageUrl: value,
-                              },
-                            });
-                          }}
-                        >
-                          Save and continue
-                        </Button>
-                      </>
-                    )}
-                </>
+                      Save and continue
+                    </Button>
+                  </>
+                )}
+            </>
+          ) : (
+            <Box display="flex" justifyContent="space-between">
+              {radioValue === PolicyPagesSelection.YES ? (
+                <Link variant="button">{value}</Link>
               ) : (
-                <Box display="flex" justifyContent="space-between">
-                  {radioValue === PolicyPagesSelection.YES ? (
-                    <Link variant="button">{value}</Link>
-                  ) : (
-                    <Text
-                      color="surface.text.gray.muted"
-                      variant="body"
-                      size="medium"
-                      weight="medium"
-                    >
-                      Not Provided
-                    </Text>
-                  )}
-                  <IconButton
-                    icon={EditIcon}
-                    accessibilityLabel="Close"
-                    onClick={() => setActiveField(page)}
-                  />
-                </Box>
+                <Text color="surface.text.gray.muted" variant="body" size="medium" weight="medium">
+                  Not Provided
+                </Text>
               )}
+              <Link
+                variant="button"
+                icon={EditIcon}
+                accessibilityLabel="Close"
+                onClick={() => setActiveField(page)}
+              >
+                Edit
+              </Link>
             </Box>
-          </Box>
-        </CardBody>
-      </Card>
+          )}
+        </Box>
+      </Box>
     </CardWrapper>
   );
 }
@@ -230,11 +228,11 @@ export function CardDetails({ title, value, Icon }) {
   const isCreatedByRazorpay = isPolicyPageCreatedByRazorpay(value);
 
   return (
-    <Card elevation="none">
+    <Card elevation="none" padding="spacing.5">
       <CardBody>
-        <Box display="flex" gap="spacing.4">
+        <Box display="flex" gap="spacing.5" paddingX="spacing.3">
           <Icon color="surface.icon.gray.normal" size="large" />
-          <Box display="inline-flex" gap="spacing.5" flexDirection="column" flex={1}>
+          <Box display="inline-flex" gap="spacing.2" flexDirection="column" flex={1}>
             <Box display="inline-flex" gap="spacing.3">
               <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
                 {title}

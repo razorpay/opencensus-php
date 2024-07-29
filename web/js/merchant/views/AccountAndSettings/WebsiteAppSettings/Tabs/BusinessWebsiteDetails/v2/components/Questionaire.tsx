@@ -23,7 +23,7 @@ import {
   getWebsiteCount,
 } from '../utils';
 import styled from 'styled-components';
-import { track as analyticsTrack } from '../tracking';
+import { track as analyticsTrack, trackQuestionaire } from '../tracking';
 
 const sensitiveKeys = [
   WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER,
@@ -147,13 +147,18 @@ function Questionare({
         merchant_website_details: getMerchantWebsiteDetailsPayload(policyPagesToBeMade),
       },
     })
-      .then((response) => {
+      .then(() => {
+        trackQuestionaire('Submitted');
         setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_PREVIEW);
       })
       .catch((error) => {
+        const message = error?.message || 'Failed to submit details. Please try again.';
+        trackQuestionaire('Failed', {
+          errorMessage: message,
+        });
         showNotification({
           type: 'error',
-          message: error?.message || 'Failed to submit details. Please try again.',
+          message,
         });
       });
   };
@@ -167,23 +172,13 @@ function Questionare({
       zIndex={99999}
     >
       <ModalHeader />
-      <ModalBody padding="spacing.5">
-        <>
-          <Box>
-            <Heading
-              size="medium"
-              weight="semibold"
-              color="surface.text.gray.normal"
-              marginBottom="spacing.2"
-            >
+      <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
+        <Box paddingX={isMobile ? 'none' : 'spacing.8'} paddingY={isMobile ? 'none' : 'spacing.7'}>
+          <Box marginBottom="spacing.7">
+            <Heading size="small" weight="semibold">
               Create policy pages with Razorpay
             </Heading>
-            <Text
-              size="medium"
-              color="surface.text.gray.muted"
-              weight="semibold"
-              marginBottom="spacing.8"
-            >
+            <Text size="medium" color="surface.text.gray.muted">
               {isEmpty
                 ? `We’ll be creating the ‘Terms and Conditions’ page using your given details`
                 : `Awesome! We’ll need a couple of details from you to create this page for you`}
@@ -194,12 +189,10 @@ function Questionare({
               width="100%"
               display="flex"
               flexDirection="column"
-              // height="75%"
               overflow="scroll"
-              gap="spacing.7"
+              gap="spacing.5"
               paddingLeft="spacing.1"
               paddingBottom="spacing.1"
-              marginBottom="spacing.7"
             >
               <>
                 {PolicyPageCreationQuestionaire.map((question) => {
@@ -211,7 +204,7 @@ function Questionare({
                           variant="body"
                           weight="semibold"
                           color="surface.text.gray.subtle"
-                          marginBottom="spacing.4"
+                          marginBottom="spacing.3"
                           testID={`question-${question.questionId}`}
                         >
                           {question.value}
@@ -247,7 +240,7 @@ function Questionare({
                 {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER] && (
                   <Box width="50%">
                     <TextInput
-                      label="Support contact number"
+                      label="Enter your support contact number"
                       placeholder="Phone number"
                       type="telephone"
                       name={WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER}
@@ -262,9 +255,9 @@ function Questionare({
                   </Box>
                 )}
                 {questionaireMapping[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL] && (
-                  <Box width="50%">
+                  <Box width="50%" marginTop="spacing.3">
                     <TextInput
-                      label="Support Email ID"
+                      label="Enter your support email ID"
                       placeholder="Email ID"
                       type="email"
                       name={WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL}
@@ -279,7 +272,7 @@ function Questionare({
               </>
             </Box>
           )}
-        </>
+        </Box>
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
