@@ -11,10 +11,10 @@ use RZP\Gateway\Upi\Base\Response;
 use RZP\Gateway\Upi\EasebuzzOptimizer\Fields;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway{
-
+    use AuthorizeFailed ;
     use CommonGatewayTrait;
 
     protected $gateway = Payment\Gateway::EASEBUZZ_OPTIMIZER;
