@@ -164,7 +164,7 @@ class PaymentDetailsContainer extends Component {
                           <Amount value={refund.fees - refund.tax} currency={refund.currency} />
                         </span>
                         <span>
-                          GST - <Amount value={refund.tax} currency="INR" />
+                          GST - <Amount value={refund.tax} currency={refund.currency} />
                         </span>
                       </Definition>
                     </EntityDetailRow>

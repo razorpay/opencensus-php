@@ -1,16 +1,19 @@
 import React from 'react';
 import { Badge, ClockIcon } from '@razorpay/blade/components';
+import { getCurrencySymbol as i18nifyGetCurrencySymbol } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
+
 import Amount from 'common/ui/Amount';
-import { getFormattedAmount, currencySymbols } from 'common/utils/rzp-utils';
-import SettlementCard from './SettlementCard';
-import { BADGE_INFO, HEADING_INFO, SETTLEMENT_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
-import { FlexBetween, CardFooterIcon, TextFooter } from './styledUtils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { getFormattedAmount } from 'common/utils/rzp-utils';
+
+import SettlementCard from './SettlementCard';
+import { FlexBetween, CardFooterIcon, TextFooter } from './styledUtils';
+import { BADGE_INFO, HEADING_INFO, SETTLEMENT_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
 
 const InitiatedSettlementStatuses = [SETTLEMENT_STATUS.CREATED, SETTLEMENT_STATUS.INITIATED];
 
-const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency }) => {
+const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency = 'INR' }) => {
   const initiatedSettlements = settlementsList?.filter((setl) =>
     InitiatedSettlementStatuses.includes(setl?.status?.toLowerCase()),
   );
@@ -28,7 +31,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency })
     .unix(initiatedSettlements?.[0]?.created_at)
     .add(SETTLEMENT_SLA_IN_HOURS, 'hours')
     .format('DD MMM, h:mm A');
-  const currencySym = currencySymbols[currency];
+  const currencySym = i18nifyGetCurrencySymbol(currency);
 
   const content = (
     <FlexBetween>

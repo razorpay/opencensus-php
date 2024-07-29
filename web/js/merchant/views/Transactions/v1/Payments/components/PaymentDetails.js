@@ -562,10 +562,12 @@ function PaymentDetails(props) {
                     <Definition>
                       <Amount value={payment.customer_fee + payment.customer_fee_gst} />
                       <span>
-                        Convenience Fee - <Amount value={payment.customer_fee} currency="INR" />
+                        Convenience Fee -{' '}
+                        <Amount value={payment.customer_fee} currency={payment.currency} />
                       </span>
                       <span>
-                        GST - <Amount value={payment.customer_fee_gst} currency="INR" />
+                        GST -{' '}
+                        <Amount value={payment.customer_fee_gst} currency={payment.currency} />
                       </span>
                     </Definition>
                   </EntityDetailRow>

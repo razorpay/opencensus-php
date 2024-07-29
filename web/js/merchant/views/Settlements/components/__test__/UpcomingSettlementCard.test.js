@@ -13,7 +13,7 @@ describe('UpcomingSettlementCard', () => {
       settlement_amount: 9999,
       next_settlement_time: moment().add(3, 'hours').format('X'),
     };
-    render(<App next_settlement={next_settlement} />);
+    render(<App next_settlement={next_settlement} currency="INR" />);
     expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('99')).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe('UpcomingSettlementCard', () => {
         },
       },
     };
-    render(<App settlementConfig={settlementConfig} />);
+    render(<App settlementConfig={settlementConfig} currency="INR" />);
     expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('NA')).toBeInTheDocument();

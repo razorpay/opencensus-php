@@ -19,12 +19,14 @@ import { titleCase, getFormattedAmountWithSymbol } from 'common/utils/rzp-utils'
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 import { SettlementStatus } from 'merchant/views/Settlements/v3/typings';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import { TimelineJourneyPoint } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
 import AuthorizedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Authorized';
 import CapturedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Captured';
 import CreatedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Created';
 import FailedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Failed';
 import RefundAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Refund';
+import RefundAnimationDataGeneric from 'merchant/views/Transactions/v2/Payments/lottie/RefundGeneric';
 import {
   trackDetailsCopy,
   trackDetailsClick,
@@ -38,7 +40,6 @@ import {
   DisputeStatus,
   IQuestionDetails,
 } from './types';
-import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -362,7 +363,10 @@ export const getBaseVariant = (
   }
 };
 
-export const getBadgeIcon = (status: IPaymentDetails['status'] | SettlementStatus): JSX.Element => {
+export const getBadgeIcon = (
+  status: IPaymentDetails['status'] | SettlementStatus,
+  isCountryIndia: boolean,
+): JSX.Element => {
   let animationData = {};
 
   switch (status) {
@@ -384,7 +388,7 @@ export const getBadgeIcon = (status: IPaymentDetails['status'] | SettlementStatu
       animationData = FailedAnimationData;
       break;
     case PaymentStatus.REFUNDED:
-      animationData = RefundAnimationData;
+      animationData = isCountryIndia ? RefundAnimationData : RefundAnimationDataGeneric;
       break;
     default:
       break;

@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -9,12 +10,13 @@ import {
   RefreshIcon,
   Spinner,
   Text,
+  RotateCounterClockWiseIcon,
 } from '@razorpay/blade/components';
-import React, { useEffect, useState } from 'react';
+import RefundIcon from 'assets/transactions/refund.svg';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
-import RefundIcon from 'assets/transactions/refund.svg';
+import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import { deepClone } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
@@ -37,7 +39,6 @@ import { PaymentsTimeline } from 'merchant/views/Transactions/v2/Payments/types'
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
 import { isSettlementRetryTimelineEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { useI18Service } from 'common/i18';
 
 import { IBankTransfer, IPaymentDetails, IPaymentIdRefundDetail } from './types';
 import {
@@ -245,7 +246,20 @@ function PaymentDetailsTimeline({
             <Box display="flex" flexDirection="row" padding="12px" marginLeft="-16px" width="100%">
               <Box marginTop="spacing.1">
                 <IconBackground status="captured">
-                  <img src={RefundIcon} alt="refund-icon" style={{ padding: '1px' }} />
+                  {user.isINCountry ? (
+                    <img
+                      src={RefundIcon}
+                      alt="refund-icon"
+                      data-testid="refund-icon"
+                      style={{ padding: '1px' }}
+                    />
+                  ) : (
+                    <RotateCounterClockWiseIcon
+                      data-testid="RotateCounterClockWiseIcon"
+                      color="interactive.icon.information.normal"
+                      size="medium"
+                    />
+                  )}
                 </IconBackground>
               </Box>
               <Box marginLeft="spacing.3">

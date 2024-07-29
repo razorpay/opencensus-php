@@ -2,6 +2,9 @@ export const initialState = {
   session: {
     user: {
       isAllowedEdit: (_) => true,
+      merchant: {
+        currency: 'INR',
+      },
     },
   },
 };

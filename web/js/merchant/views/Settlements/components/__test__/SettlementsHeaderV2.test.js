@@ -26,10 +26,17 @@ const state = {
       activation_status: 'activated',
       international: false,
       merchant: {
-        currency: 'inr',
+        currency: 'INR',
       },
     },
     org: {},
+  },
+  home: {
+    settlement_amount: {
+      data: {
+        settlement_currency: 'INR',
+      },
+    },
   },
 };
 
@@ -57,7 +64,7 @@ describe('SettlementsHeaderV2', () => {
   });
 
   test('should render SettlementsHeaderV2', async () => {
-    render(<SettlementsHeaderV2 />);
+    render(<SettlementsHeaderV2 />, { initialState: state });
     await waitFor(() => {
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
     });
@@ -116,6 +123,13 @@ describe('SettlementsHeaderV2', () => {
           custom_code: 'rzp',
         },
       },
+      home: {
+        settlement_amount: {
+          data: {
+            settlement_currency: 'INR',
+          },
+        },
+      },
     };
     render(<SettlementsHeaderV2 />, { initialState });
     await waitFor(() => {
@@ -143,11 +157,18 @@ describe('SettlementsHeaderV2', () => {
           isAllowedEdit: () => true,
           id: 'testing123',
           merchant: {
-            currency: 'RM',
+            currency: 'MYR',
           },
         },
         org: {
           custom_code: 'curlec',
+        },
+      },
+      home: {
+        settlement_amount: {
+          data: {
+            settlement_currency: 'MYR',
+          },
         },
       },
     };
@@ -167,11 +188,18 @@ describe('SettlementsHeaderV2', () => {
           isAllowedEdit: () => true,
           id: 'testing123',
           merchant: {
-            currency: 'IN',
+            currency: 'INR',
           },
         },
         org: {
           custom_code: 'rzp',
+        },
+      },
+      home: {
+        settlement_amount: {
+          data: {
+            settlement_currency: 'INR',
+          },
         },
       },
     };
@@ -191,11 +219,18 @@ describe('SettlementsHeaderV2', () => {
           isAllowedEdit: () => true,
           id: 'testing123',
           merchant: {
-            currency: 'RM',
+            currency: 'MYR',
           },
         },
         org: {
           custom_code: 'curlec',
+        },
+      },
+      home: {
+        settlement_amount: {
+          data: {
+            settlement_currency: 'MYR',
+          },
         },
       },
     };

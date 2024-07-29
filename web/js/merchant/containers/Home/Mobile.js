@@ -1,26 +1,36 @@
 import React, { Component, Suspense } from 'react';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-import LazyLoad from 'react-lazyload';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Space from '@razorpay/blade-old/src/atoms/Space';
-import Header from 'common/ui/Header';
+import LazyLoad from 'react-lazyload';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
+import Carousel from 'common/components/Carousel';
+import { withI18Service } from 'common/i18';
+import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
-import Sticky from 'common/ui/Sticky';
-import ShowWhen from 'merchant/components/ShowWhen';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import DateRangePicker from 'common/ui/DateRangePicker';
+import Header from 'common/ui/Header';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
-import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
-import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
-import { openModal } from 'merchant_common/reducers/modals';
+import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
+import Sticky from 'common/ui/Sticky';
+import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import Announcement from 'merchant/components/Announcements/Instant';
-import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
+import ShowWhen from 'merchant/components/ShowWhen';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
+import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
+import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
+import { openModal } from 'merchant_common/reducers/modals';
+import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
+import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+
+import DateRangeTooltip from './DateRangeTooltip';
 import {
   trackPresetChange,
   trackSettlementsClick,
@@ -32,12 +42,9 @@ import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
-import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
-import Carousel from 'common/components/Carousel';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
@@ -48,13 +55,9 @@ import {
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
-import DashboardBanner from 'common/ui/DashboardBanner';
 import lazy from 'merchant/routes/LazyLoader';
+
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
-import DateRangeTooltip from './DateRangeTooltip';
-import { withSplitzService } from 'common/splitz';
-import { withI18Service } from 'common/i18';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -370,7 +373,10 @@ class AnalyticsMobile extends Component {
                 Balance:{' '}
                 <b>
                   {!current_balance.loading && (
-                    <Amount value={current_balance.data.balance} currency="INR" />
+                    <Amount
+                      value={current_balance.data.balance}
+                      currency={user.merchant.currency}
+                    />
                   )}
                 </b>
               </div>

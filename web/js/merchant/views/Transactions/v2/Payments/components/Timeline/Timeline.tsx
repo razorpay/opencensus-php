@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import User from 'common/typings/User';
 import Amount from 'common/ui/Amount';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ERROR_DESCRIPTION_CONTENT_MAP } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/constants';
@@ -48,7 +49,7 @@ interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
   bankTransfer: IBankTransfer;
   paymentIdDetails: IPaymentDetails;
-  user: Record<string, string>;
+  user: User;
   fetchPaymentsTimelineData: () => Promise<void>;
   reFetchPageDetails: (id: string) => void;
   showNotification: (args: any) => void;
@@ -234,7 +235,11 @@ const EntityStatusTimeline = ({
       <StyledJourneyMetadata>
         <Box paddingBottom="spacing.2">
           <Text size="small" color="surface.text.gray.subtle" weight="regular">
-            Net amount: <Amount value={journeyPoint.metadata.amount} />
+            Net amount:{' '}
+            <Amount
+              value={journeyPoint.metadata.amount}
+              currency={(user as Record<string, any>).merchant.currency}
+            />
           </Text>
         </Box>
         {journeyPoint.timestamp && (

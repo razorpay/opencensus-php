@@ -879,7 +879,7 @@ class AnalyticsDesktop extends Component {
                             <Amount
                               className="pr-5"
                               value={settlement_amount.data.settlement_amount}
-                              currency="INR"
+                              currency={user.merchant.currency}
                             />
                           </strong>
                           <span className="pr-5">will be settled on</span>

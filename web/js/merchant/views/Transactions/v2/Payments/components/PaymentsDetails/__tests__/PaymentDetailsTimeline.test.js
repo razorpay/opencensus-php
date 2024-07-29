@@ -128,6 +128,44 @@ describe('Payment Timeline parent component', () => {
     });
   });
 
+  describe(`RefundIcons`, () => {
+    it('renders RefundIcon when user is in India', async () => {
+      mockPaymentIdTimelineDetails('captured');
+      mockIsConfigTagEnabled.mockReturnValue(false);
+      const { getByTestId } = render(<App props={happyFlowProps} />, {
+        initialState: {
+          ...initialState,
+          session: {
+            user: { ...initialState.session.user, isINCountry: true },
+          },
+        },
+      });
+
+      await waitFor(() => {
+        const refundIcon = getByTestId('refund-icon');
+        expect(refundIcon).toBeInTheDocument();
+      });
+    });
+
+    it('renders RotateCounterClockWiseIcon when user is not in India', async () => {
+      mockPaymentIdTimelineDetails('captured');
+      mockIsConfigTagEnabled.mockReturnValue(false);
+      const { getByTestId } = render(<App props={happyFlowProps} />, {
+        initialState: {
+          ...initialState,
+          session: {
+            user: { ...initialState.session.user, isINCountry: false },
+          },
+        },
+      });
+
+      await waitFor(() => {
+        const rotateIcon = getByTestId('RotateCounterClockWiseIcon');
+        expect(rotateIcon).toBeInTheDocument();
+      });
+    });
+  });
+
   describe(`Should call fetchTransfers when payment method is bank transfer`, () => {
     beforeEach(() => {
       mockPaymentIdTimelineDetails('authorized');

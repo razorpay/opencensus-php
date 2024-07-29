@@ -20,6 +20,7 @@ const getUser = () => ({
   activation_status: undefined,
   user: {
     contact_mobile: undefined,
+    isINCountry: true,
   },
   isOrgAxis: undefined,
   isOrgRZP: undefined,
@@ -161,19 +162,41 @@ describe('Condition Utils', () => {
   });
 
   describe('isPaymentMethodEnabled', () => {
+    beforeEach(() => {
+      user = {
+        isOrgRZP: false,
+        isINCountry: false,
+        isInstrumentRequestAllowed: jest.fn().mockReturnValue(false),
+        isInstrumentRequestHidden: false,
+      };
+    });
+
     test.each([
-      [false, false, false, false, 'test'],
-      [false, true, false, false, 'live'],
-      [false, true, true, true, 'test'],
-      [false, false, true, false, 'live'],
-      [true, true, true, false, 'live'],
+      // Expected result, isOrgRZP, isINCountry, isInstrumentRequestAllowed, isInstrumentRequestHidden, mode
+      [false, false, false, false, false, 'test'],
+      [false, false, true, false, false, 'live'],
+      [false, true, true, true, false, 'test'],
+      [false, false, false, true, false, 'live'],
+      [true, true, true, true, true, 'live'],
+      [true, true, true, true, false, 'live'],
+      [true, false, true, true, true, 'live'],
+      [false, true, false, true, false, 'test'],
     ])(
-      'should return %s when isOrgRZP is %s, isInstrumentRequestAllowed returns %s and mode is %s',
-      (flag, isOrgRZP, isInstrumentRequestAllowedOutput, isInstrumentRequestHiddenOutput, mode) => {
+      'should return %s when isOrgRZP is %s, isINCountry is %s, isInstrumentRequestAllowed returns %s, isInstrumentRequestHidden is %s, and mode is %s',
+      (
+        expectedResult,
+        isOrgRZP,
+        isINCountry,
+        isInstrumentRequestAllowedOutput,
+        isInstrumentRequestHiddenOutput,
+        mode,
+      ) => {
         user.isOrgRZP = isOrgRZP;
-        user.isInstrumentRequestHidden = isInstrumentRequestHiddenOutput;
+        user.isINCountry = isINCountry;
         user.isInstrumentRequestAllowed.mockReturnValueOnce(isInstrumentRequestAllowedOutput);
-        expect(conditionalUtils.isPaymentMethodEnabled(user, mode)).toBe(flag);
+        user.isInstrumentRequestHidden = isInstrumentRequestHiddenOutput;
+
+        expect(conditionalUtils.isPaymentMethodEnabled(user, mode)).toBe(expectedResult);
       },
     );
   });

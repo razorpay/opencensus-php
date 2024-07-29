@@ -1,12 +1,14 @@
 import React from 'react';
 import { Badge, HelpCircleIcon, ClockIcon } from '@razorpay/blade/components';
+import { getCurrencySymbol as i18nifyGetCurrencySymbol } from '@razorpay/i18nify-js/currency';
+import moment from 'moment/moment';
+
 import Amount from 'common/ui/Amount';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+
 import SettlementCard from './SettlementCard';
 import { FlexBetween, CardWrapper, CardFooterIcon, TextFooter } from './styledUtils';
-import moment from 'moment/moment';
 import { BADGE_INFO, HEADING_INFO } from './utils';
-import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
-import { currencySymbols } from 'common/utils/rzp-utils';
 
 const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency }) => {
   const no_settlement = next_settlement?.no_settlement;
@@ -14,7 +16,7 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency })
   const isBlock = settlementConfig?.data?.config?.features?.block?.status;
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
-  const currencySym = currencySymbols[currency];
+  const currencySym = i18nifyGetCurrencySymbol(currency);
 
   const showBlockedBadge = isBlock || isOnHold || isOnTemporaryHold;
 

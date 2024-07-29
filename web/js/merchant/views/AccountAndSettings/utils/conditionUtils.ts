@@ -38,7 +38,7 @@ export const isTrustedBadgeAllowed = (user: User, extraConfig: ExtraConfig): boo
   !extraConfig.isConfigTagEnabled('account.trusted_badge');
 
 export const isPaymentMethodEnabled = (user: User, mode: string): boolean =>
-  ((user.isOrgRZP === true && user.isInstrumentRequestAllowed()) ||
+  ((user.isOrgRZP === true && user.isINCountry && user.isInstrumentRequestAllowed()) ||
     user.isInstrumentRequestHidden) &&
   mode !== 'test';
 

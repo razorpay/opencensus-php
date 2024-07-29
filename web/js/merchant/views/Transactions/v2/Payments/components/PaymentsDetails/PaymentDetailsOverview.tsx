@@ -48,8 +48,8 @@ import {
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
-export const OverviewIcon = ({ status }) => {
-  const Icon = getBadgeIcon(status);
+export const OverviewIcon = ({ status, isCountryIndia = true }) => {
+  const Icon = getBadgeIcon(status, isCountryIndia);
   return <OverviewIconWrapper>{Icon}</OverviewIconWrapper>;
 };
 
