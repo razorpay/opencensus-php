@@ -4428,7 +4428,7 @@ class Base extends BaseCore
         if ($check[Payout\Entity::PURPOSE] === Payout\Purpose::RZP_FEES)
         {
             $variant = $this->app['razorx']->getTreatment($check[Payout\Entity::MERCHANT_ID ],
-                RazorxTreatment::ENABLE_CA_RZP_FEES_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+                RazorxTreatment::ENABLE_CA_RZP_FEES_PAYOUT_VIA_PAYOUTS_SERVICE, Mode::LIVE);
 
             if ($variant != 'on')
             {

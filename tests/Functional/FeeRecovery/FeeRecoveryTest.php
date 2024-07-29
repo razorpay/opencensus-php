@@ -587,7 +587,7 @@ class FeeRecoveryTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
 
-        $this->setMockRazorxTreatment(['enable_ca_rzp_fees_flow_via_payouts_service' => 'off']);
+        $this->setMockRazorxTreatment(['enable_ca_rzp_fees_payout_via_payouts_service' => 'off']);
 
         $oldTime = Carbon::create(2020, 1, 3, null, null, null);
 
