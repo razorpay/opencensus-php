@@ -35,62 +35,6 @@ jobs:
           HUSKY=0 pnpm i --ignore-scripts
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-      # - name: Install dependencies with caching
-      #   uses: ./.github/actions/package-installer
-      #   with:
-      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v44.5.5
-        with:
-          files: |
-            **/*.js
-            **/*.json
-            **/*.jsx
-            **/*.ts
-            **/*.tsx
-
-      - name: Get branch names
-        id: branch-name
-        uses: tj-actions/branch-names@v5
-
-      - name: ESLint PR Check
-        # Don't run check on revert PRs
-        if: |
-          !(
-            startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
-            startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
-          ) &&
-          steps.changed-files.outputs.all_changed_files != ''
-        run: |
-          echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
-          # base=$base pnpm validate-lint
-          npx eslint \
-          --output-file eslint_report.json \
-          --no-error-on-unmatched-pattern \
-          --format json \
-          --ext .js,.jsx,.ts,.tsx \
-          ${{ steps.changed-files.outputs.all_changed_files }}
-        continue-on-error: true
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          base: origin/${{ github.base_ref }}
-
-      - name: Annotate ES lint issues
-        uses: ataylorme/eslint-annotate-action@v2
-        id: eslint-annotator
-        # skip test for revert pr's
-        if: |
-          !(
-            startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
-            startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
-          ) &&
-          steps.changed-files.outputs.all_changed_files != ''
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          report-json: "eslint_report.json"
-          check-name: "Eslint Report"
 
       - name: Get changed Stylus files
         id: changed-stylus-files
@@ -100,7 +44,6 @@ jobs:
             **/*.styl
           path: web
           diff_relative: true
-
 
       - name: Stylelint PR Check
         id: stylelint-check

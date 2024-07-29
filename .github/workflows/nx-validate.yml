@@ -31,11 +31,6 @@ jobs:
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
-      # - name: Install dependencies with caching
-      #   uses: ./.github/actions/package-installer
-      #   with:
-      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-
       - name: Extract branch name
         shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT

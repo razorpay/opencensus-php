@@ -54,7 +54,7 @@ Stylelint CLI docs: <https://stylelint.io/user-guide/usage/cli>
 
 ### 4. CI Flow
 
-Stylelint check is added as a step in `format-checker` GitHub Action which automatically runs on all the modified files of the PR. Errors are added as annotations on the files directly
+Stylelint check is added as a step in NX Validate GitHub Action which automatically runs on all the modified files of the PR. Errors are added as annotations on the files directly
 
 ![](./assets/stylelint-ci-flow.png)
 

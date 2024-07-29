@@ -27,7 +27,7 @@ export const updateConfig = () => {
           preview_image_url: {
             file_id: 'file_O2oTHE8V4KgYqf',
             signed_url:
-              'https://rzp-1018-nonprod-test-bucket.s3.ap-south-1.amazonaws.com/preview_1714038900.jpeg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=FwoGZXIvYXdzEGsaDHMbLuzvWB9MqIpslCKtAUVmGMLid2WWKKk0V1CGDhSV9FRM83OOOn8Mfsu%2FRsGUyKwETLDf5k9qCM41aFKjrPfwhAYdat2eLY2athf%2FrzrPZo3uUK%2B8UYmdg%2F3upW0CU2XP5Au9pcV6GYpa5gP6ukyjf9%2BU01DE%2BUa%2B8UhEyKlAL%2FGXaDKD1g6Gm6twJ13Kxgwijs6p%2BzLtlq7Ec26yLypDDgA1iwOJJEBG3iBrJ0dqETjMjsUvkHG1VPCMKIzOqLEGMi0YyUQOpTsqoDCQAHnixfZfn0VvTNVyED7c37XezNn%2F4sHjqeLAgiuiLMiHfjk%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARPN2ZIK2FG5366SR%2F20240425%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20240425T095501Z&X-Amz-SignedHeaders=host&X-Amz-Expires=900&X-Amz-Signature=768aee893e522fcd954ec7ec3dd99c8e162166fa4d74b58c889392e3a2d5bfb1',
+              'https://rzp-1018-nonprod-test-bucket.s3.ap-south-1.amazonaws.com/preview_1714038900.jpeg',
             name: 'preview_1714038900.jpeg',
             mime: 'image/jpeg',
             extension: 'jpeg',

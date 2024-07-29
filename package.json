@@ -31,7 +31,7 @@
     "test:jest-watch": "pnpm nx run web:test:jest-watch",
     "devstack-deploy": "pnpm nx run web:devstack-deploy",
     "lint": "pnpm nx run web:lint",
-    "lint:stylelint": "pnpm nx run web:lint:css",
+    "lint:stylelint": "pnpm nx run web:stylelint",
     "nx": "nx",
     "validate-lint": "bash validate-eslint.sh $base",
     "lint:css": "pnpm nx run web:lint:css",
