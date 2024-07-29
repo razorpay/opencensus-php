@@ -382,7 +382,7 @@ class Core extends Base\Core
 
                 $planId = $merchant->getPricingPlanId();
 
-                $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
+                $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId, 'org_' . $merchant->org->getId());
 
                 if ($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId))
                 {
