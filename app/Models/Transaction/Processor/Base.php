@@ -397,7 +397,7 @@ abstract class Base extends BaseCore
 
         $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        if ((in_array($this->txn->getType(), [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL]) === true) and
+        if ((in_array($this->txn->getType(), [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL, Transaction\Type::SETTLEMENT]) === true) and
             (isset($this->txn->source->balance)=== true) and
             ($this->txn->source->balance->getType() !== Balance\Type::PRIMARY))
         {
