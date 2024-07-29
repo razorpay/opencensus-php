@@ -168,7 +168,7 @@ class Service extends Base\Service
         //are skipped.
         //$response is returned empty if it is not a validation request
 
-        if ($this->checkForCollectXRequestForUPI($input) === true)
+        if ($this->checkForCollectXValidateRequestForUPI($input) === true)
         {
             return $this->routeForCollectXUPIRequest($input);
         }
@@ -224,9 +224,18 @@ class Service extends Base\Service
         return $this->validateAndProcessRequest($input, $bankTransferRequest, $provider, $checkForIfsc);
     }
 
-    protected function checkForCollectXRequestForUPI(array $input): bool
+    protected function checkForCollectXValidateRequestForUPI(array $input): bool
     {
         if ((array_key_exists('validate', $input)) and $input['validate']['transfer_type'] === "UPI")
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected function checkForCollectXNotifyRequestForUPI(array $input): bool
+    {
+        if ((array_key_exists('notify', $input)) and $input['notify']['transfer_type'] === "UPI")
         {
             return true;
         }
@@ -535,6 +544,26 @@ class Service extends Base\Service
             TraceCode::BANK_TRANSFER_NOTIFY_REQUEST,
             $inputTrace
         );
+
+        // For CollectX, money transfer is happening once the validation callback succeeds
+        // This should be extended to record notification of money transfer but for now, giving 200 response
+        // to all CollectX notification callbacks
+        if ($this->checkForCollectXNotifyRequestForUPI($input) === true)
+        {
+            $response = [
+                'notifyResult' => [
+                    'result' => "ok"
+                ]
+            ];
+
+            $this->trace->info(
+                TraceCode::COLLECTX_YESB_RESPONSE,
+                [
+                    'response' => $response
+                ]);
+
+            return $response;
+        }
 
         $this->validateProvider();
 

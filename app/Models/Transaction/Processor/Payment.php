@@ -221,6 +221,10 @@ class Payment extends Base
 
             return false;
         }
+        else if ($this->source->identifierForCollectxPayment() === true)
+        {
+            return false;
+        }
 
         $this->txn->setBalanceUpdated(true);
 

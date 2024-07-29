@@ -3115,6 +3115,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true);
     }
 
+    public function identifierForCollectxPayment()
+    {
+        return ($this->getAttribute("reference14") === "collectx");
+    }
+
     /**
      * @ToDo: This method needs fixing as it doesn't return the correct value
      *        during manual capture of payments as $metadata is empty.

@@ -51,8 +51,28 @@ class Service extends Base\Service
             if ($isCollectXPayment === true)
             {
                 $input = json_decode($input, true);
+
                 [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminalForCollectX($input['validate'], $gateway);
+
+                [$valid, $transactionId] = $this->processUpiTransfer($gatewayResponse, $terminal);
+
+                $decision = $valid ? "pass" : "reject";
+
+                $response = [
+                    'validateResponse' => [
+                        'decision' => $decision
+                    ]
+                ];
+
+                $this->trace->info(
+                    TraceCode::COLLECTX_YESB_RESPONSE,
+                    [
+                        'response' => $response
+                    ]);
+
+                return $response;
             }
+
             else
             {
                 [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminal($input, $gateway);

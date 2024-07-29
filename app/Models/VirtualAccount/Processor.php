@@ -422,11 +422,11 @@ abstract class Processor extends Base\Core
         $this->getPaymentProcessor()->process($paymentInput, $gatewayData);
     }
 
-    protected function createPayment(array $input, array $gatewayData = [])
+    protected function createPayment(array $input, array $gatewayData = [], $isCollectXPayment = false)
     {
         try
         {
-            $this->getPaymentProcessor()->process($input, $gatewayData);
+            $this->getPaymentProcessor()->process($input, $gatewayData, $isCollectXPayment);
         }
         catch (RequestsException $e)
         {
@@ -1005,11 +1005,11 @@ abstract class Processor extends Base\Core
         return false;
     }
 
-    protected function createPaymentOrUnexpected(Base\PublicEntity $entity, array $input, array $gatewayData = [])
+    protected function createPaymentOrUnexpected(Base\PublicEntity $entity, array $input, array $gatewayData = [], $isCollectXPayment = false)
     {
         try
         {
-            return $this->createPayment($input, $gatewayData);
+            return $this->createPayment($input, $gatewayData, $isCollectXPayment);
         }
         catch (Exception $ex)
         {

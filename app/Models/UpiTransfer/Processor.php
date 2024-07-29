@@ -5,6 +5,7 @@ namespace RZP\Models\UpiTransfer;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
@@ -71,10 +72,17 @@ class Processor extends VirtualAccount\Processor
 
                     $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
 
-                    Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_PROCESS_PAYMENT],
-                        function() use ($upiTransfer, $paymentInput)
+                    $isCollectXUpiPayment = false;
+
+                    if ($this->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true)
                     {
-                        $this->createPaymentOrUnexpected($upiTransfer, $paymentInput, $this->callbackData);
+                        $isCollectXUpiPayment = true;
+                    }
+
+                    Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_PROCESS_PAYMENT],
+                        function() use ($upiTransfer, $paymentInput, $isCollectXUpiPayment)
+                    {
+                        $this->createPaymentOrUnexpected($upiTransfer, $paymentInput, $this->callbackData, $isCollectXUpiPayment);
                     });
 
                     $payment = $this->getPaymentProcessor()->getPayment();
@@ -92,6 +100,8 @@ class Processor extends VirtualAccount\Processor
             );
 
             $payment = $upiTransfer->payment;
+
+            $payment->upiTransfer = $upiTransfer;
 
             if($payment->isCollectXPayment() === true)
             {

@@ -2400,6 +2400,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_PAYMENT_GATEWAY_CALLBACK                           = 'QR_PAYMENT_GATEWAY_CALLBACK';
     const PROCESS_QR_PAYMENT_REQUEST                            = 'PROCESS_QR_PAYMENT_REQUEST';
 
+    const COLLECTX_YESB_RESPONSE                                = "COLLECTX_YESB_RESPONSE";
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
     const BAD_REQUEST_BQR_PAYMENT_FAILED                        = 'BAD_REQUEST_BQR_PAYMENT_FAILED';
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST_INTERNAL            = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST_INTERNAL';

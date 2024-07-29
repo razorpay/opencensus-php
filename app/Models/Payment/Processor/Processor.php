@@ -3336,7 +3336,7 @@ class Processor
     }
 
 
-    public function process(array $input, $gatewayInput = []): array
+    public function process(array $input, $gatewayInput = [], $isCollectXPayment = false): array
     {
         $meta = [
             'metadata' => [
@@ -3443,7 +3443,7 @@ class Processor
 
                 $this->convert3ds2BrowserDetails($input);
 
-                $payment = $this->buildPaymentEntity($input);
+                $payment = $this->buildPaymentEntity($input, null, $isCollectXPayment);
                 if ($isPaCbPartnerPayment) {
                     $payment->setInternational();
                     $payment->setGateway(Payment\Gateway::PING_PONG);
@@ -9168,7 +9168,7 @@ class Processor
         $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
-    protected function buildPaymentEntity(array $input, $transferPaymentId = null): Payment\Entity
+    protected function buildPaymentEntity(array $input, $transferPaymentId = null, $isCollectXPayment = false): Payment\Entity
     {
         //
         //For simpl provider if $input['payment'] is not empty than we return the same payment
@@ -9193,6 +9193,11 @@ class Processor
         // fallback if payment_id empty
         if (empty($payment->getId()) === true) {
             $payment->generateId();
+        }
+
+        if ($isCollectXPayment === true)
+        {
+            $payment->setAttribute("reference14" , "collectx");
         }
 
         $payment->merchant()->associate($this->merchant);
