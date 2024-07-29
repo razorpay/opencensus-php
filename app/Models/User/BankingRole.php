@@ -23,6 +23,7 @@ class BankingRole
     const OPERATIONS           = Role::OPERATIONS;
     const CHARTERED_ACCOUNTANT = Role::CHARTERED_ACCOUNTANT;
     const VENDOR               = Role::VENDOR;
+    const PETTY_CASH_EMPLOYEE  = Role::PETTY_CASH_EMPLOYEE;
 
     //
     // Dynamic Roles:

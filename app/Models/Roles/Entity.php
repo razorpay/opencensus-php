@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
         BankingRole::CHARTERED_ACCOUNTANT,
         BankingRole::VIEW_ONLY,
         BankingRole::VENDOR,
+        BankingRole::PETTY_CASH_EMPLOYEE,
     ];
 
     protected $fillable = [

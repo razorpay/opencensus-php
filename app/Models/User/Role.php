@@ -35,6 +35,7 @@ class Role
     const VENDOR                = 'vendor';
     const AUTH_LINK_SUPERVISOR  = 'auth_link_supervisor';
     const AUTH_LINK_AGENT       = 'auth_link_agent';
+    const PETTY_CASH_EMPLOYEE   = 'petty_cash_employee';
 
     // SELLERAPP and extra functionality (Reports) - not publicly available.
     const SELLERAPP_PLUS        = 'sellerapp_plus';

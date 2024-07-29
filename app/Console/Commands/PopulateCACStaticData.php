@@ -824,6 +824,38 @@ class PopulateCACStaticData extends Command
                     ],
                 ],
             ],
+
+            [
+                "id" => "petty_cash_employee",
+                "name" => "petty_cash_employee",
+                "description" => "Test description for petty cash employee",
+                "type" => "standard",
+                "merchant_id" => $merchantId,
+                "created_by" => "system",
+                "updated_by" => "system",
+                "access_policies" => [
+                    [
+                        "privilege_name" => "Banking Details",
+                        "action" => "view",
+                    ],
+                    [
+                        "privilege_name" => "Petty Cash Budgets",
+                        "action" => "view",
+                    ],
+                    [
+                        "privilege_name" => "Expense Categories",
+                        "action" => "view",
+                    ],
+                    [
+                        "privilege_name" => "Petty Cash Expenses",
+                        "action" => "view",
+                    ],
+                    [
+                        "privilege_name" => "Petty Cash Expenses",
+                        "action" => "create",
+                    ],
+                ],
+            ],
         ];
     }
 

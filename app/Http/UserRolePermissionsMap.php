@@ -801,6 +801,27 @@ class UserRolePermissionsMap
 
                  Permission::MERCHANT_ONBOARDING,
              ],
+
+             BankingRole::PETTY_CASH_EMPLOYEE => [
+                Permission::BANKING_ACCOUNT_READ,
+
+                Permission::VIEW_BUDGET,
+                Permission::VIEW_EXPENSE_CATEGORIES,
+                Permission::CREATE_PETTY_CASH,
+                Permission::VIEW_PETTY_CASH,
+
+                // Permissions needed for base functionalities in dashboard
+                Permission::MOB_SERVICE_READ,
+                Permission::VIEW_USER,
+                Permission::UPDATE_USER_PROFILE,
+                Permission::HAS_APP_ACCESS,
+                Permission::VIEW_PRIVILEGES,
+                Permission::VIEW_ALL_ROLES,
+                Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+
+                Permission::MERCHANT_USER_WRITE,
+                Permission::MERCHANT_ONBOARDING,
+             ],
         ];
 
         $rolePermissions[BankingRole::FINANCE_L2] = $rolePermissions[BankingRole::FINANCE_L1];

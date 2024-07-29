@@ -38,6 +38,9 @@ class UserRoleFeatureMap
             BankingRole::VENDOR => [
                 Constants::VIEW_ONBOARDING_CARDS,
             ],
+            BankingRole::PETTY_CASH_EMPLOYEE => [
+                Constants::VIEW_ONBOARDING_CARDS,
+            ]
         ];
 
         $roleFeature[BankingRole::FINANCE_L2] = $roleFeature[BankingRole::FINANCE_L1];
