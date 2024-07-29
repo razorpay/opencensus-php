@@ -178,6 +178,9 @@ class Core extends Base\Core
 
         $token = $this->repo->transaction(
             function () use ($input, $merchant, $batchId) {
+                // Introducing sleep of 100ms to avoid creation of duplicate customers
+                // because of lag in DB replication between reader and writer instance
+                usleep(100000);
                 $customer = $this->createCustomer($input, $merchant);
 
                 $subscriptionRegistration = $this->createSubscriptionRegistration($input, $merchant, $customer);
