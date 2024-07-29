@@ -471,7 +471,8 @@ class Constants
     // Country Code for Indian & Malaysia mobile numbers
     const SUPPORTED_COUNTRY_CODES_SIGNUP    = [
         'IN',
-        'MY'
+        'MY',
+        'SG'
     ];
 
     const X_SECOND_FACTOR_AUTH_ACTION   = 'x_second_factor_auth';

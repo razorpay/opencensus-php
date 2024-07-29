@@ -150,7 +150,7 @@ class Validator extends Base\Validator
         Entity::SIGNUP_SOURCE               => 'sometimes|string|max:32',
         Entity::CODE                        => 'custom',
         Entity::SIGNUP_VIA_EMAIL            => 'sometimes|in:0,1',
-        Entity::COUNTRY_CODE                => 'sometimes|string|max:2|in:IN,MY',
+        Entity::COUNTRY_CODE                => 'sometimes|string|max:2|in:IN,MY,SG',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
     ];
 
@@ -204,7 +204,7 @@ class Validator extends Base\Validator
         'reset_pricing_plan'                          => 'sometimes|boolean',
         Entity::PURPOSE_CODE                          => 'sometimes|string|max:5',
 //        Entity::EMAIL                                 => 'sometimes|email|unique:merchants',
-        Entity::COUNTRY_CODE                          => 'sometimes|string|size:2|in:IN,MY',
+        Entity::COUNTRY_CODE                          => 'sometimes|string|size:2|in:IN,MY,SG',
     ];
 
     protected static $editBillingLabelRules = [

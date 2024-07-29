@@ -473,6 +473,7 @@ class Service extends Base\Service
             'easyOnboarding'                       => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true,
             Merchant\Constants::PHANTOM_ONBOARDING => optional($merchant)->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING) === true,
             Merchant\Constants::I18N_MY_ONBOARDING    => optional($merchant)->isSignupCampaign(DDConstants::I18N_MY_SIGNUP) === true,
+            DeviceDetail\Constants::SINGAPORE_SIGNUP  => optional($merchant)->isSignupCampaign(DeviceDetail\Constants::SINGAPORE_SIGNUP) === true
         ];
 
         if ($user[Entity::SIGNUP_VIA_EMAIL] == 0)

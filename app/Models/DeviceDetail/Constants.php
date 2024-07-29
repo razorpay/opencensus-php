@@ -2,6 +2,8 @@
 
 namespace RZP\Models\DeviceDetail;
 
+use RZP\Constants\Country;
+
 class Constants
 {
     // onboarding source
@@ -30,6 +32,8 @@ class Constants
     ];
     const I18N_MY_SIGNUP = 'i18n_my_signup';
 
+    const SINGAPORE_SIGNUP = 'sg_signup';
+
     const WORKFLOW_TYPE = 'workflow_type';
 
     const PRODUCT  = "product";
@@ -47,7 +51,7 @@ class Constants
     const PLATFORM_PG = 'pg';
 
 
-    const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION];
+    const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION, self::SINGAPORE_SIGNUP] ;
 
     const SIGNUP_CAMPAIGN_ONBOARDING_MAPPING = [
         self::RIZE_INCORPORATION => [

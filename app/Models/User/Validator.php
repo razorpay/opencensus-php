@@ -145,7 +145,7 @@ class Validator extends Base\Validator
         BDConstants::WEBSITE_OR_APP             => 'sometimes|boolean',
         BDConstants::OTHERS                     => 'sometimes|string',
         Merchant\Entity::SIGNUP_SOURCE          => 'sometimes|string',
-        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY',
+        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY,SG',
         Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
     ];
@@ -306,7 +306,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $countryCodeRules = [
-        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY',
+        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY,SG',
     ];
 
     protected static $confirmRules = [
