@@ -444,12 +444,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::FEE_BEARER,
         self::REWARD_ID,
         self::REWARD,
+        self::DeviceId,
         self::SOURCE_CHANNEL,
     ];
 
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
+        self::DeviceId,
         self::METHOD,
         self::AMOUNT,
         self::BASE_AMOUNT,
@@ -6150,6 +6152,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                         ($receiver->getRequestSource() === RequestSource::EZETAP))
                         {
                             $paymentArray[Payment\Entity::SOURCE_CHANNEL] = QRConstant::PAYMENT_TYPE_IN_PERSON;
+
+                            if($receiver->merchant->isFeatureEnabled(Feature\Constants::DD_TERMINAL_UPI_QR) === true)
+                            {
+                                if ($receiver->getDeviceId() !== null)
+                                {
+                                    $paymentArray[Payment\Entity::DeviceId] = $receiver->getDeviceId();
+                                }
+                                else
+                                {
+                                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_DEVICE_ID_REQUIRED);
+                                }
+                            }
                         }
                 }
                 break;

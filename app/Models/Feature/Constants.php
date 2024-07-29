@@ -2191,6 +2191,11 @@ class Constants
     const DISPLAY_DS_SETT_AMT ='display_ds_sett_amt';
 
     /*
+   * Feature flags to control the terminal selection flows for terminal dependent merchant for QR payments
+   */
+    const DD_TERMINAL_UPI_QR = 'dd_terminal_upi_qr';
+
+    /*
     * Feature flags to control the terminal selection flows for in person card payments
     */
     const IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION = 'ipc_en_terminal_selection';
@@ -3091,6 +3096,7 @@ class Constants
         self::SHOW_INVOICE_REPORT                   => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
         self::DISABLE_SINCH_SMS_EMAIL               => true,
+        self::DD_TERMINAL_UPI_QR                    => true,
         self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION => true,
         self::IN_PERSON_CARDS_ENABLE_DYNAMIC_DEVICE_MAPPING => true,
         self::IN_PERSON_CARDS_ENABLE_LABEL_MAPPING   => true,
@@ -4422,6 +4428,11 @@ class Constants
             'feature'       => self::OMNI_ENABLED,
             'display_name'  => 'Omni Enabled',
             'documentation' => 'Omni Enabled Merchant',
+        ],
+        self::DD_TERMINAL_UPI_QR => [
+            'feature'       => self::DD_TERMINAL_UPI_QR,
+            'display_name'  => 'Enable device dependent routing for QR payments',
+            'documentation' => 'Enable device dependent routing based on device id for QR payments. Need to be enabled for terminal dependent merchant',
         ],
         self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION => [
             'feature'       => self::IN_PERSON_CARDS_ENABLE_TERMINAL_SELECTION,

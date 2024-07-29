@@ -180,6 +180,7 @@ class Validator extends Base\Validator
         'wallet_amount'                                              => 'sometimes|integer',
         'device_fingerprint'                                          => 'sometimes|array',
         'split_amount'                                               => 'sometimes|integer',
+        'device_id'                                                  => 'sometimes',
     ];
 
     protected static $editAcquirerRules = [
