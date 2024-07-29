@@ -783,7 +783,7 @@ final class Constants
 
     const MERCHANT_RISK_SCORE_DATA_DRUID_QUERY  = 'SELECT * FROM druid.risk_scoring_fact WHERE merchants_id = \'%s\'';
 
-    const MERCHANT_RISK_SCORE_DATA_PINOT_QUERY  = 'SELECT * FROM pinot.risk_scoring_fact WHERE merchants_id = \'%s\'';
+    const MERCHANT_RISK_SCORE_DATA_PINOT_QUERY  = 'SELECT * FROM risk_scoring_fact WHERE merchants_id = \'%s\'';
 
     const MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING = [
         'Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score' => 'transaction_dedupe_merchant_risk_score',
