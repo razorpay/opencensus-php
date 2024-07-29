@@ -192,6 +192,12 @@ class Type
     const SHOP_FRONT_IMAGE                  = 'shop_front';
     const SHOP_INTERIOR_IMAGE               = 'shop_interior';
 
+    //multiple document upload constants for POS Device onboarding.
+    const CUSTOM_DEVICE_CHARGES_PROOF       =  'custom_device_charges_proof';
+    const CUSTOM_PRICING_PROOF              =  'custom_pricing_proof';
+    const NACH                              =  'nach';
+    const MERCHANT_AGREEMENT                =  'merchant_agreement';
+
     const NC_ADDITIONAL_DOCUMENTS = [
 
         self::FSSAI_CERTIFICATE,
@@ -568,7 +574,10 @@ class Type
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
         self::PGI_CERTIFICATE,
-
+        self::CUSTOM_DEVICE_CHARGES_PROOF,
+        self::CUSTOM_PRICING_PROOF,
+        self::NACH,
+        self::MERCHANT_AGREEMENT,
         // Curlec documents
         self::FIMM_OR_SC_REGISTRATION_FORM,
         self::COI_DOCUMENT,
@@ -595,6 +604,10 @@ class Type
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
         self::BANK_STATEMENT,
+        self::CUSTOM_DEVICE_CHARGES_PROOF,
+        self::CUSTOM_PRICING_PROOF,
+        self::NACH,
+        self::MERCHANT_AGREEMENT
     ];
 
     const DOCUMENT_TYPE_VALIDATIONS = [

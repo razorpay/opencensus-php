@@ -37,6 +37,8 @@ class Route
 
 
     protected static $apiRoutes = [
+        //adding internal route for PGOS to fetch users of a merchant
+        'internal_fetch_merchant_users'                     => ['get',      'internal/merchants-users',                             'MerchantController@getUsers',                                      ],
         'register_merchant_verify_otp'                      => ['post',     'register/merchant/otp/verify',                         'UserController@verifySignupOtpAndRegisterUser'                     ],
         'merchant_activation_details_sales'                 => ['get',      'pg/onboarding/merchant_activation_details_sales',      'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'payments_rearch_backfill'                          => ['post',     'payments/backfill',                                    'PaymentController@callCpsForBackfilling'                           ],
@@ -5680,6 +5682,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_fetch_merchant_users',
         'internal_workflow_create',
         'internal_post_website_update',
         'otpelf_iin_flow_enable',
@@ -17909,6 +17912,7 @@ class Route
         ],
 
         'pgos' => [
+            'internal_fetch_merchant_users',
             'merchant_entities_info',
             'merchant_submit_internal',
             'merchant_assign_pricing_internal',
