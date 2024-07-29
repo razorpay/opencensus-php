@@ -264,6 +264,14 @@ class Core extends Base\Core
 
         $merchant->setPricingPlan($planId);
 
+        // override the pricing plan with the no code app pricing plan if applicable
+        $noCodeAppPricingPlan = $this->getNoCodeAppsPricingPlan($merchant);
+
+        if ($noCodeAppPricingPlan !== null)
+        {
+            $merchant->setPricingPlan($noCodeAppPricingPlan);
+        }
+
         $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
@@ -294,6 +302,68 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+    public function getNoCodeAppsPricingPlan(Entity $merchant) {
+        try
+        {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.nocodeapp_pricing_exp_id')
+            ];
+
+            if (!$this->isSplitzExperimentEnable($properties, 'enable'))
+            {
+                return null;
+            }
+
+            if (!$this->isNoCodeAppPricingApplicableOnMerchantType($merchant))
+            {
+                return null;
+            }
+
+            $plService = $this->app['paymentlinkservice'];
+
+            $response = $plService->getNoCodeAppsPricingPlanPreferences($merchant);
+
+            if (!empty($response))
+            {
+                if ($response['nocodeapp_fee_applicable'] === true && $response['nocodeapp_plan_id'] !== null)
+                {
+                    return $response['nocodeapp_plan_id'];
+                }
+            }
+
+            return null;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UNHANDLED_ERROR_WHILE_FETCHING_NOCODEAPPS_PLAN,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                ]);
+
+            return null;
+        }
+    }
+
+
+    public function isNoCodeAppPricingApplicableOnMerchantType(Entity $merchant): bool
+    {
+
+        $isIndianMerchant = $merchant->getCountry() === DEConstants::INDIA_COUNTRY_CODE;
+
+        $isRazorPayOrgMerchant = $merchant->isRazorpayOrgId();
+
+        $isNotLinkedAccount = !$merchant->isLinkedAccount();
+
+        $isNotPartnerAccount = !$merchant->isPartner();
+
+        return $isIndianMerchant && $isRazorPayOrgMerchant && $isNotLinkedAccount && $isNotPartnerAccount;
+    }
+
 
     private function addMerchantRelevantFeatures($merchant,$tokenData)
     {

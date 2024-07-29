@@ -994,6 +994,7 @@ return [
         'pl_urls'       => [
             'verify_order'          => 'v1/payment_links_verify_payment',
             'evict_merchant_cache'  => 'v1/evict_merchant_cache',
+            'pricing_preferences'   => 'v1/nocodeapps/pricing/preferences',
         ],
     ],
 

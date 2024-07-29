@@ -128,6 +128,48 @@ class PaymentLinkService
         }
     }
 
+    public function getNoCodeAppsPricingPlanPreferences(Merchant\Entity $merchant)
+    {
+        try
+        {
+            $this->trace->info(
+                TraceCode::NOCODEAPPS_PRICING_PLAN_PREFERENCES_REQUEST,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                ]);
+
+            $response = $this->sendDirectRequestParams($this->plUrls['pricing_preferences'], Request::METHOD_GET, $merchant, null);
+
+            $this->trace->info(
+                TraceCode::NOCODEAPPS_PRICING_PLAN_PREFERENCES_RESPONSE,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                    'response'       => $response
+                ]);
+
+            if (($response !== null) and ($response['status_code'] === 200))
+            {
+                return $response['response'];
+            }
+
+            return null;
+
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::NOCODEAPPS_PRICING_PLAN_PREFERENCES_REQUEST_FAILURE,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                ]);
+
+            return null;
+        }
+    }
+
+
     public function notifyMerchantStatusAction(Merchant\Entity $merchant)
     {
         try

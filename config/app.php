@@ -721,6 +721,8 @@ return array(
 
     'merchant_automation_activation_exp_id' => env('MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
 
+    'nocodeapp_pricing_exp_id' => env('NOCODEAPP_PRICING_EXP_ID'),
+
     'no_website_merchant_automation_activation_exp_id' => env('NO_WEBSITE_MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
 
     'pgos_migration_dual_writing_exp_id' => env('PGOS_MIGRATION_DUAL_WRITING_EXP_ID'),
