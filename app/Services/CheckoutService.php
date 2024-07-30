@@ -15,6 +15,8 @@ use RZP\Trace\TraceCode;
 class CheckoutService
 {
     public const PREFERENCES_ENDPOINT = '/v1/preferences';
+    public const INTERNAL_BUYER_PROTECTION_ELIGIBILITY_ENDPOINT = '/v1/internal/buyer_protection/eligibility';
+    public const AUTHORIZATION = 'Authorization';
 
     /** @var string The ingress url of checkout-service */
     protected string $baseUrl;
@@ -64,7 +66,7 @@ class CheckoutService
         $urlPath  = self::PREFERENCES_ENDPOINT . '?' . http_build_query($input, '', '&');
 
         try {
-            return $this->sendRequest($urlPath, [], Requests::GET);
+            return $this->sendRequest($urlPath, [], Requests::GET, $this->getHeaders());
         } catch (Exception $e) {
             $this->trace->traceException(
                 $e,
@@ -76,7 +78,34 @@ class CheckoutService
         }
     }
 
-    public function sendRequest($path, $input, $method): Response
+    /**
+     * Get checkout preferences from checkout service
+     *
+     * @param  array  $input
+     * @return Response
+     * @throws Exception
+     */
+    public function getBuyerProtectionEligibilityFromCheckoutService(array $input): Response
+    {
+        $urlPath  = self::INTERNAL_BUYER_PROTECTION_ELIGIBILITY_ENDPOINT;
+        $headers = $this->getHeaders();
+        // Add Authorization header for internal auth.
+        $headers[self::AUTHORIZATION] = $this->getAuthorizationHeader();
+
+        try {
+            return $this->sendRequest($urlPath, $input, Requests::POST, $headers);
+        } catch (Exception $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CHECKOUT_SERVICE_BUYER_PROTECTION_ELIGIBILITY_REQUEST_FAILURE
+            );
+
+            throw $e;
+        }
+    }
+
+    public function sendRequest($path, $input, $method, $headers): Response
     {
         $url = $this->baseUrl . $path;
 
@@ -91,7 +120,7 @@ class CheckoutService
 
             $response = Requests::request(
                 $url,
-                $this->getHeaders(),
+                $headers,
                 $input,
                 $method,
                 $this->getOptions()
@@ -193,5 +222,10 @@ class CheckoutService
         }
 
         return $headers;
+    }
+
+    protected function getAuthorizationHeader(): string
+    {
+        return 'Basic ' . base64_encode($this->config['username']. ':' . $this->config['service_secret']);
     }
 }

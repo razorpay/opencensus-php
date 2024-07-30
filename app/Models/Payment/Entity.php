@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use App;
 use Carbon\Carbon;
+use Illuminate\Http\Response as HttpResponse;
 use Google\Service\CloudControlsPartnerService\Partner;
 use Lib\PhoneBook;
 use Razorpay\Trace\Logger as Trace;
@@ -5972,7 +5973,54 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
+        $orderId = null;
+        if(empty($order) === false) {
+            $orderId = $order->getId();
+        }
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::BUYER_PROTECT_SIGNED_UP) &&
+            $this->isBuyerProtectionEnabled($this->getId(), $this->merchant->getId(), $mode, $orderId) === true)
+        {
+            $features[] = Pricing\Feature::BUYER_PROTECTION;
+        }
+
         return $features;
+    }
+
+    private function isBuyerProtectionEnabled(string $paymentId, string $merchantId, string $mode, ?string $orderId): bool
+    {
+        $requestData = [
+            'payment' => [
+                'id' => $paymentId,
+            ],
+            'merchant' => [
+                'id' => $merchantId,
+            ],
+            'mode' => $mode,
+        ];
+
+        if ($orderId !== null)
+        {
+            $requestData['order'] = [
+                'id' => $orderId,
+            ];
+        }
+
+        /** @var HttpResponse */
+        try
+        {
+            $buyerProtectionEligibilityResponse = $this->app['checkout_service']
+                ->getBuyerProtectionEligibilityFromCheckoutService($requestData)
+                ->getOriginalContent();
+
+            return $buyerProtectionEligibilityResponse['eligible'];
+        } catch (Exception $e) {
+            $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::BUYER_PROTECTION_ELIGIBILITY_CHECK_FAILED, $requestData);
+        }
+
+        return false;
     }
 
     public function getTimeoutWindow()
