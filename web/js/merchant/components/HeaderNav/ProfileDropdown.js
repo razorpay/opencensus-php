@@ -463,25 +463,27 @@ class ProfileDropdown extends Component {
                     )}
                   </>
                 )}
-                <div
-                  className="media media-action"
-                  onClick={() => {
-                    CreateTicketEmitter.emit('toggle-help-section');
-                  }}
-                >
-                  <div className="media-left">
-                    <div className="media-object">
-                      <Box display="flex" alignItems="center" justifyContent="center">
-                        <HeadphonesIcon
-                          size="large"
-                          color="surface.icon.gray.subtle"
-                          marginLeft="spacing.2"
-                        />
-                      </Box>
+                {!withI18Service('account.support_history') ? (
+                  <div
+                    className="media media-action"
+                    onClick={() => {
+                      CreateTicketEmitter.emit('toggle-help-section');
+                    }}
+                  >
+                    <div className="media-left">
+                      <div className="media-object">
+                        <Box display="flex" alignItems="center" justifyContent="center">
+                          <HeadphonesIcon
+                            size="large"
+                            color="surface.icon.gray.subtle"
+                            marginLeft="spacing.2"
+                          />
+                        </Box>
+                      </div>
                     </div>
+                    <div className="media-body">Help & Support</div>
                   </div>
-                  <div className="media-body">Help & Support</div>
-                </div>
+                ) : null}
                 <div className="media loggedin-as">
                   <div className="media-body">
                     <div>Logged in as</div>
@@ -517,7 +519,8 @@ class ProfileDropdown extends Component {
                   additionalCondition={(user) =>
                     user.role === rolesList.OWNER &&
                     user.partner_type === null &&
-                    !isOrgFeatureExist('hide_razorpay_text_link')
+                    !isOrgFeatureExist('hide_razorpay_text_link') &&
+                    !user.isSGCountry
                   }
                 >
                   <div className="media loggedin-as">

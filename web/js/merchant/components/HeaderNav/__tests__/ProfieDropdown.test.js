@@ -70,6 +70,47 @@ describe('test for ProfileDropdown component', () => {
     expect(screen.queryByText(text)).not.toBeInTheDocument();
   });
 
+  test('should hide Partnership link if user.isSGCountry is enabled', () => {
+    const props = { ...defaultProps };
+    const updatedState = updateStore(
+      {
+        user: {
+          name: 'test',
+          isSGCountry: true,
+        },
+        merchant: {
+          country_code: 'SG',
+        },
+        current: 'abcd',
+        merchants: {
+          abcd: { name: 'abcd', id: '12345' },
+        },
+      },
+      { features: [] },
+    );
+    renderApp({ props, state: updatedState });
+    expect(screen.queryByText('Explore Partner Program')).not.toBeInTheDocument();
+  });
+
+  test(`should hide 'Help & Support' if account.support_history is enabled`, () => {
+    const props = { ...defaultProps };
+    const updatedState = updateStore(
+      {
+        user: {
+          name: 'test',
+        },
+        current: 'abcd',
+        merchants: {
+          abcd: { name: 'abcd', id: '12345' },
+        },
+      },
+      { features: [] },
+    );
+    mockedFn.mockImplementation((path) => path === 'account.support_history');
+    renderApp({ props, state: updatedState });
+    expect(screen.queryByText('Help & Support')).not.toBeInTheDocument();
+  });
+
   test('should hide component if account.gst is enabled', () => {
     const props = { ...defaultProps };
     const updatedState = updateStore(
