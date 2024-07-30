@@ -462,7 +462,7 @@ class Entity extends Base\Entity
     public function addCaptchaConfigurations(): array
     {
         $dcsConfigService = app('dcs_config_service');
-        return $dcsConfigService -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $this->mode);
+        return $dcsConfigService -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $this->getMode());
     }
 
     public function getConfigurations(): array
