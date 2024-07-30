@@ -106,6 +106,17 @@ function PaymentDetails(props) {
     ? lazy(() => import('merchant/views/Transactions/v1/Payments/components/PlatformFeeDetails'))
     : null;
 
+  const getBankReferenceNumber = (method, acquirer_data) => {
+    switch (method) {
+      case 'netbanking':
+        return acquirer_data?.bank_transaction_id;
+      case 'wallet':
+        return acquirer_data?.transaction_id;
+      default:
+        return acquirer_data?.rrn;
+    }
+  };
+
   const paymentByCardOffline = payment.method === 'card' && payment.receiver_type === 'pos';
   const { refetch: refetchEzetapAppKey, data: ezetapData } = useQuery({
     queryKey: [FETCH_EZETAP_KEY_NAME],
@@ -580,6 +591,12 @@ function PaymentDetails(props) {
                       : 'The customer has paid the fees for this payment'}
                   </Definition>
                 </EntityDetailRow>
+
+                <ShowWhen additionalCondition={() => isOrgFeatureExist('vas_rrn_identifier')}>
+                  <EntityDetailRow label="Bank Reference Number">
+                    {getBankReferenceNumber(payment.method, payment.acquirer_data)}
+                  </EntityDetailRow>
+                </ShowWhen>
 
                 <ShowWhen additionalCondition={() => user.isProjectNitroEnabled}>
                   <AnnouncementBar
