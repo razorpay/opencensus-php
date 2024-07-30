@@ -113,6 +113,7 @@ class ApiRequestAny
         'terminals/proxy/qc',
         'magic/analytics/reports',
         'vendor_experience',
+        'charge-collections',
         'accounting-integrations',
         'checkout_config'
     ];
