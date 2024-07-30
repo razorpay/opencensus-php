@@ -1,0 +1,179 @@
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  CheckCircleIcon,
+  ChevronRightIcon,
+  Divider,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  EditIcon,
+  Heading,
+  Link,
+  useToast,
+} from '@razorpay/blade/components';
+import { useForm, FormProvider } from 'react-hook-form';
+import AddDeviceToCartHeader from './AddDeviceToCartHeader';
+import PlanSelectionCard from './PlanSelectionCard';
+import DeviceFee from './DeviceFee';
+import OptionalFeatures from './OptionalFeatures';
+import { DeviceConfig, ModularPayload, PlanConfig } from 'apps/pos/src/app/types/modular';
+import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
+import {
+  MODULAR_DEVICE_FIELDS,
+  EditDeviceInCartForm,
+} from 'apps/pos/src/app/types/DeviceSelection';
+import {
+  DeviceFees,
+  DeviceOptionalFeatures,
+  MODULAR_FLAGS,
+} from 'apps/pos/src/app/constants/DeviceSelection';
+import { processFormDataForModularSubmit } from 'apps/pos/src/app/utils/modularConfig';
+
+interface AddDeviceToCartProps {
+  deviceConfig: DeviceConfig;
+  defaultValues?: EditDeviceInCartForm;
+  isEditFlow?: boolean;
+  isDisabled?: boolean;
+  isDeviceAlreadyAdded?: boolean;
+  isUpdateModularLoading?: boolean;
+  handleModularUpdate: (payload: ModularPayload) => void;
+}
+
+const AddDeviceToCart = ({
+  deviceConfig,
+  defaultValues,
+  isEditFlow,
+  isDisabled,
+  isUpdateModularLoading,
+  isDeviceAlreadyAdded,
+  handleModularUpdate,
+}: AddDeviceToCartProps): JSX.Element => {
+  const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
+  const toast = useToast();
+
+  const methods = useForm({
+    defaultValues: defaultValues ?? {
+      ...deviceConfig.defaultValues,
+      [MODULAR_DEVICE_FIELDS.DEVICE_NAME]: deviceConfig.title as string,
+    },
+  });
+
+  const { handleSubmit, getValues, watch, reset } = methods;
+
+  const onModularUpdate = () => {
+    setIsDetailsOpen(false);
+    if (!isEditFlow) reset();
+    toast.show({
+      color: 'positive',
+      content: `Successfully ${isEditFlow ? 'edited' : 'added'} ${deviceConfig.title} to cart`,
+      leading: CheckCircleIcon,
+    });
+  };
+
+  const { isMobile } = useScreen();
+
+  const { rateConfig } = deviceConfig;
+  const latestRateConfig = rateConfig?.find((config) => !!config?.active);
+
+  const toggleDetails = (): void => {
+    if (isUpdateModularLoading) return;
+    setIsDetailsOpen((prevState) => !prevState);
+  };
+
+  const handleAddToCartFormSubmit = (form): void => {
+    const processedFormData = processFormDataForModularSubmit(form);
+    const payload: ModularPayload = {
+      [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onModularUpdate,
+      ...processedFormData,
+    };
+
+    handleModularUpdate(payload);
+  };
+
+  const addDeviceText = isDeviceAlreadyAdded ? 'Add Another Device' : 'Add Device';
+
+  const handleProductDelete = (): void => {
+    const payload: ModularPayload = {
+      [MODULAR_DEVICE_FIELDS.DEVICE_CART_ID_FIELD]: getValues('device_item_id_field'),
+      [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onModularUpdate,
+      ...MODULAR_FLAGS.DELETE_CART_ITEM,
+    };
+    handleModularUpdate(payload);
+  };
+
+  const devicePlan = watch('device_item_plan_field');
+
+  return (
+    <React.Fragment>
+      {isMobile || isEditFlow ? (
+        <Link
+          variant="button"
+          icon={isEditFlow ? EditIcon : ChevronRightIcon}
+          onClick={toggleDetails}
+          iconPosition={isEditFlow ? 'left' : 'right'}
+          isDisabled={isDisabled}
+          size="small"
+        >
+          {isEditFlow ? 'Edit' : addDeviceText}
+        </Link>
+      ) : (
+        <Button variant="secondary" onClick={toggleDetails} isDisabled={isDisabled} isFullWidth>
+          {isEditFlow ? 'Edit' : addDeviceText}
+        </Button>
+      )}
+      <Drawer isOpen={isDetailsOpen} onDismiss={toggleDetails}>
+        <DrawerHeader title="Device Selection" />
+        <DrawerBody>
+          <FormProvider {...methods}>
+            <form onSubmit={handleSubmit(handleAddToCartFormSubmit)}>
+              <AddDeviceToCartHeader
+                deviceConfig={deviceConfig}
+                isEditFlow={!!isEditFlow}
+                onDelete={handleProductDelete}
+                isLoading={isUpdateModularLoading}
+              />
+              <Divider orientation="horizontal" width="100%" marginBottom="spacing.5" />
+              <Heading weight="semibold" marginBottom="spacing.5">
+                Plan Selection
+              </Heading>
+              <PlanSelectionCard plans={latestRateConfig?.plans as PlanConfig[]} />
+              <Divider orientation="horizontal" width="100%" marginBottom="spacing.5" />
+              <Box testID="device-fees-container">
+                {DeviceFees.map((deviceFee, index) =>
+                  deviceFee?.isHidden?.(devicePlan) ? null : (
+                    <React.Fragment key={deviceFee.field}>
+                      <DeviceFee deviceFee={deviceFee} />
+                      {index !== DeviceFees.length - 1 ? (
+                        <Divider orientation="horizontal" width="100%" marginBottom="spacing.5" />
+                      ) : null}
+                    </React.Fragment>
+                  ),
+                )}
+              </Box>
+              {DeviceOptionalFeatures.map((optionalFeature) => (
+                <OptionalFeatures key={optionalFeature.field} optionalFeature={optionalFeature} />
+              ))}
+              <Box marginBottom="spacing.6" display="flex" alignItems="center">
+                <Button
+                  variant="tertiary"
+                  marginRight="spacing.5"
+                  onClick={toggleDetails}
+                  isFullWidth
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" isLoading={isUpdateModularLoading} isFullWidth>
+                  {isEditFlow ? 'Update Cart' : 'Add to Cart'}
+                </Button>
+              </Box>
+            </form>
+          </FormProvider>
+        </DrawerBody>
+      </Drawer>
+    </React.Fragment>
+  );
+};
+
+export default AddDeviceToCart;

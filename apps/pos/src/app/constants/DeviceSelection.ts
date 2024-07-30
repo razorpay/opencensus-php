@@ -1,0 +1,86 @@
+import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import { ModularPayload } from '../types/modular';
+import {
+  AvailableDevicePlans,
+  MODULAR_DEVICE_FIELDS,
+  DeviceFee,
+  DeviceFeeOptions,
+  DeviceOptionalFeature,
+  DevicePlanCharge,
+} from 'apps/pos/src/app/types/DeviceSelection';
+
+export const DeviceFees: DeviceFee[] = [
+  {
+    title: 'Setup Fee',
+    field: MODULAR_DEVICE_FIELDS.DEVICE_SETUP_FEE_TYPE,
+    customAmountField: MODULAR_DEVICE_FIELDS.DEVICE_SETUP_CUSTOM_FEE_AMOUNT,
+  },
+  {
+    title: (devicePlan: string) => `${titleCase(devicePlan)} Rental Charges`,
+    field: MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_TYPE,
+    customAmountField: MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT,
+    isHidden: (value: AvailableDevicePlans) => value === 'lifetime',
+  },
+];
+
+export const DeviceOptionalFeatures: DeviceOptionalFeature[] = [
+  {
+    title: 'Collecting Rental Charges in Advance (in months)',
+    field: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE,
+    customInputField: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD,
+  },
+  {
+    title: 'Purchase Paper Rolls',
+    field: MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD,
+    customInputField: MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD,
+  },
+];
+
+export const DevicePlanAvailableCharges: DevicePlanCharge[] = [
+  {
+    name: 'Setup Fee',
+    key: 'setupFee',
+  },
+  {
+    name: 'Rental Charge',
+    key: 'rentalCharge',
+  },
+  {
+    name: 'One time charge',
+    key: 'oneTimeCharge',
+  },
+];
+
+export const DeviceFeeTypes: DeviceFeeOptions[] = [
+  {
+    name: 'Standard',
+    key: 'standard',
+  },
+  {
+    name: 'Custom',
+    key: 'custom',
+  },
+];
+
+export const MODULAR_FLAGS: Record<string, ModularPayload> = {
+  ADD_ITEM_TO_CART: {
+    [MODULAR_DEVICE_FIELDS.DEVICE_ADD_TO_CART_FIELD]: true,
+  },
+  CONFIRM_DEVICE_SELECTION: {
+    [MODULAR_DEVICE_FIELDS.DEVICE_CONFIRM_DEVICE_FIELD]: true,
+  },
+  DELETE_CART_ITEM: {
+    [MODULAR_DEVICE_FIELDS.DEVICE_DELETE_PRODUCT_FIELD]: true,
+  },
+  CONFIRM_ORDER: {
+    [MODULAR_DEVICE_FIELDS.DEVICE_ORDER_CONFIRMATION_FIELD]: true,
+  },
+};
+
+export const DEVICE_PLAN_TO_NAME_MAPPING: Record<AvailableDevicePlans, string> = {
+  monthly: 'Monthly',
+  halfyearly: 'Half Yearly',
+  quarterly: 'Quarterly',
+  yearly: 'Yearly',
+  lifetime: 'Lifetime',
+};

@@ -24,6 +24,7 @@ interface SalesFileUploadProps {
   uploadType: 'single' | 'multiple';
   error?: string;
   isLoading?: boolean;
+  isDisabled?: boolean;
   defaultValue?: FileItem[];
   onChange: (files: FileItem[]) => void;
   onError: () => void;
@@ -38,6 +39,7 @@ const SalesFileUpload = ({
   uploadType,
   error,
   isLoading,
+  isDisabled,
   maxLimit,
   maxSize,
   defaultValue,
@@ -123,7 +125,7 @@ const SalesFileUpload = ({
               style={{ display: 'none' }}
               onChange={handleOnChange}
               accept={accept}
-              disabled={isLoading ?? isUfhUploadLoading}
+              disabled={isLoading || isUfhUploadLoading || isDisabled}
               {...(uploadType === 'multiple' && maxLimit > 1 ? { multiple: true } : {})}
             />
             <Text color="surface.text.staticBlack.subtle">Choose Files</Text>
@@ -151,6 +153,7 @@ const SalesFileUpload = ({
           fileStoreId={fileStoreId}
           onDownloadClick={handleFileDownloadClick}
           onRemoveClick={handleOnRemove}
+          isDisabled={isDisabled}
         />
       ))}
     </Box>

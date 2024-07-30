@@ -13,6 +13,7 @@ import DocIcon from 'apps/pos/src/assets/docsIcon.svg';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 
 interface UploadedfileItemProps extends FileItem {
+  isDisabled?: boolean;
   onDownloadClick: (fileStoreId: string) => void;
   onRemoveClick: (fileStoreId: string) => void;
 }
@@ -21,6 +22,7 @@ const UploadedfileItem = ({
   fileStoreId,
   name,
   size,
+  isDisabled,
   onDownloadClick,
   onRemoveClick,
 }: UploadedfileItemProps): JSX.Element => {
@@ -57,12 +59,14 @@ const UploadedfileItem = ({
           icon={DownloadIcon}
           onClick={() => onDownloadClick(fileStoreId as string)}
           accessibilityLabel="download-file"
+          isDisabled={isDisabled}
         />
         <Divider orientation="vertical" marginX="spacing.4" variant="normal" />
         <IconButton
           icon={TrashIcon}
           onClick={() => onRemoveClick(fileStoreId as string)}
           accessibilityLabel="delete-file"
+          isDisabled={isDisabled}
         />
       </Box>
     </Box>

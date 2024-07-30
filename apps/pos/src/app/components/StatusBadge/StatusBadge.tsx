@@ -44,6 +44,25 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
           Completed
         </Badge>
       );
+    case 'payment_pending':
+      return (
+        <Badge icon={ClockIcon} color="notice" size={size}>
+          Payment not initiated
+        </Badge>
+      );
+    case 'payment_completed':
+      return (
+        <Badge icon={CheckIcon} color="positive" size={size}>
+          Payment Completed
+        </Badge>
+      );
+
+    case 'kyc_completed':
+      return (
+        <Badge icon={CheckIcon} color="positive" size={size}>
+          KYC Completed
+        </Badge>
+      );
     default:
       return null;
   }

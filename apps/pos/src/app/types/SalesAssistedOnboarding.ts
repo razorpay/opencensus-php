@@ -1,3 +1,4 @@
+import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
 import { APIResponse } from './common';
 
 export interface MerchantRegisterArgs {
@@ -88,6 +89,29 @@ export type STATUS_FILTERS =
 
 export type OnboardingStoreState = {};
 
+export interface AddressField {
+  value: string | null;
+}
+
+export interface Address {
+  city: AddressField;
+  country: AddressField;
+  district: AddressField;
+  line1: AddressField;
+  line2: AddressField;
+  state: AddressField;
+  zipCode: AddressField;
+}
+
+export interface Business {
+  address: {
+    registered: Address;
+    operation: Address;
+  };
+}
+
+export type MerchantDetails = Merchant;
+
 export enum SalesMerchantActivationStatusEnum {
   ACTIVATED = 'ACTIVATED',
   KYC_QUALIFIED_STB = 'KYC_QUALIFIED_STB',
@@ -114,3 +138,5 @@ export interface SalesOnboardedMerchants {
   total: number;
   __typename?: string;
 }
+
+export type StepProgressTypes = 'pending' | 'completed';

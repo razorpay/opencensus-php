@@ -1,4 +1,4 @@
-import { MerchantRegistrationError } from '../types/SalesAssistedOnboarding';
+import { MerchantRegistrationError } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 
 export const MERCHANT_REGISTRATION_ERRORS: Record<string, MerchantRegistrationError> = {
   BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS: {
@@ -10,7 +10,7 @@ export const MERCHANT_REGISTRATION_ERRORS: Record<string, MerchantRegistrationEr
     description: 'Please enter a valid phone number',
   },
   GENERIC_ERROR: {
-    title: 'Error occured',
+    title: 'Error occured!',
     description: 'Something went wrong. Please try again',
   },
 };

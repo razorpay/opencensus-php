@@ -30,6 +30,10 @@ export enum AvailableSteps {
 export enum AvailableComponents {
   MOBILE_NUMBER_VERIFY = 'mobileNumberVerify',
   MERCHANT_KYC_REDIRECT = 'merchantKycRedirect',
+  DEVICE_CART = 'deviceCart',
+  DEVICE_SELECTION_CATALOG = 'deviceSelectionCatalog',
+  DEVICE_DELIVERY_ADDRESS = 'deviceDeliveryAddress',
+  DEVICE_PAYMENT = 'devicePayment',
 }
 
 export type OnboardingStepType =
@@ -39,7 +43,11 @@ export type OnboardingStepType =
 
 export type OnboardingComponentType =
   | AvailableComponents.MOBILE_NUMBER_VERIFY
-  | AvailableComponents.MERCHANT_KYC_REDIRECT;
+  | AvailableComponents.MERCHANT_KYC_REDIRECT
+  | AvailableComponents.DEVICE_CART
+  | AvailableComponents.DEVICE_SELECTION_CATALOG
+  | AvailableComponents.DEVICE_DELIVERY_ADDRESS
+  | AvailableComponents.DEVICE_PAYMENT;
 
 export type RouteConfig = {
   fallback: string;

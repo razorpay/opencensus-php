@@ -1,18 +1,18 @@
 import * as React from 'react';
-import { BladeProvider, Box } from '@razorpay/blade/components';
+import { BladeProvider, Box, ToastContainer } from '@razorpay/blade/components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
 
-import App from '../../app';
-import PageError from '../../app/components/PageError';
+import App from 'apps/pos/src/app';
+import PageError from 'apps/pos/src/app/components/PageError';
 
 export const queryClient = new QueryClient();
 
 const Wrapper = (): JSX.Element => {
   React.useEffect(() => {
-    console.log('Injected Manifest!!!!');
+    console.log('Injected Manifest!!!! ');
     const link = document.createElement('link');
     link.rel = 'manifest';
     link.href = `${process.env.UNIVERSE_PUBLIC_ASSETS_URL}/build/browser/manifest.json`;
@@ -39,6 +39,7 @@ const Wrapper = (): JSX.Element => {
           <App />
         </ErrorBoundary>
       </QueryClientProvider>
+      <ToastContainer />
     </BladeProvider>
   );
 };

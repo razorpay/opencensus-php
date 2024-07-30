@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { Box, Card, CardBody, Heading, Text } from '@razorpay/blade/components';
+import { Box, Card, CardBody, Text } from '@razorpay/blade/components';
 import StatusBadge from '../StatusBadge';
 import { StyledCard } from './styled';
 
@@ -58,21 +58,27 @@ const OnboardingStepCard = ({
                 {iconComponent}
               </Box>
               <Box>
-                <Heading
+                <Text
                   size="large"
                   marginBottom={{ base: 'spacing.3', l: 'spacing.0' }}
                   color={isDisabled ? 'surface.text.gray.disabled' : 'surface.text.gray.normal'}
+                  weight="semibold"
                 >
                   {title}
-                </Heading>
-                <Text color={isDisabled ? 'surface.text.gray.disabled' : 'surface.text.gray.muted'}>
+                </Text>
+                <Text
+                  size="small"
+                  color={isDisabled ? 'surface.text.gray.disabled' : 'surface.text.gray.muted'}
+                >
                   {description}
                 </Text>
               </Box>
             </Box>
-            <Box position={{ base: 'absolute', l: 'static' }} top="0px" right="0px">
-              <StatusBadge type={status} size="medium" />
-            </Box>
+            {!isDisabled ? (
+              <Box position={{ base: 'absolute', l: 'static' }} top="0px" right="0px">
+                <StatusBadge type={status} size="medium" />
+              </Box>
+            ) : null}
           </Box>
         </CardBody>
       </Card>

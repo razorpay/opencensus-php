@@ -5,7 +5,8 @@ import OnboardingHeader from 'apps/pos/src/app/components/OnboardingHeader';
 import PageError from 'apps/pos/src/app/components/PageError/PageError';
 
 const MerchantOnboardingComponent = (): JSX.Element => {
-  const { handlers } = useOnboardingContext();
+  const { states, handlers } = useOnboardingContext();
+  const { isModularFetchError, isModularLoading } = states;
   const { getStepConfigStepSlug, getComponentConfigFromStep } = handlers;
 
   const stepConfig = getStepConfigStepSlug();
@@ -20,13 +21,22 @@ const MerchantOnboardingComponent = (): JSX.Element => {
       />
     );
 
+  if (isModularFetchError)
+    return <PageError description="Failed to fetch modular config." isFullWidth={true} />;
+
   return (
     <React.Fragment>
-      <Box margin="spacing.5">
-        <OnboardingHeader isBackButtonVisible pageLabel={stepConfig?.title.toUpperCase()} />
-      </Box>
-      <Box flexGrow="1" backgroundColor="surface.background.gray.intense">
-        {component}
+      {componentConfig?.isFullScreenLayout ? null : (
+        <Box margin="spacing.5">
+          <OnboardingHeader isBackButtonVisible pageLabel={stepConfig?.title.toUpperCase()} />
+        </Box>
+      )}
+      <Box
+        flexGrow="1"
+        backgroundColor="surface.background.gray.intense"
+        paddingTop={componentConfig?.isFullScreenLayout ? 'spacing.5' : '0px'}
+      >
+        {isModularLoading ? 'Loading...' : component}
       </Box>
     </React.Fragment>
   );

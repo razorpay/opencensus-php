@@ -1,0 +1,116 @@
+import { DeviceConfig, DeviceOrderSummaryItem } from 'apps/pos/src/app/types/modular';
+
+export enum MODULAR_DEVICE_FIELDS {
+  DEVICE_NAME = 'device_item_name_field',
+  DEVICE_PLAN = 'device_item_plan_field',
+  DEVICE_QUANTITY = 'device_item_quantity_field',
+  DEVICE_SETUP_FEE_TYPE = 'device_item_setup_fee_type_field',
+  DEVICE_RENTAL_TYPE = 'device_item_rental_charges_type_field',
+  DEVICE_ADVANCE_RENTAL_FEE = 'device_item_advanced_rental_field',
+  DEVICE_PAPER_ROLL_FIELD = 'device_item_purchase_paper_rolls_field',
+  DEVICE_SETUP_CUSTOM_FEE_AMOUNT = 'device_item_custom_setup_fee_field',
+  DEVICE_RENTAL_CUSTOM_AMOUNT = 'device_item_custom_rental_charges_field',
+  DEVICE_ADVANCE_RENTAL_PERIOD_FIELD = 'device_item_advanced_rental_periods_field',
+  DEVICE_PAPER_ROLL_QUANTITY_FIELD = 'device_item_purchase_paper_rolls_quantity_field',
+  DEVICE_ADD_TO_CART_FIELD = 'device_add_to_cart_field',
+  DEVICE_CONFIRM_DEVICE_FIELD = 'device_selection_completion_field',
+  DEVICE_ID = 'device_item_id_field',
+  DEVICE_EDIT_CART_FIELD = 'device_edit_cart_field',
+  DEVICE_DELETE_PRODUCT_FIELD = 'device_delete_from_cart_field',
+  DEVICE_CART_ID_FIELD = 'device_cart_item_id_field',
+  MODULAR_CALLBACK = 'modular_callback',
+  DEVICE_CUSTOM_PRICING_DOC = 'device_custom_pricing_documents_field',
+  DEVICE_DELIVERY_ADDRESS_FIELD = 'device_delivery_address_field',
+  DEVICE_ORDER_CONFIRMATION_FIELD = 'device_order_confirmation_field',
+  DEVICE_ORDER_QR_AMOUNT = 'qr_payment_amount_field',
+  DEVICE_QR_PAYMENT_STATUS_CHECK = 'check_qr_status_field',
+}
+
+export enum QuantityActions {
+  add = 'add',
+  reduce = 'reduce',
+}
+
+export type AvailableDevicePlans = 'monthly' | 'halfyearly' | 'quarterly' | 'yearly' | 'lifetime';
+export type DeviceExtraFeatures =
+  | MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
+  | MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD;
+
+export interface DeviceFee {
+  title: string | ((selectedPlan: string) => string);
+  field: MODULAR_DEVICE_FIELDS.DEVICE_SETUP_FEE_TYPE | MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_TYPE;
+  customAmountField:
+    | MODULAR_DEVICE_FIELDS.DEVICE_SETUP_CUSTOM_FEE_AMOUNT
+    | MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT;
+  isHidden?: (args: AvailableDevicePlans) => boolean;
+}
+
+export interface DeviceOptionalFeature {
+  title: string;
+  field:
+    | MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
+    | MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD;
+  customInputField?:
+    | MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD
+    | MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD;
+}
+
+export interface AddDeviceToCartForm {
+  [MODULAR_DEVICE_FIELDS.DEVICE_NAME]: string;
+  [MODULAR_DEVICE_FIELDS.DEVICE_QUANTITY]: number;
+  [MODULAR_DEVICE_FIELDS.DEVICE_PLAN]: AvailableDevicePlans;
+  [MODULAR_DEVICE_FIELDS.DEVICE_SETUP_FEE_TYPE]: string;
+  [MODULAR_DEVICE_FIELDS.DEVICE_SETUP_CUSTOM_FEE_AMOUNT]: string;
+  [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_TYPE]: string;
+  [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT]: string;
+  [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD]: string;
+  [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE]: boolean;
+  [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD]: boolean;
+  [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD]: string;
+}
+
+export interface DevicePlanCharge {
+  name: string;
+  key: 'setupFee' | 'rentalCharge' | 'oneTimeCharge';
+}
+
+export interface DeviceFeeOptions {
+  name: string;
+  key: 'standard' | 'custom';
+}
+
+export type OrderSummaryItemWithDeviceConfig = DeviceOrderSummaryItem & {
+  deviceConfig: DeviceConfig | null;
+};
+
+export interface EditDeviceInCartForm extends AddDeviceToCartForm {
+  [MODULAR_DEVICE_FIELDS.DEVICE_ID]: string;
+}
+
+export enum DeliveryAddressFields {
+  line1 = 'line1',
+  line2 = 'line2',
+  city = 'city',
+  zipcode = 'zipcode',
+  state = 'state',
+  country = 'country',
+  landmark = 'landmark',
+  name = 'name',
+  contact = 'contact',
+}
+
+export interface DeviceDeliveryAddress {
+  [DeliveryAddressFields.line1]: string;
+  [DeliveryAddressFields.line2]: string;
+  [DeliveryAddressFields.city]: string;
+  [DeliveryAddressFields.zipcode]: string;
+  [DeliveryAddressFields.state]: string;
+  [DeliveryAddressFields.country]: string;
+  [DeliveryAddressFields.landmark]: string;
+  [DeliveryAddressFields.name]: string;
+  [DeliveryAddressFields.contact]: string;
+}
+
+export type DeviceDeliveryAddressTypes = 'registered' | 'operation';
+export type DeliveryAddresses = Record<DeviceDeliveryAddressTypes, DeviceDeliveryAddress>;
+export type DevicePaymentStatus = 'pending' | 'success' | 'payment_completed' | 'payment_pending';
