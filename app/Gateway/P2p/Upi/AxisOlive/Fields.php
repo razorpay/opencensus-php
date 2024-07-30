@@ -13,6 +13,7 @@ class Fields
     const CONTEXT                           = 'context';
     const ENTITY                            = 'entity';
     const ACTION                            = 'action';
+    const ROUTE                             = 'route';
 
     //------------------------Callback---------------------//
     const CONTENT                           = 'content';
@@ -94,4 +95,10 @@ class Fields
     const INIT_MODE                         = 'init_mode';
     const SUB_TYPE                          = 'sub_type';
     const SUBTYPE                           = 'subType';
+
+    // ------------------- Turbo<>Axis Version----------------------//
+    // Call goes to 2P BE
+    const AXIS_2P                           = '2p';
+    // Call goes to Axis BE
+    const AXIS_3P                           = '3p';
 }

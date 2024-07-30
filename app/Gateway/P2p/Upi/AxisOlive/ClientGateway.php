@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\AxisOlive;
 
+use RZP\Models\P2p\Base\Libraries\ContextMap;
 use RZP\Models\P2p\Client\Entity;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Gateway\P2p\Upi\Contracts;
@@ -24,6 +25,23 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
     {
         $request = $this->initiateS2sRequest(ClientAction::GET_GATEWAY_CONFIG);
 
+        $route = Fields::AXIS_3P;
+        $version = $this->request->header(ContextMap::X_RAZORPAY_PSP_SDK_VERSION);
+        if (!is_null($version) && $version !== '') {
+
+            $versionParts = explode('.', $version);
+
+            if (isset($versionParts[0])) {
+
+                $majorVersion = (int)$versionParts[0];
+                // Check if the major version is greater than or equal to 2
+                if ($majorVersion >= 2) {
+                    $route = Fields::AXIS_2P;
+                }
+            }
+        }
+
+
         $request->merge([
                 Fields::MERCHANT_ID              => $this->getMerchantId(),
                 Fields::MERCHANT_CHANNEL_ID      => $this->getMerchantChannelId(),
@@ -31,6 +49,7 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
                 Fields::MCC_CODE                 => $this->getMerchantCategoryCode(),
                 Fields::TIMESTAMP                => $this->getTimeStamp(),
                 Fields::MOBILE_NUMBER            => '91' . substr($this->input[CustomerEntity::CONTACT] , -10),
+                Fields::ROUTE                    => $route
         ]);
 
         $gatewayResponse = $this->sendGatewayRequestAndParseResponse($request);
