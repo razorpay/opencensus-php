@@ -408,7 +408,7 @@ export default {
   ],
   bundle_pricing: [
     // beta
-    'LEgIE3J0zaDwz1',
+    'ONoTVEOboHPBMI',
 
     // prod
     'LJ70vtwLTYmo6I',

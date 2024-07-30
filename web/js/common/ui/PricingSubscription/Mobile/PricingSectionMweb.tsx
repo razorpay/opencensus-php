@@ -14,6 +14,7 @@ import {
   ListItem,
   CheckIcon,
   Box,
+  ListItemText,
 } from '@razorpay/blade/components';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import type { PlansType } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
@@ -23,16 +24,11 @@ import {
   PricingPlanName,
   PricingPlanContainer,
   StylePlanIconMweb,
-  StyleDescription,
-  StylePrice,
   StyleViewMore,
+  PriceContainer,
 } from 'common/ui/PricingSubscription/Mobile/PricingMwebStyle';
 import Image from 'common/ui/Image';
-import {
-  StyleMonthlyPrice,
-  StylePercentageColor,
-  StyleStrikePrice,
-} from 'common/ui/PricingSubscription/PricingStyled';
+import { PercentageColor, StrikePrice } from 'common/ui/PricingSubscription/PricingStyled';
 
 import {
   TogglePlanValue,
@@ -61,12 +57,19 @@ const PlanBenefitList = ({
       }),
     [viewMore],
   );
+
   return (
-    <List variant="unordered" icon={CheckIcon}>
+    <List
+      size="large"
+      variant="unordered"
+      icon={() => <CheckIcon color="feedback.icon.positive.intense" size="medium" />}
+    >
       {filteredList.map((featureId): JSX.Element => {
         return (
           <ListItem key={featureId}>
-            {featureIdToFeatureCopyMap[featureId]}&nbsp;{plans[featureId][togglePlan]}
+            <ListItemText color="surface.text.gray.subtle">
+              {featureIdToFeatureCopyMap[featureId]}&nbsp;{plans?.[featureId]?.[togglePlan]}
+            </ListItemText>
           </ListItem>
         );
       })}
@@ -145,40 +148,41 @@ const PricingSectionMweb = ({
         <StylePlanIconMweb>
           <Image src={plans?.icon?.src} alt={plans?.icon?.alt} />
         </StylePlanIconMweb>
-        <Heading size="xlarge">{plans?.title}</Heading>
+        <Heading size="large" weight="semibold" color="interactive.text.positive.normal">
+          {plans?.title}
+        </Heading>
       </PricingPlanName>
-      <StyleDescription>
-        <Text size="large">{plans?.description}</Text>
-      </StyleDescription>
-      <StylePrice>
-        <Heading size="xlarge">
+      {/* <Text size="large">{plans?.description}</Text> */}
+      <PriceContainer>
+        <Heading size="large" weight="semibold" color="interactive.text.positive.normal">
           {togglePlan === TogglePlanValue.monthly
             ? `₹${plans?.monthlyPrice?.toLocaleString()}/Month`
             : `₹${plans?.annualPrice?.toLocaleString()}/Year`}
         </Heading>
-      </StylePrice>
+      </PriceContainer>
       {togglePlan === TogglePlanValue.monthly ? (
-        <StyleMonthlyPrice>
+        <Box marginTop="spacing.2" marginBottom="spacing.7">
           <Text color="surface.text.gray.muted" size="large">
             ₹{Math.floor(plans?.annualPrice / 12).toLocaleString()}/Month with Annual Plan
           </Text>
-        </StyleMonthlyPrice>
+        </Box>
       ) : null}
+
       {togglePlan === TogglePlanValue.annual ? (
-        <StyleStrikePrice isMobile>
-          <Text color="surface.text.gray.muted" size="large" variant="body">
+        <StrikePrice isMobile>
+          <Text color="surface.text.gray.muted" size="large">
             ₹
             {getMonthlyDiscount(
               plans?.monthlyPrice,
               plans?.annualPrice,
             ).projectedPrice.toLocaleString()}
           </Text>
-          <StylePercentageColor>
+          <PercentageColor>
             <Text size="large">
               {getMonthlyDiscount(plans?.monthlyPrice, plans?.annualPrice).percentSavings}% Off
             </Text>
-          </StylePercentageColor>
-        </StyleStrikePrice>
+          </PercentageColor>
+        </StrikePrice>
       ) : null}
       <Box width="100%" marginX="spacing.0" marginY="spacing.7">
         <Button
@@ -203,27 +207,20 @@ const PricingSectionMweb = ({
           togglePlan={togglePlan}
         />
       </PricingPlansDetail>
-      {isViewMore ? (
-        <Button
-          isLoading={isLoading && selectedPlanId === plans?.id}
-          isDisabled={isLoading && selectedPlanId !== plans?.id}
-          onClick={handleCheckoutPayment({ ...checkoutPayment, plans })}
-          size="medium"
-          isFullWidth
-          type="button"
-          variant={plans?.button?.variant}
-          icon={ArrowRightIcon}
-          iconPosition="right"
-        >
-          {plans?.button?.label}
-        </Button>
-      ) : null}
       <StyleViewMore onClick={toggleViewMore}>
-        <Text size="large">{isViewMore ? 'View Less' : 'View All Benefits'}</Text>
+        <Text
+          variant="body"
+          size="large"
+          color="interactive.text.neutral.normal"
+          marginRight="spacing.2"
+          weight="medium"
+        >
+          {isViewMore ? 'View Less' : 'View All Benefits'}
+        </Text>
         {isViewMore ? (
-          <ChevronsUpIcon color="feedback.icon.neutral.intense" size="medium" />
+          <ChevronsUpIcon color="interactive.icon.neutral.normal" size="medium" />
         ) : (
-          <ChevronsDownIcon color="feedback.icon.neutral.intense" size="medium" />
+          <ChevronsDownIcon color="interactive.icon.neutral.normal" size="medium" />
         )}
       </StyleViewMore>
     </PricingPlanContainer>

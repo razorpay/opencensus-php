@@ -1,6 +1,7 @@
 import styled, { css } from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
-import sparklePb from 'assets/sparklePb.png';
+import sparklePb from 'assets/pricing-bundle/sparkle-banner-mobile.svg';
+
 interface CarouselSlideProps {
   active: boolean;
 }
@@ -15,12 +16,22 @@ const PricingHeaderTag = styled.div(
     align-items: flex-start;
     width: 100%;
     padding: ${theme.spacing[5]}px ${theme.spacing[7]}px;
-    background-image: url(${sparklePb}), linear-gradient(130.97deg, #C8BFFF 9.95%, #553EDF 108.91%);
-    background-repeat: no-repeat;
-    background-position: right top;
-    flex-direction: column;
-    & > h4 {
-        color: ${theme.colors.surface.background.gray.intense};
+    flex-direction: column;   
+    position: relative;
+    z-index: 1;
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-image: url(${sparklePb}), linear-gradient(131deg, #48D08C 9.95%, #008743 108.91%);
+      background-repeat: no-repeat;
+      background-position: right top;
+      z-index: -1;
     }
 `,
 );
@@ -30,41 +41,31 @@ const PricingSubHeader = styled.div(
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 0 ${theme.spacing[5]}px;
-  background: rgba(114, 95, 231, 0.1);
-`,
-);
-const PricingBadge = styled.div(
-  ({
-    theme,
-    addColor,
-    addBackgroundColor,
-  }: {
-    theme: Theme;
-    addColor?: boolean | undefined;
-    addBackgroundColor?: boolean | undefined;
-  }) => `
-  margin: ${theme.spacing[4]}px ${theme.spacing[0]}px; 
-   p {
-    color: ${
-      addColor
-        ? theme.colors.surface.background.gray.intense
-        : 'linear-gradient(130.97deg, #c8bfff 9.95%, #553edf 108.91%)'
-    };
-    }
-    & > div { 
-        background: ${addBackgroundColor ? 'rgba(114, 95, 231, 0.1)' : 'rgba(255, 255, 255, 0.2)'};
-    }
+  padding: ${theme.spacing[4]}px ${theme.spacing[6]}px;
+  position: relative;
+  z-index: 1;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: .9; 
+    background: ${theme.colors.feedback.background.positive.subtle};
+    z-index: -1;
   }
 `,
 );
 
 const PricingPlanContainer = styled.div(
   ({ theme }: { theme: Theme }) => `
-  border: 1px solid #bdb3ff; // TODO: remove with blade color format
-  box-shadow: inset 0px 0px 16px rgba(85, 62, 223, 0.2);
+  border: 1px solid ${theme.colors.interactive.border.positive.faded}; 
+  box-shadow: 0px 0px 16px 0px rgba(0, 135, 67, 0.20) inset;
   border-radius: ${theme.border.radius.large}px;
-  padding: ${theme.spacing[5]}px;
+  padding: ${theme.spacing[6]}px;
 `,
 );
 const PricingPlanName = styled.div(
@@ -73,34 +74,19 @@ const PricingPlanName = styled.div(
   justify-content: flex-start;
   align-items: center;
   margin-bottom: ${theme.spacing[7]}px;
-  // TODO: remove with blade color format
-  & > h2 {
-    color: #9586f2;
-  }
 `,
 );
 const StylePlanIconMweb = styled.div(
   ({ theme }: { theme: Theme }) => `
   width: unset;
-  margin-right: ${theme.spacing[4]}px;
-`,
-);
-const StyleDescription = styled.div(
-  ({ theme }: { theme: Theme }) => `
-  margin-bottom: ${theme.spacing[5]}px;
-  & > p {
-    color: ${theme.colors.surface.text.gray.muted}
-  }
+  margin-right: ${theme.spacing[3]}px;
 `,
 );
 
-const StylePrice = styled.div`
-  & > h2 {
-    color: #9586f2;
-  }
-  h2:after {
+const PriceContainer = styled.div`
+  h3:after {
     content: ' *';
-    color: #9586f2;
+    color: ${(props) => props.theme.colors.interactive.text.positive.normal};
   }
 `;
 const StyleViewMore = styled.div(
@@ -109,20 +95,11 @@ const StyleViewMore = styled.div(
   justify-content: center;
   align-items: center;
   margin-top: ${theme.spacing[7]}px;
-  & > p {
-    margin-right: ${theme.spacing[4]}px;
-    color: ${theme.colors.surface.text.gray.muted}
-  }
 `,
 );
 const PricingPlansDetail = styled.div(
   ({ theme, isViewMore }: { theme: Theme; isViewMore: boolean }) => `
   margin-bottom: ${isViewMore ? `${theme.spacing[7]}px` : `${theme.spacing[0]}px`};
-  & > p:first-of-type {
-    margin-right: ${theme.spacing[4]}px;
-    display:inline;
-    color: ${theme.colors.surface.text.gray.muted}
-  }
 `,
 );
 const StyleSwitchText = styled.div(
@@ -169,7 +146,7 @@ const StyledCarouselDot = styled.div(
     margin-right: ${theme.spacing[3]}px;
     background: ${
       isActive
-        ? 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)'
+        ? theme.colors.interactive.text.positive.normal
         : theme.colors.surface.border.gray.muted
     };
     box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.06);
@@ -196,13 +173,11 @@ const StyledCarouselSlides = styled.div<CarouselSlidesProps>`
 export {
   PricingHeaderTag,
   PricingSubHeader,
-  PricingBadge,
   PricingPlansDetail,
   PricingPlanName,
   PricingPlanContainer,
   StylePlanIconMweb,
-  StyleDescription,
-  StylePrice,
+  PriceContainer,
   StyleViewMore,
   StyleSwitchText,
   StyleRightSlide,

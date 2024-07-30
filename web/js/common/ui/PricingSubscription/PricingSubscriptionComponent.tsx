@@ -1,56 +1,47 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { connect } from 'react-redux';
-import { compose, bindActionCreators } from 'redux';
-import rTracking, { useTracking } from 'react-tracking';
 import { withRouter } from 'common/deprecated/withRouter';
-import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { Button } from '@razorpay/blade/components';
-import Image from 'common/ui/Image';
 import {
-  StyledDiv,
-  StyledTable,
-  StyledTr,
-  StyledTh,
-  StyledTd,
-  StyleHeroImage,
-} from './PricingStyled';
-import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
-import {
-  LS_LABELS,
   IMPRESSION_TIME_INTERVAL,
+  LS_LABELS,
   PAYMENT_TYPE,
 } from 'common/ui/PricingSubscription/constants';
-import { setCookie } from 'common/utils/cookies';
-import { fetchGSModal as fetchGSModalAction } from 'merchant/reducers/growthService';
 import type {
+  PaymentType,
+  PlansType,
   PricingSubscriptionProps,
   TogglePlan,
   TrackingObjectType,
-  PlansType,
-  PaymentType,
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
+import { setCookie } from 'common/utils/cookies';
+import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
+import { fetchGSModal as fetchGSModalAction } from 'merchant/reducers/growthService';
+import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import React, { useEffect, useRef, useState } from 'react';
+import { connect } from 'react-redux';
+import rTracking, { useTracking } from 'react-tracking';
+import { bindActionCreators, compose } from 'redux';
+import { Container, PlanRow, PlanSection, StyleHeroImage } from './PricingStyled';
 
-import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
-import pricingTag from 'assets/pricing-bundle/pricingTag.svg';
-import {
-  FooterButton,
-  plansDetailsForViewMore,
-  PricingHeader,
-  getPlanPrice,
-  TogglePlanValue,
-  ModalLoader,
-  PricingTncInfoMemo,
-  handleCheckoutPayment,
-} from './PricingBundleCommon';
-import MultiPaymentModal from 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions';
-import { MODAL_TYPE } from 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions/constant';
+import { Box } from '@razorpay/blade/components';
 import {
   getPaymentOptions,
   ReturnPaymentResponse,
 } from 'common/ui/PricingSubscription/API/getPaymentDetails.api';
-import { MultiPaymentContext, INITIAL_PLAN } from 'common/ui/PricingSubscription/PricingContext';
+import { INITIAL_PLAN, MultiPaymentContext } from 'common/ui/PricingSubscription/PricingContext';
+import MultiPaymentModal from 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions';
+import { MODAL_TYPE } from 'common/ui/PricingSubscription/screen/Common/MultiPaymentOptions/constant';
+import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
 import lazy from 'merchant/routes/LazyLoader';
+import {
+  FooterButton,
+  PlanDetails,
+  handleCheckoutPayment,
+  ModalLoader,
+  PricingHeader,
+  PricingTncInfoMemo,
+  TogglePlanValue,
+} from './PricingBundleCommon';
+import { equalizeRowElementHeights } from './utils';
 
 const CongratulatoryModal = lazy(
   () =>
@@ -89,7 +80,6 @@ const PricingSubscriptionComponent = ({
 }: PricingSubscriptionProps): React.ReactElement | null => {
   const isReadOnly = variant === PRICING_BUNDLE_VARIANT.READ_ONLY;
   const [isFullView, setFullView] = useState(false);
-  const [isChecked, setChecked] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isPaymentOptionLoading, setIsPaymentOptionLoading] = useState(false);
@@ -103,6 +93,8 @@ const PricingSubscriptionComponent = ({
     ...MULTIPAYMENT_DATA,
   });
   const [togglePlan, setTogglePlan] = useState<TogglePlan>(TogglePlanValue.monthly);
+  const columnRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const { trackEvent } = useTracking({ page: 'Home' });
   const totalPlanTimer = {};
   const { data: { balance = 0 } = {} } = currentBalance || {};
@@ -299,10 +291,7 @@ const PricingSubscriptionComponent = ({
       });
     }
   };
-  const toggleSwitchButton = (e): void => {
-    setChecked(e.target.checked);
-    toggleAnnualPlan();
-  };
+
   const handlePaymentSuccess = (response, plans) => {
     setModalType(MODAL_TYPE.CHECKOUT_PAYMENT);
     setCongratulatoryModal(true);
@@ -345,38 +334,43 @@ const PricingSubscriptionComponent = ({
     closeModal,
   };
 
-  const handleClose =
-    (buttonType: string | undefined): (() => void) =>
-    () => {
-      if (isLoading) return;
-      trackInstrumentation(buttonType === 'close' ? 'CloseCTA' : 'NotInterestedCTA', {
-        toggle_switch: togglePlan,
-        cta_value: buttonType === 'close' ? 'Close' : 'Not Interested',
-        event_name:
-          buttonType === 'close'
-            ? 'merchant_dashboard.click_close.initiated'
-            : 'merchant_dashboard.not_interested.initiated',
-      });
+  const handleClose = (buttonType: string | undefined): void => {
+    if (isLoading) return;
 
-      if (buttonType !== 'close' && !templateId)
-        localStorage.setItem(`${LS_LABELS.NOT_INTERESTED}-${user?.current}`, '1');
+    const eventType = buttonType === 'close' ? 'CloseCTA' : 'NotInterestedCTA';
+    const ctaValue = buttonType === 'close' ? 'Close' : 'Not Interested';
+    const eventName =
+      buttonType === 'close'
+        ? 'merchant_dashboard.click_close.initiated'
+        : 'merchant_dashboard.not_interested.initiated';
 
-      const tempTimer = {};
-      if (Object.entries(totalPlanTimer).length) {
-        for (const [key, value] of Object.entries(totalPlanTimer)) {
-          // TODO: Fix `any`
-          tempTimer[key] = (value as any)?.totalTime;
-        }
-        trackInstrumentation('', {
-          time_spent: {
-            outside: outsidePlanSectionTimer?.totalTime,
-            ...tempTimer,
-          },
-          event_name: 'merchant_dashboard.hover_plan.success',
-        });
+    trackInstrumentation(eventType, {
+      toggle_switch: togglePlan,
+      cta_value: ctaValue,
+      event_name: eventName,
+    });
+
+    if (buttonType !== 'close' && !templateId) {
+      localStorage.setItem(`${LS_LABELS.NOT_INTERESTED}-${user?.current}`, '1');
+    }
+
+    const tempTimer = {};
+    if (Object.entries(totalPlanTimer).length) {
+      for (const [key, value] of Object.entries(totalPlanTimer)) {
+        // TODO: Fix `any`
+        tempTimer[key] = (value as any)?.totalTime;
       }
-      closeModal();
-    };
+      trackInstrumentation('', {
+        time_spent: {
+          outside: outsidePlanSectionTimer?.totalTime,
+          ...tempTimer,
+        },
+        event_name: 'merchant_dashboard.hover_plan.success',
+      });
+    }
+
+    closeModal();
+  };
 
   const handleMouseEnter = (title) => (): void => {
     outsidePlanSectionTimer?.pause(outsidePlanSectionTimer);
@@ -407,17 +401,6 @@ const PricingSubscriptionComponent = ({
       return null;
     } else if (loading) return <ModalLoader closeModal={closeModal} />;
   }
-
-  const renderPlansDetails = (featureId, index) =>
-    plansDetailsForViewMore({
-      text: featureIdToFeatureCopyMap[featureId],
-      pricingPlans,
-      featureId,
-      featureIndex: index,
-      handleMouseEnter,
-      handleMouseLeave,
-      togglePlan,
-    });
 
   const getPaymentMethodCall =
     (
@@ -464,7 +447,7 @@ const PricingSubscriptionComponent = ({
     };
 
   return (
-    <StyledDiv
+    <Container
       fullView={isFullView}
       onMouseLeave={() => {
         document.addEventListener('click', onClickOverlay, { once: true });
@@ -477,71 +460,53 @@ const PricingSubscriptionComponent = ({
         headerSrc={headerSrc}
         headerAlt={headerAlt}
         title={title}
-        isChecked={isChecked}
-        toggleSwitchButton={toggleSwitchButton}
+        toggleSwitchButton={toggleAnnualPlan}
         pillText={String(pillText)}
         handleClose={handleClose}
       />
-      <StyledTable pricingPlanLength={pricingPlans?.length}>
-        <StyledTr headerHeight pricingPlanLength={pricingPlans?.length}>
-          <StyledTh removeCss>
+
+      <PlanSection>
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+          <PlanRow noBorder>
             <StyleHeroImage>
-              <Image src={pricingTag} alt="Pricing Tag" />
-              <Image src={heroSrc} alt={heroAlt} />
+              <img src={heroSrc} alt={heroAlt} />
             </StyleHeroImage>
-          </StyledTh>
+          </PlanRow>
+
           {pricingPlans.map((plans, index) => {
             return (
-              <StyledTh
-                addRightMargin
+              <PlanRow
                 key={index}
-                isRecommend={plans?.isRecommended}
+                addRightMargin
+                isRecommended={plans?.isRecommended}
                 onMouseEnter={handleMouseEnter(plans?.title)}
                 onMouseLeave={handleMouseLeave(plans?.title)}
+                ref={(el) => (columnRefs.current[index] = el)}
+                data-testid={`plan-column-${plans.id}`}
               >
-                {getPlanPrice({
-                  plans,
-                  togglePlan,
-                  isReadOnly,
-                  isLoading,
-                  selectedPlanId,
-                  getPaymentMethodCall,
-                  isPaymentOptionLoading,
-                })}
-              </StyledTh>
+                <PlanDetails
+                  plans={plans}
+                  togglePlan={togglePlan}
+                  isReadOnly={isReadOnly}
+                  isLoading={isLoading}
+                  selectedPlanId={selectedPlanId}
+                  getPaymentMethodCall={getPaymentMethodCall}
+                  isPaymentOptionLoading={isPaymentOptionLoading}
+                  featureIdOrder={featureIdOrder}
+                  featureIdToFeatureCopyMap={featureIdToFeatureCopyMap}
+                  isFullView={isFullView}
+                  columnRefs={columnRefs}
+                  featureIndex={index}
+                  handleMouseLeave={handleMouseLeave}
+                  handleMouseEnter={handleMouseEnter}
+                />
+              </PlanRow>
             );
           })}
-        </StyledTr>
-        {featureIdOrder
-          .filter((_, index) => isFullView || index < 3)
-          .map((featureId, index) => renderPlansDetails(featureId, index))}
-        <StyledTr pricingPlanLength={pricingPlans?.length}>
-          <StyledTd removeCss />
-          {isFullView &&
-            pricingPlans.map((plans) => {
-              return (
-                !isReadOnly && (
-                  <StyledTd lastRow key={plans?.id} isRecommend={plans?.isRecommended}>
-                    <Button
-                      isLoading={
-                        (isLoading || isPaymentOptionLoading) && selectedPlanId === plans?.id
-                      }
-                      isDisabled={
-                        (isLoading || isPaymentOptionLoading) && selectedPlanId !== plans?.id
-                      }
-                      variant={plans.button?.variant}
-                      onClick={getPaymentMethodCall(plans)}
-                      size="small"
-                      type="button"
-                    >
-                      {plans.button?.label}
-                    </Button>
-                  </StyledTd>
-                )
-              );
-            })}
-        </StyledTr>
-      </StyledTable>
+        </Box>
+
+        <PricingTncInfoMemo isMobile={isMobile} />
+      </PlanSection>
       <MultiPaymentContext.Provider
         value={{ checkoutPayment, currentBalance, plans: selectedPlan, multiPaymentData }}
       >
@@ -563,9 +528,13 @@ const PricingSubscriptionComponent = ({
           togglePlan={togglePlan}
         />
       ) : null}
-      {isFullView ? <PricingTncInfoMemo isMobile={isMobile} /> : null}
-      <FooterButton handleToggle={handleToggle} isFullView={isFullView} handleClose={handleClose} />
-    </StyledDiv>
+      <FooterButton
+        equalizeRowElementHeights={() => equalizeRowElementHeights(pricingPlans, columnRefs)}
+        handleToggle={handleToggle}
+        isFullView={isFullView}
+        handleClose={handleClose}
+      />
+    </Container>
   );
 };
 

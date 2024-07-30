@@ -41,7 +41,7 @@ describe('User model', () => {
     window.rzp_user = {
       ...window.rzp_user,
       splitz_experiments: {
-        LEgIE3J0zaDwz1: {
+        ONoTVEOboHPBMI: {
           variables: {
             result: 'on',
           },

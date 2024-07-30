@@ -1,17 +1,18 @@
-import React, { useState, memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import {
-  Text,
+  Badge,
+  Box,
   Button,
   ChevronDownIcon,
-  ChevronUpIcon,
-  Badge,
+  ChevronsUpIcon,
   CloseIcon,
-  Box,
-  RupeeIcon,
   Link,
+  RupeeIcon,
+  Switch,
+  Text,
 } from '@razorpay/blade/components';
-
 import rzpLogo from 'assets/rzp_logo.jpg';
+
 import Image from 'common/ui/Image';
 import Loader from 'common/ui/Loader';
 import { PAYMENT_TYPE } from 'common/ui/PricingSubscription/constants';
@@ -21,37 +22,23 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { loadCheckoutScript } from 'merchant/views/Capital/utils';
 
 import {
-  StyledTr,
-  StyledTd,
-  StyledFooter,
-  StyledHeader,
-  StyledCloseIcon,
-  StyledModalClose,
-  StyleStrikePrice,
-  StylePlanIcon,
-  StyleMonthlyPrice,
-  StylePlanName,
-  StyleWrapper,
-  StylePercentageColor,
+  CloseModalButton,
+  FeatureItem,
+  FireImage,
+  Footer,
+  Header,
+  ModalClose,
+  PercentageColor,
+  PlansTncSection,
+  StrikePrice,
   StyleToastLink,
-  Label,
-  Input,
-  Switch,
-  StyledHeaderIcon,
-  StyleBadgeContainer,
-  StyleSwitchContainer,
-  PlanLeftSection,
-  StyleFireImage,
-  StyleInfo,
-  StylePlanWrapper,
 } from './PricingStyled';
 import {
   FooterButtonType,
-  PricingHeaderType,
   GetPlanPriceType,
-  ViewMoreParams,
-  PlansType,
   PaymentCheckoutFlowType,
+  PlansType,
+  PricingHeaderType,
 } from './PricingSubscriptionProps.type';
 import TncMobile from './PricingTnCMobile';
 
@@ -64,97 +51,86 @@ const TogglePlanValue = {
   annual: 'annual',
 } as const;
 
-const FooterButton = ({ isFullView, handleToggle }: FooterButtonType): JSX.Element => {
+const FooterButton = ({
+  isFullView,
+  handleToggle,
+  equalizeRowElementHeights,
+  handleClose,
+}: FooterButtonType): JSX.Element => {
+  const expandBenefits = useCallback(() => {
+    Promise.resolve(handleToggle()).then(() => {
+      equalizeRowElementHeights();
+    });
+  }, [handleToggle, equalizeRowElementHeights]);
+
   return (
-    <StyledFooter className="pricing-footer">
-      <Button
-        iconPosition="right"
-        icon={!isFullView ? ChevronDownIcon : ChevronUpIcon}
-        onClick={handleToggle}
-        size="small"
-        type="button"
-      >
-        &#127873; &nbsp; View All Benefits
-      </Button>
-    </StyledFooter>
+    <Box position="relative">
+      <Footer className="pricing-footer">
+        <Button
+          iconPosition="right"
+          icon={!isFullView ? ChevronDownIcon : ChevronsUpIcon}
+          onClick={expandBenefits}
+          size="small"
+          type="button"
+          variant="secondary"
+          color="primary"
+        >
+          &#127873; &nbsp; View All Benefits
+        </Button>
+        <Button
+          onClick={() => handleClose()}
+          marginLeft="spacing.7"
+          size="small"
+          type="button"
+          variant="tertiary"
+        >
+          Not Interested
+        </Button>
+      </Footer>
+    </Box>
   );
 };
 
-const plansDetailsForViewMore = ({
-  text,
-  pricingPlans,
-  featureId,
-  featureIndex,
-  handleMouseEnter,
-  handleMouseLeave,
-  togglePlan,
-}: ViewMoreParams): JSX.Element => {
-  return (
-    <StyledTr key={text} pricingPlanLength={pricingPlans?.length}>
-      <StyledTd removeCss textAlign verticalAlign={featureIndex === 0 ? undefined : 'baseline'}>
-        <PlanLeftSection>
-          <Text weight="semibold" size="large" color="surface.text.gray.normal">
-            {text}
-          </Text>
-        </PlanLeftSection>
-      </StyledTd>
-      {pricingPlans.map((plans): JSX.Element => {
-        let featureOffering = plans?.[featureId]?.[togglePlan];
-        featureOffering = featureOffering ? String(featureOffering).trim() : '';
-
-        return (
-          <StyledTd
-            verticalAlign={featureIndex === 0 ? undefined : 'baseline'}
-            key={plans?.id}
-            addShadow
-            addRightMargin
-            addLineGradient={featureIndex === 0}
-            isRecommend={plans?.isRecommended}
-            onMouseEnter={handleMouseEnter(plans?.title)}
-            onMouseLeave={handleMouseLeave(plans?.title)}
-          >
-            <Text>{featureOffering}</Text>
-          </StyledTd>
-        );
-      })}
-    </StyledTr>
-  );
-};
 const PricingHeader = ({
   headerSrc,
   headerAlt,
   title,
-  isChecked,
   toggleSwitchButton,
   pillText,
   handleClose,
 }: PricingHeaderType): JSX.Element => {
   return (
-    <StyledHeader className="pricing-header">
-      <StyledHeaderIcon>
-        <StyleFireImage>
-          <Image src={headerSrc} alt={headerAlt} />
-        </StyleFireImage>
-        <Text size="large">{title}</Text>
-      </StyledHeaderIcon>
-      <StyleSwitchContainer>
-        <Text>Switch to Annual Plans</Text>
-        <Label>
-          <Input checked={isChecked} type="checkbox" onChange={(e) => toggleSwitchButton(e)} />
-          <Switch />
-        </Label>
-      </StyleSwitchContainer>
-      <StyleBadgeContainer>
-        <Badge emphasis="subtle" size="large" color="positive">
-          {String(pillText)}
-        </Badge>
-        <StyledCloseIcon data-testid="close-icon" onClick={handleClose('close')}>
-          <CloseIcon color="feedback.icon.neutral.intense" size="medium" />
-        </StyledCloseIcon>
-      </StyleBadgeContainer>
-    </StyledHeader>
+    <Box position="relative">
+      <Header className="pricing-header">
+        <Box display="flex" alignItems="center" flexDirection="row">
+          <FireImage>
+            <Image src={headerSrc} alt={headerAlt} />
+          </FireImage>
+          <Text size="large" weight="semibold" color="surface.text.gray.normal">
+            {title}
+          </Text>
+        </Box>
+        <Box display="flex" alignItems="center">
+          <Box as="label" display="flex" alignItems="center" gap="spacing.2">
+            <Text size="large" color="surface.text.gray.muted">
+              Switch to Annual Plans
+            </Text>
+            <Switch onChange={toggleSwitchButton} accessibilityLabel="Toggle Plans" size="medium" />
+          </Box>
+          <Box marginLeft="spacing.4">
+            <Badge emphasis="subtle" size="large" color="positive">
+              {String(pillText)}
+            </Badge>
+            <CloseModalButton data-testid="close-icon" onClick={() => handleClose('close')}>
+              <CloseIcon size="large" color="interactive.icon.gray.muted" />
+            </CloseModalButton>
+          </Box>
+        </Box>
+      </Header>
+    </Box>
   );
 };
+
 const RedirectToastUI = ({ handleToastLink }: { handleToastLink: () => void }): JSX.Element => {
   return (
     <StyleToastLink>
@@ -177,7 +153,8 @@ const getMonthlyDiscount = (
   const percentSavings = Math.floor(((projectedPrice - annualPrice) * 100) / projectedPrice);
   return { projectedPrice, percentSavings };
 };
-const getPlanPrice = ({
+
+const PlanDetails = ({
   plans,
   togglePlan,
   isReadOnly,
@@ -185,72 +162,109 @@ const getPlanPrice = ({
   selectedPlanId,
   getPaymentMethodCall,
   isPaymentOptionLoading,
+  featureIdOrder,
+  featureIdToFeatureCopyMap,
+  isFullView,
+  featureIndex,
+  handleMouseEnter,
+  handleMouseLeave,
 }: GetPlanPriceType): JSX.Element => {
+  const { icon, title, monthlyPrice, annualPrice, isRecommended } = plans;
+
+  const renderFeatures = () => {
+    return featureIdOrder
+      .filter((_, index) => isFullView || index < 3)
+      .map((featureId, index) => {
+        const featureOffering = plans?.[featureId]?.[togglePlan];
+        const featureOfferingTrimmed = featureOffering ? String(featureOffering).trim() : '';
+
+        return (
+          <div key={index} style={{ width: 'inherit' }}>
+            <FeatureItem
+              addLineGradient={index === 0}
+              isRecommended={isRecommended}
+              planTitle={featureIdToFeatureCopyMap[featureId]}
+              showRowTitle={featureIndex === 0}
+              onMouseEnter={handleMouseEnter(plans?.title)}
+              onMouseLeave={handleMouseLeave(plans?.title)}
+            >
+              <Text size="medium" color="surface.text.gray.subtle">
+                {featureOfferingTrimmed}
+              </Text>
+            </FeatureItem>
+          </div>
+        );
+      });
+  };
+
   return (
-    <StylePlanName data-testid={`plan-column-${plans.id}`}>
-      <StylePlanIcon>
-        <Image src={plans.icon.src} alt={plans.icon.alt} />
-      </StylePlanIcon>
-      <StyleWrapper>
-        <Text weight="semibold" size="large" color="surface.text.gray.normal">
-          {plans.title}
-        </Text>
-      </StyleWrapper>
-      <StylePlanWrapper>
+    <>
+      <Box marginBottom="spacing.3">
+        <img src={icon.src} alt={icon.alt} />
+      </Box>
+      <Text
+        marginBottom="spacing.7"
+        marginTop="spacing.2"
+        weight="semibold"
+        size="large"
+        color="surface.text.gray.subtle"
+      >
+        {title}
+      </Text>
+
+      <Box display="flex" alignItems="center" flexDirection="row">
         <RupeeIcon color="currentColor" size="large" />
         <Text weight="semibold" size="large" color="surface.text.gray.normal">
           {togglePlan === TogglePlanValue.monthly
-            ? `${plans.monthlyPrice.toLocaleString()}/Month`
-            : `${plans.annualPrice.toLocaleString()}/Year`}
+            ? `${monthlyPrice.toLocaleString()}/Month`
+            : `${annualPrice.toLocaleString()}/Year`}
         </Text>
-      </StylePlanWrapper>
-      {togglePlan === TogglePlanValue.monthly ? (
-        <StyleMonthlyPrice>
+      </Box>
+      {togglePlan === TogglePlanValue.monthly && (
+        <Box marginBottom="spacing.4" marginTop="spacing.2">
           <Text size="small" variant="body" color="surface.text.gray.muted">
-            ₹{Math.floor(plans.annualPrice / 12).toLocaleString()}/Month with Annual Plan
+            ₹{Math.floor(annualPrice / 12).toLocaleString()}/Month with Annual Plan
           </Text>
-        </StyleMonthlyPrice>
-      ) : null}
-      {togglePlan === TogglePlanValue.annual ? (
-        <StyleStrikePrice>
-          <Text color="surface.text.gray.muted" size="small" variant="body">
-            ₹
-            {getMonthlyDiscount(
-              plans.monthlyPrice,
-              plans.annualPrice,
-            ).projectedPrice.toLocaleString()}
-          </Text>
-          <StylePercentageColor>
-            <Text>
-              {getMonthlyDiscount(plans.monthlyPrice, plans.annualPrice).percentSavings}% Off
-            </Text>
-          </StylePercentageColor>
-        </StyleStrikePrice>
-      ) : null}
-      {!isReadOnly && (
-        <StyleWrapper>
-          <Button
-            isLoading={(isLoading || isPaymentOptionLoading) && selectedPlanId === plans?.id}
-            isDisabled={(isLoading || isPaymentOptionLoading) && selectedPlanId !== plans?.id}
-            iconPosition="left"
-            onClick={getPaymentMethodCall(plans)}
-            size="small"
-            type="button"
-            variant={plans.button?.variant}
-          >
-            {plans.button?.label}
-          </Button>
-        </StyleWrapper>
+        </Box>
       )}
-    </StylePlanName>
+      {togglePlan === TogglePlanValue.annual && (
+        <StrikePrice>
+          <Text color="surface.text.gray.muted" size="small" variant="body">
+            ₹{getMonthlyDiscount(monthlyPrice, annualPrice).projectedPrice.toLocaleString()}
+          </Text>
+          <PercentageColor>
+            <Text>{getMonthlyDiscount(monthlyPrice, annualPrice).percentSavings}% Off</Text>
+          </PercentageColor>
+        </StrikePrice>
+      )}
+      {!isReadOnly && (
+        <Button
+          isLoading={(isLoading || isPaymentOptionLoading) && selectedPlanId === plans?.id}
+          isDisabled={(isLoading || isPaymentOptionLoading) && selectedPlanId !== plans?.id}
+          iconPosition="left"
+          onClick={getPaymentMethodCall(plans)}
+          size="medium"
+          isFullWidth
+          type="button"
+          variant={plans.button?.variant}
+          marginTop="spacing.8"
+          marginBottom="spacing.10"
+        >
+          {plans.button?.label}
+        </Button>
+      )}
+
+      {renderFeatures()}
+    </>
   );
 };
+
 const ModalLoader = ({ closeModal }: { closeModal: () => void }): JSX.Element => {
   return (
     <>
-      <StyledModalClose onClick={closeModal}>
+      <ModalClose onClick={closeModal}>
         <CloseIcon color="feedback.icon.neutral.intense" size="medium" />
-      </StyledModalClose>
+      </ModalClose>
       <div id="gs-modal-loader">
         <Loader />
       </div>
@@ -260,16 +274,19 @@ const ModalLoader = ({ closeModal }: { closeModal: () => void }): JSX.Element =>
 
 const PricingTncInfo = ({ isMobile }: { isMobile: boolean }): JSX.Element => {
   const [isOpenTncModal, setOpenTnCModal] = useState(false);
-  const toggleTncModal = useCallback(
-    (): void => setOpenTnCModal((prevState) => !prevState),
-    [isOpenTncModal],
-  );
+
+  const toggleTncModal = useCallback(() => {
+    setOpenTnCModal((prevState) => !prevState);
+  }, []);
+
   return (
-    <StyleInfo isMobile={isMobile}>
-      <Text>Auto Renewal Plans. No Refunds</Text>
-      <Text>*Prices mentioned are exclusive of GST </Text>
-      <Box width="fit-content" height="fit-content">
-        Full{'  '}
+    <PlansTncSection isMobile={isMobile}>
+      <Text color="surface.text.gray.subtle">Auto Renewal Plans. No Refunds</Text>
+      <Text color="surface.text.gray.subtle">*Prices mentioned are exclusive of GST</Text>
+      <Box width="fit-content" height="fit-content" display="flex" alignItems="center">
+        <Text color="surface.text.gray.subtle" marginRight="spacing.2">
+          Full
+        </Text>
         <Link onClick={toggleTncModal} variant="button">
           Terms & Conditions
         </Link>
@@ -279,7 +296,7 @@ const PricingTncInfo = ({ isMobile }: { isMobile: boolean }): JSX.Element => {
       ) : (
         <TncDesktop isOpenTncModal={isOpenTncModal} toggleTncModal={toggleTncModal} />
       )}
-    </StyleInfo>
+    </PlansTncSection>
   );
 };
 
@@ -289,6 +306,7 @@ const handleCheckoutInitiation = (trackInstrumentation) => {
     event_name: 'merchant_dashboard.checkout_modal.initiated',
   });
 };
+
 const handleCheckoutError = (trackInstrumentation) => {
   trackInstrumentation('', {
     value: 'failure',
@@ -317,6 +335,7 @@ const handleCheckoutPayment =
       setCongratulatoryModal,
       showNotificationToast,
     } = props;
+
     const { title, id, button: { label } = {} } = plans;
 
     trackInstrumentation('choosePlanCTA', {
@@ -329,8 +348,11 @@ const handleCheckoutPayment =
       plan_name: title,
       event_name: 'merchant_dashboard.click_cta',
     });
+
     setLoading(true);
+
     await loadCheckoutScript();
+
     try {
       const subscriptionData = await merchantFetch({
         method: 'post',
@@ -339,12 +361,16 @@ const handleCheckoutPayment =
         }`,
         mode: 'live',
       });
+
       const { data: { response = {}, status_code = '' } = {} } = subscriptionData || {};
+
       if (status_code === 200) {
         const { subscription = {} } = response;
+
         if (type === PAYMENT_TYPE.PG || !type) {
           // TODO: remove `!type` when add this feature in Mobile
           const { merchant_id, account_key, payment_subscription_id } = subscription || {};
+
           const options = {
             notes: {
               merchant_id,
@@ -358,11 +384,14 @@ const handleCheckoutPayment =
               handlePaymentSuccess(response, plans);
             },
           };
+
           const razorpayCheckout = new window.Razorpay(options);
           razorpayCheckout.open();
+
           razorpayCheckout.on('payment.failed', (response) => {
             handlePaymentFailure(response, plans);
           });
+
           handleCheckoutInitiation(trackInstrumentation);
         } else if (type === PAYMENT_TYPE.INTERNAL) {
           if (planAmount <= settlementBalance) {
@@ -370,6 +399,7 @@ const handleCheckoutPayment =
           } else {
             setModalType(MODAL_TYPE.INSUFFICIENT_BALANCE);
           }
+
           setCongratulatoryModal(true);
           togglePaymentOptionModal();
         }
@@ -385,16 +415,17 @@ const handleCheckoutPayment =
       setLoading(false);
     }
   };
+
 const PricingTncInfoMemo = memo(PricingTncInfo);
+
 export {
   FooterButton,
-  plansDetailsForViewMore,
-  PricingHeader,
-  TogglePlanValue,
-  getPlanPrice,
-  ModalLoader,
-  PricingTncInfoMemo,
-  handleCheckoutPayment,
   getMonthlyDiscount,
+  PlanDetails,
+  handleCheckoutPayment,
+  ModalLoader,
+  PricingHeader,
+  PricingTncInfoMemo,
   RedirectToastUI,
+  TogglePlanValue,
 };

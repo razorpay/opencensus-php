@@ -18,6 +18,17 @@ const LazyPricingBundleMweb = lazy(
     ),
 );
 
+const lazyPricingSubscriptionImport = lazyRetry(
+  () =>
+    import(
+      /* webpackChunkName: 'PricingSubscriptionComponent Dweb ' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
+    ),
+);
+
+const LazyPricingSubscriptionComponent = lazy(
+  () => new Promise((resolve) => resolve(lazyPricingSubscriptionImport)),
+);
+
 export const PricingBundle = ({
   user,
   openModal,
@@ -50,24 +61,11 @@ export const PricingBundle = ({
     !isWithinTimeInterval &&
     !isNotInterested;
 
-  useEffect(() => {
-    if (isAllowedToFetch) fetchPricingSubscription({ fromWhere: location?.pathname });
-  }, []);
-
   const showPricingBundleWeb =
     isAllowedToFetch && pricing_bundles && Object.keys(pricing_bundles).length;
 
   const openPricingSubcriptionModal = async (loading) => {
     if (showPricingBundleWeb && !loading) {
-      const lazyPricingSubscriptionImport = await lazyRetry(
-        () =>
-          import(
-            /* webpackChunkName: 'PricingSubscriptionComponent Dweb ' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
-          ),
-      );
-      const LazyPricingSubscriptionComponent = lazy(
-        () => new Promise((resolve) => resolve(lazyPricingSubscriptionImport)),
-      );
       return openModal({
         closeOnOverLay: true,
         component: (
@@ -81,12 +79,18 @@ export const PricingBundle = ({
   };
 
   useEffect(() => {
+    if (isAllowedToFetch) {
+      fetchPricingSubscription({ fromWhere: location?.pathname });
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isMobileResolution) openPricingSubcriptionModal(loading);
   }, [loading, isMobileResolution]);
 
   return showPricingBundleWeb && isMobileResolution ? (
     <Suspense fallback={null}>
-      <LazyPricingBundleMweb pricingSubscription={pricing_bundles} />;
+      <LazyPricingBundleMweb pricingSubscription={pricing_bundles} />
     </Suspense>
   ) : null;
 };

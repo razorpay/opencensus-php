@@ -1,177 +1,107 @@
-import styled from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
+import RecommendedPlanBg from 'assets/pricing-bundle/focused-plan-bg.svg';
+import styled from 'styled-components';
 
-const StyledDiv = styled.div(
+const Container = styled.div(
   ({ theme, fullView }: { theme; fullView: boolean }) => `
-      
-      border-radius: ${theme.border.radius.medium};
-      max-height: ${fullView ? '1439px' : 'unset'};
-      background-color: ${theme.colors.surface.background.gray.intense};
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: ${fullView ? 'translate(-50%,-25%)' : 'translate(-50%,-50%)'}; 
+    border-radius: ${theme.border.radius.medium}px;
+    max-height: ${fullView ? '1439px' : 'unset'};
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: ${fullView ? 'translate(-50%,-25%)' : 'translate(-50%,-50%)'}; 
   `,
 );
-const StyledTable = styled.table(
-  ({ theme, pricingPlanLength }: { theme; pricingPlanLength: number }) => `
-  width: 100%;
-  border-radius: ${theme.border.radius.medium};
-  display: table;
-  border-collapse: separate;
-  border-spacing: 15px 0;
-  padding: ${theme.spacing[7]}px 0 ${theme.spacing[5]}px 0;
-  background-color: ${theme.colors.surface.background.gray.intense};
-  & > :first-child {
-    & > *::after {
-      content: none;
-    }
-    & > :nth-child(${pricingPlanLength}) {
-      box-shadow: 0px 0px 16px rgba(85, 62, 223, 0.2);
-      border: 1px solid #bdb3ff;
-      border-bottom: none;
-    }
+
+const FeatureItem = styled.div(
+  ({
+    theme,
+    addLineGradient,
+    isRecommended,
+    planTitle,
+    showRowTitle,
+  }: {
+    theme: Theme;
+    addLineGradient?: boolean;
+    isRecommended?: boolean;
+    planTitle?: string;
+    showRowTitle?: string;
+  }) => `
+  min-height: ${theme.spacing[10]}px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin: ${theme.spacing[4]}px 0;
+  padding: ${theme.spacing[3]}px ${theme.spacing[6]}px;
+  text-align: center;
+
+   &::before {
+    display: ${showRowTitle ? 'flex' : 'none'};
+    content: "${planTitle}";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    font-weight: ${theme.typography.fonts.weight.semibold};
+    font-size: ${theme.typography.fonts.size[200]}px;
+    width: 100%;
+    text-align: left;
+    height: 100%;
+    align-items: center;
+    justify-content: start;
   }
-  & > :last-child {
-    & > :nth-child(${pricingPlanLength}) {
-      box-shadow: 0px 0px 16px rgba(85, 62, 223, 0.2);
-      border: 1px solid #bdb3ff;
-      border-top: none;
-      &:before,
-      &:after {
-        content: none;
-      }
-    }
+
+  &::after {
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top:0;
+    left:0;
+    background: ${
+      addLineGradient ? 'linear-gradient(126deg, #DAF5E8 9.01%, #008743 98.6%)' : 'unset'
+    };   
+    box-shadow: ${
+      isRecommended
+        ? '0px 0px 12px 0px rgba(0, 0, 0, 0.06)'
+        : addLineGradient
+        ? '0px 0px 12px 0px rgba(0, 0, 0, 0.06)'
+        : 'unset'
+    };
+    opacity:0.1;
   }
 `,
 );
-const StyledTr = styled.tr<any>(
-  ({ pricingPlanLength }: { pricingPlanLength: number }) => `
-  text-align: center;
 
-  & > :not(:first-child) {
-    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.06);
-    &:before,
-    &:after {
-      content: ' ';
-      height: 12px;
-      position: absolute;
-      width: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      z-index: 1;
-    }
-    &:before {
-      bottom: -1px;
-    }
-    &:after {
-      top: -1px;
-    }
-  }
-  & > :nth-child(${pricingPlanLength}) {
-    box-shadow: 0px 0px 16px rgba(85, 62, 223, 0.2);
-    border-left: 1px solid #bdb3ff;
-    border-right: 1px solid #bdb3ff;
-
-    &:before,
-    &:after {
-      content: ' ';
-      height: 12px;
-      position: absolute;
-      width: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      z-index: 1;
-    }
-    &:before {
-      bottom: -1px;
-    }
-    &:after {
-      top: -1px;
-    }
-  }
+const Footer = styled.div(
+  ({ theme }: { theme: Theme }) => `
+    position: absolute;
+    padding: ${theme.spacing[6]}px;
+    left: 50%;
+    transform: translate(-50%);
+    border-radius: ${theme.spacing[0]}px ${theme.spacing[0]}px ${theme.spacing[3]}px ${theme.spacing[3]}px;
+    background-color: ${theme.colors.surface.background.gray.moderate};
+    z-index: -1;
 `,
 );
-const StyledTh = styled.th<any>`
-  position: relative;
-  text-align: center;
-  position: relative;
-  border-radius: 8px 8px 0 0;
-  margin-right: ${({ addRightMargin }) => (addRightMargin ? '12px' : 'unset')};
-`;
-const StyleHeroImage = styled.div`
-  > div:first-of-type img {
+const Header = styled.div(
+  ({ theme }: { theme: Theme }) => `
+    min-width: 900px;
+    padding: 0 ${theme.spacing[7]}px;
     position: absolute;
-    top: -15px;
-    left: -43px;
-  }
-  > div:last-of-type img {
-    margin-top: ${({ theme }) => theme.spacing[10]}px;
-    max-width: unset;
-  }
-  @media screen and (max-width: ${({ theme }) => theme.breakpoints.xl}px) {
-    > div img {
-      width: 168px;
-    }
-    > div:first-of-type img {
-      left: -39px;
-    }
-  }
-`;
-
-const StyledTd = styled.td<any>`
-  min-height: 48px;
-  position: relative;
-  border-radius: ${({ lastRow }) => (lastRow ? '0 0 8px 8px' : 'unset')};
-  padding: 10px 20px;
-  text-align: ${({ textAlign }) => (textAlign ? 'left' : 'center')};
-  color: ${({ addLineGradient }) => (addLineGradient ? '#fff' : 'unset')};
-  margin-right: ${({ addRightMargin }) => (addRightMargin ? '12px' : 'unset')};
-  background: ${({ addLineGradient }) =>
-    addLineGradient ? 'linear-gradient(126deg,#bdb3ff40 9.01%,#7866e821 98.6%)' : 'unset'};
-  > p {
-    white-space: pre-line;
-  }
-  ${({ verticalAlign }) => verticalAlign && `vertical-align: ${verticalAlign}`}
-`;
-
-const StyledFooter = styled.div(
-  ({ theme }: { theme }) => `
-    position: absolute;
-    padding: 16px 20px;
-    padding-right:0px;
     left: 50%;
     transform: translateX(-50%);
-    
-    border-radius: 0px 0px 8px 8px;
-    background-color: ${theme.colors.surface.background.gray.intense};
-    > button {
-        margin-right: 20px;
-    }
+    top: -72px;
+    height: 72px;
+    border-radius: ${theme.spacing[3]}px ${theme.spacing[3]}px ${theme.spacing[0]}px ${theme.spacing[0]}px;
+    background-color: ${theme.colors.surface.background.gray.moderate};
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: -1;
 `,
 );
-const StyledHeader = styled.div`
-  min-width: 900px;
-  padding: 12px 12px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: -48px;
-  border-radius: 8px 8px 0px 0px;
-  background-color: hsla(0, 0%, 100%, 1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-const PlanLeftSection = styled.div`
-  @media screen and (max-width: ${({ theme }) => theme.breakpoints.xl}px) {
-    > h6 {
-      font-size: 0.8rem;
-    }
-  }
-`;
+
 const StyledCloseIcon = styled.div<any>`
   cursor: pointer;
   margin-left: 10px;
@@ -179,40 +109,32 @@ const StyledCloseIcon = styled.div<any>`
   justify-content: center;
   align-items: center;
 `;
-const StyledModalClose = styled.div`
+const ModalClose = styled.div`
   position: absolute;
   right: 10px;
   top: 10px;
 `;
-const StyledHeaderIcon = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-const StyleBadgeContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  > :first-child {
-    padding: 3px 0;
-  }
-`;
-const StyleSwitchContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-const StyleMonthlyPrice = styled.div`
-  margin-top: 10px;
-  margin-bottom: 10px;
-`;
-const StylePlanIcon = styled.div`
-  margin-top: 16px;
-`;
-const StyleFireImage = styled.div`
+
+const FireImage = styled.div`
   width: 32px;
 `;
-const StyleStrikePrice = styled.div(
+
+const CloseModalButton = styled.div`
+  width: ${(props) => props.theme.spacing[10]}px;
+  height: ${(props) => props.theme.spacing[10]}px;
+  transform: translateX(calc(100% + 14px));
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: white;
+  border-radius: 50%;
+  transform: translate(calc(100% + 14px), 7px);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+`;
+
+const StrikePrice = styled.div(
   ({ theme, isMobile }: { theme: Theme; isMobile?: boolean }) => `
   margin-top: 10px;
   margin-bottom: 10px;
@@ -229,33 +151,8 @@ const StyleStrikePrice = styled.div(
   }
 `,
 );
-const StylePlanName = styled.div`
-  width: 208px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-  padding: 0 16px;
-  @media screen and (max-width: ${({ theme }) => theme.breakpoints.xl}px) {
-    width: 168px;
-  }
-`;
 
-const StyleWrapper = styled.div`
-  padding-bottom: 20px;
-`;
-
-const StylePlanWrapper = styled.div`
-  padding-bottom: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #8d7def;
-  & > h6 {
-    color: #8d7def;
-  }
-`;
-const StylePercentageColor = styled.div(
+const PercentageColor = styled.div(
   ({ theme }: { theme: Theme }) => `
   display: inline-block;
   padding-left: 5px;
@@ -265,7 +162,7 @@ const StylePercentageColor = styled.div(
 `,
 );
 
-const Label = styled.label`
+const ToggleLabel = styled.label`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -319,72 +216,141 @@ const StyleToastLink = styled.div`
     }
   }
 `;
-const StyleInfo = styled.div(
+const PlansTncSection = styled.div(
   ({ theme, isMobile }: { theme: Theme; isMobile: boolean }) => `
-  display: flex;
+  display: ${isMobile ? 'grid' : 'flex'};
+  place-items: ${isMobile ? 'center' : 'unset'};
+  place-content: ${isMobile ? 'center' : 'unset'};
   flex-direction: ${isMobile ? 'column' : 'row'}; 
-  justify-content: ${isMobile ? 'flex-start' : 'center'}; 
+  justify-content: center;
   align-items: ${isMobile ? 'flex-start' : 'center'};
-  margin-bottom: ${theme.spacing[6]}px;
+  margin-top: ${isMobile ? theme.spacing[0] : theme.spacing[5]}px;
   > p {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    color: ${theme.colors.surface.text.gray.muted};
-    margin-bottom : ${isMobile ? theme.spacing[3] : theme.spacing[0]}px;
+    margin-bottom : ${isMobile ? theme.spacing[2] : theme.spacing[0]}px;
 
-    ${isMobile ? '&::before' : '&:not(:first-of-type)::before'} {
+    ${!isMobile && '&:not(:first-of-type)::before'} {
       display: inline-block;
       content: "";
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: ${theme.border.radius.round};
       background: ${theme.colors.interactive.icon.gray.normal};
       margin-right:${theme.spacing[4]}px;
       margin-left: ${isMobile ? theme.spacing[0] : theme.spacing[4]}px;
     }
   } 
-  > div:before {
-    display: inline-block;
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: ${theme.border.radius.round};
-    background: ${theme.colors.interactive.icon.gray.normal};
-    margin-right:${theme.spacing[4]}px;
-    margin-left: ${isMobile ? theme.spacing[0] : theme.spacing[4]}px;
-  }
-  
 
+   
+
+  > div:before {
+    ${!isMobile} {
+      display: inline-block;
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: ${theme.border.radius.round};
+      background: ${theme.colors.interactive.icon.gray.normal};
+      margin-right:${theme.spacing[4]}px;
+      margin-left: ${isMobile ? theme.spacing[0] : theme.spacing[4]}px;
+    }
+  }
 `,
 );
+
+const PlanSection = styled.div(
+  ({ theme }: { theme }) => `
+  border-radius: ${theme.spacing[3]}px;
+  padding: ${theme.spacing[7]}px ${theme.spacing[7]}px ${theme.spacing[5]}px ${theme.spacing[7]}px;
+  background-color: ${theme.colors.surface.background.gray.intense};
+  box-shadow: 0px 0px 12px 0px #0000000F;
+`,
+);
+
+const PlanRow = styled.div(
+  ({ theme, noBorder, isRecommended }: { theme; noBorder?: boolean; isRecommended?: boolean }) => `
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  margin:  0px ${theme.spacing[3]}px  0px ${theme.spacing[3]}px;
+  box-shadow: ${
+    noBorder
+      ? 'none'
+      : isRecommended
+      ? '0px 0px 16px 0px rgba(0, 135, 67, 0.20) inset;'
+      : '0px 0px 12px 0px #0000000f'
+  };
+  border: ${noBorder ? 'none' : `1px solid ${theme.colors.feedback.border.positive.subtle}`};
+  border-radius: ${theme.spacing[3]}px;
+  padding: ${theme.spacing[5]}px ${theme.spacing[6]}px;
+  width: 208px;
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0px 0px 16px 0px rgba(0, 135, 67, 0.20) inset;;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: ${isRecommended ? `url(${RecommendedPlanBg})` : 'unset'};
+    background-size: cover;
+  }
+
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.xl}px) {
+    width: 168px;
+  }
+`,
+);
+
+const StyleHeroImage = styled.div`
+  > div:first-of-type img {
+    position: absolute;
+    top: -15px;
+    left: -43px;
+  }
+  > div:last-of-type img {
+    margin-top: ${({ theme }) => theme.spacing[10]}px;
+    max-width: unset;
+  }
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.xl}px) {
+    > div img {
+      width: 168px;
+    }
+    > div:first-of-type img {
+      left: -39px;
+    }
+  }
+`;
+
+const StyledButton = styled.button`
+  ${(props) => props.isLoading && 'cursor: wait;'}
+  ${(props) => props.isDisabled && 'cursor: not-allowed;'}
+`;
 export {
-  StyledDiv,
-  StyledTable,
-  StyledTr,
-  StyledTd,
-  StyledTh,
-  StyledFooter,
-  StyledHeader,
-  StyledCloseIcon,
-  StyleStrikePrice,
-  StylePlanIcon,
-  StyleMonthlyPrice,
-  StylePlanName,
-  StyleWrapper,
-  StylePercentageColor,
-  Label,
+  CloseModalButton,
+  PlanSection,
   Input,
-  Switch,
-  StyledHeaderIcon,
-  StyleToastLink,
-  StyleSwitchContainer,
-  StyleBadgeContainer,
+  ToggleLabel,
+  PlanRow,
+  PlansTncSection,
+  FeatureItem,
+  StyledButton,
+  StyledCloseIcon,
+  Container,
+  Footer,
+  Header,
+  ModalClose,
+  FireImage,
   StyleHeroImage,
-  PlanLeftSection,
-  StyleFireImage,
-  StyledModalClose,
-  StyleInfo,
-  StylePlanWrapper,
+  PercentageColor,
+  StrikePrice,
+  StyleToastLink,
+  Switch,
 };

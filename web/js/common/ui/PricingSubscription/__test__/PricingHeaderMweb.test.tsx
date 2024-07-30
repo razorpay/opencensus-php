@@ -23,17 +23,15 @@ describe('Tests for `PricingHeaderMweb` components', () => {
   test('`Data from props`: Should show the correct information in PricingHeaderMweb', () => {
     renderPricingHeaderApp();
     const title = screen.getByTestId('title');
-    const staticBadge = screen.getByTestId('staticBadge');
     const switchContainer = screen.getByTestId('switchContainer');
-    const dynamicBadge = screen.getByTestId('dynamicBadge');
+    const bundlePricingHeaderBadge = screen.getByTestId('bundle-pricing-header-badge');
 
     expect(title).toBeInTheDocument();
-    expect(staticBadge).toBeInTheDocument();
     expect(switchContainer).toBeInTheDocument();
-    expect(dynamicBadge).toBeInTheDocument();
+    expect(bundlePricingHeaderBadge).toBeInTheDocument();
     expect(screen.getByText(pricingHeaderProps.title)).toBeInTheDocument();
     expect(screen.getByText(pricingHeaderProps.pillText)).toBeInTheDocument();
-    expect(screen.getByText('NEW PRICING PLANS')).toBeInTheDocument();
+    expect(screen.getByText('New pricing plans')).toBeInTheDocument();
   });
 
   test('`Data from props`: Should show the correct information in Toggle Switch', () => {

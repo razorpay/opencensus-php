@@ -202,7 +202,7 @@ const BottomSheetPricingContainer = ({
     };
 
   return (
-    <BottomSheet isOpen={isOpen} onDismiss={handleClose('close')} snapPoints={[1, 1, 1]}>
+    <BottomSheet isOpen={isOpen} onDismiss={() => handleClose('close')} snapPoints={[1, 1, 1]}>
       <BottomSheetHeader title="" />
       <BottomSheetBody>
         <PricingHeaderMweb
@@ -229,20 +229,17 @@ const BottomSheetPricingContainer = ({
             ))}
           </Carousel>
         ) : null}
-        {isViewMore ? (
-          <>
-            <PricingTncInfoMemo isMobile={isMobile} />
-            <Button
-              isFullWidth
-              onClick={handleClose()}
-              size="small"
-              type="button"
-              variant="tertiary"
-            >
-              Not Interested
-            </Button>
-          </>
-        ) : null}
+        <PricingTncInfoMemo isMobile={isMobile} />
+        <Button
+          marginTop="spacing.7"
+          isFullWidth
+          onClick={() => handleClose()}
+          size="medium"
+          type="button"
+          variant="tertiary"
+        >
+          Not Interested
+        </Button>
       </BottomSheetBody>
     </BottomSheet>
   );

@@ -1,14 +1,14 @@
 import React from 'react';
-import { Text, Badge, Box, useTheme, Heading } from '@razorpay/blade/components';
+import { Text, Badge, Box, useTheme, BladeProvider } from '@razorpay/blade/components';
 import { makeSpace } from '@razorpay/blade/utils';
-import { Label, Input, Switch } from 'common/ui/PricingSubscription/PricingStyled';
+import { ToggleLabel, Input, Switch } from 'common/ui/PricingSubscription/PricingStyled';
 import {
   PricingHeaderTag,
   PricingSubHeader,
-  PricingBadge,
   StyleSwitchText,
 } from 'common/ui/PricingSubscription/Mobile/PricingMwebStyle';
 import { TogglePlanValue } from 'common/ui/PricingSubscription/PricingBundleCommon';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 interface ToggleSwitchProps {
   isChecked: boolean;
@@ -34,7 +34,7 @@ export const ToggleSwitch = ({
           Plans
         </Text>
       </StyleSwitchText>
-      <Label data-testid="switchInput">
+      <ToggleLabel data-testid="switchInput">
         <Input
           data-testid="toggleInput"
           checked={isChecked}
@@ -42,7 +42,7 @@ export const ToggleSwitch = ({
           onChange={handlePlanSwitch}
         />
         <Switch />
-      </Label>
+      </ToggleLabel>
     </Box>
   );
 };
@@ -64,27 +64,31 @@ const PricingHeaderMweb = ({
       marginBottom="spacing.6"
       margin={makeSpace(-theme.spacing[5])}
     >
-      <PricingHeaderTag data-testid="title">
-        <PricingBadge addColor data-testid="staticBadge">
-          <Badge emphasis="subtle" size="medium" color="neutral">
-            NEW PRICING PLANS
+      <BladeProvider themeTokens={bladeTheme} colorScheme="dark">
+        <PricingHeaderTag data-testid="title">
+          <Badge emphasis="intense" size="large" color="positive">
+            New pricing plans
           </Badge>
-        </PricingBadge>
-        <Heading weight="semibold" size="medium" color="surface.text.gray.normal">
-          {title}
-        </Heading>
-      </PricingHeaderTag>
+          <Text
+            marginTop="spacing.4"
+            weight="semibold"
+            size="medium"
+            color="surface.text.gray.normal"
+          >
+            {title}
+          </Text>
+        </PricingHeaderTag>
+      </BladeProvider>
+
       <PricingSubHeader data-testid="switchContainer">
         <ToggleSwitch
           isChecked={isChecked}
           togglePlan={togglePlan}
           handlePlanSwitch={handlePlanSwitch}
         />
-        <PricingBadge addBackgroundColor data-testid="dynamicBadge">
-          <Badge emphasis="subtle" size="large" color="neutral">
-            {String(pillText)}
-          </Badge>
-        </PricingBadge>
+        <Badge testID="bundle-pricing-header-badge" emphasis="subtle" size="large" color="positive">
+          {String(pillText)}
+        </Badge>
       </PricingSubHeader>
     </Box>
   );

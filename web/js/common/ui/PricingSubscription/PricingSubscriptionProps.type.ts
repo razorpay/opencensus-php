@@ -74,7 +74,8 @@ interface PricingSubscriptionProps extends CurrentBalanceContext {
 interface FooterButtonType {
   isFullView: boolean;
   handleToggle: () => void;
-  handleClose: (buttonType?: string | undefined) => () => void;
+  handleClose: (buttonType?: string) => void;
+  equalizeRowElementHeights: () => void;
 }
 
 type TogglePlan = keyof typeof TogglePlanValue;
@@ -92,8 +93,7 @@ interface PricingHeaderType {
   headerSrc: string;
   headerAlt: string;
   title: string;
-  isChecked: boolean;
-  toggleSwitchButton: (e: React.FormEvent<HTMLInputElement>) => void;
+  toggleSwitchButton: () => void;
   pillText: string;
   handleClose: (buttonType?: string) => void;
 }
@@ -107,6 +107,13 @@ interface GetPlanPriceType {
     plans,
   ) => (plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>;
   isPaymentOptionLoading: boolean;
+  isFullView: boolean;
+  featureIndex: number;
+  handleMouseEnter: (title: string) => void;
+  handleMouseLeave: (title: string) => void;
+  featureIdOrder: Array<string>;
+  featureIdToFeatureCopyMap: { [key: string]: string };
+  columnRefs: React.MutableRefObject<any[]>;
 }
 
 interface TncModalText {
@@ -171,7 +178,7 @@ interface PaymentCheckoutFlowType extends checkoutPaymentType {
   plans: PlansType;
   type: typeof PAYMENT_TYPE.INTERNAL | typeof PAYMENT_TYPE.PG;
 }
-type PaymentType = (typeof PAYMENT_TYPE)[keyof typeof PAYMENT_TYPE];
+type PaymentType = typeof PAYMENT_TYPE[keyof typeof PAYMENT_TYPE];
 
 export type {
   PricingSubscriptionProps,

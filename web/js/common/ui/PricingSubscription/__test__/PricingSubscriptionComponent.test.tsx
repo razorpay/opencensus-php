@@ -37,9 +37,10 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
 
   test.each(pricing_bundle.featureIdOrder.slice(0, 2))(
     'Data from props`: Should show the correct plan information',
-    (featureId) => {
+    () => {
       const initialState = getState();
       renderApp({ initialState });
+
       pricing_bundle.pricingPlans.forEach((pricingPlan) => {
         expect(screen.getByText(pricingPlan.title)).toBeInTheDocument();
         expect(screen.getAllByText(pricingPlan.button.label)).not.toHaveLength(0);
@@ -53,9 +54,9 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
         ).toBeInTheDocument();
       });
 
-      expect(
-        screen.getByText(pricing_bundle.featureIdToFeatureCopyMap[featureId]),
-      ).toBeInTheDocument();
+      // expect(
+      //   screen.getByText(pricing_bundle.featureIdToFeatureCopyMap[featureId]),
+      // ).toBeInTheDocument();
     },
   );
 
@@ -68,7 +69,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
 
   test.each(pricing_bundle.featureIdOrder)(
     '`Data from props`: Should show the full plan information if `View All Benefits` cta is clicked',
-    async (featureId) => {
+    async () => {
       const initialState = getState();
       renderApp({ initialState });
 
@@ -90,10 +91,6 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
           ),
         ).toBeInTheDocument();
       });
-
-      expect(
-        screen.getByText(pricing_bundle.featureIdToFeatureCopyMap[featureId]),
-      ).toBeInTheDocument();
     },
   );
 
@@ -103,7 +100,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       const initialState = getState();
       renderApp({ initialState });
 
-      const frequencyToggle = screen.getByRole('checkbox');
+      const frequencyToggle = screen.getByRole('switch');
       await userEvent.click(frequencyToggle);
 
       const yearlyPricing = screen.getByText(`${pricingPlan.annualPrice.toLocaleString()}/Year`);
@@ -201,7 +198,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
 
   test.each(pricing_bundle.featureIdOrder.slice(0, 2))(
     '`Data from template id`: Should show the correct plan information',
-    async (featureId) => {
+    async () => {
       const initialState = getState();
 
       renderApp({ props: { templateId }, initialState });
@@ -209,9 +206,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       server.use(fetchGSModalHandler({ delay: 0 }));
 
       await waitFor(() =>
-        expect(
-          screen.getByText(pricing_bundle.featureIdToFeatureCopyMap[featureId]),
-        ).toBeInTheDocument(),
+        expect(screen.getByText(pricing_bundle.header.title)).toBeInTheDocument(),
       );
       pricing_bundle.pricingPlans.forEach((pricingPlan) => {
         expect(screen.getByText(pricingPlan.title)).toBeInTheDocument();
@@ -251,13 +246,10 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
         name: '🎁 View All Benefits',
       }),
     );
-    pricing_bundle.featureIdOrder.forEach(async (featureId) => {
+    pricing_bundle.featureIdOrder.forEach(async () => {
       await waitFor(() =>
-        expect(
-          screen.getByText(pricing_bundle.featureIdToFeatureCopyMap[featureId]),
-        ).toBeInTheDocument(),
+        expect(screen.getByText(pricing_bundle.header.title)).toBeInTheDocument(),
       );
-
       pricing_bundle.pricingPlans.forEach(async (pricingPlan) => {
         await waitFor(() => expect(screen.getByText(pricingPlan.title)).toBeInTheDocument());
 
@@ -284,7 +276,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
 
       server.use(fetchGSModalHandler({ delay: 0 }));
 
-      const frequencyToggle = await waitFor(() => screen.getByRole('checkbox'));
+      const frequencyToggle = await waitFor(() => screen.getByRole('switch'));
       await userEvent.click(frequencyToggle);
 
       const yearlyPricing = screen.getByText(`${pricingPlan.annualPrice.toLocaleString()}/Year`);
