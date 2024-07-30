@@ -9,6 +9,9 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Admin\Org;
+use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Permission;
 
 class Validator extends Base\Validator
 {
@@ -138,6 +141,69 @@ class Validator extends Base\Validator
             $merchantDetails->merchant->org->isFeatureEnabled(\RZP\Models\Feature\Constants::ADDITIONAL_ONBOARDING) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED, null);
+        }
+    }
+
+    protected function validateFieldTypes($fields, $merchantId)
+    {
+        $validationData = ['validationSuccess' => true];
+        $patterns = [
+            'alphanumeric' => '/^[a-zA-Z0-9]+$/',
+            'number' => '/^[0-9]+$/',
+            'alphabet' => '/^[a-zA-Z]+$/',
+            'amount' => '/^\d+(\.\d{1,2})?$/',
+            'date' => '/^\d{4}-\d{2}-\d{2}$/', // Format: YYYY-MM-DD
+            'string' => '/^[a-zA-Z0-9\s\W]+$/', // Allows alphanumeric, spaces, and special characters
+            'email' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+            'bool' => '/^(true|false)$/i'
+        ];
+
+        foreach ($fields as $field)
+        {
+            $name = $field['name'];
+            $type = $field['type'];
+            $value = $field['value'];
+
+            if (!empty($value) && !preg_match($patterns[$type], (string) $value))
+            {
+                $validationData = [
+                    'validationSuccess' => false,
+                    'fieldName' => $name,
+                    'fieldType' => $type,
+                    'fieldValue' => $value
+                ];
+
+                $this->getTrace()->info(TraceCode::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS_FIELD_VALIDATION,
+                [
+                    'merchant_id' => $merchantId,
+                    'data' => $validationData
+                ]);
+                break;
+            }
+        }
+
+        return $validationData;
+    }
+
+    public function validateOrgDefinedMerchantFields(array &$input, $merchantId, $org, $isBulkFlow = false)
+    {
+        if (isset($input[Entity::METADATA]) and
+            array_key_exists(Entity::ORG_DEFINED_MERCHANT_FIELDS, $input[Entity::METADATA]) === true && !$isBulkFlow)
+        {
+
+            $isPermissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($org->getId(), Permission\Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS);
+            //permission check
+            if ($isPermissionEnabled === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED, null);
+            }
+
+            //field type check
+            $validationData = $this->validateFieldTypes($input[Entity::METADATA][Entity::ORG_DEFINED_MERCHANT_FIELDS], $merchantId);
+            if ($validationData['validationSuccess'] === false)
+            {
+                throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INVALID_FIELD_TYPE, null, $validationData);
+            }
         }
     }
 }

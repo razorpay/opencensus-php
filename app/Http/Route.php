@@ -935,7 +935,7 @@ class Route
         'merchant_activation_change_log_internal'  => ['get',      'internal/merchant/activation/{id}/status_change_log', 'MerchantController@getActivationStatusChangeLog'              ],
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                                   ],
-
+        'merchant_save_org_defined_merchant_fields' => ['post',    'merchant/save_org_defined_merchant_fields/batch',         'MerchantController@saveOrgDefinedMerchantFieldsBatch'     ],
         'auto_approve_merchant_activation_checker' => ['post',     'merchant/activation/auto_approve',               'PartnerController@autoApproveMerchantActivationCheckerFlow'        ],
 
         'merchant_tnc_details'                     => ['get',      'merchant/tnc/{id}',                              'MerchantController@getMerchantTnc'                                 ],
@@ -6690,6 +6690,8 @@ class Route
         'pricing_update_miq',
 
         'merchant_update_miq',
+
+        'merchant_save_org_defined_merchant_fields',
 
         'payment_nbplus_authorize_failed',
 
@@ -17582,6 +17584,7 @@ class Route
             'pricing_update_miq',
             'irctc_settlement_batch_service',
             'payouts_bas_process_post_recon',
+            'merchant_save_org_defined_merchant_fields',
         ],
 
         'stork' => [

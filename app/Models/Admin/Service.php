@@ -240,6 +240,7 @@ class Service extends Base\Service
     public function fetchEntityById(string $entity, string $id, array $input = [], $isExternalAdmin = false): array
     {
         $data = ["function" => "fetchEntityById", "entity" => $entity];
+        $inputEntityType = $entity;
 
         $this->app['trace']->info(TraceCode::FETCH_ENTITY_BY_ID, $data);
 
@@ -305,6 +306,20 @@ class Service extends Base\Service
         if ($isExternalAdmin === true)
         {
             $response = AdminFetch::filterAttributesForExternalAdminFetchEntityById($entityType, $response);
+        }
+        //add check for permission enabled
+        if ($inputEntityType === Entity::ORG)
+        {
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($id);
+            if ((new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS))
+            {
+                $orgCustomConfig = (new Org\Service)->getOrgCustomConfig();
+                if (array_key_exists($orgId, $orgCustomConfig))
+                {
+                    // Append the custom fields to the response array
+                    $response['org_custom_fields'] = $orgCustomConfig[$orgId];
+                }
+            }
         }
 
         return $response;

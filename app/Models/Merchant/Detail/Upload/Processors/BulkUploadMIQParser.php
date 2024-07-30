@@ -15,6 +15,8 @@ use RZP\Models\Merchant\BusinessDetail\Entity as BEntity;
 use RZP\Models\Merchant\Detail\BusinessType as BusinessType;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BConstants;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
 
 class BulkUploadMIQParser
 {
@@ -217,6 +219,55 @@ class BulkUploadMIQParser
                 BConstants::PRICING             => $entry[Header::MIQ_WEBSITE_PRODUCT_PRICING] !=='' ? $entry[Header::MIQ_WEBSITE_PRODUCT_PRICING] : null,
                 BConstants::TERMS               => $entry[Header::MIQ_WEBSITE_TERMS_CONDITIONS] !==''? $entry[Header::MIQ_WEBSITE_TERMS_CONDITIONS]: null,
             ],
+        ];
+    }
+
+    public static function getOrgDefinedMerchantFields(array $entry, $org): array
+    {
+        $isPermissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($org->getId(), Permission\Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS);
+        if ($isPermissionEnabled === false)
+        {
+            return [];
+        }
+        $additionalFields = [
+            Header::FIELD1 => $entry[Header::FIELD1],
+            Header::FIELD2 => $entry[Header::FIELD2],
+            Header::FIELD3 => $entry[Header::FIELD3],
+            Header::FIELD4 => $entry[Header::FIELD4],
+            Header::FIELD5 => $entry[Header::FIELD5],
+            Header::FIELD6 => $entry[Header::FIELD6],
+            Header::FIELD7 => $entry[Header::FIELD7],
+            Header::FIELD8 => $entry[Header::FIELD8],
+            Header::FIELD9 => $entry[Header::FIELD9],
+            Header::FIELD10 => $entry[Header::FIELD10],
+            Header::FIELD11 => $entry[Header::FIELD11],
+            Header::FIELD12 => $entry[Header::FIELD12],
+            Header::FIELD13 => $entry[Header::FIELD13],
+            Header::FIELD14 => $entry[Header::FIELD14],
+            Header::FIELD15 => $entry[Header::FIELD15]
+        ];
+
+        $orgCustomConfig = (new Org\Service)->getOrgCustomConfig();
+        $orgCustomConfig = array_key_exists($org->getId(), $orgCustomConfig) ? $orgCustomConfig[$org->getId()] : null;
+
+        if ($orgCustomConfig === null)
+        {
+            return [];
+        }
+        $lookup = array_change_key_case($additionalFields, CASE_LOWER);
+
+        // Iterate through $orgCustomConfig and update values from $additionalFields
+        foreach ($orgCustomConfig as &$item)
+        {
+            $fieldKey = strtolower($item['id']);
+            if (isset($lookup[$fieldKey]))
+            {
+                $item['value'] = $lookup[$fieldKey];
+            }
+        }
+
+        return [
+            BEntity::METADATA => [BEntity::ORG_DEFINED_MERCHANT_FIELDS => $orgCustomConfig]
         ];
     }
     /**

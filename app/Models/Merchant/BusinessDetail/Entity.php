@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const TESTING_CREDENTIALS_DATE      = 'testing_credentials_date';
     const METADATA                      = 'metadata';
     const PRODUCTS                      = 'products';
+    const ORG_DEFINED_MERCHANT_FIELDS = 'org_defined_merchant_fields';
 
     protected $entity = 'merchant_business_detail';
 

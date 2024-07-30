@@ -16,6 +16,9 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Models\Merchant\Website;
 use RZP\Exception;
+use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Consent;
+use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
@@ -75,6 +78,57 @@ class Service extends Base\Service
             $businessDetail = $this->core->createBusinessDetail($merchantDetails, [Entity::WEBSITE_DETAILS => Entity::getDefaultWebsiteDetails()]);
         }
 
+        $org = $merchant->org;
+        if ((new Org\Service())->isRequiredPermissionEnabledforOrg($org->getId(), Permission\Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS) === true)
+        {
+            try {
+                $orgCustomConfig = (new Org\Service)->getOrgCustomConfig();
+                $orgCustomConfig = array_key_exists($org->getId(), $orgCustomConfig) ? $orgCustomConfig[$org->getId()] : null;
+                //if metadata is null or org_defined_merchant_fields is not stored in metadata for merchant then send orgConfig
+                $metaData = $businessDetail[Entity::METADATA] ?? [];
+                if (array_key_exists(Entity::ORG_DEFINED_MERCHANT_FIELDS, $metaData) === false)
+                {
+
+                    $orgCustomConfig = (new Consent\Core())->mergeJson($metaData,
+                        [Entity::ORG_DEFINED_MERCHANT_FIELDS => $orgCustomConfig]);
+                    $businessDetail[Entity::METADATA] = $orgCustomConfig;
+                }
+                else
+                {
+                    $orgDefinedMerchantFields = $businessDetail[Entity::METADATA][Entity::ORG_DEFINED_MERCHANT_FIELDS];
+                    //map for field name and value
+                    $merchant_config_map = [];
+                    foreach ($orgDefinedMerchantFields as $merchant_field)
+                    {
+                        $merchant_config_map[$merchant_field['name']] = $merchant_field['value'];
+                    }
+                    // Iterate through original_org_config and append values from merchant_config if present
+                    foreach ($orgCustomConfig as &$original_field)
+                    {
+                        if (isset($merchant_config_map[$original_field['name']]))
+                        {
+                            $original_field['value'] = $merchant_config_map[$original_field['name']];
+                        }
+                    }
+                    $orgCustomConfig = (new Consent\Core())->mergeJson($businessDetail[Entity::METADATA],
+                        [Entity::ORG_DEFINED_MERCHANT_FIELDS => $orgCustomConfig]);
+                    $businessDetail[Entity::METADATA] = $orgCustomConfig;
+                }
+            } catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::ORG_DEFINED_CUSTOM_FIELDS_FETCH_FAILURE,
+                    [
+                        'merchant_id' => $merchantId,
+                        'org_id' => $merchant->org->getId(),
+                        'reason' => 'failed to fetch org custom fields for merchant'
+                    ]
+                );
+            }
+        }
+
         return $businessDetail;
     }
 
@@ -89,7 +143,7 @@ class Service extends Base\Service
      * @throws LogicException
      * @throws Throwable
      */
-    public function saveBusinessDetailsForMerchant(string $merchantId, array $input)
+    public function saveBusinessDetailsForMerchant(string $merchantId, array $input, $isBulkFlow = false)
     {
         $startTime = microtime(true);
 
@@ -98,6 +152,10 @@ class Service extends Base\Service
         $businessDetail = $merchantDetails->businessDetail;
 
         (new Validator)->validateMIQSharingAndTestingDate($input, $merchantDetails);
+
+        $org = $merchantDetails->merchant->org;
+        //new validator call for org_defined_merchant_fields, check if permission enabled and if type matches
+        (new Validator)->validateOrgDefinedMerchantFields($input, $merchantId, $org, $isBulkFlow);
 
         $this->getMidnightTimestampForMIQSharingAndTestingDate($input);
 

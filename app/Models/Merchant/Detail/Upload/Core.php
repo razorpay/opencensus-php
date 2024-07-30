@@ -353,6 +353,11 @@ class Core extends Base\Core
 
             $entry[Header::STATUS] = Status::SUCCESS;
 
+            $this->trace->info(TraceCode::BATCH_SERVICE_UPDATE_MIQ_CREATE_RESPONSE, [
+                    'response'    =>  $parser->getMaskedEntryForLogging($entry),
+                ]
+            );
+
             return $entry;
         });
     }
@@ -430,6 +435,55 @@ class Core extends Base\Core
                     'response'    =>  $parser->getMaskedEntryForLogging($entry),
                 ]
             );
+
+            return $entry;
+        });
+    }
+
+    public function processAdditionalMerchantFieldsEntry(array $entry): array
+    {
+        (new Validator)->validateAdditionalMerchantFieldsRequestInput($entry);
+
+        $this->trace->info(TraceCode::BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_REQUEST, [
+                'entry' => $entry,
+            ]
+        );
+
+        $lockKey = $entry[Header::MERCHANT_ID];
+
+        return $this->mutex->acquireAndRelease($lockKey, function () use ($entry) {
+            $parser = Factory::getInstance(Constants::BULK_UPLOAD_MIQ);
+
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use ($parser, &$entry) {
+                $merchant = $this->repo->merchant->findOrFail($entry[Header::MERCHANT_ID]);
+
+                $org = $merchant->org;
+
+                $orgDefinedMerchantFields = $parser->getOrgDefinedMerchantFields($entry, $org);
+
+                if (!empty($orgDefinedMerchantFields))
+                {
+                    $additionalFieldsValidationResponse = (new Validator)->validateOrgDefinedMerchantFieldsInput($entry, $org->getId());
+                }
+
+                if (!empty($additionalFieldsValidationResponse) and empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+                {
+                    //if no error in field validations then proceed to save the details
+                    $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $orgDefinedMerchantFields, true);
+                    $entry[Header::STATUS] = Status::SUCCESS;
+                }
+                else if(!empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+                {
+                    $entry[Header::STATUS] = Status::FAILED;
+                    $entry[Header::ERROR_CODE] = $additionalFieldsValidationResponse[Header::ERROR_CODE];
+                    $entry[Header::ERROR_DESCRIPTION] = $additionalFieldsValidationResponse[Header::ERROR_DESCRIPTION];
+                }
+
+                $this->trace->info(TraceCode::BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_RESPONSE, [
+                        'response'    =>  $entry
+                    ]
+                );
+            });
 
             return $entry;
         });

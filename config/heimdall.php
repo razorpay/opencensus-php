@@ -1029,6 +1029,10 @@ return [
             Permission::DELETE_ORG   => [
                 'description' => 'delete org',
             ],
+            Permission::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS => [
+                'description' => 'For storage of additional fields at org and MID level',
+                'assignable' => true,
+            ],
         ],
 
         // Workflow

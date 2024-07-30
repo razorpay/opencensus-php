@@ -325,4 +325,27 @@ class Service extends Base\Service
 
         return (in_array($featureFlag, $assignedFeatures) === true);
     }
+
+    public function isRequiredPermissionEnabledforOrg($orgId, $permissionName): bool
+    {
+        $org = $this->repo->org->find($orgId);
+        $orgPermissions = $org->permissions()->get(['name']);
+        $isPermissionEnabled = false;
+
+        foreach ($orgPermissions as $item)
+        {
+            if (isset($item['name']) && $item['name'] === $permissionName)
+            {
+                $isPermissionEnabled = true;
+                break;
+            }
+        }
+
+        return $isPermissionEnabled;
+    }
+
+    public function getOrgCustomConfig()
+    {
+        return Constants::ORG_CUSTOM_CONFIG;
+    }
 }

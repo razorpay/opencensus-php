@@ -5980,6 +5980,257 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
         ],
-    ]
+    ],
 
+    'testFetchEmptyAdditionalBusinessDetailsForMerchantMetadata' => [
+        'request'  => [
+            'content' => [
+                'merchant_id' => ''
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchAdditionalBusinessDetailsForMerchantMetadata' => [
+        'request'  => [
+            'content' => [
+                'merchant_id' => ''
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSaveAdditionalBusinessDetailsForMerchantMetadataSuccess' => [
+        'request'  => [
+            'content' => [
+                'metadata' => ['org_defined_merchant_fields' =>
+                    [[
+                        "id" => 'field1',
+                        "name" => 'RM Name',
+                        "type" => 'string',
+                        "value" => 'testName'
+                    ],
+                    [
+                        "id" => 'field2',
+                        "name" => 'RM Contact Number',
+                        "type" => 'number',
+                        "value" => 9999999
+                    ],
+                    [
+                        "id" => 'field3',
+                        "name" => 'RM Email ID',
+                        "type" => 'email',
+                        "value" => 'test@email.com'
+                    ],
+                    [
+                        "id" => 'field4',
+                        "name" => 'RM Department',
+                        "type" => 'string',
+                    ],
+                    [
+                        "id" => 'field5',
+                        "name" => 'Zonal Head Name',
+                        "type" => 'string',
+                    ],
+                    [
+                        "id" => 'field6',
+                        "name" => 'Region',
+                        "type" => 'string',
+                    ],
+                    [
+                        "id" => 'field7',
+                        "name" => 'Department Subventing',
+                        "type" => 'string',
+                    ],
+                    [
+                        "id" => 'field8',
+                        "name" => 'Committed Throughput',
+                        "type" => 'number',
+                    ],
+                    [
+                        "id" => 'field9',
+                        "name" => 'Committed Transaction count',
+                        "type" => 'number',
+                    ],
+                    [
+                        "id" => 'field10',
+                        "name" => 'Committed Account Balance',
+                        "type" => 'number',
+                    ],
+                    [
+                        "id" => 'field11',
+                        "name" => 'Subvented',
+                        "type" => 'bool',
+                    ]]
+                ]
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'POST',
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'metadata' => ['org_defined_merchant_fields' =>
+                    [[
+                        "id" => 'field1',
+                        "name" => 'RM Name',
+                        "type" => 'string',
+                        "value" => 'testName'
+                    ],
+                        [
+                            "id" => 'field2',
+                            "name" => 'RM Contact Number',
+                            "type" => 'number',
+                            "value" => 9999999
+                        ],
+                        [
+                            "id" => 'field3',
+                            "name" => 'RM Email ID',
+                            "type" => 'email',
+                            "value" => 'test@email.com'
+                        ],
+                        [
+                            "id" => 'field4',
+                            "name" => 'RM Department',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field5',
+                            "name" => 'Zonal Head Name',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field6',
+                            "name" => 'Region',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field7',
+                            "name" => 'Department Subventing',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field8',
+                            "name" => 'Committed Throughput',
+                            "type" => 'number',
+                        ],
+                        [
+                            "id" => 'field9',
+                            "name" => 'Committed Transaction count',
+                            "type" => 'number',
+                        ],
+                        [
+                            "id" => 'field10',
+                            "name" => 'Committed Account Balance',
+                            "type" => 'number',
+                        ],
+                        [
+                            "id" => 'field11',
+                            "name" => 'Subvented',
+                            "type" => 'bool',
+                        ]]
+                ]
+            ],
+        ],
+    ],
+
+    'testSaveAdditionalBusinessDetailsForMerchantMetadataFailure' => [
+        'request'  => [
+            'content' => [
+                'metadata' => ['org_defined_merchant_fields' =>
+                    [[
+                        "id" => 'field1',
+                        "name" => 'RM Name',
+                        "type" => 'string',
+                        "value" => 'testName'
+                    ],
+                        [
+                            "id" => 'field2',
+                            "name" => 'RM Contact Number',
+                            "type" => 'number',
+                            "value" => '9999999a'
+                        ],
+                        [
+                            "id" => 'field3',
+                            "name" => 'RM Email ID',
+                            "type" => 'email',
+                            "value" => 'test-email.com'
+                        ],
+                        [
+                            "id" => 'field4',
+                            "name" => 'RM Department',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field5',
+                            "name" => 'Zonal Head Name',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field6',
+                            "name" => 'Region',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field7',
+                            "name" => 'Department Subventing',
+                            "type" => 'string',
+                        ],
+                        [
+                            "id" => 'field8',
+                            "name" => 'Committed Throughput',
+                            "type" => 'number',
+                        ],
+                        [
+                            "id" => 'field9',
+                            "name" => 'Committed Transaction count',
+                            "type" => 'number',
+                        ],
+                        [
+                            "id" => 'field10',
+                            "name" => 'Committed Account Balance',
+                            "type" => 'number',
+                        ],
+                        [
+                            "id" => 'field11',
+                            "name" => 'Subvented',
+                            "type" => 'bool',
+                        ]]
+                ]
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'POST',
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "BAD_REQUEST_INVALID_FIELD_TYPE"
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

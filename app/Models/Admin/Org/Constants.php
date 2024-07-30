@@ -22,4 +22,66 @@ class Constants
     const SMS_AND_EMAIL = 'sms_and_email';
 
     const DEFAULT_MAX_WRONG_2FA_ATTEMPTS = 9;
+
+    const ORG_CUSTOM_CONFIG = [
+        Entity::AXIS_ORG_ID => [
+            [
+                "id" => 'field1',
+                "name" => 'RM Name',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field2',
+                "name" => 'RM Contact Number',
+                "type" => 'number',
+            ],
+            [
+                "id" => 'field3',
+                "name" => 'RM Email ID',
+                "type" => 'email',
+            ],
+            [
+                "id" => 'field4',
+                "name" => 'RM Department',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field5',
+                "name" => 'Zonal Head Name',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field6',
+                "name" => 'Region',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field7',
+                "name" => 'Department Subventing',
+                "type" => 'string',
+            ],
+            [
+                "id" => 'field8',
+                "name" => 'Committed Throughput',
+                "type" => 'number',
+            ],
+            [
+                "id" => 'field9',
+                "name" => 'Committed Transaction count',
+                "type" => 'number',
+            ],
+            [
+                "id" => 'field10',
+                "name" => 'Committed Account Balance',
+                "type" => 'number',
+            ],
+            [
+                "id" => 'field11',
+                "name" => 'Subvented',
+                "type" => 'bool',
+            ],
+        ]
+    ];
 }
+
+

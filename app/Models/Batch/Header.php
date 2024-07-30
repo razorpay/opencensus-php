@@ -1508,6 +1508,22 @@ class Header
     const MIQ_MERCHANT_NAME_BUSINESS_NAME  = 'MerchantNameBusinessName';
     const MIQ_STATUS                        = 'status';
     const MIQ_MERCHANT_ID                   = 'Merchant_id';
+    //custom fields for storing additional data for VAS merchants
+    const FIELD1                            = 'Field1';
+    const FIELD2                            = 'Field2';
+    const FIELD3                            = 'Field3';
+    const FIELD4                            = 'Field4';
+    const FIELD5                            = 'Field5';
+    const FIELD6                            = 'Field6';
+    const FIELD7                            = 'Field7';
+    const FIELD8                            = 'Field8';
+    const FIELD9                            = 'Field9';
+    const FIELD10                           = 'Field10';
+    const FIELD11                           = 'Field11';
+    const FIELD12                           = 'Field12';
+    const FIELD13                           = 'Field13';
+    const FIELD14                           = 'Field14';
+    const FIELD15                           = 'Field15';
 
     // Payment Transfer Headers
     const PAYMENT_ID_2          = 'payment_id';
@@ -3854,7 +3870,7 @@ class Header
                 self::MIQ_BUSINESS,
                 self::MIQ_BANK_ACC_NUMBER,
                 self::MIQ_BENEFICIARY_NAME,
-                self::MIQ_BRANCH_IFSC_CODE,
+                self::MIQ_BRANCH_IFSC_CODE
             ],
 
             self::OUTPUT => [
@@ -6156,7 +6172,7 @@ class Header
                 self::UPDATE_MIQ_OFFLINE_C,
                 self::UPDATE_MIQ_TYPES_C,
                 self::UPDATE_MIQ_CAPABILITY_C,
-                self::UPDATE_MIQ_CURRENCY_C,
+                self::UPDATE_MIQ_CURRENCY_C
             ],
             self::OUTPUT => [
                 self::UPDATE_MIQ_MERCHANT_ID,
@@ -6305,6 +6321,49 @@ class Header
                 self::BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE,
             ],
             self::OUTPUT => []
+        ],
+        Type::STORE_ORG_DEFINED_MERCHANT_FIELDS => [
+            self::INPUT => [
+                self::ORG_ID,
+                self::MERCHANT_ID,
+                self::FIELD1,
+                self::FIELD2,
+                self::FIELD3,
+                self::FIELD4,
+                self::FIELD5,
+                self::FIELD6,
+                self::FIELD7,
+                self::FIELD8,
+                self::FIELD9,
+                self::FIELD10,
+                self::FIELD11,
+                self::FIELD12,
+                self::FIELD13,
+                self::FIELD14,
+                self::FIELD15
+            ],
+            self::OUTPUT => [
+                self::ORG_ID,
+                self::MERCHANT_ID,
+                self::FIELD1,
+                self::FIELD2,
+                self::FIELD3,
+                self::FIELD4,
+                self::FIELD5,
+                self::FIELD6,
+                self::FIELD7,
+                self::FIELD8,
+                self::FIELD9,
+                self::FIELD10,
+                self::FIELD11,
+                self::FIELD12,
+                self::FIELD13,
+                self::FIELD14,
+                self::FIELD15,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION
+            ]
         ]
     ];
 
@@ -6351,9 +6410,9 @@ class Header
         if ($type === Type::TALLY_PAYOUT) {
             return;
         }
-        
+
         // Header validation is not possible for otc_payment_Credit batch
-        if ($type === Type::OTC_PAYMENT_CREDIT) 
+        if ($type === Type::OTC_PAYMENT_CREDIT)
         {
            $expectedHeaders[0] = 'CLIENT|PRODUCT|ARRANGEMENT|DEPSLIPNUM|BATCHNUM|SCHNO|CLGLOC|PICKUPLOC|PICKUPPOINT|DRAWEEBANK|INSTNUM|INSTAMT|INSTDATE|DEPDATE|DRAWERCODE|DRAWERDES|LIQDATE|LIQTYPE|RETURNRES|ACTIVATIONDATE|VALDATE|INTERNALINSTNMBR|MICRCODE|ENTRYREJRMKS|DEPOSITBRANCH|E1|E2|E3|E4|E5|E6|E7|E8|E9|E10|E11|E12|E13|E14|E15|E16|E17|E18|E19|E20|E21';
         }

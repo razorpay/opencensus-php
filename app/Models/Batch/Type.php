@@ -307,6 +307,8 @@ class Type
 
     const MERCHANT_ONBOARDING_EMI_SBI = 'merchant_onboarding_emi_sbi';
 
+    const STORE_ORG_DEFINED_MERCHANT_FIELDS = 'store_org_defined_merchant_fields';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -396,7 +398,8 @@ class Type
         self::MERCHANT_UPLOAD_MIQ,
         self::UPDATE_MIQ,
         self::BVS_BULK_KYC_VERIFICATION,
-        self::OTC_PAYMENT_CREDIT
+        self::OTC_PAYMENT_CREDIT,
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
     ];
 
     /**
@@ -497,7 +500,8 @@ class Type
         self::UPDATE_MIQ,
         self::TOKEN_HQ_CHARGE,
         self::PAYMENT_PAGE,
-        self::OTC_PAYMENT_CREDIT
+        self::OTC_PAYMENT_CREDIT,
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
     ];
 
     /**
@@ -636,7 +640,8 @@ class Type
         self::CREATE_WALLET_CONTAINER_REVERSALS,
         self::CREATE_BULK_GIFT_CARDS,
         self::GCMS_UPLOAD_BULK_EMAILS,
-        self::BVS_BULK_KYC_VERIFICATION
+        self::BVS_BULK_KYC_VERIFICATION,
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
     ];
 
     /**
@@ -741,7 +746,8 @@ class Type
         self::CREATE_BULK_GIFT_CARDS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
-        self::OTC_PAYMENT_CREDIT
+        self::OTC_PAYMENT_CREDIT,
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -825,9 +831,8 @@ class Type
         self::PRICING_RULE                       => Name::PRICING_RULE,
         self::PARTNER_REFERRAL_FETCH             => Name::ADMIN_BATCH_CREATE,
         self::UPDATE_MIQ                         => Name::MERCHANT_BULK_UPLOAD_MIQ,
-
         self::MERCHANT_UPLOAD_MIQ                => Name::MERCHANT_BULK_UPLOAD_MIQ,
-
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS  => Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS,
         self::DEBIT_NOTE                         => Name::CREATE_DEBIT_NOTE,
         self::NACH_MIGRATION                     => Name::ADMIN_BATCH_CREATE,
         self::CREATE_PAYMENT_FRAUD               => Name::ADMIN_BATCH_CREATE,

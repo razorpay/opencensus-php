@@ -11753,6 +11753,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const IS_EMI_V2_PLANS_RAZORX_ERROR                          = 'IS_EMI_V2_PLANS_RAZORX_ERROR';
 
+    const ORG_DEFINED_CUSTOM_FIELDS_FETCH_FAILURE               = 'ORG_DEFINED_CUSTOM_FIELDS_FETCH_FAILURE';
+
+    const ORG_DEFINED_CUSTOM_MERCHANT_FIELDS_FIELD_VALIDATION   = 'ORG_DEFINED_CUSTOM_MERCHANT_FIELDS_FIELD_VALIDATION';
+
+    const BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_REQUEST     = 'BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_REQUEST';
+
+    const BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_RESPONSE    = 'BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_RESPONSE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

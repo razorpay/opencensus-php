@@ -6,12 +6,14 @@ namespace RZP\Models\Merchant\Detail\Upload;
 use App;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Batch\Header;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use Lib\Gstin;
-
+use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Entity;
 
 class Validator extends Base\Validator
 {
@@ -105,7 +107,7 @@ class Validator extends Base\Validator
         Header::MIQ_BENEFICIARY_NAME                 => 'required|string|min:4|max:120',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'required|alpha_num|max:11',
         Merchant\Entity::ORG_ID                      => 'required',
-        UConstants::IS_DS_MERCHANT                   => 'sometimes',
+        UConstants::IS_DS_MERCHANT                   => 'sometimes'
     ];
 
     protected static array $updateMiqMerchantBatchRules = [
@@ -141,7 +143,7 @@ class Validator extends Base\Validator
         Header::MIQ_GSTIN                            => 'sometimes',
         Header::MIQ_BUSINESS_DESCRIPTION             => 'sometimes|max:255',
         Header::MIQ_ESTD_DATE                        => 'sometimes|before:"today"',
-        Header::MIQ_FEE_MODEL                        => 'sometimes|custom:feeModel',
+        Header::MIQ_FEE_MODEL                        => 'sometimes|custom:feeModel'
     ];
 
     protected static array $updateMiqPricingBatchRules = [
@@ -183,6 +185,26 @@ class Validator extends Base\Validator
         Header::MIQ_BANK_ACC_NUMBER                  => 'sometimes',
         Header::MIQ_BENEFICIARY_NAME                 => 'sometimes|string',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'sometimes|alpha_num|max:11',
+    ];
+
+    protected static array $additionalMerchantFieldsBatchRules = [
+        Header::MERCHANT_ID                      => 'required',
+        Header::ORG_ID                           => 'required',
+        Header::FIELD1                           => 'sometimes|nullable',
+        Header::FIELD2                           => 'sometimes|nullable',
+        Header::FIELD3                           => 'sometimes|nullable',
+        Header::FIELD4                           => 'sometimes|nullable',
+        Header::FIELD5                           => 'sometimes|nullable',
+        Header::FIELD6                           => 'sometimes|nullable',
+        Header::FIELD7                           => 'sometimes|nullable',
+        Header::FIELD8                           => 'sometimes|nullable',
+        Header::FIELD9                           => 'sometimes|nullable',
+        Header::FIELD10                          => 'sometimes|nullable',
+        Header::FIELD11                          => 'sometimes|nullable',
+        Header::FIELD12                          => 'sometimes|nullable',
+        Header::FIELD13                          => 'sometimes|nullable',
+        Header::FIELD14                          => 'sometimes|nullable',
+        Header::FIELD15                          => 'sometimes|nullable'
     ];
 
     /**
@@ -435,6 +457,21 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateAdditionalMerchantFieldsRequestInput(array $entry): void
+    {
+        (new Validator)->validateInput('additionalMerchantFieldsBatch', $entry);
+
+        if(empty($entry[Header::MERCHANT_ID]))
+        {
+            throw new BadRequestValidationFailureException("The ".Header::MERCHANT_ID." is required");
+        }
+
+        if(empty($entry[Header::ORG_ID]))
+        {
+            throw new BadRequestValidationFailureException("The ".Header::ORG_ID." is required");
+        }
+    }
+
 
     /**
      * Validate the fee bearer
@@ -641,5 +678,91 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException('Invalid ' . $attribute);
         }
+    }
+
+    public function validateOrgDefinedMerchantFieldsInput(array $entry, $orgId)
+    {
+        $additionalFields = [
+            Header::FIELD1 => $entry[Header::FIELD1],
+            Header::FIELD2 => $entry[Header::FIELD2],
+            Header::FIELD3 => $entry[Header::FIELD3],
+            Header::FIELD4 => $entry[Header::FIELD4],
+            Header::FIELD5 => $entry[Header::FIELD5],
+            Header::FIELD6 => $entry[Header::FIELD6],
+            Header::FIELD7 => $entry[Header::FIELD7],
+            Header::FIELD8 => $entry[Header::FIELD8],
+            Header::FIELD9 => $entry[Header::FIELD9],
+            Header::FIELD10 => $entry[Header::FIELD10],
+            Header::FIELD11 => $entry[Header::FIELD11],
+            Header::FIELD12 => $entry[Header::FIELD12],
+            Header::FIELD13 => $entry[Header::FIELD13],
+            Header::FIELD14 => $entry[Header::FIELD14],
+            Header::FIELD15 => $entry[Header::FIELD15]
+        ];
+
+        $orgCustomConfig = (new Org\Service)->getOrgCustomConfig();
+        $orgCustomConfig = array_key_exists($orgId, $orgCustomConfig) ? $orgCustomConfig[$orgId] : null;
+
+        if($orgCustomConfig === null)
+        {
+            return [Header::ERROR_CODE => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                Header::ERROR_DESCRIPTION => "Org Defined Merchant fields are not configured for {$orgId}"];
+        }
+
+        // Create a lookup array from $orgCustomConfig for quick access
+        $lookup = [];
+        foreach ($orgCustomConfig as $field)
+        {
+            $lookup[strtolower($field['id'])] = $field;
+        }
+
+        // Define regex patterns for types
+        $patterns = [
+            'alphaNumeric' => '/^[a-zA-Z0-9]+$/',
+            'number' => '/^[0-9]+$/',
+            'alphabet' => '/^[a-zA-Z]+$/',
+            'amount' => '/^\d+(\.\d{1,2})?$/',
+            'date' => '/^\d{4}-\d{2}-\d{2}$/', // Format: YYYY-MM-DD
+            'string' => '/^[a-zA-Z0-9\s\W]+$/', // Allows alphanumeric, spaces, and special characters
+            'email' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+            'bool' => '/^(true|false)$/i'
+        ];
+
+        $errorDescriptionCombined = '';
+        $errorCodeCombined = '';
+        foreach ($additionalFields as $key => $value)
+        {
+            $fieldKey = strtolower($key);
+            $currErrorCode = '';
+            $currErrorDescription = '';
+            if (empty($value) or strtolower($value) === 'na')
+            {
+                //empty values allowed
+                continue;
+            }
+            else if (isset($lookup[$fieldKey]))
+            {
+                $type = $lookup[$fieldKey]['type'];
+
+                // Check if the type is valid and matches the value
+                if (isset($patterns[$type]) && preg_match($patterns[$type], $value))
+                {
+                    continue; // Value matches the type
+                }
+                else
+                {
+                    $currErrorCode = $currErrorCode . ', ' . ErrorCode::BAD_REQUEST_VALIDATION_FAILURE;
+                    $currErrorDescription = $currErrorDescription . ', ' . "Value type doesn't match for {$key}";
+                }
+            }
+            else
+            {
+                $currErrorCode = $currErrorCode . ', ' . ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED;
+                $currErrorDescription = $currErrorDescription . ', ' . "{$key} is not defined in org custom config";
+            }
+            $errorCodeCombined = $errorCodeCombined . ',' . $currErrorCode;
+            $errorDescriptionCombined = $errorDescriptionCombined . ',' . $currErrorDescription;
+        }
+        return [Header::ERROR_CODE => $errorCodeCombined, Header::ERROR_DESCRIPTION => $errorDescriptionCombined];
     }
 }

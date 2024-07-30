@@ -88,6 +88,7 @@ use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo
 use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient as  MccCategorisationClient;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 
 class MerchantDetailTest extends OAuthTestCase
 {
@@ -13461,5 +13462,119 @@ We look forward to transacting with you!
 
             return true;
         });
+    }
+
+    public function testFetchEmptyAdditionalBusinessDetailsForMerchantMetadata()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/business/detail";
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->assertEmpty($resp['metadata']['org_defined_merchant_fields']);
+    }
+
+    public function testFetchAdditionalBusinessDetailsForMerchantMetadata()
+    {
+        $mid = random_alphanum_string(14);
+
+        $org = $this->fixtures->create('org', [
+            'id' => OrgEntity::AXIS_ORG_ID
+        ]);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->fixtures->create('merchant',
+            [
+                'id'                    => $mid,
+                'email'                 => 'test@razorpay.com',
+                'billing_label'         => 'Test Merchant',
+                'activated_at'          => time(),
+                'category'              => '5399',
+                'product_international' => '1111000000',
+                'org_id'                => OrgEntity::AXIS_ORG_ID
+            ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => $mid,
+            'contact_mobile'    => '1234567124',
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$mid/business/detail";
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->assertNotEmpty($resp['metadata']['org_defined_merchant_fields']);
+    }
+
+    public function testSaveAdditionalBusinessDetailsForMerchantMetadataSuccess()
+    {
+        $mid = random_alphanum_string(14);
+
+        $org = $this->fixtures->create('org', [
+            'id' => OrgEntity::AXIS_ORG_ID
+        ]);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->fixtures->create('merchant',
+            [
+                'id'                    => $mid,
+                'email'                 => 'test@razorpay.com',
+                'billing_label'         => 'Test Merchant',
+                'activated_at'          => time(),
+                'category'              => '5399',
+                'product_international' => '1111000000',
+                'org_id'                => OrgEntity::AXIS_ORG_ID
+            ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => $mid,
+            'contact_mobile'    => '1234567124',
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$mid/business/detail";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchantDetails = (new Detail\Repository())->getByMerchantId($mid);
+        $businessDetailMetadata = $merchantDetails->businessDetail->getMetadata();
+
+        $this->assertNotEmpty($businessDetailMetadata['org_defined_merchant_fields']);
+    }
+
+    public function testSaveAdditionalBusinessDetailsForMerchantMetadataFailure()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/business/detail";
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->assertEquals($resp['error']['description'], "BAD_REQUEST_INVALID_FIELD_TYPE");
+
+        $merchantDetails = (new Detail\Repository())->getByMerchantId($merchantId);
+        $businessDetailMetadata = $merchantDetails->businessDetail;
+
+        $this->assertEmpty($businessDetailMetadata);
     }
 }

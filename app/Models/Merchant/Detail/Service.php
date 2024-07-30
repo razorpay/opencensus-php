@@ -1569,6 +1569,45 @@ class Service extends Base\Service
         return $input;
     }
 
+    public function saveOrgDefinedMerchantFieldsBatch(array $input)
+    {
+        try
+        {
+            return (new Upload\Core)->processAdditionalMerchantFieldsEntry($input);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MERCHANT_ID     => $input[BatchHeader::MERCHANT_ID],
+                BatchHeader::ORG_ID          => $input[BatchHeader::ORG_ID]
+            ]);
+
+            $error = $e->getError();
+
+            $input[BatchHeader::STATUS]            = BatchStatus::FAILURE;
+
+            $input[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
+
+            $input[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
+                BatchHeader::MERCHANT_ID     => $input[BatchHeader::MERCHANT_ID],
+                BatchHeader::ORG_ID          => $input[BatchHeader::ORG_ID]
+            ]);
+
+            $input[BatchHeader::STATUS]     = BatchStatus::FAILURE;
+
+            $input[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+            $input[BatchHeader::ERROR_DESCRIPTION] = PublicErrorDescription::SERVER_ERROR;
+        }
+
+        return $input;
+    }
+
 
     public function sendWhatsappNotification($id, array $input): array
     {

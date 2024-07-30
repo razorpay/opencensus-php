@@ -230,6 +230,7 @@ class Name
     const FTS_SOURCE_ACCOUNT_UPDATE           = 'fts_source_account_update';
     const FTS_SOURCE_ACCOUNT_GRACEFUL_UPDATE  = 'fts_source_account_graceful_update';
     const GET_RECONCILIATION                  = 'get_reconciliation';
+    const ORG_DEFINED_CUSTOM_MERCHANT_FIELDS  = 'org_defined_custom_merchant_fields';
     // @todo
     // Rename delete_merchant_features to delete_features as features
     // have now been extended to applications as well.
