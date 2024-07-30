@@ -341,3 +341,5 @@ app/Models/Payment/PaymentMeta                             @razorpay/TechCrossBo
 app/Http/Controllers/CustomerController.php              @razorpay/cdp
 app/Models/Customer/CustomerConsent1cc                   @razorpay/cdp
 app/Models/Customer/Account                              @razorpay/cdp
+tests/Unit/Customer/                                     @razorpay/cdp
+tests/Functional/Customer/                               @razorpay/cdp

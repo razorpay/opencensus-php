@@ -108,6 +108,7 @@
         <testsuite name="Features-1 Test Suite">
             <directory>./tests/Functional/FileStore/</directory>
             <directory>./tests/Functional/Customer/</directory>
+            <directory>./tests/Unit/Customer/</directory>
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
             <exclude>./tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>

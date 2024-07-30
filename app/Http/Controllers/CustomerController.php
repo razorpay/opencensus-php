@@ -13,6 +13,7 @@ use RZP\Http\Cookie\PartitionedCookie;
 use RZP\Models\Customer\Truecaller\AuthRequest\Service as TruecallerService;
 use RZP\Models\Customer\Service;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BaseException;
 use Symfony\Component\HttpFoundation\Cookie;
 
@@ -23,6 +24,9 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $data = $this->service()->createLocalCustomer($input);
+
+        if (array_key_exists('id', $data)) // customer got created successfully
+            $this->logInfoAboutRequestPayload(Request::getContent());
 
         return ApiResponse::json($data);
     }
@@ -663,5 +667,60 @@ class CustomerController extends Controller
         $address = $this->service()->createGlobalCustomerAndAddress($input);
 
         return ApiResponse::json($address);
+    }
+
+    public function logInfoAboutRequestPayload($requestContent)
+    {
+        try {
+            $requestContent = trim($requestContent);
+            if (strlen($requestContent) == 0)
+                // Empty body should be allowed
+                return;
+
+            // Check if the request payload has an invalid JSON
+            $requestJson = json_decode($requestContent, false);
+            if ($requestJson === null)
+            {
+                $this->trace->info(TraceCode::CUSTOMER_CREATE_PAYLOAD_INFO, ['is_json_valid' => false]);
+                return;
+            }
+
+            $dataTypeTrace = [];
+            // Check datatype of contact and fail_existing fields
+            foreach (['contact', 'fail_existing'] as $key)
+            {
+                if (property_exists($requestJson, $key) and $requestJson->{$key} !== null and !is_string($requestJson->{$key}))
+                    $dataTypeTrace[$key] = gettype($requestJson->{$key});
+            }
+
+            // Check datatype of address fields
+            foreach (['shipping_address', 'billing_address'] as $key)
+            {
+                if (property_exists($requestJson, $key) and $requestJson->{$key} !== null)
+                    if (!is_object($requestJson->{$key}))
+                        $dataTypeTrace[$key] = gettype($requestJson->{$key});
+                    else
+                    {
+                        $addressObject = $requestJson->{$key};
+                        // Check data type of primary field in address object
+                        if (property_exists($addressObject, 'primary') and !is_bool($addressObject->primary))
+                        {
+                            $dataTypeTrace[$key . '.primary'] = gettype($addressObject->primary);
+                        }
+                    }
+            }
+
+            if (!empty($dataTypeTrace))
+                $this->trace->info(TraceCode::CUSTOMER_CREATE_PAYLOAD_INFO, [
+                        'is_json_valid' => true,
+                        'data_types' => $dataTypeTrace
+                    ]
+                );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::CUSTOMER_CREATE_PAYLOAD_INFO);
+        }
+
     }
 }
