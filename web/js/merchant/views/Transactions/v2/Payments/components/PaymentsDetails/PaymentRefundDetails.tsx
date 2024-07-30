@@ -47,6 +47,9 @@ import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/trackin
 import styled from 'styled-components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { REFUND_ELIBILITY_TEXT } from './constants';
+import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
+import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import { useSplitzService } from 'common/splitz';
 
 interface IPaymentRefundDetails {
   paymentDetails: IPaymentDetails | null;
@@ -82,6 +85,7 @@ function PaymentRefundDetails({
   const { currency, refund_status } = paymentDetails!;
   const hasFooter = refund_status !== null;
   const subsequentRefunds = paymentIdRefundDetails.slice(1);
+  const splitz = useSplitzService();
 
   const onRefundSuccess = () => {
     reFetchPageDetails(paymentDetails!.id);
@@ -99,15 +103,18 @@ function PaymentRefundDetails({
       },
     });
 
+    const isRefundModalRevampEnabled = isRefundRevampEnabled(splitz);
+    const modalProps = {
+      fetchMerchantBalance: fetchCurrentBalance,
+      fetchRefundFee,
+      payment: _payment,
+      onRefund: onRefundSuccess,
+    };
+    const RefundModalComponent = isRefundModalRevampEnabled ? RefundModalRevamp : RefundModal;
+
     openModal({
-      component: (
-        <RefundModal
-          fetchMerchantBalance={fetchCurrentBalance}
-          fetchRefundFee={fetchRefundFee}
-          payment={_payment}
-          onRefund={onRefundSuccess}
-        />
-      ),
+      isNew: true,
+      component: <RefundModalComponent {...modalProps} />,
       size: 'small',
     });
   };

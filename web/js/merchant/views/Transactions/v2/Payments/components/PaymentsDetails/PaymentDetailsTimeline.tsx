@@ -29,6 +29,7 @@ import {
   refundPaymentFn,
 } from 'merchant/views/Transactions/model';
 import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
+import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
 import TimeLine from 'merchant/views/Transactions/v2/Payments/components/Timeline';
 import { IconBackground } from 'merchant/views/Transactions/v2/Payments/components/Timeline/styled';
 import {
@@ -37,7 +38,10 @@ import {
 } from 'merchant/views/Transactions/v2/Payments/components/Timeline/types';
 import { PaymentsTimeline } from 'merchant/views/Transactions/v2/Payments/types';
 import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
-import { isSettlementRetryTimelineEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isRefundRevampEnabled,
+  isSettlementRetryTimelineEnabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 import { IBankTransfer, IPaymentDetails, IPaymentIdRefundDetail } from './types';
@@ -177,28 +181,33 @@ function PaymentDetailsTimeline({
   };
 
   const openIssueRefundModal = () => {
-    const _payment = deepClone(paymentIdDetails);
-    _payment.refund = refundPaymentFn(paymentIdDetails.id);
-    _payment.fetchTransfers = fetchTransfersFn(paymentIdDetails.id);
-    _payment.fetchInstantRefundFee = fetchInstantRefundFeeFn;
+    const clonedPaymentDetails = deepClone(paymentIdDetails);
+    clonedPaymentDetails.refund = refundPaymentFn(paymentIdDetails.id);
+    clonedPaymentDetails.fetchTransfers = fetchTransfersFn(paymentIdDetails.id);
+    clonedPaymentDetails.fetchInstantRefundFee = fetchInstantRefundFeeFn;
     trackDetailsClick({
       objectName: 'Issue Refund',
       properties: {
-        latestTransactionStatus: _payment.status,
-        method: _payment.method,
-        paymentId: _payment.id,
+        latestTransactionStatus: clonedPaymentDetails.status,
+        method: clonedPaymentDetails.method,
+        paymentId: clonedPaymentDetails.id,
       },
     });
 
+    const isRefundModalRevampEnabled = isRefundRevampEnabled(splitz);
+
+    const modalProps = {
+      fetchMerchantBalance: fetchCurrentBalance,
+      fetchRefundFee,
+      payment: clonedPaymentDetails,
+      onRefund: onRefundSuccess,
+    };
+
+    const RefundModalComponent = isRefundModalRevampEnabled ? RefundModalRevamp : RefundModal;
+
     openModal({
-      component: (
-        <RefundModal
-          fetchMerchantBalance={fetchCurrentBalance}
-          fetchRefundFee={fetchRefundFee}
-          payment={_payment}
-          onRefund={onRefundSuccess}
-        />
-      ),
+      isNew: true,
+      component: <RefundModalComponent {...modalProps} />,
       size: 'small',
     });
   };

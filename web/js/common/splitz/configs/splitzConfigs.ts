@@ -360,6 +360,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'refund_revamp',
+        experimentId: {
+          beta: 'OYYUaZJTQUczkI',
+          production: 'OYYZ6mzZcBVkdW',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

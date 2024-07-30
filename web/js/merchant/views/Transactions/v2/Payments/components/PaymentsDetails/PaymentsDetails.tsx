@@ -19,6 +19,7 @@ import { bindActionCreators, compose } from 'redux';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
 import { getErrorMessageFromResponse, deepClone, getURLQueryParams } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
@@ -31,11 +32,13 @@ import {
   fetchAppDetails,
 } from 'merchant/views/Transactions/model';
 import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
+import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
 import GoBack from 'merchant/views/Transactions/v2/common/components/GoBack';
 import {
   trackDetailsClick,
   trackDetailsPageLoad,
 } from 'merchant/views/Transactions/v2/common/tracking';
+import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -84,6 +87,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   const isDesktop = ['xl', 'l'].includes(matchedBreakpoint as string);
   const queryParams = getURLQueryParams(location.search);
   const dashboardFlag = queryParams?.dashboard_flag;
+  const splitz = useSplitzService();
 
   const fetchDetails = async () => {
     setError(null);
@@ -180,15 +184,19 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
       },
     });
 
+    const isRefundModalRevampEnabled = isRefundRevampEnabled(splitz);
+    const modalProps = {
+      fetchMerchantBalance: props.fetchCurrentBalance,
+      fetchRefundFee: props.fetchRefundFee,
+      payment: _payment,
+      onRefund: onRefundSuccess,
+    };
+
+    const RefundModalComponent = isRefundModalRevampEnabled ? RefundModalRevamp : RefundModal;
+
     openModal({
-      component: (
-        <RefundModal
-          fetchMerchantBalance={props.fetchCurrentBalance}
-          fetchRefundFee={props.fetchRefundFee}
-          payment={_payment}
-          onRefund={onRefundSuccess}
-        />
-      ),
+      isNew: true,
+      component: <RefundModalComponent {...modalProps} />,
       size: 'small',
     });
   };

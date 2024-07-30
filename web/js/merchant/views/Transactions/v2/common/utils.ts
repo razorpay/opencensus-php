@@ -235,3 +235,9 @@ export const isSettlementRetryTimelineEnabled = (
   }
   return isExperimentEnabled(abExperiments.Transaction_Retry_Timeline) && user.isOrgRZP;
 };
+
+export const isRefundRevampEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || { abExperiments: { refund_revamp: undefined } };
+  if (!abExperiments?.refund_revamp) return false;
+  return isExperimentEnabled(abExperiments.refund_revamp);
+};
