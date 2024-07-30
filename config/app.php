@@ -935,4 +935,10 @@ return array(
     'support_dashboard_tidb_splitz_experiment_id' => env('SUPPORT_DASHBOARD_TIDB_SPLITZ_EXPERIMENT_ID'),
 
     'get_pan_list_for_activated_merchants_experiment_id' => env('GET_PAN_LIST_FOR_ACTIVATED_MERCHANTS_EXPERIMENT_ID'),
+
+    'is_kkbk_v2_emi_plans_experiment_id' => env('IS_KKBK_V2_EMI_PLANS_EMPERIMENT_ID'),
+
+    'is_idfb_v2_emi_plans_experiment_id' => env('IS_IDFB_V2_EMI_PLANS_EMPERIMENT_ID'),
+
+    'is_yesb_v2_emi_plans_experiment_id' => env('IS_YESB_V2_EMI_PLANS_EMPERIMENT_ID'),
 );

@@ -3,9 +3,27 @@
 
 namespace RZP\Models\Emi;
 
+use App;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+
 
 class ProcessingFeePlan
 {
+    /** @var App */
+    protected $app;
+
+    /** @var Trace  */
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
+    }
+
     const DEFAULT = 'default';
 
     const FIXED = 'fixed';
@@ -19,6 +37,12 @@ class ProcessingFeePlan
     const AMOUNT = 'amount';
 
     const MIN_AMOUNT = 'min_amount';
+
+    const V2_ISSUERS = [
+        CreditEmiProvider::KKBK,
+        CreditEmiProvider::IDFB,
+        CreditEmiProvider::YESB,
+    ];
 
     protected static $plan = [
         CreditEmiProvider::UTIB => [
@@ -67,6 +91,14 @@ class ProcessingFeePlan
                 ]
             ]
         ],
+        CreditEmiProvider::KKBK.'v2' => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 24900
+                ]
+            ]
+        ],
         CreditEmiProvider::INDB => [
             Type::CREDIT => [
                 self:: DEFAULT => [
@@ -86,6 +118,14 @@ class ProcessingFeePlan
                 self:: DEFAULT => [
                     self::TYPE => self::FIXED,
                     self::AMOUNT => 19900
+                ]
+            ]
+        ],
+        CreditEmiProvider::YESB.'v2' => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 29900
                 ]
             ]
         ],
@@ -166,12 +206,25 @@ class ProcessingFeePlan
                     self::AMOUNT => 9900
                 ]
             ]
-        ]
+        ],
+        CreditEmiProvider::IDFB.'v2' => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::COMBINATION,
+                    self::PERCENTAGE => 1,
+                    self::AMOUNT => 9900
+                ]
+            ]
+        ],
     ];
 
 
-    public function getProcessingFeePlan(string $issuer, string $cardType, string $duration, int $amount): array
+    public function getProcessingFeePlan(string $issuer, string $cardType, string $duration, int $amount, string $merchantId = null): array
     {
+        if (in_array($issuer, self::V2_ISSUERS) && $cardType == Type::CREDIT) {
+            $issuer = $this->getIssuer($merchantId, $issuer);
+        }
+
         if ((!isset(self:: $plan[$issuer])) || (!isset(self:: $plan[$issuer][$cardType])))
         {
             return [];
@@ -182,6 +235,7 @@ class ProcessingFeePlan
             $duration = self::DEFAULT;
         }
 
+
         if (isset(self:: $plan[$issuer][$cardType][$duration]['min_amount'])
             and ($amount < self:: $plan[$issuer][$cardType][$duration]['min_amount']))
         {
@@ -189,6 +243,61 @@ class ProcessingFeePlan
         }
 
         return self:: $plan[$issuer][$cardType][$duration];
+    }
+
+    private function getIssuer(string $merchantId, string $issuer)
+    {
+        $experimentRequest = $this->fillExperimentData(
+            $merchantId,
+            'app.is_' . strtolower($issuer) . '_v2_emi_plans_experiment_id'
+        );
+
+        if ($merchantId === null || $merchantId === '') {
+            return $issuer;
+        }
+
+        if($merchantId === null or $merchantId === '')
+        {
+            return $issuer;
+        }
+
+        try
+        {
+            $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment($experimentRequest);
+
+            $isExperimentEnabled = ($expResult['variant'] === 'variant_on');
+
+            if($isExperimentEnabled)
+            {
+                $issuer = $issuer.'v2';
+            }
+
+            return $issuer;
+
+        }catch (\Throwable $e) {
+
+            $this->trace->error(
+                TraceCode::IS_EMI_V2_PLANS_RAZORX_ERROR,
+                [
+                    'type'         => 'is' . strtoupper($issuer) . 'v2EmiExperimentEnabled',
+                    'errorMessage' => $e->getMessage()
+                ]
+            );
+        }
+
+    }
+
+    private function fillExperimentData(
+        string $experimentEntityId,
+        string $experimentIdVariable
+    )
+    {
+        $expData = [
+            'id'            => $experimentEntityId,
+            'experiment_id' => $this->app['config']->get($experimentIdVariable)
+        ];
+
+        return $expData;
     }
 
 }

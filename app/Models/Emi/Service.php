@@ -144,7 +144,7 @@ class Service extends Base\Service
 
             if ($emiOptionPresent)
             {
-                $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($plan->getIssuer(), $plan->getType(), $duration, $amount);
+                $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($plan->getIssuer(), $plan->getType(), $duration, $amount, $this->merchant->getId());
 
                 if ($processingFeePlan !== [])
                 {
