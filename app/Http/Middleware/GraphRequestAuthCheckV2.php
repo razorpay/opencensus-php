@@ -45,7 +45,9 @@ class GraphRequestAuthCheckV2
         'verifyEmailOtp',
         'setEmailPassword',
         'optInForWhatsapp',
-        'userExistsByEmailOrPhone'
+        'userExistsByEmailOrPhone',
+        'getInvitation',
+        'acceptInvitation',
     ];
 
     public function handle($request, Closure $next)

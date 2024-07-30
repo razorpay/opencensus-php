@@ -7,17 +7,17 @@ import { bindActionCreators, compose } from 'redux';
 
 import { ShowNotificationType, User } from 'common/typings';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import { PGAcceptedInviteItem } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
+import { POSAcceptedInviteItem } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
 import { getIsInviteFlowEnabled } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
 import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
-import { PRODUCT_ROUTE_PATH_PREFIX } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_ROUTE_PATH_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { trackAccountLevelAcceptedInvitesCta } from './utils/analytics';
 
 type ActionButtonKYCProps = {
-  submerchant: PGAcceptedInviteItem;
+  submerchant: POSAcceptedInviteItem;
   user: User;
   productType: string;
   showNotification: ShowNotificationType;
@@ -33,7 +33,6 @@ const ActionButtonKYC = ({
   const navigate = useNavigate();
 
   const { isInviteFlowEnabled } = getIsInviteFlowEnabled(productType, experiments);
-
   const { details: { activation_status } = {}, kyc_access } = submerchant;
   const isSubMerchantKYCAccess = user?.isFeatureEnabled('partner_sub_kyc_access');
   const submerchantId = submerchant?.id;
@@ -99,9 +98,14 @@ const ActionButtonKYC = ({
     isDisabled = false;
   }
 
-  if (activation_status === 'needs_clarification') {
+  if (
+    activation_status === 'needs_clarification' ||
+    (productType === PRODUCT_TYPE.POS &&
+      submerchant?.pos?.activation_status === 'needs_clarification')
+  ) {
     btnText = 'Resubmit KYC details';
     action = openKYCForm;
+    isDisabled = false;
   }
 
   if (
@@ -111,7 +115,11 @@ const ActionButtonKYC = ({
       'under_review',
       'kyc_qualified_unactivated',
       'rejected',
-    ].includes(activation_status as string)
+    ].includes(activation_status as string) &&
+    !(
+      productType === PRODUCT_TYPE.POS &&
+      submerchant?.pos?.activation_status === 'needs_clarification'
+    )
   ) {
     isDisabled = true;
   }

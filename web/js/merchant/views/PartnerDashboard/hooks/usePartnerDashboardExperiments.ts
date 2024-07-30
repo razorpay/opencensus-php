@@ -5,6 +5,7 @@ import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
+import { filterBy } from 'common/utils/rzp-utils';
 import { getUser } from 'merchant/store';
 
 /**
@@ -61,6 +62,15 @@ const isPartnershipCapitalBureauLinkEnabled = ({ abExperiments }) => {
   return isExperimentEnabled(abExperiments.partnership_capital_bureau_link);
 };
 
+const isFeatureEnabled = (feature, enabledFeatures) => {
+  return enabledFeatures.some((item) => item.feature === feature);
+};
+
+const getIsPosKycEnabled = ({ user }) => {
+  const enabledFeatures = filterBy(user.features ?? [], 'value', true);
+  return isFeatureEnabled('pos_channel_partnership', enabledFeatures);
+};
+
 /**
  * A custom hook for consuming partner dashboard's specific experiments
  *
@@ -102,6 +112,7 @@ const usePartnerDashboardExperiments = (): PartnerDashboardExperiments => {
         abExperiments,
       }),
       isPosPartnerOwnerAccount: !!checkIfPosSalesAgent({ user, abExperiments })?.isOwner,
+      isPosEkycEnabled: getIsPosKycEnabled({ user }),
     }),
     [user, abExperiments],
   );

@@ -48,6 +48,25 @@ describe('<ActionButtonKYC /> ', () => {
     };
     return render(<ActionButtonKYC {...props} />);
   };
+  const renderAppPos = ({ activation_status, kyc_access } = {}, experiments = {}) => {
+    mockPartnerDashboardExperiments = {
+      ...defaultPartnerDashboardExperiments,
+      ...experiments,
+    };
+    const props = {
+      ...commonProps,
+      submerchant: {
+        ...commonProps.submerchant,
+        details: { activation_status },
+        kyc_access,
+        pos: {
+          activation_status,
+        },
+      },
+      productType: PRODUCT_TYPE.POS,
+    };
+    return render(<ActionButtonKYC {...props} />);
+  };
   test("Partner didn't request SubM", () => {
     render(<ActionButtonKYC {...commonProps} />);
     expect(screen.getByText('Request for KYC')).toBeInTheDocument();
@@ -250,5 +269,10 @@ describe('<ActionButtonKYC /> ', () => {
 
     // test redirection
     expect(history.location.pathname).toBe(`/partners/submerchants/acc_LY0LBrSgJLlFHa`);
+  });
+
+  test('should render Resubmit KYC details button when POS activation status is NC', () => {
+    renderAppPos({ activation_status: 'needs_clarification' });
+    expect(screen.getByText('Resubmit KYC details')).toBeInTheDocument();
   });
 });

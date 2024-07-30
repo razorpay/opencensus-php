@@ -42,7 +42,7 @@ const CheckoutWrapper = ({
    */
   useEffect(() => {
     if (isMagicDashboardV2Enabled) {
-      let index = SHOPIFY_CHECKOUT_SETTINGS?.findIndex(
+      const index = SHOPIFY_CHECKOUT_SETTINGS?.findIndex(
         (Setting) => Setting.key === 'one_cc_international_shipping',
       );
       SHOPIFY_CHECKOUT_SETTINGS?.splice(index, 1);

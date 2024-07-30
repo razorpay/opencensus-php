@@ -42,8 +42,10 @@ dev:
       - labelSelector:
           name: ${APP_NAME}-${DEVSTACK_LABEL}
 vars:
+  # Note: now you can choose to export DEVSTACK_LABEL from your shell as well!
   - name: DEVSTACK_LABEL
-    value: 'Your-label'
+    source: env
+    default: "your-label"
   - name: NAMESPACE
     value: 'dashboard'
   - name: APP_NAME
