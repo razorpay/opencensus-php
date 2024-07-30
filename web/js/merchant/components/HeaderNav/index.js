@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unsafe */
-import { Box, MenuIcon } from '@razorpay/blade/components';
+import { Box, Button, MenuIcon, RefreshIcon, Spinner, Text } from '@razorpay/blade/components';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
@@ -81,6 +81,7 @@ class HeaderNav extends Component {
     this.state = {
       isSuccessfullyCouponApplied: false,
       mtuOfferCount: null,
+      isRefreshLoading: false,
     };
 
     this.onToggleAppMenu = this.onToggleAppMenu.bind(this);
@@ -189,6 +190,11 @@ class HeaderNav extends Component {
     this.props.setCareOpenedWidget('');
   };
 
+  handleOnRefreshClick = () => {
+    this.setState({ isRefreshLoading: true });
+    window.location.reload();
+  };
+
   render() {
     const {
       user,
@@ -208,7 +214,7 @@ class HeaderNav extends Component {
       openedCareWidget,
       splitz,
     } = this.props;
-    const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
+    const { isSuccessfullyCouponApplied, mtuOfferCount, isRefreshLoading } = this.state;
 
     const fragmentSpecificProps = {
       mode,
@@ -250,7 +256,7 @@ class HeaderNav extends Component {
                   alt="Powered by Razorpay"
                 />
               )}
-              {isMobile && (
+              {isMobile ? (
                 <div className="pull-left navbar-toggle-container">
                   {isRTUXHomepage ? (
                     <Box display="flex" alignItems="center" justifyContent="center" height="60px">
@@ -272,11 +278,11 @@ class HeaderNav extends Component {
                         <span className="i-bar" />
                         <span className="i-bar" />
                       </button>{' '}
-                      {activePageName || 'Dashboard'}
+                      {isPosSalesAgent ? null : activePageName || 'Dashboard'}
                     </>
                   )}
                 </div>
-              )}
+              ) : null}
               {!isPosSalesAgent ? (
                 <React.Fragment>
                   {isUniversalSearchEnabled && !isMobile && (
@@ -415,6 +421,22 @@ class HeaderNav extends Component {
                 </React.Fragment>
               ) : (
                 <ul className="nav navbar-nav navbar-right">
+                  <Button
+                    variant="tertiary"
+                    onClick={this.handleOnRefreshClick}
+                    isDisabled={isRefreshLoading}
+                  >
+                    <Box display="flex" alignItems="center">
+                      <Text color="surface.text.staticWhite.normal" marginRight="spacing.3">
+                        Refresh
+                      </Text>
+                      {isRefreshLoading ? (
+                        <Spinner color="white" accessibilityLabel="pos-sales-refresh-loader" />
+                      ) : (
+                        <RefreshIcon color="interactive.icon.onPrimary.normal" />
+                      )}
+                    </Box>
+                  </Button>
                   <li id="profile-dropdown">
                     <ProfileDropdown
                       analytics={analytics}

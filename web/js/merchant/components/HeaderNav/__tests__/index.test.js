@@ -1,8 +1,9 @@
+import * as posAgentUtils from 'common/utils/posAgent';
 import HeaderNav from 'merchant/components/HeaderNav/index';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import User from 'merchant/models/User';
 import store from 'merchant/store';
-import { render, screen } from 'test-utils';
+import { render, screen, userEvent } from 'test-utils';
 import * as rtuxUtils from 'merchant/containers/Home/RTUX/utils';
 
 const mockedFn = jest.fn();
@@ -124,11 +125,19 @@ const updateStore = (user, org = {}) => {
 };
 
 const renderApp = ({ props, state }) => render(<HeaderNav {...props} />, { initialState: state });
+const mockWindowReload = jest.fn();
 
 describe('test for HeaderNav component', () => {
   beforeEach(() => {
     mockedFn.mockReset();
+    const location = {
+      reload: mockWindowReload,
+    };
+    Object.defineProperty(window, 'location', {
+      value: location,
+    });
   });
+
   test('should hide component if announcements.announcements is enabled', () => {
     const props = { ...defaultProps };
     const updatedState = updateStore({
@@ -333,5 +342,23 @@ describe('test for HeaderNav component', () => {
       renderApp({ props });
       expect(screen.queryByText(text)).toBeInTheDocument();
     });
+  });
+
+  test('should render refresh button for sales agent', async () => {
+    const props = { ...defaultProps };
+    jest.spyOn(posAgentUtils, 'checkIfPosSalesAgent').mockReturnValue({
+      isEnabled: true,
+      isPosSalesAgent: true,
+    });
+    const updatedState = updateStore({
+      user: {
+        name: 'test',
+      },
+      role: 'partner_agent',
+    });
+
+    renderApp({ props, updatedState });
+    await userEvent.click(screen.getByText('Refresh'));
+    expect(mockWindowReload).toHaveBeenCalledWith();
   });
 });

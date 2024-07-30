@@ -43,6 +43,7 @@ const SUBSCRIPTIONS_ROUTES_REGEX =
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 const MAGIC_CHECKOUT_REGEX = /^\/(magic)/;
 const MAGIC_KONNECT_REGEX = /^\/magic-konnect(\/|$)/;
+const POS_SALES = /^\/pos-sales(\/.*)?$/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -73,6 +74,7 @@ export const BASE_ROUTES = {
   paymentHandle: '/payment-handle',
   reconciliations: '/reconciliations/dashboard',
   assistedFinancing: '/assisted-financing',
+  posSales: '/pos-sales',
 };
 
 // Note: cannot use Box because textOverflow is not supported.
@@ -178,6 +180,9 @@ class Sidebar extends Component {
     } else if (MAGIC_KONNECT_REGEX.test(pathname)) {
       routes.magicKonnect = pathname.match(MAGIC_KONNECT_REGEX)[0];
       this.prevRoute = 'magicKonnect';
+    } else if (POS_SALES.test(pathname)) {
+      routes.posSales = pathname.match(POS_SALES)[0];
+      this.prevRoute = 'posSales';
     }
 
     if (user.isRegistrationLinkBasedRole) {
@@ -415,7 +420,9 @@ class PartnerSidebarComponent extends Component {
     return (
       <div className={`nav-group ${fuxEnabledClass}`}>
         <MainNavLinkGroup
-          additionalCondition={(currentUser) => currentUser.isAllowedView('partner_navlinks')}
+          additionalCondition={(currentUser) =>
+            currentUser.isAllowedView('partner_navlinks') && !isPosSalesAgent
+          }
           title={partnerNavGroupTitle}
           onToggleClick={this.toggle('partnerOpen')}
           value={this.state.partnerOpen}
@@ -425,7 +432,7 @@ class PartnerSidebarComponent extends Component {
         <MainNavLink
           label="POS Sales Dashboard"
           icon="i i-chart text-info"
-          to="/pos-sales"
+          to={merchantNavLinkProps.routes.posSales}
           end
           type="general"
           additionalCondition={() => isPosSalesAgent}
