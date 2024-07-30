@@ -6,6 +6,8 @@ import { useUCSLayoutQuery } from 'merchant/containers/Home/RTUX/hooks/useUCSLay
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { getUcsAliasFromQueryKey, getBaseWidget, track } from 'merchant/widgets/utils';
 import { ResponsiveWrapper } from './styles';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const DefaultLoader = (): JSX.Element => (
   <Box minHeight="150px" display="flex" alignItems="center" justifyContent="center">
@@ -33,6 +35,18 @@ const RTUXHomepage = (): JSX.Element => {
   const retryHandler = () => {
     if (isError) refetch();
   };
+
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'home page',
+      actionName: 'displayed',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        flow: 'new',
+      },
+    });
+  }, []);
 
   useEffect(() => {
     if (!isFetching) {
