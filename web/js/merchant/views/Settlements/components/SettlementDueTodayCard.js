@@ -3,8 +3,10 @@ import { Badge, ClockIcon } from '@razorpay/blade/components';
 import { getCurrencySymbol as i18nifyGetCurrencySymbol } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 
+import { ANALYTICS } from 'common/constant';
 import Amount from 'common/ui/Amount';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getFormattedAmount } from 'common/utils/rzp-utils';
 
 import SettlementCard from './SettlementCard';
@@ -31,7 +33,23 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency = 
     .unix(initiatedSettlements?.[0]?.created_at)
     .add(SETTLEMENT_SLA_IN_HOURS, 'hours')
     .format('DD MMM, h:mm A');
-  const currencySym = i18nifyGetCurrencySymbol(currency);
+
+  let currencySym;
+
+  try {
+    currencySym = i18nifyGetCurrencySymbol(currency);
+  } catch (error) {
+    currencySym = currency;
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `currency: ${currency}`,
+        error: `${error}`,
+      },
+    });
+  }
 
   const content = (
     <FlexBetween>

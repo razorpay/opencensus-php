@@ -3,8 +3,10 @@ import { Badge, HelpCircleIcon, ClockIcon } from '@razorpay/blade/components';
 import { getCurrencySymbol as i18nifyGetCurrencySymbol } from '@razorpay/i18nify-js/currency';
 import moment from 'moment/moment';
 
+import { ANALYTICS } from 'common/constant';
 import Amount from 'common/ui/Amount';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import SettlementCard from './SettlementCard';
 import { FlexBetween, CardWrapper, CardFooterIcon, TextFooter } from './styledUtils';
@@ -16,7 +18,6 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency })
   const isBlock = settlementConfig?.data?.config?.features?.block?.status;
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
-  const currencySym = i18nifyGetCurrencySymbol(currency);
 
   const showBlockedBadge = isBlock || isOnHold || isOnTemporaryHold;
 
@@ -60,9 +61,26 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency })
   }
 
   if (next_settlement?.next_settlement_time && next_settlement?.settlement_amount < 100) {
+    let currencySymbol;
+
+    try {
+      currencySymbol = i18nifyGetCurrencySymbol(currency);
+    } catch (error) {
+      currencySymbol = currency;
+      analyticsTrack({
+        objectName: ANALYTICS.OBJECT.I18N,
+        actionName: ANALYTICS.ACTION.CURRENCY,
+        screen: ANALYTICS.SCREEN.DASHBOARD,
+        properties: {
+          input: `currency: ${currency}`,
+          error: `${error}`,
+        },
+      });
+    }
+
     footer = (
       <TextFooter>
-        <span>Amount more than {currencySym}1 is settled </span>
+        <span>Amount more than {currencySymbol}1 is settled </span>
       </TextFooter>
     );
   }
