@@ -24,6 +24,7 @@ use RZP\Services\RazorXClient;
 use RZP\Gateway\Mozart\Action;
 use RZP\Models\Customer\Entity;
 use RZP\Models\Payment\Gateway;
+use RZP\Services\SmartRouting;
 use RZP\Services\SplitzService;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -76,6 +77,8 @@ class VirtualAccountTest extends TestCase
         $this->testDataFilePath = __DIR__.'/VirtualAccountTestData.php';
 
         parent::setUp();
+
+        $this->app['config']->set('applications.smart_routing.mock', true);
 
         $this->fixtures->org->createHdfcOrg();
 
@@ -3706,6 +3709,7 @@ class VirtualAccountTest extends TestCase
         $orderId = $this->generateOrderId($content);
 
         $terminalCreteData = [
+            'id'                       => 'Oc3KkqYe4LjpdA',
             'gateway'                  => 'offline_hdfc',
             'gateway_merchant_id'      => '12345678',
             'gateway_secure_secret'    => '12345',
@@ -3779,6 +3783,7 @@ class VirtualAccountTest extends TestCase
         $orderId = $this->generateOrderId($content);
 
         $terminalCreateData = [
+            'id'                       => 'Oc3KkqYe4LjpdA',
             'gateway'                  => 'offline_hdfc',
             'gateway_merchant_id'      => '12345678',
             'gateway_secure_secret'    => '12345',
@@ -3934,6 +3939,7 @@ class VirtualAccountTest extends TestCase
             'payment_date' => '01-sep-2024',
             'payment_time' => '21:30:45',
             'client_code'  =>  '12345678',
+            'description' => 'Received INR 1000 through Cheque',
         ];
 
         $this->testData[__FUNCTION__]['request'] =  [
@@ -3955,6 +3961,12 @@ class VirtualAccountTest extends TestCase
 
         $this->startTest();
 
+        $payment = $this->getDbLastEntity('payment');
+
+        //Verifying the mock response of smart routing request by terminal id
+
+        $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
+
     }
 
     public function testValidateChallanWithDuplicateOfflinePaymentCredit()
@@ -3966,6 +3978,55 @@ class VirtualAccountTest extends TestCase
         $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
 
         $this->startTest($this->testData);
+    }
+
+    public function testOfflinePaymentCreditWithoutMockResponseOfSmartRouting()
+    {
+        $this->app['config']->set('applications.smart_routing.mock', false);
+
+        $this->testValidateOfflineChallanPresentInNotes();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'description' => 'Received INR 1000 through Cash',
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 1,
+                'error' => [
+                    'code' => 'BAD_REQ_ER',
+                    'description' => 'Terminal should not be null',
+                    'field' => '',
+                    'source' => 'business',
+                    'step' => null,
+                    'reason' => 'Terminal should not be null',
+                    'metadata' => []
+                ]
+            ],
+        ];
+
+        $this->startTest();
+
     }
 
     public function testOfflinePaymentCreditWithOtherBankChequeByApi()
@@ -4105,6 +4166,12 @@ class VirtualAccountTest extends TestCase
 
         $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
 
+        $payment = $this->getDbLastEntity('payment');
+
+        //Verifying the mock response of smart routing request by terminal id
+
+        $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
+
         // Verifying new added  column SOURCE in offline_payments entity.
 
         $this->assertEquals('captured', $offlinePayment['status']);
@@ -4218,6 +4285,12 @@ class VirtualAccountTest extends TestCase
 
         $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
 
+        $payment = $this->getDbLastEntity('payment');
+
+        //Verifying the mock response of smart routing request by terminal id
+
+        $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
+
         // Verifying newly added column SOURCE in offline_payments entity.
 
         $this->assertEquals('failed', $offlinePayment['status']);
@@ -4312,6 +4385,13 @@ class VirtualAccountTest extends TestCase
              ];
 
         $this->startTest();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        //Verifying the mock response of smart routing request by terminal id
+
+        $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
+
     }
 
     public function testOfflinePaymentCreditAfterChallanExpiryWithFailureByBatch(){
@@ -4429,6 +4509,12 @@ class VirtualAccountTest extends TestCase
         ];
 
         $this->startTest();
+
+        //Verifying the mock response of smart routing request by terminal id
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
 
         Carbon::setTestNow();
     }
@@ -4548,6 +4634,7 @@ class VirtualAccountTest extends TestCase
         $orderId = $this->generateOrderId($content);
 
         $terminalCreateData = [
+            'id'                       => 'Oc3KkqYe4LjpdA',
             'gateway'                  => 'offline_hdfc',
             'gateway_merchant_id'      => '12345678',
             'gateway_secure_secret'    => '12345',

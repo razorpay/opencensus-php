@@ -984,6 +984,11 @@ class Selector extends Base\Core
             return false;
         }
 
+        if($payment->isOffline() === true and $this->app->runningUnitTests() === true)
+        {
+            return true;
+        }
+
         $card = $payment->card;
 
         // For HDFC DC EMI, we need not send the request to smart routing till the same is
@@ -1197,6 +1202,11 @@ class Selector extends Base\Core
 
     private function shouldFetchApiTerminals($payment): bool
     {
+        //Fetching the terminals from router service for offline payment method.
+        if ($payment->isOffline() === true)
+        {
+            return false;
+        }
 
         //Unit Tests use API Terminals, until all the terminal fetch is mocked in unit test cases
         if ($this->repo->terminal->isTestEnv())

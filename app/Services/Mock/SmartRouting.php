@@ -10,7 +10,35 @@ class SmartRouting extends BaseSmartRouting
 
     public function sendPaymentData($data)
     {
-        return null;
+        if($data['payment']['method'] !== null)
+        {
+            if ($data['payment']['method'] === 'offline')
+            {
+                $terminalResponse = [
+                    [
+                        'type' => [
+                            'direct_settlement_without_refund',
+                            'non_recurring'
+                        ],
+                        'gateway_terminal_id' => '',
+                        'id' => 'Oc3KkqYe4LjpdA',
+                        'offline' => true,
+                        'currency' => 'INR',
+                        'notes' => [],
+                        'gateway' => 'offline_hdfc',
+                        'gateway_merchant_id' => '12345678',
+                        'gateway_merchant_id2' => '',
+                        'gateway_acquirer' => 'hdfc',
+                        'merchant_id' => '10000000000000',
+                    ]
+                ];
+                return $terminalResponse;
+            }
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public function syncBuyPricingRules($data)
