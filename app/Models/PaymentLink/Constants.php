@@ -2,6 +2,8 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Models\Order\ProductType;
+
 class Constants
 {
     // Input/output keys when doing ufh service requests.
@@ -63,4 +65,11 @@ class Constants
     const PP_DOMAIN_NAME_CURLEC = "Curlec Payment Pages";
     const PB_BRANDING_LOGO_CURLEC = "https://cdn.razorpay.com/static/assets/i18n/malaysia/secured-by-curlec-by-rzp.svg";
     const PB_WHITE_BRANDING_LOGO_CURLEC = "https://cdn.razorpay.com/static/assets/i18n/malaysia/curlec_white_transparent.png";
+    const MONETIZED_NOCODEAPP_PRODUCT_TYPES = [
+        ProductType::INVOICE,
+        ProductType::PAYMENT_PAGE,
+        ProductType::PAYMENT_LINK_V2,
+        ProductType::PAYMENT_STORE,
+        ProductType::PAYMENT_HANDLE,
+    ];
 }

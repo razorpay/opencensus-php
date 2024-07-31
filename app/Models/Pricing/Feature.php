@@ -27,6 +27,7 @@ class Feature
     // vas specific pricing features
     const SMS                     = 'sms';
     const AFFORDABILITY           = 'affordability';
+    const NOCODEAPPS              = 'nocodeapps';
 
     const FEATURE_LIST = [
         self::MAGIC_CHECKOUT,
@@ -45,6 +46,7 @@ class Feature
         self::TOKEN_HQ,
         self::AFFORDABILITY_WIDGET,
         self::REWARD,
+        self::NOCODEAPPS,
     ];
 
     const VAS_FEATURE_LIST = [
@@ -71,6 +73,7 @@ class Feature
 
     const METHOD_AGNOSTIC_FEATURES = [
         self::OPTIMIZER,
+        self::NOCODEAPPS,
         self::BUYER_PROTECTION,
     ];
 

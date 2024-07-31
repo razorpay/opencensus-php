@@ -5971,6 +5971,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             {
                 $features[] = Pricing\Feature::MAGIC_CHECKOUT;
             }
+
+            if($this->isNoCodeAppFeatureRuleApplicable($order))
+            {
+                $features[] = Pricing\Feature::NOCODEAPPS;
+            }
         }
 
         $orderId = null;
@@ -5987,6 +5992,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $features;
+    }
+
+
+    protected function isNoCodeAppFeatureRuleApplicable($order) : bool
+    {
+        $isMonetizedOrder = (new PaymentLink\Service)->isMonetizedNoCodeAppsOrder($order);
+
+        $isFeatureEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::NOCODEAPP_FEE_APPLICABLE);
+
+        return $isMonetizedOrder && $isFeatureEnabled;
     }
 
     private function isBuyerProtectionEnabled(string $paymentId, string $merchantId, string $mode, ?string $orderId): bool

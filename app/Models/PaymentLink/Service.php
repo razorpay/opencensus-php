@@ -32,6 +32,8 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 use RZP\Models\PaymentLink\CustomDomain\Plans as CDS_PLANS;
+use RZP\Models\Order\Entity as OrderEntity;
+
 
 
 class Service extends Base\Service
@@ -1388,4 +1390,20 @@ class Service extends Base\Service
             "exists"    => $this->cdsHas(array_get($input, 'domain_name'))
         ];
     }
+
+    /**
+     * Returns true if the order is of type monetized no code apps.
+     * Keeping this out of OrderEntity to facilitate easier decomp.
+     */
+    public function isMonetizedNoCodeAppsOrder(OrderEntity $order) : bool
+    {
+
+        if($order->getProductType() === null || $order->getProductId() === null)
+        {
+            return false;
+        }
+
+        return in_array($order->getProductType(), Constants::MONETIZED_NOCODEAPP_PRODUCT_TYPES);
+    }
+
 }
