@@ -1,0 +1,130 @@
+name: Auto-Merge master to special branches
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  merge-master-to-special-branch:
+    strategy:
+      matrix:
+        release_branch:
+          - singapore_release
+            # Add more special branches as needed
+
+      fail-fast: false
+
+    runs-on: [k8s-runner, linux-arm64]
+    continue-on-error: false
+
+    steps:
+
+      - name: Generate App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.BRANCH_AUTO_MERGER_APP_ID }}
+          private-key: ${{ secrets.BRANCH_AUTO_MERGER_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "api"
+
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Check if target branch exists
+        id: check_branch
+        run: |
+          if git ls-remote --heads origin ${{ matrix.release_branch }} | grep -q 'refs/heads/${{ matrix.release_branch }}'; then
+            echo "branch_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "branch_exists=false" >> $GITHUB_OUTPUT
+            echo "Release branch ${{ matrix.release_branch }} does not exist. Skipping."
+            exit 0
+          fi
+
+      - name: Checkout target branch
+        if: steps.check_branch.outputs.branch_exists == 'true'
+        run: |
+          git fetch origin ${{ matrix.release_branch }}
+          git checkout -b ${{ matrix.release_branch }} origin/${{ matrix.release_branch }}
+
+      - name: Configure git
+        if: steps.check_branch.outputs.branch_exists == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Merge incoming changes
+        id: merge
+        if: steps.check_branch.outputs.branch_exists == 'true'
+        run: |
+          # Fetch the latest changes
+          git fetch origin ${{ github.ref }}
+
+          # Check if there are any changes to merge
+          if git merge-base --is-ancestor origin/${GITHUB_REF#refs/heads/} HEAD; then
+            echo "merge_status=up_to_date" >> $GITHUB_OUTPUT
+            echo "::notice title=Merge Status::${{ matrix.release_branch }} is already up to date with ${{ github.ref }}. No merge needed."
+          else
+            if git merge --no-commit --no-ff --allow-unrelated-histories ${{ github.ref }}; then
+              echo "merge_status=success" >> $GITHUB_OUTPUT
+              echo "::notice title=Merge Status::Merge ${{ github.ref }} into ${{ matrix.release_branch }} is possible. No conflicts detected."
+              git merge --abort  # Clean up the working directory
+            else
+              echo "merge_status=conflict" >> $GITHUB_OUTPUT
+              echo "::warning title=Merge Conflict::Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required."
+              git merge --abort  # Clean up the working directory
+            fi
+          fi
+
+      - name: Push changes
+        if: steps.check_branch.outputs.branch_exists == 'true' && steps.merge.outputs.merge_status == 'success'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git branch -a
+          git merge --no-ff --allow-unrelated-histories ${{ github.ref }}
+          git push -u origin ${{ matrix.release_branch }}
+
+      - name: Report merge status
+        if: always()
+        run: |
+          if [[ "${{ steps.check_branch.outputs.branch_exists }}" == "false" ]]; then
+            echo "::notice title=Branch Status::Branch ${{ matrix.release_branch }} does not exist."
+            echo "Branch ${{ matrix.release_branch }} does not exist." >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ steps.merge.outputs.merge_status }}" == "conflict" ]]; then
+            echo "::error title=Merge Failed::Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required."
+            echo "Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          elif [[ "${{ steps.merge.outputs.merge_status }}" == "success" ]]; then
+            echo "::notice title=Merge Successful::Successfully merged ${{ github.ref }} into ${{ matrix.release_branch }}."
+            echo "Successfully merged '${{ github.ref }}' branch into '${{ matrix.release_branch }}' branch." >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ steps.merge.outputs.merge_status }}" == "up_to_date" ]]; then
+            echo "::notice title=Branch Up to Date::${{ matrix.release_branch }} is already up to date with ${{ github.ref }}."
+            echo "${{ matrix.release_branch }} is already up to date with ${{ github.ref }}." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::error title=Unexpected Status::Unexpected status for ${{ matrix.release_branch }}."
+            echo "Unexpected status for ${{ matrix.release_branch }}." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  check-overall-status:
+    needs: merge-master-to-special-branch
+    runs-on: [k8s-runner, linux-arm64]
+    if: always()
+    steps:
+      - name: Check if any merges failed
+        run: |
+          if [[ "${{ contains(needs.merge-master-to-special-branch.result, 'failure') }}" == "true" ]]; then
+            echo "::error title=Merge Failures::One or more merges failed. Please check the individual job results."
+            echo "One or more merges failed. Please check the individual job results." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "::notice title=All Merges Successful::All merges completed successfully."
+            echo "All merges completed successfully." >> $GITHUB_STEP_SUMMARY
+          fi
