@@ -459,14 +459,23 @@ class Core extends Merchant\Core
             $input = $this->preProcessAMCBankAccountDetailsToCreateLinkedAccount($amcBankAccount);
 
             try {
-                $this->createLinkedAccount($input, $merchant);
+                $linkedAccount = $this->createLinkedAccount($input, $merchant);
 
                 $this->trace->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_SUCCESSFUL,[
                     Entity::MERCHANT_ID     => $merchantId,
-                    Entity::BUSINESS_NAME   => $amcBankAccount[Entity::BUSINESS_NAME]
+                    Entity::BUSINESS_NAME   => $amcBankAccount[Entity::BUSINESS_NAME],
+                    Entity::ID      => $linkedAccount->getId()
                 ]);
 
                 array_push($successfulLA, $amcBankAccount->getBusinessName());
+
+                list($testEntity, $liveEntity, $asvEntity) = $this->repo->merchant->FetchRecordFromAllDBs($linkedAccount->getId());
+
+                $this->trace->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_DEBUG_LOGS,[
+                    "testEntity empty" => empty($testEntity),
+                    "liveEntity empty" => empty($liveEntity),
+                    "asvEntity empty" => empty($asvEntity)
+                ]);
             }
             catch( \Exception $e)
             {
