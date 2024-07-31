@@ -227,4 +227,12 @@ class Metric
     const SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR      = 'settlement_ondemand_invalid_capping_scale_factor';
 
     const SETTLEMENT_ONDEMAND_ALLOWED_LIMIT_BREACHED            = 'settlement_ondemand_allowed_limit_breached';
+
+    const SETTLEMENT_ONDEMAND_MERCHANT_LIMIT_BREACHED           = 'settlement_ondemand_merchant_limit_breached';
+
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_EXCEPTION          = 'settlement_ondemand_feature_config_exception';
+
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND          = 'settlement_ondemand_feature_config_not_found';
+
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
 }

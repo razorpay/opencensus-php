@@ -631,23 +631,52 @@ class Core extends Base\Core
         return false;
     }
 
-    public function isODSCappingBreached($merchantId): bool
+    // this method returns an array which contains [isODSCappingBreached boolean, merchant's max limit per working day, available limit]
+    public function isODSCappingBreached($merchantId)
     {
+        try {
+            // Fetch merchant's settlement ondemand feature config
+            $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($merchantId);
+
+            if($featureConfig === null) {
+                $this->trace->error(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND, [
+                    'merchantId'    => $merchantId,
+                    'error'         => 'feature config not found',
+                ]);
+
+                $this->trace->count(
+                    Metric::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND, []);
+
+                return [true, null, null];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_EXCEPTION, [
+                'merchantId'    => $merchantId,
+                'error'         => $e->getMessage(),
+            ]);
+
+            $this->trace->count(
+                Metric::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_EXCEPTION, []);
+
+            return [false, null, null];
+        }
+
         $odsCappingCheckRequired = (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false);
 
         if($odsCappingCheckRequired === false)
-            return false;
+            return [false, $featureConfig->getMaxLimitPerWorkingDay(), null];
 
         $odsGlobalLimit = (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0);
 
-        [$key, $keyTimeStamp]  = $this->getTotalODSSettledRedisKey();
+        [$key, $keyTimestamp]  = $this->getTotalODSSettledRedisKey();
 
         $totalOdsSettled = ConfigKey::get($key);
 
-
         // Fetch the settled ods amount according to the current working day
         if($totalOdsSettled === null) {
-            $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimeStamp);
+            $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimestamp);
             // ttl set for 6 hours in seconds
             ConfigKey::set($key, $totalOdsSettled, 21600);
         }
@@ -655,7 +684,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY, [
             'merchantId'    => $merchantId,
             'key'           => $key,
-            'keyTimeStamp'  => $keyTimeStamp,
+            'keyTimeStamp'  => $keyTimestamp,
             'totalSettled'  => $totalOdsSettled,
         ]);
 
@@ -670,7 +699,7 @@ class Core extends Base\Core
             $this->trace->count(
                 Metric::SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED, []);
 
-            return true;
+            return [true, $featureConfig->getMaxLimitPerWorkingDay(), null];
         }
 
         $odsCappingScaleFactor = (int) ConfigKey::get(ConfigKey::ODS_CAPPING_SCALE_FACTOR, 100);
@@ -685,7 +714,7 @@ class Core extends Base\Core
             $this->trace->count(
                 Metric::SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR, []);
 
-            return false;
+            return [false, $featureConfig->getMaxLimitPerWorkingDay(), null];
         }
 
         if($totalOdsSettled >= ($odsCappingScaleFactor / 100) * $odsGlobalLimit)
@@ -704,11 +733,42 @@ class Core extends Base\Core
                 $this->trace->count(
                     Metric::SETTLEMENT_ONDEMAND_ALLOWED_LIMIT_BREACHED, []);
 
-                return true;
+                return [true, $featureConfig->getMaxLimitPerWorkingDay(), null];
             }
         }
 
-        return false;
+        // Validate merchant has not breached merchant's per working day limit
+        $amountSettledForMerchant = (int) (new Repository)->findAllByMerchantIdFromTimestamp($merchantId, $keyTimestamp);
+
+        // For merchants who have not configured merchant limit yet
+        if($featureConfig->getMaxLimitPerWorkingDay() === null)
+        {
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND, [
+                'merchantId'                    => $merchantId,
+                'amountSettledForMerchant'      => $amountSettledForMerchant,
+            ]);
+
+            $this->trace->count(
+                Metric::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND, []);
+
+            return [false, $featureConfig->getMaxLimitPerWorkingDay(), null];
+        }
+
+        if($amountSettledForMerchant >= $featureConfig->getMaxLimitPerWorkingDay())
+        {
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_MERCHANT_LIMIT_BREACHED, [
+                'merchantId'                    => $merchantId,
+                'amountSettledForMerchant'      => $amountSettledForMerchant,
+                'merchantLimitPerWorkingDay'    => $featureConfig->getMaxLimitPerWorkingDay(),
+            ]);
+
+            $this->trace->count(
+                Metric::SETTLEMENT_ONDEMAND_MERCHANT_LIMIT_BREACHED, []);
+
+            return [true, $featureConfig->getMaxLimitPerWorkingDay(), 0];
+        }
+
+        return [false, $featureConfig->getMaxLimitPerWorkingDay(), $featureConfig->getMaxLimitPerWorkingDay() - $amountSettledForMerchant];
     }
 
     protected function getTransactionMutexresource(Base\Entity $baseEntity)

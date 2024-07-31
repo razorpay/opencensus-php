@@ -75,7 +75,9 @@ class Repository extends Base\Repository
 
     public function findAllFromTimeStamp($timeStamp)
     {
-        return $this->newQuery()
+        $connection = $this->newQueryOnPaymentFetchReplica();
+
+        return $connection->newQuery()
                     ->where(Entity::CREATED_AT,'>=', $timeStamp)
                     ->where(function ($query) {
                         $query->where(Entity::STATUS, '=', Status::CREATED)
@@ -84,6 +86,22 @@ class Repository extends Base\Repository
                             ->orWhere(Entity::STATUS, '=', Status::PROCESSED);
                     })
                     ->sum(Entity::AMOUNT);
+    }
+
+    public function findAllByMerchantIdFromTimestamp($merchantId, $timeStamp)
+    {
+        $connection = $this->newQueryOnPaymentFetchReplica();
+
+        return $connection->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::CREATED_AT,'>=', $timeStamp)
+            ->where(function ($query) {
+                $query->where(Entity::STATUS, '=', Status::CREATED)
+                    ->orwhere(Entity::STATUS, '=', Status::INITIATED)
+                    ->orWhere(Entity::STATUS, '=', Status::PARTIALLY_PROCESSED)
+                    ->orWhere(Entity::STATUS, '=', Status::PROCESSED);
+            })
+            ->sum(Entity::AMOUNT);
     }
 
 }

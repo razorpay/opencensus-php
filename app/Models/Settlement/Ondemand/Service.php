@@ -324,14 +324,18 @@ class Service extends Base\Service
 
     public function validateIfODSCappingBreached($merchantId)
     {
-        if(($this->core()->isODSCappingBreached($merchantId)) === true)
+        [$ondemandDisabled, $maxLimit, $availableLimit] = $this->core()->isODSCappingBreached($merchantId);
+
+        if($ondemandDisabled === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_GLOBAL_CAPPING_BREACHED,
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_NOT_ALLOWED,
                 null,
                 [
-                    'merchantId'=> $this->merchant->getId(),
-                    'errorDescription' => 'Ondemand settlement has breached the global limit'
+                    'merchantId'        => $this->merchant->getId(),
+                    'maxLimit'          => $maxLimit,
+                    'availableLimit'    => $availableLimit,
+                    'errorDescription'  => 'Ondemand settlement not allowed at the moment',
                 ]);
         }
     }
@@ -570,11 +574,13 @@ class Service extends Base\Service
     {
         $ondemandBlocked = $this->core()->isOndemandBlocked();
 
-        $ondemandDisabled = $this->core()->isODSCappingBreached($merchantId);
+        [$ondemandDisabled, $maxLimit, $availableLimit] = $this->core()->isODSCappingBreached($merchantId);
 
         return [
-            'blocked'       => $ondemandBlocked,
-            'disable'       => $ondemandDisabled
+            'blocked'           => $ondemandBlocked,
+            'disable'           => $ondemandDisabled,
+            'max_limit'         => $maxLimit,
+            'available_limit'   => $availableLimit,
         ];
     }
 

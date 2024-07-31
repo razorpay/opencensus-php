@@ -82,6 +82,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ES_PRICING_PERCENT);
     }
 
+    public function getMaxLimitPerWorkingDay()
+    {
+        return $this->getAttribute(self::MAX_LIMIT_PER_WORKING_DAY);
+    }
+
     public function setSettlementsCountLimit($settlementsCountLimit)
     {
         $this->setAttribute(Entity::SETTLEMENTS_COUNT_LIMIT, $settlementsCountLimit);
