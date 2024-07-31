@@ -206,7 +206,7 @@ function PaymentDetailsTimeline({
     const RefundModalComponent = isRefundModalRevampEnabled ? RefundModalRevamp : RefundModal;
 
     openModal({
-      isNew: true,
+      isNew: !!isRefundModalRevampEnabled,
       component: <RefundModalComponent {...modalProps} />,
       size: 'small',
     });
