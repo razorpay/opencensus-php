@@ -2792,6 +2792,16 @@ class Core extends Base\Core
         return $users;
     }
 
+    public function getInternalUsers(Entity $merchant, string $product = Product::PRIMARY)
+    {
+        $users = $merchant->users()
+            ->wherePivot(User\Entity::PRODUCT, $product)
+            ->get()
+            ->callOnEveryItem('toInternalUserArray');
+
+        return $users;
+    }
+
     public function getUsersByRole(Entity $merchant, string $role, string $product = Product::BANKING)
     {
         $users = $merchant->users()
@@ -2799,6 +2809,17 @@ class Core extends Base\Core
             ->wherePivot(User\Entity::PRODUCT, $product)
             ->get()
             ->callOnEveryItem('toArrayMerchant');
+
+        return $users;
+    }
+
+    public function getInternalUsersByRole(Entity $merchant, string $role, string $product = Product::BANKING)
+    {
+        $users = $merchant->users()
+            ->where(User\Entity::ROLE, $role)
+            ->wherePivot(User\Entity::PRODUCT, $product)
+            ->get()
+            ->callOnEveryItem('toInternalUserArray');
 
         return $users;
     }

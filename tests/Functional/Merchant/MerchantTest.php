@@ -744,6 +744,33 @@ class MerchantTest extends TestCase
         $this->assertTrue(in_array('manager', $roles));
     }
 
+    public function testGetMerchantUsersInternalForXperience()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'owner', 'test', 'banking');
+
+        $this->ba->xperienceServiceAppAuth();
+        $this->ba->setAppAuthHeaders(['x-product-name' => 'banking']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/internal-users';
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+
+        $roles = array_column($response, 'role');
+
+        $this->assertEquals(count($roles), 1);
+
+        $this->assertTrue(in_array('owner', $roles));
+
+        $this->assertNull($response[0]['second_factor_auth']);
+    }
+
     public function testGetMerchantUsersInternalByRole()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -774,6 +801,35 @@ class MerchantTest extends TestCase
         $this->assertEquals(count($roles), 1);
 
         $this->assertTrue(in_array('owner', $roles));
+    }
+
+    public function testGetMerchantUsersInternalByRoleForXperience()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'owner', 'test', 'banking');
+
+        $this->ba->xperienceServiceAppAuth();
+        $this->ba->setAppAuthHeaders([
+            'x-product-name' => 'banking',
+            'x-role-id'      => 'owner',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/internal-users';
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $roles = array_column($response, 'role');
+
+       $this->assertEquals(count($roles), 1);
+
+       $this->assertTrue(in_array('owner', $roles));
+
+       $this->assertNull($response[0]['second_factor_auth']);
     }
 
     public function testGetMerchantUsersInternalInvalidRole()

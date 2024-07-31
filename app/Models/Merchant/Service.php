@@ -1782,13 +1782,13 @@ class Service extends Base\Service
         {
             return ;
         }
-        
+
         //  This check is added to prevent changing email of any Partner merchant's User email when following criteria are met,
         //  1. Merchant changing email has the same email as partner, and has NO user account of own, Or
         //  2. Merchant changing email has same email as any other merchant, and has NO user account of own.
-        
+
         $merchantIdsWithSameEmail = $this->repo->merchant->fetchMerchantIdsWithSameEmail($originalEmail);
-    
+
         if (count($merchantIdsWithSameEmail) > 1)
         {
             $this->trace->info(TraceCode::MERCHANT_EMAIL_EDIT_FAILED, [
@@ -1796,14 +1796,14 @@ class Service extends Base\Service
                 'original_email'            => $originalEmail,
                 'merchant_ids_same_email'   => $merchantIdsWithSameEmail,
             ]);
-        
+
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
                 null,
                 null,
                 "Same email exist with other merchant");
         }
     }
-    
+
     /**
      * @throws BadRequestException
      */
@@ -6208,7 +6208,7 @@ class Service extends Base\Service
             $product = Product::PRIMARY;
         }
 
-        $users = $this->core()->getUsers($merchant, $product);
+        $users = $this->core()->getInternalUsers($merchant, $product);
 
         return $users;
     }
@@ -6236,7 +6236,7 @@ class Service extends Base\Service
                 ['roleId' => $roleId]);
         }
 
-        $users =  $this->core()->getUsersByRole($merchant, $roleId, $product);
+        $users =  $this->core()->getInternalUsersByRole($merchant, $roleId, $product);
 
         return $users;
     }
@@ -13755,7 +13755,7 @@ class Service extends Base\Service
 
         return $isExperimentEnabled;
     }
-  
+
     public function createMerchantMethods($merchantId)
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);

@@ -486,7 +486,38 @@ return [
         ],
     ],
 
+    'testGetMerchantUsersInternalForXperience' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/users',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role' => 'owner'
+                ],
+                [
+                    'role' => 'manager'
+                ]
+            ],
+        ],
+    ],
+
     'testGetMerchantUsersInternalByRole' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/users',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role' => 'owner'
+                ]
+            ],
+        ],
+    ],
+
+    'testGetMerchantUsersInternalByRoleForXperience' => [
         'request' => [
             'url' => '/merchants/1X4hRFHFx4UiXt/users',
             'method' => 'GET',

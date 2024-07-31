@@ -133,6 +133,7 @@ class Entity extends Base\PublicEntity
     // Constant for skipping sms verification on stage
 
     const SKIP_SMS_REQUEST    = 'skip_sms_request';
+    const XPERIENCE = 'xperience';
 
     protected $fillable = [
         self::ID,
@@ -762,6 +763,36 @@ class Entity extends Base\PublicEntity
         $attributes = $this->toArrayPublic();
 
         $app = App::getFacadeRoot();
+
+        $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+
+        $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($attributes[self::ROLE]);
+
+        return $attributes;
+    }
+
+    public function toInternalUserArray()
+    {
+        $app = App::getFacadeRoot();
+
+        if($app['basicauth']->getInternalApp() == self::XPERIENCE) {
+            $attributes = [
+                self::ID => $this->getAttribute(self::ID),
+                self::NAME => $this->getAttribute(self::NAME),
+                self::EMAIL => $this->getAttribute(self::EMAIL),
+                self::CONTACT_MOBILE => $this->getAttribute(self::CONTACT_MOBILE),
+                self::CONTACT_MOBILE_VERIFIED => $this->isContactMobileVerified(),
+                self::EMAIL_VERIFIED => $this->getConfirmedAttribute(),
+                self::RESTRICTED => $this->getRestricted(),
+                self::CREATED_AT => $this->getAttribute(self::CREATED_AT),
+                self::SIGNUP_VIA_EMAIL => $this->getAttribute(self::SIGNUP_VIA_EMAIL),
+                self::METADATA => $this->getAttribute(self::METADATA),
+                self::ACCOUNT_LOCKED => $this->isAccountLocked(),
+                SELF::CONFIRMED =>  $this->getConfirmedAttribute()
+            ];
+        } else {
+            $attributes = $this->toArrayPublic();
+        }
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
