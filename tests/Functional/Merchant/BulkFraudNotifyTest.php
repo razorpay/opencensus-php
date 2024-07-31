@@ -652,7 +652,7 @@ class BulkFraudNotifyTest extends TestCase
 
         $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
 
-        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('74110751299033415520957','74110751299033415520957')",
+        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from payments_auth_fact where payments_reference1 in ('74110751299033415520957','74110751299033415520957')",
                                 [
                                     [
                                         'payments_reference1' => '74110751299033415520957',
@@ -689,7 +689,7 @@ class BulkFraudNotifyTest extends TestCase
 
     public function testCreateFraudBatchVisaDatalakeQueryFails()
     {
-        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('74110751299033415520957')", []);
+        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from payments_auth_fact where payments_reference1 in ('74110751299033415520957')", []);
 
         $this->ba->batchAppAuth();
 
@@ -1008,9 +1008,9 @@ class BulkFraudNotifyTest extends TestCase
 
         $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
 
-        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('02705601344033737573894')", []);
+        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from payments_auth_fact where payments_reference1 in ('02705601344033737573894')", []);
 
-        $this->mockHarvesterService("select authorization_rrn, authorization_payment_id, payments_merchant_id from pinot.payments_auth_fact where authorization_rrn in ('003373757389')",
+        $this->mockHarvesterService("select authorization_rrn, authorization_payment_id, payments_merchant_id from payments_auth_fact where authorization_rrn in ('003373757389')",
             [
                     [
                         'authorization_rrn'        => '003373757389',

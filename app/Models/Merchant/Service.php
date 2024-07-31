@@ -4064,7 +4064,7 @@ class Service extends Base\Service
     {
         $strMerchantIds = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIdList));
 
-        $query = 'select * from pinot.segment_fact where segment_fact.merchant_details_merchant_id in (%s)';
+        $query = 'select * from segment_fact where segment_fact.merchant_details_merchant_id in (%s)';
 
         $query = sprintf($query, $strMerchantIds);
 
@@ -4120,7 +4120,7 @@ class Service extends Base\Service
 
     public function getDataFromPinot($merchantId)
     {
-        $query = 'select * from pinot.segment_fact where segment_fact.merchant_details_merchant_id = \'%s\'';
+        $query = 'select * from segment_fact where segment_fact.merchant_details_merchant_id = \'%s\'';
 
         $query = sprintf($query, $merchantId);
 
@@ -12520,7 +12520,7 @@ class Service extends Base\Service
 
     public function getPluginAndTotalPaymentCountsFromPinot($merchantId): array
     {
-        $query = 'select payment_analytics_total_plugin_payments as plugin_transactions,payments_total_payments as total_transactions from pinot.plugin_merchant_fact where plugin_merchant_fact.payments_merchant_id=\'%s\'';
+        $query = 'select payment_analytics_total_plugin_payments as plugin_transactions,payments_total_payments as total_transactions from plugin_merchant_fact where plugin_merchant_fact.payments_merchant_id=\'%s\'';
 
         $query = sprintf($query, $merchantId);
 

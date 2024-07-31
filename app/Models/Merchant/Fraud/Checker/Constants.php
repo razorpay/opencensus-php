@@ -87,19 +87,19 @@ class Constants
     // Pinot queries
 
     const PINOT_QUERY_AOV =
-        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
+        'SELECT merchants_id FROM merchant_risk_fact ' .
         'WHERE merchant_fact_txn_count_ltd >= 20 ' .
         'AND merchant_fact_txn_count_lt_yesterday < 20 ' .
         'AND aov_table_cov > 1.0 ' .
         'AND aov_table_aov_reported = \'1\'';
 
     const PINOT_QUERY_HIGH_GMV =
-        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
+        'SELECT merchants_id FROM merchant_risk_fact ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 10000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 10000000';
 
     const PINOT_QUERY_MYSTERY_SHOPPING =
-        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
+        'SELECT merchants_id FROM merchant_risk_fact ' .
         'WHERE ' .
         '( ' .
         'merchant_fact_overall_gmv_ltd >= 200000 ' .
@@ -114,19 +114,19 @@ class Constants
         ')';
 
     const PINOT_QUERY_GSTIN_SOFT_BLOCK =
-        'SELECT merchants_id FROM pinot.merchant_risk_fact  ' .
+        'SELECT merchants_id FROM merchant_risk_fact  ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 3000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 3000000 ' .
         'AND merchant_details_gst_present = 0';
 
     const PINOT_QUERY_GSTIN_HARD_BLOCK =
-        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
+        'SELECT merchants_id FROM merchant_risk_fact ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 4000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
         'AND merchant_details_gst_present = 0';
 
     const PINOT_QUERY_GSTIN_OFFLINE_VERIFICATION =
-        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
+        'SELECT merchants_id FROM merchant_risk_fact ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 4000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
         'AND merchant_details_gst_present = 1';

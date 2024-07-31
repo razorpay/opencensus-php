@@ -107,7 +107,7 @@ class Constants
     const GMV_MILESTONE_AMOUNT2               = 100000;
     const TRANSACTION_MILESTONE_COUNT         = 50;
     const MILESTONE_MERCHANT_LIST_PINOT_QUERY =
-        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
+        'SELECT merchants_id FROM merchant_risk_fact ' .
         'WHERE (merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT .') OR ' .
         '(merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT2 .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT2 .') OR ' .
         '(merchant_fact_txn_count_lt_yesterday < ' . self::TRANSACTION_MILESTONE_COUNT . ' AND merchant_fact_txn_count_ltd >= ' . self::TRANSACTION_MILESTONE_COUNT . ')';
@@ -124,7 +124,7 @@ class Constants
         'where Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score >= ' . self::TRANSACTION_DEDUPE_RISK_SCORE;
 
     const RISK_SCORE_MERCHANT_LIST_PINOT_QUERY =
-        'SELECT merchants_id FROM pinot.risk_scoring_fact ' .
+        'SELECT merchants_id FROM risk_scoring_fact ' .
         'where Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score >= ' . self::TRANSACTION_DEDUPE_RISK_SCORE;
 
     const EVENT_TYPE_DRUID_QUERY_MAP = [

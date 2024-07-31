@@ -6208,9 +6208,9 @@ class Service extends Base\Service
 
         /*
          *  For ARN
-         *  way to fetch Data from Data Lake pinot.payments_fact
+         *  way to fetch Data from Data Lake payments_fact
         */
-        $query1 = "select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('" . implode("','", $allArn) . "')";
+        $query1 = "select payments_reference1, payments_id, payments_merchant_id from payments_auth_fact where payments_reference1 in ('" . implode("','", $allArn) . "')";
 
         $pinotService = $this->app['eventManager'];
 
@@ -6277,9 +6277,9 @@ class Service extends Base\Service
 
         /*
          *  For RRN
-         *  way to fetch Data from pinot pinot.payments_fact
+         *  way to fetch Data from pinot payments_fact
         */
-        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id from pinot.payments_auth_fact where authorization_rrn in ('" . implode("','", $requiredRrn) . "')";
+        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id from payments_auth_fact where authorization_rrn in ('" . implode("','", $requiredRrn) . "')";
 
         try {
             $content = [
