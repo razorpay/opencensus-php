@@ -22,6 +22,7 @@ class Type
     const CREATE_WALLET_USER_CONTAINERS     = 'create_wallet_user_containers';
     const CREATE_WALLET_CONTAINER_REVERSALS = 'create_wallet_container_reversals';
     const CREATE_BULK_GIFT_CARDS            = 'create_bulk_gift_cards';
+    const UPDATE_GIFT_CARDS_EXPIRY          = 'update_gift_cards_expiry';
 
     // GCOMS batch types
     CONST GCMS_UPLOAD_BULK_EMAILS = 'gcms_upload_bulk_emails';
@@ -641,7 +642,8 @@ class Type
         self::CREATE_BULK_GIFT_CARDS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
-        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::UPDATE_GIFT_CARDS_EXPIRY,
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
     ];
 
     /**
@@ -746,6 +748,7 @@ class Type
         self::CREATE_BULK_GIFT_CARDS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
+        self::UPDATE_GIFT_CARDS_EXPIRY,
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS
     ];

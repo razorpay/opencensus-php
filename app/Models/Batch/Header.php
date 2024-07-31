@@ -1666,6 +1666,13 @@ class Header
     const CREATE_BULK_GIFT_CARD_REQUEST_ID = "Request ID (Optional)";
     const CREATE_BULK_GIFT_CARD_CONTACT = 'Contact (Optional)';
     const CREATE_BULK_GIFT_CARD_BUYER_USER_ID = 'Buyer User ID (Optional)';
+    
+    // Wallet update Gift Cards expiry
+    const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID = "Gift Card ID";
+    const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER = "Gift Card Number";
+    const UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT = "Expire At (YYYY-MM-DD)";
+    const UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID = "Reference ID (Optional)";
+    const UPDATE_GIFT_CARDS_EXPIRY_NOTES = "Notes (Optional)";
 
     // GCOMS: Provide EMAILS against orderID for gift-cards delivery
     const UPLOAD_BULK_EMAIL_ORDER_ID = "Order ID";
@@ -1942,6 +1949,13 @@ class Header
     const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
         Header::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
         Header::CREATE_BULK_GIFT_CARD_AMOUNT
+    ];
+
+    // mandatory headers for email upload
+    const MANDATORY_HEADERS_FOR_UPDATE_GIFT_CARDS_EXPIRY = [
+        Header::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID,
+        Header::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER,
+        Header::UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT
     ];
 
     // mandatory headers for email upload
@@ -6009,6 +6023,17 @@ class Header
             self::OUTPUT => []
         ],
 
+        TYPE::UPDATE_GIFT_CARDS_EXPIRY => [
+            self::INPUT => [
+                self::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID,
+                self::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER,
+                self::UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT,
+                self::UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID,
+                self::UPDATE_GIFT_CARDS_EXPIRY_NOTES
+            ],
+            self::OUTPUT => []
+        ],
+
         TYPE::GCMS_UPLOAD_BULK_EMAILS => [
             self::INPUT => [
                 self::UPLOAD_BULK_EMAIL_ORDER_ID,
@@ -6605,6 +6630,11 @@ class Header
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
         }
 
+        if ($type === Type::UPDATE_GIFT_CARDS_EXPIRY )
+        {
+            self::validateWalletUpdateGCExpiryBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPDATE_GIFT_CARDS_EXPIRY);
+        }
+
         if ($type === Type::GCMS_UPLOAD_BULK_EMAILS)
         {
             self::validateGCOMSBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPLOAD_BULK_EMAILS);
@@ -6751,6 +6781,44 @@ class Header
         }
 
         if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
+    }
+
+    public static function validateWalletUpdateGCExpiryBatchHeaders(array $expectedHeaders, array $actualHeaders, array $mandatoryHeaders)
+    {
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0 && !(count($mandatoryHeaders) === 1 && in_array($mandatoryHeaders[0], [self::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID, self::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER])))
         {
             $msg = 'Uploaded file is missing mandatory header(s) [%s]';
 

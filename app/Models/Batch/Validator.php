@@ -1080,6 +1080,13 @@ class Validator extends Base\Validator
         Entity::FILE_ID              => 'required_without:file|public_id'
     ];
 
+    protected static $updateGiftCardsExpiryCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:51200' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id'
+    ];
+
     protected static $createWalletContainerReversalsCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
