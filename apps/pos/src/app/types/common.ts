@@ -56,3 +56,11 @@ export type RouteConfig = {
     view: JSX.Element;
   }[];
 };
+
+export type ActivationStatusKeys =
+  | 'activated'
+  | 'rejected'
+  | 'needsClarification'
+  | 'kycQualifiedStb'
+  | 'pending'
+  | 'underReview';

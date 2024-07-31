@@ -1,10 +1,12 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import {
+  Badge,
   Box,
   Button,
   CloseIcon,
   Heading,
   PlusIcon,
+  Spinner,
   Text,
   useToast,
 } from '@razorpay/blade/components';
@@ -16,11 +18,13 @@ import { useNavigate } from 'react-router-dom';
 
 import SalesTable from './SalesTable';
 import StatusFilter from './StatusFilter';
+import SalesDashboardStatusCounts from './SalesDashboardStatusCounts';
 import { SALES_ONBOARDED_MERCHANTS } from 'apps/pos/src/services/queries/SalesDashboard';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import {
   SalesOnboardedMerchants,
   STATUS_FILTERS,
+  StatusCounts,
 } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { GraphQLErrorResponseType } from 'apps/pos/src/app/types/common';
 
@@ -86,7 +90,7 @@ const SalesDashboard = (): JSX.Element => {
     SalesOnboardedMerchants | null,
     GraphQLErrorResponseType
   >({
-    queryKey: [QUERY_KEY],
+    queryKey: [QUERY_KEY, page],
     queryFn: async ({ pageParam = 0 }) => {
       const { salesOnboardedMerchants: response } = await graphqlRequest<
         'salesOnboardedMerchants',
@@ -115,18 +119,19 @@ const SalesDashboard = (): JSX.Element => {
       if (!lastPage?.hasMore) return undefined;
       return page + 1;
     },
+    enabled: false,
     staleTime: 60000 * 1,
     retry: false,
     networkMode: 'always',
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    keepPreviousData: true,
     onError: (error) => {
       handleError(error);
     },
   });
 
   const pages = (data?.pages ?? []).map((item) => item).filter((item) => item !== null);
+  const { totalMerchantsOnboarded, statusCounts } = pages[pages.length - 1] ?? {};
 
   const handleOnApplyFilter = () => {
     void queryCache.removeQueries({ queryKey: [QUERY_KEY] });
@@ -177,9 +182,16 @@ const SalesDashboard = (): JSX.Element => {
           marginBottom="spacing.5"
           alignItems="center"
         >
-          <Heading color="surface.text.gray.normal" size="xlarge">
-            Merchant Details
-          </Heading>
+          <Box display="flex" alignItems="center">
+            <Heading color="surface.text.gray.normal" size="xlarge" marginRight="spacing.3">
+              Merchant Details
+            </Heading>
+            {totalMerchantsOnboarded ? (
+              <Badge size="medium" color="neutral">
+                {String(totalMerchantsOnboarded)}
+              </Badge>
+            ) : null}
+          </Box>
           <Box
             display="flex"
             justifyContent="center"
@@ -197,12 +209,17 @@ const SalesDashboard = (): JSX.Element => {
           </Box>
         </Box>
         <Suspense fallback={null}>
-          <Box display="flex" alignItems="flex-start" flexWrap="wrap">
+          <Box
+            display="flex"
+            alignItems="flex-start"
+            flexWrap="wrap"
+            marginBottom={{ base: 'spacing.4', l: 'spacing.0' }}
+          >
             <Box
               display="flex"
               alignItems="center"
-              marginRight="spacing.5"
-              marginBottom={{ base: 'spacing.4', l: 'spacing.0' }}
+              marginRight="spacing.3"
+              marginBottom="spacing.4"
             >
               <DateRangePicker
                 onDatesChange={(dates: DatePickerRange) => handleOnDateChange(dates)}
@@ -212,9 +229,13 @@ const SalesDashboard = (): JSX.Element => {
               />
             </Box>
             <Box display="flex">
-              <Button marginRight="spacing.4" onClick={handleOnApplyFilter}>
-                Apply
-              </Button>
+              {isLoading ? (
+                <Spinner marginRight="spacing.4" accessibilityLabel="Loading..." />
+              ) : (
+                <Button marginRight="spacing.4" onClick={handleOnApplyFilter}>
+                  Apply
+                </Button>
+              )}
               <Button
                 variant="tertiary"
                 icon={CloseIcon}
@@ -226,6 +247,9 @@ const SalesDashboard = (): JSX.Element => {
             </Box>
           </Box>
         </Suspense>
+        {filters.status === 'all' ? (
+          <SalesDashboardStatusCounts statusCounts={statusCounts as StatusCounts} />
+        ) : null}
       </Box>
       <Box
         padding="spacing.5"
@@ -246,7 +270,6 @@ const SalesDashboard = (): JSX.Element => {
               onChange={handleStatusFilterChange}
             />
           </Box>
-          {isLoading || isFetching ? <Text size="small">Loading...</Text> : null}
         </Box>
         <Box testID="sales-table">
           <SalesTable

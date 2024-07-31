@@ -1,5 +1,5 @@
 import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
-import { APIResponse } from './common';
+import { ActivationStatusKeys, APIResponse } from './common';
 
 export interface MerchantRegisterArgs {
   contactMobile: string;
@@ -85,6 +85,7 @@ export type STATUS_FILTERS =
   | 'activated'
   | 'rejected'
   | 'needs_clarification'
+  | 'pending'
   | 'kyc_qualified_stb';
 
 export type OnboardingStoreState = {};
@@ -130,13 +131,30 @@ export interface SalesOnboardedMerchant {
   status?: SalesMerchantActivationStatusEnum;
 }
 
+export interface StatusCounts {
+  __typename?: 'StatusCounts';
+  activated: number | null;
+  kycQualifiedStb: number | null;
+  needsClarification: number | null;
+  pending: number | null;
+  rejected: number | null;
+  underReview: number | null;
+}
+
 export interface SalesOnboardedMerchants {
   hasMore: boolean;
   limit: number;
   merchants: SalesOnboardedMerchant;
   offset: number;
   total: number;
+  statusCounts: StatusCounts;
+  totalMerchantsOnboarded: number;
   __typename?: string;
+}
+
+export interface StatusTile {
+  name: string;
+  key: ActivationStatusKeys;
 }
 
 export type StepProgressTypes = 'pending' | 'completed';

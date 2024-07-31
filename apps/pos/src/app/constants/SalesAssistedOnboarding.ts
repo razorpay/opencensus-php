@@ -1,4 +1,4 @@
-import { MerchantRegistrationError } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import { MerchantRegistrationError, StatusTile } from '../types/SalesAssistedOnboarding';
 
 export const MERCHANT_REGISTRATION_ERRORS: Record<string, MerchantRegistrationError> = {
   BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS: {
@@ -14,3 +14,32 @@ export const MERCHANT_REGISTRATION_ERRORS: Record<string, MerchantRegistrationEr
     description: 'Something went wrong. Please try again',
   },
 };
+
+export const StatusTiles: StatusTile[] = [
+  {
+    name: 'KYC Qualified',
+    key: 'kycQualifiedStb',
+  },
+  {
+    name: 'Pending',
+    key: 'pending',
+  },
+
+  {
+    name: 'Under Review',
+    key: 'underReview',
+  },
+  {
+    name: 'Activated',
+    key: 'activated',
+  },
+
+  {
+    name: 'Needs Clarification',
+    key: 'needsClarification',
+  },
+  {
+    name: 'Rejected',
+    key: 'rejected',
+  },
+];

@@ -5,6 +5,13 @@ export const SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE = {
     offset: 0,
     total: 31,
     hasMore: true,
+    statusCounts: {
+      activated: 20,
+      pending: 10,
+      underReview: 1,
+      rejected: 21,
+      kycQualifiedStb: 35,
+    },
     merchants: [
       {
         createdAt: '1718211619',

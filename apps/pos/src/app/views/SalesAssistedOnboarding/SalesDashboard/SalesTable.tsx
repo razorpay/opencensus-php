@@ -17,6 +17,7 @@ import {
   Heading,
 } from '@razorpay/blade/components';
 import moment from 'moment';
+import EmptyScreen from './EmptyScreen';
 import { SalesOnboardedMerchants } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import StatusBadge from 'apps/pos/src/app/components/StatusBadge/StatusBadge';
@@ -49,8 +50,7 @@ const SalesTable: React.FC<DashboardTableProps> = ({
     ...merchant,
   }));
 
-  if (page === 0 && tableData.length === 0 && !isLoading && !isFetching)
-    return <Text>No data available</Text>;
+  if (page === 0 && tableData.length === 0 && !isLoading && !isFetching) return <EmptyScreen />;
 
   const handleOnDetailsClick = (merchantId: string): void => {
     navigate(`${ONBOARDING_ROUTE}/${merchantId}`);

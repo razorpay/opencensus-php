@@ -21,6 +21,15 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
         offset
         total
         hasMore
+        totalMerchantsOnboarded
+        statusCounts {
+          activated
+          rejected
+          needsClarification
+          kycQualifiedStb
+          pending
+          underReview
+        }
         merchants {
           createdAt
           merchantId

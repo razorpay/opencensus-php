@@ -7,4 +7,16 @@ export const getSalesMappedMerchantsHandler = ({ type }: { type: string }): any 
       return res(ctx.status(200), ctx.data(SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE), ctx.delay(50));
     });
   }
+
+  if (type === 'empty') {
+    return graphql.query('SalesOnboardedMerchants', (_req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.data({
+          salesOnboardedMerchants: { ...SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE, merchants: [] },
+        }),
+        ctx.delay(50),
+      );
+    });
+  }
 };

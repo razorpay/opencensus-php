@@ -43,6 +43,10 @@ const STATUS_FILTERS: StatusFilter[] = [
     value: 'under_review',
   },
   {
+    label: 'Pending',
+    value: 'pending',
+  },
+  {
     label: 'Rejected',
     value: 'rejected',
   },
@@ -64,7 +68,7 @@ const StatusFilter = ({ defaultValue, value, onChange }: StatusFilterProps): JSX
   );
 
   return (
-    <Dropdown>
+    <Dropdown testID="sales-dashboard-filters">
       <SelectInput
         label="Status"
         name="status"
