@@ -308,7 +308,13 @@ class Core extends Base\Core
         {
             $properties = [
                 'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.nocodeapp_pricing_exp_id')
+                'experiment_id' => $this->app['config']->get('app.nocodeapp_pricing_exp_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                        'merchant_name' => $merchant->getName()
+                    ]
+                ),
             ];
 
             if (!$this->isSplitzExperimentEnable($properties, 'enable'))
