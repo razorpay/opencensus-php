@@ -4376,12 +4376,12 @@ EOT;
         return $payments;
     }
 
-    public function getPaymentsForInvoice(string $invoiceId)
+    public function getPaymentsForInvoice(string $orderId)
     {
         $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
-                    ->where(Entity::INVOICE_ID, $invoiceId)
+                    ->where(Entity::ORDER_ID, $orderId)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }

@@ -1270,15 +1270,29 @@ class Processor
                         return false;
                     }
                 }
+                //invoice rearch card payment
+                if (empty($order) === false and ($order->getProductId() !== null
+                        and $order->getProductType() === ProductType::INVOICE))
+                {
+                    $result = $this->canRouteInvoiceCardPaymentThroughRearch($merchant->getId());
+                    if ($result === false) {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "invoice_card_payment",
+                            'merchant_id' => $merchant->getId(),
+                            'order_id' => $order->getId(),
+                        ]);
+                        return false;
+                    }
+                }
 
                 if (empty($order) === false and ($order->getProductId() !== null
                         and $order->getProductType() !== ProductType::PAYMENT_LINK_V2
-                        and !in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())) or
-                    ($order->invoice !== null))
+                        and $order->getProductType() !== ProductType::INVOICE
+                        and !in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
                 {
 
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "other_apps_and_invoice",
+                        'reason' => "other_apps",
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
@@ -2396,6 +2410,38 @@ class Processor
                     Trace::CRITICAL,
                     TraceCode::REARCH_CRITIERIA_CHECK_FAILED,
                     []);
+        }
+
+        return false;
+    }
+
+    private function canRouteInvoiceCardPaymentThroughRearch($merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.invoice_card_payment_on_rearch_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID, 'mode' => $this->mode]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::INVOICE_CARD_PAYMENT_VIA_REARCH, [
+                'merchant_id' => $merchantID,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::INVOICE_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR);
         }
 
         return false;

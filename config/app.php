@@ -936,6 +936,8 @@ return array(
 
     'get_pan_list_for_activated_merchants_experiment_id' => env('GET_PAN_LIST_FOR_ACTIVATED_MERCHANTS_EXPERIMENT_ID'),
 
+    'invoice_card_payment_on_rearch_splitz_experiment_id' => env('INVOICE_CARD_PAYMENT_ON_REARCH_SPLITZ_EXPERIMENT_ID'),
+
     'is_kkbk_v2_emi_plans_experiment_id' => env('IS_KKBK_V2_EMI_PLANS_EMPERIMENT_ID'),
 
     'is_idfb_v2_emi_plans_experiment_id' => env('IS_IDFB_V2_EMI_PLANS_EMPERIMENT_ID'),
