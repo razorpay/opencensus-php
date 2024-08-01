@@ -81,6 +81,7 @@ type Getters = {
   isINCountry: boolean;
   isSGCountry: boolean;
   isVasTestingMerchant: boolean;
+  isMultiCouponsEnabled: boolean;
   isAdminOrOwner: boolean;
   isOwner: boolean;
   isAdditionalDomainWhitelistSelfServeOn: boolean;

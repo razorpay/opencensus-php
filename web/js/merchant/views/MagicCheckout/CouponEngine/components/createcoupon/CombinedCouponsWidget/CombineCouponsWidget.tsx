@@ -1,5 +1,6 @@
 import React from 'react';
-import { useSplitzService } from 'common/splitz';
+import { connect } from 'react-redux';
+import type { User } from 'common/typings';
 
 // UI imports
 import { Accordion } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/common/Accordian';
@@ -10,12 +11,11 @@ import { DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG } from 'merchant/views/MagicChe
 
 interface CombinedCouponProps {
   couponName: string;
+  user: User;
 }
 
-const CombineCouponsWidget: React.FC<CombinedCouponProps> | null = ({ couponName }) => {
-  const { abExperiments } = useSplitzService();
-  const shouldShowMultiCoupons =
-    abExperiments?.magic_multi_coupons_enabled?.variables?.result === 'on';
+const CombineCouponsWidget: React.FC<CombinedCouponProps> | null = ({ couponName, user }) => {
+  const shouldShowMultiCoupons = user.isMultiCouponsEnabled;
 
   if (shouldShowMultiCoupons && DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG[couponName]) {
     return (
@@ -31,4 +31,4 @@ const CombineCouponsWidget: React.FC<CombinedCouponProps> | null = ({ couponName
   return null;
 };
 
-export default CombineCouponsWidget;
+export default connect((state) => ({ user: state.session.user }))(CombineCouponsWidget);

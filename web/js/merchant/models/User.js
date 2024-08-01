@@ -2065,6 +2065,10 @@ export default class User {
     const variant = getSplitzExperimentVariant('omni_channel_merchants');
     return variant?.name === 'show-ezetap-txn';
   }
+
+  get isMultiCouponsEnabled() {
+    return this.isFeatureEnabled('one_cc_multi_coupons');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
