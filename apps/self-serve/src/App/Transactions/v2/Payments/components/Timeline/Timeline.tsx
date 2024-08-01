@@ -19,15 +19,6 @@ import { connect } from 'react-redux';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import Amount from 'common/ui/Amount';
 import { merchantFetch } from '@dashboard/shared-utils/ajax';
-import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
-import { shouldShowCapturePaymentButton } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/utils';
-import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import { ERROR_DESCRIPTION_CONTENT_MAP } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/constants';
-import {
-  IPaymentDetails,
-  IBankTransfer,
-} from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/types';
 import {
   StyledJourneyMetadata,
   StyledTimelineContainer,
@@ -41,6 +32,16 @@ import {
 } from './styled';
 import { getHumanReadableTimestamp } from './utils';
 import { TimelineJourneyPoint } from './types';
+import { POS_TRANSACTION_CHANNEL } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
+import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
+import { shouldShowCapturePaymentButton } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/utils';
+import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { ERROR_DESCRIPTION_CONTENT_MAP } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/constants';
+import {
+  IPaymentDetails,
+  IBankTransfer,
+} from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/types';
 
 interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
@@ -158,6 +159,9 @@ const EntityStatusTimeline = ({
   };
 
   const getPaymentsJourneyMeta = (journeyPoint: TimelineJourneyPoint): JSX.Element => {
+    const paymentSourceChannel = journeyPoint?.metadata?.payment?.source_channel;
+    const isCapturePaymentDisabled = paymentSourceChannel === POS_TRANSACTION_CHANNEL;
+
     return (
       <StyledJourneyMetadata>
         {journeyPoint.status === 'not-authorized' ? (
@@ -178,6 +182,7 @@ const EntityStatusTimeline = ({
                   variant="primary"
                   onClick={onPaymentCaptureClick}
                   isLoading={isCapturePaymentLoading}
+                  isDisabled={isCapturePaymentDisabled}
                 >
                   Capture payment
                 </Button>

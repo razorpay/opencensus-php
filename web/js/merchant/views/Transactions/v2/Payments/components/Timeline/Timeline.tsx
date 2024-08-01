@@ -44,6 +44,7 @@ import { TimelineJourneyPoint, SkipTimelineTransactions } from './types';
 import { getHumanReadableTimestamp } from './utils';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 
 interface EntityStatusTimelineProps extends RouteComponentProps {
   data: TimelineJourneyPoint[];
@@ -168,6 +169,9 @@ const EntityStatusTimeline = ({
   };
 
   const getPaymentsJourneyMeta = (journeyPoint: TimelineJourneyPoint): JSX.Element => {
+    const paymentSourceChannel = journeyPoint?.metadata?.payment?.source_channel;
+    const isCapturePaymentDisabled = paymentSourceChannel === POS_TRANSACTION_CHANNEL;
+
     return (
       <StyledJourneyMetadata>
         {journeyPoint.status === 'not-authorized' && (
@@ -188,6 +192,7 @@ const EntityStatusTimeline = ({
                   variant="primary"
                   onClick={onPaymentCaptureClick}
                   isLoading={isCapturePaymentLoading}
+                  isDisabled={isCapturePaymentDisabled}
                 >
                   Capture payment
                 </Button>
