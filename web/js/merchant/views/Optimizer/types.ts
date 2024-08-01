@@ -20,6 +20,8 @@ export interface Parameter {
   values: {
     value: string;
     label?: string;
+    disabled?: boolean;
+    disabled_message?: string;
   }[];
   operators: {
     '=='?: {
@@ -74,6 +76,22 @@ export interface Parameter {
   description: string;
   type: string;
   id: number;
+}
+
+export interface MappedProiders {
+  id: string;
+  name: string;
+  value: string;
+  disabled?: boolean;
+  disabled_message?: string;
+}
+
+export interface Option {
+  id: string;
+  name: string;
+  description: string;
+  disabled?: boolean;
+  disabled_message?: string;
 }
 
 export interface Rule {
