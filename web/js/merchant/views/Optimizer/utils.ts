@@ -1104,6 +1104,10 @@ export const RZP_GATEWAYS = ['razorpay', 'smart_router'];
 export const DEFAULT_RULE = 'Default Rule';
 export const TOTAL_RULE_LIMIT = 25;
 
+export const OPTIMIZER_SVGS = {
+  checkCircle: require('assets/optimizer/check_circle.svg'),
+};
+
 const LOGO_PATH = 'static/assets/merchant-dash/providers';
 const getLogoPath = (logoName, extension = 'png') =>
   `${window.cdnBaseUrl}/${LOGO_PATH}/${logoName}.${extension}`;
