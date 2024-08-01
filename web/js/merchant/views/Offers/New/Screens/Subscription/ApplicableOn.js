@@ -33,7 +33,7 @@ export default class ApplicableOn extends React.Component {
   };
   render() {
     const { isFormLocked, values, errors, touched } = this.props;
-    const { payment_method_type, iins } = values;
+    const { payment_method_type } = values;
     const { isCard } = this.currentSelectedPaymentMethod;
 
     const isDebitCard = payment_method_type === CARD_TYPES.DEBIT;
@@ -84,8 +84,8 @@ export default class ApplicableOn extends React.Component {
                 labelPosition="left"
                 validationState="none"
                 value={values.payment_method_type}
-                onChange={({ name, value }) => {
-                  this.handleFormChange(name, value);
+                onChange={({ name, values }) => {
+                  this.handleFormChange(name, values[0]);
                 }}
               />
               <DropdownOverlay>
@@ -110,8 +110,8 @@ export default class ApplicableOn extends React.Component {
                 labelPosition="left"
                 validationState="none"
                 value={values.issuer}
-                onChange={({ name, value }) => {
-                  this.handleFormChange(name, value);
+                onChange={({ name, values }) => {
+                  this.handleFormChange(name, values[0]);
                 }}
               />
               <DropdownOverlay>
@@ -136,8 +136,8 @@ export default class ApplicableOn extends React.Component {
                 labelPosition="left"
                 validationState="none"
                 value={values.payment_network}
-                onChange={({ name, value }) => {
-                  this.handleFormChange(name, value);
+                onChange={({ name, values }) => {
+                  this.handleFormChange(name, values[0]);
                 }}
               />
               <DropdownOverlay>
@@ -177,7 +177,6 @@ export default class ApplicableOn extends React.Component {
               labelPosition="left"
               name="iins"
               placeholder="6 digit IINs for cards. Separated by comma if more than one"
-              helpText={iins && iins.join(', ')}
               validationState="none"
               isDisabled={isFormLocked}
               marginBottom="spacing.7"

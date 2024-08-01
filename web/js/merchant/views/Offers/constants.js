@@ -248,7 +248,7 @@ export const REDEMPTION_TYPE_OPTIONS = [
 ];
 
 export const CREDIT_DEBIT_CARDS_OPTIONS = [
-  { label: 'Both Credit and Debit Cards', name: '' },
+  { label: 'Both Credit and Debit Cards', name: 'both' },
   { label: 'Credit Card', name: 'credit' },
   { label: 'Debit Card', name: 'debit' },
 ];

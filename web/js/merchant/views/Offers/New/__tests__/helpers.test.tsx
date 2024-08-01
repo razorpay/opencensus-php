@@ -88,7 +88,7 @@ describe('prepareDataForSubmit', () => {
     issuer: 'VISA',
     payment_network: 'VISA',
     max_payment_count: '10',
-    iins: [],
+    iins: '',
     max_offer_usage: '5',
     default_offer: '1',
     block: '0',

@@ -50,6 +50,15 @@ export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
     transformedFormData[field] = rupeesToPaise(formData[field]);
   });
 
+  //convert comma separated iins to array
+  if (formData.iins) {
+    formData.iins = formData.iins
+      .split(',')
+      .map((iin) => iin.trim())
+      .filter((iin) => /^\d{6}$/.test(iin));
+    transformedFormData.iins = formData.iins;
+  }
+
   // get additional fields to be deleted based on the discount_type
   if (transformedFormData.discount_type === 'flat') {
     fieldsToBeDeleted.push('max_cashback');
@@ -89,6 +98,10 @@ export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
 
   if (!['card', 'emi'].includes(formData.payment_method)) {
     fieldsToBeDeleted.push('max_payment_count');
+  }
+
+  if (formData.payment_method_type === 'both') {
+    formData.payment_method_type = '';
   }
 
   if (formData.product_type === 'subscription') {

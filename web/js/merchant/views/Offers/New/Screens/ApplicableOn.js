@@ -257,12 +257,9 @@ export default class ApplicableOn extends React.Component {
               name="iins"
               placeholder="6 digit IINs for cards. Separated by comma if more than one"
               helpText={
-                <>
-                  <p>
-                    {'Note: Bin based offers on Amex saved card will not work post tokenisation.'}
-                  </p>
-                  {/* <p>{iins && iins.join(', ')}</p> */}
-                </>
+                <p>
+                  {'Note: Bin based offers on Amex saved card will not work post tokenisation.'}
+                </p>
               }
               validationState="none"
               isDisabled={isFormLocked}
