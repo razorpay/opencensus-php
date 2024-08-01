@@ -15,6 +15,7 @@ import {
   MOCK_REJECTED_WITH_REFUND_COMPLETED,
   MOCK_CMMA_CASE_CREATE_CALL,
   MOCK_PARTNER_PRODUCT_PRICING_RESPONSE,
+  getMockModularResponse,
 } from './fixtures';
 
 const delivery_available_pincode = {
@@ -267,5 +268,39 @@ export const createActvationCaseHandler = () => {
   };
   return rest.post('*/merchant/api/*/merchant/activation', (_, res, ctx) =>
     res(ctx.status(200), ctx.json(response), ctx.delay(50)),
+  );
+};
+
+export const getModularResponseHandler = ({
+  isSuccess = true,
+  consented = '',
+  isCustomRateEnabled = true,
+  isAgreementRequired = true,
+}) => {
+  const response = {
+    status_code: isSuccess ? 200 : 500,
+    success: isSuccess,
+    data: getMockModularResponse({ consented, isCustomRateEnabled, isAgreementRequired }),
+  };
+  return rest.get('*/onboarding/workflow/merchant*', (_, res, ctx) =>
+    res(ctx.status(200), ctx.json(response)),
+  );
+};
+
+export const getModularSaveResponseHandler = ({
+  isSuccess = true,
+  consented,
+  isCustomRateEnabled = true,
+  isAgreementRequired = true,
+}) => {
+  return rest.post('*/onboarding/workflow/merchant*', (_, res, ctx) =>
+    res(
+      ctx.status(200),
+      ctx.json({
+        status_code: isSuccess ? 200 : 500,
+        success: isSuccess,
+        data: getMockModularResponse({ consented, isCustomRateEnabled, isAgreementRequired }),
+      }),
+    ),
   );
 };

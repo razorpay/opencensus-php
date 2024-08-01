@@ -504,3 +504,4 @@ export {
 } from './DetailedPricingAndTnc';
 export { ORDER_STATUS_META_DATA, ORDER_STATUS_TIMELINE_ITEMS } from './OrderStatus';
 export * from './CommsBanner';
+export * from './MerchantAgreement';

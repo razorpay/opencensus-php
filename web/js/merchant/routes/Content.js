@@ -589,6 +589,10 @@ const ReconRun = lazy(() =>
     /* webpackChunkName: "ReconRun" */ 'merchant/views/Reconciliations/Onboarding/NewReconciliationRun'
   ),
 );
+const PosMerchantAgreement = lazy(() =>
+  import(/* webpackChunkName: "PosMerchantAgreement" */ 'merchant/views/POS/MerchantAgreement'),
+);
+
 @withI18Service
 @connect(
   (state) => ({
@@ -626,6 +630,11 @@ class Content extends Component {
   checkIsHelpWidgetDisabled = () => {
     const { splitz } = this.props;
     return isHelpWidgetDisabled(splitz);
+  };
+
+  checkIfAssistedOnboardingUser = () => {
+    const { user } = this.props;
+    return user?.user.signup_campaign === 'assisted_onboarding';
   };
 
   setBaseLocation = (location) => {
@@ -762,7 +771,7 @@ class Content extends Component {
     const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
     const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
     const isPosSalesAgent = this.checkIfPosSalesAgent();
-
+    const isAssistedOnboardingUser = this.checkIfAssistedOnboardingUser();
     return (
       <Suspense fallback={<Loader />}>
         <Routes location={this.baseLocation}>
@@ -2374,6 +2383,14 @@ class Content extends Component {
             element={
               <RouteGuard additionalCondition={() => isPosSalesAgent}>
                 <PosApp />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="pos-merchant-agreement/*"
+            element={
+              <RouteGuard additionalCondition={() => isAssistedOnboardingUser}>
+                <PosMerchantAgreement />
               </RouteGuard>
             }
           />

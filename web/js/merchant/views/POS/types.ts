@@ -506,3 +506,73 @@ export type OfferConfig = {
     setup_fee: number | null;
   };
 };
+
+export type PosAgreementSignIds = {
+  merchantId: string;
+  tncId: string;
+  privacyId: string;
+  pricingId?: string;
+};
+
+type ConsentField = {
+  type: string;
+  templateId: string;
+};
+
+export type PosAgreementSignPayload = {
+  terms_and_conditions_consent_field: ConsentField;
+  privacy_consent_field: ConsentField;
+  pricing_consent_field?: ConsentField;
+};
+
+export type WorkflowData = {
+  id: string;
+  milestones: [ModularOnboardingMilestone];
+  progress: number;
+  status: string;
+};
+
+export type ModularOnboardingMilestone = {
+  name: string;
+  status: string;
+  can_submit: boolean;
+  steps: [ModularOnboardingStep];
+  progress: number;
+  meta: { template: string; title: string };
+};
+export type ModularOnboardingStep = {
+  name: string;
+  progress: number;
+  status: string;
+  components: [ModularOnboardingStepComponent];
+  meta: {
+    icon: string;
+    template: string;
+    title: string;
+    description: string;
+  };
+};
+
+export type ModularOnboardingStepComponent = {
+  name: string;
+  progress: number;
+  status: string;
+  verification: string;
+  meta: any;
+  is_required: boolean;
+  fields: any[];
+};
+
+export type WorkflowConfig = {
+  success: boolean;
+  workflow_data: WorkflowData;
+  onboarding_state: {
+    components: string[];
+    milestones: string[];
+    steps: string[];
+  };
+  onboarding_status: string;
+  country_code: string;
+  onboarding_type: string;
+  merchant_type: string;
+};

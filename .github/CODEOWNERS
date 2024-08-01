@@ -43,4 +43,5 @@ plugins/i18n-rules                                @razorpay/i18n-fe
 smart-linter.js                                   @razorpay/i18n-fe
 apps/pos                                          @amitabh-blade @prashant-kush @loombarishav
 pnpm-lock.yaml                                    @aniketonweb @razorpay/ssab-fe
+web/js/common/utils/posAgent.ts                   @amitabh-blade @DanishOnGit @prashant-kush @AakashRaina @amanpatel6991
 environment/.env.vault.j2                         @razorpay-sanjib @shubham25kr07 @loombarishav @dhruvdutt @rahul-rzp

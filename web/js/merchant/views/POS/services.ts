@@ -10,6 +10,9 @@ import {
   CreateOrderPayload,
   ProductPricingMap,
   PosActivationStatusTypes,
+  WorkflowConfig,
+  PosAgreementSignPayload,
+  PosAgreementSignIds,
 } from './types';
 
 export const getOrderList = async (payload: PaginationParamsType) => {
@@ -112,3 +115,66 @@ export const createActvationCase = (): Promise<ApiResponse<CreateActvationCaseRe
       is_pos_details_submitted: true,
     },
   });
+
+export const getModularOnboardingData = async (
+  merchantId: string,
+): Promise<ApiResponse<WorkflowConfig> | null> => {
+  const data = await merchantFetch({
+    url: `onboarding/workflow/merchant/${merchantId}`,
+    method: 'get',
+    data: {
+      merchant_id: merchantId,
+    },
+  });
+  return data;
+};
+
+export const getPosPricingTemplate = async (payload = {}) => {
+  const htmlTemplate = await merchantFetch({
+    url: `templating/template_configs/render`,
+    // url: `email_template_config/render`,
+    method: 'post',
+    data: {
+      namespace: 'payments',
+      name: 'POS_pricing_agreement',
+      orgId: '',
+      merchantId: '',
+      channel: 'email',
+      placeholderData: payload,
+    },
+  });
+  return htmlTemplate;
+};
+
+export const agreeToPosMerchantAgreement = async ({
+  merchantId,
+  tncId,
+  pricingId,
+  privacyId,
+}: PosAgreementSignIds) => {
+  const payload: PosAgreementSignPayload = {
+    terms_and_conditions_consent_field: {
+      type: 'Terms of Service',
+      templateId: tncId,
+    },
+    privacy_consent_field: {
+      type: 'Privacy Policy',
+      templateId: privacyId,
+    },
+  };
+  if (pricingId) {
+    payload.pricing_consent_field = {
+      type: 'Pricing Agreement',
+      templateId: pricingId,
+    };
+  }
+  const response = await merchantFetch({
+    url: `onboarding/workflow/merchant/${merchantId}`,
+    method: 'post',
+    data: {
+      merchant_id: merchantId,
+      field_data: payload,
+    },
+  });
+  return response;
+};

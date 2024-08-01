@@ -18,6 +18,14 @@ import {
   PRODUCT_PLANS,
   FEE_TYPES,
   EASY_DASHBOARD_ROUTES,
+  CONSENT_STEP,
+  CONSENT_COMPONENT,
+  AGREEMENT_STATUS_FIELD,
+  PRICING_CONSENT_FIELD,
+  AGREEMENT_STEP,
+  AGREEMENT_COMPONENT,
+  DEVICE_CATALOG_COMPONENT,
+  DEVICE_SELECTION_STEP,
 } from './constants';
 import {
   CartItem,
@@ -35,6 +43,9 @@ import {
   Product,
   OrderDetailsItem,
   OfferConfig,
+  ModularOnboardingStep,
+  WorkflowConfig,
+  ModularOnboardingStepComponent,
 } from './types';
 
 export const isValidFee = (value: number | null | undefined): boolean => {
@@ -1028,3 +1039,97 @@ export const checkIfPanIndiaLive = ({
 }: {
   abExperiments: ExperimentInfoType;
 }): boolean => abExperiments?.pos_onboarding?.variables?.isPanIndiaLive === 'on';
+
+export const getStepDataByStepName = (
+  workflowConfig: WorkflowConfig | null | undefined,
+  stepName: string,
+) => {
+  if (!workflowConfig?.workflow_data?.milestones[0]) return null;
+  const data = workflowConfig?.workflow_data.milestones[0]?.steps.find(
+    (step: ModularOnboardingStep) => step.name === stepName,
+  );
+  return data;
+};
+
+export const getComponentByName = (
+  components: ModularOnboardingStepComponent[] = [],
+  compName: string,
+) => {
+  if (!components || !components.length || !compName) return null;
+  return components.find((component) => component.name === compName);
+};
+
+export const getAllFieldValuesOfAComponent = (component) => {
+  if (!component || !component.fields) return {};
+  const data = component.fields.reduce((acc, field) => {
+    if (!acc[field.name]) {
+      acc[field.name] = field.value;
+    }
+    return acc;
+  }, {});
+  return data;
+};
+
+export const isCustomRateEnabled = (workflowConfig) => {
+  const consentStep = getStepDataByStepName(workflowConfig, CONSENT_STEP);
+  if (!consentStep) return false;
+  const consentComponent = getComponentByName(consentStep.components, CONSENT_COMPONENT);
+  if (!consentComponent) return false;
+  const consentFields = consentComponent.fields;
+  const pricingConsentField: any = consentFields.find(
+    (field: any) => field.name === PRICING_CONSENT_FIELD,
+  );
+  return pricingConsentField.is_required;
+};
+
+export const getAgreementStatus = (workflowConfig) => {
+  const consentStep = getStepDataByStepName(workflowConfig, AGREEMENT_STEP);
+  if (!consentStep) return { is_required: false, status: '' };
+  const consentComponent = getComponentByName(consentStep.components, AGREEMENT_COMPONENT);
+  if (!consentComponent) return { is_required: false, status: '' };
+  const consentFields = consentComponent.fields;
+  const agreementField: any = consentFields.find(
+    (field: any) => field.name === AGREEMENT_STATUS_FIELD,
+  );
+  return { is_required: agreementField?.is_required, status: agreementField?.value };
+};
+
+export const getDeviceChargesData = (workflowConfig) => {
+  const tableStructure: Array<[string, (item: any) => string]> = [
+    ['Device Type', (item) => item.device_model?.toUpperCase() ?? ''],
+    ['Subscription Plan', (item) => item.renewal ?? ''],
+    ['Rental Fee Per Device Unit', (item) => item.rental_charge ?? ''],
+    ['Total Device Quantity', (item) => item.quantity ?? ''],
+    ['Advance Rental Period', (item) => item.advanced_rental_periods ?? ''],
+    [
+      'Advance  Rental Fee Payable at Setup (excluding GST)',
+      (item) => item.total_advance_rental_charge ?? '',
+    ],
+    ['Device Charges (excl GST)', (item) => item.total_setup_charge ?? ''],
+    ['Paper Roll Charges (excl GST)', (item) => item.total_paper_roll_charge ?? ''],
+    ['Total GST on Fee Payable at Setup', (item) => item.total_order_gst_amount?.toFixed(2) ?? ''],
+  ];
+
+  const deviceSelectionStep = getStepDataByStepName(workflowConfig?.data, DEVICE_SELECTION_STEP);
+
+  if (!deviceSelectionStep) return { tableStructure, data: [], overallSetupFee: 0 };
+  const deviceCatalogComponent = getComponentByName(
+    deviceSelectionStep.components,
+    DEVICE_CATALOG_COMPONENT,
+  );
+
+  if (!deviceCatalogComponent) return { tableStructure, data: [], overallSetupFee: 0 };
+  const deviceSummary = deviceCatalogComponent.fields.find(
+    (field) => field.name === 'device_order_items_summary_field',
+  );
+  const deviceSummaryValues = deviceSummary?.value ?? [];
+  const setupFee = deviceCatalogComponent.fields.find(
+    (field) => field.name === 'device_order_summary_field',
+  );
+
+  return {
+    tableStructure,
+    data: deviceSummaryValues,
+    overallSetupFee: setupFee?.value?.total_order_charge ?? 0,
+  };
+};
