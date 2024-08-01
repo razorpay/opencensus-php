@@ -2245,6 +2245,11 @@ class Constants
      */
     const HIDE_AGGREGATOR_FIELDS = 'hide_aggregator_fields';
 
+    /**
+     *  The feature flag is used to control the eKYC functionalities for reseller partners.
+     */
+    const POS_CHANNEL_PARTNERSHIP = 'pos_channel_partnership';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3119,8 +3124,9 @@ class Constants
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
         self::BANKING_UPI_REARCH                     => true,
-        self::HIDE_AGGREGATOR_FIELDS         => true
+        self::HIDE_AGGREGATOR_FIELDS         => true,
 
+        self::POS_CHANNEL_PARTNERSHIP                => true,
     ];
 
     // Entity type constants
@@ -4518,7 +4524,12 @@ class Constants
             'feature'       => self::PAYOUT_IDEM_KEY_REQUIRED,
             'display_name'  => 'Payout Idempotency Key Required',
             'documentation' => 'Feature flag to make idempotency key mandatory for the merchant while creating payouts',
-        ]
+        ],
+        self::POS_CHANNEL_PARTNERSHIP => [
+            'feature'       => self::POS_CHANNEL_PARTNERSHIP,
+            'display_name'  => 'POS CHANNEL PARTNERSHIP',
+            'documentation' => 'feature to control the eKYC functionalities for reseller partners',
+        ],
     ];
 
     /**
