@@ -32,6 +32,7 @@ import {
   WebsiteUpdateAutomationStatus,
 } from '../types';
 import { snapPoints } from '../utils';
+import { PolicyPageContent } from './utils';
 
 const SkeletonWrapper = styled.div(
   ({ theme }) => `
@@ -248,7 +249,7 @@ function PreviewPages({
                         size="medium"
                       >
                         <AccordionItem>
-                          <AccordionItemHeader title={item.section} />
+                          <AccordionItemHeader title={PolicyPageContent[item.section].title} />
                           <AccordionItemBody>
                             <Box height="200px" overflow="scroll">
                               <div dangerouslySetInnerHTML={{ __html: item.html_content }} />
