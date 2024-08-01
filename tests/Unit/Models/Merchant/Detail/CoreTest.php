@@ -3386,10 +3386,10 @@ class CoreTest extends TestCase
 
         (new DetailCore())->updatePosActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
     }
-    
+
     public function testHandleRiskWorkFlowCreationErrors()
     {
-        
+
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 2,
             'business_category'         => 'services',
@@ -3401,30 +3401,30 @@ class CoreTest extends TestCase
             'submitted'                 => true,
             'business_website'          => 'https://google.com',
         ]);
-        
+
         $merchantDetailCore = new DetailCore();
         $workflowServiceMock = \Mockery::mock(\RZP\Services\Workflow\Service::class)->makePartial();
-        
+
         $workflowServiceMock->shouldReceive('handle')
                             ->once()
                             ->andThrow(new BadRequestValidationFailureException("hi",null,null,[]));
-        
+
         $this->app->instance('workflow', $workflowServiceMock);
-        
+
         // Create a ReflectionClass object to inspect the DetailCore class
         $reflection = new ReflectionClass($merchantDetailCore);
-       
+
         // Get a reference to the protected method 'isSubCategoryExcluded'
         $method = $reflection->getMethod('triggerWorkflowFlowForImpersonatedMerchant');
-        
+
         // Allow access to the protected method by setting it to be accessible
         $method->setAccessible(true);
-        
+
         // Call the protected method 'isSubCategoryExcluded' and store the result
         $result = $method->invoke($merchantDetailCore, $merchantDetails->merchant, $merchantDetails, "100000razorpay");
-        
+
         $this->assertEquals(null, $result);
-        
+
     }
     public function testRejectedWorkflowCreationInUpdatePosActivationStatus()
     {
@@ -6045,7 +6045,7 @@ class CoreTest extends TestCase
             'merchant_id' => $merchantId,
             'business_subcategory' => "fashion_and_lifestyle",
         ]);
-        
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
         $this->fixtures->create('user_device_detail', [
@@ -6069,7 +6069,7 @@ class CoreTest extends TestCase
             $this->assertTrue(true);
         }
     }
-    
+
     public function testOldOnboardingCategoryAndSubcategoryEmptyValidation()
     {
         $merchantId = '1T4hRFHFx4SFTU';
@@ -18288,6 +18288,93 @@ class CoreTest extends TestCase
 
         $this->assertEquals($merchantDetail->setBusinessSubcategory(), 'consulting_and_outsourcing');
 
+    }
+    public function testSubmitMerchantInternalWithActionasActivatePosAndMarkKycVerified()
+    {
+        Queue::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "contact_mobile"=>"7355206348",
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_website" => "https://www.hempstrol.com/",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "business_operation_city" => "Delhi",
+            "business_operation_pin" => 110022,
+            "business_category" => "ecommerce",
+            "bank_account_number"=>"1234567890",
+            "bank_branch_ifsc"=>"ICIC0000009",
+            "bank_account_name"=>"CHIZRINZ INFOWAY PRIVATE LIMITED",
+            "business_subcategory" => "fashion_and_lifestyle",
+            "steps_finished" => [
+            ],
+            "activation_progress" => 80,
+            "locked" => 0,
+            "activation_flow" => "whitelist",
+            "issue_fields" => "business_website",
+            "submitted" => 1,
+            "poi_verification_status" => "verified",
+            "poa_verification_status" => "verified",
+            "bank_details_verification_status" => "verified",
+            "kyc_clarification_reasons" => [
+                "nc_count" => 1,
+                "additional_details" => [
+                ],
+            ],
+            "live_transaction_done" => 0,
+            "additional_websites" => [
+            ],
+            "company_pan_verification_status" => "intiated",
+            "gstin_verification_status" => "failed",
+            "international_activation_flow" => "whitelist",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+            'action'                  => 'ACTIVATE_POS_AND_MARK_KYC_VERIFIED'
+        ]);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $balanceConfig = $this->getDbLastEntity('balance_config', 'live');
+
+        //check if there is a entry in bank account
+        $this->assertNotNull($bankAccount);
+        $this->assertEquals('ICIC0000009', $bankAccount['ifsc_code']);
+        $this->assertEquals('1234567890', $bankAccount['account_number']);
+        $this->assertEquals('CHIZRINZ INFOWAY PRIVATE LIMITED', $bankAccount['beneficiary_name']);
+        //check if there is a entry in balance
+        $this->assertNotNull($balance);
+        //check if there is a entry in balance config
+        $this->assertNotNull($balanceConfig);
+        $this->assertEquals($balance['id'], $balanceConfig['balance_id']);
     }
 
 

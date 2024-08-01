@@ -5077,6 +5077,8 @@ class Service extends Base\Service
         {
             case 'SEND_OTP':
                 return $this->core->sendOtpViaEmailPGOSInternal($merchantId, $input);
+            case 'ACTIVATE_POS_AND_MARK_KYC_VERIFIED':
+                return  (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchantId);
             case 'ACTIVATED_NOT_LIVE_FIX':
                 return $this->core->updateActivatedNotLiveMerchantsCron();
             case 'UPDATE_ACTIVATION_PROGRESS':

@@ -237,6 +237,51 @@ class Activate extends Base\Core
         return $merchantDetail;
     }
 
+    public function processActivatePosAndMarkKycVerifiedEvent($merchantId): Detail\Entity
+    {
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $merchantCore = new Core();
+
+        $merchant->releaseFunds();
+
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
+
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $merchantDetail, $merchantCore)
+        {
+            if ($this->shouldCreateBankAccount($merchantDetail) === true)
+            {
+                (new Detail\Core)->setBankAccountForMerchant($merchant);
+
+                $merchant->getValidator()->validateHasBankAccount();
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_CREATED);
+            }
+
+            $merchantBalance = $merchantCore->createBalance($merchant, 'live');
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_CREATED);
+
+            $merchantCore->createBalanceConfig($merchantBalance, 'live');
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_CONFIG_CREATED);
+
+            $this->updateLedger($merchant);
+
+            $this->repo->saveOrFail($merchant);
+
+            $this->repo->saveOrFail($merchantDetail);
+
+            $merchantCore->addMerchantEmailToMailingList($merchant);
+        });
+
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());
+
+        return $merchantDetail;
+    }
+
     /**
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
