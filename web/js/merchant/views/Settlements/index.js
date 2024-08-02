@@ -6,7 +6,6 @@ import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
-import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
@@ -229,8 +228,6 @@ const Settlements = ({
             </Link>
           </AnnouncementBanner>
         )}
-
-        <CashAdvanceOrNitroBanner productName="Settlements" />
 
         <DashboardBanner />
       </div>

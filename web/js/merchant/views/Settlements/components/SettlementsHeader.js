@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useI18Service } from 'common/i18';
@@ -9,8 +9,8 @@ import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytic
 import SettlementsBanner from './SettlementsBanner';
 import BalanceDetails from './BalanceDetails';
 import SettleNow from './SettleNow';
-import { fetchOnDemandBlocked as fnFetchOnDemandBlocked } from 'merchant/reducers/settlements/details';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 
 function SettlementsHeader(props) {
   const {
@@ -21,11 +21,10 @@ function SettlementsHeader(props) {
     settlementExists,
     checkIfFirstEverSettlement,
     esOndemandSettlementEnabled,
-    settleNowDisabled,
-    fetchOnDemandBlocked,
   } = props;
+  const odsQuery = useODSConfig();
 
-  const isNodalAccountBalanceLowBlocked = settleNowDisabled?.data?.blocked;
+  const isNodalAccountBalanceLowBlocked = odsQuery.data?.blocked;
   const { isConfigTagEnabled } = useI18Service();
   const { no_settlement } = settlement_amount.data;
 
@@ -49,10 +48,6 @@ function SettlementsHeader(props) {
     });
     handleAnalytics('settlement cycle', 'clicked');
   };
-
-  useEffect(() => {
-    fetchOnDemandBlocked();
-  }, []);
 
   return (
     <div className="settlements-header">
@@ -117,7 +112,6 @@ const mapStateToProps = (state) => {
     holidayList: state.settlement.holidayList,
     ...state.home,
     settlementConfig: state.settlement.config,
-    settleNowDisabled: state?.settlement?.settleNowButtonDisabled,
   };
 };
 
@@ -125,7 +119,6 @@ const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     {
       openModal: fnOpenModal,
-      fetchOnDemandBlocked: fnFetchOnDemandBlocked,
     },
     dispatch,
   );

@@ -1,8 +1,9 @@
 import React from 'react';
+import { fireEvent, render, screen, delay, waitFor } from 'test-utils';
+
+import TestModal from 'common/services/test/TestModal';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import { POST_ENABLE_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
-import { fireEvent, render, screen, delay } from 'test-utils';
-import TestModal from 'common/services/test/TestModal';
 
 jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils', () => ({
   __esModule: true,
@@ -217,4 +218,46 @@ test('test post enablement - full shift failure', async () => {
   expect(screen.queryByText('Maintain daily payment gateway transactions')).toBeInTheDocument();
   expect(screen.queryByText('Keep refunds low')).toBeInTheDocument();
   expect(screen.queryByText('Minimise bank chargebacks')).toBeInTheDocument();
+});
+
+describe('Post enablement', () => {
+  test('should render merchant level limit info', async () => {
+    render(<App enabled postModalType={POST_ENABLE_TYPES.ODS_MERCHANT_LEVEL_LIMIT} />, {
+      showModal: true,
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', {
+          name: /Instant Settlements now come with a daily settlement limit./i,
+        }),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText('Daily limits ensure')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'If you require assistance or need to discuss your limit, please contact your Relationship Manager or raise a support ticket here.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Limit assigned to you is available until the next working day'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Understood/i })).toBeInTheDocument();
+  });
+
+  test('should render es restricted info', async () => {
+    render(<App enabled postModalType={POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS} />, {
+      showModal: true,
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /How much can I settle?/i })).toBeInTheDocument();
+    });
+    expect(screen.getByText('While you enjoy your benefits...')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'To unlock 100% settlements, keep up your sales cycle and follow the eligibility criteria given below',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Maintain daily payment gateway transactions')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Understood/i })).toBeInTheDocument();
+  });
 });

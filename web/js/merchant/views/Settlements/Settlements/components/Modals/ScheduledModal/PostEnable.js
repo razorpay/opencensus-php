@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { ZapIcon } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
-import { ZapIcon } from '@razorpay/blade/components';
 
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 
-import TopSection from './components/TopSection';
 import BottomSection from './components/BottomSection';
-import ProgressBar from './components/ProgressBar';
-import List from './components/List';
 import Button from './components/Button';
+import List from './components/List';
+import ProgressBar from './components/ProgressBar';
+import TopSection from './components/TopSection';
 import {
   UNLOCK_POINTS,
   DAILY_LIMIT_POINTS,
@@ -69,9 +69,11 @@ const BadgeLabel = styled.div`
   }
 `;
 
-function PostEnable({ user, pricingRate, postModalType, closeModal }) {
-  const [modalType, setModalType] = useState();
+const CURRENCY_PARTIAL_LIMIT = {
+  INR: '₹15,000',
+};
 
+function PostEnable({ user, pricingRate, postModalType, closeModal }) {
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isPartialOndemandSettlementEnabled =
@@ -98,14 +100,7 @@ function PostEnable({ user, pricingRate, postModalType, closeModal }) {
     }
   };
 
-  useEffect(() => {
-    if (postModalType) {
-      setModalType(postModalType);
-    } else {
-      setModalType(getModalType());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const modalType = postModalType || getModalType();
 
   const getUnderstoodButton = () => <Button onClick={closeModal}>Understood</Button>;
 
@@ -233,7 +228,7 @@ function PostEnable({ user, pricingRate, postModalType, closeModal }) {
         );
       }
 
-      case POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS: {
+      case POST_ENABLE_TYPES.ODS_MERCHANT_LEVEL_LIMIT: {
         return (
           <>
             <TopSection
@@ -241,11 +236,37 @@ function PostEnable({ user, pricingRate, postModalType, closeModal }) {
               heading="Instant Settlements now come with a daily settlement limit."
             />
             <BottomSection heading="Daily limits ensure">
-              {/* <ProgressBar /> */}
               <List
                 labelPosition="bottom"
                 label="If you require assistance or need to discuss your limit, please contact your Relationship Manager or raise a support ticket here."
                 items={DAILY_LIMIT_POINTS}
+              />
+              {getUnderstoodButton()}
+            </BottomSection>
+          </>
+        );
+      }
+
+      case POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS: {
+        const currencyCode = user.merchant.currency || 'INR';
+        const partialLimit = CURRENCY_PARTIAL_LIMIT[currencyCode];
+        return (
+          <>
+            <TopSection
+              heading="How much can I settle?"
+              subHeading="You are enjoying early access to Instant Settlements and can settle a part of your balance"
+              badgeLabel={
+                <BadgeLabel>
+                  ✅ &nbsp;<span>60%</span> of your balance{' '}
+                  {partialLimit ? <span>upto {partialLimit}</span> : null}
+                </BadgeLabel>
+              }
+            />
+            <BottomSection heading="While you enjoy your benefits...">
+              <ProgressBar />
+              <List
+                label="To unlock 100% settlements, keep up your sales cycle and follow the eligibility criteria given below"
+                items={UNLOCK_POINTS}
               />
               {getUnderstoodButton()}
             </BottomSection>

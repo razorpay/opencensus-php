@@ -1,15 +1,23 @@
 import React, { useEffect } from 'react';
+import { Amount } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { fetchOndemandRestrictions as fnFetchOndemandRestrictions } from 'merchant/reducers/home';
-import { openModal as fnOpenModal, closeModal } from 'merchant_common/reducers/modals';
-import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
+
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { fetchOndemandRestrictions as fnFetchOndemandRestrictions } from 'merchant/reducers/home';
+import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import {
+  getIsGlobalLimitBreached,
+  getIsMerchantLimitBreached,
+} from 'merchant/views/Settlements/InstantSettlements/utils/common';
+import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
+import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import {
   trackOndemand,
   EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
 } from 'merchant/views/Settlements/Settlements/ga';
+import { openModal as fnOpenModal, closeModal } from 'merchant_common/reducers/modals';
+
 import { restrictedFeatures, settleNowRestrictionMsgFn } from './utils';
 
 const SettleNow = (props) => {
@@ -24,10 +32,13 @@ const SettleNow = (props) => {
     fetchOndemandRestrictions,
     isNodalAccountLowBalanceBlocked,
     showLeftBorder = true,
-    odsConfigState,
   } = props;
-  const isLoading = odsConfigState.loading || current_balance.loading;
-  const isOdsDisabled = !!odsConfigState.data?.disable;
+  const currencyCode = user.merchant.currency || 'INR';
+
+  const odsQuery = useODSConfig();
+
+  const isLoading = odsQuery.isFetching || current_balance.loading;
+  const isOdsDisabled = !!odsQuery.data?.disable;
 
   const isOnDemandDisabled = () => {
     return restrictedFeatures.some((feature) => user.isFeatureEnabled(feature));
@@ -91,7 +102,21 @@ const SettleNow = (props) => {
     if (isLoading) {
       return 'Loading...';
     }
-    if (isOdsDisabled) {
+    if (!user.isOndemandSettlementsRestricted && getIsMerchantLimitBreached(odsQuery.data)) {
+      return (
+        <>
+          You’ve already settled your maximum allowed limit of{' '}
+          <Amount
+            size="small"
+            color="surface.text.staticWhite.normal"
+            currency={currencyCode}
+            value={(odsQuery.data?.max_limit || 0) / 100}
+          />{' '}
+          for the day.
+        </>
+      );
+    }
+    if (getIsGlobalLimitBreached(odsQuery.data)) {
       return 'On-demand Settlements are being limited due to high usage. Please try again the next working day.';
     }
     if (isEsOnDemandBlocked) {
@@ -145,7 +170,6 @@ const mapStateToProps = (state) => {
     mode: state.session.mode,
     ...state.home,
     ...state.instantSettlements,
-    odsConfigState: state.settlement.settleNowButtonDisabled,
   };
 };
 

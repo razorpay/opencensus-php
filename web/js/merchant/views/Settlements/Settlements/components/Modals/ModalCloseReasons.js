@@ -65,7 +65,8 @@ class ModalCloseReasons extends Component {
 
   render() {
     const { brief } = this.state;
-    const { user, openModal, closeOrigin, showISPlusPlus, fromWhere, onFinish } = this.props;
+    const { user, openModal, closeOrigin, showISPlusPlus, fromWhere, onFinish, hasMIDLevelLimit } =
+      this.props;
 
     if (showISPlusPlus) {
       return <ISPlusPlusReasons onFinish={onFinish} fromWhere={fromWhere} />;
@@ -102,7 +103,12 @@ class ModalCloseReasons extends Component {
           />
         </div>
 
-        <Nudge user={user} openModal={openModal} closeOrigin={closeOrigin} />
+        <Nudge
+          user={user}
+          openModal={openModal}
+          hasMIDLevelLimit={hasMIDLevelLimit}
+          closeOrigin={closeOrigin}
+        />
 
         <div class="flex action-container">
           <Button.Transparent onClick={this.handleGoBackClick} class="go-back">

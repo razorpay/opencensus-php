@@ -1,13 +1,14 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import SettlementsHeader from 'merchant/views/Settlements/components/SettlementsHeader';
-import { render, screen, waitFor } from 'test-utils';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
+
 import { storeWithInitialState } from 'merchant/store';
-import * as details from 'merchant/reducers/settlements/details';
-import * as modals from 'merchant_common/reducers/modals';
 import * as analytics from 'merchant/views/Settlements/Settlements/analytics';
+import SettlementsHeader from 'merchant/views/Settlements/components/SettlementsHeader';
+import * as modals from 'merchant_common/reducers/modals';
+import { render, screen, waitFor } from 'test-utils';
 
 jest.mock('merchant/views/Settlements/components/BalanceDetails', () => ({ amount }) => (
   <div>
@@ -74,16 +75,10 @@ const state = {
   settlement: {
     holidayList: { data: {} },
     config: { data: {} },
-    settleNowButtonDisabled: {
-      data: {
-        blocked: false,
-      },
-    },
   },
 };
 
 describe('SettlementsHeader', () => {
-  const fetchOnDemandFnSpy = jest.spyOn(details, 'fetchOnDemandBlocked');
   const modalsSpy = jest.spyOn(modals, 'openModal');
   const analyticsSpy = jest.spyOn(analytics, 'handleAnalytics');
 
@@ -96,16 +91,8 @@ describe('SettlementsHeader', () => {
   };
 
   beforeEach(() => {
-    fetchOnDemandFnSpy.mockClear();
     modalsSpy.mockClear();
     analyticsSpy.mockClear();
-  });
-
-  test('should call fetch on demand blocked on mount', async () => {
-    render(<App />);
-    await waitFor(() => {
-      expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
-    });
   });
 
   describe('Left content', () => {

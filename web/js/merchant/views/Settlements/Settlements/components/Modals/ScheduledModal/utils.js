@@ -81,8 +81,8 @@ export const getEsBannerSeen = (bannerType) => {
   return getItem(getEsBannerKey(bannerType));
 };
 
-export const setEsBannerSeen = (bannerType) => {
-  setItem(getEsBannerKey(bannerType), true);
+export const setEsBannerSeen = (bannerType, value) => {
+  setItem(getEsBannerKey(bannerType), value ?? true);
 };
 
 export const getEsNudgeKey = (nudgeType) => {

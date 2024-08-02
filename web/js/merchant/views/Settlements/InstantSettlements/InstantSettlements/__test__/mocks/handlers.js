@@ -36,3 +36,29 @@ export const instantsettlementsHandlers = () =>
       }),
     );
   });
+
+export const getOdsValidateHandler = (data) => {
+  return rest.get('*/settlements/ondemand/feature/validate', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data,
+      }),
+    );
+  });
+};
+
+export const getOdsConfigHandler = (data, status = true) => {
+  return rest.get('*/settlements/ondemand/merchant/config', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: status ? 200 : 500,
+        success: !!status,
+        data,
+      }),
+    );
+  });
+};

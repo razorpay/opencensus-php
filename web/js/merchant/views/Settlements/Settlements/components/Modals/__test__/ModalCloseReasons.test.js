@@ -1,8 +1,9 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from 'test-utils';
+
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
 import { CLOSE_OPTIONS } from 'merchant/views/Settlements/Settlements/data';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { fireEvent, render, screen, waitFor } from 'test-utils';
 
 const mockGoBackToInitialModalView = jest.fn();
 
@@ -14,12 +15,14 @@ describe('ModalCloseReaons.js', () => {
     window.rzpAnalytics.mockReset();
   });
 
-  const renderApp = () =>
+  const renderApp = ({ user, hasMIDLevelLimit } = {}) =>
     render(
       <ModalCloseReasons
         eventCategory="Dashboard - Early Settlement"
         closeOrigin="OnDemand"
         goBackToInitialModalView={mockGoBackToInitialModalView}
+        user={user}
+        hasMIDLevelLimit={hasMIDLevelLimit}
       />,
       {
         showModal: true,
@@ -96,5 +99,17 @@ describe('ModalCloseReaons.js', () => {
       });
     });
     expect(closeModalsSpy).toBeCalled();
+  });
+
+  test('should render merchant level limit nudge', () => {
+    renderApp({
+      user: {
+        isOndemandSettlementEnabled: true,
+        isOndemandSettlementsRestricted: false,
+        isAutomaticSettlementEnabled: true,
+      },
+      hasMIDLevelLimit: true,
+    });
+    expect(screen.getByText(/Why can't I settle more money?/i)).toBeInTheDocument();
   });
 });

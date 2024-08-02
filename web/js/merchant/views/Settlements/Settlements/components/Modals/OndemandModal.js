@@ -1,6 +1,5 @@
 import './OndemandModal.styl';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import {
   Box,
   PlusSquareIcon,
@@ -9,16 +8,28 @@ import {
   Spinner,
   Link,
 } from '@razorpay/blade/components';
-import ModalHeader from 'common/ui/ModalHeader';
-import {
-  closeModal as fnCloseModal,
-  openModal as fnOpenModal,
-} from 'merchant_common/reducers/modals';
+import axios from 'axios';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { isInteger } from 'common/utils/validators';
-import { classList } from 'common/utils/rzp-utils';
+import Input from 'common/new-ui/Input';
+import Amount, { AmountTooltip } from 'common/ui/Amount';
+import ModalHeader from 'common/ui/ModalHeader';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import debounce from 'common/utils/debounce';
 import { setItem, getItem } from 'common/utils/localStorage';
+import { classList } from 'common/utils/rzp-utils';
+import { isInteger } from 'common/utils/validators';
+import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import ajax from 'merchant/utils/ajax';
+import { withODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import { getHasMerchantLevelLimit } from 'merchant/views/Settlements/InstantSettlements/utils/common';
+import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
+import SettleToLinkedAccounts from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts';
+import EnableScheduledBanner from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/EnableScheduledBanner';
+import UpsellBanners from 'merchant/views/Settlements/Settlements/components/UpsellBanners';
 import {
   trackOndemand,
   EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
@@ -34,25 +45,18 @@ import {
   trackEsConfirm,
   trackEsAmountUpdated,
 } from 'merchant/views/Settlements/Settlements/ga';
-import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
-import Input from 'common/new-ui/Input';
-import Amount, { AmountTooltip } from 'common/ui/Amount';
-import debounce from 'common/utils/debounce';
-import PropTypes from 'prop-types';
-import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
+import {
+  closeModal as fnCloseModal,
+  openModal as fnOpenModal,
+} from 'merchant_common/reducers/modals';
 import { onDemandModalTrackEvents } from 'merchant/views/Settlements/trackEvents';
-import { bindActionCreators } from 'redux';
-import Nudge from './ScheduledModal/components/Nudge';
-import ScheduledModal from './ScheduledModal';
-import { setEsNudgeSeen } from './ScheduledModal/utils';
-import { NUDGE_TYPES, POST_ENABLE_TYPES } from './ScheduledModal/constants';
-import UpsellBanners from 'merchant/views/Settlements/Settlements/components/UpsellBanners';
-import SettleToLinkedAccounts from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts';
-import EnableScheduledBanner from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/EnableScheduledBanner';
-import SettlementSuccessView from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/SettlementSuccessView';
+
 import IsPlusPlusModal from './IsPlusPlusModal';
-import axios from 'axios';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import ScheduledModal from './ScheduledModal';
+import Nudge from './ScheduledModal/components/Nudge';
+import { NUDGE_TYPES, POST_ENABLE_TYPES } from './ScheduledModal/constants';
+import { setEsNudgeSeen } from './ScheduledModal/utils';
+import SettlementSuccessView from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/SettlementSuccessView';
 
 class OndemandModal extends Component {
   constructor(props) {
@@ -417,6 +421,7 @@ class OndemandModal extends Component {
     this.setState({
       isSaving: true,
       errors: [],
+      validAmount: true,
     });
     return ajax(
       {
@@ -434,6 +439,7 @@ class OndemandModal extends Component {
         });
         this.props.fetchCurrentBalance();
         this.props.fetchOndemandRestrictions();
+        this.props.invalidateOdsQuery();
 
         const { user } = this.props;
         if (user.isOndemandSettlementEnabled && !user.isOndemandSettlementsRestricted) {
@@ -447,7 +453,8 @@ class OndemandModal extends Component {
         this.setState({
           isSaving: false,
           isSaved: false,
-          errors: response.errors,
+          validAmount: false,
+          errors: response?.errors?.[0] ? response.errors : ['Something went wrong'],
         });
       });
   };
@@ -479,7 +486,13 @@ class OndemandModal extends Component {
           validAmount: false,
         });
       }
-      if (this.props.settlableAmount > 0 && val * 100 > this.props.settlableAmount) {
+      const merchantLevelLimit = this.props.odsQuery.data?.available_limit;
+      const isMerchantLevelLimitInvalid = merchantLevelLimit > 0 && val * 100 > merchantLevelLimit;
+      const isEsRestricedInvalid =
+        this.props.settlableAmount > 0 && val * 100 > this.props.settlableAmount;
+      if (
+        this.isPartialOndemandSettlementEnabled ? isEsRestricedInvalid : isMerchantLevelLimitInvalid
+      ) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
         trackEsAmountError();
         this.setState({
@@ -491,9 +504,13 @@ class OndemandModal extends Component {
                 weight="semibold"
                 suffix="humanize"
                 color="feedback.text.negative.intense"
-                value={this.props.settlableAmount / 100}
-              />{' '}
-              Today.{' '}
+                value={
+                  (this.isPartialOndemandSettlementEnabled
+                    ? this.props.settlableAmount
+                    : merchantLevelLimit) / 100
+                }
+              />
+              {this.isPartialOndemandSettlementEnabled ? '. ' : ' Today. '}
               <Link size="small" variant="button" onClick={this.handleShowRestrictedReasonModal}>
                 Why?
               </Link>
@@ -581,14 +598,26 @@ class OndemandModal extends Component {
   };
 
   handleShowRestrictedReasonModal = () => {
+    const modalType = this.isPartialOndemandSettlementEnabled
+      ? POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS
+      : POST_ENABLE_TYPES.ODS_MERCHANT_LEVEL_LIMIT;
+
     this.props.openModal({
-      component: (
-        <ScheduledModal enabled postModalType={POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS} />
-      ),
+      component: <ScheduledModal enabled postModalType={modalType} />,
       size: 'small',
       disableClose: true,
     });
   };
+
+  get hasMerchantLevelLimit() {
+    return getHasMerchantLevelLimit(this.props.odsQuery.data?.available_limit);
+  }
+
+  get isPartialOndemandSettlementEnabled() {
+    return (
+      this.props.user.isOndemandSettlementEnabled && this.props.user.isOndemandSettlementsRestricted
+    );
+  }
 
   successModalHeader = () => {
     return (
@@ -614,17 +643,16 @@ class OndemandModal extends Component {
       showIsPlusPlusBreakup,
       MID_LIMIT,
     } = this.state;
-    const { user, settlableAmount, fromWhere, openModal } = this.props;
+    const { user, settlableAmount, fromWhere, openModal, odsQuery } = this.props;
 
     const MAX_IS_LIMIT = MID_LIMIT[user.current] || 0;
 
-    const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
-    const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
-
-    const isPartialOndemandSettlementEnabled =
-      isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
+    const hasEsRestricedLimit = settlableAmount > 0;
+    const merchantLevelLimit = odsQuery.data?.available_limit;
+    const hasMerchantLevelLimit = merchantLevelLimit > 0;
     const shouldShowMaxLimit =
-      validAmount && isPartialOndemandSettlementEnabled && settlableAmount > 0;
+      validAmount &&
+      (this.isPartialOndemandSettlementEnabled ? hasEsRestricedLimit : hasMerchantLevelLimit);
 
     if (showIsPlusPlusBreakup) {
       return (
@@ -730,9 +758,13 @@ class OndemandModal extends Component {
                   size="small"
                   weight="semibold"
                   suffix="humanize"
-                  value={settlableAmount / 100}
-                />{' '}
-                Today.{' '}
+                  value={
+                    (this.isPartialOndemandSettlementEnabled
+                      ? settlableAmount
+                      : merchantLevelLimit) / 100
+                  }
+                />
+                {this.isPartialOndemandSettlementEnabled ? '. ' : ' Today. '}
                 <Link size="small" variant="button" onClick={this.handleShowRestrictedReasonModal}>
                   Why?
                 </Link>
@@ -753,13 +785,7 @@ class OndemandModal extends Component {
           )}
           {!validAmount && <div className="error-message">{errors[0]}</div>}
 
-          <Nudge
-            user={user}
-            openModal={openModal}
-            amount={amount}
-            settlableAmount={settlableAmount}
-            hidePartialVariant
-          />
+          <Nudge user={user} openModal={openModal} hasMIDLevelLimit={this.hasMerchantLevelLimit} />
 
           <AsyncBtn.Primary
             className="submit-btn"
@@ -805,6 +831,7 @@ class OndemandModal extends Component {
 
     const handleSettleToMainAccountClick = () => this.setState({ isLinkedAccountActive: false });
     const handleSettleToLinkedAccountsClick = () => this.setState({ isLinkedAccountActive: true });
+    const isLoading = this.props.odsQuery.isFetching;
 
     return (
       <div className="onmdemand-modal">
@@ -835,38 +862,51 @@ class OndemandModal extends Component {
               isOndemandRouteSettlementsEnabled && 'extended-overflow-box',
             )}
           >
-            {isOndemandRouteSettlementsEnabled && (
-              <div className="settlement-options">
-                <p
-                  onClick={handleSettleToMainAccountClick}
-                  className={classList(
-                    'settlement-options__item',
-                    !isLinkedAccountActive && 'active',
-                  )}
-                >
-                  Settle to your account
-                </p>
-                <p
-                  onClick={handleSettleToLinkedAccountsClick}
-                  className={classList(
-                    'settlement-options__item',
-                    isLinkedAccountActive && 'active',
-                  )}
-                >
-                  <span>Settle to linked accounts </span>
-                  <span className="new-badge">NEW</span>
-                </p>
-              </div>
+            {!isLoading ? (
+              <>
+                {isOndemandRouteSettlementsEnabled && (
+                  <div className="settlement-options">
+                    <p
+                      onClick={handleSettleToMainAccountClick}
+                      className={classList(
+                        'settlement-options__item',
+                        !isLinkedAccountActive && 'active',
+                      )}
+                    >
+                      Settle to your account
+                    </p>
+                    <p
+                      onClick={handleSettleToLinkedAccountsClick}
+                      className={classList(
+                        'settlement-options__item',
+                        isLinkedAccountActive && 'active',
+                      )}
+                    >
+                      <span>Settle to linked accounts </span>
+                      <span className="new-badge">NEW</span>
+                    </p>
+                  </div>
+                )}
+                {renderMainContent()}
+              </>
+            ) : (
+              <Box
+                display="flex"
+                justifyContent="center"
+                paddingTop="spacing.11"
+                paddingBottom="spacing.8"
+              >
+                <Spinner accessibilityLabel="Checking Balance" size="large" />
+              </Box>
             )}
-
-            {renderMainContent()}
           </div>
-
-          {isLinkedAccountActive ? (
-            <EnableScheduledBanner />
-          ) : showIsPlusPlusBreakup ? null : (
-            this.breakup()
-          )}
+          {!isLoading ? (
+            isLinkedAccountActive ? (
+              <EnableScheduledBanner />
+            ) : showIsPlusPlusBreakup ? null : (
+              this.breakup()
+            )
+          ) : null}
         </div>
       </div>
     );
@@ -935,6 +975,7 @@ class OndemandModal extends Component {
             openModal={openModal}
             eventCategory={this.props.eventCategory}
             fromWhere={this.props.fromWhere}
+            hasMIDLevelLimit={this.hasMerchantLevelLimit}
             showISPlusPlus={hasISPlusPlus && wantsISPlusPlus}
             onFinish={() => {
               setItem('rzp-capital-is-plus-plus', true);
@@ -974,4 +1015,6 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(OndemandModal);
+const WrappedODSQuery = withODSConfig(OndemandModal);
+
+export default connect(mapStateToProps, mapDispatchToProps)(WrappedODSQuery);

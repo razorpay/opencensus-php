@@ -8,7 +8,6 @@ const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
 const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
 const HOLIDAY_LIST_FETCH = 'HOLIDAY_LIST_FETCH';
 const SETTLEMENT_CONFIG_FETCH = 'SETTLEMENT_CONFIG_FETCH';
-const ONDEMAND_BLOCKED_FETCH = 'ONDEMAND_BLOCKED_FETCH';
 const SETTLEMENT_TIMELINE_FETCH = 'SETTLEMENT_TIMELINE_FETCH';
 const PREVIOUS_SETTLEMENTS_FETCH = 'PREVIOUS_SETTLEMENTS_FETCH';
 
@@ -53,13 +52,6 @@ export const fetchSettlementConfig = () => {
       url: 'settlements/dashboard/merchant_config/get',
       method: 'post',
     }),
-  };
-};
-
-export const fetchOnDemandBlocked = () => {
-  return {
-    type: ONDEMAND_BLOCKED_FETCH,
-    payload: merchantFetch('settlements/ondemand/merchant/config'),
   };
 };
 
@@ -109,10 +101,6 @@ const initialState = {
     loading: false,
     data: {},
     error: null,
-  },
-  settleNowButtonDisabled: {
-    loading: false,
-    data: {},
   },
   timeline: {
     loading: false,
@@ -271,29 +259,6 @@ export default (state = initialState, action) => {
         loading: false,
         data: {},
         error: action.payload?.errors,
-      });
-
-    case `${ONDEMAND_BLOCKED_FETCH}::SUCCESS`:
-      return merge(state, {
-        settleNowButtonDisabled: {
-          data: action.payload.data,
-          loading: false,
-          error: null,
-        },
-      });
-
-    case `${ONDEMAND_BLOCKED_FETCH}::PENDING`:
-      return set(state, 'settleNowButtonDisabled', {
-        loading: true,
-        data: initialState.settleNowButtonDisabled.data,
-        error: null,
-      });
-
-    case `${ONDEMAND_BLOCKED_FETCH}::ERROR`:
-      return set(state, 'settleNowButtonDisabled', {
-        loading: false,
-        error: action.payload.errors,
-        data: initialState.settleNowButtonDisabled.data,
       });
 
     case `${SETTLEMENT_TIMELINE_FETCH}::PENDING`:

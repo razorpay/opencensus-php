@@ -16,6 +16,24 @@ jest.mock('merchant/views/TicketSupport/utils', () => ({
   },
 }));
 
+/** This component is being tested separately */
+jest.mock(
+  'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners',
+  () => ({
+    __esModule: true,
+    OdsBanners: () => <p>ODS Banners Placeholder</p>,
+  }),
+);
+const mockOdsFnc = jest.fn();
+/** This hooks is being tested separately - capital integration test cases */
+jest.mock('merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig', () => ({
+  __esModule: true,
+  ...jest.requireActual('merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig'),
+  useODSConfig: () => ({
+    refetch: mockOdsFnc,
+  }),
+}));
+
 window.session_id = `12345`;
 
 const state = {
@@ -41,7 +59,6 @@ const state = {
 };
 
 describe('SettlementsHeaderV2', () => {
-  const fetchOnDemandFnSpy = jest.spyOn(details, 'fetchOnDemandBlocked');
   const fetchSettlementConfigSpy = jest.spyOn(details, 'fetchSettlementConfig');
   const fetchPreviousSettlementsSpy = jest.spyOn(details, 'fetchPreviousSettlements');
   const fetchCurrentBalanceSpy = jest.spyOn(home, 'fetchCurrentBalance');
@@ -52,7 +69,6 @@ describe('SettlementsHeaderV2', () => {
   const analyticsSpy = jest.spyOn(analytics, 'handleAnalytics');
 
   beforeEach(() => {
-    fetchOnDemandFnSpy.mockClear();
     fetchSettlementConfigSpy.mockClear();
     fetchPreviousSettlementsSpy.mockClear();
     fetchCurrentBalanceSpy.mockClear();
@@ -63,17 +79,15 @@ describe('SettlementsHeaderV2', () => {
     analyticsSpy.mockClear();
   });
 
-  test('should render SettlementsHeaderV2', async () => {
-    render(<SettlementsHeaderV2 />, { initialState: state });
-    await waitFor(() => {
-      expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
-    });
+  test('should render SettlementsHeaderV2', () => {
+    render(<SettlementsHeaderV2 />);
     expect(screen.getByText('Overview')).toBeInTheDocument();
     expect(screen.getByText('Current balance')).toBeInTheDocument();
     expect(screen.getByText('Settlement due today')).toBeInTheDocument();
     expect(screen.getByText('Previous settlement')).toBeInTheDocument();
     expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
     expect(screen.getByText('My Settlement Cycle')).toBeInTheDocument();
+    expect(screen.getByText('ODS Banners Placeholder')).toBeInTheDocument();
   });
 
   test('My settlement cycle', async () => {
@@ -83,7 +97,6 @@ describe('SettlementsHeaderV2', () => {
         count: 25,
         skip: 0,
       });
-      expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
     });
     expect(screen.getByText('My Settlement Cycle')).toBeInTheDocument();
     userEvent.click(screen.getByText('My Settlement Cycle'));
@@ -132,11 +145,8 @@ describe('SettlementsHeaderV2', () => {
       },
     };
     render(<SettlementsHeaderV2 />, { initialState });
-    await waitFor(() => {
-      expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
-    });
     expect(screen.getByText('Refresh')).toBeInTheDocument();
-    userEvent.click(screen.getByText('Refresh'));
+    await userEvent.click(screen.getByText('Refresh'));
     await waitFor(() => {
       expect(fetchCurrentBalanceSpy).toHaveBeenCalledTimes(1);
       expect(fetchPreviousSettlementsSpy).toHaveBeenCalledWith({
@@ -146,8 +156,8 @@ describe('SettlementsHeaderV2', () => {
       expect(fetchSettlementAmountSpy).toHaveBeenCalledTimes(1);
       expect(fetchSettlementConfigSpy).toHaveBeenCalledTimes(1);
       expect(fetchBankAccountChangeStatusSpy).toHaveBeenCalledWith('testing123');
-      expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(2);
     });
+    expect(mockOdsFnc).toHaveBeenCalledTimes(1);
   });
 
   test('documentation link for curlec orgs', async () => {

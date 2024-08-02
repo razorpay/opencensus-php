@@ -165,11 +165,6 @@ export const props = {
       },
       error: null,
     },
-    settleNowButtonDisabled: {
-      loading: false,
-      error: ['The requested URL was not found on the server.', 'Status Code: 400'],
-      data: {},
-    },
     timeline: {
       loading: false,
       data: null,

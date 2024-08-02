@@ -92,8 +92,6 @@ const PartialBenefitLearnMore = styled(LearnMore)`
   margin-left: 5px !important;
 `;
 
-// Temporary hotfix, so component is not being utilised
-// eslint-disable-next-line no-unused-vars
 const PartialBenefit = ({ modalType, openModal }) => {
   const handleLearnMoreClick = () => {
     openModal({
@@ -156,11 +154,10 @@ const Full = ({ modalType, openModal }) => {
 
 export default function Nudge({
   user,
-  amount,
-  settlableAmount,
+  /** closeOrigin is used for identifying which component renders Nudge  */
   closeOrigin,
   openModal,
-  hidePartialVariant = false,
+  hasMIDLevelLimit,
 }) {
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
@@ -169,7 +166,6 @@ export default function Nudge({
   const isPartialOndemandSettlementEnabled =
     isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
 
-  const isInputAmountGreater = amount > settlableAmount / 100;
   const modalType = user.isAutomaticSettlementEnabled
     ? POST_ENABLE_TYPES.SAMEDAY_FULL_SUCCESS_SHIFT
     : POST_ENABLE_TYPES.FULL_SUCCESS_SHIFT_WITHOUT_SAMEDAY;
@@ -181,14 +177,20 @@ export default function Nudge({
       : POST_ENABLE_TYPES.SAMEDAY_FULL_FAILURE
     : POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS;
 
-  if (isFullOndemandSettlementEnabled && !closeOrigin && !getEsNudgeSeen(NUDGE_TYPES.FULL_SUCCESS))
+  // NOTE: this may be deprecated once we estabilish MID level limit for all merchants
+  if (
+    isFullOndemandSettlementEnabled &&
+    !hasMIDLevelLimit &&
+    !closeOrigin &&
+    !getEsNudgeSeen(NUDGE_TYPES.FULL_SUCCESS)
+  )
     return <Full openModal={openModal} modalType={modalType} />;
 
-  if (isPartialOndemandSettlementEnabled && closeOrigin === 'OnDemand' && !hidePartialVariant)
-    return <Partial openModal={openModal} modalType={partialModalType} />;
+  if (isPartialOndemandSettlementEnabled && closeOrigin === 'OnDemand')
+    return <PartialBenefit openModal={openModal} modalType={partialModalType} />;
 
-  if (isPartialOndemandSettlementEnabled && isInputAmountGreater && !hidePartialVariant)
-    return <Partial openModal={openModal} modalType={partialModalType} />;
+  if (hasMIDLevelLimit && closeOrigin === 'OnDemand')
+    return <Partial openModal={openModal} modalType={POST_ENABLE_TYPES.ODS_MERCHANT_LEVEL_LIMIT} />;
 
   return null;
 }

@@ -21,7 +21,6 @@ import {
 } from 'merchant/reducers/home';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import {
-  fetchOnDemandBlocked as fnFetchOnDemandBlocked,
   fetchSettlementConfig as fnFetchSettlementConfig,
   fetchPreviousSettlements as fnPreviousFetchSettlements,
 } from 'merchant/reducers/settlements/details';
@@ -36,6 +35,8 @@ import {
   openModal as fnOpenModal,
   closeModal as fnCloseModal,
 } from 'merchant_common/reducers/modals';
+import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import { OdsBanners } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners';
 
 import {
   SummaryHeader,
@@ -63,13 +64,11 @@ const SettlementsHeaderV2 = ({
   settlementExists,
   checkIfFirstEverSettlement,
   esOndemandSettlementEnabled,
-  settleNowDisabled,
   fetchCurrentBalance,
   fetchPreviousSettlements,
   fetchSettlementAmount,
   fetchSettlementConfig,
   fetchBankAccountChangeStatus,
-  fetchOnDemandBlocked,
   current_balance,
   org,
 }) => {
@@ -81,7 +80,9 @@ const SettlementsHeaderV2 = ({
   const [fetchedAt, setFetchedAt] = useState(moment());
   const [timeDiff, setTimeDiff] = useState(0);
 
-  const isNodalAccountBalanceLowBlocked = settleNowDisabled?.data?.blocked;
+  const odsQuery = useODSConfig();
+
+  const isNodalAccountBalanceLowBlocked = odsQuery.data?.blocked;
   const {
     settlement_currency: settlementCurrency,
     balance_currency: balanceCurrency,
@@ -120,7 +121,6 @@ const SettlementsHeaderV2 = ({
 
   useEffect(() => {
     fetchPreviousSettlements(prevSettlementParams);
-    fetchOnDemandBlocked();
     const interval = setInterval(() => {
       setTimeDiff(moment().diff(fetchedAt, 'minutes'));
     }, 60000);
@@ -150,7 +150,7 @@ const SettlementsHeaderV2 = ({
     fetchSettlementAmount();
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user?.id);
-    fetchOnDemandBlocked();
+    odsQuery.refetch();
     setFetchedAt(moment());
     setTimeDiff(0);
 
@@ -185,6 +185,7 @@ const SettlementsHeaderV2 = ({
   return (
     <>
       <SettlementsBannerV2 />
+      <OdsBanners />
       <div className="settlements-header">
         <div>
           <TestModeBanner />
@@ -284,7 +285,6 @@ const mapStateToProps = (state) => {
     holidayList: state?.settlement?.holidayList,
     ...state?.home,
     settlementConfig: state?.settlement?.config,
-    settleNowDisabled: state?.settlement?.settleNowButtonDisabled,
     previousSettlementsList: state?.settlement?.previousSettlements?.data?.items,
   };
 };
@@ -294,7 +294,6 @@ const mapDispatchToProps = (dispatch) => {
     {
       openModal: fnOpenModal,
       closeModal: fnCloseModal,
-      fetchOnDemandBlocked: fnFetchOnDemandBlocked,
       fetchCurrentBalance: fnFetchCurrentBalance,
       fetchSettlementConfig: fnFetchSettlementConfig,
       fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
