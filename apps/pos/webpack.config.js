@@ -7,6 +7,9 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const deps = require('./package.json').dependencies;
 
+const isProd = process.env.STAGE === 'production';
+const isRedirectorEnabled = process.env.REDIRECTOR === 'true';
+
 module.exports = {
   browserConfig: ({ config }) => {
     config.entry.push('./src/bootstrap/bootstrap');
@@ -19,6 +22,10 @@ module.exports = {
         }),
       );
     }
+
+    // config.devServer.devMiddleware = {
+    //   writeToDisk: true,
+    // };
 
     config.module.rules.push({
       test: /\.(graphql|gql)$/,
@@ -151,15 +158,11 @@ module.exports = {
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: './src/manifests/web-manifest.json',
+            from:
+              isProd || isRedirectorEnabled
+                ? './src/manifests/app.prod.manifest.json'
+                : './src/manifests/app.dev.manifest.json',
             to: `./manifest.json`,
-            transform(content) {
-              const parsedContent = JSON.parse(content);
-              const baseURL = process.env.SHELL_BASE_URL || 'https://dashboard.dev.razorpay.in';
-              parsedContent.start_url = `${baseURL}/app/pos-sales`;
-              parsedContent.scope = `${baseURL}/app`;
-              return JSON.stringify(parsedContent);
-            },
           },
           {
             from: './src/manifests/icons/*',
@@ -168,6 +171,7 @@ module.exports = {
         ],
       }),
     );
+
     return config;
   },
 };

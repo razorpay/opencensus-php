@@ -11,7 +11,8 @@
     "pnpm": "^9.0.0"
   },
   "scripts": {
-    "start": "STAGE=development universe dev",
+    "start": "STAGE=development REDIRECTOR=false universe dev",
+    "start:redirector": "STAGE=development REDIRECTOR=true universe dev",
     "beta:build": "rm -rf ./build && STAGE=beta universe build",
     "beta:serve": "STAGE=beta universe serve",
     "production:build": "STAGE=production universe build",

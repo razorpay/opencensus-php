@@ -1,0 +1,40 @@
+{
+  "theme_color": "#8936FF",
+  "background_color": "#2EC6FE",
+  "icons": [
+    {
+      "purpose": "maskable",
+      "sizes": "512x512",
+      "src": "icons/icon512_maskable.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "icons/icon512_rounded.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "192x192",
+      "src": "icons/icon512_rounded.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "144x144",
+      "src": "icons/icon512_rounded.png",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait",
+  "display": "standalone",
+  "dir": "auto",
+  "lang": "en-IN",
+  "name": "Razorpay",
+  "short_name": "RZP",
+  "start_url": "https://dashboard.razorpay.com/app/pos-sales",
+  "scope": "https://dashboard.razorpay.com/app",
+  "description": "Razorpay POS PWA app",
+  "id": "rzp"
+}
