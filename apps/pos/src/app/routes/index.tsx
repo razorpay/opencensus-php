@@ -7,6 +7,7 @@ import MerchantOnboardingRoutes, {
 import SalesDashboard from 'apps/pos/src/app/views/SalesAssistedOnboarding/SalesDashboard';
 import MerchantOnboardingStep from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/MerchantOnboardingStep';
 import MerchantOnboardingComponent from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components';
+import BasicInfo from 'apps/pos/src/app/views/SalesAssistedOnboarding/BasicInfo';
 
 export const BASE_ROUTE = 'pos-sales';
 export const ONBOARDING_ROUTE = 'onboarding';
@@ -15,6 +16,10 @@ export const PARENT_ROUTE_CONFIG: RouteObject[] = [
   {
     path: '/',
     element: <SalesDashboard />,
+  },
+  {
+    route: '/basic-info',
+    view: <BasicInfo />,
   },
   {
     path: 'onboarding/*',
