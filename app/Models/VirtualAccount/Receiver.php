@@ -95,6 +95,13 @@ class Receiver extends Base\Core
 
     public function buildVPA(Entity $virtualAccount, array $options): Vpa\Entity
     {
+        if (($virtualAccount->merchant !== null) and $virtualAccount->merchant->IsFeatureEnabled(Constants::COLLECTX_ENABLED))
+        {
+            $balance = $virtualAccount->merchant->directBankingBalance;
+
+            $virtualAccount->balance()->associate($balance);
+        }
+
         $validator = $virtualAccount->getValidator();
 
         $validator->validateInput('vpaReceiverOption', $options);

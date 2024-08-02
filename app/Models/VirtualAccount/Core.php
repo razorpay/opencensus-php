@@ -309,10 +309,11 @@ class Core extends Base\Core
 
             $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
 
-            if (($virtualAccount->merchant !== null) and $this->isCollectXMerchant($virtualAccount))
-            {
-                $balance = $virtualAccount->merchant->directBankingBalance;
-            }
+//            To be Uncommented once CollectX is live with both UPI and Bank Account, currently routed this to VPA receiver generation ONLY
+//            if (($virtualAccount->merchant !== null) and $this->isCollectXMerchant($virtualAccount))
+//            {
+//                $balance = $virtualAccount->merchant->directBankingBalance;
+//            }
 
             if (($balance !== null) and
                 ($balance->getType() !== Balance\Type::PRIMARY) and
