@@ -53,6 +53,8 @@ trait FreshdeskTrait
 
         $this->app['config']->set('applications.freshdesk.tokencap', 'random token capital');
 
+        $this->app['config']->set('applications.freshdesk.token_ezetap', 'random token ezetap');
+
         $this->freshdeskClientMock = Mockery::mock('RZP\Services\FreshdeskTicketClient', [$this->app])->makePartial();
 
         $this->freshdeskClientMock->shouldAllowMockingProtectedMethods();

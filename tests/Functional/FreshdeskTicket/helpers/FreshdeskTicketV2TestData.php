@@ -1261,6 +1261,57 @@ return [
         ],
     ],
 
+    'testCreateTicketForPGOSInternalAuth' => [
+        'request'  => [
+            'url'     => '/internal_create/fd/ticket/',
+            'method'  => \Requests::POST,
+            'content' => [
+                'account_id'    => '10000000000000',
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'tags'          => ['callback_requested'],
+                'group_id'      => 123,
+                'priority'      => 4,
+                'due_by'        => '2021-06-04T05:21:22Z',
+                'fr_due_by'     => '2021-06-04T05:21:22Z',
+                'status'        => 2,
+                'fd_instance'   => 'Ezetap',
+                'email'         => 'test@razorpay.com',
+                'custom_fields' => [
+                    'cf_requester_category'         => 'Merchant',
+                    'cf_requestor_subcategory'      => 'Call Requested',
+                    'cf_merchant_id'                => '10000000000000',
+                    'cf_merchant_activation_status' => 'undefined',
+                    'cf_category'                   => 'New Ticket'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description' => 'ticket description',
+            ],
+        ],
+    ],
+
+    'testAddTicketNoteForPGOSInternalAuth' => [
+        'request'  => [
+            'url'     => '/internal_create/fd/ticket/99/note',
+            'method'  => \Requests::POST,
+            'content' => [
+                'description' => 'Test note',
+                'private' => true,
+                'fd_instance' => 'Ezetap'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => '99',
+                'description'   => 'Test note'
+            ],
+        ],
+    ],
+
     'testGetAgentsFilterInternalAuth' => [
         'request'  => [
             'url'     => '/internal/fd/support_dashboard/agent?email=vinita.nirmal@razorpay.com&fd_instance=rzpind',

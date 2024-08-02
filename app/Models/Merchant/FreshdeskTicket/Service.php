@@ -681,8 +681,6 @@ class Service extends Base\Service
 
     public function addNoteToTicket($ticketId, $input)
     {
-
-        // verify input body
         (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('add_note', $input);
 
         $isPrivate = (boolean) $input['private'];
@@ -694,11 +692,15 @@ class Service extends Base\Service
             'private' => $isPrivate,
         ];
 
-        // add note to ticket
-        $noteResponse = $this->app[Constants::FRESHDESK_CLIENT]->addNoteToTicket($ticketId, $noteData);
+        $urlKey = Constants::URLIND;
 
+        if (empty($input[Constants::FD_INSTANCE]) === false)
+        {
+            $urlKey = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $input[Constants::FD_INSTANCE]);
+        }
 
-        // validate note response
+        $noteResponse = $this->app[Constants::FRESHDESK_CLIENT]->addNoteToTicket($ticketId, $noteData, $urlKey);
+
         $this->validateNoteResponse($noteResponse, true);
 
         return $noteResponse;

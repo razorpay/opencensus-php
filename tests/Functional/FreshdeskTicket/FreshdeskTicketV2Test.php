@@ -40,6 +40,7 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_CREATE_TICKET_CHECKING_CC_EMAILS          = 'rzp_create_ticket_checking_cc_emails';
     const RZP_CREATE_TICKET_SALESFORCE                  = 'rzp_create_ticket_salesforce';
     const RZP_CREATE_TICKET_INTERNAL_AUTH               = 'rzp_create_ticket_internal_auth';
+    const RZP_ADD_TICKET_NOTE_INTERNAL_AUTH             = 'rzp_add_ticket_note_internal_auth';
     const RZP_FETCH_TICKET_FILTER                       = 'rzp_fetch_ticket_filter';
     const RZP_FETCH_TICKET_FILTER_WITH_TAGS             = 'rzp_fetch_ticket_filter_with_tags';
     const RZP_FETCH_TICKET_FILTER_AGENT                 = 'rzp_fetch_ticket_filter_agent';
@@ -892,6 +893,48 @@ class FreshdeskTicketV2Test extends TestCase
         $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
 
         $afterCount = $this->getDbEntities('merchant_freshdesk_tickets');
+        // makes sure no entry is created in db
+        $this->assertEquals($beforeCount, $afterCount);
+    }
+
+    public function testCreateTicketForPGOSInternalAuth()
+    {
+        $beforeCount = $this->getDbEntities('merchant_freshdesk_tickets');
+
+        $this->ba->pgosAppAuth();
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_INTERNAL_AUTH);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'Ezetap',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $afterCount = $this->getDbEntities('merchant_freshdesk_tickets');
+
+        // makes sure no entry is created in db
+        $this->assertEquals($beforeCount, $afterCount);
+    }
+
+    public function testAddTicketNoteForPGOSInternalAuth()
+    {
+        $beforeCount = $this->getDbEntities('merchant_freshdesk_tickets');
+
+        $this->ba->pgosAppAuth();
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_ADD_TICKET_NOTE_INTERNAL_AUTH);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets/99/notes', 'POST', 'Ezetap',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $afterCount = $this->getDbEntities('merchant_freshdesk_tickets');
+
         // makes sure no entry is created in db
         $this->assertEquals($beforeCount, $afterCount);
     }
@@ -2222,11 +2265,14 @@ class FreshdeskTicketV2Test extends TestCase
 
         $expectedUrlCap = $this->app['config']->get('applications.freshdesk.urlcap') . '/' . $expectedPath;
 
+        $expectedUrlEzetap = $this->app['config']->get('applications.freshdesk.url_ezetap') . '/' . $expectedPath;
+
         $expectedUrls = [
             'rzpind'    => $expectedUrlInd,
             'rzpsol'    => $expectedUrl2,
             'rzpx'      => $expectedUrlx,
-            'rzpcap'    => $expectedUrlCap
+            'rzpcap'    => $expectedUrlCap,
+            'Ezetap'    => $expectedUrlEzetap
         ];
 
         $this->freshdeskClientMock
@@ -2508,6 +2554,19 @@ class FreshdeskTicketV2Test extends TestCase
                         ],
                         'priority'      => 4,
                     ]
+            ];
+        }
+        else if ($key === (self::RZP_ADD_TICKET_NOTE_INTERNAL_AUTH))
+        {
+            return [
+                'request'  => [
+                    'body'   => 'Test note',
+                    'private' => true,
+                ],
+                'response' => [
+                    'id'            => '99',
+                    'description'   => 'Test note'
+                ],
             ];
         }
         else if ($key === self::RZP_GET_TICKET_BY_ID)

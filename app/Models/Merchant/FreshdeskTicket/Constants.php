@@ -113,34 +113,41 @@ class Constants
     // Custom field prefix
     const MERCHANT_DASHBOARD = 'merchant_dashboard';
 
-    // Instances & urls
-    const URL    = 'url';
-    const RZP    = 'rzp';
-    const URLIND = 'urlind';
-    const RZPIND = 'rzpind';
-    const URL2   = 'url2';
-    const URLCAP = 'urlcap';
-    const RZPSOL = 'rzpsol';
-    const RZPCAP = 'rzpcap';
-    const RZPX   = 'rzpx';
-    const URLX   = 'urlx';
+    // Instances
+    const RZP       = 'rzp';
+    const RZPIND    = 'rzpind';
+    const RZPCAP    = 'rzpcap';
+    const RZPX      = 'rzpx';
+    const RZPSOL    = 'rzpsol';
+    const EZETAPIND = 'Ezetap';
+
+    // URLs
+    const URLIND        = 'urlind';
+    const URLCAP        = 'urlcap';
+    const URLX          = 'urlx';
+    const URL2          = 'url2';
+    const URL           = 'url';
+    const URL_EZETAP    = 'url_ezetap';
+
     const ONBOARDING_TYPE = "onboarding_type";
 
     const FRESHDESK_INSTANCES = [
         Type::SUPPORT_DASHBOARD_X => [self::RZPX   => self::URLX,
                                       self::RZPCAP => self::URLCAP],
         Type::SUPPORT_DASHBOARD   => [self::RZPIND => self::URLIND,
-                                      self::RZPCAP => self::URLCAP]
+                                      self::RZPCAP => self::URLCAP,
+                                      self::EZETAPIND => self::URL_EZETAP]
     ];
 
     const URL_VS_INSTANCES = [
-        self::URLX   => self::RZPX,
-        self::URLCAP => self::RZPCAP,
-        self::URLIND => self::RZPIND,
-        self::URL    => self::RZP
+        self::URLX       => self::RZPX,
+        self::URLCAP     => self::RZPCAP,
+        self::URLIND     => self::RZPIND,
+        self::URL        => self::RZP,
+        self::URL_EZETAP => self::EZETAPIND
     ];
 
-    const FRESHDESK_URL_LIST = [self::URL, self::URLIND, self::URLCAP, self::URLX];
+    const FRESHDESK_URL_LIST = [self::URL, self::URLIND, self::URLCAP, self::URLX, self::URL_EZETAP];
 
     // Active tickets and work in progress tickets
     const ACTIVE_STATUSES = [2, 3, 8, 9, 10, 11];

@@ -407,6 +407,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function pgosAppAuth(): void
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.pgos')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function cmmaAppAuth($mode = 'test', $merchantId = null)
     {
         if (empty($merchantId) === true)

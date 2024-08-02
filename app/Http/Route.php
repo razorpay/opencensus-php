@@ -4143,10 +4143,12 @@ class Route
         'fd_create_ticket'                        => ['post',      'fd/{type}/ticket',                                          'FreshdeskTicketController@postTicketV2',                      ],
         'fd_insert_into_db'                       => ['post',      'fd/insert_into_db',                                         'FreshdeskTicketController@insertIntoDB',                      ],
         'internal_fd_create_ticket'               => ['post',      'internal/fd/ticket',                                        'FreshdeskTicketController@internalPostTicketV2',              ],
-        'internal_fd_add_note'                    => ['post',      'internal/fd/ticket/{id}/note',                              'FreshdeskTicketController@addNoteToTicket',                  ],
+        'internal_fd_add_note'                    => ['post',      'internal/fd/ticket/{id}/note',                              'FreshdeskTicketController@addNoteToTicket',                   ],
+        'internal_fd_create_ticket_graphql'       => ['post',      'internal_create/fd/ticket',                                 'FreshdeskTicketController@internalPostTicketV2',              ],
+        'internal_fd_add_note_graphql'            => ['post',      'internal_create/fd/ticket/{id}/note',                       'FreshdeskTicketController@addNoteToTicket',                   ],
         'internal_fd_fetch_agent_detail_for_ticket' => ['get',     'fd/ticket/{id}/agent',                                      'FreshdeskTicketController@getAgentDetailForFreshdeskTicket'   ],
         'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
-        'internal_fd_fetch_agents'                => ['get',       'internal/fd/{type}/agent',                                  'FreshdeskTicketController@getAgents'                         ],
+        'internal_fd_fetch_agents'                => ['get',       'internal/fd/{type}/agent',                                  'FreshdeskTicketController@getAgents'                          ],
         'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
         'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
         'fd_post_ticket_reply'                    => ['post',      'fd/{type}/ticket/{id}/reply',                               'FreshdeskTicketController@postTicketReply'                    ],
@@ -6389,6 +6391,8 @@ class Route
         'internal_fd_fetch_agents',
         'internal_fd_create_ticket',
         'internal_fd_add_note',
+        'internal_fd_create_ticket_graphql',
+        'internal_fd_add_note_graphql',
         'internal_fd_fetch_agent_detail_for_ticket',
         'dispute_automation',
         'care_service_cron_proxy',
@@ -17922,7 +17926,9 @@ class Route
             'merchant_submit_internal',
             'merchant_assign_pricing_internal',
             'check_user_exists',
-            'fetch_users_internal'
+            'fetch_users_internal',
+            'internal_fd_create_ticket_graphql',
+            'internal_fd_add_note_graphql'
         ],
 
         'disputes' => [

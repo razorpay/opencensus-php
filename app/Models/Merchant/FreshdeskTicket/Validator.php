@@ -117,7 +117,8 @@ class Validator extends Base\Validator
 
     protected static $addNoteRules = [
         'description'                         => 'required|string|max:4000',
-        'private'                             => 'sometimes|boolean'
+        'private'                             => 'sometimes|boolean',
+        'fd_instance'                         => 'sometimes|string',
     ];
 
     protected static $fetchCustomerTicketsRules = [
