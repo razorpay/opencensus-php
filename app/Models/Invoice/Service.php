@@ -46,7 +46,7 @@ class Service extends Base\Service
     protected $userId   = null;
     protected $userRole = null;
 
-    const TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY = 50;
+    const TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY = 300;
     const LIVE_NOCODEAPP_MAX_CREATIONS_PER_DAY = 10000;
 
     public function __construct()
