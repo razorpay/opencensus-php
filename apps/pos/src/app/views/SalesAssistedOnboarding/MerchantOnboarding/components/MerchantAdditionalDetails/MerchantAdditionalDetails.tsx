@@ -1,0 +1,167 @@
+import React, { useEffect, useMemo } from 'react';
+import {
+  ArrowRightIcon,
+  Box,
+  Button,
+  CheckCircleIcon,
+  Heading,
+  Spinner,
+  Text,
+  useToast,
+} from '@razorpay/blade/components';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import {
+  getAdditionalDetailFields,
+  getFieldErrorText,
+  getFieldRules,
+  getInitialMerchantAdditionalDetails,
+  getNecessityIndicator,
+} from 'apps/pos/src/app/utils/merchantAdditionalDetails';
+import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
+import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
+import FormField from 'apps/pos/src/app/components/FormField';
+import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
+import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
+
+const MerchantAdditionalDetails = (): JSX.Element | null => {
+  const toast = useToast();
+  const navigate = useNavigate();
+  const { states, handlers, values } = useOnboardingContext({
+    onModularConfigUpdate: () => {
+      toast.show({
+        color: 'positive',
+        content: 'Successfully updated additional details',
+        leading: CheckCircleIcon,
+      });
+      navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${values.merchantId}`, { replace: true });
+    },
+  });
+  const { modularConfig, isUpdateModularLoading } = states;
+  const { isMobile } = useScreen();
+  const { updateModularConfig } = handlers;
+
+  const defaultValues = getInitialMerchantAdditionalDetails({ modularConfig });
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+    getValues,
+    reset,
+    watch,
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: defaultValues ?? {},
+  });
+
+  const omcValue = watch('additional_details_omc_field');
+
+  const additionalDetailsFields = useMemo(() => {
+    return getAdditionalDetailFields({ modularConfig, omcValue });
+  }, [omcValue]);
+
+  useEffect(() => {
+    if (modularConfig && defaultValues) {
+      reset(defaultValues);
+    }
+  }, [modularConfig]);
+
+  useEffect(() => {
+    if (!omcValue) {
+      reset({ ...getValues(), additional_details_sap_code_field: '' });
+    }
+  }, [omcValue]);
+
+  const onSubmit = () => {
+    updateModularConfig(getValues());
+  };
+
+  const renderContinueBtn = () => {
+    return (
+      <Button
+        isDisabled={!isValid}
+        type="submit"
+        isFullWidth={isMobile}
+        iconPosition="right"
+        icon={ArrowRightIcon}
+        isLoading={isUpdateModularLoading}
+      >
+        Continue to next step
+      </Button>
+    );
+  };
+
+  if (!modularConfig)
+    return (
+      <Box
+        as="section"
+        height="90vh"
+        width="100%"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner color="primary" accessibilityLabel="additional-details-spinner" size="xlarge" />
+      </Box>
+    );
+
+  return (
+    <Box padding={['spacing.6', 'spacing.6']}>
+      <Box paddingBottom="spacing.7">
+        <Heading
+          marginBottom="spacing.2"
+          color="surface.text.gray.normal"
+          weight="semibold"
+          as="h5"
+        >
+          Miscellaneous Information
+        </Heading>
+        <Text color="surface.text.gray.muted">
+          We require this information for taxation and compliance.
+        </Text>
+      </Box>
+      <Box maxWidth={isMobile ? '768px' : '540px'}>
+        <form noValidate onSubmit={handleSubmit(onSubmit)}>
+          <Box display="flex" flexDirection="column" gap="spacing.7">
+            {additionalDetailsFields?.map((item) =>
+              item.isHidden ? null : (
+                <FormField
+                  key={item.name}
+                  type={item?.meta?.dataType ?? ''}
+                  label={item?.meta?.title ?? ''}
+                  necessityIndicator={getNecessityIndicator({ field: item, omcValue })}
+                  control={control}
+                  name={item.name}
+                  errorText={getFieldErrorText({ item, errors, omcValue }) ?? ''}
+                  rules={getFieldRules({ field: item, omcValue })}
+                  selectOptions={item?.meta?.options ?? []}
+                  defaultValue={isStringValue(item) ? item.stringValue : ''}
+                  isDisabled={item?.isDisabled}
+                />
+              ),
+            )}
+          </Box>
+          {isMobile ? (
+            <Box
+              display="flex"
+              justifyContent="center"
+              position="fixed"
+              bottom="0px"
+              padding="spacing.4"
+              backgroundColor="surface.background.gray.intense"
+              left="0px"
+              right="0px"
+              zIndex="1"
+            >
+              {renderContinueBtn()}
+            </Box>
+          ) : (
+            <Box marginTop="spacing.9">{renderContinueBtn()}</Box>
+          )}
+        </form>
+      </Box>
+    </Box>
+  );
+};
+
+export default MerchantAdditionalDetails;

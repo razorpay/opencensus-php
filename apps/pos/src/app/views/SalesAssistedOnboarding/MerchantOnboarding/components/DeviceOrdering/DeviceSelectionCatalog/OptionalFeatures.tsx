@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Checkbox, TextInput } from '@razorpay/blade/components';
 import { useController, useFormContext } from 'react-hook-form';
 import { DeviceOptionalFeature } from 'apps/pos/src/app/types/DeviceSelection';
+import { ONLY_NUMBER_REGEX } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 
 interface OptionalFeaturesProps {
   optionalFeature: DeviceOptionalFeature;
@@ -27,6 +28,10 @@ const OptionalFeatures = ({ optionalFeature }: OptionalFeaturesProps): JSX.Eleme
       required: {
         message: 'This field is required',
         value: !!formField.value,
+      },
+      pattern: {
+        message: 'Enter valid number',
+        value: ONLY_NUMBER_REGEX,
       },
     },
     control,
@@ -63,8 +68,8 @@ const OptionalFeatures = ({ optionalFeature }: OptionalFeaturesProps): JSX.Eleme
             label=""
             name={customInputField.name}
             value={customInputField.value}
-            onChange={({ name, value }) =>
-              handleOnCustomInputChange({ name: name as string, value })
+            onChange={({ name, value = '' }) =>
+              handleOnCustomInputChange({ name: name as string, value: value.trim() })
             }
             isDisabled={!formField.value}
             validationState={customInputFieldState.error ? 'error' : 'none'}

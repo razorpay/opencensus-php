@@ -1,5 +1,4 @@
 import React from 'react';
-import { ToastContainer } from '@razorpay/blade/components';
 import useMerchantActivation from '../useMerchantActivation';
 import {
   render,
@@ -23,7 +22,6 @@ const TestApp = ({ merchantId }) => {
     <React.Fragment>
       {isMerchantDetailsLoading ? <h1> Merchant Details Loading </h1> : null}
       <button onClick={() => checkModularConfig(merchantDetails)}>Check Merchant Details</button>
-      <ToastContainer />
     </React.Fragment>
   );
 };

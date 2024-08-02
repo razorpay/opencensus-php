@@ -238,6 +238,7 @@ export const MODULAR_CONFIG = gql`
       size
       accessibilityLabel
       hideOnReviewScreen
+      dataType
       options {
         label
         value
@@ -441,6 +442,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
       size
       accessibilityLabel
       hideOnReviewScreen
+      dataType
       options {
         label
         value

@@ -1,5 +1,10 @@
 import React from 'react';
-import { UserPlusIcon, FileTextIcon, ShoppingCartIcon } from '@razorpay/blade/components';
+import {
+  UserPlusIcon,
+  FileTextIcon,
+  ShoppingCartIcon,
+  FilePlusIcon,
+} from '@razorpay/blade/components';
 import { OnboardingStatesType, OnboardingValuesType } from './providers/useOnboardingContext';
 import DeviceDeliveryAddressForSaleSalesAgent from './components/DeviceOrdering/DeviceDeliveryAddress/DeviceDeliveryAddressForSaleSalesAgent';
 import DeviceSelectionCatalogForPosSalesAgent from './components/DeviceOrdering/DeviceSelectionCatalog/DeviceSelectionCatalogForPosSalesAgent';
@@ -8,6 +13,7 @@ import MerchantNumberVerifySalesAssisted from './components/MerchantRegistration
 import DevicePaymentForPosSalesAgent from './components/DeviceOrdering/DevicePayment/DevicePaymentForPosSalesAgent';
 
 import MerchantKYC from './components/MerchantKYC';
+import MerchantAdditionalDetails from './components/MerchantAdditionalDetails';
 import {
   OnboardingStepType,
   AvailableSteps,
@@ -131,6 +137,28 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
         view: <DevicePaymentForPosSalesAgent />,
         title: 'Device Payment',
         isFullScreenLayout: true,
+      },
+    ],
+  },
+  {
+    slug: AvailableSteps.ADDITIONAL_DETAILS,
+    modularKey: 'additional_details_step',
+    title: 'Additional Details',
+    description: 'Provide merchant’s business information to start the POS journey ',
+    getStatus: ({ states }) => {
+      return getProgressFromModularStep({
+        modularConfig: states.modularConfig,
+        step: 'additional_details_step',
+      });
+    },
+    checkIfDisabled: ({ values }) => !values.merchantId,
+    icon: <FilePlusIcon />,
+    components: [
+      {
+        slug: AvailableComponents.ADDITIONAL_DETAILS,
+        modularKey: 'additional_details_form',
+        checkIfLandingPossible: () => true,
+        view: <MerchantAdditionalDetails />,
       },
     ],
   },

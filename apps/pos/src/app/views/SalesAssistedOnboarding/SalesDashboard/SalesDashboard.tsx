@@ -203,7 +203,7 @@ const SalesDashboard = (): JSX.Element => {
             right="0px"
             zIndex="1"
           >
-            <Button icon={PlusIcon} size="large" onClick={handleOnAddMerchantClick} isFullWidth>
+            <Button icon={PlusIcon} onClick={handleOnAddMerchantClick} isFullWidth>
               Add Merchant
             </Button>
           </Box>

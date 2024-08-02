@@ -1,5 +1,4 @@
 import React from 'react';
-import { ToastContainer } from '@razorpay/blade/components';
 import useModular from '../useModular';
 import {
   render,
@@ -38,7 +37,6 @@ const TestApp = ({ merchantId }) => {
       <h3>{modularConfig?.workflowData.status === 'executed' ? 'Completed' : 'Pending'}</h3>
       <button onClick={() => checkModularConfig(modularConfig)}>Check Modular Config</button>
       <button onClick={handleUpdateModular}>Test Update Modular</button>
-      <ToastContainer />
     </React.Fragment>
   );
 };

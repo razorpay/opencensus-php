@@ -32,7 +32,7 @@ const MerchantNumberVerify = ({
 
   const handleOnPhoneNumberChange = (value: string): void => {
     if (isNaN(Number(value))) return;
-    setPhoneNumber(value);
+    setPhoneNumber(value.trim());
     onPhoneNumberChange?.(value);
   };
 

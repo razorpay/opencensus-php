@@ -13,7 +13,7 @@ import {
   QueryClient,
   QueryClientProvider as ReactQueryClientProvider,
 } from '@tanstack/react-query';
-import { BladeProvider } from '@razorpay/blade/components';
+import { BladeProvider, ToastContainer } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import { server } from '../mocks/setup';
 import { COMPONENT_WRAPPER_TESTID } from './constants';
@@ -54,6 +54,7 @@ const createWrapper = ({
           <Router navigator={history} location={history.location}>
             <>
               {showModal ? <ModalDialog /> : null}
+              <ToastContainer />
               <Notifications />
               <Routes>
                 <Route

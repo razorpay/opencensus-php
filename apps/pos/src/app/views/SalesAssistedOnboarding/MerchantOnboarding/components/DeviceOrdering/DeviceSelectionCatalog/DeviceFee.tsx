@@ -7,6 +7,7 @@ import {
   DeviceFee as DeviceFeeType,
 } from 'apps/pos/src/app/types/DeviceSelection';
 import { DeviceFeeTypes } from 'apps/pos/src/app/constants/DeviceSelection';
+import { ONLY_NUMBER_REGEX } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 
 interface DeviceFeeProps {
   deviceFee: DeviceFeeType;
@@ -32,6 +33,10 @@ const DeviceFee = ({ deviceFee }: DeviceFeeProps): JSX.Element => {
       required: {
         message: 'This field is required',
         value: feeTypeField.value === 'custom',
+      },
+      pattern: {
+        message: 'Enter valid amount',
+        value: ONLY_NUMBER_REGEX,
       },
     },
     control,
@@ -62,7 +67,9 @@ const DeviceFee = ({ deviceFee }: DeviceFeeProps): JSX.Element => {
           label=""
           name={customInputField.name}
           value={customInputField.value}
-          onChange={({ value }) => setValue(deviceFee.customAmountField, value as string)}
+          onChange={({ value = '' }) =>
+            setValue(deviceFee.customAmountField, value?.trim() as string)
+          }
           leadingIcon={RupeeIcon}
           isDisabled={feeTypeField.value !== 'custom'}
           validationState={customInputFieldState.error ? 'error' : 'none'}
