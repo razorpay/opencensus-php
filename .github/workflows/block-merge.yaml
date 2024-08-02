@@ -1,0 +1,16 @@
+name: Verify Merge Restrictions
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  verify_merge_restrictions:
+    runs-on: [k8s-runner, linux-amd64]
+    steps:
+      - name: Check base branch and source branch
+        # TODO: Scale the below if condition to multiple restricted branches
+        if: (github.base_ref == 'main' || github.base_ref == 'master') && github.head_ref == 'singapore_release'
+        run: |
+          echo "Merging from 'singapore_release' branch to 'main/master' is NOT allowed."
+          exit 1
