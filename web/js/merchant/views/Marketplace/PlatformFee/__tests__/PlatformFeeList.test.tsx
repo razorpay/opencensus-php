@@ -15,6 +15,10 @@ jest.mock('common/ui/HeaderAction', () => ({
   },
 }));
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: {} }),
+}));
+
 jest.spyOn(NotificationsActions, 'showNotification');
 
 const location = {

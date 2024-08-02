@@ -10,3 +10,4 @@ export const LOGO = 'logo';
 export const FILE_TYPES = ['png', 'jpg', 'jpeg'];
 export const UPLOAD_IMAGE_HERE = 'Upload Image here';
 export const LOGO_REMOVED_SUCCESSFULLY = 'Logo Removed Successfully';
+export const BRAND_LOGO_SIZE_LIMIT = 1048576;

@@ -32,6 +32,8 @@ const FETCH_MERCHANT_MOPL_SUBSCRIPTION = 'FETCH_MERCHANT_MOPL_SUBSCRIPTION';
 const FETCH_MOPL_PLANS = 'FETCH_MOPL_PLANS';
 const FETCH_INSIGHTS = 'FETCH_INSIGHTS';
 const FETCH_FEATURE_BY_NAME = 'FETCH_FEATURE_BY_NAME';
+const FETCH_MERCHANT_CHECKOUT_CONFIG = 'FETCH_MERCHANT_CHECKOUT_CONFIG';
+const CREATE_MERCHANT_CHECKOUT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_CONFIG';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 const ADD_REPLY_URL_CARE_SERVICE =
@@ -561,6 +563,24 @@ export const fetchFeatureByName = ({ userId, feature }) => {
   };
 };
 
+export const fetchMerchantCheckoutConfig = () => {
+  return {
+    type: FETCH_MERCHANT_CHECKOUT_CONFIG,
+    payload: merchantFetch('checkout_config?type=1'),
+  };
+};
+
+export const createMerchantCheckoutConfig = ({ type, ...data }) => {
+  return {
+    type: CREATE_MERCHANT_CHECKOUT_CONFIG,
+    payload: merchantFetch({
+      url: 'checkout_config',
+      method: type,
+      data,
+    }),
+  };
+};
+
 const initialState = {
   loading: true,
   error: null,
@@ -615,6 +635,11 @@ const initialState = {
   featureStatusConfig: {
     loading: true,
     data: {},
+    error: null,
+  },
+  checkoutConfig: {
+    loading: true,
+    data: null,
     error: null,
   },
 };
@@ -915,6 +940,32 @@ const configReducer = (state = initialState, action) => {
           transaction_report_email,
         },
       };
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_CONFIG}::PENDING`: {
+      return merge(state, {
+        checkoutConfig: {
+          ...state.checkoutConfig,
+          loading: true,
+        },
+      });
+    }
+
+    case `${CREATE_MERCHANT_CHECKOUT_CONFIG}::SUCCESS`:
+    case `${FETCH_MERCHANT_CHECKOUT_CONFIG}::SUCCESS`: {
+      return set(state, 'checkoutConfig', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_CONFIG}::ERROR`: {
+      return set(state, 'checkoutConfig', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors,
+      });
     }
 
     default:

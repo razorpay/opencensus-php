@@ -1,19 +1,21 @@
 import React from 'react';
-import { BrandNameLabel, BrandNameValue } from '.';
+import { Box, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
+
 import IntoView from 'common/ui/IntoView';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import DetailRow from 'merchant/components/DetailRow';
 import {
   BILLING_LABEL,
   UPDATE_BILLING_LABEL,
   ACTION_QUERY_PARAM_KEY,
 } from 'merchant/views/Account/Profile/deeplink-constants';
-import DetailRow from 'merchant/components/DetailRow';
-import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
-import { Box } from '@razorpay/blade/components';
 import {
   INDIVIDUAL,
   NOT_REGISTERED,
 } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+
+import { BrandNameLabel, BrandNameValue } from '.';
 
 const BrandName = ({ user }): JSX.Element | null => {
   const shouldShowBrandName: boolean =
@@ -39,12 +41,12 @@ const BrandName = ({ user }): JSX.Element | null => {
       <IntoView hashedWith={BILLING_LABEL}>
         {user.isAccountAndSettingsRevampEnabled ? (
           <Box display="flex" flexDirection="column" marginTop="spacing.4" marginBottom="spacing.3">
-            <label className="col-md-12 col-sm-12">
-              <strong>
+            <label>
+              <Text weight="semibold" color="surface.text.gray.subtle">
                 <BrandNameLabel />
-              </strong>
+              </Text>
             </label>
-            <div className="col-md-5 col-sm-6">
+            <div>
               <BrandNameValue />
             </div>
           </Box>

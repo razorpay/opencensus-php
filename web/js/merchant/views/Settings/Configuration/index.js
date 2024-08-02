@@ -1,31 +1,45 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
 import LazyLoad from 'react-lazyload';
-import { withI18Service } from 'common/i18';
-import Spinner from 'common/ui/Spinner';
-import * as ConfigActions from 'merchant/reducers/config';
-import * as NotificationActions from 'merchant_common/reducers/notifications';
-import DefaultRefundSpeed from './DefaultRefundSpeed';
-import FeeBearerSelfserver from './FeeBearerSelfserve';
-import CheckoutTheme from './CheckoutTheme';
-import EmailNotifications from './EmailNotifications';
-import PaymentSettings from './PaymentSettings';
+import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { merchantFetch } from 'merchant/utils/ajax';
-import InstantRefundFee from 'merchant/views/Transactions/v1/Payments/components/InstantRefundFee';
-import MissedOrderPaymentLink from './MissedOrderPaymentLink';
-import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
-import SmsNotification from './SmsNotification';
-import WhatsappNotification from './WhatsappNotification';
-import InternationalPayments from './InternationalPayments';
-import { fetchUser } from 'merchant/reducers/session';
+import { compose } from 'redux';
+
+import { withI18Service } from 'common/i18';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import IntoView from 'common/ui/IntoView';
+import LoaderDots from 'common/ui/LoaderDots';
+import Spinner from 'common/ui/Spinner';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import DebitRefundAnnouncement from 'merchant/components/Announcements/Refunds/DebitRefund';
+import EasterEgg from 'merchant/components/EasterEgg';
+import ShowWhen from 'merchant/components/ShowWhen';
+import * as ConfigActions from 'merchant/reducers/config';
+import { fetchUser } from 'merchant/reducers/session';
+import { merchantFetch } from 'merchant/utils/ajax';
+import {
+  isFlashCheckoutAllowed,
+  isSkipMandatorySummaryPageAllowed,
+  isWhatsappNotificationEnabled,
+  isSmsNotificationEnabled,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { showDynamicFields } from 'merchant/views/PaymentLinks/utils';
+import InstantRefundFee from 'merchant/views/Transactions/v1/Payments/components/InstantRefundFee';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+
+import { CheckoutConfigExperiment } from './CheckoutConfig';
+import DefaultRefundSpeed from './DefaultRefundSpeed';
+import EmailNotifications from './EmailNotifications';
+import FeeBearerSelfserver from './FeeBearerSelfserve';
+import InternationalPayments from './InternationalPayments';
+import MissedOrderPaymentLink from './MissedOrderPaymentLink';
+import PaymentSettings from './PaymentSettings';
+import SmsNotification from './SmsNotification';
+import ToggleSetting from './ToggleSetting';
+import WhatsappNotification from './WhatsappNotification';
+import Firc from './components/FircAnnouncements/Firc';
 import {
   FLASH_CHECKOUT,
   CAPTURE_SETTINGS,
@@ -38,20 +52,8 @@ import {
   ACCOUNT_SETTINGS,
   DYNAMIC_FIELDS_PL,
 } from './deeplink-constants';
-import EasterEgg from 'merchant/components/EasterEgg';
-import Firc from './components/FircAnnouncements/Firc';
-import ToggleSetting from './ToggleSetting';
-import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import {
-  isFlashCheckoutAllowed,
-  isSkipMandatorySummaryPageAllowed,
-  isWhatsappNotificationEnabled,
-  isSmsNotificationEnabled,
-} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { showDynamicFields } from 'merchant/views/PaymentLinks/utils';
-import LoaderDots from 'common/ui/LoaderDots';
 import DynamicFieldsPl from './dynamicFieldsPl';
+import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
 
 // eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
@@ -418,7 +420,7 @@ class CongfigurationContainer extends Component {
           <div>
             {showBranding && (
               <IntoView hashedWith={ACCOUNT_SETTINGS}>
-                <CheckoutTheme
+                <CheckoutConfigExperiment
                   form="configForm"
                   onSave={this.saveConfig}
                   onSwitchChange={this.handleCovidReliefOptinAndOut}

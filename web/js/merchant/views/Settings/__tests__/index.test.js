@@ -2,6 +2,10 @@ import * as analytics from 'common/utils/analytics';
 import { renderApp, defaultProps } from 'merchant/views/Settings/__tests__/mocks/fixtures/index';
 import { screen, waitFor } from 'test-utils';
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: {} }),
+}));
+
 beforeAll(() => {
   jest.spyOn(analytics, 'analyticsTrack').mockImplementation(jest.fn);
 });

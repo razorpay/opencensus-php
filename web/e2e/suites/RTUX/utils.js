@@ -6,10 +6,7 @@ const UCS_DATA_API_URL = '**/ucs/**/GetComponentData';
 export async function getRTUXResponse({ page }) {
   let result;
   try {
-    const [response] = await Promise.all([
-      page.waitForResponse(UCS_DATA_API_URL),
-      page.goto(routes.DASHBOARD),
-    ]);
+    const [response] = await Promise.all([page.waitForResponse(UCS_DATA_API_URL)]);
     const res = await response.json();
     result = res.components;
     if (!result.length) {

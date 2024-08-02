@@ -602,7 +602,11 @@ class CheckoutTheme extends Component {
                     </div>
                   )}
 
-                {user.isAccountAndSettingsRevampEnabled && <BrandName />}
+                {user.isAccountAndSettingsRevampEnabled && (
+                  <div className="col-md-12 col-sm-12">
+                    <BrandName />
+                  </div>
+                )}
 
                 <label className="col-md-12 col-sm-12" style={{ marginTop: 12 }}>
                   <strong>Theme Color</strong>
