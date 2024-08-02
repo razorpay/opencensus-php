@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - '.github/**'
+      - '.gitignore'
   workflow_dispatch:
 
 concurrency:

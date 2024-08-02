@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - '.github/**'
+      - '.gitignore'
   workflow_dispatch:
 
 concurrency:
@@ -151,4 +154,3 @@ jobs:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
         volumes:
           - /etc/hosts:/etc/hosts
-
