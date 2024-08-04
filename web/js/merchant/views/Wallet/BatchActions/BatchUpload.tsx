@@ -16,6 +16,8 @@ import {
   validateReversalBatch,
   createGiftCardsBatch,
   validateGiftCardsBatch,
+  createGCExpiryBatch,
+  validateGCExpiryBatch,
 } from 'merchant/reducers/batches';
 import { BatchUploadWrapper } from 'merchant/views/Wallet/BatchActions/components/BatchUploadWrapper';
 import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
@@ -181,6 +183,27 @@ export const ReversalsBatchUpload = connect(null, {
       title="Create Batch Reversals"
       points={[
         'Load ID can be obtained from the response file if you have used batch load action or from transactions tab on dashboard.',
+        'This feature will work only if you are not using two factor authentication for wallet debit',
+      ]}
+      createBatch={createBatch}
+      validateBatch={validateBatch}
+    />
+  );
+});
+
+export const GCExpiryBatchUpload = connect(null, {
+  createBatch: createGCExpiryBatch as () => void,
+  validateBatch: validateGCExpiryBatch as () => void,
+})(({ createBatch, validateBatch }) => {
+  const sampleUrl = `/files/sample_extend_gift_card_expiry.xlsx`;
+
+  return (
+    <BatchUploadWrapper
+      batchType={BATCH_TYPES.UPDATE_GIFT_CARD_EXPIRY}
+      docUrl={sampleUrl}
+      title="Create Batch GC Expiry"
+      points={[
+        'Gift Card ID and Expire At (YYYY-MM-DD) are mandatory fields.',
         'This feature will work only if you are not using two factor authentication for wallet debit',
       ]}
       createBatch={createBatch}

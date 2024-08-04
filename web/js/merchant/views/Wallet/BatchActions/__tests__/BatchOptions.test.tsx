@@ -41,7 +41,7 @@ describe('BatchOptions tests', () => {
       />,
     );
 
-    expect(getAllByTestId(container, 'batch-type-option')).toHaveLength(3);
+    expect(getAllByTestId(container, 'batch-type-option')).toHaveLength(4);
   });
 
   test('it should call openModal with expected properties', async () => {

@@ -15,6 +15,7 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 const typesLabelMap = {
   create_wallet_accounts: 'Accounts',
   create_wallet_loads: 'Loads',
+  update_gift_cards_expiry: 'GC Expiry',
 };
 
 const typeColumn = {

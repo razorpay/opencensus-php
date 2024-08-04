@@ -2,11 +2,13 @@ import { connect } from 'react-redux';
 import React from 'react';
 import {
   AccountsBatchUpload,
+  GCExpiryBatchUpload,
   LoadsBatchUpload,
   ReversalsBatchUpload,
 } from 'merchant/views/Wallet/BatchActions/BatchUpload';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { Box, Button, Heading, Text } from '@razorpay/blade/components';
+import { Box, Heading, Text } from '@razorpay/blade/components';
+import Button from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Button';
 import ErrorIcon from 'assets/error_illustration.svg';
 
 interface OpenModalArgs {
@@ -33,6 +35,7 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
           'create_wallet_user_containers',
           'create_wallet_container_reversals',
           'create_bulk_gift_cards',
+          'update_gift_cards_expiry',
         ].includes(batch.type) && ['created', 'processing'].includes(batch.status),
     );
 
@@ -53,7 +56,7 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
               You can only have 3 unprocessed batch uploads at a time. Please try again once your
               previous batches are processed.
             </Text>
-            <Button onClick={closeModal} alignSelf={'center'} size="large">
+            <Button onClick={closeModal} alignSelf="center" size="large">
               Go Back
             </Button>
           </Box>
@@ -74,6 +77,9 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
     }
     if (batchType === 'reversalsBatchUpload') {
       openModal({ component: <ReversalsBatchUpload />, size: 'large' });
+    }
+    if (batchType === 'gcExpiryBatchUpload') {
+      openModal({ component: <GCExpiryBatchUpload />, size: 'large' });
     }
   };
 
@@ -120,6 +126,21 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
               <strong>Reversals</strong>
             </div>
             <div>Reverse wallet loads from multiple customers at once.</div>
+          </div>
+          <i className="i-chevron-right pull-right text-primary" />
+        </div>
+      </div>
+      <div
+        data-testid="batch-type-option"
+        className="panel panel-default"
+        onClick={() => handleBatchUpload('gcExpiryBatchUpload')}
+      >
+        <div className="panel-body">
+          <div className="description">
+            <div className="text-primary">
+              <strong>GC Expiry</strong>
+            </div>
+            <div>Extend the expiry date for multiple gift cards.</div>
           </div>
           <i className="i-chevron-right pull-right text-primary" />
         </div>

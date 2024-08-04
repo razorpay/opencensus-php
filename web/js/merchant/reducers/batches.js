@@ -506,6 +506,7 @@ export const fetchAllWalletBatches = (params, isCreateGiftCardBatchEnabled) => {
     'create_wallet_container_loads',
     'create_wallet_user_containers',
     'create_wallet_container_reversals',
+    'update_gift_cards_expiry',
   ];
 
   if (!isCreateGiftCardBatchEnabled) {
@@ -526,6 +527,8 @@ export const createReversalBatch = createBatch('create_wallet_container_reversal
 export const validateReversalBatch = validateBatch('create_wallet_container_reversals');
 export const createGiftCardsBatch = createBatch('create_bulk_gift_cards');
 export const validateGiftCardsBatch = validateBatch('create_bulk_gift_cards');
+export const createGCExpiryBatch = createBatch('update_gift_cards_expiry');
+export const validateGCExpiryBatch = validateBatch('update_gift_cards_expiry');
 
 /* batches for GCMS */
 export const createGCMSEmailDeliveryBatch = createBatch('gcms_upload_bulk_emails');

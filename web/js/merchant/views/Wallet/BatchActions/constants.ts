@@ -34,4 +34,5 @@ export const BATCH_TYPES = {
   CREATE_WALLET_USERS_CONTAINERS: 'create_wallet_user_containers',
   CREATE_WALLET_REVERSAL_CONTAINERS: 'create_wallet_reversal_containers',
   CREATE_BULK_GIFT_CARDS: 'create_bulk_gift_cards',
+  UPDATE_GIFT_CARD_EXPIRY: 'update_gift_cards_expiry',
 };
