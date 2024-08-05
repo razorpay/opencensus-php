@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 3
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v3
@@ -119,6 +121,8 @@ jobs:
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 3
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v3
@@ -170,6 +174,8 @@ jobs:
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 3
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v3
@@ -222,6 +228,8 @@ jobs:
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 3
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v3

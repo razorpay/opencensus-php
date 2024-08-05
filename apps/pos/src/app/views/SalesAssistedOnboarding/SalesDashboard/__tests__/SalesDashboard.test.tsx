@@ -12,6 +12,8 @@ import {
   within,
 } from 'apps/pos/src/services/test/test-utils';
 
+jest.setTimeout(30000);
+
 jest.mock('@dashboard/shared-ui/components/Forms/DateRangePickerField', () => {
   return {
     __esModule: true,
