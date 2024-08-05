@@ -1010,11 +1010,14 @@ class Payment extends Base
 
             if ($e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) {
 
-                $this->trace->count(Metrics::SERVER_ERROR_PRICING_RULE_ABSENT_COUNT);
-
                 $isExpEnabled = $this->isFallbackRuleExpEnabled();;
 
                 $merchant = $this->entity->merchant;
+
+                $this->trace->count(Metrics::SERVER_ERROR_PRICING_RULE_ABSENT_COUNT,
+                    [
+                        'org_id' => $merchant?->getOrgId(),
+                    ]);
 
                 $existingPaymentPricingRule = (!empty($this->pricingRules) && ($this->pricingRules[0]?->getFeature() == Pricing\Feature::PAYMENT));
 
@@ -1030,6 +1033,12 @@ class Payment extends Base
                         if ($merchant->getCountry() === 'SG' && app()->isEnvironmentProduction() === true) {
                             $defaultFallbackPlanId = Pricing\DefaultPlan::SG_NO_RULE_FALLBACK_PLAN_ID;
                         }
+
+                        $this->trace->count(Metrics::FALLBACK_PRICING_APPLIED_COUNT,
+                            [
+                                'org_id' => $merchant?->org->getId(),
+                                'fallback_plan_id' => $defaultFallbackPlanId,
+                            ]);
 
                         try {
                             $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($defaultFallbackPlanId);
