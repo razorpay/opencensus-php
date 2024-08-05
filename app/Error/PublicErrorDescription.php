@@ -1839,4 +1839,5 @@ class PublicErrorDescription
     const BAD_REQUEST_OWNER_GSTIN_MISMATCH    = 'The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_BUSINESS_GSTIN_MISMATCH = 'The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_SUSPICIOUS_TRANSACTION  = 'Transaction blocked. Please reach out to support.';
+    const SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE = 'Your Razorpay merchant account creation is in progress. Please retry the action after sometime.';
 }

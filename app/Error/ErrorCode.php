@@ -3138,6 +3138,7 @@ class ErrorCode
     const BANK_ADMIN_ADFS_LOGIN_FEATURE_ENABLED                        = 'BANK_ADMIN_ADFS_LOGIN_FEATURE_ENABLED';
     const BAD_REQUEST_ADMIN_EXPIRED                                    = 'BAD_REQUEST_ADMIN_EXPIRED';
 
+    const SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE                  = 'SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE';
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

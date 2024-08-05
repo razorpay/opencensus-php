@@ -63,7 +63,7 @@ class Core extends Base\Core
     const METHOD_ENABLED = 'method_enabled';
     const TERMINAL_AVAILABLE = 'terminal_available';
 
-    const SET_DEFAULT_METHODS_LOCK_TIMEOUT        = 0.07;  //seconds
+    const SET_DEFAULT_METHODS_LOCK_TIMEOUT        = 1;  //seconds
 
     const defaultCreditEmiProvidersWhitelisted = [
 
@@ -879,12 +879,13 @@ class Core extends Base\Core
         }
     }
 
-    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null)
+    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null, string $source=null)
     {
 
         $this->trace->info(TraceCode::SET_PAYMENT_METHODS_UNDER_MUTEX_LOCK,
             [
                 'merchant_id' => $merchant->getId(),
+                'source' => $source
             ]
         );
 
@@ -899,7 +900,8 @@ class Core extends Base\Core
                 (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
             },
             self::SET_DEFAULT_METHODS_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS,
+            2, 110,210);
     }
 
     public function setDefaultMethods($merchant, Merchant\Entity $aggregatorMerchant = null)

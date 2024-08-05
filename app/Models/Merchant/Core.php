@@ -171,6 +171,7 @@ class Core extends Base\Core
 
     protected $irctcBatchType;
 
+
     /**
      * @var CapitalSubmerchantUtility
      */
@@ -1994,7 +1995,7 @@ class Core extends Base\Core
 
         if($isExpEnabled === true)
         {
-            (new Methods\Core)->setMethods($merchant, $aggregatorMerchant);
+            (new Methods\Core)->setMethods($merchant, $aggregatorMerchant, Constants::SET_METHODS_SOURCE_ACCOUNT);
         }
 
         $this->addPartnerAddedFeaturesToSubmerchant($merchant, $aggregatorMerchant);

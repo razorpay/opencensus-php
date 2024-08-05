@@ -2023,4 +2023,7 @@ final class Constants
     const MERCHANT_WEBSITE_AUTOMATED_OCR_CHECKS_TTL = 45 * 60; // in seconds
     const OCR_AUTOMATED_CHECK_ENABLE = 'ocr_automated_check_enable';
     const MERCHANT_SAVE_BUSINESS_WEBSITE = 'merchant_save_business_website';
+
+    const SET_METHODS_SOURCE_ACCOUNT="ACCOUNT";
+
 }

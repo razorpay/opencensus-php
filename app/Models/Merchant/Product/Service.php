@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Product;
 
 use App;
 
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
@@ -151,7 +152,12 @@ class Service extends Base\Service
                     $isExpEnabled = (new Merchant\Core())->isExpEnabledForProductConfigIssue($partner);
 
                     if($isExpEnabled === true) {
-                        (new Methods\Core())->setMethods($merchant, $partner);
+                        try {
+                            (new Methods\Core())->setMethods($merchant, $partner, Util\Constants::SET_METHODS_SOURCE_PRODUCT);
+                        }
+                        catch (\Exception $e) {
+                            throw new Exception\ServerErrorException(PublicErrorDescription::SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE, ErrorCode::SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE);
+                        }
                     }
                     else {
                         (new Methods\Core())->setDefaultMethods($merchant, $partner);
