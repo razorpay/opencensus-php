@@ -50,6 +50,29 @@ describe('ProgramItemsTable', () => {
     expect(defaultProps.openPreview).toHaveBeenCalledWith(getStartedSection.folders[0].items[0]);
   });
 
+  test('row item click action cta', async () => {
+    renderApp();
+    const rowTitle = defaultProps.items[0].title;
+    const rowDescription = defaultProps.items[0].description;
+    expect(screen.getAllByText(rowDescription)).toHaveLength(1);
+    await userEvent.click(screen.getAllByText(rowDescription)[0]);
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Partner Playbook Page Section Cta',
+        actionName: 'Clicked',
+        properties: expect.objectContaining({
+          section: 'Get Started',
+          pageFold: 2,
+          folderName: null,
+          folderDescription: null,
+          title: rowTitle,
+          ctaClicked: 'row item',
+        }),
+      }),
+    );
+    expect(defaultProps.openPreview).toHaveBeenCalledWith(getStartedSection.folders[0].items[0]);
+  });
+
   test('item actions copy url cta', async () => {
     renderApp();
     expect(screen.getAllByLabelText('copy')).toHaveLength(6);

@@ -105,7 +105,7 @@ const ProgramItemsTable = ({
     openPreview(item);
   };
 
-  const onRowClick = (id) => {
+  const onRowClick = ({ id }) => {
     const rowItem = itemsMap[id];
     trackItemActionCta('row item', rowItem);
     openItemPreview(rowItem);

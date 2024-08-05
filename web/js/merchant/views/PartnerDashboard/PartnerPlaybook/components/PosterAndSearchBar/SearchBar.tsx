@@ -20,13 +20,14 @@ const StyledSearchBar = styled.div(
     input {
       width: 380px;
       font-size: ${theme.typography.fonts.size[300]}px;
-      background-color: ${theme.colors.surface.background.gray.intense};
+      background-color: ${theme.colors.surface.background.gray.moderate};
     }
     input::placeholder{
       font-size: ${theme.typography.fonts.size[300]}px;
     }
     div {
       border-width: 0px;
+      box-shadow: none;
     }
     div[class^='BaseInputAnimatedBorder'], div[class*=' BaseInputAnimatedBorder']{
       height: 0px;
