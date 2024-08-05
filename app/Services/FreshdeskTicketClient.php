@@ -628,11 +628,20 @@ class FreshdeskTicketClient
 
     private function getAuth($authKey = 'token') : string
     {
-        return $this->isMock ? '' :
-            (($this->isSandbox === true) ?
-                $this->config['sandbox_token'] :
-                $this->config[$authKey]
-            );
+        if ($this->isMock === true)
+        {
+            return '';
+        }
+        else if ($this->isSandbox === true)
+        {
+            return $this->config['sandbox_token'];
+        }
+        else if ($authKey === 'token_ezetap')
+        {
+            return 'Basic ' . $this->config[$authKey];
+        }
+
+        return  $this->config[$authKey];
     }
 
     protected function getDimension($route, $responseCode){
