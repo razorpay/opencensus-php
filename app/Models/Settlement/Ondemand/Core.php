@@ -634,39 +634,10 @@ class Core extends Base\Core
     // this method returns an array which contains [isODSCappingBreached boolean, merchant's max limit per working day, available limit]
     public function isODSCappingBreached($merchantId)
     {
-        try {
-            // Fetch merchant's settlement ondemand feature config
-            $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($merchantId);
-
-            if($featureConfig === null) {
-                $this->trace->error(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND, [
-                    'merchantId'    => $merchantId,
-                    'error'         => 'feature config not found',
-                ]);
-
-                $this->trace->count(
-                    Metric::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND, []);
-
-                return [true, null, null];
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->error(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_EXCEPTION, [
-                'merchantId'    => $merchantId,
-                'error'         => $e->getMessage(),
-            ]);
-
-            $this->trace->count(
-                Metric::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_EXCEPTION, []);
-
-            return [false, null, null];
-        }
-
         $odsCappingCheckRequired = (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false);
 
         if($odsCappingCheckRequired === false)
-            return [false, $featureConfig->getMaxLimitPerWorkingDay(), null];
+            return [false, null, null];
 
         $odsGlobalLimit = (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0);
 
@@ -699,7 +670,7 @@ class Core extends Base\Core
             $this->trace->count(
                 Metric::SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED, []);
 
-            return [true, $featureConfig->getMaxLimitPerWorkingDay(), null];
+            return [true, null, null];
         }
 
         $odsCappingScaleFactor = (int) ConfigKey::get(ConfigKey::ODS_CAPPING_SCALE_FACTOR, 100);
@@ -714,7 +685,7 @@ class Core extends Base\Core
             $this->trace->count(
                 Metric::SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR, []);
 
-            return [false, $featureConfig->getMaxLimitPerWorkingDay(), null];
+            return [false, null, null];
         }
 
         if($totalOdsSettled >= ($odsCappingScaleFactor / 100) * $odsGlobalLimit)
@@ -733,8 +704,37 @@ class Core extends Base\Core
                 $this->trace->count(
                     Metric::SETTLEMENT_ONDEMAND_ALLOWED_LIMIT_BREACHED, []);
 
-                return [true, $featureConfig->getMaxLimitPerWorkingDay(), null];
+                return [true, null, null];
             }
+        }
+
+        try {
+            // Fetch merchant's settlement ondemand feature config
+            $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($merchantId);
+
+            if($featureConfig === null) {
+                $this->trace->error(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND, [
+                    'merchantId'    => $merchantId,
+                    'error'         => 'feature config not found',
+                ]);
+
+                $this->trace->count(
+                    Metric::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND, []);
+
+                return [false, null, null];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_EXCEPTION, [
+                'merchantId'    => $merchantId,
+                'error'         => $e->getMessage(),
+            ]);
+
+            $this->trace->count(
+                Metric::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_EXCEPTION, []);
+
+            return [false, null, null];
         }
 
         // Validate merchant has not breached merchant's per working day limit
