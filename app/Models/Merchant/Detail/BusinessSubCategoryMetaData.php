@@ -1190,7 +1190,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::GREYLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
         ],
         Sub::SEXUAL_WELLNESS_PRODUCTS      => [
