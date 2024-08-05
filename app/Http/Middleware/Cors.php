@@ -145,6 +145,7 @@ class Cors
                 'sentry-trace',
                 'Authorization',
                 'baggage',
+                Headers::X_PAYOUT_IDEMPOTENCY,
             ];
 
             $headers = [

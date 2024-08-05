@@ -183,6 +183,7 @@ class ApiRequestAny
             'X-Request-TraceId'     => $requestId,
             Headers::DEV_SERVE_USER => Request::header(Headers::DEV_SERVE_USER),
             Headers::X_RAZORPAY_REQUEST_ID => Request::header(Headers::X_RAZORPAY_REQUEST_ID),
+            Headers::X_PAYOUT_IDEMPOTENCY => Request::header(Headers::X_PAYOUT_IDEMPOTENCY),
         ];
 
         if (app('request.ctx')->isOauthRequest() === true)

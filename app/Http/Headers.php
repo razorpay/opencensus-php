@@ -34,4 +34,6 @@ class Headers
     const X_PARTNER_OAUTH_REFERRAL      = 'x-partner-oauth-referral';
 
     const ONBOARDING_SIGNATURE          = 'x-onboarding-signature';
+
+    const X_PAYOUT_IDEMPOTENCY          = 'X-Payout-Idempotency';
 }
