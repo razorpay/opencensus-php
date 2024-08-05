@@ -14,10 +14,9 @@ export const TestingConfirmation = ({
   closeTestingConfirmationModal,
   startIntegrationTesting,
   raiseTicket,
+  isTicketLoading,
 }) => {
   const testNow = () => {
-    // open testing modal
-    // To-do: Add analytics event
     startIntegrationTesting();
   };
 
@@ -41,7 +40,11 @@ export const TestingConfirmation = ({
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-          <Button variant="secondary" onClick={raiseTicket}>
+          <Button
+            variant="secondary"
+            onClick={() => raiseTicket('test_help')}
+            isLoading={isTicketLoading}
+          >
             Raise a ticket
           </Button>
           <Button onClick={testNow}>Test now</Button>

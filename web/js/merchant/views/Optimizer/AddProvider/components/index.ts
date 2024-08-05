@@ -5,3 +5,4 @@ export { default as ProviderConfiguration } from './ProviderConfiguration';
 export { PaymentMethodCoverage } from './PaymentMethodCoverage';
 export { TestingConfirmation } from './TestingConfirmation';
 export { default as IntegrationTesting } from './IntegrationTesting';
+export { RaiseTicketSuccess } from './RaiseTicketSuccess';

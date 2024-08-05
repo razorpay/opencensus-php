@@ -1196,3 +1196,6 @@ export const findProviderName = (providers: Provider[], id: string): string => {
   const provider = providers?.filter((p) => p.Terminal_id === id);
   return provider.length > 0 ? provider[0].Provider_name : id;
 };
+
+// This helps adding ticket into Mission Integrations queue
+export const FD_TICKET_GROUP_ID = 82000661025;

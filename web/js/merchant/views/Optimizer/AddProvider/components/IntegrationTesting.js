@@ -43,6 +43,7 @@ const IntegrationTesting = ({
   gatewayMetaData,
   gatewayCoverage,
   razorpayCoverage,
+  isTicketLoading,
   goToStep,
   shouldFetchSummary,
   activeMethods,
@@ -490,6 +491,10 @@ const IntegrationTesting = ({
     }
   };
 
+  const raiseTicketForPaymentFailure = () => {
+    raiseTicket('payment_failure', paymentError);
+  };
+
   if (isGoLiveConfirmation) {
     return (
       <GoLiveConfirmation
@@ -506,16 +511,16 @@ const IntegrationTesting = ({
       <ModalHeader
         title="Optimizer Integration Testing"
         subtitle="The terminal would go live once all tests are performed and the issues resolved"
-        trailing={
-          <Button
-            variant="tertiary"
-            icon={HelpCircleIcon}
-            iconPosition="left"
-            onClick={raiseTicket}
-          >
-            HELP
-          </Button>
-        }
+        // trailing={
+        //   <Button
+        //     variant="tertiary"
+        //     icon={HelpCircleIcon}
+        //     iconPosition="left"
+        //     onClick={}
+        //   >
+        //     HELP
+        //   </Button>
+        // }
       />
       <ModalBody padding="spacing.0">
         <Box display="flex" flexDirection="row">
@@ -598,12 +603,13 @@ const IntegrationTesting = ({
             isPaymentSuccessfull={!isWebhookFailure && isPaymentSuccessfull}
             isPaymentDone={isPaymentDone}
             testPayment={testPayment}
-            raiseTicket={raiseTicket}
+            raiseTicket={raiseTicketForPaymentFailure}
             isRefundDone={isRefundDone}
             testAnotherPayment={testAnotherPayment}
             changeIntegrationTestingStep={changeIntegrationTestingStep}
             takeProviderLive={takeProviderLive}
             isUpdatingProvider={isUpdatingProvider}
+            isTicketLoading={isTicketLoading}
           />
         </Box>
       </ModalFooter>

@@ -30,6 +30,7 @@ import {
   RAZORPAY_GATEWAY_KEY,
 } from 'merchant/views/Navigator/constants';
 import { WALLETS_MAP } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/constants';
+import { FD_TICKET_GROUP_ID } from 'merchant/views/Optimizer/utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -69,6 +70,10 @@ const reducer = (state, action) => {
       return { ...state, shouldFetchSummary: action.payload };
     case 'set_provider':
       return { ...state, provider: action.payload };
+    case 'set_is_ticket_loading':
+      return { ...state, isTicketLoading: action.payload };
+    case 'set_is_ticket_raised':
+      return { ...state, isTicketRaised: action.payload };
     default:
       return state;
   }
@@ -85,6 +90,8 @@ const initialState = {
   goToStep: '',
   shouldFetchSummary: true,
   provider: {},
+  isTicketLoading: false,
+  isTicketRaised: false,
 };
 
 const ProviderView = (props) => {
@@ -101,6 +108,8 @@ const ProviderView = (props) => {
     showAuditSummaryButton,
     shouldFetchSummary,
     provider,
+    isTicketLoading,
+    isTicketRaised,
   } = state;
 
   const selectedProviderId = props.location.pathname.split('/').pop();
@@ -301,9 +310,63 @@ const ProviderView = (props) => {
     setShowIntegrationAuditModal(false);
   };
 
-  const raiseTicket = () => {
-    closeIntegrationAuditModal();
-    document.dispatchEvent(new CustomEvent('create-ticket', { detail: { id: 'tickets' } }));
+  const raiseTicket = (reason, paymentError = '') => {
+    let screen = 'Optimizer Integration Testing';
+    let description = '';
+    if (reason === 'payment_failure') {
+      screen = 'Optimizer Integration Testing - Payment Testing Screen';
+      description = `Payment testing failure - ${paymentError}`;
+    }
+
+    trackOptimizerEvents({
+      objectName: 'raise ticket',
+      actionName: 'click',
+      properties: {
+        gateway: provider?.Gateway,
+        integration_type: provider?.Gateway_details?.optimizer_seamless_disabled
+          ? 'instant'
+          : 's2s',
+        payment_error: paymentError,
+      },
+      screen,
+    });
+    dispatch({ type: 'set_is_ticket_loading', payload: true });
+    // For edge case where we don't recieve any response for FD ticket creation
+    setTimeout(() => {
+      dispatch({ type: 'set_is_ticket_loading', payload: false });
+    }, 5000);
+    window.addEventListener('message', (event) => {
+      if (event.data === 'optimizer-ticket-creation-successful') {
+        closeIntegrationAuditModal();
+        dispatch({ type: 'set_is_ticket_raised', payload: true });
+        dispatch({ type: 'set_is_ticket_loading', payload: false });
+      }
+      if (event.data === 'optimizer-ticket-creation-failure') {
+        dispatch({ type: 'set_is_ticket_loading', payload: false });
+        showNotification({
+          type: 'error',
+          message: 'Failed to raise a ticket. Please try again after sometime.',
+          closeTimeout: 3000,
+        });
+      }
+    });
+    document.dispatchEvent(
+      new CustomEvent('create-optimizer-ticket', {
+        detail: {
+          data: {
+            description,
+            category: {
+              value: 'Integrations Support',
+            },
+            subcategory: {
+              value: 'Plugins',
+            },
+            group_id: FD_TICKET_GROUP_ID,
+          },
+          user,
+        },
+      }),
+    );
   };
 
   const viewIntegrationAuditResults = () => {
@@ -360,6 +423,10 @@ const ProviderView = (props) => {
     dispatch({ type: 'set_provider', payload: data });
   };
 
+  const closeRaiseTicketSuccessModal = () => {
+    dispatch({ type: 'set_is_ticket_raised', payload: false });
+  };
+
   return (
     <Box
       display="flex"
@@ -388,6 +455,13 @@ const ProviderView = (props) => {
           shouldFetchSummary={shouldFetchSummary}
           activeMethods={activeMethods}
           updateProviderViewDetails={updateProviderViewDetails}
+          isTicketLoading={isTicketLoading}
+        />
+      )}
+      {isTicketRaised && (
+        <RaiseTicketSuccess
+          isModalOpen={isTicketRaised}
+          closeRaiseTicketSuccessModal={closeRaiseTicketSuccessModal}
         />
       )}
       <Box display="flex" flexDirection="row">

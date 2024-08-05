@@ -13,6 +13,7 @@ export const FooterButtons = ({
   changeIntegrationTestingStep,
   takeProviderLive,
   isUpdatingProvider,
+  isTicketLoading,
 }) => {
   let isPaymentTestingBlocked, isRefundTestingBlocked, isIntegrationAuditSummaryBlocked;
   steps.forEach(({ value, blocked }) => {
@@ -53,7 +54,7 @@ export const FooterButtons = ({
                 Continue
               </Button>
             ) : (
-              <Button variant="primary" onClick={raiseTicket}>
+              <Button variant="primary" onClick={raiseTicket} isLoading={isTicketLoading}>
                 Raise a ticket
               </Button>
             )

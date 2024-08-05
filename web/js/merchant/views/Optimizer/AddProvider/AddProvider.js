@@ -32,6 +32,7 @@ import {
   fetchRazorpayMethodCoverage,
   updateProvider,
 } from 'merchant/views/Optimizer/AddProvider/service';
+import { FD_TICKET_GROUP_ID } from 'merchant/views/Optimizer/utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -43,6 +44,7 @@ import {
   PaymentMethodCoverage,
   TestingConfirmation,
   IntegrationTesting,
+  RaiseTicketSuccess,
 } from './components';
 import {
   isIntegrationAuditEnabled,
@@ -100,6 +102,8 @@ class AddProvider extends React.Component {
     isStartIntegrationTesting: false,
     providerId: null,
     updateProviderData: {},
+    isTicketLoading: false,
+    isTicketRaised: false,
   };
 
   componentDidMount() {
@@ -945,8 +949,19 @@ class AddProvider extends React.Component {
     this.setState({ isStartIntegrationTesting: false });
   };
 
-  raiseTicket = () => {
+  raiseTicket = (reason, paymentError = '') => {
     const { provider } = this.state;
+
+    let screen = 'Optimizer Integration Testing';
+    let description = '';
+    if (reason === 'payment_failure') {
+      screen = 'Optimizer Integration Testing - Payment Testing Screen';
+      description = `Payment testing failure - ${paymentError}`;
+    } else if (reason === 'test_help') {
+      screen = 'Optimizer Integration Testing - Testing Confirmation Screen';
+      description = 'Need help with testing';
+    }
+
     trackOptimizerEvents({
       objectName: 'raise ticket',
       actionName: 'click',
@@ -955,12 +970,51 @@ class AddProvider extends React.Component {
         integration_type: provider?.Gateway_details?.optimizer_seamless_disabled
           ? 'instant'
           : 's2s',
+        payment_error: paymentError,
       },
-      screen: 'Optimizer Integration Testing',
+      screen,
     });
-    this.closeTestingConfirmationModal();
-    this.closeIntegrationTestingModal();
-    document.dispatchEvent(new CustomEvent('create-ticket', { detail: { id: 'tickets' } }));
+
+    this.setState({ isTicketLoading: true });
+
+    // For edge case where we don't recieve any response for FD ticket creation
+    setTimeout(() => {
+      this.setState({ isTicketLoading: false });
+    }, 5000);
+
+    window.addEventListener('message', (event) => {
+      if (event.data === 'optimizer-ticket-creation-successful') {
+        this.setState({ isTicketRaised: true });
+        this.closeTestingConfirmationModal();
+        this.closeIntegrationTestingModal();
+        this.setState({ isTicketLoading: false });
+      }
+      if (event.data === 'optimizer-ticket-creation-failure') {
+        this.setState({ isTicketLoading: false });
+        showNotification({
+          type: 'error',
+          message: 'Failed to raise a ticket. Please try again after sometime.',
+          closeTimeout: 3000,
+        });
+      }
+    });
+    document.dispatchEvent(
+      new CustomEvent('create-optimizer-ticket', {
+        detail: {
+          data: {
+            description,
+            category: {
+              value: 'Integrations Support',
+            },
+            subcategory: {
+              value: 'Plugins',
+            },
+            group_id: FD_TICKET_GROUP_ID,
+          },
+          user: this.props.user,
+        },
+      }),
+    );
   };
 
   updateProviderDetails = (data) => {
@@ -982,6 +1036,10 @@ class AddProvider extends React.Component {
       }
     });
     return valid;
+  };
+
+  closeRaiseTicketSuccessModal = () => {
+    this.setState({ isTicketRaised: false });
   };
 
   render() {
@@ -1007,6 +1065,8 @@ class AddProvider extends React.Component {
       isTestingConfirmationModalOpen,
       isStartIntegrationTesting,
       providerId,
+      isTicketLoading,
+      isTicketRaised,
     } = this.state;
 
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
@@ -1052,6 +1112,7 @@ class AddProvider extends React.Component {
             gatewayMetaData={providers?.[selectedProviderWithAcquirer]}
             gatewayCoverage={gatewayCoverage}
             razorpayCoverage={razorpayCoverage}
+            isTicketLoading={isTicketLoading}
           />
         )}
 
@@ -1061,6 +1122,14 @@ class AddProvider extends React.Component {
             closeTestingConfirmationModal={this.closeTestingConfirmationModal}
             startIntegrationTesting={this.startIntegrationTesting}
             raiseTicket={this.raiseTicket}
+            isTicketLoading={isTicketLoading}
+          />
+        )}
+
+        {isTicketRaised && (
+          <RaiseTicketSuccess
+            isModalOpen={isTicketRaised}
+            closeRaiseTicketSuccessModal={this.closeRaiseTicketSuccessModal}
           />
         )}
 
