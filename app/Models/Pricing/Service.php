@@ -210,7 +210,7 @@ class Service extends Base\Service
                 $mutexKey = sprintf(self::MERCHANT_PRICING_UPDATE_MUTEX, $item[Entity::MERCHANT_ID]);
                 $pricingRulesCollection = $mutex->acquireAndRelease($mutexKey, function () use ($idempotencyKey, $shouldUpdate, $item, $pricingRulesCollection, $orgId)
                 {
-                $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey, $shouldUpdate, $orgId)
+                $result = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($item, $idempotencyKey, $shouldUpdate, $orgId)
                 {
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
 
