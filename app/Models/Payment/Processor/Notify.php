@@ -605,6 +605,13 @@ class Notify
             ],
         ];
 
+        // Added this custom logic for razorpay org id as main logo url wasn't loading properly for GMAIL mails,
+        // Due to it being in SVG format. And Changing Main logo URL would have disrupted multiple other services.
+        // Hence, a custom logic for razorpay org id to fix the SVG image issue.
+        if($this->merchant->isRazorpayOrgId() === true) {
+            $data['org']['logo_url'] = $this->org->getEmailLogo();
+        }
+
         // Add Org Data from commit 1dad91cb6e6e here instead of doing in Payment/Base constructor,
         // that was wrong implementation since child class has power to override not parent
         $orgData = OrgWiseConfig::getOrgDataForEmail($this->merchant);
