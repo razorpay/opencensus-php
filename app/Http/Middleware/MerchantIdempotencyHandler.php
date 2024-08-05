@@ -99,7 +99,8 @@ class MerchantIdempotencyHandler
             ($this->basicauth->isSettlementsApp() === false) and
             ($this->basicauth->isXPayrollApp() === false) and
             ($this->basicauth->isRouteDirectTransferRequest() === false) and
-            ($this->basicauth->isXperienceApp() === false))
+            ($this->basicauth->isXperienceApp() === false) and
+            ($this->basicauth->isRouteDashboardPayoutRequest() === false))
         {
             return $next($request);
         }

@@ -42209,6 +42209,75 @@ class PayoutTest extends OAuthTestCase
         }
     }
 
+    public function testPayoutCreateOTPWithNoIdempotencyKeySuccess()
+    {
+        $this->liveSetUp();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotNull($payout);
+    }
+
+    public function testPayoutCreateWithOTPIdempotencyKeySuccess()
+    {
+        $this->liveSetUp();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $iKey = $this->getDbEntity('idempotency_key', ['source_id' => $payout->id]);
+
+        $this->assertNotNull($iKey);
+    }
+
+    public function testPayoutCreateWithOTPDuplicateIdempotencyKey()
+    {
+        $this->mockLedgerSns(1);
+
+        $payout1 = $this->testCreatePayoutOTPWithIKeyHeader('samekey');
+
+        $payout2 = $this->testCreatePayoutOTPWithIKeyHeader('samekey');
+
+        $this->assertEquals($payout1['id'], $payout2['id']);
+
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+    }
+
+    public function testCreatePayoutOTPWithIKeyHeader($ikeyValue = 'check', $amount = null)
+    {
+        $headers = [
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY => $ikeyValue,
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        if (empty($amount) === false)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['amount'] = $amount;
+        }
+
+        $this->ba->proxyAuth();
+
+        $payout = $this->startTest();
+
+        $ikey = $this->getDbLastEntity(Constants\Entity::IDEMPOTENCY_KEY);
+
+        $this->assertEquals($payout['id'], 'pout_' . $ikey->getSourceId());
+        $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
+
+        return $payout;
+    }
+
     /*
  * -------------------HELPER FUNCTIONS-------------------
  */

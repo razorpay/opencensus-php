@@ -2043,6 +2043,10 @@ class BasicAuth
     {
         return ($this->app['api.route']->getCurrentRouteName() === 'transfer_create');
     }
+    public function isRouteDashboardPayoutRequest()
+    {
+        return ($this->app['api.route']->getCurrentRouteName() === 'payout_create_with_otp');
+    }
 
     public function isXDashboardApp()
     {

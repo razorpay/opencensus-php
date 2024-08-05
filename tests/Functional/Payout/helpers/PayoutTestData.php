@@ -23996,5 +23996,120 @@ return [
                 'result' => false
             ],
         ]
-    ]
+    ],
+
+    'testCreatePayoutOTPWithIKeyHeader' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutCreateWithOTPIdempotencyKeySuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'server'  => [
+                'HTTP_X-Payout-Idempotency' => 'idempotency_key'
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ]
+            ],
+        ],
+    ],
+
+    'testPayoutCreateOTPWithNoIdempotencyKeySuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ]
+            ],
+        ],
+    ],
 ];
