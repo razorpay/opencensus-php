@@ -5003,8 +5003,8 @@ class SettlementOndemandTest extends TestCase
             "transactor_event" =>  "ondemand_settlement_processed",
             "money_params" => [
                 "ondemand_settlement_amount" => "1000000",
-                "ondemand_settlement_fee" => "20000",
-                "ondemand_settlement_tax" => "3600"
+                "ondemand_settlement_fee" => "0",
+                "ondemand_settlement_tax" => "0"
             ],
             "ledger_integration_mode" =>  "reverse-shadow",
             "tenant" => "PG"
@@ -5019,10 +5019,10 @@ class SettlementOndemandTest extends TestCase
             'user_id'                        => null,
             'amount'                         => 1000000,
             'total_amount_settled'           => 0,
-            'total_fees'                     => 23600,
-            'total_tax'                      => 3600,
+            'total_fees'                     => 0,
+            'total_tax'                      => 0,
             'total_amount_reversed'          => 0,
-            'total_amount_pending'           => 976400,
+            'total_amount_pending'           => 1000000,
             'max_balance'                    => false,
             'currency'                       => 'INR',
             'status'                         => 'created',

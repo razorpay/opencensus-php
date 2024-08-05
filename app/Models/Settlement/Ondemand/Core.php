@@ -44,6 +44,7 @@ use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
 use RZP\Models\Ledger\ReverseShadow\Capital\Core as ReverseShadowCapitalCore;
+use RZP\Models\Settlement\Ondemand\Constants as SettlementOndemandConstants;
 
 class Core extends Base\Core
 {
@@ -168,7 +169,14 @@ class Core extends Base\Core
         $settlementOndemandPayouts = (new OndemandPayout\Service)
             ->createSettlementOndemandPayout($settlementOndemand, $requestDetails);
 
-        [$totalFees , $totalTax] = $this->calculateFees($settlementOndemandPayouts);
+        $settlementType = SettlementOndemandConstants::SETTLEMENT_TYPE;
+        $linkedAccountSettlement = SettlementOndemandConstants::LINKED_ACCOUNT_SETTLEMENT;
+        $isLinkedAccountSettlement = ($this->merchant->isFeatureEnabled(Feature\Constants::ONDEMAND_LINKED) && isset($requestDetails[$settlementType]) && $requestDetails[$settlementType] === $linkedAccountSettlement);
+        $totalFees = 0;
+        $totalTax = 0;
+        if(!$isLinkedAccountSettlement) {
+            [$totalFees, $totalTax] = $this->calculateFees($settlementOndemandPayouts);
+        }
 
         $settlementOndemand->setFees($totalFees);
 
