@@ -15394,5 +15394,23 @@ return [
                 'is_submerchant' => true,
             ],
         ],
-    ]
+    ],
+
+    'testEditMerchantBillingLabel' => [
+        'request' => [
+            'method' => 'PUT',
+            'url'    => '/merchants/AaaBbbCccDddEe',
+            'content' => [
+                'billing_label' => 'abcBusiness'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'AaaBbbCccDddEe',
+                'entity' => 'merchant',
+                'billing_label' => 'abcBusiness'
+            ],
+            'status_code' => 200
+        ]
+    ],
 ];

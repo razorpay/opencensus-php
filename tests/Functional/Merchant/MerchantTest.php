@@ -20872,6 +20872,40 @@ The same has been enabled for the account.
         $this->assertFalse($response['is_submerchant']);
     }
 
+    public function testEditMerchantBillingLabel() : void
+    {
+        $merchantId = 'AaaBbbCccDddEe';
+
+        $oldBillingLabel = 'xyzBusiness';
+
+        $newBillingLabel = 'abcBusiness';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'            => $merchantId,
+            'billing_label' => $oldBillingLabel
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_details', [
+            'merchant_id'   => $merchantId,
+            'business_dba'  => $oldBillingLabel
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant', [
+            'id' => $merchantId
+        ]);
+
+        $merchantDetails = $this->getDbEntity('merchant_details', [
+            'merchant_id' => $merchantId
+        ]);
+
+        $this->assertEquals($newBillingLabel, $merchant->getBillingLabel());
+
+        $this->assertEquals($newBillingLabel, $merchantDetails->getBusinessDba());
+    }
 
     // helper Functions
 

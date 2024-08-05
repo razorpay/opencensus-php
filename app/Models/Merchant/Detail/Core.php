@@ -3038,6 +3038,11 @@ class Core extends Base\Core
             (new Merchant\Core())->updateWhitelistedDomain($merchant, $input);
         }
 
+        if(isset($input[Merchant\Entity::BILLING_LABEL]) === true)
+        {
+            $data[Entity::BUSINESS_DBA] = $input[Merchant\Entity::BILLING_LABEL];
+        }
+
         if (empty($data) === false)
         {
             $merchantDetails->edit($data);
