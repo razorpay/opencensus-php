@@ -312,13 +312,29 @@ class Core extends Base\Core
                 'experiment_id' => $this->app['config']->get('app.nocodeapp_pricing_exp_id'),
                 'request_data'  => json_encode(
                     [
-                        'merchant_id' => $merchant->getId(),
-                        'merchant_name' => $merchant->getName()
+                        'merchant_id'    => $merchant->getId(),
+                        'merchant_name'  => $merchant->getName(),
+                        'merchant_email' => $merchant->getEmail(),
                     ]
                 ),
             ];
 
-            if (!$this->isSplitzExperimentEnable($properties, 'enable'))
+            $isExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
+
+            $this->trace->info(
+                TraceCode::NOCODEAPPS_PRICING_PLAN_PREFERENCES_EXPERIMENT,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                    'merchant_name'  => $merchant->getName(),
+                    'merchant_email' => $merchant->getEmail(),
+                    'country' => $merchant->getCountry(),
+                    'is_razorpay_org' => $merchant->isRazorpayOrgId(),
+                    'is_linked_account' => $merchant->isLinkedAccount(),
+                    'is_partner' => $merchant->isPartner(),
+                    'is_experiment_enabled' => $isExperimentEnabled,
+                ]);
+
+            if (!$isExperimentEnabled)
             {
                 return null;
             }
