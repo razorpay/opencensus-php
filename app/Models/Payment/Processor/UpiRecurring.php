@@ -630,6 +630,7 @@ trait UpiRecurring
         // validation for fixed frequencies
         if(($upiMandate['frequency'] !== UpiMandate\Frequency::AS_PRESENTED) and
             ($upiMandate->getFrequency() !== UpiMandate\Frequency::DAILY) and
+            ($upiMandate->getFrequency() !== UpiMandate\Frequency::ONETIME) and
             ($lastSuccessDebitTimeStamp !== null) and
             (in_array($this->app['env'],['automation','bvt']) === false))
         {
@@ -653,6 +654,14 @@ trait UpiRecurring
                     null,
                     []);
             }
+        }
+
+        if(($upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME) and ($upiMandate->getUsedCount() > 2))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Debit has been already initiated for the mandate.',
+                null,
+                []);
         }
 
         if($upiMandate->getFrequency() === UpiMandate\Frequency::DAILY)
@@ -801,7 +810,8 @@ trait UpiRecurring
                 $notificationCount = $this->repo->notification->fetchSuccessfulNotificationCount(
                     Order\Entity::verifyIdAndSilentlyStripSign($input[Payment\Entity::ORDER_ID]));
 
-                if($notificationCount !== 0)
+                if(($notificationCount !== 0) or
+                   ($payment->localToken->upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME))
                 {
                         $metadata->setRemindAt(null);
                         $metadata->setInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED);
@@ -967,6 +977,7 @@ trait UpiRecurring
 
         if(($upiMandate->getFrequency() !== UpiMandate\Frequency::AS_PRESENTED) and
             ($upiMandate->getFrequency() !== UpiMandate\Frequency::DAILY) and
+            ($upiMandate->getFrequency() !== UpiMandate\Frequency::ONETIME) and
             ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED) and
             ($isOrderPaidOrAuthorized === false))
         {
@@ -1113,7 +1124,7 @@ trait UpiRecurring
             $notificationCount = $this->repo->notification->fetchSuccessfulNotificationCount(
                 Order\Entity::verifyIdAndSilentlyStripSign($orderId));
 
-            if ($notificationCount !== 0)
+            if (($notificationCount !== 0) or ($payment->localToken->upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME))
             {
                 $this->processRecurringDebitForUpi($payment);
             }
@@ -1405,6 +1416,12 @@ trait UpiRecurring
 
                     $metadata->setInternalStatus(UpiMetadata\InternalStatus::FAILED);
                     (new UpiMetadata\Core)->update($metadata);
+
+                    if($payment->localToken->upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME)
+                    {
+                        $data = ['recurring_failure_reason' => 'Mandate execution is completed.'];
+                        $this->updateTokenAndMandateCancelledForUpiAutopayOneTimePayment($payment, $data);
+                    }
 
                     $this->updatePaymentAuthFailed($exception);
                 });
@@ -1725,6 +1742,10 @@ trait UpiRecurring
         {
             $newStatus = UpiMetadata\InternalStatus::AUTHORIZED;
         }
+        else if(($confirmed === true) and ($upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME))
+        {
+            $newStatus = UpiMetadata\InternalStatus::FAILED;
+        }
         else if ($confirmed === true)
         {
             $newStatus = UpiMetadata\InternalStatus::PENDING_FOR_AUTHORIZE;
@@ -1772,6 +1793,18 @@ trait UpiRecurring
             (new Token\Core)->updateTokenForUpi($token, [
                 Token\Entity::VPA_ID            => $vpaId,
                 Token\Entity::RECURRING_STATUS  => $token->getRecurringStatus(),
+            ]);
+        }
+
+        if(($upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME) and
+            ($upiMandate->getStatus() === UpiMandate\Status::CONFIRMED))
+        {
+            $token->terminal()->associate($payment->terminal);
+
+            $this->createAndSetTerminalInGatewayToken($payment, $token);
+
+            (new Token\Core())->updateTokenForUpi($token, [
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
             ]);
         }
 
@@ -1891,6 +1924,82 @@ trait UpiRecurring
         }
 
         return false;
+    }
+
+    public function getReattemptIntervalForOneTimeMandate(string $merchantId)
+    {
+        $app = \App::getFacadeRoot();
+
+        $internalErrorCode = $this->exception->getError()->getInternalErrorCode();
+
+        $shouldReattempt = in_array($internalErrorCode, [ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT]);
+
+        $interval = null;
+
+        if ($shouldReattempt === true) {
+            $variant = $app['razorx']->getTreatment($merchantId,
+                Merchant\RazorxTreatment::UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL,
+                $app['rzp.mode'],
+                3
+            );
+
+            if ($variant !== 'control') {
+                $interval = (int)$variant;
+            }
+        }
+
+        return $interval;
+    }
+
+    public function updateTokenAndMandateCancelledForUpiAutopayOneTimePayment(Payment\Entity $payment, array $data)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token === null)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_UPDATE_TOKEN,
+            [
+                'payment_id'      => $payment->getId(),
+                'token_id'        => $payment->getTokenId(),
+                'global_token_id' => $payment->getGlobalTokenId(),
+                'data'            => $data,
+            ]);
+
+        $createdAt = $payment->getCreatedAt();
+
+        $token->setUsedAt($createdAt);
+
+        $token->incrementUsedCount();
+
+        $oldRecurringStatus = $token->getRecurringStatus();
+
+        $token->setRecurringStatus(Token\RecurringStatus::CANCELLED);
+
+        $token->setRecurringFailureReason($data[Token\Entity::RECURRING_FAILURE_REASON]);
+
+        $this->repo->saveOrFail($token);
+
+        $this->updateUpiMandateExpired($token->upiMandate);
+
+        $this->eventTokenStatus($token, $oldRecurringStatus);
+    }
+
+    public function updateUpiMandateExpired(UpiMandate\Entity $upiMandate)
+    {
+        $upiMandate->setStatus(UpiMandate\Status::EXPIRED);
+
+        $this->repo->saveOrFail($upiMandate);
+
+        $this->trace->info(
+            TraceCode::UPI_AUTOPAY_MANDATE_EXPIRED,
+            [
+                'mandate_id' => $upiMandate->getId(),
+                'status' => $upiMandate->getStatus()
+            ]);
     }
 
     /**

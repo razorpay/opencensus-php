@@ -13,6 +13,7 @@ class Frequency
     const QUARTERLY    = 'quarterly';
     const HALF_YEARLY  = 'half_yearly';
     const YEARLY       = 'yearly';
+    const ONETIME      = 'one_time';
 
     /**
      * Autopay supports only selected frequencies as maintained in this array
@@ -27,7 +28,8 @@ class Frequency
          self::YEARLY,
          self::FORTNIGHTLY,
          self::BIMONTHLY,
-         self::HALF_YEARLY
+         self::HALF_YEARLY,
+         self::ONETIME
     ];
 
     public static $frequencyToRecurringValueMap = [

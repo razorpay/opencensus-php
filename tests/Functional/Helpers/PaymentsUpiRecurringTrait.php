@@ -76,6 +76,36 @@ trait PaymentsUpiRecurringTrait
         return $order['id'];
     }
 
+    protected function createUpiRecurringOneTimeOrder(array $override = [])
+    {
+        $this->ba->privateAuth();
+
+        $content =  [
+            'amount'          => 50000,
+            'currency'        => 'INR',
+            'method'          => 'upi',
+            'customer_id'     => 'cust_100000customer',
+            'payment_capture' => 1,
+            'token'           => [
+                'max_amount'      => 150000,
+                'frequency'       => 'one_time',
+                'start_at'        => Carbon::now()->addDay(1)->getTimestamp()
+            ]
+        ];
+
+        $content = array_merge($content, $override);
+
+        $request = [
+            'method'  => 'POST',
+            'content' => $content,
+            'url' => '/orders',
+        ];
+
+        $order = $this->makeRequestAndGetContent($request);
+
+        return $order['id'];
+    }
+
     protected function createUpiRecurringTpvOrder(array $override = [])
     {
         $this->ba->privateAuth();

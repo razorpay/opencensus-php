@@ -8209,7 +8209,17 @@ class Processor
 
         (new Payment\Metric)->pushFailedMetrics($payment);
 
-        $this->eventPaymentFailed($exception);
+        $isUpiOtmPayment = false;
+
+        if(isset($this->payment->localToken->upiMandate) === true)
+        {
+            $isUpiOtmPayment = $this->isUpiOtmPayment($payment, $this->payment->localToken->upiMandate->toArray());
+        }
+
+        if($isUpiOtmPayment === false)
+        {
+            $this->eventPaymentFailed($exception);
+        }
 
         (new Notify($this->payment))->trigger(Payment\Event::CUSTOMER_FAILED);
 

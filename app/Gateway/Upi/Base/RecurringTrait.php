@@ -62,7 +62,7 @@ trait RecurringTrait
             if ($this->isRunningOnDark() === false)
             {
                 $uri = route('gateway_payment_callback_recurring', ["gateway" => $this->gateway], false);
-                $url = 'https://api-dark.razorpay.com' . $uri;
+                $url = 'https://api-dark-concierge.razorpay.com' . $uri;
 
                 $this->trace->info(TraceCode::MISC_TRACE_CODE, [
                     'message'       => 'callback redirected',

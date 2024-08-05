@@ -944,6 +944,8 @@ final class RazorxTreatment
     //Experiment to change debit retries time gap for merchant
     const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP = 'upi_autopay_increase_debit_retries_time_gap';
 
+    const UPI_AUTOPAY_ONE_TIME_MANDATE_REATTEMPT_INTERVAL = 'upi_autopay_one_time_mandate_reattempt_interval';
+
     const UPI_AUTOPAY_PAYMENT_REMARK            = "upi_autopay_payment_remark";
 
     const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";

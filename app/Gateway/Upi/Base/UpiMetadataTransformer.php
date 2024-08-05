@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Base;
 use App;
 use Carbon\Carbon;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -283,7 +284,15 @@ class UpiMetadataTransformer extends UpiTransformer
 
             $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->input[Entity::PAYMENT]['id'], $this->input[Entity::PAYMENT]['merchant_id'], $this->upi);
 
-            if ((($canRetry === true) and ($attempt >= 10)) or (($canRetry === false) and ($attempt >= 3)))
+            $token = $this->input[Entity::PAYMENT][Payment\Entity::TOKEN];
+
+            $app = \App::getFacadeRoot();
+
+            $upiMandate = $app['repo']->upi_mandate->findByTokenId($token['id']);
+
+            if ((($canRetry === true) and ($attempt >= 10)) or
+                (($canRetry === false) and ($attempt >= 3)) or
+                (($upiMandate->getFrequency() === Frequency::ONETIME) and ($attempt >= 10)))
             {
                 return null;
             }
@@ -314,12 +323,23 @@ class UpiMetadataTransformer extends UpiTransformer
                 $remindAfter =  (pow(2, $attempt) * 15);
             }
 
+            if($upiMandate->getFrequency() === Frequency::ONETIME)
+            {
+                $interval = $this->getReattemptIntervalForOneTimeMandate($this->input[Entity::PAYMENT]['merchant_id']);
+
+                if($interval !== null)
+                {
+                    $remindAfter = $interval;
+                }
+            }
+
             $upiMandate = $this->input['upi_mandate'] ?? null;
 
             if((empty($remindAfter) === false) and
                 ($upiMandate !== null) and
                 ($upiMandate['frequency'] !== Frequency::AS_PRESENTED) and
-                ($upiMandate['frequency'] !== Frequency::DAILY))
+                ($upiMandate['frequency'] !== Frequency::DAILY) and
+                ($upiMandate['frequency'] !== Frequency::ONETIME))
             {
                 if(($this->isValidMandateExpiry($upiMandate, $remindAfter) === false) or
                     ($this->isValidCycle($upiMandate, $remindAfter) === false))

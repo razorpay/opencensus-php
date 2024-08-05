@@ -95,6 +95,20 @@ class Core extends Base\Core
             );
         }
 
+        if(($this->getFrequency($input) === Frequency::ONETIME) and (isset($input['expire_at']) === true))
+        {
+            $currentTime = Carbon::now(Timezone::IST);
+
+            $mandateExpiry = Carbon::createFromTimestamp($input['expire_at'], Timezone::IST);
+
+            if ($currentTime->diffInDays($mandateExpiry) > 60)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Token expiry cannot be greater than 60 days for one time mandate.'
+                );
+            }
+        }
+
         // Perform validation on fixed frequency on recurring type and recurring value
         if(($this->getFrequency($input) !== Frequency::AS_PRESENTED) and
           ($this->getFrequency($input) !== Frequency::DAILY))
@@ -113,6 +127,7 @@ class Core extends Base\Core
         {
             case Frequency::DAILY:
             case Frequency::AS_PRESENTED:
+            case Frequency::ONETIME:
                 return;
             case Frequency::WEEKLY:
                 if (($recurringValue < 1) or ($recurringValue > 7))
@@ -252,6 +267,11 @@ class Core extends Base\Core
         if (isset($input[Entity::END_TIME]) === false) {
             //Default end time to 10 years from current timestamp.
             $endTime = $input['expire_at'] ?? Carbon::now()->addYears(10)->getTimestamp();
+
+            if((isset($input[Entity::FREQUENCY]) === true) and ($input[Entity::FREQUENCY] === Frequency::ONETIME))
+            {
+                $endTime = $input['expire_at'] ?? Carbon::now()->addDays(60)->getTimestamp();
+            }
 
             $input[Entity::END_TIME] = $endTime;
 

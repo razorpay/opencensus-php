@@ -16,6 +16,8 @@ class Status
 
     const PAUSED    = 'paused';
 
+    const EXPIRED   = 'expired';
+
     public static function isUpiMandateStatusValid($status): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));

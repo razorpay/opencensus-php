@@ -7,6 +7,8 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\UpiMandate;
 use RZP\Models\Customer\Token;
+use RZP\Models\UpiMandate\Entity;
+use RZP\Models\UpiMandate\Status;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payment\UpiMetadata\Entity as MetaData;
@@ -41,6 +43,191 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
 
         // test when callback is encrypted.
         $this->testRecurringMandateCreate(true);
+    }
+
+    public function testRecurringOneTimeMandateCreate()
+    {
+        $orderId = $this->createUpiRecurringOneTimeOrder();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'one_time',
+            Entity::STATUS          => Status::CREATED,
+            Entity::USED_COUNT      => 0,
+            Entity::GATEWAY_DATA    => null,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $response = $this->doAuthPayment($this->payment);
+
+        // Just to validate that a proper coproto is being send
+        $this->assertArraySubset([
+            'type'      => 'async',
+            'request'   => [
+                'method' => 'get'
+            ],
+        ], $response);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $upiMandate->reload();
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'one_time',
+            Entity::STATUS          => Status::CREATED,
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::USED_COUNT      => 1,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW    => 'collect',
+            ],
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION        => 'authenticate',
+            Base\Entity::TYPE          => 'collect',
+            Base\Entity::PAYMENT_ID    => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'create',
+                'ano'       => 1,
+                'sno'       => 1,
+            ]
+        ], $upi->toArray());
+
+        $this->mandateCreateCallback($payment, true);
+
+        $payment->reload();
+
+        $upiMandate->reload();
+
+        $token->reload();
+
+        $this->token = $token;
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'failed',
+            Payment\Entity::INTERNAL_ERROR_CODE => ErrorCode::BAD_REQUEST_DUMMY_PAYMENT
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'one_time',
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::STATUS          => Status::CONFIRMED,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW        => 'collect',
+                Entity::VPA         => $this->payment['vpa'],
+            ]
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'confirmed'
+        ], $token->toArray());
+
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            MetaData::INTERNAL_STATUS => 'failed'
+        ], $upiMetadata->toArray());
+
+        $this->assertNotNull($upiMandate[Entity::UMN]);
+        $this->assertNotNull($upiMandate[Entity::RRN]);
+        $this->assertNotNull($upiMandate[Entity::NPCI_TXN_ID]);
+    }
+
+    public function testRecurringOneTimeMandateExecute()
+    {
+        $this->testRecurringOneTimeMandateCreate();
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        $response = $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway' => 'upi_icici',
+            'cps_route' => 0,
+        ]);
+
+        $this->assertArraySubset([
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $this->order->getPublicId(),
+        ], $response);
+
+        $this->assertArrayHasKey('razorpay_signature', $response);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'action'        => 'authorize',
+            'status_code'   => '0',
+            'gateway_data'  => [
+                'act'   => 'execte',
+                'ano'   => 1,
+                'ext'   => null,
+                'sno'   => 1,
+            ]
+        ], false);
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'created',
+            'reference1'    => null,
+            'reference16'   => null,
+        ], false);
+
+        $content = $this->mockServer()->getAsyncCallbackResponseAutoDebitForIcici($payment);
+
+        $this->makeS2sCallbackAndGetContent($content, 'upi_icici');
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'captured',
+            'reference1'    => 'HDFC00001124',
+            'reference16'   => '019721040510',
+        ], false);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'action'                => 'authorize',
+            'merchant_reference'    => $this->upiMandate->getId(),
+            'gateway_payment_id'    => 'GatewayPaymentIdDebit',
+            'status_code'           => '0',
+            'npci_txn_id'           => 'HDFC00001124',
+            'npci_reference_id'     => '019721040510',
+            'gateway_error'         => [
+                'gatewayStatusCode'     => null,
+                'gatewayStatusDesc'     => 'Debit Success',
+            ],
+        ]);
+
+        $this->assertUpiDbLastEntity('token', [
+            'recurring_status' => 'cancelled',
+            'recurring_failure_reason' => 'Mandate execution is completed.'
+        ]);
+
+        $this->assertUpiDbLastEntity('upi_mandate', [
+            'status' => 'expired'
+        ]);
     }
 
     public function testRecurringTpvMandateCreate()

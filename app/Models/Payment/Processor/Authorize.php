@@ -66,6 +66,7 @@ use RZP\Models\Card\IIN;
 use RZP\Services\Doppler;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
+use RZP\Models\UpiMandate;
 use RZP\Models\CardMandate;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
@@ -92,6 +93,7 @@ use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Card\IIN\MandateHub;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\UpiMandate\Frequency;
 use RZP\Services\CardPaymentService;
 use RZP\Models\Customer\Token\Metric;
 use RZP\Models\Payment\TwoFactorAuth;
@@ -3552,7 +3554,13 @@ trait Authorize
 
         $this->repo->saveOrFail($payment);
 
-        if (empty($payment->getGooglePayMethods()) === true)
+        $isUpiOtmPayment = false;
+        if(isset($gatewayInput['upi_mandate']) === true)
+        {
+            $isUpiOtmPayment = $this->isUpiOtmPayment($payment, $gatewayInput['upi_mandate']);
+        }
+
+        if ((empty($payment->getGooglePayMethods()) === true) and ($isUpiOtmPayment === false))
         {
             $this->eventPaymentCreated();
 
@@ -3624,6 +3632,19 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function isUpiOtmPayment(Payment\Entity $payment, array $upiMandate)
+    {
+        if (($payment->isUpiRecurring() === true) and
+            ($payment->isRecurringTypeInitial() === true) and
+            (isset($upiMandate['frequency']) === true) and
+            ($upiMandate['frequency'] === 'one_time'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -8062,6 +8083,16 @@ trait Authorize
             return;
         }
 
+        if(($payment->isUpiAutoRecurring() === true) and
+           ($payment->localToken->upiMandate->getFrequency() === Frequency::ONETIME))
+        {
+            $data = ['recurring_failure_reason' => 'Mandate execution is completed.'];
+
+            $this->updateTokenAndMandateCancelledForUpiAutopayOneTimePayment($payment, $data);
+
+            return;
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
             [
@@ -8493,6 +8524,18 @@ trait Authorize
         {
             // We need to update the mandate status if applicable
             $this->updateRecurringEntitiesForUpiIfApplicable($this->payment, $data, $wasFailed);
+
+            if($this->isUpiOtmPayment($this->payment, $this->payment->localToken->upiMandate->toArray()) === true)
+            {
+                $traceCode = TraceCode::UPI_AUTOPAY_ONE_TIME_INITIAL_PAYMENT;
+
+                $errorCode = ErrorCode::BAD_REQUEST_DUMMY_PAYMENT;
+
+                $exception = new BadRequestException($errorCode);
+
+                $this->updatePaymentFailed($exception, $traceCode);
+            }
+
             return;
         }
 
