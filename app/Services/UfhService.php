@@ -341,7 +341,7 @@ class UfhService
             $storageFileName = "b2b_export_invoices/" . $storageFileName;
         }
 
-        if($type === GenericDocumentConstants::OPGSP_INVOICE)
+        if($type === GenericDocumentConstants::OPGSP_INVOICE || $type === 'opgsp_invoice_zip')
         {
             $fileNameArray= (explode("/",$storageFileName));
             $fileNameFromPath = array_pop($fileNameArray);
@@ -372,7 +372,7 @@ class UfhService
         // RBL + ICICI + FirstData Detail + FirstData Summary Files
         if($type === 'firs_file' or $type === 'firs_icici_file' or
             $type === 'firs_firstdata_file' or $type === 'firs_firstdata_sum_file' or
-            $type === FileStore\Type::JPMC_DECRYPTED_FILES or $type === FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE)
+            $type === FileStore\Type::JPMC_DECRYPTED_FILES or $type === FileStore\Type::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE or $type === 'opgsp_invoice_zip')
         {
             $this->merchantId = $requestData[self::ENTITY_ID];
         }

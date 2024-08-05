@@ -84,6 +84,8 @@ class CrossBorderCommonUseCases extends Job
 
     const UPDATE_PAYMENT_STATUS = 'update_payment_status';
     const CAPTURE_PACB_BANK_TRANSFER_PAYMENT = 'capture_pacb_bank_transfer_payment';
+
+    const SEND_OPGSP_INVOICES_ZIP = 'SEND_OPGSP_INVOICES_ZIP';
     /**
      * @var string
      */
@@ -183,6 +185,9 @@ class CrossBorderCommonUseCases extends Job
                     break;
                 case self::CAPTURE_PACB_BANK_TRANSFER_PAYMENT:
                     (new BankTransfer\Service())->capturePACBBankTransferPayments($this->payload['body']);
+                    break;
+                case self::SEND_OPGSP_INVOICES_ZIP:
+                    $this->sendZippedInvoices();
                     break;
                 default:
                     $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_INVALID_ACTION,[
@@ -647,6 +652,11 @@ class CrossBorderCommonUseCases extends Job
     protected function sendInvoices()
     {
         (new OpgspIciciProcessor())->sendInvoicesForICICIOpgspImport($this->payload);
+    }
+
+    protected function sendZippedInvoices()
+    {
+        (new OpgspIciciProcessor())->sendOpgspImportZippedInvoices($this->payload);
     }
 
     protected function zipFIRS()

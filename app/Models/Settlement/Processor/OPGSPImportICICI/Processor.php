@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Country;
 use RZP\Constants\Disputes;
 use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Excel\Export as ExcelExport;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
@@ -23,10 +24,12 @@ use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Service as InvoiceService;
 use RZP\Models\Transaction\Entity as TEntity;
 use RZP\Models\Transaction\Type;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Services\Beam\Service;
 use RZP\Services\UfhService;
 use RZP\Trace\TraceCode;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
@@ -34,11 +37,14 @@ use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\GenericDocument;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Order\OrderMeta;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use Symfony\Component\HttpFoundation;
 
 
 class Processor extends Base\Core
 {
 
+    use FileHandlerTrait;
     protected $jobNameProd = BeamConstants::ICICI_OPGSP_IMPORT_PROD_JOB_NAME;
 
     protected $invoicesJobNameProd = BeamConstants::ICICI_OPGSP_INVOICES_PROD_JOB_NAME;
@@ -755,10 +761,11 @@ class Processor extends Base\Core
             {
                 $transactionCount = $this->repo->transaction
                     ->getCountBySettlementIdAndTypes($settlement->getId(), [Type::PAYMENT]);
-
+                $currentDate = Carbon::createFromTimestamp($settlement->getCreatedAt())->isoFormat('DD-MM-YYYY');
                 // get number of batches for sending invoices
                 $numberOfBatches = intdiv($transactionCount, Constants::INVOICE_BATCH_SIZE) + 1;
-
+                $zipCount = 1;
+                $zipIds = [];
                 for ($batch = 0; $batch < $numberOfBatches; $batch++) {
                     $offset = $batch * Constants::INVOICE_BATCH_SIZE;
 
@@ -771,6 +778,7 @@ class Processor extends Base\Core
                     $paymentDocuments = (new InvoiceService())->findByPaymentIds($paymentIds, $merchantId);
 
                     $fileIds = [];
+                    $invoicesNotPresent = [];
                     foreach ($paymentDocuments as $paymentDoc)
                     {
                         if(isset($paymentDoc[InvoiceEntity::REF_NUM]))
@@ -778,16 +786,51 @@ class Processor extends Base\Core
                             $fileIds[] = 'file_'.$paymentDoc[InvoiceEntity::REF_NUM];
                         } else
                         {
-                            $this->trace->error(TraceCode::OPGSP_IMPORT_INVOICE_NOT_PRESENT,
+                            $invoicesNotPresent[] = $paymentDoc['id'];
+                        }
+                    }
+
+                    $this->trace->info(TraceCode::OPGSP_IMPORT_INVOICE_NOT_PRESENT,
+                        [
+                            'Missing_Payment_Document'    => $invoicesNotPresent,
+                            'Total_Documents_Missing'     => count($invoicesNotPresent)
+                        ]);
+
+                    $fileIdBatches = array_chunk($fileIds, Constants::INVOICE_ZIP_BATCH_SIZE);
+
+                    foreach ($fileIdBatches as $fileIdBatch) {
+                        $prefix = 'Invoice_Zip' . '_' . $merchantId . '_' . $currentDate . "_" . $zipCount++;
+
+                        try {
+                            $zipFileId = $this->app['ufh.service']->downloadFiles($fileIdBatch, $merchantId, $prefix, Constants::OPGSP_INVOICE_ZIP_TYPE);
+                            $zipIds[] = $zipFileId;
+                        } catch (\Exception $e) {
+                            $this->trace->info(
+                                TraceCode::OPGSP_IMPORT_ZIP_INVOICE_CREATION_FAILED,
                                 [
-                                    'payment_document'    => $paymentDoc,
+                                    "error" => $e
                                 ]);
                         }
-
                     }
-                    $files = (new GenericDocument\Service)->fetchFiles($fileIds, $merchantId);
-                    $this->sendInvoiceFiles($files, $merchantId);
+                }
 
+                if (count($zipIds) > 0) {
+
+                    $data = [
+                        'zip_ids'       =>  $zipIds,
+                        'action'        => CrossBorderCommonUseCases::SEND_OPGSP_INVOICES_ZIP,
+                        'merchant_id'   => $merchantId,
+                        'settlement_id' => $settlement->getId(),
+                        'mode'          => Mode::LIVE,
+                    ];
+
+                    $this->trace->info(TraceCode::OPGSP_IMPORT_INVOICE_ZIP_PUSH_NOTIFICATION,
+                        [
+                            'data' => $data,
+                        ]
+                    );
+                    // adding delay of 1 hour for the ZIP status to be uploaded. since batch size is only 2500, it took around 2/3 min only on dark.
+                    CrossBorderCommonUseCases::dispatch($data)->delay(3600);
                 }
             }
 
@@ -802,11 +845,73 @@ class Processor extends Base\Core
         }
     }
 
-    private function sendInvoiceFiles($files, $merchantId)
+    /**
+     * @throws RecoverableException
+     */
+    public function sendOpgspImportZippedInvoices($input)
     {
+        $fileProcessor = new FileProcessor;
+        $failedZipFiles = [];
+        try {
 
-        foreach ($files['items'] as $file)
-        {
+            $this->trace->info(TraceCode::OPGSP_IMPORT_ZIP_INVOICE_UPLOAD_INPUT, [
+                'input' => $input
+            ]);
+
+            $merchantId = $input['merchant_id'];
+            $zipIds = $input['zip_ids'];
+            $settlementId = $input['settlement_id'];
+            $merchant = $this->repo->merchant->find($merchantId);
+
+            $files = (new GenericDocument\Service)->fetchFiles($zipIds, $merchantId);
+
+            // save the files to opgsp_invoice/api/mid directory , currently file would be at base of bucket.
+            // And the file is missing .zip as extension so it will work properly , once send to icici sftp.
+            foreach ($files['items'] as $item) {
+
+                $this->trace->count(Metrics::INVOICE_ZIP_FILE_NOT_UPLOADED_PROPERLY, ['status' => $item['status']]);
+
+                if ($item['status'] !== 'uploaded') {
+                    $failedZipFiles[] = $item['id'];
+                    continue;
+                }
+
+                $filePath = $this->getH2HFileFromAws($item['name'], true, $item['bucket'], $item['region'], true);
+
+                $file = new File($filePath);
+
+                $fileDetails = $fileProcessor->getFileDetails($file, FileProcessor::STORAGE);
+
+                $newFileName = $file->getFilename(). '.' . 'zip';
+
+                $file = new HttpFoundation\File\UploadedFile($fileDetails['file_path'], $newFileName, $fileDetails['mime_type'], null, true);
+
+                $type = Constants::OPGSP_INVOICE_ZIP_TYPE;
+                $storageLocation = 'api/' .  $newFileName;
+                $response = $this->app['ufh.service']->uploadFileAndGetResponse($file, $storageLocation, $type, $merchant);
+                $this->sendInvoiceFiles($response, $merchantId);
+            }
+
+            return ['success' => true];
+
+        } catch (\Exception $e) {
+            $this->trace->info(
+                TraceCode::OPGSP_IMPORT_SEND_ZIP_INVOICES_ERROR,
+                [
+                    "error" => $e
+                ]);
+            throw new RecoverableException($e->getMessage(), $e->getCode(), $e);
+        } finally {
+            if (count($failedZipFiles) > 0) {
+                $this->trace->info(TraceCode::OPGSP_IMPORT_ZIP_INVOICE_CREATION_STATUS_FAILED, [
+                    'zip_id' => $failedZipFiles
+                ]);
+            }
+        }
+    }
+
+    private function sendInvoiceFiles($file, $merchantId)
+    {
             $ufhResponse = [
                 'file_id' => $file['id'],
                 'success' => isset($file['id']),
@@ -824,7 +929,6 @@ class Processor extends Base\Core
                 'file_id' => $file['id'],
             ]);
 
-        }
     }
 
     protected function getBucketConfig()

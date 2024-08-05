@@ -12,6 +12,8 @@ class Metrics extends Core
     // Counters
     const CROSS_BORDER_COMMON_WORKER_JOB_FAILED = 'cross_border_common_worker_job_failed';
 
+    const INVOICE_ZIP_FILE_NOT_UPLOADED_PROPERLY = 'invoice_zip_file_not_uploaded_properly';
+
     // Dimensions
     const ACTION = 'action';
     const IS_DELETED = 'is_deleted';
