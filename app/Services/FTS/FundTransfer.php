@@ -2038,9 +2038,9 @@ class FundTransfer extends Base
      */
     public function fetchSmartRoutingRulesThroughFts(array $input)
     {
-        $response = $this->createAndSendRequest(parent::FTS_MAR_ROUTE, 'GET', $input);
+        $response = $this->createAndSendRequest(parent::FTS_MAR_ROUTE, 'POST', $input);
 
-        return $response['body'];
+        return $response;
     }
 
     /**
@@ -2049,8 +2049,8 @@ class FundTransfer extends Base
      */
     public function modifySmartRoutingRulesThroughFts(array $input)
     {
-        $response = $this->createAndSendRequest(parent::FTS_MAR_ROUTE, 'POST', $input);
+        $response = $this->createAndSendRequest(parent::FTS_MAR_ROUTE, 'PATCH', $input);
 
-        return $response['body'];
+        return $response;
     }
 }

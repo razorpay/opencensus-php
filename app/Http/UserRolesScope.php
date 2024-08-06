@@ -988,6 +988,8 @@ class UserRolesScope
             'payout_2fa_approve'                                   => [Role::OWNER, Role::ADMIN],
             'payout_cancel'                                        => [Role::OWNER, Role::ADMIN],
             'payout_create'                                        => [Role::OWNER, Role::ADMIN],
+            'payouts_merchant_smart_routing_rules_fetch'           => [Role::OWNER, Role::ADMIN],
+            'payouts_merchant_smart_routing_rules_modify'          => [Role::OWNER, Role::ADMIN],
             'payout_create_with_otp'                               => [Role::OWNER, Role::ADMIN],
             'composite_payout_create_with_otp'                     => [Role::OWNER, Role::ADMIN],
             'payout_create_2FA'                                    => [Role::OWNER, Role::ADMIN],

@@ -2523,9 +2523,9 @@ class PayoutSmartRoutingTest extends TestCase
         $requestMethod = '';
 
         if ($action == 'fetch') {
-            $requestMethod = 'GET';
-        } else if ($action == 'modify') {
             $requestMethod = 'POST';
+        } else if ($action == 'modify') {
+            $requestMethod = 'PATCH';
         }
 
         if(!$customResponse)

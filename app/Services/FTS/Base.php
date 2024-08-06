@@ -166,6 +166,7 @@ class Base
 
     const TRACING_ENABLED_FTS_ROUTES = [
         self::FTS_SMART_ROUTING,
+        self::FTS_MAR_ROUTE,
     ];
 
     /**

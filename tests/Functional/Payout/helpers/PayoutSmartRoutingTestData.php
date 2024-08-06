@@ -1087,7 +1087,7 @@ return [
     'testSmartRoutingRules_FetchRulesForMerchant_UPIEnabled_Success' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payouts/smart_routing_rules',
+            'url'     => '/payouts/smart_routing_rules_admin',
             'content' => [
                 'merchant_id' => '10000000000000',
             ],
@@ -1115,7 +1115,7 @@ return [
     'testSmartRoutingRules_FetchRulesForMerchant_UPINotEnabled_Success' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payouts/smart_routing_rules',
+            'url'     => '/payouts/smart_routing_rules_admin',
             'content' => [
                 'merchant_id' => '10000000000000',
             ],
@@ -1139,7 +1139,7 @@ return [
     'testSmartRoutingRules_FetchRulesForMerchant_NoActiveSharedAccountsFoundForMerchant' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payouts/smart_routing_rules',
+            'url'     => '/payouts/smart_routing_rules_admin',
             'content' => [
                 'merchant_id' => '10000000000000',
             ],
@@ -1161,7 +1161,7 @@ return [
     'testSmartRoutingRules_FetchRulesForMerchant_FTSNoRulesFoundForMerchant' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payouts/smart_routing_rules',
+            'url'     => '/payouts/smart_routing_rules_admin',
             'content' => [
                 'merchant_id' => '10000000000000',
             ],
@@ -1183,7 +1183,7 @@ return [
     'testSmartRoutingRules_FetchRulesForMerchant_NoActiveDirectAccountsFoundForMerchant' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payouts/smart_routing_rules',
+            'url'     => '/payouts/smart_routing_rules_admin',
             'content' => [
                 'merchant_id' => '10000000000000',
             ],
@@ -1205,7 +1205,7 @@ return [
     'testSmartRoutingRules_ModifyRulesForMerchant_Success' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/smart_routing_rules',
+            'url'     => '/payouts/smart_routing_rules_admin',
             'content' => [
                 'merchant_id' => '10000000000000',
                 'merchant_customized_priority_rules' => [

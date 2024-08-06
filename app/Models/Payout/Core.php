@@ -11665,17 +11665,6 @@ class Core extends Base\Core
             'UPI' => ['RBL' => 123456, 'SHARED' => '']] */
         $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID);
 
-        $activeChannelsNonUPICount = count($activeChannelsWithFundAccounts[Mode::IMPS]);
-        $activeChannelsUPICount = count($activeChannelsWithFundAccounts[Mode::UPI]);
-
-        // If no. of active channels is < 2, routing is not possible
-        if($activeChannelsNonUPICount < 2 && $activeChannelsUPICount < 2)
-        {
-            throw new LogicException('Merchant doesn\'t have any viable channels for smart routing.',
-                  ErrorCode::SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE,
-                  [Entity::MERCHANT_ID  => $merchantID]);
-        }
-
         /* {
             "merchant_id": "10000000000000",
             "mode_wise_active_channels": {
@@ -11704,12 +11693,21 @@ class Core extends Base\Core
         $ftsService = App::getFacadeRoot()['fts_fund_transfer'];
         $ftsService->setRequestTimeout(1);
 
+        $ftsResponse = [];
+
         try {
             // Call to FTS to get merchant's smart routing rules
             // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["YESBANK", "RBL", "SHARED"], "UPI" => ["RBL"]]
             $ftsResponse = $ftsService->fetchSmartRoutingRulesThroughFts($ftsRequest);
 
-            $modeWiseChannelPriorities = $ftsResponse[self::MERCHANT_ROUTING_PRIORITIES];
+            $ftsResponseBody = $ftsResponse['body'];
+
+            $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_RESPONSE, [
+                Entity::MERCHANT_ID => $merchantID,
+                TraceCode::FTS_RESPONSE_BODY => $ftsResponseBody
+            ]);
+
+            $modeWiseChannelPriorities = $ftsResponseBody[self::MERCHANT_ROUTING_PRIORITIES];
 
             (new Validator())->validateSmartRoutingRulesFTSResponse($modeWiseChannelPriorities);
         } catch (\Throwable $ex) {
@@ -11725,11 +11723,6 @@ class Core extends Base\Core
                 TraceCode::FTS_REQUEST => $ftsRequest
             ], null, $ex);
         }
-
-        $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_RESPONSE, [
-            Entity::MERCHANT_ID => $merchantID,
-            TraceCode::FTS_RESPONSE => $ftsResponse
-        ]);
 
         return $modeWiseChannelPriorities;
     }
@@ -11755,17 +11748,6 @@ class Core extends Base\Core
             'NEFT' => ['RBL' => 123456, 'ICICI' => 78907],
             'UPI' => ['RBL' => 123456]] */
         $activeChannelsWithFundAccounts = $this->getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID);
-
-        $activeChannelsNonUPICount = count($activeChannelsWithFundAccounts[Mode::IMPS]);
-        $activeChannelsUPICount = count($activeChannelsWithFundAccounts[Mode::UPI]);
-
-        // If no. of active channels is < 2, routing is not possible
-        if($activeChannelsNonUPICount < 2 && $activeChannelsUPICount < 2)
-        {
-            throw new LogicException('Merchant doesn\'t have any viable channels for smart routing.',
-                                     ErrorCode::SMART_ROUTING_RULES_NO_VIABLE_CHANNELS_AVAILABLE,
-                                     [Entity::MERCHANT_ID  => $merchantID]);
-        }
 
     /* {
         "merchant_id": "10000000000000",
@@ -11806,12 +11788,21 @@ class Core extends Base\Core
         $ftsService = App::getFacadeRoot()['fts_fund_transfer'];
         $ftsService->setRequestTimeout(1);
 
+        $ftsResponse = [];
+
         try {
             // Call to FTS to modify merchant's smart routing rules
             // Sample response: ["IMPS" => ["RBL", "ICICI", "SHARED"], "NEFT" => ["ICICI", "RBL", "SHARED"], "UPI" => ["RBL"]]
             $ftsResponse = $ftsService->modifySmartRoutingRulesThroughFts($ftsRequest);
 
-            $modeWiseChannelPriorities = $ftsResponse[self::MERCHANT_ROUTING_PRIORITIES];
+            $ftsResponseBody = $ftsResponse['body'];
+
+            $this->trace->info(TraceCode::FETCH_SMART_ROUTING_RULES_FTS_RESPONSE, [
+                Entity::MERCHANT_ID => $merchantID,
+                TraceCode::FTS_RESPONSE_BODY => $ftsResponseBody
+            ]);
+
+            $modeWiseChannelPriorities = $ftsResponseBody[self::MERCHANT_ROUTING_PRIORITIES];
 
             (new Validator())->validateSmartRoutingRulesFTSResponse($modeWiseChannelPriorities);
         } catch (\Throwable $ex) {

@@ -5865,6 +5865,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_NOTIFY_TEMPLATE                                   = 'FTS_NOTIFY_TEMPLATE';
     const FTS_REQUEST                                           = 'FTS_REQUEST';
     const FTS_RESPONSE                                          = 'FTS_RESPONSE';
+    const FTS_RESPONSE_BODY                                     = 'FTS_RESPONSE_BODY';
     const FTS_TRANSFER_INIT                                     = 'FTS_TRANSFER_INIT';
     const FTS_SERVICE_RETRY                                     = 'FTS_SERVICE_RETRY';
     const FTS_INVALID_CHANNEL                                   = 'FTS_INVALID_CHANNEL';
