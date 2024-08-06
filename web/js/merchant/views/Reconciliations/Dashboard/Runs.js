@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  SelectInput,
-  Dropdown,
-  DropdownOverlay,
-  ActionList,
-  ActionListItem,
-} from '@razorpay/blade/components';
+import { Box } from '@razorpay/blade/components';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import RunsListTable from 'merchant/views/Reconciliations/Dashboard/RunsListTable';
@@ -78,31 +71,6 @@ export default function Runs({ openDetail }) {
 
   return (
     <Box testID="recon-runs-listing">
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        marginBottom="spacing.4"
-      >
-        <Box display="flex">
-          <Dropdown marginRight="spacing.4">
-            <SelectInput name="configurations" defaultValue="all" prefix="Configurations: " />
-            <DropdownOverlay>
-              <ActionList>
-                <ActionListItem title="All" value="all" />
-              </ActionList>
-            </DropdownOverlay>
-          </Dropdown>
-          <Dropdown>
-            <SelectInput name="status" defaultValue="all" prefix="Status: " />
-            <DropdownOverlay>
-              <ActionList>
-                <ActionListItem title="All" value="all" />
-              </ActionList>
-            </DropdownOverlay>
-          </Dropdown>
-        </Box>
-      </Box>
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
         <RunsListTable
           nodes={runsList}

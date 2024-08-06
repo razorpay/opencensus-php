@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  SelectInput,
-  Dropdown,
-  DropdownOverlay,
-  ActionList,
-  ActionListItem,
   PlusIcon,
   Button,
   Link,
@@ -62,30 +57,7 @@ const Processes = ({ openDetail }) => {
   }, []);
   return (
     <Box testID="recon-process-listing">
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        marginBottom="spacing.4"
-      >
-        <Box display="flex">
-          <Dropdown marginRight="spacing.4">
-            <SelectInput name="product" defaultValue="all" prefix="Product: " />
-            <DropdownOverlay>
-              <ActionList>
-                <ActionListItem title="All" value="all" />
-              </ActionList>
-            </DropdownOverlay>
-          </Dropdown>
-          <Dropdown>
-            <SelectInput name="type" defaultValue="all" prefix="Type: " />
-            <DropdownOverlay>
-              <ActionList>
-                <ActionListItem title="All" value="all" />
-              </ActionList>
-            </DropdownOverlay>
-          </Dropdown>
-        </Box>
+      <Box display="flex" justifyContent="flex-end" marginBottom="spacing.4">
         <Button variant="secondary" icon={PlusIcon} onClick={createConfig}>
           New Configuration
         </Button>

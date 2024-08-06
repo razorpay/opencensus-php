@@ -21,6 +21,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  ActionListItemText,
 } from '@razorpay/blade/components';
 import moment from 'moment';
 
@@ -241,7 +242,16 @@ export default function ProcessTransactions({ activeProcess }) {
                 <ActionList>
                   <ActionListItem title="All" value="all" />
                   {runsList.map((run) => (
-                    <ActionListItem key={run?.id} title={run?.id} value={run?.id} />
+                    <ActionListItem
+                      key={run?.id}
+                      title={run?.id}
+                      value={run?.id}
+                      trailing={
+                        <ActionListItemText>
+                          {moment(run.updated_at * 1000).format('ll')}
+                        </ActionListItemText>
+                      }
+                    />
                   ))}
                 </ActionList>
               </DropdownOverlay>

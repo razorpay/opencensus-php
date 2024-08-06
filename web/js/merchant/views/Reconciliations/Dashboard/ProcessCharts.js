@@ -61,8 +61,9 @@ const ProcessCharts = ({ stats, currency, error }) => {
   });
 
   const getChartFormatData = (stats) => {
-    const data = stats?.unreconciled_split;
+    let data = stats?.unreconciled_split;
     if (Array.isArray(data)) {
+      data = data.filter((item) => item.count > 0);
       const labels = data.map((item) => item.reason);
       return {
         labels,
@@ -213,10 +214,10 @@ const ProcessCharts = ({ stats, currency, error }) => {
               </Heading>
               <Box>
                 <Box display="flex">
-                  <Box marginTop="spacing.8" width="50%">
+                  <Box marginTop="spacing.8" width="40%">
                     <Doughnut data={chartData} options={chartOptions} />
                   </Box>
-                  <Box display="grid" gridTemplateColumns="1fr 1fr" gap="40px">
+                  <Box display="grid" gridTemplateColumns="1fr 1fr" gap="36px">
                     {chartData?.labels.map((label, index) => {
                       const item = statsData?.unreconciled_split[index];
                       return (

@@ -53,7 +53,7 @@ export const SomethingWrong = () => (
 // To fix UI issue by blade https://github.com/razorpay/blade/issues/2086
 export const BladeDropdownWrapper = styled.div`
   margin-top: -10px;
-  min-width: 150px;
+  min-width: 280px;
 `;
 
 export const RenderErrorLoadingOrChild = ({ isError, isLoading, children }) => {

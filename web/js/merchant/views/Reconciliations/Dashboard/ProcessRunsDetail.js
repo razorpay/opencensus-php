@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  SelectInput,
-  Dropdown,
-  DropdownOverlay,
-  ActionList,
-  ActionListItem,
-} from '@razorpay/blade/components';
+import { Box } from '@razorpay/blade/components';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import RunsListTable from 'merchant/views/Reconciliations/Dashboard/RunsListTable';
@@ -76,21 +69,6 @@ export default function ProcessRunsDetail({ activeProcess, openRunDetail }) {
 
   return (
     <Box testID="recon-process-runs">
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        marginBottom="spacing.4"
-      >
-        <Dropdown>
-          <SelectInput name="status" defaultValue="all" prefix="Status: " />
-          <DropdownOverlay>
-            <ActionList>
-              <ActionListItem title="All" value="all" />
-            </ActionList>
-          </DropdownOverlay>
-        </Dropdown>
-      </Box>
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
         <RunsListTable
           nodes={runsList}

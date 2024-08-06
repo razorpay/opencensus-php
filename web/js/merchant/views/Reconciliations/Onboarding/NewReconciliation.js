@@ -236,13 +236,10 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
           <Box display="flex" justifyContent="space-between" marginBottom="spacing.4">
             <Box>
               <Text marginBottom="spacing.2" size="large">
-                Add transaction and bank records
+                Add other records
               </Text>
             </Box>
           </Box>
-          <Text size="small" color="surface.text.gray.muted">
-            You’ll need to provide the following records:
-          </Text>
           <List size="small">
             {filteredFileConfigs.map((config) => (
               <ListItem key={config.source_name}>{getReadableFromKey(config.source_name)}</ListItem>

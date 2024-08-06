@@ -172,13 +172,10 @@ export default function NewReconciliationRun() {
               <Box display="flex" justifyContent="space-between">
                 <Box>
                   <Text marginBottom="spacing.6" size="large">
-                    Add transaction and bank records
+                    Add other bank records
                   </Text>
                 </Box>
               </Box>
-              <Text size="small" color="surface.text.gray.muted">
-                You’ll need to provide the following records:
-              </Text>
               <List size="small">
                 {filteredFileConfigs.map((config) => (
                   <ListItem key={config.name}>{config.name}</ListItem>
