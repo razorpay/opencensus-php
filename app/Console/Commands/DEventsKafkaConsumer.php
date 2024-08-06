@@ -137,6 +137,17 @@ class DEventsKafkaConsumer extends Command
         // Overwriting consumer group & offset config for address-dedupe topic
         $topics = $this->argument('topics');
 
+        if (in_array(env('PARTNER_WEBHOOK_EVENTS_KAFKA_TOPIC_NAME'), $topics) ) {
+
+            $consumerGroup = env('PARTNER_WEBHOOK_EVENTS_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . env('PARTNER_WEBHOOK_EVENTS_KAFKA_TOPIC_NAME'));
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
+
         if (count($topics) == 1 && $topics[0] == env('DEDUPE_KAFKA_TOPIC_NAME'))
         {
 
