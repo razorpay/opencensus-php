@@ -592,7 +592,7 @@ function PaymentDetails(props) {
                   </Definition>
                 </EntityDetailRow>
 
-                <ShowWhen additionalCondition={() => isOrgFeatureExist('vas_rrn_identifier')}>
+                <ShowWhen additionalCondition={() => isOrgFeatureExist('vas_merchant')}>
                   <EntityDetailRow label="Bank Reference Number">
                     {getBankReferenceNumber(payment.method, payment.acquirer_data)}
                   </EntityDetailRow>
