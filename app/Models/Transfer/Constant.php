@@ -64,4 +64,23 @@ final class Constant
     const DEDICATED_QUEUE_THREE = 'dedicated_queue_three';
     const DEDICATED_QUEUE_FOUR  = 'dedicated_queue_four';
     const DEDICATED_QUEUE_FIVE  = 'dedicated_queue_five';
+
+    /**
+     * For enabling merchants on async balance debit for transfer debit transactions
+     * which are on zero pricing model for transfers. This will create a debit transaction
+     * without fee calculation and consider fee and tax as 0.
+     */
+    const MIDS_FOR_ASYNC_BALANCE_UPDATE_FOR_TRANSFER_DEBIT_TXNS = [
+        'EtHJCtiuRSZRCz',
+    ];
+
+    /**
+     * For enabling merchants on async balance debit for transfer debit transactions
+     * which are on non-zeo pricing model for transfers. This will create a debit transaction
+     * with fee calculation.
+     * NOTE: This skips credit calculation, so this should be enabled with caution only for
+     * merchants which have 0 credits.
+     */
+    const MIDS_FOR_ASYNC_BALANCE_UPDATE_FOR_TRANSFER_DEBIT_TXNS_WITH_FEE = [
+    ];
 }

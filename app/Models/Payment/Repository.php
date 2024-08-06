@@ -2590,7 +2590,7 @@ EOT;
      * @param int $timestamp
      * @return Base\PublicCollection
      */
-    public function getPaymentsOnHoldBeforeTimestamp(int $timestamp) : Base\PublicCollection
+    public function getPaymentsOnHoldBeforeTimestamp(int $timestamp, int $limit = 500) : Base\PublicCollection
     {
         $connectionType = $this->getDataWarehouseSourceAPIConnection();
 
@@ -2599,7 +2599,7 @@ EOT;
                     ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
                     ->where(Payment\Entity::TRANSACTION_ID, '!=', null)
                     ->with('transfer')
-                    ->limit(500)
+                    ->limit($limit)
                     ->get();
     }
 

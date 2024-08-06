@@ -102,7 +102,7 @@ class Metric extends Base\Core
             self::TRANSFER_PROCESS_REVERSE_SHADOW   => $isReverseShadow,
         ];
 
-        $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $this->getCreateDefaultDimensions());
+        $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $dimensions);
     }
 
     public function pushCustomerTransferFailedMetrics(\Throwable $e)

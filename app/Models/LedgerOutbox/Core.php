@@ -1029,34 +1029,50 @@ class Core extends Base\Core
 
             $transferProcessStartTime = microtime(true);
 
+            $transferPaymentId = $this->findTransferPaymentFromNotes($transfer);
+
+            if ($transferPaymentId === null)
+            {
+                $this->trace->error(TraceCode::TRANSFER_PAYMENT_NOT_FOUND_FOR_TRANSFER, [
+                    'transfer_id'    => $transfer->getId(),
+                ]);
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                    null,
+                    [
+                        LedgerConstants::TRANSFER_ID      => $transfer->getId(),
+                    ]);
+            }
+
+            $filteredDebitJournal = array_filter($journal, function ($item) use ($debitJournalId) {
+                return $item['id'] === $debitJournalId;
+            });
+
+            $filteredCreditJournal = array_filter($journal, function ($item) use ($creditJournalId) {
+                return $item['id'] === $creditJournalId;
+            });
+
+            $debitJournal = reset($filteredDebitJournal);
+
+            $creditJournal = reset($filteredCreditJournal);
+
+            [$fees, $tax, $isAmountCreditsUsed] = $this->getFeeAndTaxFromJournal($debitJournal,"rzp_transfer_fee","rzp_gst");
+
             try
             {
                 $this->mutex->acquireAndRelease(
                     $mutexResource,
-                    function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source, $journal)
+                    function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source,
+                        $creditJournal, $debitJournal, $fees, $tax, $transferPaymentId)
                     {
-                        $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source, $journal)
+                        $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source,
+                            $creditJournal, $debitJournal, $tax, $fees, $transferPaymentId)
                         {
                             // Reload transfer entity after mutex acquire to fetch the latest status of the transfer
                             $transfer->reload();
 
                             if($transfer->getStatus() === Transfer\Status::PENDING)
                             {
-                                $transferPaymentId = $this->findTransferPaymentFromNotes($transfer);
-
-                                if ($transferPaymentId === null)
-                                {
-                                    $this->trace->error(TraceCode::TRANSFER_PAYMENT_NOT_FOUND_FOR_TRANSFER, [
-                                        'transfer_id'    => $transfer->getId(),
-                                    ]);
-
-                                    throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
-                                    null,
-                                    [
-                                        LedgerConstants::TRANSFER_ID      => $transfer->getId(),
-                                    ]);
-                                }
-
                                 $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment,$transferPaymentId);
 
                                 $transfer->setProcessed();
@@ -1069,29 +1085,11 @@ class Core extends Base\Core
 
                                 $transferCore->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
 
-                                $filteredDebitJournal = array_filter($journal, function ($item) use ($debitJournalId) {
-                                    return $item['id'] === $debitJournalId;
-                                });
-
-                                $filteredCreditJournal = array_filter($journal, function ($item) use ($creditJournalId) {
-                                    return $item['id'] === $creditJournalId;
-                                });
-
-                                $debitJournal = reset($filteredDebitJournal);
-
-                                $creditJournal = reset($filteredCreditJournal);
-
-                                [$fees, $tax, $isAmountCreditsUsed] = $this->getFeeAndTaxFromJournal($debitJournal,"rzp_transfer_fee","rzp_gst");
-
                                 $transfer->setFees($fees);
 
                                 $transfer->setTax($tax);
 
                                 $this->repo->saveOrFail($transfer);
-
-                                $transferMetric->pushTransferProcessSuccessMetrics(true);
-
-                                $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
 
                                 // create txns without balance update and dispatch for settlement
                                 // balance update is done asynchronously via AsyncBalanceUpdateForTransfer job
@@ -1124,8 +1122,12 @@ class Core extends Base\Core
                     $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY],
                     $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY],
                     $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY], true);
+
+                $transferMetric->pushTransferProcessSuccessMetrics(true);
+
+                $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $transferMetric->pushTransferProcessFailedMetrics($ex, true);
 

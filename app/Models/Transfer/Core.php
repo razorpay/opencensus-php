@@ -2883,7 +2883,11 @@ class Core extends Base\Core
     public function pushTransferForAsyncBalanceUpdateIfApplicable($transfer): void
     {
         // TODO: Remove this check once Airtel is onboarded to reverse shadow
-        if (($transfer->isProcessed() === true) and ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz'))
+        $asyncBalanceDebitMids = array_merge(Constant::MIDS_FOR_ASYNC_BALANCE_UPDATE_FOR_TRANSFER_DEBIT_TXNS,
+            Constant::MIDS_FOR_ASYNC_BALANCE_UPDATE_FOR_TRANSFER_DEBIT_TXNS_WITH_FEE);
+
+        if (($transfer->isProcessed() === true) and
+            (in_array($transfer->merchant->getId(), $asyncBalanceDebitMids) === true))
         {
             AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
 

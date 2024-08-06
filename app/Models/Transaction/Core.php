@@ -973,7 +973,7 @@ class Core extends Base\Core
         }
         else
         {
-            if ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz')
+            if((in_array($merchant->getId(), Transfer\Constant::MIDS_FOR_ASYNC_BALANCE_UPDATE_FOR_TRANSFER_DEBIT_TXNS) === true))
             {
                 $this->trace->info(
                     TraceCode::PAYMENT_TRANSFER_BALANCE_UPDATE_SKIPPED,
@@ -982,6 +982,7 @@ class Core extends Base\Core
                         'transaction_id' => $txn->getId(),
                         'payment_id'     => $transfer->source->getId(),
                         'transfer_id'    => $transfer->getId(),
+                        'merchant_id'    => $merchant->getId(),
                     ]);
 
                 list($debit, $fee, $tax, $feesSplit) = [$transfer->getAmount(), 0, 0, new PublicCollection()];
@@ -1029,7 +1030,7 @@ class Core extends Base\Core
                 'transaction_id' => $txn->getId()
             ]);
 
-        if ($transfer->merchant->getId() === 'EtHJCtiuRSZRCz')
+        if((in_array($merchant->getId(), Transfer\Constant::MIDS_FOR_ASYNC_BALANCE_UPDATE_FOR_TRANSFER_DEBIT_TXNS) === true))
         {
             // skip balance update
             $this->trace->info(
@@ -1039,6 +1040,7 @@ class Core extends Base\Core
                     'transaction_id' => $txn->getId(),
                     'payment_id'     => $transfer->source->getId(),
                     'transfer_id'    => $transfer->getId(),
+                    'merchant_id'    => $merchant->getId(),
                 ]);
 
             $txn->setBalanceUpdated(false);

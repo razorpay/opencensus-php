@@ -72,230 +72,253 @@ class Core extends Base\Core
 
         foreach ($entries as $entry)
         {
-            $entry->reload();
-
-            if (($entry->isDeleted() === false) && ($entry[Entity::RETRY_COUNT] < $maxRetryCount))
+            try
             {
-                $retries = $entry[Entity::RETRY_COUNT] + 1;
+                $entry->reload();
 
-                $payload = $entry[Entity::PAYLOAD_SERIALIZED];
-
-                //decode base_64 payload
-                $payload = base64_decode($payload);
-
-                $payload = json_decode($payload, true);
-
-                $transactorId = $payload[LedgerConstants::TRANSACTOR_ID];
-
-                $transactorEvent = $payload[LedgerConstants::TRANSACTOR_EVENT];
-
-                if ($transactorEvent !== LedgerConstants::TRANSFER)
+                if (($entry->isDeleted() === false) && ($entry[Entity::RETRY_COUNT] < $maxRetryCount))
                 {
-                    $this->trace->info(TraceCode::PG_LEDGER_OUTBOX_FETCH_INVALID,
+                    $retries = $entry[Entity::RETRY_COUNT] + 1;
+
+                    $payload = $entry[Entity::PAYLOAD_SERIALIZED];
+
+                    //decode base_64 payload
+                    $payload = base64_decode($payload);
+
+                    $payload = json_decode($payload, true);
+
+                    $transactorId = $payload[LedgerConstants::TRANSACTOR_ID];
+
+                    $transactorEvent = $payload[LedgerConstants::TRANSACTOR_EVENT];
+
+                    if ($transactorEvent !== LedgerConstants::TRANSFER)
+                    {
+                        $this->trace->info(TraceCode::PG_LEDGER_OUTBOX_FETCH_INVALID,
+                            [
+                                LedgerConstants::TRANSACTOR_ID    => $transactorId,
+                                LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                                Constants::SOURCE                 => Constants::CRON,
+                                Constants::CRON_TYPE              => Constants::TRANSFER
+                            ]
+                        );
+
+                        $failed++;
+
+                        array_push($failedIds, $transactorId);
+
+                        continue;
+                    }
+
+                    $this->trace->info(TraceCode::PG_LEDGER_OUTBOX_CRON_RETRY_TRACE,
                         [
-                            LedgerConstants::TRANSACTOR_ID    => $transactorId,
-                            LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
-                            Constants::SOURCE                 => Constants::CRON,
-                            Constants::CRON_TYPE              => Constants::TRANSFER
+                            LedgerConstants::TRANSACTOR_ID      => $transactorId,
+                            LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
+                            Entity::RETRY_COUNT                 => $entry[Entity::RETRY_COUNT],
+                            'max_retry_count'                   => $maxRetryCount,
+                            Constants::SOURCE                   => Constants::CRON,
+                            Constants::CRON_TYPE                => Constants::TRANSFER
                         ]
                     );
 
-                    $failed++;
-
-                    array_push($failedIds, $transactorId);
-
-                    continue;
-                }
-
-                $this->trace->info(TraceCode::PG_LEDGER_OUTBOX_CRON_RETRY_TRACE,
-                    [
-                        LedgerConstants::TRANSACTOR_ID      => $transactorId,
-                        LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
-                        Entity::RETRY_COUNT                 => $entry[Entity::RETRY_COUNT],
-                        'max_retry_count'                   => $maxRetryCount,
-                        Constants::SOURCE                   => Constants::CRON,
-                        Constants::CRON_TYPE                => Constants::TRANSFER
-                    ]
-                );
-
-                $idempotencyKey =$payload[LedgerConstants::IDEMPOTENCY_KEY];
-
-                try
-                {
-                    $requestHeaders = $this->getJournalRequestHeadersSync($idempotencyKey);
-
-                    $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST,
-                        [
-                            LedgerConstants::TRANSACTOR_ID    => $transactorId,
-                            LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
-                            LedgerConstants::IDEMPOTENCY_KEY  => $idempotencyKey,
-                            Constants::SOURCE                 => Constants::CRON,
-                            Constants::CRON_TYPE              => Constants::TRANSFER
-                        ]
-                    );
-
-//                  Note: All transfer_processed journals are bulk journals
-                    $response = $ledgerService->createBulkJournal($payload, $requestHeaders, true);
-
-                    $journal = $response[LedgerService::RESPONSE_BODY];
-
-                    $responseBody = $response[LedgerService::RESPONSE_BODY];
-
-                    $bulkJournals = $responseBody[LedgerConstants::JOURNALS];
-
-                    $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE,
-                        [
-                            LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
-                            LedgerConstants::JOURNALS       => $journal,
-                            Constants::SOURCE               => Constants::CRON,
-                            Constants::CRON_TYPE            => Constants::TRANSFER
-                        ]
-                    );
-
-                    $this->trace->count(Metric::PG_LEDGER_CREATE_JOURNAL_ENTRY_SUCCESS, [
-                        LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
-                        Constants::SOURCE                 => Constants::CRON,
-                        Constants::CRON_TYPE              => Constants::TRANSFER
-                    ]);
+                    $idempotencyKey =$payload[LedgerConstants::IDEMPOTENCY_KEY];
 
                     try
                     {
-                        $txn = null;
+                        $requestHeaders = $this->getJournalRequestHeadersSync($idempotencyKey);
 
-                        $txn = $ledgerOutboxCore->createTransactionFromJournal($bulkJournals, Constants::CRON, true);
+                        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST,
+                            [
+                                LedgerConstants::TRANSACTOR_ID    => $transactorId,
+                                LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                                LedgerConstants::IDEMPOTENCY_KEY  => $idempotencyKey,
+                                Constants::SOURCE                 => Constants::CRON,
+                                Constants::CRON_TYPE              => Constants::TRANSFER
+                            ]
+                        );
 
-                        if($txn === null)
+//                  Note: All transfer_processed journals are bulk journals
+                        $response = $ledgerService->createBulkJournal($payload, $requestHeaders, true);
+
+                        $journal = $response[LedgerService::RESPONSE_BODY];
+
+                        $responseBody = $response[LedgerService::RESPONSE_BODY];
+
+                        $bulkJournals = $responseBody[LedgerConstants::JOURNALS];
+
+                        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE,
+                            [
+                                LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                                LedgerConstants::JOURNALS       => $journal,
+                                Constants::SOURCE               => Constants::CRON,
+                                Constants::CRON_TYPE            => Constants::TRANSFER
+                            ]
+                        );
+
+                        $this->trace->count(Metric::PG_LEDGER_CREATE_JOURNAL_ENTRY_SUCCESS, [
+                            LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                            Constants::SOURCE                 => Constants::CRON,
+                            Constants::CRON_TYPE              => Constants::TRANSFER
+                        ]);
+
+                        try
                         {
-                            $this->trace->info(TraceCode::PG_LEDGER_TRANSACTION_NOT_CREATED,
+                            $txn = null;
+
+                            $txn = $ledgerOutboxCore->createTransactionFromJournal($bulkJournals, Constants::CRON, true);
+
+                            if($txn === null)
+                            {
+                                $this->trace->info(TraceCode::PG_LEDGER_TRANSACTION_NOT_CREATED,
+                                    [
+                                        LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
+                                        LedgerConstants::TRANSACTOR_ID          => $transactorId,
+                                        LedgerConstants::JOURNAL_ID             => $journal[LedgerConstants::ID],
+                                        Constants::SOURCE                       => Constants::CRON,
+                                        Constants::CRON_TYPE                    => Constants::TRANSFER
+                                    ]
+                                );
+                            }
+                            else
+                            {
+                                $txnId = $txn->getId();
+
+                                $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
+                                    [
+                                        LedgerConstants::API_TRANSACTION_ID   => $txnId,
+                                        LedgerConstants::JOURNAL_ID           => $journal[LedgerConstants::ID],
+                                        LedgerConstants::TRANSACTOR_EVENT     => $transactorEvent,
+                                        LedgerConstants::TRANSACTOR_ID        => $transactorId,
+                                        Constants::SOURCE                     => Constants::CRON,
+                                        Constants::CRON_TYPE                  => Constants::TRANSFER
+                                    ]
+                                );
+
+                                $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
+                                    LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
+                                    Constants::SOURCE                   => Constants::CRON,
+                                    Constants::CRON_TYPE                => Constants::TRANSFER
+                                ]);
+                            }
+                        }
+                        catch (\Throwable $e)
+                        {
+                            // catches all txn failure exceptions
+                            $this->trace->traceException(
+                                $e,
+                                Trace::CRITICAL,
+                                TraceCode::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE,
                                 [
-                                    LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
-                                    LedgerConstants::TRANSACTOR_ID          => $transactorId,
-                                    LedgerConstants::JOURNAL_ID             => $journal[LedgerConstants::ID],
-                                    Constants::SOURCE                       => Constants::CRON,
-                                    Constants::CRON_TYPE                    => Constants::TRANSFER
+                                    Constants::SOURCE                           => Constants::TRANSACTION_CREATE,
+                                    Constants::CRON_TYPE                        => Constants::TRANSFER,
+                                    LedgerReverseShadowConstants::RETRY_COUNT   => $retries,
                                 ]
                             );
+
+                            $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_FAILURE, [
+                                LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
+                                Constants::SOURCE                       => Constants::CRON,
+                                Constants::CRON_TYPE                    => Constants::TRANSFER,
+                            ]);
+
+                            $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE, [
+                                LedgerReverseShadowConstants::RETRY_COUNT => $retries,
+                                Constants::CRON_TYPE                      => Constants::TRANSFER,
+                            ]);
+
+                            // For transfer transactor IDs, skip update of retry count. This will allow
+                            // retry of transfer processing infinitely (status update and dispatch to queue
+                            // for txn creation) in case of failures.
+                            (new Transfer\Metric())->pushLedgerOutboxRetryCronFailureMetrics($e);
+
+                            $failed++;
+                            array_push($failedIds, $transactorId);
+                            continue;
+                        }
+
+                        $isDeleted = $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
+
+                        if ($isDeleted === true)
+                        {
+                            $successful++;
+                            array_push($successfulIds, $transactorId);
                         }
                         else
                         {
-                            $txnId = $txn->getId();
-
-                            $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
-                                [
-                                    LedgerConstants::API_TRANSACTION_ID   => $txnId,
-                                    LedgerConstants::JOURNAL_ID           => $journal[LedgerConstants::ID],
-                                    LedgerConstants::TRANSACTOR_EVENT     => $transactorEvent,
-                                    LedgerConstants::TRANSACTOR_ID        => $transactorId,
-                                    Constants::SOURCE                     => Constants::CRON,
-                                    Constants::CRON_TYPE                  => Constants::TRANSFER
-                                ]
-                            );
-
-                            $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
-                                LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
-                                Constants::SOURCE                   => Constants::CRON,
-                                Constants::CRON_TYPE                => Constants::TRANSFER
-                            ]);
+                            $failed++;
+                            array_push($failedIds, $transactorId);
                         }
                     }
                     catch (\Throwable $e)
                     {
-                        // catches all txn failure exceptions
                         $this->trace->traceException(
                             $e,
                             Trace::CRITICAL,
                             TraceCode::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE,
                             [
-                                Constants::SOURCE                           => Constants::TRANSACTION_CREATE,
-                                Constants::CRON_TYPE                        => Constants::TRANSFER,
+                                Constants::SOURCE                           => Constants::JOURNAL_CREATE,
                                 LedgerReverseShadowConstants::RETRY_COUNT   => $retries,
+                                Constants::CRON_TYPE                        => Constants::TRANSFER,
                             ]
                         );
-
-                        $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_FAILURE, [
-                                LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
-                                Constants::SOURCE                       => Constants::CRON,
-                                Constants::CRON_TYPE                    => Constants::TRANSFER,
-                        ]);
 
                         $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE, [
                             LedgerReverseShadowConstants::RETRY_COUNT => $retries,
                             Constants::CRON_TYPE                      => Constants::TRANSFER,
                         ]);
 
-                        // For transfer transactor IDs, skip update of retry count. This will allow
-                        // retry of transfer processing infinitely (status update and dispatch to queue
-                        // for txn creation) in case of failures.
-                        (new Transfer\Metric())->pushLedgerOutboxRetryCronFailureMetrics($e);
+                        $canRetry = $ledgerOutboxCore->handleSyncLedgerJournalCreateFailures($payload,  $e->getError()->toPublicArray(), Constants::CRON);
 
-                        $failed++;
-                        array_push($failedIds, $transactorId);
-                        continue;
-                    }
-
-                    $isDeleted = $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
-
-                    if ($isDeleted === true)
-                    {
-                        $successful++;
-                        array_push($successfulIds, $transactorId);
-                    }
-                    else
-                    {
-                        $failed++;
-                        array_push($failedIds, $transactorId);
-                    }
-                }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::CRITICAL,
-                        TraceCode::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE,
-                        [
-                            Constants::SOURCE                           => Constants::JOURNAL_CREATE,
-                            LedgerReverseShadowConstants::RETRY_COUNT   => $retries,
-                            Constants::CRON_TYPE                        => Constants::TRANSFER,
-                        ]
-                    );
-
-                    $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE, [
-                        LedgerReverseShadowConstants::RETRY_COUNT => $retries,
-                        Constants::CRON_TYPE                      => Constants::TRANSFER,
-                    ]);
-
-                    $canRetry = $ledgerOutboxCore->handleSyncLedgerJournalCreateFailures($payload,  $e->getError()->toPublicArray(), Constants::CRON);
-
-                    if($canRetry === false)
-                    {
-                        $ledgerOutboxCore->failTransferWithErrorCodeAndMessage($entry);
-
-                        $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
-                    }
-                    else if ($retries === $maxRetryCount)
-                    {
-                        $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRIES_EXHAUSTED, [
-                            LedgerReverseShadowConstants::RETRY_COUNT => $retries,
-                            Constants::CRON_TYPE                      => Constants::TRANSFER,
-                        ]);
-
-                        if (str_contains($e->getMessage(), Constants::INSUFFICIENT_BALANCE_FAILURE))
+                        if($canRetry === false)
                         {
-                            $ledgerOutboxCore->failTransferWithErrorCodeAndMessage(
-                                $entry, ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
-                                PublicErrorDescription::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE);
+                            $ledgerOutboxCore->failTransferWithErrorCodeAndMessage($entry);
+
+                            $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
+                        }
+                        else if ($retries === $maxRetryCount)
+                        {
+                            $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRIES_EXHAUSTED, [
+                                LedgerReverseShadowConstants::RETRY_COUNT => $retries,
+                                Constants::CRON_TYPE                      => Constants::TRANSFER,
+                            ]);
+
+                            if (str_contains($e->getMessage(), Constants::INSUFFICIENT_BALANCE_FAILURE))
+                            {
+                                $ledgerOutboxCore->failTransferWithErrorCodeAndMessage(
+                                    $entry, ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+                                    PublicErrorDescription::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE);
+                            }
+
+                            $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
+                        }
+                        else
+                        {
+                            $ledgerOutboxCore->updateRetryCount($entry, $retries, $transactorEvent);
                         }
 
-                        $ledgerOutboxCore->updateRetryCountAndSoftDelete($entry, $retries);
+                        $failed++;
+                        array_push($failedIds, $transactorId);
                     }
-                    else
-                    {
-                        $ledgerOutboxCore->updateRetryCount($entry, $retries, $transactorEvent);
-                    }
-
-                    $failed++;
-                    array_push($failedIds, $transactorId);
                 }
+            }
+            catch (\Throwable $e)
+            {
+                try
+                {
+                    $payloadName = $entry->getPayloadName();
+                }
+                catch (\Throwable $ex) {}
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE,
+                    [
+                        Constants::CRON_TYPE                        => Constants::TRANSFER,
+                        'payload_name'                              => $payloadName,
+                    ]
+                );
+
+                $failed++;
             }
         }
 

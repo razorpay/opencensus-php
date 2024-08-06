@@ -6,6 +6,7 @@ use App;
 use Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Transfer\Core;
+use RZP\Models\Transfer\Constant;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature;
@@ -106,27 +107,6 @@ class AsyncBalanceUpdateForTransfer extends Job
             );
 
             (new Metric())->pushAsyncBalanceUpdateForTransferFailedMetrics($ex);
-
-            $this->delete();
-
-            return;
-        }
-
-        $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
-
-        if (($transfer->merchant->getId() !== 'EtHJCtiuRSZRCz') and
-            (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) or
-             ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)))
-        {
-            $this->trace->info(
-                TraceCode::ASYNC_BALANCE_UPDATE_FOR_TRANSFER_NOT_SUPPORTED,
-                [
-                    'transfer_id'      => $this->transferId,
-                    'merchant_id'      => $transfer->merchant->getId(),
-                    'to_id'            => $transfer->getToId(),
-                    'attempt_count'    => $this->attempts()
-                ]
-            );
 
             $this->delete();
 

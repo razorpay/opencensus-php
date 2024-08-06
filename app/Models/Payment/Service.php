@@ -4311,9 +4311,13 @@ class Service extends Base\Service
      */
     public function updateOnHold(array $input): array
     {
+        RuntimeManager::setMaxExecTime(600);
+
         $timestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
-        $paymentIdsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp)->pluck(Entity::ID)->toArray();
+        $limit = $input['limit'] ?? 500;
+
+        $paymentIdsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp, $limit)->pluck(Entity::ID)->toArray();
 
         $cronSummary = $this->updateOnHoldForPayments($paymentIdsToUpdate, $timestamp);
 

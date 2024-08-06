@@ -90,8 +90,9 @@ class TransferProcess extends Job
 
             if ($delay === true)
             {
-                // Dispatch with delay of 900s (15 min)
-                (new Transfer\Core)->dispatchForTransferProcessing($this->transferMode, $this->payment, 900);
+                $delaySecs = $this->getProcessingRetryDelay($this->payment->merchant);
+
+                (new Transfer\Core)->dispatchForTransferProcessing($this->transferMode, $this->payment, $delaySecs);
 
                 $this->delete();
 
@@ -333,5 +334,19 @@ class TransferProcess extends Job
         {
             (new Core())->eventTransferFailed($transfer);
         }
+    }
+
+    protected function getProcessingRetryDelay($merchant)
+    {
+        if (in_array($merchant->getCategory(), Transfer\Constant::CATEGORY_1_MCC))
+        {
+            return 3 * 60;  // 3 minutes
+        }
+        else if (in_array($merchant->getCategory(), Transfer\Constant::CATEGORY_2_MCC))
+        {
+            return 10 * 60;  // 10 minutes
+        }
+
+        return 15 * 60;  // 15 minutes
     }
 }
