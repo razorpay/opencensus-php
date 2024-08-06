@@ -656,6 +656,14 @@ class Core extends Base\Core
         // Fetch the settled ods amount according to the current working day
         if($totalOdsSettled === null) {
             $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimestamp);
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_ODS_FROM_DB, [
+                'merchantId'        => $merchantId,
+                'key'               => $key,
+                'keyTimeStamp'      => $keyTimestamp,
+                'totalSettled'      => $totalOdsSettled,
+                'currentTimeStamp'  => Carbon::now(Timezone::IST)->getTimestamp(),
+
+            ]);
             // ttl set for 6 hours in seconds
             ConfigKey::set($key, $totalOdsSettled, 21600);
         }
@@ -1016,18 +1024,22 @@ class Core extends Base\Core
         [$key, $keyTimeStamp] = $this->getTotalODSSettledRedisKey();
         $totalOdsSettled = ConfigKey::get($key);
 
-        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY, [
-            'merchantId'    => $merchantId,
-            'key'           => $key,
-            'keyTimeStamp'  => $keyTimeStamp,
-            'totalSettled'  => $totalOdsSettled,
-        ]);
-
         // If key does not exist
         if($totalOdsSettled === null)
             $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimeStamp);
 
+        $currentSettledOds = $totalOdsSettled;
+
         $totalOdsSettled += $amount;
+
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY_UPDATE, [
+            'merchantId'            => $merchantId,
+            'key'                   => $key,
+            'keyTimeStamp'          => $keyTimeStamp,
+            'totalSettledBefore'    => $currentSettledOds,
+            'totalSettledAfter'     => $totalOdsSettled,
+            'currentTimeStamp'      => Carbon::now(Timezone::IST)->getTimestamp(),
+        ]);
 
         // ttl set for 6 hours in seconds
         ConfigKey::set($key, $totalOdsSettled, 21600);
