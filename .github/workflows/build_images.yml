@@ -30,9 +30,8 @@ jobs:
     continue-on-error: false
     name: Validate PHP Syntax
     steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: "Cache dependencies installed with composer"
         uses: "actions/cache@v3.0.0"
         with:
@@ -60,9 +59,8 @@ jobs:
     continue-on-error: false
     name: Validate PHP Syntax - Misc
     steps:
-      - name: checkout
-        id: checkout
-        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: "Cache dependencies installed with composer"
         uses: "actions/cache@v3.0.0"
         with:
@@ -103,6 +101,7 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
+          add-hosts: github.com:172.20.36.152
           tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           context: .
@@ -168,6 +167,7 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
+          add-hosts: github.com:172.20.36.152
           tags: c.rzp.io/razorpay/api:${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           context: .
@@ -237,6 +237,7 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
+          add-hosts: github.com:172.20.36.152
           tags: c.rzp.io/razorpay/api:worker-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           context: .
@@ -304,6 +305,7 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
+          add-hosts: github.com:172.20.36.152
           tags: c.rzp.io/razorpay/api:checkout-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           context: .
@@ -362,6 +364,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
+          add-hosts: github.com:172.20.36.152
           file: ./e2e/Dockerfile
           context: e2e
           secrets: git_token=${{ secrets.GIT_TOKEN }}
@@ -454,7 +457,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          repository: ${{ github.repository }}
+          add-hosts: github.com:172.20.36.152
           file: ./slit/Dockerfile
           context: slit
           build-args: |
