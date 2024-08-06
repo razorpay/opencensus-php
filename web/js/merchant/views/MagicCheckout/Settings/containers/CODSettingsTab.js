@@ -10,6 +10,8 @@ import ConfirmationModal, {
   DisplayNotificationTxt,
 } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
+import { MagicXBanner } from 'merchant/views/MagicCheckout/components/MagicXShopifyBanner';
+import { checkMagicConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -174,7 +176,13 @@ const CODSettingsTab = ({
         </div>
         <Box marginTop="spacing.4">
           <Text size="small" color="surface.text.gray.muted">
-            {!rcodEnabled ? COD_SETTINGS_INFO : RCOD_SETTINGS_INFO}
+            {!rcodEnabled ? (
+              COD_SETTINGS_INFO
+            ) : checkMagicConfigurationFlow() ? (
+              <MagicXBanner />
+            ) : (
+              RCOD_SETTINGS_INFO
+            )}
           </Text>
           {settings.platform === PLATFORMS.VALUES.WOOCOMMERCE && (
             <StyledPluginUpdateWrapper>{UPDATE_WOOC_PLUGIN_MSG}</StyledPluginUpdateWrapper>

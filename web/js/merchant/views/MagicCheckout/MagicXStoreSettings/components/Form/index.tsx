@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { Box, Divider, Button } from '@razorpay/blade/components';
+import { Box, Divider, Button, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -191,7 +191,13 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         </Box>
       </Box>
       <Divider />
-      <Box display="flex" justifyContent="flex-end">
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Box maxWidth="75%">
+          <Text>
+            Upon clicking "Save Settings", you will be redirected to your Shopify admin and MagicX
+            checkout will be enabled on your live theme
+          </Text>
+        </Box>
         <Button
           onClick={handleSubmit}
           marginRight="none"
