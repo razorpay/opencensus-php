@@ -17,5 +17,6 @@ export const processFilesForModularSave = (files: FileItem[]): ProcessFilesForMo
     file_store_id: file.fileStoreId,
     name: file.name,
     size: file.size,
+    file_id: `${file.fileStoreId}-sales-file`,
   }));
 };

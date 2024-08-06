@@ -96,14 +96,14 @@ const AddDeviceToCart = ({
 
   const handleProductDelete = (): void => {
     const payload: ModularPayload = {
-      [MODULAR_DEVICE_FIELDS.DEVICE_CART_ID_FIELD]: getValues('device_item_id_field'),
+      [MODULAR_DEVICE_FIELDS.DEVICE_CART_ID_FIELD]: getValues(MODULAR_DEVICE_FIELDS.DEVICE_ID),
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onModularUpdate,
       ...MODULAR_FLAGS.DELETE_CART_ITEM,
     };
     handleModularUpdate(payload);
   };
 
-  const devicePlan = watch('device_item_plan_field');
+  const devicePlan = watch(MODULAR_DEVICE_FIELDS.DEVICE_PLAN);
 
   return (
     <React.Fragment>

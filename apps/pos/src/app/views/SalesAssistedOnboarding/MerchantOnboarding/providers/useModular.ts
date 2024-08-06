@@ -66,6 +66,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
       ) {
         return response.merchantModularOnboardingDetailsAsSales as MerchantModularOnboardingDetailsSuccessResponse;
       }
+
       handleModularFetchError();
       return null;
     },
@@ -125,6 +126,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
       handleModularUpdateError();
       return null;
     },
+    retry: false,
     onSuccess: (data) => {
       if (data) {
         queryClient.setQueryData(['modularConfig', merchantId], data);

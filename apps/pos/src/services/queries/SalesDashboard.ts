@@ -175,6 +175,7 @@ export const MODULAR_CONFIG = gql`
                         rentalDiscountMonths
                         plans {
                           oneTimeCharge
+                          planDisplayName
                           planName
                           rentalCharge
                           setupFee
@@ -379,6 +380,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
                         rentalDiscountMonths
                         plans {
                           oneTimeCharge
+                          planDisplayName
                           planName
                           rentalCharge
                           setupFee

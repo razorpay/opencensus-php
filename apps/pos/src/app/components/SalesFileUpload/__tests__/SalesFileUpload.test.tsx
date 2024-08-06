@@ -254,6 +254,7 @@ describe('processFilesForModularSave', () => {
     const result = processFilesForModularSave(dummyfile);
     expect(result).toEqual([
       {
+        file_id: 'random_file_123-sales-file',
         file_store_id: 'random_file_123',
         name: 'defaultFile.pdf',
         size: 500000,

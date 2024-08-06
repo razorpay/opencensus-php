@@ -32,17 +32,17 @@ const PlanSelectionCard = ({ plans = [] }: PlanSelectionCardProps): JSX.Element 
             padding="spacing.3"
             borderRadius="medium"
             elevation="none"
-            isSelected={devicePlan.field.value === String(plan.planName).toLowerCase()}
+            isSelected={devicePlan.field.value === plan.planName}
           >
             <CardBody>
               <Box minHeight="80px" display="flex" flexDirection="column" justifyContent="center">
                 <Radio
-                  value={String(plan.planName).toLowerCase()}
+                  value={String(plan.planName)}
                   marginBottom="spacing.3"
                   size="small"
                   testID={`${plan.planName}-plan-card-radio`}
                 >
-                  {plan.planName}
+                  {plan.planDisplayName}
                 </Radio>
                 {DevicePlanAvailableCharges.map(({ key, name }) =>
                   plan?.[key] !== null ? (

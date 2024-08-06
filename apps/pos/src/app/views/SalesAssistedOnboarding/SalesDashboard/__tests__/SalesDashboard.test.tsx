@@ -1,4 +1,5 @@
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as graphqlUtils from '@dashboard/shared-utils/graphql/graphql';
 import SalesDashboard from '../SalesDashboard';
 import { getSalesMappedMerchantsHandler } from './mocks/handlers';
@@ -31,10 +32,29 @@ jest.mock('@dashboard/shared-ui/components/Forms/DateRangePickerField', () => {
   };
 });
 
+const queryClient = new QueryClient();
+
+const renderApp = () => {
+  render(
+    <QueryClientProvider client={queryClient}>
+      <SalesDashboard />
+    </QueryClientProvider>,
+  );
+};
+
 describe('<SalesDashboard/>', () => {
+  beforeEach(() => {
+    queryClient.clear();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    queryClient.clear();
+  });
+
   test('should render sales dashboard on screen', async () => {
     server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
-    render(<SalesDashboard />);
+    renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     expect(screen.getByText('Merchant Details')).toBeInTheDocument();
     const salesTable = screen.getByTestId('sales-table');
@@ -47,7 +67,7 @@ describe('<SalesDashboard/>', () => {
   test('Should trigger gql api with correct payload on filter change', async () => {
     const graphqlRequestSpy = jest.spyOn(graphqlUtils, 'graphqlRequest');
     server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
-    render(<SalesDashboard />);
+    renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     expect(screen.getByText('Merchant Details')).toBeInTheDocument();
     await userEvent.click(screen.getByTestId('date-range-test-btn'));
@@ -69,7 +89,7 @@ describe('<SalesDashboard/>', () => {
 
   test('should render status counts on screen', async () => {
     server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
-    render(<SalesDashboard />);
+    renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     const statusCountsContainer = screen.getByTestId('sales-dashboard-status-counts');
     expect(within(statusCountsContainer).getByText('20')).toBeInTheDocument();
@@ -81,7 +101,7 @@ describe('<SalesDashboard/>', () => {
 
   test('should not show status counts if filter on status is added', async () => {
     server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
-    render(<SalesDashboard />);
+    renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     const statusFilterContainer = screen.getByTestId('sales-dashboard-filters');
     await userEvent.click(statusFilterContainer);
@@ -91,7 +111,7 @@ describe('<SalesDashboard/>', () => {
 
   test('should show empty screen if no merchants are available', async () => {
     server.use(getSalesMappedMerchantsHandler({ type: 'empty' }));
-    render(<SalesDashboard />);
+    renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     expect(
       screen.getByText(`We couldn't find any merchant details associated with your requests`),

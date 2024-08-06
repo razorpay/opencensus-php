@@ -20,6 +20,7 @@ import {
   DeviceDeliveryAddressTypes,
   DevicePaymentStatus,
   EditDeviceInCartForm,
+  MODULAR_DEVICE_FIELDS,
   OrderSummaryItemWithDeviceConfig,
   QuantityActions,
 } from 'apps/pos/src/app/types/DeviceSelection';
@@ -59,15 +60,15 @@ export const getCatalogDataFromModularConfig = ({
 }: GetDeviceCatalogFromModularConfigProps): GetDeviceCatalogFromModularConfig => {
   const component = getComponentFromStep({
     modularConfig,
-    step: 'device_selection_step',
-    component: 'device_catalogue_component',
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_CATALOG_COMPONENT,
   });
 
   const modularField = getFieldFromComponent({
     modularConfig,
-    step: 'device_selection_step',
-    component: 'device_catalogue_component',
-    fieldName: 'device_order_items_summary_field',
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_CATALOG_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_ORDER_ITEMS_SUMMARY_FIELD,
   });
 
   const { addedDevices } =
@@ -96,25 +97,25 @@ export const getOrderSummaryFieldsFromModularConfig = ({
 
   const addedDevicesField = getFieldFromComponent({
     modularConfig,
-    step: 'device_selection_step',
-    component: 'device_cart_component',
-    fieldName: 'device_order_items_summary_field',
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_CART_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_ORDER_ITEMS_SUMMARY_FIELD,
   });
 
   const deviceConfig = getCatalogDataFromModularConfig({ modularConfig })?.deviceConfig;
 
   const orderSummaryField = getFieldFromComponent({
     modularConfig,
-    step: 'device_selection_step',
-    component: 'device_cart_component',
-    fieldName: 'device_order_summary_field',
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_CART_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_ORDER_SUMMARY_FIELD,
   });
 
   const arrayOfDocumentsUploadValueField = getFieldFromComponent({
     modularConfig,
-    step: 'device_selection_step',
-    component: 'device_cart_component',
-    fieldName: 'device_custom_pricing_documents_field',
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_CART_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_CUSTOM_PRICING_DOCS,
   });
 
   const addedDevices = isOrderSummaryItem(addedDevicesField) ? addedDevicesField.addedDevices : [];
@@ -142,22 +143,27 @@ export const getDeviceChargesFromModularConfig = ({
   orderSummaryItem,
 }: GetDeviceChargesFromModularConfigProps): EditDeviceInCartForm => {
   return {
-    device_item_name_field: orderSummaryItem?.deviceName,
-    device_item_id_field: orderSummaryItem?.itemId,
-    device_item_plan_field: orderSummaryItem?.renewal as AvailableDevicePlans,
-    device_item_quantity_field: orderSummaryItem?.quantity as number,
-    device_item_setup_fee_type_field: orderSummaryItem?.setupChargeType ?? '',
-    device_item_custom_setup_fee_field: String(orderSummaryItem?.setupCharge ?? ''),
-    device_item_advanced_rental_periods_field: String(
+    [MODULAR_DEVICE_FIELDS.DEVICE_NAME]: orderSummaryItem?.deviceName,
+    [MODULAR_DEVICE_FIELDS.DEVICE_ID]: orderSummaryItem?.itemId,
+    [MODULAR_DEVICE_FIELDS.DEVICE_PLAN]: orderSummaryItem?.renewal as AvailableDevicePlans,
+    [MODULAR_DEVICE_FIELDS.DEVICE_QUANTITY]: orderSummaryItem?.quantity as number,
+    [MODULAR_DEVICE_FIELDS.DEVICE_SETUP_FEE_TYPE]: orderSummaryItem?.setupChargeType ?? '',
+    [MODULAR_DEVICE_FIELDS.DEVICE_SETUP_CUSTOM_FEE_AMOUNT]: String(
+      orderSummaryItem?.setupCharge ?? '',
+    ),
+    [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD]: String(
       orderSummaryItem?.totalAdvanceRentalCharge ?? '',
     ),
-    device_item_rental_charges_type_field: orderSummaryItem?.rentalChargeType ?? '',
-    device_item_custom_rental_charges_field: String(orderSummaryItem?.rentalCharge ?? ''),
-    device_item_purchase_paper_rolls_quantity_field: String(
+    [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_TYPE]: orderSummaryItem?.rentalChargeType ?? '',
+    [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT]: String(
+      orderSummaryItem?.rentalCharge ?? '',
+    ),
+    [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD]: String(
       orderSummaryItem?.paperRollQuantity ?? '',
     ),
-    device_item_advanced_rental_field: (orderSummaryItem?.totalAdvanceRentalCharge || 0) > 0,
-    device_item_purchase_paper_rolls_field: (orderSummaryItem?.paperRollQuantity || 0) > 0,
+    [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE]:
+      (orderSummaryItem?.totalAdvanceRentalCharge || 0) > 0,
+    [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD]: (orderSummaryItem?.paperRollQuantity || 0) > 0,
   };
 };
 
@@ -204,31 +210,28 @@ export const getDevicePaymentFields = ({
 }: GetDevicePaymentFieldsProps): GetDevicePaymentFields => {
   const qrImageContentField = getFieldFromComponent({
     modularConfig,
-    step: 'device_selection_step',
-    component: 'qrcode_component',
-    fieldName: 'qr_image_content_field',
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_QR_IMAGE_CONTENT_FIELD,
   });
 
   const qrTotalAmountField = getFieldFromComponent({
     modularConfig,
-    step: 'device_selection_step',
-    component: 'qrcode_component',
-    fieldName: 'qr_payment_amount_field',
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_QR_CODE_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_AMOUNT_FIELD,
   });
 
-  const qrPaymentStatusField = getFieldFromComponent({
-    modularConfig,
-    step: 'device_selection_step',
-    component: 'qrcode_component',
-    fieldName: 'qr_payment_status_field',
-  });
+  const isDeviceStepCompleted =
+    getProgressFromModularStep({
+      modularConfig,
+      step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    }) === 'completed';
 
   return {
     qrImageContent: isStringValue(qrImageContentField) ? qrImageContentField.stringValue : '',
     qrTotalAmount: isStringValue(qrTotalAmountField) ? qrTotalAmountField.stringValue : '',
-    qrPaymentStatus: isStringValue(qrPaymentStatusField)
-      ? (qrPaymentStatusField.stringValue as DevicePaymentStatus)
-      : 'pending',
+    qrPaymentStatus: isDeviceStepCompleted ? 'success' : 'pending',
   };
 };
 
@@ -243,7 +246,10 @@ export const getDeviceStepStatus = ({
   const orderSummaryFields = getOrderSummaryFieldsFromModularConfig({ modularConfig });
   const { addedDevices = [] } = orderSummaryFields ?? {};
   const isDeviceStepCompleted =
-    getProgressFromModularStep({ modularConfig, step: 'device_selection_step' }) === 'completed';
+    getProgressFromModularStep({
+      modularConfig,
+      step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    }) === 'completed';
 
   if (addedDevices?.length > 0 && !isDeviceStepCompleted) return 'payment_pending';
   else if (addedDevices?.length > 0 && isDeviceStepCompleted) return 'payment_completed';

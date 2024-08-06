@@ -361,6 +361,7 @@ export interface PlanConfig {
   setupFee?: number;
   rentalCharge?: number;
   oneTimeCharge?: number;
+  planDisplayName: string;
 }
 
 // Rate Config

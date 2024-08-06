@@ -27,6 +27,7 @@ import {
   isDevicePricingAdditionalDetailsCompleted,
 } from 'apps/pos/src/app/utils/modularConfig';
 import { getDeviceStepStatus } from 'apps/pos/src/app/utils/deviceSelection';
+import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
 import { getAgreementStepStatus } from 'apps/pos/src/app/utils/agreementSigning';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 import { MODULAR_AGREEMENT_FIELDS } from 'apps/pos/src/app/types/AgreementSigning';
@@ -102,21 +103,22 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     slug: AvailableSteps.DEVICE_SELECTION,
-    modularKey: 'device_selection_step',
+    modularKey: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
     title: 'Device Selection & Ordering',
     description: 'Help your merchants optimise their transactions with the perfect POS devices',
     getStatus: ({ states }) => getDeviceStepStatus({ modularConfig: states.modularConfig }),
-    checkIfDisabled: ({ values }) => !values.merchantId,
+    checkIfDisabled: ({ values, states }) =>
+      !values.merchantId || !states.merchantDetails?.activation.isFormSubmitted,
     checkIfCompleted: ({ states }) =>
       getProgressFromModularStep({
         modularConfig: states.modularConfig,
-        step: 'device_selection_step',
+        step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
       }) === 'completed',
     icon: <ShoppingCartIcon />,
     components: [
       {
         slug: AvailableComponents.DEVICE_SELECTION_CATALOG,
-        modularKey: 'device_catalogue_component',
+        modularKey: MODULAR_DEVICE_FIELDS.DEVICE_CATALOG_COMPONENT,
         checkIfLandingPossible: () => true,
         view: <DeviceSelectionCatalogForPosSalesAgent />,
         title: 'Choose Suitable Devices for your merchant',
@@ -124,7 +126,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
       },
       {
         slug: AvailableComponents.DEVICE_CART,
-        modularKey: 'device_cart_component',
+        modularKey: MODULAR_DEVICE_FIELDS.DEVICE_CART_COMPONENT,
         checkIfLandingPossible: () => true,
         view: <DeviceConfirmationForSalesAgent />,
         title: 'Order Confirmation',
@@ -132,7 +134,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
       },
       {
         slug: AvailableComponents.DEVICE_DELIVERY_ADDRESS,
-        modularKey: 'device_delivery_address_component',
+        modularKey: MODULAR_DEVICE_FIELDS.DEVICE_DELIVERY_ADDRESS_COMPONENT,
         checkIfLandingPossible: () => true,
         view: <DeviceDeliveryAddressForSaleSalesAgent />,
         title: 'Delivery Address',
@@ -140,7 +142,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
       },
       {
         slug: AvailableComponents.DEVICE_PAYMENT,
-        modularKey: 'device_payment',
+        modularKey: MODULAR_DEVICE_FIELDS.DEVICE_PAYMENT_COMPONENT,
         checkIfLandingPossible: () => true,
         view: <DevicePaymentForPosSalesAgent />,
         title: 'Device Payment',
@@ -159,7 +161,8 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
         step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
       });
     },
-    checkIfDisabled: ({ values }) => !values.merchantId,
+    checkIfDisabled: ({ values, states }) =>
+      !values.merchantId || !states.merchantDetails?.activation.isFormSubmitted,
     checkIfCompleted: ({ states }) =>
       getProgressFromModularStep({
         modularConfig: states.modularConfig,

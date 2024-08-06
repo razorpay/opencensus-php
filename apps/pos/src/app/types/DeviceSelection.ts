@@ -24,6 +24,17 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_ORDER_CONFIRMATION_FIELD = 'device_order_confirmation_field',
   DEVICE_ORDER_QR_AMOUNT = 'qr_payment_amount_field',
   DEVICE_QR_PAYMENT_STATUS_CHECK = 'check_qr_status_field',
+  DEVICE_SELECTION_STEP = 'device_selection_step',
+  DEVICE_CART_COMPONENT = 'device_cart_component',
+  DEVICE_CATALOG_COMPONENT = 'device_catalogue_component',
+  DEVICE_ORDER_ITEMS_SUMMARY_FIELD = 'device_order_items_summary_field',
+  DEVICE_ORDER_SUMMARY_FIELD = 'device_order_summary_field',
+  DEVICE_CUSTOM_PRICING_DOCS = 'device_custom_pricing_documents_field',
+  DEVICE_QR_CODE_COMPONENT = 'qrcode_component',
+  DEVICE_QR_IMAGE_CONTENT_FIELD = 'qr_image_content_field',
+  DEVICE_PAYMENT_AMOUNT_FIELD = 'qr_payment_amount_field',
+  DEVICE_DELIVERY_ADDRESS_COMPONENT = 'device_delivery_address_component',
+  DEVICE_PAYMENT_COMPONENT = 'device_payment',
 }
 
 export enum QuantityActions {

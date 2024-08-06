@@ -63,10 +63,10 @@ describe('AddDeviceToCart', () => {
   test('should show plan card on screen', async () => {
     renderApp();
     await userEvent.click(screen.getByText('Add Device'));
-    await userEvent.click(screen.getByTestId('Lifetime-plan-card'));
+    await userEvent.click(screen.getByTestId('lifetime-plan-card'));
     expect(screen.getByText('Lifetime')).toBeInTheDocument();
     expect(screen.getByText('Monthly')).toBeInTheDocument();
-    const monthlyPlan = screen.getByTestId('Monthly-plan-card');
+    const monthlyPlan = screen.getByTestId('monthly-plan-card');
     expect(within(monthlyPlan).getByText('Setup Fee')).toBeInTheDocument();
     expect(within(monthlyPlan).getByText('Rental Charge')).toBeInTheDocument();
     expect(within(monthlyPlan).getByText('One time charge')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('AddDeviceToCart', () => {
     renderApp();
     await userEvent.click(screen.getByText('Add Device'));
     expect(screen.getByText('Monthly Rental Charges')).toBeInTheDocument();
-    await userEvent.click(screen.getByTestId('Lifetime-plan-card-radio'));
+    await userEvent.click(screen.getByTestId('lifetime-plan-card-radio'));
     await userEvent.click(screen.getByText('Add to Cart'));
     const deviceFeeContainer = screen.getByTestId('device-fees-container');
     expect(within(deviceFeeContainer).queryByText('Lifetime Rental Charges')).toBeNull();
@@ -95,7 +95,7 @@ describe('AddDeviceToCart', () => {
   test('should clear custom field if rental type changes', async () => {
     renderApp();
     await userEvent.click(screen.getByText('Add Device'));
-    await userEvent.click(screen.getByTestId('Lifetime-plan-card-radio'));
+    await userEvent.click(screen.getByTestId('lifetime-plan-card-radio'));
     const deviceFeeContainer = screen.getByTestId('device-fees-container');
     await userEvent.click(within(deviceFeeContainer).getByText('Custom'));
     await userEvent.type(within(deviceFeeContainer).getByRole('textbox'), '1000');
@@ -106,7 +106,7 @@ describe('AddDeviceToCart', () => {
   test('should clear custom field if optional feature unchecked', async () => {
     renderApp();
     await userEvent.click(screen.getByText('Add Device'));
-    await userEvent.click(screen.getByTestId('Lifetime-plan-card-radio'));
+    await userEvent.click(screen.getByTestId('lifetime-plan-card-radio'));
     await userEvent.click(screen.getByText('Collecting Rental Charges in Advance (in months)'));
     const optionalField = screen.getByTestId(
       'Collecting Rental Charges in Advance (in months)-optional-field',

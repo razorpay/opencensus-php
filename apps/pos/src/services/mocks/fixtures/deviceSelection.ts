@@ -17,13 +17,15 @@ export const TestDeviceConfig: DeviceConfig = {
       name: 'Test Plan',
       plans: [
         {
-          planName: 'Monthly',
+          planName: 'monthly',
+          planDisplayName: 'Monthly',
           oneTimeCharge: 1000,
           rentalCharge: 200,
           setupFee: 13000,
         },
         {
-          planName: 'Lifetime',
+          planName: 'lifetime',
+          planDisplayName: 'Lifetime',
           oneTimeCharge: 1000,
           rentalCharge: 0,
           setupFee: 30000,
