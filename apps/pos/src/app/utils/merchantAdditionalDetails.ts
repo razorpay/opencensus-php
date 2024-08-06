@@ -2,10 +2,13 @@ import { FieldErrors } from 'react-hook-form';
 import {
   MerchantModularOnboardingDetailsSuccessResponse,
   ModularOnboardingField,
-} from '../types/modular';
-import { FieldRules } from '../typings/MerchantAdditionalDetails';
-import { getComponentFromStep } from './modularConfig';
-import { isStringValue } from './modularTypeResolvers';
+} from 'apps/pos/src/app/types/modular';
+import {
+  FieldRules,
+  MODULAR_ADDITIONAL_DETAILS_FIELDS,
+} from 'apps/pos/src/app/types/MerchantAdditionalDetails';
+import { getComponentFromStep } from 'apps/pos/src/app/utils/modularConfig';
+import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
 
 interface GetInitialMerchantAdditionalDetailsProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
@@ -17,8 +20,8 @@ export const getInitialMerchantAdditionalDetails = ({
   if (!modularConfig) return null;
   const additionalDetailsComponent = getComponentFromStep({
     modularConfig,
-    step: 'additional_details_step',
-    component: 'additional_details_component',
+    step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
+    component: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_COMPONENT,
   });
 
   if (!additionalDetailsComponent) return null;
@@ -39,11 +42,11 @@ interface FieldRulesProps {
 
 export const getFieldRules = ({ field, omcValue }: FieldRulesProps): FieldRules | undefined => {
   if (!field) return;
-  if (field.name === 'additional_details_sap_code_field') {
+  if (field.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.SAP_CODE_FIELD) {
     return omcValue ? { required: true } : { required: false };
   }
   const rules: FieldRules = { required: field?.meta?.validations?.[0].type === 'isRequired' };
-  if (field.name === 'additional_details_cashier_mobile_number_field') {
+  if (field.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.PHONE_NUMBER_FIELD) {
     rules.pattern = /^\d{10}$/;
   }
   return rules;
@@ -58,12 +61,12 @@ export const getFieldErrorText = ({ item, errors, omcValue }: FieldErrorTextProp
   if (!item) return '';
   let error = item?.meta?.validations?.[0].errorMessage;
   if (
-    item.name === 'additional_details_cashier_mobile_number_field' &&
-    errors?.additional_details_cashier_mobile_number_field?.type === 'pattern'
+    item.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.PHONE_NUMBER_FIELD &&
+    errors?.[MODULAR_ADDITIONAL_DETAILS_FIELDS.PHONE_NUMBER_FIELD]?.type === 'pattern'
   ) {
     error = 'Please enter a valid number';
   }
-  if (omcValue && item.name === 'additional_details_sap_code_field') {
+  if (omcValue && item.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.SAP_CODE_FIELD) {
     error = 'SAP code is required';
   }
   return error;
@@ -77,7 +80,7 @@ interface NecessityIndicatorProps {
 export const getNecessityIndicator = ({ field, omcValue }: NecessityIndicatorProps) => {
   if (!field) return 'none';
   if (field.isRequired) return 'required';
-  if (field.name === 'additional_details_sap_code_field' && omcValue) {
+  if (field.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.SAP_CODE_FIELD && omcValue) {
     return 'required';
   }
   return 'none';
@@ -95,13 +98,13 @@ export const getAdditionalDetailFields = ({
   if (!modularConfig) return [];
   const additionalDetailsComponent = getComponentFromStep({
     modularConfig,
-    step: 'additional_details_step',
-    component: 'additional_details_component',
+    step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
+    component: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_COMPONENT,
   });
 
   if (!omcValue) {
     const filteredFields = additionalDetailsComponent?.fields.filter(
-      (field) => field.name !== 'additional_details_sap_code_field',
+      (field) => field.name !== MODULAR_ADDITIONAL_DETAILS_FIELDS.SAP_CODE_FIELD,
     );
     return filteredFields;
   }

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, TextInput, RadioGroup, Radio } from '@razorpay/blade/components';
 import { Control, useController } from 'react-hook-form';
-import DropdownSelect from '../DropdownSelect';
-import { SelectDropdownOptions } from '../../types/common';
-import { FieldRules } from '../../typings/MerchantAdditionalDetails';
+import DropdownSelect from 'apps/pos/src/app/components/DropdownSelect/index';
+import { SelectDropdownOptions } from 'apps/pos/src/app/types/common';
+import { FieldRules } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 
 type FormFieldProps = {
   key: string;

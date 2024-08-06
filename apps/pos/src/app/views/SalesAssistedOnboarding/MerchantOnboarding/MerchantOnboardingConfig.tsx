@@ -3,6 +3,7 @@ import {
   UserPlusIcon,
   FileTextIcon,
   ShoppingCartIcon,
+  CheckCircleIcon,
   FilePlusIcon,
 } from '@razorpay/blade/components';
 import { OnboardingStatesType, OnboardingValuesType } from './providers/useOnboardingContext';
@@ -13,6 +14,7 @@ import MerchantNumberVerifySalesAssisted from './components/MerchantRegistration
 import DevicePaymentForPosSalesAgent from './components/DeviceOrdering/DevicePayment/DevicePaymentForPosSalesAgent';
 
 import MerchantKYC from './components/MerchantKYC';
+import AgreementSigning from './components/AgreementSigning';
 import MerchantAdditionalDetails from './components/MerchantAdditionalDetails';
 import {
   OnboardingStepType,
@@ -20,8 +22,14 @@ import {
   OnboardingComponentType,
   AvailableComponents,
 } from 'apps/pos/src/app/types/common';
-import { getProgressFromModularStep } from 'apps/pos/src/app/utils/modularConfig';
+import {
+  getProgressFromModularStep,
+  isDevicePricingAdditionalDetailsCompleted,
+} from 'apps/pos/src/app/utils/modularConfig';
 import { getDeviceStepStatus } from 'apps/pos/src/app/utils/deviceSelection';
+import { getAgreementStepStatus } from 'apps/pos/src/app/utils/agreementSigning';
+import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
+import { MODULAR_AGREEMENT_FIELDS } from 'apps/pos/src/app/types/AgreementSigning';
 
 export interface Component {
   slug: OnboardingComponentType;
@@ -142,23 +150,52 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     slug: AvailableSteps.ADDITIONAL_DETAILS,
-    modularKey: 'additional_details_step',
+    modularKey: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
     title: 'Additional Details',
     description: 'Provide merchant’s business information to start the POS journey ',
     getStatus: ({ states }) => {
       return getProgressFromModularStep({
         modularConfig: states.modularConfig,
-        step: 'additional_details_step',
+        step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
       });
     },
     checkIfDisabled: ({ values }) => !values.merchantId,
+    checkIfCompleted: ({ states }) =>
+      getProgressFromModularStep({
+        modularConfig: states.modularConfig,
+        step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
+      }) === 'completed',
     icon: <FilePlusIcon />,
     components: [
       {
         slug: AvailableComponents.ADDITIONAL_DETAILS,
-        modularKey: 'additional_details_form',
+        modularKey: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_COMPONENT,
         checkIfLandingPossible: () => true,
         view: <MerchantAdditionalDetails />,
+      },
+    ],
+  },
+  {
+    slug: AvailableSteps.AGREEMENT_SIGNING,
+    modularKey: MODULAR_AGREEMENT_FIELDS.AGREEMENT_STEP,
+    title: 'Agreement Signing',
+    description: 'Merchant’s T&C and Pricing Agreement with Razorpay',
+    getStatus: ({ states }) => getAgreementStepStatus({ modularConfig: states.modularConfig }),
+    checkIfDisabled: ({ states, values }) =>
+      !values.merchantId ||
+      !isDevicePricingAdditionalDetailsCompleted({ modularConfig: states.modularConfig }),
+    checkIfCompleted: ({ states }) =>
+      getProgressFromModularStep({
+        modularConfig: states.modularConfig,
+        step: MODULAR_AGREEMENT_FIELDS.AGREEMENT_STEP,
+      }) === 'completed',
+    icon: <CheckCircleIcon />,
+    components: [
+      {
+        slug: AvailableComponents.AGREEMENT_SIGNING,
+        modularKey: MODULAR_AGREEMENT_FIELDS.AGREEMENT_COMPONENT,
+        checkIfLandingPossible: () => true,
+        view: <AgreementSigning />,
       },
     ],
   },

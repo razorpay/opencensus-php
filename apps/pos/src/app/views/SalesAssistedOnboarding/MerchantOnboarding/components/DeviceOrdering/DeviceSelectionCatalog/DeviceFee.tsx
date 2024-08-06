@@ -67,9 +67,7 @@ const DeviceFee = ({ deviceFee }: DeviceFeeProps): JSX.Element => {
           label=""
           name={customInputField.name}
           value={customInputField.value}
-          onChange={({ value = '' }) =>
-            setValue(deviceFee.customAmountField, value?.trim() as string)
-          }
+          onChange={({ value = '' }) => setValue(deviceFee.customAmountField, value?.trim())}
           leadingIcon={RupeeIcon}
           isDisabled={feeTypeField.value !== 'custom'}
           validationState={customInputFieldState.error ? 'error' : 'none'}

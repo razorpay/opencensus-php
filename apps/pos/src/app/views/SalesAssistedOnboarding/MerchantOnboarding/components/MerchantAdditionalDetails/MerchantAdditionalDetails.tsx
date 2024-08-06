@@ -23,6 +23,7 @@ import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import FormField from 'apps/pos/src/app/components/FormField';
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
+import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 
 const MerchantAdditionalDetails = (): JSX.Element | null => {
   const toast = useToast();
@@ -37,7 +38,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
       navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${values.merchantId}`, { replace: true });
     },
   });
-  const { modularConfig, isUpdateModularLoading } = states;
+  const { modularConfig, isUpdateModularLoading, isModularLoading } = states;
   const { isMobile } = useScreen();
   const { updateModularConfig } = handlers;
 
@@ -54,7 +55,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
     defaultValues: defaultValues ?? {},
   });
 
-  const omcValue = watch('additional_details_omc_field');
+  const omcValue = watch(MODULAR_ADDITIONAL_DETAILS_FIELDS.OMC_FIELD);
 
   const additionalDetailsFields = useMemo(() => {
     return getAdditionalDetailFields({ modularConfig, omcValue });
@@ -91,7 +92,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
     );
   };
 
-  if (!modularConfig)
+  if (isModularLoading)
     return (
       <Box
         as="section"
@@ -104,6 +105,8 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
         <Spinner color="primary" accessibilityLabel="additional-details-spinner" size="xlarge" />
       </Box>
     );
+
+  if (!modularConfig) return null;
 
   return (
     <Box padding={['spacing.6', 'spacing.6']}>

@@ -27,7 +27,7 @@ interface SalesFileUploadProps {
   isDisabled?: boolean;
   defaultValue?: FileItem[];
   onChange: (files: FileItem[]) => void;
-  onError: () => void;
+  onError?: () => void;
   maxSize: number;
   maxLimit: number;
 }

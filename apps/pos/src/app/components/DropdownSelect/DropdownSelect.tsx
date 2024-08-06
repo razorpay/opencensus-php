@@ -10,9 +10,9 @@ import {
   SelectInput,
 } from '@razorpay/blade/components';
 import { ControllerRenderProps } from 'react-hook-form';
-import { SelectDropdownOptions } from '../../types/common';
-import { useScreen } from '../../utils/hooks/useScreen';
-import { FieldRules } from '../../typings/MerchantAdditionalDetails';
+import { SelectDropdownOptions } from 'apps/pos/src/app/types/common';
+import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
+import { FieldRules } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 
 interface DropdownSelectProps {
   field: ControllerRenderProps;

@@ -5,6 +5,8 @@ import {
   ModularOnboardingStepWithModularComponents,
 } from 'apps/pos/src/app/types/modular';
 import { StepProgressTypes } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import { COMPLETED } from 'apps/pos/src/app/utils/agreementSigning';
+import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 
 interface GetStepsFromModularConfigProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
@@ -99,4 +101,24 @@ export const getProgressFromModularStep = ({
   }
 
   return 'pending';
+};
+
+interface IsDevicePricingAdditionalDetailsCompleted {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
+}
+export const isDevicePricingAdditionalDetailsCompleted = ({
+  modularConfig,
+}: IsDevicePricingAdditionalDetailsCompleted) => {
+  if (!modularConfig) return false;
+  const isDeviceOrderingCompleted =
+    getProgressFromModularStep({ modularConfig, step: 'device_selection_step' }) === COMPLETED;
+  const isPricingCompleted =
+    getProgressFromModularStep({ modularConfig, step: 'pricing_step' }) === COMPLETED;
+  const isAdditionalDetailsCompleted =
+    getProgressFromModularStep({
+      modularConfig,
+      step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
+    }) === COMPLETED;
+  if (isDeviceOrderingCompleted && isPricingCompleted && isAdditionalDetailsCompleted) return true;
+  return false;
 };

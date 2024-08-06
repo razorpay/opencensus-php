@@ -25,6 +25,7 @@ export enum AvailableSteps {
   MERCHANT_REGISTRATION = 'merchantRegistration',
   MERCHANT_KYC = 'merchantKyc',
   DEVICE_SELECTION = 'deviceSelection',
+  AGREEMENT_SIGNING = 'agreementSigning',
   ADDITIONAL_DETAILS = 'additionalDetails',
 }
 
@@ -33,6 +34,7 @@ export enum AvailableComponents {
   MERCHANT_KYC_REDIRECT = 'merchantKycRedirect',
   DEVICE_CART = 'deviceCart',
   DEVICE_SELECTION_CATALOG = 'deviceSelectionCatalog',
+  AGREEMENT_SIGNING = 'agreementMode',
   ADDITIONAL_DETAILS = 'merchantAdditionalDetails',
   DEVICE_DELIVERY_ADDRESS = 'deviceDeliveryAddress',
   DEVICE_PAYMENT = 'devicePayment',
@@ -42,6 +44,7 @@ export type OnboardingStepType =
   | AvailableSteps.MERCHANT_REGISTRATION
   | AvailableSteps.MERCHANT_KYC
   | AvailableSteps.DEVICE_SELECTION
+  | AvailableSteps.AGREEMENT_SIGNING
   | AvailableSteps.ADDITIONAL_DETAILS;
 
 export type OnboardingComponentType =
@@ -49,6 +52,7 @@ export type OnboardingComponentType =
   | AvailableComponents.MERCHANT_KYC_REDIRECT
   | AvailableComponents.DEVICE_CART
   | AvailableComponents.DEVICE_SELECTION_CATALOG
+  | AvailableComponents.AGREEMENT_SIGNING
   | AvailableComponents.ADDITIONAL_DETAILS
   | AvailableComponents.DEVICE_DELIVERY_ADDRESS
   | AvailableComponents.DEVICE_PAYMENT;

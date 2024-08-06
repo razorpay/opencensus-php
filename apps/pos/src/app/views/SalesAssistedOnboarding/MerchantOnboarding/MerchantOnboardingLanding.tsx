@@ -24,6 +24,7 @@ const MerchantOnboardingLanding = (): JSX.Element => {
             marginY="spacing.7"
             showPercentage={false}
             max={totalSteps}
+            color={totalSteps === totalCompletedSteps ? 'positive' : undefined}
           />
         }
         isBackButtonVisible

@@ -42,7 +42,7 @@ const UploadedfileItem = ({
         <img src={DocIcon} height="40px" alt="file icon" />
       </Box>
       <Box>
-        <Box display="flex" alignItems="center" width={{ base: '200px', l: '500px' }}>
+        <Box display="flex" alignItems="center">
           <Text wordBreak="break-all" truncateAfterLines={1} marginRight="spacing.3">
             {name}
           </Text>
@@ -59,7 +59,6 @@ const UploadedfileItem = ({
           icon={DownloadIcon}
           onClick={() => onDownloadClick(fileStoreId as string)}
           accessibilityLabel="download-file"
-          isDisabled={isDisabled}
         />
         <Divider orientation="vertical" marginX="spacing.4" variant="normal" />
         <IconButton
