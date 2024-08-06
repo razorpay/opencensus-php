@@ -20,6 +20,7 @@ use RZP\Error\ErrorCode;
 use RZP\Mail\User\Otp;
 use RZP\Models\Feature;
 use RZP\Mail\User\Login;
+use RZP\Models\User\Constants;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Product;
@@ -27,7 +28,6 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
-use RZP\Models\User\Constants;
 use RZP\Models\User\Entity;
 use RZP\Mail\User\OtpSignup;
 use RZP\Services\Mock\Raven;
@@ -14559,5 +14559,65 @@ class UserTest extends TestCase
 
         $this->assertEquals($user2->getName(), $response[$user2->getEmail()]['name']);
         $this->assertEquals($user3->getName(), $response[$user3->getEmail()]['name']);
+    }
+
+    public function testResellerPartnerMerchantRegister()
+    {
+        Config::set('applications.test_case.execution', false);
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $merchantId = '1X4hRFHFx4Uiut';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+        $this->fixtures->edit('merchant', $merchantId, ['partner_type' =>'reseller']);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'],['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => Constants::MERCHANT,
+                'entity_id' => $merchantId,
+                'name' => 'pos_channel_partnership'
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $response['merchants'][0]['id'])->get();
+
+        $merchant1 = $this->getDbEntityById('merchant', $merchantId);
+
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $response['merchants'][0]['id']]);;
+
+        $this->assertEquals($merchantUserMapping[0]->role, 'razorpay_sales');
+
+        $this->assertEquals($merchant1->getPartnerType(), 'reseller');
+
+        $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
+
     }
 }

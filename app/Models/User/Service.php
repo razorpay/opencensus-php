@@ -790,11 +790,8 @@ class Service extends Base\Service
                     (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                 }
 
-                $loggedInMerchant=  $this->app['basicauth']->getMerchant();
-
-                $ezetapMerchantId= $this->app['config']->get('app.ezetap_merchant_id');
-
-                if ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING and $loggedInMerchant->getId()==$ezetapMerchantId) {
+                if ($this->shouldUpdateUserMerchantMapping($signupCampaign))
+                {
                     $userMerchantMappingInputData = [
                         'action' => 'attach',
                         'role' => Role::RAZORPAY_SALES,
@@ -3992,5 +3989,16 @@ class Service extends Base\Service
         }
 
         return $userMapping;
+    }
+
+    function shouldUpdateUserMerchantMapping($signupCampaign): bool
+    {
+        $loggedInMerchant=  $this->app['basicauth']->getMerchant();
+        $ezetapMerchantId=  $this->app['config']->get('app.ezetap_merchant_id');
+
+        return $signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING &&
+            ($loggedInMerchant->getId() == $ezetapMerchantId ||
+                ($loggedInMerchant->isResellerPartner() &&
+                    $loggedInMerchant->isFeatureEnabled(FeatureConstant::POS_CHANNEL_PARTNERSHIP)));
     }
 }

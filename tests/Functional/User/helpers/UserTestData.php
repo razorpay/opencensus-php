@@ -7864,4 +7864,28 @@ return [
             'content'   => []
         ],
     ],
+
+    'testResellerPartnerMerchantRegister' => [
+        'request' => [
+            'url'     => '/register/merchant/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'signup_campaign'       => 'assisted_onboarding',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'            =>'8877665544',
+                'signup_via_email'          => 0,
+                'confirmed'                 => false,
+                'email_verified'            => false,
+                'contact_mobile_verified'   => true,
+                'signup_campaign'           => 'assisted_onboarding'
+            ]
+        ]
+    ],
 ];
