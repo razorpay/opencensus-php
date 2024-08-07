@@ -986,6 +986,27 @@ return [
             ],
         ],
     ],
+    'changePosActivationStatusToUnderReview' => [
+        'request'  => [
+            'content' => [
+                'pos_activation_status' => 'under_review',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid status change',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'changeActivationStatusToNeedsClarificationWithoutReasons' => [
         'request'  => [
             'content' => [
@@ -1002,7 +1023,27 @@ return [
             'status_code' => 400,
         ]
     ],
-
+    'changePosActivationStatusToNeedsClarification' => [
+        'request'  => [
+            'content' => [
+                'pos_activation_status' => 'needs_clarification',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Processing failed because no clarifications asked',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testSaveGroupCommentsMerchantClarificationReasons' => [
         'request' => [
             'url'       => '/merchant/activation/clarifications',

@@ -931,6 +931,8 @@ class Route
         'merchant_activation_document_type'        => ['get',      'merchant/activation/document_types',              'MerchantController@getNCAdditionalDocuments'                       ],
         'merchant_activation_status'               => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
         'internal_merchant_activation_status'      => ['patch',    'merchant/activation/{id}/activation_status/internal', 'MerchantController@updateActivationStatusInternal'            ],
+        'merchant_pos_activation_status'           => ['patch',    'merchant/pos_activation_status/{id}',            'MerchantController@updatePosActivationStatus'                      ],
+        'internal_merchant_pos_activation_status'  => ['patch',    'merchant/pos_activation_status/{id}/internal',   'MerchantController@updatePosActivationStatusInternal' ],
         'merchant_activation_status_change_log'    => ['get',      'merchant/activation/{id}/status_change_log',     'MerchantController@getActivationStatusChangeLog'                   ],
         'merchant_activation_change_log_internal'  => ['get',      'internal/merchant/activation/{id}/status_change_log', 'MerchantController@getActivationStatusChangeLog'              ],
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
@@ -6665,6 +6667,7 @@ class Route
 
         'bank_transfer_process_internal',
         'internal_merchant_activation_status',
+        'internal_merchant_pos_activation_status',
         'internal_create_risk_action',
 
         // Magic Club
@@ -8154,6 +8157,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_pos_activation_status',
         'merchant_activation_business_categories_adminV3',
         'merchant_activation_business_categories_admin_v3',
         'merchant_vkyc_submit_admin',
@@ -10091,8 +10095,10 @@ class Route
         'merchant_activation_document_type'        => Permission::EDIT_MERCHANT,
         'merchant_activation_archive'              => Permission::MERCHANT_ACTIVATION_ARCHIVE,
         'merchant_activation_status'               => Permission::EDIT_ACTIVATE_MERCHANT,
+        'merchant_pos_activation_status'           => Permission::EDIT_ACTIVATE_MERCHANT,
         'auto_approve_merchant_activation_checker' => Permission::EDIT_ACTIVATE_MERCHANT,
         'internal_merchant_activation_status'      => Permission::EDIT_ACTIVATE_MERCHANT,
+        'internal_merchant_pos_activation_status'  => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_activation_status_change_log'    => Permission::VIEW_ACTIVATION_FORM,
         'merchant_update_key_access'               => Permission::EDIT_MERCHANT_KEY_ACCESS,
         'merchant_get_rejection_reasons'           => Permission::VIEW_MERCHANT,
@@ -13976,6 +13982,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_pos_activation_status',
             'merchant_vkyc_submit',
             'merchant_edd_details_fetch',
             '1cc_prepay_cod_configs_get',
@@ -17921,6 +17928,7 @@ class Route
         ],
 
         'cmma' => [
+            'internal_merchant_pos_activation_status',
             'internal_merchant_partnership',
             'internal_merchant_details_fetch',
             'internal_merchant_activation_status',

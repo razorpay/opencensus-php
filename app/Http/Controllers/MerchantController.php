@@ -1774,6 +1774,16 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+    public function updatePosActivationStatus(string $id)
+    {
+        $input = Request::all();
+
+        unset($input['checkers_file']);
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updatePosActivationStatusOfMerchant($id, $input);
+
+        return ApiResponse::json($response);
+    }
 
     public function getNCAdditionalDocuments()
     {
@@ -1787,6 +1797,14 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatusInternal($id, $input);
+
+        return ApiResponse::json($response);
+    }
+    public function updatePosActivationStatusInternal(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updatePosActivationStatusInternal($id, $input);
 
         return ApiResponse::json($response);
     }

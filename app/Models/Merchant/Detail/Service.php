@@ -1910,6 +1910,16 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
+    public function updatePosActivationStatusOfMerchant(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updatePosActivationStatusOfMerchant($merchant, $input,$admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
     /**
      * This function is used for updating merchant activation status
      * @param string $merchantId
@@ -1962,6 +1972,30 @@ class Service extends Base\Service
         $this->app['workflow']->setPermission(PermissionName::EDIT_ACTIVATE_MERCHANT);
 
         $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $maker);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function updatePosActivationStatusInternal(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
+            DetailConstants::INPUT => $input,
+            Entity::MERCHANT_ID    => $merchantId
+
+        ]);
+
+        $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
+
+        $this->app['workflow']->setMakerFromAuth(false);
+        $this->app['workflow']->setWorkflowMaker($maker);
+        $this->app['workflow']->setWorkflowMakerType(MakerType::ADMIN);
+
+        $this->app['basicauth']->setOrgId($merchant->getOrgId());
+
+        $this->app['workflow']->setPermission(PermissionName::POS_EDIT_ACTIVATE_MERCHANT);
+        $merchantDetails = (new Core)->updatePosActivationStatusOfMerchant($merchant, $input,$maker);
 
         return $merchantDetails->toArrayPublic();
     }

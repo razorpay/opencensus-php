@@ -14,6 +14,7 @@ class Constants
     const EMAIL_CHANGE                          = 'merchant_edit_email';
     const MERCHANT_ACTIVATION_STATUS            = 'merchant_activation_status';
     const INTERNAL_MERCHANT_ACTIVATION_STATUS   = 'internal_merchant_activation_status';
+    const INTERNAL_MERCHANT_POS_ACTIVATION_STATUS   = 'internal_merchant_pos_activation_status';
 
     const INTERNAL_CREATE_RISK_ACTION           = 'internal_create_risk_action';
 
@@ -68,6 +69,8 @@ class Constants
         self::MERCHANT_ACTIVATION_STATUS                => MerchantActivationStatusObserver::class,
 
         self::INTERNAL_MERCHANT_ACTIVATION_STATUS       => MerchantActivationStatusObserver::class,
+
+        self::INTERNAL_MERCHANT_POS_ACTIVATION_STATUS   => MerchantActivationStatusObserver::class,
 
         self::MERCHANT_SAVE_BUSINESS_WEBSITE            => MerchantSelfServeObserver::class,
 

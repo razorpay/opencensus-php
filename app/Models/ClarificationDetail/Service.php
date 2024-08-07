@@ -222,7 +222,7 @@ class Service extends Base\Service
 
                 if ($isAdminRouteRequest === true)
                 {
-                    $response = $pgosNCProxyController->handlePGOSProxyRequests('merchant_activation_clarifications_fetch_admin', $payload, $merchant);
+                    $response = $this->app['NeedsClarificationProxyController']->handlePGOSProxyRequests('merchant_activation_clarifications_fetch_admin', $payload, $merchant);
 
                     $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
                         'route'    => 'merchant_activation_clarifications_fetch_admin',
@@ -297,11 +297,11 @@ class Service extends Base\Service
                     'response'  => $response,
                     'payload'   => $pgosInput,
                 ]);
-               
+
                 $pgosProxyController = new MerchantOnboardingProxyController();
                 // check errors and rethrow them
                 $pgosProxyController->errorHandler($response);
-                
+
                 return $response;
             }
         }

@@ -4939,6 +4939,182 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    public function updatePosActivationStatusOfMerchant(Merchant\Entity $merchant, array $input, PublicEntity $maker, bool $triggerWorkflow = true): ?Entity
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+
+        $this->trace->info(TraceCode::PGOS_POS_SUBMIT, [
+            'pos_activation_status' => $merchantPosActivationStatus,
+            'input'                 => $input
+        ]);
+
+        $merchantDetails->getValidator()
+                        ->validatePOSActivationStatusChange(
+                            $merchantPosActivationStatus,
+                            $input[DEConstants::POS_ACTIVATION_STATUS]);
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_POS_ACTIVATION_STATUS, [
+            'input'       => $input,
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $newMerchantDetails = clone $merchantDetails;
+
+        $oldMerchantDetails = clone $merchantDetails;
+
+        $rejectionReasons = [];
+
+        $rejectionOption = '';
+
+        if (empty($input[Entity::REJECTION_REASONS]) === false)
+        {
+            $rejectionReasons = $input[Entity::REJECTION_REASONS];
+
+            unset($input[Entity::REJECTION_REASONS]);
+        }
+
+        if (empty($input[Entity::REJECTION_OPTION]) === false)
+        {
+            $rejectionOption = $input[Entity::REJECTION_OPTION];
+
+            unset($input[Entity::REJECTION_OPTION]);
+        }
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use (
+            $maker,
+            $merchantDetails,
+            $oldMerchantDetails,
+            $newMerchantDetails,
+            $input,
+            $merchant,
+            $merchantPosActivationStatus,
+            $rejectionOption,
+            $rejectionReasons,
+            $triggerWorkflow
+        ) {
+            $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $merchantPosActivationStatus;
+            $merchantDetails[DEConstants::POS_ACTIVATION_STATUS]    = $input[DEConstants::POS_ACTIVATION_STATUS];
+
+            switch ($input[DEConstants::POS_ACTIVATION_STATUS])
+            {
+                case Status::KYC_QUALIFIED_STB:
+                    if ($triggerWorkflow === true)
+                    {
+                        // if there is already a open workflow on same entity with same permission this will throw BadRequestException
+                        // Handle with return without error when the workflow is being executed or approved
+                        // Handle will throw EarlyWorkflowResponse error when workflow is succesfully created
+                        $this->app['workflow']
+                            ->setEntity($merchantDetails->getEntity())
+                            ->setOriginal($oldMerchantDetails)
+                            ->setDirty($merchantDetails)
+                            ->setWorkflowMaker($maker)
+                            ->setWorkflowMakerType(MakerType::ADMIN)
+                            ->handle();
+
+
+                    }
+
+                    break;
+
+                case Status::REJECTED:
+                    if ($triggerWorkflow === true)
+                    {
+                        $rejectionReasonDescriptions = [];
+
+                        foreach ($rejectionReasons as $rejectionReason)
+                        {
+                            $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
+
+                            $rejectionReasonDescriptions[] = ($rejectionReason[Reason\Entity::REASON_CATEGORY] ?? 'None')
+                                                             . ' - ' .
+                                                             RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
+
+                            $rejectionReasonCategory[] = $rejectionReason[Reason\Entity::REASON_CATEGORY];
+                        }
+
+                        $merchantDetails[DetailConstants::REJECTION_CATEGORY_REASONS] = $rejectionReasonDescriptions;
+
+                        $merchantDetails[DetailConstants::REJECTION_OPTION] = $rejectionOption;
+
+                        $this->app['workflow']
+                            ->setEntity($merchantDetails->getEntity())
+                            ->setOriginal($oldMerchantDetails)
+                            ->setDirty($merchantDetails)
+                            ->setWorkflowMaker($maker)
+                            ->setWorkflowMakerType(MakerType::ADMIN)
+                            ->handle();
+
+                    }
+
+                    $this->sendRejectionEmail($merchant);
+                    break;
+                case Status::NEEDS_CLARIFICATION:
+                    $merchantId = $newMerchantDetails->getMerchantId();
+
+                    $posClarificationDetails = (new ClarificationDetailService())->getClarificationDetail($merchantDetails->getMerchantId());
+
+                    if (empty($posClarificationDetails) === false)
+                    {
+                        $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
+                            'merchant_id'                => $merchantId,
+                            'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
+                            'pos_activation_status'      => $merchantDetails->getActivationStatus()
+                        ]);
+
+                        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
+                            (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
+                        {
+                            $this->sendNeedsClarificationEmail($merchant);
+                        }
+
+                        $this->trace->info(TraceCode::POS_NC_EMAIL_SENT, [
+                            'merchant_id'           => $merchantId,
+                            'pos_activation_status' => $merchantPosActivationStatus,
+                        ]);
+                    }
+                    break;
+            }
+            if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
+            {
+                (new ClarificationDetailValidator())->validateClarificationExists($merchant->getId());
+            }
+
+            (new ClarificationDetailService())->updateClarificationDetails($merchant->getId(), $input[DEConstants::POS_ACTIVATION_STATUS]);
+
+            $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
+
+            //send mail
+            try
+            {
+                $args = [
+                    'posActivationStatus'      => $input[DEConstants::POS_ACTIVATION_STATUS],
+                    'merchant'                 => $merchant,
+                    Merchant\Constants::PARAMS => [
+                        'subMerchantName' => $merchant->getTrimmedName(25, "..."),
+                        'subMerchantId'   => $merchant->getId(),
+                    ]
+                ];
+
+                Tracer::inSpan(['name' => 'in_person_onboarding_notification_handler_send'], function() use ($args) {
+                    (new OnboardingNotificationHandler($args))->sendInPersonNotifications();
+                });
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::MERCHANT_IN_PERSON_NOTIFICATION_FAILED, [
+                    'MerchantId'   => $merchantId,
+                    'ErrorMessage' => $e->getMessage()
+                ]);
+
+                return $merchantDetails;;
+            }
+
+        });
+
+        return $merchantDetails;
+    }
+
     public function updateMerchantStoreInternal(string $merchantId, array $input): array
     {
         try

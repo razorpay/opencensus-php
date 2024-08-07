@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Illuminate\Support\Facades\App;
 use Mail;
+use Mockery\MockInterface;
 use Queue;
 use Config;
 use Mockery;
@@ -12,6 +13,8 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Http\Controllers\NeedsClarificationProxyController;
 use RZP\Http\Request\Requests;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
@@ -1711,6 +1714,123 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->assertEquals(0, $result->count());
 
+    }
+
+    public function testPosActivationRequestStatusWithException()
+    {
+        Mail::fake();
+
+        $MerchantOnboardingProxyControllerMock = $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                ->andReturn(true);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pgos_fetch_activation_status';
+                })->andReturn(["pos_activation_status"=>'under_review']);
+        });
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $testData = $this->testData['changePosActivationStatusToUnderReview'];
+
+        $testData['request']['url'] = "/merchant/pos_activation_status/$merchantId";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+    }
+
+    public function testPosActivationRequestForNCStatusWithException()
+    {
+        Mail::fake();
+
+        $MerchantOnboardingProxyControllerMock = $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                ->andReturn(true);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pgos_fetch_activation_status';
+                })->andReturn(["pos_activation_status"=>'under_review']);
+        });
+
+        $NeedsClarificationProxyControllerMock = $this->mock(NeedsClarificationProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                ->andReturn(true);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_activation_clarifications_fetch_admin';
+                })->andReturn(["success"=>'true']);
+        });
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+        $this->app->instance('NeedsClarificationProxyController', $NeedsClarificationProxyControllerMock);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true,
+            "email" => null
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->fixtures->create('clarification_detail', [
+            "merchant_id" => $merchantId,
+            "group_name"  => "bank_details",
+            "status"      => 'under_review',
+            "metadata"    => [
+                'admin_email' => '123@gmail.com',
+            ],
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ]);
+
+        $testData = $this->testData['changePosActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/pos_activation_status/$merchantId";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
     }
 
     public function testValidateClarificationDetail()

@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
+use RZP\Http\Controllers\NeedsClarificationProxyController;
 use RZP\Trace\TraceCode;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
@@ -510,6 +511,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('MerchantOnboardingProxyController', function ($app)
         {
             return new MerchantOnboardingProxyController();
+        });
+
+        $this->app->singleton('NeedsClarificationProxyController', function ($app)
+        {
+            return new NeedsClarificationProxyController();
         });
 
         $this->app->singleton('gateway_file', function($app)

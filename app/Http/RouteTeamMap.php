@@ -292,6 +292,7 @@ class RouteTeamMap
         'merchant_activation_upload_file_admin'           => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_update'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_status'                      => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_pos_activation_status'                  => [self::TEAM_OMNI_ACQUISITION],
         'merchant_activation_status_change_log'           => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_document_type'               => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_get_rejection_reasons'                  => [self::TEAM_PAYMENTS_GROWTH],
