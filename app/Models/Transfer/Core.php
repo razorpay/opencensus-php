@@ -237,7 +237,7 @@ class Core extends Base\Core
 
         $allTransfers = $orderTransfers->merge($paymentTransfers);
 
-        $parentMerchant = $this->fetchAccountParentMerchant($merchant);
+        $parentMerchant = $this->fetchAccountParentMerchant($merchant, null, $payment);
 
         foreach ($input as $transfer)
         {

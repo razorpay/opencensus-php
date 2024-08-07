@@ -1765,6 +1765,15 @@ class Service extends Base\Service
      */
     public function transfer(string $id, array $input) : array
     {
+        if ($this->auth->isAppAuth() && $this->auth->isRouteApp())
+        {
+            $payment = $this->repo->payment->findByPublicId($id);
+
+            $this->merchant = $payment->merchant;
+
+            $this->auth->setMerchant($this->merchant);
+        }
+
         try
         {
             $transfers = $this->getNewProcessor()->transfer($id, $input);

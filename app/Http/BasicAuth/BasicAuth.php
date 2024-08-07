@@ -2224,6 +2224,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'merchant_dashboard');
     }
 
+    public function isRouteApp(): bool
+    {
+        return ($this->getInternalApp() === 'route');
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------

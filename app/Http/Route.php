@@ -6793,8 +6793,9 @@ class Route
         'create_fund_account_vendor_portal_v2',
         'fetch_fund_accounts_vendor_portal_v2',
 
-        'expire_keys'
+        'expire_keys',
 
+        'payment_transfer',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -18226,6 +18227,10 @@ class Route
             'setl_fetch_multiple_proxy',
             'merchant_analytics',
         ],
+
+        'route' => [
+            'payment_transfer'
+        ]
     ];
 
     //

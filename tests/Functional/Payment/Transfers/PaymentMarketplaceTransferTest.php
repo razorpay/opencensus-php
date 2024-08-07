@@ -1750,10 +1750,6 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testTransferToSuspendedLinkedAccount()
     {
-        $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $this->fixtures->edit('merchant', '10000000000001', ['suspended_at' => 1642901927]);
-
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 1000,
@@ -1998,6 +1994,30 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertNotNULL($transfer['processed_at']);
 
         $this->assertEquals(4, $transfer['attempts']);
+    }
+
+    public function testTransferPaymentUsingInternalAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $transfers[0] = [
+            'account_code'  => 'code-007',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+        ];
+
+        $response = $this->transferPaymentUsingInternalAuth($this->payment['id'], $transfers);
+
+        $transfer = $response['items'][0];
+
+        $this->assertEquals('transfer', $transfer['entity']);
+        $this->assertEquals($this->payment['id'], $transfer['source']);
+        $this->assertEquals('pending', $transfer['status']);
+        $this->assertNull($transfer['processed_at']);
+        $this->assertEquals('acc_10000000000001', $transfer['recipient']);
+        $this->assertEquals('code-007', $transfer['account_code']);
+        $this->assertEquals($this->payment['amount'], $transfer['amount']);
     }
 
     protected function mockSplitzTreatmentBulkRequest($output)

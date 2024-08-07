@@ -2071,5 +2071,10 @@ return [
             'test' => env('TOKENS_TEST_SECRET'),
             'live' => env('TOKENS_LIVE_SECRET'),
         ],
-    ]
+    ],
+
+    'route' => [
+        // Secret used by Route microservice to call API
+        'secret' => env('ROUTE_API_SECRET'),
+    ],
 ];

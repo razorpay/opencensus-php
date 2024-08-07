@@ -1223,6 +1223,21 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function transferPaymentUsingInternalAuth(string $id, array $transfers)
+    {
+        $request = [
+            'method'        => 'POST',
+            'url'           => '/payments/' . $id . '/transfers/internal',
+            'content'       => [
+                'transfers' => $transfers,
+            ],
+        ];
+
+        $this->ba->routeAppAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function addPaymentMetadata($id, $content)
     {
         $request = array(
