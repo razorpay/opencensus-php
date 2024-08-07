@@ -1285,9 +1285,26 @@ class Processor
                     }
                 }
 
+
+                //storefront rearch card payment
+                if (empty($order) === false and ($order->getProductId() !== null
+                        and $order->getProductType() === ProductType::PAYMENT_STORE))
+                {
+                    $result = $this->canRouteStorefrontCardPaymentThroughRearch($merchant->getId());
+                    if ($result === false) {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "storefront_card_payment",
+                            'merchant_id' => $merchant->getId(),
+                            'order_id' => $order->getId(),
+                        ]);
+                        return false;
+                    }
+                }
+
                 if (empty($order) === false and ($order->getProductId() !== null
                         and $order->getProductType() !== ProductType::PAYMENT_LINK_V2
                         and $order->getProductType() !== ProductType::INVOICE
+                        and $order->getProductType() !== ProductType::PAYMENT_STORE
                         and !in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
                 {
 
@@ -2442,6 +2459,39 @@ class Processor
                 $e,
                 null,
                 TraceCode::INVOICE_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+
+
+    private function canRouteStorefrontCardPaymentThroughRearch($merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.storefront_card_payment_on_rearch_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID, 'mode' => $this->mode]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::STOREFRONT_CARD_PAYMENT_VIA_REARCH, [
+                'merchant_id' => $merchantID,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR);
         }
 
         return false;

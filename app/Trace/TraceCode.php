@@ -11787,6 +11787,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_RESPONSE    = 'BATCH_SERVICE_ORG_DEFINED_MERCHANT_FIELDS_RESPONSE';
 
+    const STOREFRONT_CARD_PAYMENT_VIA_REARCH                    = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH';
+
+    const STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR       = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
