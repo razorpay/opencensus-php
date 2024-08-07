@@ -93,7 +93,8 @@ test.describe.parallel(
     test('should search UPI PL with payment link id @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
-      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+      await container.waitFor();
       await searchAndVerifyByPLId({ container });
     });
   },

@@ -1,6 +1,6 @@
 import { test, expect } from 'utils/base';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { switchToTestMode, clickSkipAndStartBtn } from 'utils';
+import { switchToTestModeShortCircuit, clickSkipAndStartBtn } from 'utils';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { searchAndVerifyByPLId } from './utils';
@@ -33,8 +33,12 @@ import { searchAndVerifyByPLId } from './utils';
       });
 
       test.beforeEach(async ({ page }) => {
-        if (context.isTestMode) await switchToTestMode({ page });
         await page.goto(routes.PAYMENT_LINKS);
+        if (context.isTestMode)
+        await switchToTestModeShortCircuit({
+          page,
+          mid: context.plType === 'v1' ? 'LhXWnWmSvyDJmm' : 'LLkjLdJz4gWVvk',
+        });
         await clickSkipAndStartBtn({ page });
         await page.getByRole('link', { name: 'Batch Uploads' }).click();
       });
@@ -81,7 +85,8 @@ import { searchAndVerifyByPLId } from './utils';
       test(`should search and verify by batch Id for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
         page,
       }) => {
-        const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+        const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+        await container.waitFor();
         await searchAndVerifyByPLId({ container });
       });
     },

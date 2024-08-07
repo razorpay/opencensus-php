@@ -1,5 +1,5 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expectSuccessNotification, switchToTestMode, clickSkipAndStartBtn } from 'utils';
+import { expectSuccessNotification, switchToTestModeShortCircuit, clickSkipAndStartBtn } from 'utils';
 import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
@@ -27,14 +27,14 @@ const SELECTORS = {
 };
 
 test.describe
-  .parallel('Test Payments Links V2 @flow=payment-links-v1 @project=no-code @project=no-code-stable @project=no-code-roast', () => {
+  .parallel('Test Payments Links V1 @flow=payment-links-v1 @project=no-code @project=no-code-stable @project=no-code-roast', () => {
   test.use({
     storageState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
   });
 
   test.beforeEach(async ({ page }) => {
-    await switchToTestMode({ page });
     await page.goto(routes.PAYMENT_LINKS);
+    await switchToTestModeShortCircuit({ page, mid: 'LhXWnWmSvyDJmm' });
     await clickSkipAndStartBtn({ page });
   });
 
@@ -79,7 +79,8 @@ test.describe
     test(`should search PL v1 with ${statusToVerify} status @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
-      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+      await container.waitFor();
       const statusToCheck = statusToKey[statusToVerify];
       await mockFetchPaymentLinkApi({
         targetUrl: `**/merchant/api/test/invoices?skip=0&count=25&status=${statusToCheck}*`,
@@ -94,10 +95,11 @@ test.describe
   });
 
   // roast test searchByCompatInvoiceId
-  test.skip('should search PL v1 with invoice id @priority=critical @suite=nocode-P1-automation', async ({
+  test('should search PL v1 with invoice id @priority=critical @suite=nocode-P1-automation', async ({
     page,
   }) => {
-    const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+    const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+    await container.waitFor();
     await searchAndVerifyByPLId({ container });
   });
 
@@ -127,7 +129,7 @@ test.describe
     ).toBeDefined();
   });
 
-  // roast test chaneExpiryToNoExpiryVerifyInCompat
+  // roast test chaneExpiryToNoExpiryVerifyInCompat.
   test('should change and verify expiry to no expiry in PL v1 @priority=critical @suite=nocode-P1-automation', async ({
     page,
   }) => {
@@ -171,7 +173,8 @@ test.describe
   }) => {
     const statusToVerify = 'Paid';
 
-    const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+    const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+    await container.waitFor();
 
     const statusToCheck = statusToKey[statusToVerify];
     await mockFetchPaymentLinkApi({
@@ -204,7 +207,8 @@ test.describe
   }) => {
     const statusToVerify = 'Partially Paid';
 
-    const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+    const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+    await container.waitFor();
 
     const statusToCheck = statusToKey[statusToVerify];
     await mockFetchPaymentLinkApi({

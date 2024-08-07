@@ -1,5 +1,5 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { switchToTestMode, clickSkipAndStartBtn } from 'utils';
+import { switchToTestModeShortCircuit, clickSkipAndStartBtn } from 'utils';
 import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
@@ -29,8 +29,8 @@ test.describe.parallel(
     });
 
     test.beforeEach(async ({ page }) => {
-      await switchToTestMode({ page });
       await page.goto(routes.PAYMENT_LINKS);
+      await switchToTestModeShortCircuit({ page, mid: 'LLkjLdJz4gWVvk' });
       await clickSkipAndStartBtn({ page });
     });
 
@@ -88,8 +88,8 @@ test.describe.parallel(
       test(`should search PL with ${statusToVerify} status @priority=critical @suite=nocode-P1-automation`, async ({
         page,
       }) => {
-        const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-
+        const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+        await container.waitFor();
         const statusToCheck = statusToKey[statusToVerify];
         const targetUrl = `**/merchant/api/test/payment_links?skip=0&count=25&status=${statusToCheck}*`;
         await mockFetchPaymentLinkApi({
@@ -108,7 +108,8 @@ test.describe.parallel(
     test('should search PL with payment link id @priority=critical @suite=nocode-P1-automation', async ({
       page,
     }) => {
-      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+      await container.waitFor();
       await searchAndVerifyByPLId({ container });
     });
 
@@ -122,7 +123,8 @@ test.describe.parallel(
         productData,
         type: 'V2',
       });
-      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+      await container.waitFor();
       await searchAndVerifyByPLReferenceId({ container, referenceId });
     });
 
@@ -131,8 +133,8 @@ test.describe.parallel(
       page,
     }) => {
       const statusToVerify = 'Paid';
-      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
-
+      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+      await container.waitFor();
       const statusToCheck = statusToKey[statusToVerify];
       await mockFetchPaymentLinkApi({
         targetUrl: `**/merchant/api/test/payment_links?skip=0&count=25&status=${statusToCheck}*`,
@@ -162,7 +164,8 @@ test.describe.parallel(
     }) => {
       const statusToVerify = 'Partially Paid';
 
-      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+      await container.waitFor();
 
       const statusToCheck = statusToKey[statusToVerify];
       await mockFetchPaymentLinkApi({

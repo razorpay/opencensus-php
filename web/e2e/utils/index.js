@@ -251,6 +251,15 @@ export const clickSkipAndStartBtn = async ({ page }) => {
   }
 };
 
+export const switchToTestModeShortCircuit = async ({ page, mid }) => {
+  // adding twice reload due to race condition in page and evaluate
+  await page.reload();
+  await page.evaluate((mid) => {
+    localStorage.setItem(`rzp_mode--${mid}`, 'test');
+  }, mid);
+  await page.reload();
+};
+
 module.exports = {
   generateRandomText,
   generateRandomPhoneNumber,
@@ -264,6 +273,7 @@ module.exports = {
   getDefaultDateRangeForPayments,
   generateDataForPaymentLink,
   switchToTestMode,
+  switchToTestModeShortCircuit,
   hideSearchFTUXBannerByClick,
   hideSearchFTUXBannerByLocalStorage,
   getNextDate,

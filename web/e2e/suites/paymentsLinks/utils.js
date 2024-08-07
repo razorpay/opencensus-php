@@ -123,7 +123,8 @@ export const verifyPLCreated = async ({
   referenceId,
   statusToVerify = 'Created',
 }) => {
-  const detailsContainer = await page.locator(SELECTORS.detailsContainer);
+  const detailsContainer = page.locator(SELECTORS.detailsContainer);
+  await detailsContainer.waitFor();
   await expect(await detailsContainer.getByText(statusToVerify, { exact: true })).toBeVisible();
   await expect(await detailsContainer.getByText(referenceId)).toBeVisible();
   await expect(
@@ -136,8 +137,11 @@ export const verifyPLCreated = async ({
 };
 
 export const cancelPLCreated = async ({ page }) => {
-  const detailsContainer = await page.locator(SELECTORS.detailsContainer);
-  const cancelButton = await detailsContainer.getByRole('button', { name: 'Cancel Link' });
+  const detailsContainer = page.locator(SELECTORS.detailsContainer);
+  await detailsContainer.waitFor();
+  await expect(detailsContainer).toBeVisible();
+  const cancelButton = detailsContainer.getByRole('button', { name: 'Cancel Link' });
+  await cancelButton.waitFor();
   await expect(cancelButton).toBeVisible();
   await cancelButton.click();
   await page.getByRole('button', { name: 'Yes, Cancel' }).click();
@@ -250,7 +254,8 @@ export const navigateToPaymentHistory = async ({ page, container, isPartialPaid 
   const firstRow = await container.locator('tbody tr').first();
   await firstRow.locator('a').click();
 
-  const detailsContainer = await page.locator(SELECTORS.detailsContainer);
+  const detailsContainer = page.locator(SELECTORS.detailsContainer);
+  await detailsContainer.waitFor();
 
   if (isPartialPaid) await page.getByText('View Payment Details').click();
 

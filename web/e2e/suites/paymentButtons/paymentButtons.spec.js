@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { clickSkipAndStartBtn } from 'utils';
+import { clickSkipAndStartBtn, switchToTestModeShortCircuit } from 'utils';
 
 import {
   paymentButtonType,
@@ -9,7 +9,7 @@ import {
   updatePaymentButtonReceiptSettings,
   openBtnDetailsView,
 } from './utils';
-import { expectSuccessNotification, generateRandomText, switchToTestMode } from '../../utils';
+import { expectSuccessNotification, generateRandomText } from '../../utils';
 
 test.describe.parallel(
   'Test Payments Buttons @flow=payment-buttons @project=no-code-stable',
@@ -19,8 +19,8 @@ test.describe.parallel(
     });
 
     test.beforeEach(async ({ page }) => {
-      await switchToTestMode({ page });
       await page.goto(routes.PAYMENT_BUTTONS);
+      await switchToTestModeShortCircuit({ page, mid: 'LLkjLdJz4gWVvk' });
       await clickSkipAndStartBtn({ page });
     });
 
@@ -118,11 +118,12 @@ test.describe.parallel(
         await expect(page.getByRole('link', { name: updatedButtonTitle })).toBeVisible();
       });
 
-      test.skip('should update and verify stock @priority=critical', async ({ page }) => {
+      test('should update and verify stock @priority=critical', async ({ page }) => {
         await openBtnDetailsView({
           page,
           buttonTitle: testButtonTitle,
         });
+        await page.waitForLoadState();
         await page.getByRole('button', { name: 'Update Stock' }).click();
         await page.locator('label').filter({ hasText: 'No Limit' }).locator('div').first().click();
         await page.getByPlaceholder('Total Stock').click();
