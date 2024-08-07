@@ -301,5 +301,9 @@ return array(
     'ezetap_receipt_config' => [
         'username'  => env('EZETAP_RECEIPT_USERNAME'),
         'appKey'   => env('EZETAP_RECEIPT_APP_KEY'),
+    ],
+    'insightx' => [
+        'url' => env('INSIGHTX_HOST_URL'),
+        'timeout' => 5,
     ]
 );

@@ -115,6 +115,13 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function generateSupersetToken()
+    {
+        list($error, $data) = (new Merchant\Service)->generateSupersetToken();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postActivation()
     {
         $input = ['submit' => true];

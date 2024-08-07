@@ -29,6 +29,7 @@ use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
 use App\Services\Razorassist\RazorassistClient;
+use App\Services\Insightx\InsightXClient;
 
 class Service extends Base\Service
 {
@@ -404,6 +405,25 @@ class Service extends Base\Service
         }
 
         list($error, $data) = (new RazorassistClient())->generateAzureBotDirectLinkToken($merchant->id, $currentUser->name);
+
+        return [$error, $data];
+    }
+
+    public function generateSupersetToken() : array
+    {
+        $currentUser = Auth::guard('user')->user();
+
+        $merchant = empty($currentUser) === true ? null : $currentUser->currentMerchant();
+
+        if (is_null($merchant)) {
+            throw new BadRequestError(
+                'Invalid merchant request.',
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        list($error, $data) = (new InsightXClient())->getSupersetGuestToken($merchant->id);
 
         return [$error, $data];
     }
