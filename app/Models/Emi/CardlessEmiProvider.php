@@ -52,12 +52,13 @@ class CardlessEmiProvider
         self::FDRL,
         self::BARB,
         self::KRBE,
-        self::LIQUILOANS,
+
     ];
 
     public static $experimentCheckRequiredCardlessEmiProviders = [
         self::ZESTMONEY  => 'app.zestmoney_whitelisted_merchants_experiment_id',
-        self::HDFC       => 'app.hdfc_cardless_emi_whitelisted_merchants_experiment_id'
+        self::HDFC       => 'app.hdfc_cardless_emi_whitelisted_merchants_experiment_id',
+         self::LIQUILOANS => 'app.liquiloans_whitelisted_merchants_experiment_id'
     ];
 
     public static function checkProviderValidity($provider)

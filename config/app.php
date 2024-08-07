@@ -926,6 +926,8 @@ return array(
 
     'hdfc_cardless_emi_whitelisted_merchants_experiment_id' => env('HDFC_CARDLESS_EMI_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 
+    'liquiloans_whitelisted_merchants_experiment_id' => env('LIQUILOANS_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
+
     'downtime_manager_routing_experiment' => env('DOWNTIME_MANAGER_ROUTING_SPLITZ_EXPERIMENT_ID'),
 
     'x_data_privacy_splitz_experiment_id' => env('X_DATA_PRIVACY_SPLITZ_EXPERIMENT_ID'),
