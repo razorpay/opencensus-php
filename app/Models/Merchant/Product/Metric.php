@@ -11,4 +11,6 @@ class Metric
     const PRODUCT_CONFIG_AUTO_UPDATE_MERCHANT_STATUS_FAILED = 'product_config_auto_update_merchant_status_failed';
 
     const PRODUCT_CONFIG_AUTO_UPDATE_MERCHANT_STATUS        = 'product_config_auto_update_merchant_status';
+
+    const PRODUCT_CONFIG_SET_METHODS_FAILURE                =  'product_config_set_methods_failure';
 }

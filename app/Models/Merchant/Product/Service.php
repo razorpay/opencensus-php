@@ -15,6 +15,8 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product\Config;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\Product\Util\ProductRequestHandler;
@@ -155,7 +157,12 @@ class Service extends Base\Service
                         try {
                             (new Methods\Core())->setMethods($merchant, $partner, Util\Constants::SET_METHODS_SOURCE_PRODUCT);
                         }
-                        catch (\Exception $e) {
+                        catch (\Exception $ex)
+                        {
+                            $this->trace->traceException($ex,Trace::ERROR, TraceCode::SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE);
+
+                            $this->trace->count(Metric::PRODUCT_CONFIG_SET_METHODS_FAILURE);
+
                             throw new Exception\ServerErrorException(PublicErrorDescription::SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE, ErrorCode::SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE);
                         }
                     }
