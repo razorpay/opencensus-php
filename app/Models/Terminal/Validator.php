@@ -80,7 +80,7 @@ class Validator extends Base\Validator
         Entity::PLAN_ID                     => 'sometimes',
         Entity::ENABLED_WALLETS             => 'sometimes|array',
         Entity::OFFLINE                     => 'sometimes|boolean',
-        Entity::MERCHANT_MOBILE_CONTACT     => 'sometimes|string|numeric|size:12',
+        Entity::MERCHANT_MOBILE_CONTACT     => 'sometimes|string|size:12',
     ];
 
     protected static $gatewayInputRules = [
