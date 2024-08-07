@@ -847,11 +847,11 @@ class Service extends Base\Service
         $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
 
         $this->trace->info(TraceCode::PGOS_ONBOARDING, [
-            'merchant_id' => $merchant->getId(),
-            '$workflowType' => $workflowType,
-            '$signupCampaign' => $signupCampaign,
-            '$countryCode' => $countryCode,
-            '$input' => $input
+            'merchant_id'    => $merchant->getId(),
+            'workflowType'   => $workflowType,
+            'signupCampaign' => $signupCampaign,
+            'countryCode'    => $countryCode,
+            'input'          => $input
         ]);
 
         //Determine whether onboarding should be done via PGOS or not
@@ -922,6 +922,9 @@ class Service extends Base\Service
             return;
         }
 
+        $product = $input[DeviceDetail\Constants::PRODUCT] ?? '';
+        $platform = $input[DeviceDetail\Constants::PLATFORM] ?? DeviceDetail\Constants::PLATFORM_PG;
+
         // Create OBS Workflow For Merchant via PGOS.
         // Workflow will only be created for merchants who will be onboarded via PGOS
         try
@@ -938,8 +941,8 @@ class Service extends Base\Service
                 'org_id'                                => $orgId,
                 'user_id'                               => $user['id'],
                 DeviceDetail\Constants::WORKFLOW_TYPE   => $workflowType,
-                DeviceDetail\Constants::PRODUCT         => $input[DeviceDetail\Constants::PRODUCT] ?? '',
-                DeviceDetail\Constants::PLATFORM        => $input[DeviceDetail\Constants::PLATFORM] ?? ''
+                DeviceDetail\Constants::PRODUCT         => $product,
+                DeviceDetail\Constants::PLATFORM        => $platform
 
             ];
 
@@ -1012,8 +1015,11 @@ class Service extends Base\Service
                             Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
                             DeviceDetailConstants::SIGNUP_SOURCE => DeviceDetailConstants::MOBILE,
                         ],
-                        'workflow_id' => $workflowId,
-                        DeviceDetail\Constants::PRODUCT  => $input[DeviceDetail\Constants::PRODUCT] ?? '',
+                        DeviceDetail\Constants::PRODUCT         => $product,
+                        DeviceDetail\Constants::PLATFORM        => $platform,
+                        Merchant\Entity::COUNTRY_CODE           => $countryCode,
+                        DeviceDetail\Constants::ORG_ID          => $orgId,
+                        DeviceDetail\Constants::VERSION_ID      => DeviceDetail\Constants::DEFAULT_VERSION,
                     ];
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
@@ -1076,6 +1082,9 @@ class Service extends Base\Service
             $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? '');
         }
 
+        $product = $input[DeviceDetail\Constants::PRODUCT] ?? '';
+        $platform = $input[DeviceDetail\Constants::PLATFORM] ?? DeviceDetail\Constants::PLATFORM_PG;
+
         // Create OBS Workflow For Merchant via PGOS.
         // Workflow will only be created for merchants who will be onboarded via PGOS
         try
@@ -1092,8 +1101,8 @@ class Service extends Base\Service
                 'org_id'                                => $orgId,
                 'user_id'                               => $user['id'],
                 DeviceDetail\Constants::WORKFLOW_TYPE   => $workflowType,
-                DeviceDetail\Constants::PRODUCT         => $input[DeviceDetail\Constants::PRODUCT] ?? '',
-                DeviceDetail\Constants::PLATFORM        => $input[DeviceDetail\Constants::PLATFORM] ?? ''
+                DeviceDetail\Constants::PRODUCT         => $product,
+                DeviceDetail\Constants::PLATFORM        => $platform,
             ];
 
             // sign up response is not driven by PGOS
@@ -1166,8 +1175,11 @@ class Service extends Base\Service
                             'contact_email' => $input[Entity::EMAIL],
                             DeviceDetailConstants::SIGNUP_SOURCE => Entity::EMAIL
                         ],
-                        'workflow_id' => $workflowId,
-                        DeviceDetail\Constants::PRODUCT  => $input[DeviceDetail\Constants::PRODUCT] ?? '',
+                        DeviceDetail\Constants::PRODUCT         => $product,
+                        DeviceDetail\Constants::PLATFORM        => $platform,
+                        Merchant\Entity::COUNTRY_CODE           => $countryCode,
+                        DeviceDetail\Constants::ORG_ID          => $orgId,
+                        DeviceDetail\Constants::VERSION_ID      => DeviceDetail\Constants::DEFAULT_VERSION,
                     ];
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);

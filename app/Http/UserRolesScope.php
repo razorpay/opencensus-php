@@ -66,6 +66,7 @@ class UserRolesScope
             'onboarding_order_verify'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER,Role::RAZORPAY_SALES],
             'merchant_bmc_response_save'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
             'merchant_website_section_page_load_v2'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
+            'merchant_policy_preview_v2'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_business_categories_v3'           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_business_categories_admin_v3'     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE,Role::RAZORPAY_SALES],
             'merchant_activation_business_categories_adminV3'      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE,Role::RAZORPAY_SALES],

@@ -61,6 +61,8 @@ class Validator extends Base\Validator
         Entity::X_VERIFY_EMAIL                  => 'sometimes|string',
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
     ];
 
     protected static $createRules = self::CREATE_COMMON_RULES + [
@@ -89,6 +91,8 @@ class Validator extends Base\Validator
         Entity::OTP                             => 'required|string|between:4,6',
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
     ];
 
     protected static $createSubmerchantSignupRules = [
@@ -107,6 +111,8 @@ class Validator extends Base\Validator
         Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
         Merchant\Entity::COUNTRY_CODE           => 'sometimes|string',
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
     ];
 
     protected static $salesforceOtpRules = [
@@ -148,6 +154,8 @@ class Validator extends Base\Validator
         Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY,SG',
         Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
     ];
 
     protected static $createOauthRules = [

@@ -44,6 +44,7 @@ class RouteLatencyGroup
         'merchant_website_section_fetch'            => self::LATENCY_GROUP_MEDIUM,
         'merchant_website_section_save'             => self::LATENCY_GROUP_MEDIUM,
         'merchant_website_section_page_load_v2 =>'  => self::LATENCY_GROUP_MEDIUM,
+        'merchant_policy_preview_v2'                => self::LATENCY_GROUP_MEDIUM,
         'merchant_fetch_users'                      => self::LATENCY_GROUP_HIGH,
         'merchant_analytics'                        => self::LATENCY_GROUP_HIGH,
         'pricing_get_merchant_plans'                => self::LATENCY_GROUP_HIGH,

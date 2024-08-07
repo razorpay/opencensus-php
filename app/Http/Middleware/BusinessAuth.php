@@ -60,6 +60,7 @@ class BusinessAuth
         'merchant_identity_verification',
         'merchant_process_verification_details',
         'merchant_website_section_page_load_v2',
+        'merchant_policy_preview_v2',
         'merchant_website_policy_verify',
         'merchant_get_l2_dynamic_configs',
         'merchant_policy_section_publish_v2',

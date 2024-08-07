@@ -1508,6 +1508,7 @@ class Route
         'merchant_policy_section_publish_v2'                => ['post',     'pg/onboarding/merchant_policy_section_publish_v2',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         // pending status code and success true return from pgos to api
         'merchant_website_section_page_load_v2'             => ['get',      'pg/onboarding/merchant_policy_preview',                        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_policy_preview_v2'                        => ['get',      'pg/onboarding/merchant_policy_preview/v2',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'fetch_sales_assisted_merchants'                    => ['get',      'pg/onboarding/fetch_sales_assisted_merchants',                 'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_website_policy_verify'                    => ['put',      'merchant/website/policy/verify',                               'MerchantController@verifyMerchantWebsitePolicy'                    ],
 
@@ -6948,6 +6949,7 @@ class Route
         'fetch_onboarding_payment_details',
         'merchant_policy_section_publish_v2',
         'merchant_website_section_page_load_v2',
+        'merchant_policy_preview_v2',
         'user_update_name',
         'merchant_get_l2_dynamic_configs',
         'merchant_website_policy_verify',
@@ -9677,6 +9679,7 @@ class Route
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
         'merchant_website_section_page_load_v2'           => Permission::VIEW_MERCHANT,
+        'merchant_policy_preview_v2'                      => Permission::VIEW_MERCHANT,
         'payouts_merchant_smart_routing_summary'          => Permission::VIEW_PAYOUT,
         'payouts_merchant_smart_routing_rules_fetch'      => Permission::VIEW_PAYOUT,
         'payouts_merchant_smart_routing_rules_modify'      => Permission::VIEW_PAYOUT,
@@ -12360,6 +12363,7 @@ class Route
             'merchant_get_l2_dynamic_configs',
             'merchant_website_policy_verify',
             'merchant_website_section_page_load_v2',
+            'merchant_policy_preview_v2',
             'merchant_bmc_response_fetch',
             'onboarding_get',
             'onboarding_create_or_fetch',

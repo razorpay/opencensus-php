@@ -40,6 +40,8 @@ class Constants
 
     const PLATFORM = "platform";
 
+    const ALL_PLATFORM = "all"; // to be used later when obs changes are done
+
     const MOBILE = "mobile";
 
     const SIGNUP_SOURCE = "signup_source";
@@ -49,6 +51,12 @@ class Constants
     const RIZE_INCORPORATION = 'rize_incorporation';
 
     const PLATFORM_PG = 'pg';
+
+    const VERSION_ID = 'version_id';
+
+    const ORG_ID = 'org_id';
+
+    const DEFAULT_VERSION = 'v1';
 
 
     const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION, self::SINGAPORE_SIGNUP] ;

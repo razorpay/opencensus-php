@@ -89,6 +89,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION          = 'get_merchant_onboarding_docs_verification';
     const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
     const MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2              = 'merchant_policy_preview';
+    const MERCHANT_WEBSITE_POLICY_PREVIEW_V2                 = 'merchant_policy_preview_v2'; // version 2 for modular
 
     const GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL        = 'generate_merchant_identity_verification_url';
     const PROCESS_MERCHANT_IDENTITY_VERIFICATION             = 'process_merchant_identity_verification';
@@ -128,7 +129,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const ONBOARDING_SAVE_SALES                  = 'onboarding_save_sales';
     const L2_SUBMIT_SHADOW                       = 'l2_submit_shadow';
 
-    const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH];
+    const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
@@ -193,6 +194,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_FETCH_GATING_LOGIC,
         self::PAYMENT_ORDER_WEBHOOK,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
+        self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2,
         self::MERCHANT_CATEGORIES_V3,
         self::SEND_SMS_OTP,
         self::VERIFY_OTP,
@@ -266,6 +268,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ProcessMerchantIdentityVerification',
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreview',
+        self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreviewV2',
         self::MERCHANT_CATEGORIES_V3                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesV3Map',
         self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
         self::ACTIVATION_DOCUMENT_TYPES                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchAllDocumentsTypesList',
@@ -312,6 +315,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => 15,
+        self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2        => 15,
 
         // TODO: Revert back once the root cause for OBS latency is found and fixed.
         // This is temporarily being increased to unblock curlec signup flows.
@@ -360,6 +364,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
+        self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2,
         self::MERCHANT_CATEGORIES_V3,
         self::MERCHANT_CATEGORIES_ADMIN_V3,
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE,
