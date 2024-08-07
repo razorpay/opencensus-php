@@ -670,6 +670,18 @@ class RepositoryManager extends Illuminate\Support\Manager
             $this->db->connection(Mode::TEST)->rollBack();
             $this->db->connection(Connection::ASV_WRITER)->rollBack();
 
+            $this->app['trace']->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::LIVE_AND_TEST_AND_ASV_DB_TRANSACTION_ERROR, [
+                'info' => "Error throw in transactionOnLiveAndTestAndAsv",
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+
+            ]);
+
+
+
             throw $e;
         }
         finally

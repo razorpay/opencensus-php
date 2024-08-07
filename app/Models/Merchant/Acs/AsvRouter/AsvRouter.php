@@ -72,7 +72,7 @@ class AsvRouter
 
             $isExclusionFlow = AsvFlows::isExclusionFLow($routeOrWorkerName);
 
-            if($isExclusionFlow === true && $routeOrWorkerName != self::MERCHANT_FETCH_INTERNAL_USERS) {
+            if($isExclusionFlow === true) {
                 $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForEnableExclusionFlow();
                 $isExclusionFlow = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $routeOrWorkerName);
             }
