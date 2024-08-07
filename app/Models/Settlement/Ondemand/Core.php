@@ -649,30 +649,16 @@ class Core extends Base\Core
 
         $odsGlobalLimit = (int) ConfigKey::get(ConfigKey::ODS_GLOBAL_LIMIT, 0);
 
-        [$key, $keyTimestamp]  = $this->getTotalODSSettledRedisKey();
-
-        $totalOdsSettled = ConfigKey::get($key);
+        [$key, $keyTimestamp]  = $this->getTotalODSSettledTimestamp();
 
         // Fetch the settled ods amount according to the current working day
-        if($totalOdsSettled === null) {
-            $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimestamp);
-            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_ODS_FROM_DB, [
-                'merchantId'        => $merchantId,
-                'key'               => $key,
-                'keyTimeStamp'      => $keyTimestamp,
-                'totalSettled'      => $totalOdsSettled,
-                'currentTimeStamp'  => Carbon::now(Timezone::IST)->getTimestamp(),
-
-            ]);
-            // ttl set for 6 hours in seconds
-            ConfigKey::set($key, $totalOdsSettled, 21600);
-        }
-
-        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY, [
-            'merchantId'    => $merchantId,
-            'key'           => $key,
-            'keyTimeStamp'  => $keyTimestamp,
-            'totalSettled'  => $totalOdsSettled,
+        $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimestamp);
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_ODS_FROM_DB, [
+            'merchantId'        => $merchantId,
+            'key'               => $key,
+            'keyTimeStamp'      => $keyTimestamp,
+            'totalSettled'      => $totalOdsSettled,
+            'currentTimeStamp'  => Carbon::now(Timezone::IST)->getTimestamp(),
         ]);
 
         if($totalOdsSettled >= $odsGlobalLimit)
@@ -1019,35 +1005,9 @@ class Core extends Base\Core
         return $baseTransactionEntity;
     }
 
-    public function updateRedisKeyForTotalOdsSettled($merchantId, $amount)
+    public function getTotalODSSettledTimestamp()
     {
-        [$key, $keyTimeStamp] = $this->getTotalODSSettledRedisKey();
-        $totalOdsSettled = ConfigKey::get($key);
-
-        // If key does not exist
-        if($totalOdsSettled === null)
-            $totalOdsSettled = (int) (new Repository)->findAllFromTimeStamp($keyTimeStamp);
-
-        $currentSettledOds = $totalOdsSettled;
-
-        $totalOdsSettled += $amount;
-
-        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TOTAL_SETTLED_REDIS_KEY_UPDATE, [
-            'merchantId'            => $merchantId,
-            'key'                   => $key,
-            'keyTimeStamp'          => $keyTimeStamp,
-            'totalSettledBefore'    => $currentSettledOds,
-            'totalSettledAfter'     => $totalOdsSettled,
-            'currentTimeStamp'      => Carbon::now(Timezone::IST)->getTimestamp(),
-        ]);
-
-        // ttl set for 6 hours in seconds
-        ConfigKey::set($key, $totalOdsSettled, 21600);
-    }
-
-    public function getTotalODSSettledRedisKey()
-    {
-        // Redis key computation logic wrt current working day
+        // Timestamp computation logic wrt current working day
         $today = Carbon::today(Timezone::IST);
         $keyTimeStamp = $today->getTimeStamp();
 

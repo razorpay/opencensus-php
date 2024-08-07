@@ -191,8 +191,6 @@ class Service extends Base\Service
                     $this->handleJobPushPostTransactionCreation($settlementOndemand,$settlementOndemandPayouts,$this->mode,$this->merchant->getId());
                 }
 
-                $this->updateRedisKeyForTotalOdsSettled($this->merchant->getId(), $amount);
-
                 if (isset($input['expand']) === true && boolval($input['expand']) === true)
                 {
                     return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);
@@ -338,11 +336,6 @@ class Service extends Base\Service
                     'errorDescription'  => 'Ondemand settlement not allowed at the moment',
                 ]);
         }
-    }
-
-    public function updateRedisKeyForTotalOdsSettled($merchantId, $amount)
-    {
-        $this->core()->updateRedisKeyForTotalOdsSettled($merchantId, $amount);
     }
 
     public function validateIfOndemandRouteMerchant($merchantId)
