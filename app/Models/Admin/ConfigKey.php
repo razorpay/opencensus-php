@@ -124,6 +124,8 @@ class ConfigKey
 
     const ROUTE_TRANSFER_QUEUE_CONFIG = self::PREFIX . 'route_transfer_queue_config';
 
+    const ROUTE_ASYNC_BALANCE_UPDATE_QUEUE_CONFIG = self::PREFIX . 'route_async_balance_update_queue_config';
+
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
     // So if last fetched at was while ago greater than this value, then we will fetch balance
     // again before creating a payout

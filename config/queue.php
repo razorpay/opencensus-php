@@ -305,8 +305,23 @@ return [
     ],
 
     // Dedicated transfer queue for malaysian merchants
-    'transfer_process_dedicated_queue_malaysia' => [
+   'transfer_process_dedicated_queue_malaysia' => [
         'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_MALAYSIA_LIVE'),
+    ],
+
+    // Transfer async balance update queue 1 for merchants
+    'transfer_async_balance_update_queue_one' => [
+        'live'       => env('AWS_TRANSFER_ASYNC_BALANCE_UPDATE_ONE_LIVE'),
+    ],
+
+    // Transfer async balance update queue 2 for merchants
+    'transfer_async_balance_update_queue_two' => [
+        'live'       => env('AWS_TRANSFER_ASYNC_BALANCE_UPDATE_TWO_LIVE'),
+    ],
+
+    // Transfer async balance update queue 3 for merchants
+    'transfer_async_balance_update_queue_three' => [
+        'live'       => env('AWS_TRANSFER_ASYNC_BALANCE_UPDATE_THREE_LIVE'),
     ],
 
     // settlement related QUEUES

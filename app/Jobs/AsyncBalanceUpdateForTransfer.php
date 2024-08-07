@@ -146,7 +146,8 @@ class AsyncBalanceUpdateForTransfer extends Job
                 ErrorCode::BAD_REQUEST_TRANSFER_ASYNC_BALANCE_UPDATE_IN_PROGRESS,
                 self::MUTEX_RETRY_COUNT,
                 self::MUTEX_MIN_RETRY_DELAY_MS,
-                self::MUTEX_MAX_RETRY_DELAY_MS
+                self::MUTEX_MAX_RETRY_DELAY_MS,
+                true
             );
 
             (new Metric())->pushAsyncBalanceUpdateForTransferSuccessMetrics($startTime);

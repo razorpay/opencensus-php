@@ -577,14 +577,7 @@ class Core extends Base\Core
 
         $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
 
-        AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
-
-        $this->trace->info(
-            TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
-            [
-                'transfer_id'         => $transfer->getId(),
-                'merchant_id'         => $transfer->getMerchantId(),
-            ]);
+        (new Transfer\Core())->dispatchForAsyncBalanceUpdate($transfer);
 
         $this->trace->info(TraceCode::TRANSFER_REVERSE_SHADOW_TXN_CREATION_SUCCESS,
             [

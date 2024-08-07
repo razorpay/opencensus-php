@@ -11,6 +11,9 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Jobs\AsyncBalanceUpdateForTransfer;
+use RZP\Jobs\AsyncBalanceUpdateForTransferQueueOne;
+use RZP\Jobs\AsyncBalanceUpdateForTransferQueueThree;
+use RZP\Jobs\AsyncBalanceUpdateForTransferQueueTwo;
 use RZP\Jobs\TransferLedgerOutboxPush;
 use RZP\Jobs\TransferProcessDedicatedQueueOne;
 use RZP\Jobs\TransferProcessDedicatedQueueTwo;
@@ -2896,14 +2899,7 @@ class Core extends Base\Core
         if (($transfer->isProcessed() === true) and
             (in_array($transfer->merchant->getId(), $asyncBalanceDebitMids) === true))
         {
-            AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
-
-            $this->trace->info(
-                TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
-                [
-                    'transfer_id'         => $transfer->getId(),
-                    'merchant_id'         => $transfer->getMerchantId(),
-                ]);
+            $this->dispatchForAsyncBalanceUpdate($transfer);
         }
     }
 
@@ -2990,5 +2986,42 @@ class Core extends Base\Core
             }
         }
         return $payment;
+    }
+
+    public function dispatchForAsyncBalanceUpdate($transfer)
+    {
+        try
+        {
+            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ROUTE_ASYNC_BALANCE_UPDATE_QUEUE_CONFIG]) ?? [];
+        }
+        catch (\Throwable $ex)
+        {
+            // Fallback to default queue if an error occurs
+            $config = [];
+        }
+
+        if (in_array($transfer->merchant->getId(), $config[Constant::DEDICATED_QUEUE_ONE] ?? []) === true)
+        {
+            AsyncBalanceUpdateForTransferQueueOne::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
+        }
+        else if (in_array($transfer->merchant->getId(), $config[Constant::DEDICATED_QUEUE_TWO] ?? []) === true)
+        {
+            AsyncBalanceUpdateForTransferQueueTwo::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
+        }
+        else if (in_array($transfer->merchant->getId(), $config[Constant::DEDICATED_QUEUE_THREE] ?? []) === true)
+        {
+            AsyncBalanceUpdateForTransferQueueThree::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
+        }
+        else
+        {
+            AsyncBalanceUpdateForTransfer::dispatch($this->mode, $transfer->getId())->delay(10 * 60);
+        }
+
+        $this->trace->info(
+            TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCHED,
+            [
+                'transfer_id'         => $transfer->getId(),
+                'merchant_id'         => $transfer->getMerchantId(),
+            ]);
     }
 }
