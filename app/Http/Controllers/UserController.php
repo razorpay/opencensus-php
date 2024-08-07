@@ -61,6 +61,10 @@ class UserController extends Controller
     
     const CHUNKED_BASED_STREAMING_DISABLED = 'CHUNKED_BASED_STREAMING_DISABLED';
     
+    const PARTNER_AGENT_ROLE = 'partner_agent';
+
+    const RAZORPAY_SALES_ROLE = 'razorpay_sales';
+    
     /**
      * @var \App\Admin\Service|null
      */
@@ -254,6 +258,15 @@ class UserController extends Controller
             $submitted = $details['submitted'] ?? null;
 
             $milestone = $details['activation_form_milestone'] ?? null;
+
+            $isPosSalesAgentRedirectApplicable = $details["role"] === self::RAZORPAY_SALES_ROLE;
+
+            if ($isPosSalesAgentRedirectApplicable) {
+                $isSwitchComplete =  $this->switchToPosSalesAgent($details);
+                if($isSwitchComplete){
+                    return redirect('/');
+                }
+            }
 
             if (($signupCampaign === 'p2pm_onboarding') and
                 ($submitted == 0) and
@@ -481,6 +494,37 @@ class UserController extends Controller
                 ob_flush();
                 flush();
             }
+        }
+    }
+
+    private function switchToPosSalesAgent($details)
+    {
+        try {
+
+            // Get merchant with role as partner agent from list of merchants 
+            $partnerAgentMerchant = current(array_filter($details['merchants'], function ($merchant) {
+                return $merchant['role'] ===  self::PARTNER_AGENT_ROLE;
+            }));
+
+            if ($partnerAgentMerchant["id"]) {
+                $switchMerchant = $this->switchCurrentMerchant($partnerAgentMerchant["id"]);
+                $this->trace->info(
+                    TraceCode::PARTNER_AGENT_SWITCH_SUCCESS,
+                    [
+                        "switchMerchant" => $switchMerchant,
+                        'partner_id'      => $partnerAgentMerchant["id"]
+                    ]
+                );
+
+                return true;
+            }
+        } catch (\Throwable $e) {
+            $this->trace->info(
+                TraceCode::PARTNER_AGENT_SWITCH_FAILED,
+                [
+                    "exception" => $e->getMessage(),
+                ]
+            );
         }
     }
 
