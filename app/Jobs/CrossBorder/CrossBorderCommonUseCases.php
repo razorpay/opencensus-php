@@ -106,7 +106,7 @@ class CrossBorderCommonUseCases extends Job
      */
     protected $repo;
 
-    public $timeout = 900;
+    public $timeout = 1800;
 
     public function __construct(array $payload)
     {

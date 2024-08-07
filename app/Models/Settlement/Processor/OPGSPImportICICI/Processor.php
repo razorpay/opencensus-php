@@ -829,8 +829,9 @@ class Processor extends Base\Core
                             'data' => $data,
                         ]
                     );
-                    // adding delay of 1 hour for the ZIP status to be uploaded. since batch size is only 2500, it took around 2/3 min only on dark.
-                    CrossBorderCommonUseCases::dispatch($data)->delay(3600);
+
+                    //batch size is only 2500, it took around 2/3 min only on dark, hence adding delay of 15 minutes for the ZIP creation.
+                    CrossBorderCommonUseCases::dispatch($data)->delay(900);
                 }
             }
 
