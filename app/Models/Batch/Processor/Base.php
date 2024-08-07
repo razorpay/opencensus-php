@@ -27,6 +27,9 @@ use RZP\Models\Batch\Type as BatchType;
 use Symfony\Component\HttpFoundation\File\File;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 
 class Base extends BaseModel\Core
 {
@@ -1881,12 +1884,20 @@ class Base extends BaseModel\Core
 
     public function addSettingsIfRequired(& $input)
     {
+        $admin = $this->app['basicauth']->getAdmin();
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($admin->getOrgId());
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS);
         if($this->batch->getType() === BatchType::MERCHANT_UPLOAD_MIQ)
         {
-            $admin = $this->app['basicauth']->getAdmin();
-
             $input[Batch\Entity::CONFIG][Merchant\Entity::ORG_ID] = $admin->getOrgId();
+            $input[Batch\Entity::CONFIG][UConstants::ORG_DEFINED_FIELD_PERMISSION_ENABLED] = $permissionEnabled;
 
+            return;
+        }
+
+        if ($this->batch->getType() === BatchType::UPDATE_MIQ)
+        {
+            $input[Batch\Entity::CONFIG][UConstants::ORG_DEFINED_FIELD_PERMISSION_ENABLED] = $permissionEnabled;
             return;
         }
         return;

@@ -9,11 +9,14 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as PName;
 use RZP\Tests\P2p\Service\Base\Traits\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Admin\Org;
 
 class MerchantUpdateMiqBatchTest extends TestCase
 {
     use BatchTestTrait;
     use DbEntityFetchTrait;
+    use HeimdallTrait;
 
     protected function setUp(): void
     {
@@ -359,5 +362,80 @@ class MerchantUpdateMiqBatchTest extends TestCase
         $input = $testData['request']['content'];
         $response = (new Detail\Upload\Core)->processUpdateMerchantEntry($input);
 
+    }
+
+    public function testCreateBatchMerchantUploadMIQforAxis()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => Org\Entity::AXIS_ORG_ID,
+            'entity_type'   => 'org',
+        ]);
+
+        $org = $this->fixtures->create('org', [
+            'id' => Org\Entity::AXIS_ORG_ID
+        ]);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->fixtures->pricing->createPricingPlanForDifferentOrg($org->getId());
+        $org1 = (new Org\Service())->edit('org_' . Org\Entity::AXIS_ORG_ID, ['default_pricing_plan_id' => '1hDYlICxbxOCYx', 'merchant_session_timeout_in_seconds' => 600,]);
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::ORG_ID] = 'org_' . Org\Entity::AXIS_ORG_ID;
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+
+        return ($response[Header::MIQ_OUT_MERCHANT_ID]);
+    }
+
+    public function testCreateBatchMerchantUpdateMiqAdditionalFieldsSuccess()
+    {
+        $resp = $this->testCreateBatchMerchantUploadMIQforAxis();
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content'][Header::MIQ_MERCHANT_ID] = $resp;
+        $testData['response']['content'][Header::MIQ_MERCHANT_ID] = $resp;
+
+        $input = $testData['request']['content'];
+        $response = (new Detail\Upload\Core)->processUpdateMerchantEntry($input);
+
+        $merchantDetails = (new Detail\Repository())->getByMerchantId($response[Header::MIQ_MERCHANT_ID]);
+        $businessDetailMetadata = $merchantDetails->businessDetail->getMetadata();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertNotEmpty($businessDetailMetadata['org_defined_merchant_fields']);
+    }
+
+    public function testCreateBatchMerchantUpdateMiqAdditionalFieldsFailure()
+    {
+        $resp = $this->testCreateBatchMerchantUploadMIQforAxis();
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content'][Header::MIQ_MERCHANT_ID] = $resp;
+        $testData['response']['content'][Header::MIQ_MERCHANT_ID] = $resp;
+
+        $input = $testData['request']['content'];
+        $response = (new Detail\Upload\Core)->processUpdateMerchantEntry($input);
+
+        $merchantDetails = (new Detail\Repository())->getByMerchantId($response[Header::MIQ_MERCHANT_ID]);
+        $businessDetailMetadata = $merchantDetails->businessDetail->getMetadata();
+
+        $this->assertNotEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertNotEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertEmpty($businessDetailMetadata['org_defined_merchant_fields'][0]['value']);
     }
 }

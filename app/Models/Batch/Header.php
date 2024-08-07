@@ -22,6 +22,8 @@ use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings as SbiEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 use RZP\Models\Batch\Processor\Nach\Migration\NachMigrationFileHeadings as NachMigrationHeadings;
 use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\DebitFileHeadings as IciciENachDebitHeadings;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
 
 class Header
 {
@@ -6401,6 +6403,24 @@ class Header
         self::ERROR_DESCRIPTION,
     ];
 
+    const MIQ_ADDITIONAL_FIELDS = [
+        self::FIELD1,
+        self::FIELD2,
+        self::FIELD3,
+        self::FIELD4,
+        self::FIELD5,
+        self::FIELD6,
+        self::FIELD7,
+        self::FIELD8,
+        self::FIELD9,
+        self::FIELD10,
+        self::FIELD11,
+        self::FIELD12,
+        self::FIELD13,
+        self::FIELD14,
+        self::FIELD15
+    ];
+
     /**
      * Validates headers of batch input file.
      *
@@ -6409,7 +6429,7 @@ class Header
      *
      * @throws BadRequestException
      */
-    public static function validate(string $type, array $actualHeaders)
+    public static function validate(string $type, array $actualHeaders, string $orgId = null)
     {
 
         $expectedHeaders = Header::getInputHeadersForType($type);
@@ -6441,6 +6461,17 @@ class Header
         {
            $expectedHeaders[0] = 'CLIENT|PRODUCT|ARRANGEMENT|DEPSLIPNUM|BATCHNUM|SCHNO|CLGLOC|PICKUPLOC|PICKUPPOINT|DRAWEEBANK|INSTNUM|INSTAMT|INSTDATE|DEPDATE|DRAWERCODE|DRAWERDES|LIQDATE|LIQTYPE|RETURNRES|ACTIVATIONDATE|VALDATE|INTERNALINSTNMBR|MICRCODE|ENTRYREJRMKS|DEPOSITBRANCH|E1|E2|E3|E4|E5|E6|E7|E8|E9|E10|E11|E12|E13|E14|E15|E16|E17|E18|E19|E20|E21';
         }
+
+        if ($orgId !== null)
+        {
+            $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS);
+        }
+
+        if (($type === Type::MERCHANT_UPLOAD_MIQ || $type === Type::UPDATE_MIQ) && !empty($permissionEnabled) && $permissionEnabled === true)
+        {
+            $expectedHeaders = Header::getMiqHeadersWithAdditionalFields($type);
+        }
+
         //
         // Speed is also optional. See ^above comments about Notes;
         // Speed is optional for batch type refunds.
@@ -6946,6 +6977,11 @@ class Header
     public static function getValidatedHeadersForType(string $type): array
     {
         return array_merge(self::HEADER_MAP[$type][self::INPUT] ?? [], self::VALIDATED_HEADERS);
+    }
+
+    public static function getMiqHeadersWithAdditionalFields(string $type): array
+    {
+        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::MIQ_ADDITIONAL_FIELDS);
     }
 
     public static function getHeadersForFileTypeAndBatchType(string $fileType, string $type): array

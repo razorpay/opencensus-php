@@ -44,6 +44,7 @@ use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
 use Illuminate\Support\Facades\Validator as LaravelValidator;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
+use RZP\Models\Admin\Org;
 
 /**
  * Class Validator
@@ -1287,6 +1288,21 @@ class Validator extends Base\Validator
         Header::MIQ_BANK_ACC_NUMBER                  => 'required',
         Header::MIQ_BENEFICIARY_NAME                 => 'required',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'required',
+        Header::FIELD1                               => 'sometimes|nullable',
+        Header::FIELD2                               => 'sometimes|nullable',
+        Header::FIELD3                               => 'sometimes|nullable',
+        Header::FIELD4                               => 'sometimes|nullable',
+        Header::FIELD5                               => 'sometimes|nullable',
+        Header::FIELD6                               => 'sometimes|nullable',
+        Header::FIELD7                               => 'sometimes|nullable',
+        Header::FIELD8                               => 'sometimes|nullable',
+        Header::FIELD9                               => 'sometimes|nullable',
+        Header::FIELD10                              => 'sometimes|nullable',
+        Header::FIELD11                              => 'sometimes|nullable',
+        Header::FIELD12                              => 'sometimes|nullable',
+        Header::FIELD13                              => 'sometimes|nullable',
+        Header::FIELD14                              => 'sometimes|nullable',
+        Header::FIELD15                              => 'sometimes|nullable'
     ];
 
     protected static $partnerSubmerchantReferralInviteTypeRowRules = [
@@ -1640,9 +1656,11 @@ class Validator extends Base\Validator
 
         // Limit validations
         Limit::validate($rules['limit_rule'], count($entries));
-
+        $app = App::getFacadeRoot();
+        $orgId = $app['basicauth']->getOrgId();
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
         // Header validations
-        Header::validate($rules['header_rule'], array_keys(current($entries)));
+        Header::validate($rules['header_rule'], array_keys(current($entries)), $orgId);
 
         //adding validation for type payment_page
         if ($rules['header_rule'] === TYPE::PAYMENT_PAGE)

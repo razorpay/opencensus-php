@@ -173,6 +173,21 @@ class Core extends Base\Core
 
                 $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $websiteDetails);
 
+                $org = $merchant->org;
+
+                $orgDefinedMerchantFields = $parser->getOrgDefinedMerchantFields($processedEntry, $org);
+
+                if (!empty($orgDefinedMerchantFields))
+                {
+                    $additionalFieldsValidationResponse = (new Validator)->validateOrgDefinedMerchantFieldsInput($entry, $org->getId());
+                }
+
+                if (!empty($additionalFieldsValidationResponse) and empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+                {
+                    //if no error in field validations then proceed to save the details
+                    $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $orgDefinedMerchantFields, true);
+                }
+
                 // The activation form milestone is set to L2 as here we are submitting the KYC form.
                 $submitData = [
                     DetailEntity::ACTIVATION_FORM_MILESTONE => "L2",
@@ -203,6 +218,13 @@ class Core extends Base\Core
                     $bvsResponse = $this->merchantDetailCore->getBVSResponseforKYCValidations($merchant->getId());
                     $entry[Header::ERROR_CODE] = $bvsResponse[0];
                     $entry[Header::ERROR_DESCRIPTION] = $bvsResponse[1];
+
+                    //storing error for orgDefinedMerchantFields
+                    if (!empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+                    {
+                        $entry[Header::ERROR_CODE] = $entry[Header::ERROR_CODE] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_CODE];
+                        $entry[Header::ERROR_DESCRIPTION] = $entry[Header::ERROR_DESCRIPTION] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_DESCRIPTION];
+                    }
                 }
 
                 return $merchant;
@@ -322,6 +344,21 @@ class Core extends Base\Core
                     $this->merchantWebsite->createOrEditWebsiteDetails($merchant->merchant_detail, $merchantWebsite);
                 }
 
+                $org = $merchant->org;
+
+                $orgDefinedMerchantFields = $parser->getOrgDefinedMerchantFields($processedEntry, $org);
+
+                if (!empty($orgDefinedMerchantFields))
+                {
+                    $additionalFieldsValidationResponse = (new Validator)->validateOrgDefinedMerchantFieldsInput($entry, $org->getId());
+                }
+
+                if (!empty($additionalFieldsValidationResponse) and empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+                {
+                    //if no error in field validations then proceed to save the details
+                    $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $orgDefinedMerchantFields, true);
+                }
+
                 $submitData = [
                     DetailEntity::ACTIVATION_FORM_MILESTONE => "L2",
                     DetailEntity::SUBMIT => '1',
@@ -348,6 +385,13 @@ class Core extends Base\Core
                     $bvsResponse = $this->merchantDetailCore->getBVSResponseforKYCValidations($merchant->getId());
                     $entry[Header::ERROR_CODE] = $bvsResponse[0];
                     $entry[Header::ERROR_DESCRIPTION] = $bvsResponse[1];
+
+                    //storing error for orgDefinedMerchantFields
+                    if (!empty($additionalFieldsValidationResponse[Header::ERROR_CODE]))
+                    {
+                        $entry[Header::ERROR_CODE] = $entry[Header::ERROR_CODE] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_CODE];
+                        $entry[Header::ERROR_DESCRIPTION] = $entry[Header::ERROR_DESCRIPTION] . ', ' . $additionalFieldsValidationResponse[Header::ERROR_DESCRIPTION];
+                    }
                 }
             });
 

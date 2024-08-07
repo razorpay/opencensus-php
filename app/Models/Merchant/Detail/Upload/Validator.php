@@ -107,7 +107,23 @@ class Validator extends Base\Validator
         Header::MIQ_BENEFICIARY_NAME                 => 'required|string|min:4|max:120',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'required|alpha_num|max:11',
         Merchant\Entity::ORG_ID                      => 'required',
-        UConstants::IS_DS_MERCHANT                   => 'sometimes'
+        UConstants::IS_DS_MERCHANT                   => 'sometimes',
+        UConstants::IS_PERMISSION_ENABLED            => 'sometimes',
+        Header::FIELD1                               => 'sometimes|nullable',
+        Header::FIELD2                               => 'sometimes|nullable',
+        Header::FIELD3                               => 'sometimes|nullable',
+        Header::FIELD4                               => 'sometimes|nullable',
+        Header::FIELD5                               => 'sometimes|nullable',
+        Header::FIELD6                               => 'sometimes|nullable',
+        Header::FIELD7                               => 'sometimes|nullable',
+        Header::FIELD8                               => 'sometimes|nullable',
+        Header::FIELD9                               => 'sometimes|nullable',
+        Header::FIELD10                              => 'sometimes|nullable',
+        Header::FIELD11                              => 'sometimes|nullable',
+        Header::FIELD12                              => 'sometimes|nullable',
+        Header::FIELD13                              => 'sometimes|nullable',
+        Header::FIELD14                              => 'sometimes|nullable',
+        Header::FIELD15                              => 'sometimes|nullable'
     ];
 
     protected static array $updateMiqMerchantBatchRules = [
@@ -143,7 +159,22 @@ class Validator extends Base\Validator
         Header::MIQ_GSTIN                            => 'sometimes',
         Header::MIQ_BUSINESS_DESCRIPTION             => 'sometimes|max:255',
         Header::MIQ_ESTD_DATE                        => 'sometimes|before:"today"',
-        Header::MIQ_FEE_MODEL                        => 'sometimes|custom:feeModel'
+        Header::MIQ_FEE_MODEL                        => 'sometimes|custom:feeModel',
+        Header::FIELD1                               => 'sometimes|nullable',
+        Header::FIELD2                              => 'sometimes|nullable',
+        Header::FIELD3                               => 'sometimes|nullable',
+        Header::FIELD4                               => 'sometimes|nullable',
+        Header::FIELD5                               => 'sometimes|nullable',
+        Header::FIELD6                               => 'sometimes|nullable',
+        Header::FIELD7                               => 'sometimes|nullable',
+        Header::FIELD8                               => 'sometimes|nullable',
+        Header::FIELD9                               => 'sometimes|nullable',
+        Header::FIELD10                               => 'sometimes|nullable',
+        Header::FIELD11                              => 'sometimes|nullable',
+        Header::FIELD12                              => 'sometimes|nullable',
+        Header::FIELD13                               => 'sometimes|nullable',
+        Header::FIELD14                               => 'sometimes|nullable',
+        Header::FIELD15                               => 'sometimes|nullable'
     ];
 
     protected static array $updateMiqPricingBatchRules = [

@@ -13,10 +13,13 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as PName;
 use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\Merchant;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Admin\Org;
 
 class MerchantUploadMiqBatchTest extends TestCase
 {
     use BatchTestTrait;
+    use HeimdallTrait;
 
     protected function setUp(): void
     {
@@ -343,6 +346,21 @@ class MerchantUploadMiqBatchTest extends TestCase
                 Header::MIQ_BANK_ACC_NUMBER               => '921010040934567',
                 Header::MIQ_BENEFICIARY_NAME              => 'ABC LTD',
                 Header::MIQ_BRANCH_IFSC_CODE              => 'UTIB0004651',
+                Header::FIELD1                            => '',
+                Header::FIELD2                            => '',
+                Header::FIELD3                            => '',
+                Header::FIELD4                            => '',
+                Header::FIELD5                            => '',
+                Header::FIELD6                            => '',
+                Header::FIELD7                            => '',
+                Header::FIELD8                            => '',
+                Header::FIELD9                            => '',
+                Header::FIELD10                           => '',
+                Header::FIELD11                           => '',
+                Header::FIELD12                           => '',
+                Header::FIELD13                           => '',
+                Header::FIELD14                           => '',
+                Header::FIELD15                           => ''
             ],
         ];
     }
@@ -1558,6 +1576,85 @@ class MerchantUploadMiqBatchTest extends TestCase
                     return "default";
                 })
             );
+    }
+
+    public function testCreateMerchantUploadMiqAdditionalFieldsSuccess()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => Org\Entity::AXIS_ORG_ID,
+            'entity_type'   => 'org',
+        ]);
+
+        $org = $this->fixtures->create('org', [
+            'id' => Org\Entity::AXIS_ORG_ID
+        ]);
+
+        $this->fixtures->pricing->createPricingPlanForDifferentOrg($org->getId());
+        $org1 = (new Org\Service())->edit('org_' . Org\Entity::AXIS_ORG_ID, ['default_pricing_plan_id' => '1hDYlICxbxOCYx', 'merchant_session_timeout_in_seconds' => 600,]);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::ORG_ID] = 'org_' . Org\Entity::AXIS_ORG_ID;
+        $this->testData[__FUNCTION__]['request']['content'][Header::FIELD1] = 'testName';
+        $this->testData[__FUNCTION__]['request']['content'][Header::FIELD2] = 9999999;
+        $this->testData[__FUNCTION__]['request']['content'][Header::FIELD3] = 'test@email.com';
+
+        $response = $this->startTest();
+
+        $merchantDetails = (new Detail\Repository())->getByMerchantId($response[Header::MIQ_MERCHANT_ID]);
+        $businessDetailMetadata = $merchantDetails->businessDetail->getMetadata();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+
+        $this->assertNotEmpty($businessDetailMetadata['org_defined_merchant_fields']);
+    }
+
+    public function testCreateMerchantUploadMiqAdditionalFieldsFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name' => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id' => Org\Entity::AXIS_ORG_ID,
+            'entity_type' => 'org',
+        ]);
+
+        $org = $this->fixtures->create('org', [
+            'id' => Org\Entity::AXIS_ORG_ID
+        ]);
+
+        $this->fixtures->pricing->createPricingPlanForDifferentOrg($org->getId());
+        $org1 = (new Org\Service())->edit('org_' . Org\Entity::AXIS_ORG_ID, ['default_pricing_plan_id' => '1hDYlICxbxOCYx', 'merchant_session_timeout_in_seconds' => 600,]);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::ORG_ID] = 'org_' . Org\Entity::AXIS_ORG_ID;
+        $this->testData[__FUNCTION__]['request']['content'][Header::FIELD1] = 'testName';
+        $this->testData[__FUNCTION__]['request']['content'][Header::FIELD2] = '9999999a';
+        $this->testData[__FUNCTION__]['request']['content'][Header::FIELD3] = 'test-email.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::FIELD14] = 'random text';
+
+        $response = $this->startTest();
+
+        $merchantDetails = (new Detail\Repository())->getByMerchantId($response[Header::MIQ_MERCHANT_ID]);
+        $businessDetailMetadata = $merchantDetails->businessDetail->getMetadata();
+
+        $this->assertNotEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertNotEmpty($response[Header::ERROR_DESCRIPTION]);
+
+        $this->assertEmpty($businessDetailMetadata['org_defined_merchant_fields']);
     }
 }
 

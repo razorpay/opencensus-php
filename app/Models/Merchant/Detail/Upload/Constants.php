@@ -65,4 +65,6 @@ class Constants
     const IS_DS_MERCHANT    = "is_ds_merchant";
     const ONLY_DS_UPLOAD_MIQ = "only_ds_upload_miq";
     const INTERNATIONAL = 'international';
+    const IS_PERMISSION_ENABLED = 'is_permission_enabled';
+    const ORG_DEFINED_FIELD_PERMISSION_ENABLED = 'org_defined_field_permission_enabled';
 }

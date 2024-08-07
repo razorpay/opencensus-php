@@ -307,10 +307,11 @@ class Service extends Base\Service
         {
             $response = AdminFetch::filterAttributesForExternalAdminFetchEntityById($entityType, $response);
         }
-        //add check for permission enabled
+        
         if ($inputEntityType === Entity::ORG)
         {
             $orgId = Org\Entity::verifyIdAndSilentlyStripSign($id);
+            //add check for permission enabled
             if ((new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::ORG_DEFINED_CUSTOM_MERCHANT_FIELDS))
             {
                 $orgCustomConfig = (new Org\Service)->getOrgCustomConfig();
