@@ -245,6 +245,10 @@ class Constants
     const V1                                 = 'v1';
     const TOTAL_LEAD_SCORE                   = 'total_lead_score';
 
+    // Payment Gateway Competitors constants
+    const ONBOARDED_TO_COMPETITORS_PREVIOUSLY = 'onboarded_to_competitors_previously';
+    const PAYMENT_GATEWAY_COMPETITORS = 'payment_gateway_competitors';
+
     // Default payment constants
     const DEFAULT_ELIGIBILITY_CRITERIA   = true;
     const DEFAULT_ORDER_ID               = "order_MblejZXmYhvaqK" ;

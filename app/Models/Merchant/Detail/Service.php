@@ -324,6 +324,17 @@ class Service extends Base\Service
         {
             $response[DetailConstants::CATEGORY_MODULE_PLACEMENT] = $pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT];
         }
+
+        // adding pg competitors keys coming from pgos
+        if (isset($pgosFetchInternalResponse[DetailConstants::ONBOARDED_TO_COMPETITORS_PREVIOUSLY]) === true)
+        {
+            $response[DetailConstants::ONBOARDED_TO_COMPETITORS_PREVIOUSLY] = $pgosFetchInternalResponse[DetailConstants::ONBOARDED_TO_COMPETITORS_PREVIOUSLY];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::PAYMENT_GATEWAY_COMPETITORS]) === true)
+        {
+            $response[DetailConstants::PAYMENT_GATEWAY_COMPETITORS] = $pgosFetchInternalResponse[DetailConstants::PAYMENT_GATEWAY_COMPETITORS];
+        }
     }
 
     public function getMerchantMethodsCore()
