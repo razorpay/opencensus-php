@@ -280,28 +280,33 @@ return [
     ],
 
     // Dedicated transfer queue 1 for merchants
-    'transfer_process_dedicate_queue_one' => [
+    'transfer_process_dedicated_queue_one' => [
         'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_ONE_LIVE'),
     ],
 
     // Dedicated transfer queue 2 for merchants
-    'transfer_process_dedicate_queue_two' => [
+    'transfer_process_dedicated_queue_two' => [
         'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_TWO_LIVE'),
     ],
 
     // Dedicated transfer queue 3 for merchants
-    'transfer_process_dedicate_queue_three' => [
+    'transfer_process_dedicated_queue_three' => [
         'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_THREE_LIVE'),
     ],
 
     // Dedicated transfer queue 4 for merchants
-    'transfer_process_dedicate_queue_four' => [
+    'transfer_process_dedicated_queue_four' => [
         'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_FOUR_LIVE'),
     ],
 
     // Dedicated transfer queue 5 for merchants
-    'transfer_process_dedicate_queue_five' => [
+    'transfer_process_dedicated_queue_five' => [
         'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_FIVE_LIVE'),
+    ],
+
+    // Dedicated transfer queue for malaysian merchants
+    'transfer_process_dedicated_queue_malaysia' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_DEDICATED_QUEUE_MALAYSIA_LIVE'),
     ],
 
     // settlement related QUEUES

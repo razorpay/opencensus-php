@@ -6,5 +6,5 @@ namespace RZP\Jobs;
 
 class TransferProcessDedicatedQueueOne extends TransferProcess
 {
-    protected $queueConfigKey = 'transfer_process_dedicate_queue_one';
+    protected $queueConfigKey = 'transfer_process_dedicated_queue_one';
 }

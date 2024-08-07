@@ -17,6 +17,7 @@ use RZP\Jobs\TransferProcessDedicatedQueueTwo;
 use RZP\Jobs\TransferProcessDedicatedQueueThree;
 use RZP\Jobs\TransferProcessDedicatedQueueFour;
 use RZP\Jobs\TransferProcessDedicatedQueueFive;
+use RZP\Jobs\TransferProcessDedicatedQueueMalaysia;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Order;
@@ -1721,6 +1722,12 @@ class Core extends Base\Core
         else if (in_array($merchant->getId(), $config[Constant::DEDICATED_QUEUE_FIVE] ?? []) === true)
         {
             TransferProcessDedicatedQueueFive::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
+
+            return;
+        }
+        else if ($merchant->getCountry() === 'MY' )
+        {
+            TransferProcessDedicatedQueueMalaysia::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadowTxnCreate, $transferInput)->delay($delaySecs);
 
             return;
         }

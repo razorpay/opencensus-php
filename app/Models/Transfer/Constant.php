@@ -64,6 +64,7 @@ final class Constant
     const DEDICATED_QUEUE_THREE = 'dedicated_queue_three';
     const DEDICATED_QUEUE_FOUR  = 'dedicated_queue_four';
     const DEDICATED_QUEUE_FIVE  = 'dedicated_queue_five';
+    const DEDICATED_QUEUE_MALAYSIA  = 'dedicated_queue_malaysia';
 
     /**
      * For enabling merchants on async balance debit for transfer debit transactions
