@@ -122,11 +122,13 @@ abstract class Base extends Core
         $this->pushChargeCollectionEvent($this->validation, $previousStatus, $errDesc);
     }
 
-    public function markValidationAsFailed(string $errorCode = null)
+    public function markValidationAsFailed(string $errorCode = null, string $errorDescription = null)
     {
         $this->validation->setStatus(Status::FAILED);
 
         $this->validation->setErrorCode($errorCode);
+
+        $this->validation->setErrorDescription($errorDescription);
 
         $this->repo->saveOrFail($this->validation);
 

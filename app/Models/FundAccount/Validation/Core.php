@@ -754,8 +754,10 @@ class Core extends Base\Core
         }
         catch (BadRequestException | Exception\IntegrationException $ex)
         {
-            $validation->setStatus(Status::FAILED);
-            $this->repo->saveOrFail($validation);
+            $processor = Processor\Factory::get($validation);
+
+            $processor->markValidationAsFailed($ex->getCode(), errorDescription: Constants::FAILED_DUE_TO_LOW_BALANCE);
+
             throw $ex;
         }
         catch (\Throwable $ex)

@@ -49,6 +49,8 @@ class Constants
 
     public const MERCHANT_ADDRESS           = "merchant_address";
 
+    const FAILED_DUE_TO_LOW_BALANCE         = "failed_due_to_low_balance";
+
     protected $slackSettings;
 
     public static function slackSettings()

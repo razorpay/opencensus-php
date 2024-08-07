@@ -2436,5 +2436,33 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testFavWithInsufficientBalance' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The fees calculated for fund account validation is greater than available fee credits or balance.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+        ],
+    ],
 ];

@@ -22,6 +22,8 @@ use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use Illuminate\Support\Facades\Queue;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
@@ -4218,5 +4220,48 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('primary', $balance['type']);
     }
 
+    public function testFavWithInsufficientBalance()
+    {
+        $this->enableRazorXTreatmentForRazorX();
 
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')->andThrow(
+            new BadRequestException(
+            ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+            null,
+            [],
+            "The fees calculated for fund account validation is greater than available fee credits or balance."
+        ));
+
+        $this->mockRazorxTreatment();
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $this->assertEquals(ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE, $fav['error_code']);
+
+        $this->assertEquals('failed_due_to_low_balance', $fav['error_description']);
+    }
 }
