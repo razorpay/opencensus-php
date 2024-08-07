@@ -192,7 +192,7 @@ class Entity extends Base\PublicEntity
         $this->setExpired($delay);
     }
 
-    protected function setExpired($delay = false)
+    public function setExpired($delay = false)
     {
         $delaySeconds = 0;
 

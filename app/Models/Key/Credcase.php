@@ -81,6 +81,26 @@ class Credcase
 
         $this->outbox->send(OutboxHandler::ROTATE, $req);
     }
+
+    /**
+     * @param  Entity $Key
+     * @return void
+     */
+    public function expire(Entity $Key)
+    {
+        if ($this->dualWriteEnabled === false)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::CREDCASE_OUTBOX_REQUEST_EXPIRE, ['key_id' => $Key->getId()]);
+        $req = array(
+            Entity::ID         => $Key->getId(),
+            Entity::EXPIRED_AT => $Key->getExpiredAt(),
+        );
+
+        $this->outbox->send(OutboxHandler::EXPIRE, $req);
+    }
 }
 
 /**
@@ -116,10 +136,10 @@ function newMigrateApiKeyRequest(Entity $key, string $mode)
  *
  * @return array
  */
-function newExpireApiKeyRequest(Entity $oldKey)
+function newExpireApiKeyRequest(Entity $Key)
 {
     return array(
-        Entity::ID         => $oldKey->getId(),
-        Entity::EXPIRED_AT => $oldKey->getExpiredAt(),
+        Entity::ID         => $Key->getId(),
+        Entity::EXPIRED_AT => $Key->getExpiredAt(),
     );
 }

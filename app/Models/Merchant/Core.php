@@ -3062,11 +3062,11 @@ class Core extends Base\Core
         {
             try
             {
-                $this->rotateKeysForSuspendedMerchant($merchant);
+                $this->expireKeysForSuspendedMerchant($merchant);
             }
             catch (\Throwable $exception)
             {
-                $this->trace->error(TraceCode::ROTATE_KEYS_FOR_SUSPENDED_MERCHANTS, [
+                $this->trace->error(TraceCode::EXPIRE_KEYS_FOR_SUSPENDED_MERCHANTS, [
                     'error' => $exception->getMessage(),
                 ]);
             }
@@ -7633,7 +7633,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function rotateKeysForSuspendedMerchant($merchant)
+    protected function expireKeysForSuspendedMerchant($merchant)
     {
         try
         {
@@ -7642,21 +7642,13 @@ class Core extends Base\Core
             $liveKeys = $this->repo->key->getKeysForMerchantForLiveAndTestMode($merchantId, MODE::LIVE);
             foreach ($liveKeys as $key)
             {
-                $keyId = $key->getPublicKey(MODE::LIVE);
-                $prefix = "rzp_live_";
-                $keyId = str_replace($prefix, '', $keyId);
-
-                (new KeyCore())->rollKeyForLiveAndTestMode($merchantId, $keyId, MODE::LIVE);
+                (new KeyCore())->expireKeyWithOutbox($key);
             }
 
             $testKeys = $this->repo->key->getKeysForMerchantForLiveAndTestMode($merchantId, MODE::TEST);
             foreach ($testKeys as $key)
             {
-                $keyId = $key->getPublicKey(MODE::TEST);
-                $prefix = "rzp_test_";
-                $keyId = str_replace($prefix, '', $keyId);
-
-                (new KeyCore())->rollKeyForLiveAndTestMode($merchantId, $keyId,MODE::TEST);
+                (new KeyCore())->expireKeyWithOutbox($key);
             }
         }
         catch(\Throwable $e)

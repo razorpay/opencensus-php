@@ -95,6 +95,25 @@ class Core extends Base\Core
         $this->repo->key->saveOrFail($key);
     }
 
+    /**
+     * Expires a key and processes the expiration using outbox to credcase.
+     *
+     * @param Key\Entity $key The key entity to expire.
+     * @return void
+     */
+    public function expireKeyWithOutbox(Key\Entity $key)
+    {
+        return $this->repo->transaction(function() use ($key)
+        {
+            $key->setExpired();
+
+            $this->repo->key->saveOrFail($key);
+
+            (new Credcase)->expire($key);
+        });
+    }
+
+
     public function rollKey($merchantId, $keyId, array $input, $mode)
     {
         Key\Entity::verifyIdAndStripSign($keyId);
@@ -180,30 +199,4 @@ class Core extends Base\Core
         }
     }
 
-    public function rollKeyForLiveAndTestMode($merchantId, $keyId, $mode)
-    {
-        Key\Validator::checkForDemoKeys($keyId);
-
-        $old = $this->repo->key->findByMerchantIdAndKeyIdForTestAndLiveMode($merchantId, $keyId, $mode);
-
-        if ($old === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        return $this->repo->transaction(function() use ($old, $mode)
-        {
-            $this->expireKey($old, false);
-
-            $key = $this->create($old->merchant, $mode);
-
-            (new Credcase)->rotate($old, $key, $mode);
-
-            $keysData['old'] = $old->toArrayPublic();
-
-            $keysData['new'] = $key->toArrayPublicWithSecret();
-
-            return $keysData;
-        });
-    }
 }

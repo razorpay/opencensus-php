@@ -105,12 +105,4 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
-
-    public function findByMerchantIdAndKeyIdForTestAndLiveMode($merchantId, $keyId, $mode)
-    {
-        return $this->newQueryWithConnection($mode)
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->where(Entity::ID, '=', $keyId)
-            ->first();
-    }
 }
