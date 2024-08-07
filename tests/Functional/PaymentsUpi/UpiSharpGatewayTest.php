@@ -157,20 +157,20 @@ class UpiSharpGatewayTest extends TestCase
         $cases['4812_failed'] = [
             '4812',
             500001,
-            ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_AMOUNT_LIMIT_REACHED,
+            ErrorCode::BAD_REQUEST_PAYMENT_UPI_AMOUNT_LIMIT_EXCEEDED,
             [
-                'description'   => 'UPI Collect payment more than INR 5000 is not allowed on your merchant category ' .
-                                   'by NPCI. Reach out to Razorpay support if you need any help',
+                'description'   => 'Payment was unsuccessful as the amount is higher than the allowed ' .
+                                   'amount for this merchant. Try using another method.',
             ],
         ];
 
         $cases['4814_failed'] = [
             '4814',
             500001,
-            ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_AMOUNT_LIMIT_REACHED,
+            ErrorCode::BAD_REQUEST_PAYMENT_UPI_AMOUNT_LIMIT_EXCEEDED,
             [
-                'description'   => 'UPI Collect payment more than INR 5000 is not allowed on your merchant category ' .
-                                   'by NPCI. Reach out to Razorpay support if you need any help',
+                'description'   => 'Payment was unsuccessful as the amount is higher than the allowed ' .
+                                   'amount for this merchant. Try using another method.',
             ],
         ];
 
@@ -180,6 +180,31 @@ class UpiSharpGatewayTest extends TestCase
             null,
             [],
         ];
+
+        $cases['8011_failed'] = [
+            '8011',
+            50000001,
+            ErrorCode::BAD_REQUEST_PAYMENT_UPI_AMOUNT_LIMIT_EXCEEDED,
+            [
+                'description'   => 'Payment was unsuccessful as the amount is higher than the allowed ' .
+                                   'amount for this merchant. Try using another method.',
+            ],
+        ];
+
+        $cases['8011_success'] = [
+            '8011',
+            500000,
+            null,
+            [],
+        ];
+
+        $cases['8021_success'] = [
+            '8021',
+            30000000,
+            null,
+            [],
+        ];
+
 
         return $cases;
     }
@@ -233,6 +258,82 @@ class UpiSharpGatewayTest extends TestCase
             ], $response);
         }
 
+
+    }
+
+    public function intentPaymentMccValidation()
+    {
+        $cases = [];
+
+        $cases['8011_failed'] = [
+            '8011',
+            50000001,
+            ErrorCode::BAD_REQUEST_PAYMENT_UPI_AMOUNT_LIMIT_EXCEEDED,
+            [
+                'description'   => 'Payment was unsuccessful as the amount is higher than the allowed ' .
+                                   'amount for this merchant. Try using another method.',
+            ],
+        ];
+
+        $cases['8011_success'] = [
+            '8011',
+            50000000,
+            null,
+            [],
+        ];
+
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider intentPaymentMccValidation
+     */
+    public function testIntentPaymentMccValidation($mcc, $amount, $iec, $error)
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $merchant->setCategory($mcc);
+        $merchant->saveOrFail();
+
+        $input = $this->getDefaultUpiPaymentArray();
+
+        $input['amount'] = $amount;
+
+        if (is_string($iec) === true)
+        {
+            $testData = [
+                'response' => [
+                    'content' => [
+                        'error' => array_merge([
+                            'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                            'description'   => 'Something went wrong, please try again after sometime.',
+                        ], $error),
+                    ],
+                    'status_code' => 400,
+                ],
+                'exception' => [
+                    'class' => 'RZP\Exception\BadRequestException',
+                    'internal_error_code' => $iec,
+                ],
+            ];
+
+            $this->runRequestResponseFlow($testData, function () use ($input)
+            {
+                $this->doAuthPaymentViaAjaxRoute($input);
+            });
+        }
+        else
+        {
+            $response = $this->doAuthPaymentViaAjaxRoute($input);
+
+            $this->assertArraySubset([
+                'type'      => 'async',
+                'method'    => 'upi',
+            ], $response);
+        }
 
     }
 }

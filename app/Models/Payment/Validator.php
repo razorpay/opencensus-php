@@ -1186,6 +1186,13 @@ class Validator extends Base\Validator
 
         if (($method === Payment\Method::UPI) or ($isGooglePayPayment === true))
         {
+            $config = new UpiMetadata\MccConfig((string) $this->entity->merchant->getCategory());
+
+            if (empty($config) === false)
+            {
+                return;
+            }
+
             if ($amount > 20000000)
             {
                 if ($isGooglePayPayment === true)

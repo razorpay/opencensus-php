@@ -260,6 +260,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_FUNCTION_NOT_SUPPORTED                        = 'The requested UPI function is not supported';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_BLOCKED                           = 'UPI Collect is not allowed for your merchant category by NPCI. Please reach out to Razorpay support if you need any help.';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_AMOUNT_LIMIT_REACHED              = 'UPI Collect payment more than INR 5000 is not allowed on your merchant category by NPCI. Reach out to Razorpay support if you need any help';
+    const BAD_REQUEST_PAYMENT_UPI_AMOUNT_LIMIT_EXCEEDED                         = 'Payment was unsuccessful as the amount is higher than the allowed amount for this merchant. Try using another method.';
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Your payment amount is different from your order amount. To pay successfully, please try using right amount.';
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
