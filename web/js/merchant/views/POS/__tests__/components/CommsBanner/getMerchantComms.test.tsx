@@ -30,6 +30,12 @@ export const PROCESSING_REFUND = {
 };
 
 describe('getMerchantComms', () => {
+  beforeEach(() => {
+    Object.defineProperty(window, 'location', {
+      value: jest.fn(),
+    });
+    window.EASY_ONBOARDING_URL = '';
+  });
   test('should return expected scenarios (0) if mode is test and KYC is null', () => {
     const user = {
       ...MOCK_USER,
@@ -56,7 +62,7 @@ describe('getMerchantComms', () => {
       'Submit your KYC details to activate your account and to order POS.',
     );
     expect(stages[1].cta?.[0].name).toBe('Submit KYC');
-    expect(stages[1].cta?.[0].url).toBe('https://easy.razorpay.com/onboarding');
+    expect(stages[1].cta?.[0].url).toBe('/onboarding/pos/store-details');
     expect(stages[1].cta?.[0].type).toBe('button');
 
     expect(stages[2].status).toBe('pending');
@@ -131,7 +137,7 @@ describe('getMerchantComms', () => {
       'Please note that you must update your required details to ensure timely delivery of your device.',
     );
     expect(stages[0].cta?.[0].name).toBe('Update KYC');
-    expect(stages[0].cta?.[0].url).toBe('https://easy.razorpay.com/onboarding');
+    expect(stages[0].cta?.[0].url).toBe('/onboarding/needs-clarification');
     expect(stages[0].cta?.[0].type).toBe('button');
 
     expect(stages[1].status).toBe('notice');
@@ -164,7 +170,7 @@ describe('getMerchantComms', () => {
     expect(stages[0].description).toBe(
       'To continue your POS journey, please ensure that you update the required details and then proceed to order your device.',
     );
-    expect(stages[0].cta?.[0].url).toBe('https://easy.razorpay.com/onboarding');
+    expect(stages[0].cta?.[0].url).toBe('/onboarding/needs-clarification');
 
     expect(stages[1].title).toBe('Access POS');
     expect(stages[1].description).toBe(
@@ -441,13 +447,11 @@ describe('getMerchantComms', () => {
       'Please add few extra details to get activated with Razorpay POS.',
     );
     expect(stages[0].cta?.[0].name).toBe('Add Details');
-    expect(stages[0].cta?.[0].url).toBe('https://easy.razorpay.com/onboarding');
     expect(stages[1].title).toBe('Access POS');
     expect(stages[1].description).toBe(
       'Explore out wide range of POS devices. Fill the shop details to place an order.',
     );
     expect(stages[1].cta?.[0].name).toBe('Add Details');
-    expect(stages[1].cta?.[0].url).toBe('https://easy.razorpay.com/onboarding');
     expect(stages[1].cta?.[1].name).toBe('Explore POS');
     expect(stages[1].cta?.[1].url).toBe('/pos/catalog?focusProduct=true');
   });

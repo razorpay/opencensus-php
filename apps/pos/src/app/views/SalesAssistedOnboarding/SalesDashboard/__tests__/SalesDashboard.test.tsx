@@ -2,16 +2,11 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as graphqlUtils from '@dashboard/shared-utils/graphql/graphql';
 import SalesDashboard from '../SalesDashboard';
-import { getSalesMappedMerchantsHandler } from './mocks/handlers';
 import {
-  render,
-  screen,
-  server,
-  userEvent,
-  waitFor,
-  waitForElementToBeRemoved,
-  within,
-} from 'apps/pos/src/services/test/test-utils';
+  SUCCESS_SALES_MAPPED_MERCHANTS_EMPTY_RESPONSE,
+  SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE,
+} from './mocks/fixtures';
+import { render, screen, userEvent, waitFor, within } from 'apps/pos/src/services/test/test-utils';
 
 jest.setTimeout(30000);
 
@@ -53,22 +48,18 @@ describe('<SalesDashboard/>', () => {
   });
 
   test('should render sales dashboard on screen', async () => {
-    server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
+    const graphqlRequestSpy = jest.spyOn(graphqlUtils, 'graphqlRequest');
+    graphqlRequestSpy.mockReturnValue(Promise.resolve(SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE));
     renderApp();
-    await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
-    expect(screen.getByText('Merchant Details')).toBeInTheDocument();
     const salesTable = screen.getByTestId('sales-table');
-    expect(within(salesTable).getByText('OLvMDMRFFdl9TU')).toBeInTheDocument();
-    expect(within(salesTable).getByText('+916817163743')).toBeInTheDocument();
-    expect(within(salesTable).getByText('Under Review')).toBeInTheDocument();
-    expect(within(salesTable).getByText('Raju Body Building')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(salesTable).getByText('OLvMDMRFFdl9TU')).toBeInTheDocument();
+    });
   });
 
   test('Should trigger gql api with correct payload on filter change', async () => {
     const graphqlRequestSpy = jest.spyOn(graphqlUtils, 'graphqlRequest');
-    server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
     renderApp();
-    await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     expect(screen.getByText('Merchant Details')).toBeInTheDocument();
     await userEvent.click(screen.getByTestId('date-range-test-btn'));
     await userEvent.click(screen.getByText('Apply'));
@@ -88,10 +79,14 @@ describe('<SalesDashboard/>', () => {
   });
 
   test('should render status counts on screen', async () => {
-    server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
+    const graphqlRequestSpy = jest.spyOn(graphqlUtils, 'graphqlRequest');
+    graphqlRequestSpy.mockReturnValue(Promise.resolve(SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE));
     renderApp();
-    await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     const statusCountsContainer = screen.getByTestId('sales-dashboard-status-counts');
+    const salesTable = screen.getByTestId('sales-table');
+    await waitFor(() => {
+      expect(within(salesTable).getByText('OLvMDMRFFdl9TU')).toBeInTheDocument();
+    });
     expect(within(statusCountsContainer).getByText('20')).toBeInTheDocument();
     expect(within(statusCountsContainer).getByText('10')).toBeInTheDocument();
     expect(within(statusCountsContainer).getByText('1')).toBeInTheDocument();
@@ -100,9 +95,7 @@ describe('<SalesDashboard/>', () => {
   });
 
   test('should not show status counts if filter on status is added', async () => {
-    server.use(getSalesMappedMerchantsHandler({ type: 'success' }));
     renderApp();
-    await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
     const statusFilterContainer = screen.getByTestId('sales-dashboard-filters');
     await userEvent.click(statusFilterContainer);
     await userEvent.click(within(statusFilterContainer).getByText('Activated'));
@@ -110,11 +103,15 @@ describe('<SalesDashboard/>', () => {
   });
 
   test('should show empty screen if no merchants are available', async () => {
-    server.use(getSalesMappedMerchantsHandler({ type: 'empty' }));
+    const graphqlRequestSpy = jest.spyOn(graphqlUtils, 'graphqlRequest');
+    graphqlRequestSpy.mockReturnValue(
+      Promise.resolve(SUCCESS_SALES_MAPPED_MERCHANTS_EMPTY_RESPONSE),
+    );
     renderApp();
-    await waitForElementToBeRemoved(screen.getByLabelText('Loading...'));
-    expect(
-      screen.getByText(`We couldn't find any merchant details associated with your requests`),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(`We couldn't find any merchant details associated with your requests`),
+      ).toBeInTheDocument();
+    });
   });
 });

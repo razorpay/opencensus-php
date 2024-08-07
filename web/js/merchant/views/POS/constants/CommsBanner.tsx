@@ -10,6 +10,7 @@ import {
   UserIcon,
 } from '@razorpay/blade/components';
 
+import { User } from 'common/typings';
 import {
   CommsBannerItemVariants,
   CommsItem,
@@ -22,7 +23,25 @@ type StatusAssets = {
   variant: CommsBannerItemVariants;
 };
 
-const KYC_URL_PROD = 'https://easy.razorpay.com/onboarding';
+const EASY_DASHBOARD_ROUTES = {
+  l2onboarding: '/onboarding/l2',
+  storeDetails: '/onboarding/pos/store-details',
+  storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos',
+  needsClarification: '/onboarding/needs-clarification',
+};
+
+const getNcUrl = (): string => {
+  return `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES?.needsClarification}`;
+};
+
+const getPosKycUrl = ({ user }: { user: User }): string => {
+  if (user?.merchant_business_detail?.website_details?.physical_store) {
+    return `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES?.storeDetails}`;
+  }
+
+  return `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.storeDetailsWithIntent}`;
+};
+
 const CATALOG_URL = '/pos/catalog?focusProduct=true';
 
 export const KYC_STATUS_TYPES = {
@@ -88,7 +107,7 @@ export const STAGES: Record<string, Omit<CommsItem, 'status'>> = {
     cta: [
       {
         name: 'Submit KYC',
-        url: KYC_URL_PROD,
+        url: ({ user }) => getPosKycUrl({ user }),
         type: 'button',
       },
     ],
@@ -115,7 +134,7 @@ export const STAGES: Record<string, Omit<CommsItem, 'status'>> = {
     cta: [
       {
         name: 'Update KYC',
-        url: KYC_URL_PROD,
+        url: getNcUrl,
         type: 'button',
       },
     ],
@@ -201,7 +220,7 @@ export const STAGES: Record<string, Omit<CommsItem, 'status'>> = {
     cta: [
       {
         name: 'Add Details',
-        url: KYC_URL_PROD,
+        url: ({ user }) => getPosKycUrl({ user }),
         type: 'button',
       },
     ],
@@ -436,7 +455,7 @@ export const SCENARIOS: CommsItem[][] = [
       cta: [
         {
           name: 'Add Details',
-          url: KYC_URL_PROD,
+          url: ({ user }) => getPosKycUrl({ user }),
           type: 'button',
         },
         { name: 'Explore POS', url: CATALOG_URL, type: 'link' },

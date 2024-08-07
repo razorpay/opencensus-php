@@ -421,22 +421,24 @@ class HeaderNav extends Component {
                 </React.Fragment>
               ) : (
                 <ul className="nav navbar-nav navbar-right">
-                  <Button
-                    variant="tertiary"
-                    onClick={this.handleOnRefreshClick}
-                    isDisabled={isRefreshLoading}
-                  >
-                    <Box display="flex" alignItems="center">
-                      <Text color="surface.text.staticWhite.normal" marginRight="spacing.3">
-                        Refresh
-                      </Text>
-                      {isRefreshLoading ? (
-                        <Spinner color="white" accessibilityLabel="pos-sales-refresh-loader" />
-                      ) : (
-                        <RefreshIcon color="interactive.icon.onPrimary.normal" />
-                      )}
-                    </Box>
-                  </Button>
+                  {isMobileDevice() ? (
+                    <Button
+                      variant="tertiary"
+                      onClick={this.handleOnRefreshClick}
+                      isDisabled={isRefreshLoading}
+                    >
+                      <Box display="flex" alignItems="center">
+                        <Text color="surface.text.staticWhite.normal" marginRight="spacing.3">
+                          Refresh
+                        </Text>
+                        {isRefreshLoading ? (
+                          <Spinner color="white" accessibilityLabel="pos-sales-refresh-loader" />
+                        ) : (
+                          <RefreshIcon color="interactive.icon.onPrimary.normal" />
+                        )}
+                      </Box>
+                    </Button>
+                  ) : null}
                   <li id="profile-dropdown">
                     <ProfileDropdown
                       analytics={analytics}

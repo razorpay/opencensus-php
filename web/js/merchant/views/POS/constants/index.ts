@@ -361,6 +361,7 @@ export const EASY_DASHBOARD_ROUTES = {
   storeDetails: '/onboarding/pos/store-details',
   storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos',
   l2onboardingWithIntent: '/onboarding/l2?intent=pos',
+  needsClarification: '/onboarding/needs-clarification',
 };
 
 export const OFFER_CARDS_STRUCT: OfferCardsStruct = {

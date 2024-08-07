@@ -346,6 +346,7 @@ describe('test for HeaderNav component', () => {
 
   test('should render refresh button for sales agent', async () => {
     const props = { ...defaultProps };
+    isMobileDevice.mockImplementation(() => true);
     jest.spyOn(posAgentUtils, 'checkIfPosSalesAgent').mockReturnValue({
       isEnabled: true,
       isPosSalesAgent: true,

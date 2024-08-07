@@ -32,3 +32,21 @@ export const SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE = {
     ],
   },
 };
+
+export const SUCCESS_SALES_MAPPED_MERCHANTS_EMPTY_RESPONSE = {
+  salesOnboardedMerchants: {
+    __typename: 'SalesOnboardedMerchants',
+    limit: 10,
+    offset: 0,
+    total: 31,
+    hasMore: true,
+    statusCounts: {
+      activated: 0,
+      pending: 0,
+      underReview: 0,
+      rejected: 0,
+      kycQualifiedStb: 0,
+    },
+    merchants: [],
+  },
+};
