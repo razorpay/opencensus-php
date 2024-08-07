@@ -522,7 +522,7 @@ class Core extends Base\Core
 
         $partnerActivation->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $merchant) {
             switch ($input[Entity::ACTIVATION_STATUS])
             {
                 case Constants::ACTIVATED:

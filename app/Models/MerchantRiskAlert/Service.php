@@ -91,7 +91,7 @@ class Service extends Base\Service
 
         if ($merchant->isFundsOnHold() === false)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant)
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $merchant)
             {
                 $merchant->holdFunds();
 

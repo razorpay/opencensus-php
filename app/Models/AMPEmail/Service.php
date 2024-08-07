@@ -181,7 +181,7 @@ class Service extends Base\Service
             try
             {
 
-                $this->repo->transactionOnLiveAndTest(function() use ($ampEmail, $formInput) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($ampEmail, $formInput) {
 
                     (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($formInput);
 

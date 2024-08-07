@@ -80,7 +80,7 @@ class PartnerSubmerchantLinkingReferralJob extends Job
                 $referral->getMerchantId(),
             );
 
-            $this->repoManager->transactionOnLiveAndTest(
+            $this->repoManager->transactionOnLiveAndTestAndAsv(
                 function() use ($subMerchant, $referral, $accessMaps) {
 
                     $detailService = new DetailService();

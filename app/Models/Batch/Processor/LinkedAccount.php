@@ -91,7 +91,7 @@ class LinkedAccount extends Base
             $overriddenInput = Helper::getBankAccountInput($entry);
             $input = array_merge($buildInput, $overriddenInput);
 
-            $this->repo->transactionOnLiveAndTest(function () use($input, $account, $accountId, &$status)
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use($input, $account, $accountId, &$status)
             {
                 $this->bankAccountCore->createOrChangeBankAccount($input, $account, false, false);
 

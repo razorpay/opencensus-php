@@ -23,7 +23,7 @@ class InstantActivation extends Base
     {
         if (empty($entry[Merchant\Entity::MERCHANT_ID]) === false)
         {
-            $this->repo->transactionOnLiveAndTest(function() use (& $entry) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use (& $entry) {
 
                 $merchant = $this->repo->merchant->findOrFail(trim($entry[Merchant\Entity::MERCHANT_ID]));
 

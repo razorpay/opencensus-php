@@ -73,7 +73,7 @@ class PartnerSubmerchantLinkingOauthJob extends Job
                 MerchantConstants::APPLICATION_ID => $this->sourceAppId,
             ];
 
-            $this->repoManager->transactionOnLiveAndTest(function() use ($input) {
+            $this->repoManager->transactionOnLiveAndTestAndAsv(function() use ($input) {
                 (new AccessMapService())->mapOAuthApplication($this->subMerchantId, $input);
             });
 
