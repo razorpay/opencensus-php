@@ -604,6 +604,126 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         ], $payment);
     }
 
+    public function testTpvPaymentSuccessWithoutOrderMethod()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $order = $this->createTpvOrderWithoutMethod();
+
+        $this->payment['amount'] = $order['amount'];
+        $this->payment['order_id'] = $order['id'];
+        $this->payment['description'] = 'tpv_order_success';
+
+        unset($this->payment['bank']);
+
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_tpv_terminal', 'upi_icici');
+
+        $this->gateway = 'upi_icici';
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [
+            'created_at'            => $payment['created_at'],
+            'gateway_payment_id'    => '882087011',
+            'gateway_merchant_id'   => '123456',
+            'vpa'                   => 'vishnu@icici',
+            'payment_id'            => $payment['id'],
+        ];
+
+        $content = $this->mockServer('upi_icici')->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $terminal = $this->terminal;
+
+        $merchant = $this->fixtures->merchant;
+
+        // assert terminal is tpv
+        $this->assertEquals(true, $terminal->isTpvAllowed());
+
+        $this->assertArraySubset([
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::TERMINAL_ID     => $terminal->getId(), // assert terminal id
+            Entity::GATEWAY         => $this->gateway,
+            Entity::CPS_ROUTE       => 4,
+        ], $payment);
+    }
+
+    public function testTpvPaymentSuccessWithoutOrderMethodWithBank()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $order = $this->createTpvOrderWithoutMethod();
+
+        $this->payment['amount'] = $order['amount'];
+        $this->payment['order_id'] = $order['id'];
+        $this->payment['description'] = 'tpv_order_success';
+
+        $this->payment['bank'] = 'RATB' ;
+
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_tpv_terminal', 'upi_icici');
+
+        $this->gateway = 'upi_icici';
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [
+            'created_at'            => $payment['created_at'],
+            'gateway_payment_id'    => '882087011',
+            'gateway_merchant_id'   => '123456',
+            'vpa'                   => 'vishnu@icici',
+            'payment_id'            => $payment['id'],
+        ];
+
+        $content = $this->mockServer('upi_icici')->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $terminal = $this->terminal;
+
+        $merchant = $this->fixtures->merchant;
+
+        // assert terminal is tpv
+        $this->assertEquals(true, $terminal->isTpvAllowed());
+
+        $this->assertArraySubset([
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::TERMINAL_ID     => $terminal->getId(), // assert terminal id
+            Entity::GATEWAY         => $this->gateway,
+            Entity::CPS_ROUTE       => 4,
+        ], $payment);
+    }
+
     // This test requires the correctness of the test testTpvPaymentSuccess() for a lot of assertions related to TPV
     // This test mocks the asserts done inside the UPS Service mock to focus on the account number assertion.
     public function testTpvPaymentSuccessWithAccountNumberFromBankAccount()

@@ -313,7 +313,7 @@ class Validator extends Base\Validator
         // TPV Check is done before check for generic order payment match.
         $this->validateMerchantSpecificData($payment);
 
-        $this->validateOrderBank($payment->getBank());
+        $this->validateOrderBank($payment);
 
         $this->validateOrderMethod($payment->getMethod());
 
@@ -558,8 +558,9 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateOrderBank($bank)
+    protected function validateOrderBank($payment)
     {
+        $bank = $payment->getBank();
         // bypassing upi as payment create fails for tpv merchants because the bank codes we receive are different
         // from payment entity than what we have in order entity.In case of UPI TPV, the validation is actually done by
         // the acquiring bank using Account Number and IFSC code. We don't really need the 'bank' field.
@@ -570,7 +571,7 @@ class Validator extends Base\Validator
         $method = $order->getMethod();
 
         if (($tpvRequired === true) and
-            ($method === Payment\Method::UPI))
+            ($payment->getMethod() === Payment\Method::UPI))
         {
             return;
         }
