@@ -383,9 +383,13 @@ abstract class Base extends BaseModel\Core
 
         if ($rule === null)
         {
+            $entityName = $this->entity->getEntityName();
+
             $this->trace->count(count($pricing) == 0 ? MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND : MetricConstants::SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
                 [
-                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                    'entity' => $entityName,
+                    'method' => $entityName == Constants\Entity::PAYMENT ? $this->entity->getMethod() : null,
                 ]);
 
             throw new Exception\LogicException(
@@ -441,9 +445,13 @@ abstract class Base extends BaseModel\Core
                     ]);
             }
 
+            $entityName = $this->entity->getEntityName();
+
             $this->trace->count(MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND,
                 [
-                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                    'entity' => $entityName,
+                    'method' => $entityName == Constants\Entity::PAYMENT ? $this->entity->getMethod() : null,
                 ]);
 
             throw new Exception\LogicException(
@@ -655,9 +663,13 @@ abstract class Base extends BaseModel\Core
                 );
             }
 
+            $entityName = $this->entity->getEntityName();
+
             $this->trace->count(count($rules) == 0? MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND : MetricConstants::SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
                 [
-                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                    'entity' => $entityName,
+                    'method' => $entityName == Constants\Entity::PAYMENT ? $this->entity->getMethod() : null,
                 ]);
 
             // Should not reach this case, ever.
@@ -672,9 +684,13 @@ abstract class Base extends BaseModel\Core
     {
         if (count($pricing) !== 1)
         {
+            $entityName = $this->entity->getEntityName();
+
             $this->trace->count(count($pricing) == 0? MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND : MetricConstants::SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
                 [
-                    'route_name' => $this->app['api.route']->getCurrentRouteName()
+                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                    'entity' => $entityName,
+                    'method' => $entityName == Constants\Entity::PAYMENT ? $this->entity->getMethod() : null,
                 ]);
 
             throw new Exception\LogicException(

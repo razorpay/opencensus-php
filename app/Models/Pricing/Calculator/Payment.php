@@ -1017,6 +1017,8 @@ class Payment extends Base
                 $this->trace->count(Metrics::SERVER_ERROR_PRICING_RULE_ABSENT_COUNT,
                     [
                         'org_id' => $merchant?->getOrgId(),
+                        'payment_method' => $this->entity->getMethod(),
+                        'on_fallback_plan' => $pricing->getId() == Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID,
                     ]);
 
                 $existingPaymentPricingRule = (!empty($this->pricingRules) && ($this->pricingRules[0]?->getFeature() == Pricing\Feature::PAYMENT));
@@ -1038,6 +1040,7 @@ class Payment extends Base
                             [
                                 'org_id' => $merchant?->org->getId(),
                                 'fallback_plan_id' => $defaultFallbackPlanId,
+                                'payment_method' => $this->entity->getMethod(),
                             ]);
 
                         try {
