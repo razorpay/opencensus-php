@@ -265,6 +265,8 @@ class Core extends Base\Core
 
         $merchant->setPricingPlan($planId);
 
+        $merchant->org()->associate($org);
+
         // override the pricing plan with the no code app pricing plan if applicable
         $noCodeAppPricingPlan = $this->getNoCodeAppsPricingPlan($merchant);
 
@@ -272,8 +274,6 @@ class Core extends Base\Core
         {
             $merchant->setPricingPlan($noCodeAppPricingPlan);
         }
-
-        $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
 
