@@ -23,7 +23,7 @@ describe('Capital/Loans', () => {
     expect(screen.getByText('Business Loans')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Working capital needs solved for Razorpay customers. Business financing up to Rs. 5 crores at zero collateral.',
+        'Working capital needs solved for our customers. Business financing up to Rs. 2 crores at zero collateral.',
       ),
     ).toBeInTheDocument();
     expect(screen.getByText(/Powered by/i)).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('Capital/Loans', () => {
     expect(screen.getByText(/apply now!/i)).toBeInTheDocument();
     expect(screen.getByTestId(/apply/i)).toHaveAttribute(
       'href',
-      'https://razorpay.typeform.com/to/ZN3c5cAO?typeform-source=pg_dashboard',
+      'https://razorpay.typeform.com/to/kdCTwe1w?typeform-source=pg_dashboard',
     );
     expect(screen.getByText('Expand your team with top talent')).toBeInTheDocument();
     expect(screen.getByText('Meet critical payments on time, every time')).toBeInTheDocument();

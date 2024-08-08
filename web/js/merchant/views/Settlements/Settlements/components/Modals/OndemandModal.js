@@ -498,7 +498,7 @@ class OndemandModal extends Component {
         this.setState({
           errors: [
             <Text key="error" size="small" color="feedback.text.negative.intense">
-              You can withdraw only upto{' '}
+              You can withdraw up to{' '}
               <BladeAmount
                 size="small"
                 weight="semibold"
@@ -510,7 +510,7 @@ class OndemandModal extends Component {
                     : merchantLevelLimit) / 100
                 }
               />
-              {this.isPartialOndemandSettlementEnabled ? '. ' : ' Today. '}
+              {this.isPartialOndemandSettlementEnabled ? ' more. ' : ' more Today. '}
               <Link size="small" variant="button" onClick={this.handleShowRestrictedReasonModal}>
                 Why?
               </Link>
@@ -753,7 +753,7 @@ class OndemandModal extends Component {
           {shouldShowMaxLimit ? (
             <div className="grey-border">
               <Text size="small" color="surface.text.gray.subtle">
-                You can withdraw only upto{' '}
+                You can withdraw up to{' '}
                 <BladeAmount
                   size="small"
                   weight="semibold"
@@ -764,7 +764,7 @@ class OndemandModal extends Component {
                       : merchantLevelLimit) / 100
                   }
                 />
-                {this.isPartialOndemandSettlementEnabled ? '. ' : ' Today. '}
+                {this.isPartialOndemandSettlementEnabled ? ' more. ' : ' more Today. '}
                 <Link size="small" variant="button" onClick={this.handleShowRestrictedReasonModal}>
                   Why?
                 </Link>

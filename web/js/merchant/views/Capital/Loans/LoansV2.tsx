@@ -8,6 +8,7 @@ import Card2Img from 'assets/capital/loans/card-2.png';
 import CircleImg from 'assets/capital/loans/circle.png';
 import ClockImg from 'assets/capital/loans/clock.png';
 import LendingKartImg from 'assets/capital/loans/lendingkart.png';
+import ProfectusImg from 'assets/capital/loans/profectus.png';
 import StockUpImg from 'assets/capital/loans/stock-up.png';
 import TeamImg from 'assets/capital/loans/team.png';
 import { connect } from 'react-redux';
@@ -39,13 +40,14 @@ const Border = styled.div`
 
 const CONTENT_CONFIG = {
   BUSINESS_LOAN: {
-    apply: 'https://razorpay.typeform.com/to/ZN3c5cAO?typeform-source=pg_dashboard',
+    apply: 'https://razorpay.typeform.com/to/kdCTwe1w?typeform-source=pg_dashboard',
     title: 'Business Loans',
     description:
-      'Working capital needs solved for Razorpay customers. Business financing up to Rs. 5 crores at zero collateral.',
+      'Working capital needs solved for our customers. Business financing up to Rs. 2 crores at zero collateral.',
     poweredBy: [
       [LendingKartImg, '12px'],
-      [AbcfImg, '20px'],
+      [AbcfImg, '24px'],
+      [ProfectusImg, '24px'],
     ],
     benefitsTitle: 'Our fast and reliable online process gets you the funds you need to:',
     benefits: [
@@ -91,7 +93,7 @@ const CONTENT_CONFIG = {
       'https://oneapp.abfldirect.com/b2c/login?dsa_hash=a03effa23e4a5bc7c48a68660058cf4b8b93d8d913108ca99f82cb0c4b088485',
     title: 'Insta Loans',
     description: 'Secure instant funds up to Rs. 5,00,000 at zero collateral.',
-    poweredBy: [[AbcfImg, '20px']],
+    poweredBy: [[AbcfImg, '24px']],
     benefitsTitle: 'Unlock instant funds for your needs with Insta Loans:',
     benefits: [
       {
@@ -193,17 +195,25 @@ const LoansV2 = ({ user }) => {
         {/* Content section */}
         <Box maxWidth={{ m: '468px' }}>
           <Heading size="2xlarge">{content.title}</Heading>
-          <Box display="flex" marginTop="spacing.5" marginBottom="spacing.3">
-            <Text color="surface.text.gray.muted" marginRight="spacing.5" size="medium">
-              Powered by
-            </Text>
+          <Box
+            display="flex"
+            flexWrap={{ base: 'wrap', m: 'nowrap' }}
+            marginTop="spacing.5"
+            marginBottom="spacing.3"
+            gap="spacing.5"
+          >
+            <Box whiteSpace="nowrap">
+              <Text marginBottom="spacing.3" color="surface.text.gray.muted" size="medium">
+                Powered by
+              </Text>
+              <Border />
+            </Box>
             {content.poweredBy.map((logo, i) => (
-              <Box marginRight="spacing.6" maxHeight={logo[1]} key={i}>
+              <Box maxWidth="120px" minWidth="100px" maxHeight={logo[1]} key={i}>
                 <Img src={logo[0]} />
               </Box>
             ))}
           </Box>
-          <Border />
           <Text marginTop="spacing.5" marginBottom="spacing.8" size="large">
             {content.description}
           </Text>

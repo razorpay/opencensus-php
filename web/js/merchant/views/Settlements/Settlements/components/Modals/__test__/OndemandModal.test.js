@@ -168,7 +168,7 @@ describe('OndemandModal.js', () => {
 
       await userEvent.clear(amount);
       await userEvent.type(amount, '9990000');
-      expect(screen.queryByText(/You can withdraw only upto/i)).toBeInTheDocument();
+      expect(screen.queryByText(/You can withdraw up to/i)).toBeInTheDocument();
       expect(screen.queryByText(/986/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /confirm/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /show breakup/i })).toBeDisabled();
@@ -197,7 +197,7 @@ describe('OndemandModal.js', () => {
 
       await userEvent.clear(amount);
       await userEvent.type(amount, '99909000');
-      expect(screen.queryByText(/You can withdraw only upto/i)).toBeInTheDocument();
+      expect(screen.queryByText(/You can withdraw up to/i)).toBeInTheDocument();
       expect(screen.queryByText(/3k/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /confirm/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /show breakup/i })).toBeDisabled();
@@ -232,7 +232,7 @@ describe('OndemandModal.js', () => {
       const amount = screen.queryByRole('textbox');
       expect(amount).toBeInTheDocument();
 
-      expect(screen.queryByText(/You can withdraw only upto/i)).toBeInTheDocument();
+      expect(screen.queryByText(/You can withdraw up to/i)).toBeInTheDocument();
       expect(screen.queryByText(/1k/i)).toBeInTheDocument();
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /confirm/i })).toBeEnabled();
@@ -261,7 +261,7 @@ describe('OndemandModal.js', () => {
       const amount = screen.queryByRole('textbox');
       expect(amount).toBeInTheDocument();
 
-      expect(screen.queryByText(/You can withdraw only upto/i)).toBeInTheDocument();
+      expect(screen.queryByText(/You can withdraw up to/i)).toBeInTheDocument();
       expect(screen.queryByText(/3k/i)).toBeInTheDocument();
 
       await waitFor(() => {
