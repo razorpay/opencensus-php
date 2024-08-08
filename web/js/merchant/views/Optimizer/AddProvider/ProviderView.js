@@ -30,6 +30,7 @@ import {
   RAZORPAY_GATEWAY_KEY,
 } from 'merchant/views/Navigator/constants';
 import { WALLETS_MAP } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/constants';
+import { trackOptimizerEvents } from 'merchant/views/Optimizer/track';
 import { FD_TICKET_GROUP_ID } from 'merchant/views/Optimizer/utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
