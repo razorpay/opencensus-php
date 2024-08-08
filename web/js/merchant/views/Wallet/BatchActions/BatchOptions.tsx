@@ -36,7 +36,11 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
           'create_wallet_container_reversals',
           'create_bulk_gift_cards',
           'update_gift_cards_expiry',
-        ].includes(batch.type) && ['created', 'processing'].includes(batch.status),
+        ].includes(batch.type) && [
+            'created',
+            'processing',
+            'partially_processed',
+          ].includes(batch.status),
     );
 
     if (unprocessedWalletBatches.length >= 3) {
