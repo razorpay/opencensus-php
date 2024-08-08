@@ -5351,7 +5351,8 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_AXIS,
         self::UPI_YESBANK,
-        self::GOOGLE_PAY
+        self::GOOGLE_PAY,
+        self::UPI_RZPAPB
     ];
 
     const CURRENCIES_SUPPORTED_BY_INTL_BANK_TRANSFER_BY_MODE = [

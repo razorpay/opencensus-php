@@ -4553,6 +4553,7 @@ class Terminal extends Base
                 'gateway_merchant_id2'      => 'RzpDeviceId123',
                 'upi'                       => 1,
                 'shared'                    => 0,
+                "notes"                     => '{\"cc_on_upi\":true}',
                 'type'                      => [
                     'non_recurring' => '1',
                     'pay'           => '1',

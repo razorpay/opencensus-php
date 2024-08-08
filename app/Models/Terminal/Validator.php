@@ -287,6 +287,7 @@ class Validator extends Base\Validator
             Entity::UPI                        => 'required|boolean|in:1',
             Entity::TYPE                       => 'sometimes|array',
             Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+            Entity::NOTES                      => 'sometimes|string',
         ];
 
     protected static $upiCitiTerminalRules = [
