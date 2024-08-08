@@ -686,7 +686,7 @@ class Entity extends Base\PublicEntity
         //
         $app = \App::getFacadeRoot();
 
-        if ($app['basicauth']->isProxyOrPrivilegeAuth() === false)
+        if (($app['basicauth']->isProxyOrPrivilegeAuth() === false && $app['basicauth']->isDashboardApp() === false))
         {
             unset($attributes[self::RECIPIENT_DETAILS]);
         }
