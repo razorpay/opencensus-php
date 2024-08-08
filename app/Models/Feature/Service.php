@@ -37,7 +37,8 @@ class Service extends Base\Service
         'banking_account_service',
         'capital_collections_client',
         'capital_cards_client',
-        'loc'
+        'loc',
+        'magic_checkout_service'
     ];
 
     public function addFeatures(

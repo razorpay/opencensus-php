@@ -18191,6 +18191,7 @@ class Route
             'internal_merchant_details_fetch',
             'payment_refund',
             'internal_create_customer_global_address',
+            'feature_add_internal',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
