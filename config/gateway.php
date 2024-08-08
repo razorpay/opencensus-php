@@ -157,6 +157,7 @@ return [
         'upi_kotak',
         "upi_rzprbl",
         "upi_rzpapb",
+        'axis_wibmo',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
