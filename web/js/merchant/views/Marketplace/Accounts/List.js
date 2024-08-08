@@ -287,7 +287,9 @@ class AccountsListContainer extends ListContainer {
             </button>
             <ShowWhen
               additionalCondition={(_user) =>
-                _user.isAllowedEdit('accounts') && !isOrgFeatureExist('block_account_update')
+                _user.isAllowedEdit('accounts') &&
+                !isOrgFeatureExist('block_account_update') &&
+                !_user.isOrgCurlec
               }
             >
               <Box display="inline-block">

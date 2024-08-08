@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { createMemoryHistory } from 'history';
 
 import PaymentsListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
-import { render, screen, userEvent, fireEvent } from 'test-utils';
+import { render, screen, userEvent, fireEvent, waitFor } from 'test-utils';
 
 let history;
 jest.mock('common/ui/DateRangePicker', () => () => <div>DateRangePicker</div>);
@@ -172,7 +172,7 @@ describe('PaymentsListFilter', () => {
     );
   });
 
-  test('should have dial-code +60 for MY merchants', () => {
+  test('should have dial-code +60 for MY merchants', async () => {
     const props = {
       user: {
         merchant: {
@@ -181,11 +181,13 @@ describe('PaymentsListFilter', () => {
       },
     };
     render(<App {...props} />);
-    expect(screen.getByTestId('dialCodeValue')).toHaveTextContent('+60');
+
+    await waitFor(() => expect(screen.getByTestId('dialCodeValue')).toHaveTextContent('+60'));
   });
 
-  test('should have dial-code +91 for IN merchants', () => {
+  test('should have dial-code +91 for IN merchants', async () => {
     render(<App />);
-    expect(screen.getByTestId('dialCodeValue')).toHaveTextContent('+91');
+
+    await waitFor(() => expect(screen.getByTestId('dialCodeValue')).toHaveTextContent('+91'));
   });
 });

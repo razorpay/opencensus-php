@@ -42,10 +42,10 @@ class GenerateReportPanel extends React.PureComponent {
   state = {};
 
   onConfigChange = (selectedConfig) => {
-    /* 
-      added null check for the selectedConfig as the componet allow search ahead 
+    /*
+      added null check for the selectedConfig as the component allow search ahead
       and if no match is found for search and its entered by customer
-      it will be null so in that case we are not changin the sate as well as firing any analytics 
+      it will be null so in that case we are not changing the state as well as firing any analytics
     */
     if (selectedConfig) {
       analyticsTrack({

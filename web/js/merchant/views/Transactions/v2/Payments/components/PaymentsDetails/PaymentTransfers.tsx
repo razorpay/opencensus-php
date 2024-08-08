@@ -45,7 +45,8 @@ const PaymentTransfers = ({
     <ShowWhen
       apiFeatureEnabled="Marketplace"
       additionalCondition={(usr) =>
-        !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentTransfers) && !hasPlatformFee
+        usr.isOrgCurlec ||
+        (!usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentTransfers) && !hasPlatformFee)
       }
     >
       <Divider dividerStyle="solid" thickness="thick" variant="muted" />

@@ -1,5 +1,9 @@
 // Todo: delete this file, it's available in @dashboard/shared-ui
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+
+import { getCountryCodes } from 'common/utils/rzp-utils';
+
+import CountryCodeDropDownItem from './CountryCodeDropDownItem';
 import {
   CountryCodeContainer,
   DropDownItems,
@@ -10,26 +14,13 @@ import {
   SearchResult,
   ValueContainer,
 } from './styled';
-import { COUNTRY_CODES } from './constant';
 import { CountryCodeInputPropsInterface } from './types';
-import CountryCodeDropDownItem from './CountryCodeDropDownItem';
 
 let defaultCountryData: {
   value: string;
   label: string;
   country: string;
 };
-const countryListData = COUNTRY_CODES.map((country) => {
-  const countryData = {
-    value: `${country.dial_code}`,
-    label: `<strong>${country.dial_code}</strong> ${country.name}`,
-    country: country.code.toLowerCase(),
-  };
-  if (country.code === 'IN') {
-    defaultCountryData = countryData;
-  }
-  return countryData;
-});
 
 const CountryCodeInput = ({
   dialCode,
@@ -41,17 +32,37 @@ const CountryCodeInput = ({
 }: CountryCodeInputPropsInterface): JSX.Element => {
   const dropdownMenuRef = useRef<HTMLDivElement>();
   // prettier-ignore
-  const [countryData, setCountryData] = useState<typeof countryListData[number]>(() => {
-    return (
-      countryListData.find((countryData) => countryData.value === dialCode) || defaultCountryData
-    );
-  });
   const [phoneNumber, setPhoneNumber] = useState(value);
-
   const [filter, setFilter] = useState('');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const [searchResult, setResult] = useState(countryListData);
+  const [countryListData, setCountryListData] = useState<
+    { value: string; label: string; country: string }[]
+  >([]);
+  const [countryData, setCountryData] = useState<{
+    value: string;
+    label: string;
+    country: string;
+  } | null>(null);
+  const [searchResult, setResult] = useState<typeof countryListData>([]);
   const chevronIcon = isDropdownVisible ? 'i-chevron-up' : ' i-chevron-down';
+
+  useEffect(() => {
+    const fetchCountryCodes = async () => {
+      const countryCodes = await getCountryCodes();
+      const formattedCountryListData = countryCodes.map((country) => ({
+        value: `${country.dial_code}`,
+        label: `<strong>${country.dial_code}</strong> ${country.name}`,
+        country: country.code.toLowerCase(),
+      }));
+      setCountryListData(formattedCountryListData);
+      setResult(formattedCountryListData);
+      const initialCountryData =
+        formattedCountryListData.find((country) => country.value === dialCode) ||
+        formattedCountryListData.find((country) => country.country === 'in');
+      setCountryData(initialCountryData);
+    };
+    fetchCountryCodes();
+  }, [dialCode]);
 
   const focusInput = () => {
     setDropdownVisible(true);
@@ -63,11 +74,11 @@ const CountryCodeInput = ({
       setPhoneNumber(inputValue);
       onContactChange?.(inputValue);
       onChange?.({
-        dialCode: countryData.value,
+        dialCode: countryData?.value as string,
         value: inputValue,
       });
     },
-    [onChange, onContactChange, setPhoneNumber, countryData.value],
+    [onChange, onContactChange, setPhoneNumber, countryData?.value],
   );
 
   const onItemSelect = useCallback(
@@ -102,7 +113,7 @@ const CountryCodeInput = ({
     }
     setResult(
       countryListData.filter((country) =>
-        country.label.toLowerCase().includes(filter.toLowerCase()),
+        country?.label.toLowerCase().includes(filter.toLowerCase()),
       ),
     );
   }, [filter]);
@@ -137,9 +148,9 @@ const CountryCodeInput = ({
       <DropDownMenu ref={dropdownMenuRef} className="country-code-input">
         <ValueContainer>
           <DropdownValue onClick={focusInput} data-testid="dialCodeSelector">
-            <span className={`flag ${countryData.country}`} />
+            <span className={`flag ${countryData?.country}`} />
             <span data-testid="dialCodeValue" className="dial-code">
-              {countryData.value || ''}
+              {countryData?.value || ''}
             </span>
             <i className={`i ${chevronIcon}`} />
           </DropdownValue>

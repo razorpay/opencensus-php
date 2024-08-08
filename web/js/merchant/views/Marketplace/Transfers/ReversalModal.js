@@ -7,7 +7,11 @@ import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ModalHeader from 'common/ui/ModalHeader';
 
-import { rupeesToPaise, paiseToRupees, titleCase } from 'common/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
+import {
+  i18nifyConvertToMinorUnit,
+  i18nifyConvertToMajorUnit,
+} from 'merchant/views/Transactions/v2/common/utils';
 import {
   fetchTransfer,
   fetchReversals,
@@ -22,7 +26,7 @@ const getReversibleAmount = (transfer) => {
 };
 
 const isPartialTransfer = (props) => {
-  const amountEntered = rupeesToPaise(props.amountEntered);
+  const amountEntered = i18nifyConvertToMinorUnit(props.amountEntered);
   const reversibleAmount = getReversibleAmount(props.transfer);
 
   return amountEntered < reversibleAmount;
@@ -45,10 +49,10 @@ const amountValidation = (props) => {
 
   const reversableAmount = getReversibleAmount(props.transfer);
 
-  if (rupeesToPaise(value) > reversableAmount) {
+  if (i18nifyConvertToMinorUnit(value) > reversableAmount) {
     return (
       `Amount can't be greater than the total Reversible` +
-      ` Amount (${paiseToRupees(reversableAmount)}).`
+      ` Amount (${i18nifyConvertToMajorUnit(reversableAmount)}).`
     );
   }
 
@@ -126,7 +130,7 @@ export default class ReversalModal extends Component {
           let data = {};
           if (isPartialTransfer(this.props)) {
             data = {
-              amount: rupeesToPaise(props.amount),
+              amount: i18nifyConvertToMinorUnit(props.amount),
             };
           }
 

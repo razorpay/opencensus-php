@@ -30,7 +30,12 @@ export const navItems = (
     },
     { title: 'Reversals', url: '/route/reversals', hidden: user.isPartnerRole },
     { title: 'Accounts', url: '/route/accounts', hidden: user.isPartnerRole },
-    { title: isNewTab('Batch Upload'), url: '/route/batchuploads', hidden: user.isPartnerRole },
+    {
+      title: isNewTab('Batch Upload'),
+      url: '/route/batchuploads',
+      hidden: user.isPartnerRole || user.isOrgCurlec,
+    },
   ];
+
   return tabsData;
 };

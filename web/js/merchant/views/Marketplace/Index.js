@@ -216,14 +216,16 @@ class MarketplaceContainer extends React.Component {
                 </Wrapper>
               }
             />
-            <Route
-              path="batchuploads/*"
-              element={
-                <Wrapper>
-                  <BatchesList />
-                </Wrapper>
-              }
-            />
+            {!user.isOrgCurlec && (
+              <Route
+                path="batchuploads/*"
+                element={
+                  <Wrapper>
+                    <BatchesList />
+                  </Wrapper>
+                }
+              />
+            )}
           </Routes>
         </ErrorBoundary>
       </div>

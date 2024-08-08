@@ -23,6 +23,8 @@ import {
   onPaginate,
   isTransactionsV2Enabled,
   isSettlementRetryTimelineEnabled,
+  i18nifyConvertToMajorUnit,
+  i18nifyConvertToMinorUnit,
 } from 'merchant/views/Transactions/v2/common/utils';
 import {
   durationOptionsMap,
@@ -375,6 +377,99 @@ describe('utils', () => {
       const user = { isOrgCurlec: false, isOrgRZP: true };
       const result = isSettlementRetryTimelineEnabled(splitz, user);
       expect(result).toBe(true);
+    });
+  });
+
+  describe('i18nifyConvertToMinorUnit', () => {
+    const testCases = [
+      { amount: 123.45, currency: 'INR', expected: 12345 },
+      { amount: 123.45, currency: 'USD', expected: 12345 },
+      { amount: 123.45, currency: 'SGD', expected: 12345 },
+      { amount: 123, currency: 'IDR', expected: 12300 },
+      { amount: 123.45, currency: 'MYR', expected: 12345 },
+      { amount: 123.45, currency: 'XYZ', expected: 12345 },
+    ];
+
+    testCases.forEach(({ amount, currency, expected }) => {
+      test(`converts amount to minor units for ${currency}`, () => {
+        expect(i18nifyConvertToMinorUnit(amount, currency)).toBe(expected);
+      });
+    });
+
+    const invalidInputs = [
+      { amount: '123.45', currency: 'USD', expected: 12345 },
+      { amount: 123.45, currency: 123, expected: 12345 },
+    ];
+
+    invalidInputs.forEach(({ amount, currency, expected }) => {
+      test(`runs fallback for invalid input types: amount=${amount}, currency=${currency}`, () => {
+        expect(i18nifyConvertToMinorUnit(amount, currency)).toBe(expected);
+      });
+    });
+
+    const edgeCases = [
+      { amount: 0, currencies: ['INR', 'USD', 'SGD', 'IDR', 'MYR'], expected: 0 },
+      { amount: -123.45, currencies: ['INR', 'USD', 'SGD', 'MYR'], expected: -12345 },
+      { amount: -123, currencies: ['IDR'], expected: -12300 },
+      { amount: 123456789.12, currencies: ['INR', 'USD', 'SGD', 'MYR'], expected: 12345678912 },
+      { amount: 123456789, currencies: ['IDR'], expected: 12345678900 },
+    ];
+
+    edgeCases.forEach(({ amount, currencies, expected }) => {
+      currencies.forEach((currency) => {
+        test(`handles edge case for ${currency}: amount=${amount}`, () => {
+          expect(i18nifyConvertToMinorUnit(amount, currency)).toBe(expected);
+        });
+      });
+    });
+  });
+
+  describe('i18nifyConvertToMajorUnit', () => {
+    const testCases = [
+      { amount: 100, currency: 'INR', expected: 1 },
+      { amount: 500, currency: 'INR', expected: 5 },
+      { amount: 100, currency: 'USD', expected: 1 },
+      { amount: 250, currency: 'USD', expected: 2.5 },
+      { amount: 100, currency: 'SGD', expected: 1 },
+      { amount: 750, currency: 'SGD', expected: 7.5 },
+      { amount: 100, currency: 'IDR', expected: 1 },
+      { amount: 300, currency: 'IDR', expected: 3 },
+      { amount: 100, currency: 'MYR', expected: 1 },
+      { amount: 450, currency: 'MYR', expected: 4.5 },
+      { amount: 450, currency: 'XYZ', expected: 4.5 },
+    ];
+
+    testCases.forEach(({ amount, currency, expected }) => {
+      test(`converts minor units to major units for ${currency}`, () => {
+        expect(i18nifyConvertToMajorUnit(amount, currency)).toBe(expected);
+      });
+    });
+
+    const invalidInputs = [
+      { amount: null, currency: 'USD', expected: 0 },
+      { amount: undefined, currency: 'SGD', expected: NaN },
+      { amount: 100, currency: 'XYZ', expected: 1 },
+    ];
+
+    invalidInputs.forEach(({ amount, currency, expected }) => {
+      test(`throws error for invalid input: amount=${amount}, currency=${currency}`, () => {
+        expect(i18nifyConvertToMajorUnit(amount, currency)).toBe(expected);
+      });
+    });
+
+    const edgeCases = [
+      { amount: 0, currencies: ['INR', 'USD', 'SGD', 'IDR', 'MYR'], expected: 0 },
+      { amount: 100000000, currencies: ['INR', 'USD', 'SGD', 'MYR'], expected: 1000000 },
+      { amount: 500000000, currencies: ['IDR'], expected: 5000000 },
+      { amount: -100, currencies: ['INR', 'USD', 'SGD', 'MYR', 'IDR'], expected: -1 },
+    ];
+
+    edgeCases.forEach(({ amount, currencies, expected }) => {
+      currencies.forEach((currency) => {
+        test(`handles edge case for ${currency}: amount=${amount}`, () => {
+          expect(i18nifyConvertToMajorUnit(amount, currency)).toBe(expected);
+        });
+      });
     });
   });
 });

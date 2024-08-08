@@ -12,7 +12,8 @@ import Alert from 'common/ui/Forms/Alert';
 import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
 import { required } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { titleCase, rupeesToPaise } from 'common/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
+import { i18nifyConvertToMinorUnit } from 'merchant/views/Transactions/v2/common/utils';
 import { fetchAccountsApi, fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
@@ -76,6 +77,10 @@ class TransferNew extends Component {
     });
   }
 
+  getCurrency = () => {
+    return this.props.user?.merchant?.currency || 'INR';
+  };
+
   save = (props) => {
     if (!this.state.selectedAccount) {
       return this.props.showNotification({
@@ -128,10 +133,10 @@ class TransferNew extends Component {
       transfers: [
         {
           account: prefixEntityValue('account', accountId),
-          amount: rupeesToPaise(amount),
+          amount: i18nifyConvertToMinorUnit(amount),
           notes: transformedNotes,
           linked_account_notes,
-          currency: 'INR',
+          currency: this.getCurrency(),
           ...holdData,
         },
       ],
@@ -282,7 +287,7 @@ class TransferNew extends Component {
                       <Field
                         name="amount"
                         component={InputGroupField}
-                        prefix="INR"
+                        prefix={this.getCurrency()}
                         class="form-control"
                         validate={required('Transfer amount is required')}
                         placeholder="0.00"
@@ -420,6 +425,7 @@ const mapStateToProps = (state) => {
     notes: selector(state, 'notes'),
     amount: selector(state, 'amount'),
     accountId: state.accountId,
+    user: state.session.user,
   };
 };
 

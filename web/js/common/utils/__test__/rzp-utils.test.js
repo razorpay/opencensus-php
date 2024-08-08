@@ -1,5 +1,7 @@
 import FileSaver from 'file-saver';
 import xlsx from 'xlsx';
+import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
+import { getAllCountries } from '@razorpay/i18nify-js';
 
 import {
   convertToLocale,
@@ -15,6 +17,8 @@ import {
   stringTemplate,
   getAmountFieldPlaceholder,
   isConfigTagAPISupported,
+  getDialCodeFromCountryCode,
+  getCountryCodes,
 } from 'common/utils/rzp-utils';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
@@ -28,6 +32,7 @@ import {
 
 const saveAsSpy = jest.spyOn(FileSaver, 'saveAs');
 const writeSpy = jest.spyOn(xlsx, 'write');
+jest.mock('@razorpay/i18nify-js');
 
 // Set navigator languages based on currency for testing formatNumber from i18nify
 const langGetter = jest.spyOn(window.navigator, 'languages', 'get');
@@ -441,5 +446,378 @@ describe('Tests for isConfigTagAPISupported', () => {
     expect(result1).toBeUndefined();
     expect(result2).toBeUndefined();
     expect(result3).toBeUndefined();
+  });
+});
+
+describe('common/utils/rzp-utils : getDialCodeFromCountryCode', () => {
+  const testCases = [
+    { countryCode: 'IN', expected: '+91' },
+    { countryCode: 'US', expected: '+1' },
+    { countryCode: 'ID', expected: '+62' },
+    { countryCode: 'MY', expected: '+60' },
+    { countryCode: 'SG', expected: '+65' },
+    { countryCode: 'XX', expected: '+91' }, // Invalid country code
+    { countryCode: undefined, expected: '+91' }, // No country code provided
+  ];
+
+  testCases.forEach(({ countryCode, expected }) => {
+    it(`should return ${expected} for country code ${countryCode}`, () => {
+      expect(getDialCodeFromCountryCode(countryCode)).toBe(expected);
+    });
+  });
+
+  describe('common/utils/rzp-utils : getCountryCodes', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+      global.fetch.mockRestore();
+    });
+
+    const mockGeoData = {
+      metadata_information: {
+        IN: {
+          country_name: 'India',
+          continent_code: 'AS',
+          continent_name: 'Asia',
+          alpha_3: 'IND',
+          numeric_code: '356',
+          flag: 'https://flagcdn.com/in.svg',
+          sovereignty: 'UN member state',
+          dial_code: '+91',
+          supported_currency: ['INR'],
+          timezones: {
+            'Asia/Kolkata': {
+              utc_offset: 'UTC +05:30',
+            },
+          },
+          timezone_of_capital: 'Asia/Kolkata',
+          locales: {
+            en_IN: {
+              name: 'English (India)',
+            },
+            hi: {
+              name: 'Hindi',
+            },
+            bn: {
+              name: 'Bangla',
+            },
+            te: {
+              name: 'Telugu',
+            },
+            mr: {
+              name: 'Marathi',
+            },
+            ta: {
+              name: 'Tamil',
+            },
+            ur: {
+              name: 'Urdu',
+            },
+            gu: {
+              name: 'Gujarati',
+            },
+            kn: {
+              name: 'Kannada',
+            },
+            ml: {
+              name: 'Malayalam',
+            },
+            or: {
+              name: 'Odia',
+            },
+            pa: {
+              name: 'Punjabi',
+            },
+            as: {
+              name: 'Assamese',
+            },
+            bh: {
+              name: 'Bihari languages',
+            },
+            sat: {
+              name: 'Santali',
+            },
+            ks: {
+              name: 'Kashmiri',
+            },
+            ne: {
+              name: 'Nepali',
+            },
+            sd: {
+              name: 'Sindhi',
+            },
+            kok: {
+              name: 'Konkani',
+            },
+            doi: {
+              name: 'Dogri',
+            },
+            mni: {
+              name: 'Manipuri',
+            },
+            sit: {
+              name: 'Sino-Tibetan languages',
+            },
+            sa: {
+              name: 'Sanskrit',
+            },
+            fr: {
+              name: 'French',
+            },
+            lus: {
+              name: 'Lushai',
+            },
+            inc: {
+              name: 'Indic languages',
+            },
+          },
+          default_locale: 'en_IN',
+          default_currency: 'INR',
+        },
+        MY: {
+          country_name: 'Malaysia',
+          continent_code: 'AS',
+          continent_name: 'Asia',
+          alpha_3: 'MYS',
+          numeric_code: '458',
+          flag: 'https://flagcdn.com/my.svg',
+          sovereignty: 'UN member state',
+          dial_code: '+60',
+          supported_currency: ['MYR'],
+          timezones: {
+            'Asia/Kuala_Lumpur': {
+              utc_offset: 'UTC +08:00',
+            },
+            'Asia/Kuching': {
+              utc_offset: 'UTC +08:00',
+            },
+          },
+          timezone_of_capital: 'Asia/Kuala_Lumpur',
+          locales: {
+            ms_MY: {
+              name: 'Malay (Malaysia)',
+            },
+            en: {
+              name: 'English',
+            },
+            zh: {
+              name: 'Chinese',
+            },
+            ta: {
+              name: 'Tamil',
+            },
+            te: {
+              name: 'Telugu',
+            },
+            ml: {
+              name: 'Malayalam',
+            },
+            pa: {
+              name: 'Punjabi',
+            },
+            th: {
+              name: 'Thai',
+            },
+          },
+          default_locale: 'ms_MY',
+          default_currency: 'MYR',
+        },
+        SG: {
+          country_name: 'Singapore',
+          continent_code: 'AS',
+          continent_name: 'Asia',
+          alpha_3: 'SGP',
+          numeric_code: '702',
+          flag: 'https://flagcdn.com/sg.svg',
+          sovereignty: 'UN member state',
+          dial_code: '+65',
+          supported_currency: ['SGD'],
+          timezones: {
+            'Asia/Singapore': {
+              utc_offset: 'UTC +08:00',
+            },
+          },
+          timezone_of_capital: 'Asia/Singapore',
+          locales: {
+            cmn: {
+              name: 'Mandarin Chinese',
+            },
+            en_SG: {
+              name: 'English (Singapore)',
+            },
+            ms_SG: {
+              name: 'Malay (Singapore)',
+            },
+            ta_SG: {
+              name: 'Tamil (Singapore)',
+            },
+            zh_SG: {
+              name: 'Chinese',
+            },
+          },
+          default_locale: 'cmn',
+          default_currency: 'SGD',
+        },
+        US: {
+          country_name: 'United States of America (the)',
+          continent_code: 'NA',
+          continent_name: 'North America',
+          alpha_3: 'USA',
+          numeric_code: '840',
+          flag: 'https://flagcdn.com/us.svg',
+          sovereignty: 'UN member state',
+          dial_code: '+1',
+          supported_currency: ['USD'],
+          timezones: {
+            'America/Chicago': {
+              utc_offset: 'UTC -06:00',
+            },
+            'America/New_York': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Indiana/Indianapolis': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Kentucky/Louisville': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Indiana/Vevay': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Indiana/Vincennes': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Indiana/Tell_City': {
+              utc_offset: 'UTC -06:00',
+            },
+            'America/Indiana/Marengo': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Indiana/Petersburg': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Kentucky/Monticello': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Detroit': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Indiana/Winamac': {
+              utc_offset: 'UTC -05:00',
+            },
+            'America/Indiana/Knox': {
+              utc_offset: 'UTC -06:00',
+            },
+            'America/Menominee': {
+              utc_offset: 'UTC -06:00',
+            },
+            'America/Phoenix': {
+              utc_offset: 'UTC -07:00',
+            },
+            'America/Los_Angeles': {
+              utc_offset: 'UTC -08:00',
+            },
+            'America/Denver': {
+              utc_offset: 'UTC -07:00',
+            },
+            'America/Boise': {
+              utc_offset: 'UTC -07:00',
+            },
+            'America/Juneau': {
+              utc_offset: 'UTC -09:00',
+            },
+            'America/Sitka': {
+              utc_offset: 'UTC -09:00',
+            },
+            'America/Metlakatla': {
+              utc_offset: 'UTC -09:00',
+            },
+            'America/Yakutat': {
+              utc_offset: 'UTC -09:00',
+            },
+            'America/North_Dakota/New_Salem': {
+              utc_offset: 'UTC -06:00',
+            },
+            'America/North_Dakota/Beulah': {
+              utc_offset: 'UTC -06:00',
+            },
+            'America/North_Dakota/Center': {
+              utc_offset: 'UTC -06:00',
+            },
+            'Pacific/Honolulu': {
+              utc_offset: 'UTC -10:00',
+            },
+            'America/Anchorage': {
+              utc_offset: 'UTC -09:00',
+            },
+            'America/Nome': {
+              utc_offset: 'UTC -09:00',
+            },
+          },
+          timezone_of_capital: 'America/New_York',
+          locales: {
+            en_US: {
+              name: 'English (United States)',
+            },
+            es_US: {
+              name: 'Spanish (United States)',
+            },
+            haw: {
+              name: 'Hawaiian',
+            },
+            fr: {
+              name: 'French',
+            },
+          },
+          default_locale: 'en_US',
+          default_currency: 'USD',
+        },
+        // Add more expected countries as needed
+      },
+    };
+
+    const expectedCountryCodesFromMock = [
+      {
+        name: 'India',
+        dial_code: '+91',
+        code: 'IN',
+      },
+      {
+        name: 'Malaysia',
+        dial_code: '+60',
+        code: 'MY',
+      },
+      {
+        name: 'Singapore',
+        dial_code: '+65',
+        code: 'SG',
+      },
+      {
+        name: 'United States of America (the)',
+        dial_code: '+1',
+        code: 'US',
+      },
+      // Add more expected countries as needed
+    ];
+
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockGeoData),
+      }),
+    );
+
+    it.only('should correctly extract country data', async () => {
+      const countryCodes = await getCountryCodes();
+      expect(countryCodes).toEqual(expectedCountryCodesFromMock);
+    });
+
+    it('should return default country codes', async () => {
+      const mockError = new Error('Error: Error in API response TypeError: Network request failed');
+      getAllCountries.mockRejectedValue(mockError);
+
+      const countryCodes = await getCountryCodes();
+      expect(countryCodes).toEqual(COUNTRY_CODES);
+    });
   });
 });

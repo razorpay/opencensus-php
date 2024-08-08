@@ -16,7 +16,8 @@ import Amount from 'common/ui/Amount';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Spinner from 'common/ui/Spinner';
 import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
-import { rupeesToPaise, classList } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
+import { i18nifyConvertToMinorUnit } from 'merchant/views/Transactions/v2/common/utils';
 import { isAmount } from 'common/utils/validators';
 import AccountSelector from 'merchant/components/AccountSelector';
 import { luminateRow } from 'merchant/reducers/app';
@@ -82,8 +83,8 @@ class DirectTransfers extends React.Component {
     const payload = {
       ...formData,
       account: prefixEntityValue('account', selectedAccount.id),
-      amount: rupeesToPaise(formData.amount),
-      currency: 'INR',
+      amount: i18nifyConvertToMinorUnit(formData.amount),
+      currency: this.props.user?.merchant?.currency || 'INR',
     };
 
     if (formData.on_hold) {
@@ -188,7 +189,7 @@ class DirectTransfers extends React.Component {
           <div class="Input-content">
             <Input.CurrencySelect
               name="currency"
-              defaultValue="INR"
+              defaultValue={props.user?.merchant?.currency || 'INR'}
               disabled
               parentQuerySelector=".Modal-body"
             />
@@ -344,7 +345,7 @@ function CurrentBalance({ currentBalance }) {
       {balanceText}
       <Amount
         value={balance}
-        currency="INR"
+        currency={currentBalance.data.currency || 'INR'}
         class={currentBalanceClassName}
         parentQuerySelector=".Modal-body"
       />{' '}
@@ -371,4 +372,10 @@ function getIsDayBlocked(date) {
   return date < nextWorkingDate || isHoliday(date);
 }
 
-export default withRouter(DirectTransfers);
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+export default connect(mapStateToProps)(withRouter(DirectTransfers));

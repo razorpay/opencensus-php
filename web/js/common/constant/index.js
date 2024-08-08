@@ -14,5 +14,6 @@ export const ANALYTICS = {
   ACTION: {
     PHONE_NUMBER: 'phone number',
     CURRENCY: 'currency',
+    GEO: 'geo',
   },
 };

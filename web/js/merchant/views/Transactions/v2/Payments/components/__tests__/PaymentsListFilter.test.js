@@ -142,8 +142,8 @@ describe('PaymentsListFilter', () => {
       await userEvent.click(screen.getByRole('option', { name: 'Mobile number' }));
       const selectedOption = screen.getByRole('combobox');
       expect(selectedOption).toHaveValue('Mobile number');
-      const countryCode = screen.getByTestId('dialCodeValue');
-      expect(countryCode.textContent).toBe('+91');
+      const countryCode = await screen.getByTestId('dialCodeValue');
+      await waitFor(() => expect(countryCode.textContent).toBe('+91'));
       const dialCodeSelector = screen.getByTestId('dialCodeSelector');
       await userEvent.click(dialCodeSelector);
       const dropdownItems = screen.getByTestId('dropdownItems');

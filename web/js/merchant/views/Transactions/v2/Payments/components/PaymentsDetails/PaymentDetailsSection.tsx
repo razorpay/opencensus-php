@@ -441,9 +441,10 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 </>
               ) : null}
 
-              {!isConfigTagEnabled('payment_transfer.transfers') && (
+              {(user.isOrgCurlec || !isConfigTagEnabled('payment_transfer.transfers')) && (
                 <PaymentTransfers paymentDetails={paymentDetails} />
               )}
+
               {disputes.items.length > 0 && (
                 <>
                   <Divider dividerStyle="solid" thickness="thick" variant="muted" />

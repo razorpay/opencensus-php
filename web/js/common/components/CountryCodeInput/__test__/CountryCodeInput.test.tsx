@@ -1,24 +1,26 @@
 import React from 'react';
+import { userEvent, render, screen, waitFor } from 'test-utils';
+
 import { CountryCodeInput } from '..';
-import { userEvent, render, screen } from 'test-utils';
 
 const phoneNumber = '9999999999';
 
 describe('CountryCodeInput component', () => {
-  test('renders without error', () => {
+  test('renders without error', async () => {
     const App = () => <CountryCodeInput />;
     render(<App />, {});
-    expect(screen.getByText('+91')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('+91')).toBeInTheDocument());
   });
 
-  test('render with default props', () => {
+  test('render with default props', async () => {
     const App = () => <CountryCodeInput dialCode="+44" value={phoneNumber} />;
     render(<App />, {});
-    const dialCodeValue = screen.getByTestId('dialCodeValue');
-    expect(dialCodeValue.innerHTML).toBe('+44');
+    const dialCodeValue = await screen.getByTestId('dialCodeValue');
+    await waitFor(() => expect(dialCodeValue.innerHTML).toBe('+44'));
     const contactInput = screen.getByTestId('contactInput') as HTMLInputElement;
     expect(contactInput.value).toBe(phoneNumber);
   });
+
   test('test action props', async () => {
     const onDialCodeChange = jest.fn();
     const onChange = jest.fn();
@@ -32,8 +34,8 @@ describe('CountryCodeInput component', () => {
       />
     );
     render(<App />, {});
-    const dialCodeValue = screen.getByTestId('dialCodeValue');
-    expect(dialCodeValue.innerHTML).toBe('+44');
+    const dialCodeValue = await screen.getByTestId('dialCodeValue');
+    await waitFor(() => expect(dialCodeValue.innerHTML).toBe('+44'));
     const dialCodeSelector = screen.getByTestId('dialCodeSelector');
     await userEvent.click(dialCodeSelector);
     const dropdownItems = screen.getByTestId('dropdownItems');

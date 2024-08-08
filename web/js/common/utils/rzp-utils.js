@@ -15,19 +15,23 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable no-use-before-define */
 /* eslint-disable prefer-const */
+import { getAllCountries } from '@razorpay/i18nify-js';
 import {
   formatNumberByParts,
   convertToMajorUnit,
   getCurrencyList,
   getCurrencySymbol,
 } from '@razorpay/i18nify-js/currency';
+import { getDialCodeByCountryCode } from '@razorpay/i18nify-js/phoneNumber';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import isEmpty from 'lodash/isEmpty';
 import moment from 'moment';
 import { utils, write } from 'xlsx';
 
-import { SENSITIVE_FIELDS } from 'common/constant';
+import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
+import { SENSITIVE_FIELDS, ANALYTICS } from 'common/constant';
+import { analyticsTrack } from 'common/utils/analytics';
 import currencies from 'merchant/constants/currency';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
@@ -1811,3 +1815,52 @@ export function getAmountFieldPlaceholder(currency = 'INR') {
     return '0.00';
   }
 }
+
+export const getDialCodeFromCountryCode = (countryCode = 'IN') => {
+  let dialCode;
+  try {
+    dialCode = getDialCodeByCountryCode(countryCode);
+  } catch (error) {
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.PHONE_NUMBER,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `countryCode: ${countryCode}`,
+        error: `${error}`,
+      },
+    });
+    dialCode = '+91';
+  }
+  return dialCode;
+};
+
+export const getCountryCodes = async () => {
+  try {
+    const geoData = await getAllCountries(); // Check response here: https://geosmart.razorpay.com/#/geo/getAllCountries
+    let result = [];
+
+    for (const code in geoData) {
+      if (geoData.hasOwnProperty(code)) {
+        const country = geoData[code];
+        result.push({
+          name: country.country_name,
+          dial_code: country.dial_code,
+          code,
+        });
+      }
+    }
+    return result;
+  } catch (error) {
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.GEO,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `function: getAllCountries`,
+        error: `${error}`,
+      },
+    });
+    return COUNTRY_CODES;
+  }
+};

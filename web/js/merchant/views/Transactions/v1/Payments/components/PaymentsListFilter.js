@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Field } from 'redux-form';
 
 import { CountryCodeInput } from 'common/components/CountryCodeInput';
-import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
 import { useI18Service } from 'common/i18';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import ListFilter from 'merchant/components/ListFilter';
 import ProviderSelector from 'merchant/components/ProviderSelector';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { handleChangeTrack } from 'merchant/views/Transactions/v1/AnalyticsTrack';
+import { getDialCodeFromCountryCode } from 'common/utils/rzp-utils';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -37,8 +37,7 @@ export default ({ showBatchIdFilter, ...props }) => {
     changeFormValue('notes', '');
   };
 
-  const merchantCountry = COUNTRY_CODES.find((country) => country.code === merchant.country_code);
-  const dialCodeCountry = merchantCountry.dial_code;
+  const dialCodeCountry = getDialCodeFromCountryCode(merchant.country_code);
 
   const resetReceiverTypeValue = () => {
     changeFormValue('txn_receiver_type', '');

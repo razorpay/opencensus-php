@@ -123,7 +123,7 @@ const AccountsListItem = ({
           isCreationDisabled={isCreationDisabled}
         />
       </td>
-      {onToggleDashboardAccess && (
+      {onToggleDashboardAccess && !user.isOrgCurlec && (
         <td style={{ textAlign: 'center' }}>
           <ToggleField
             onEdit={() => showEditAccountModal(account)}
@@ -135,7 +135,7 @@ const AccountsListItem = ({
           />
         </td>
       )}
-      {onToggleAllowRefunds && (
+      {onToggleAllowRefunds && !user.isOrgCurlec && (
         <td style={{ textAlign: 'center' }}>
           {
             <ToggleField
@@ -173,6 +173,7 @@ export default function AccountsList({
   isDirectTransferEnabled,
   isCreationDisabled,
 }) {
+  const user = getUser();
   return (
     <div class="table-responsive">
       <table class="table table-hover" id="accounts-list">
@@ -183,8 +184,10 @@ export default function AccountsList({
             <th>Name</th>
             {isRouteCodeSupportEnabled && <th>Account Code</th>}
             <th>Account Status</th>
-            {onToggleDashboardAccess && <th style={{ textAlign: 'center' }}>Dashboard Access</th>}
-            {onToggleAllowRefunds && (
+            {onToggleDashboardAccess && !user.isOrgCurlec && (
+              <th style={{ textAlign: 'center' }}>Dashboard Access</th>
+            )}
+            {onToggleAllowRefunds && !user.isOrgCurlec && (
               <th style={{ textAlign: 'center' }}>
                 Allow Refunds
                 <small class="help-content" style={{ paddingLeft: '4px' }}>

@@ -1,11 +1,18 @@
+import {
+  CurrencyCodeType,
+  convertToMajorUnit,
+  convertToMinorUnit,
+} from '@razorpay/i18nify-js/currency';
 import moment, { Moment } from 'moment';
 import qs from 'query-string';
 
 import { Option } from 'common/components/Dropdown/types';
+import { ANALYTICS } from 'common/constant';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getDateFormat } from 'common/utils/date-utils';
 import {
   decodeSensitiveFields,
@@ -234,6 +241,52 @@ export const isSettlementRetryTimelineEnabled = (
     return false;
   }
   return isExperimentEnabled(abExperiments.Transaction_Retry_Timeline) && user.isOrgRZP;
+};
+
+export const i18nifyConvertToMajorUnit = (
+  value: number,
+  currency: CurrencyCodeType = 'INR',
+): number => {
+  let majorAmt: number;
+  try {
+    majorAmt = convertToMajorUnit(value, { currency });
+  } catch (error) {
+    majorAmt = Number((value / 100).toFixed(2));
+
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${value}, currency: ${currency}`,
+        error: `${error}`,
+      },
+    });
+  }
+  return majorAmt;
+};
+
+export const i18nifyConvertToMinorUnit = (
+  value: number,
+  currency: CurrencyCodeType = 'INR',
+): number => {
+  let minorAmt: number;
+  try {
+    minorAmt = convertToMinorUnit(value, { currency });
+  } catch (error) {
+    minorAmt = Number((value * 100).toFixed(2));
+
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${value}, currency: ${currency}`,
+        error: `${error}`,
+      },
+    });
+  }
+  return minorAmt;
 };
 
 export const isRefundRevampEnabled = (splitz: SpiltzContextState): boolean => {

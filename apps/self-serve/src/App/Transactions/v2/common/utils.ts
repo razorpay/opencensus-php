@@ -1,3 +1,8 @@
+import {
+  CurrencyCodeType,
+  convertToMajorUnit,
+  convertToMinorUnit,
+} from '@razorpay/i18nify-js/currency';
 import moment, { Moment } from 'moment';
 import qs from 'query-string';
 
@@ -229,4 +234,30 @@ export const isSettlementRetryTimelineEnabled = (
     return false;
   }
   return isExperimentEnabled(abExperiments.Transaction_Retry_Timeline) && user.isOrgRZP;
+};
+
+export const i18nifyConvertToMajorUnit = (
+  value: number,
+  currency: CurrencyCodeType = 'INR',
+): number => {
+  let majorAmt: number;
+  try {
+    majorAmt = convertToMajorUnit(value, { currency });
+  } catch (error) {
+    majorAmt = Number((value / 100).toFixed(2));
+  }
+  return majorAmt;
+};
+
+export const i18nifyConvertToMinorUnit = (
+  value: number,
+  currency: CurrencyCodeType = 'INR',
+): number => {
+  let minorAmt: number;
+  try {
+    minorAmt = convertToMinorUnit(value, { currency });
+  } catch (error) {
+    minorAmt = Number((value * 100).toFixed(2));
+  }
+  return minorAmt;
 };
