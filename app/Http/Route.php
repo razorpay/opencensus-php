@@ -6798,8 +6798,6 @@ class Route
         'fetch_fund_accounts_vendor_portal_v2',
 
         'expire_keys',
-
-        'payment_transfer',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.

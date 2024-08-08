@@ -160,6 +160,7 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'on');
 
         $response = $this->transferPayment($this->payment['id'], $transfers);
+
         $transfer = $response['items'][0];
 
         $this->assertEquals('transfer', $transfer['entity']);
@@ -1996,7 +1997,7 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals(4, $transfer['attempts']);
     }
 
-    public function testTransferPaymentUsingInternalAuth()
+    public function testTransferPaymentUsingProxyAuth()
     {
         $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
         $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
@@ -2007,7 +2008,7 @@ class PaymentMarketplaceTransferTest extends TestCase
             'currency'      => 'INR',
         ];
 
-        $response = $this->transferPaymentUsingInternalAuth($this->payment['id'], $transfers);
+        $response = $this->transferPaymentUsingProxyAuth($this->payment['id'], $transfers, '10000000000000');
 
         $transfer = $response['items'][0];
 

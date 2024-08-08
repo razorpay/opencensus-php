@@ -1223,17 +1223,17 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function transferPaymentUsingInternalAuth(string $id, array $transfers)
+    protected function transferPaymentUsingProxyAuth(string $id, array $transfers, string $merchantId)
     {
         $request = [
             'method'        => 'POST',
-            'url'           => '/payments/' . $id . '/transfers/internal',
+            'url'           => '/payments/' . $id . '/transfers',
             'content'       => [
                 'transfers' => $transfers,
             ],
         ];
 
-        $this->ba->routeAppAuth();
+        $this->ba->routeAppAuth('rzp_test', $merchantId);
 
         return $this->makeRequestAndGetContent($request);
     }
