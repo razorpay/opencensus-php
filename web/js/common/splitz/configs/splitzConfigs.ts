@@ -345,6 +345,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'nocode_monetization',
+        experimentId: {
+          beta: 'OemGz3a8jmYDvi',
+          production: 'OeoDrM3YNgYLeh',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'assisted_financing',
         experimentId: {
           beta: 'NVwyOLc893cct0',

@@ -5,7 +5,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 
 import { withI18Service } from 'common/i18';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
@@ -32,6 +32,8 @@ import ListContainer from 'merchant/containers/ListContainer';
 
 import { track, trackSearchFilterForInternational } from 'merchant/views/Invoices/ga';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 @withI18Service
 @connect(
@@ -120,6 +122,24 @@ class InvoicesListContainer extends ListContainer {
   componentDidMount() {
     track({
       eventAction: 'Go To - Invoices',
+    });
+    analyticsTrack({
+      objectName: 'NC App Page Dashboard',
+      actionName: 'Render Success',
+      screen: 'Invoices',
+      toCleverTap: true,
+      properties: {
+        event_name: 'nc_app_.render.success',
+        source: getDeviceSource(),
+        page: 'Invoices Pages',
+        email_id: this.props?.user?.email,
+        url: window.location.href,
+        browser: window.razorpayAnalytics?.utils?.getBrowserDetails(),
+        activation_status: this.props?.user?.activation_status,
+        device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
+        exp_name: 'NoCode Monetization',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   }
 

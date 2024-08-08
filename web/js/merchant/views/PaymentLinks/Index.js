@@ -19,7 +19,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
-import { getMobileOperatingSystem } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, getMobileOperatingSystem } from 'common/utils/rzp-utils';
 import { getItem } from 'common/utils/localStorage';
 import { DocLink } from 'merchant/components/DocsLink';
 import OnBoarding, {
@@ -31,6 +31,15 @@ import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import lazy from 'merchant/routes/LazyLoader';
+import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
+
+const MonetizationChargesBanner = lazy(() =>
+  import(
+    /* webpackChunkName: 'PaymentLinksMonetizationChargesBanner' */ 'merchant/components/Announcements/MonetizationCharges'
+  ),
+);
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -69,6 +78,24 @@ class PaymentLinksContainer extends React.Component {
     }
     // eslint-disable-next-line react/no-did-mount-set-state
     this.setState({ showPopup });
+    analyticsTrack({
+      objectName: 'NC App Page Dashboard',
+      actionName: 'Render Success',
+      screen: 'Payment Links',
+      toCleverTap: true,
+      properties: {
+        event_name: 'nc_app_.render.success',
+        source: getDeviceSource(),
+        page: 'Payment Links',
+        email_id: this.props?.user?.email,
+        url: window.location.href,
+        browser: window.razorpayAnalytics?.utils?.getBrowserDetails(),
+        activation_status: this.props?.user?.activation_status,
+        device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
+        exp_name: 'NoCode Monetization',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -189,6 +216,9 @@ class PaymentLinksContainer extends React.Component {
           <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
             <SwitchToPaymentLinksV2 source="payment-links-list" />
           </ShowWhen>
+          <SuspenseWithLoader>
+            <MonetizationChargesBanner userId={user?.current} screen="paymentLinks" user={user} />
+          </SuspenseWithLoader>
         </div>
 
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}

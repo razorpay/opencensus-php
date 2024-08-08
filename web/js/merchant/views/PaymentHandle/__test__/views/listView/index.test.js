@@ -20,6 +20,7 @@ jest.mock('common/splitz', () => ({
         }}
       />
     ),
+  useSplitzService: () => ({ abExperiments: {} }),
 }));
 
 describe('Payment Handle List View', () => {

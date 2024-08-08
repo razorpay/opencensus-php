@@ -92,6 +92,7 @@ type Merchant = {
   hold_funds: boolean;
   max_payment_amount: number;
   currency: string;
+  pricing_plan_id?: string;
   name: string;
 };
 

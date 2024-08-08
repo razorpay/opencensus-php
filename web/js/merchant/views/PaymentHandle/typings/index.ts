@@ -1,3 +1,5 @@
+import { User } from 'common/typings';
+
 export interface LoaderSize {
   width: string;
   height: string;
@@ -113,6 +115,7 @@ export interface ListFilterPropTypes {
 }
 
 export interface PaymentHandleListFilterPropTypes {
+  user: User;
   mode: string;
   isMobile: boolean;
   handleInfo: HandleInfoTypes;

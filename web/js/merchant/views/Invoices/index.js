@@ -15,13 +15,20 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { getItem } from 'common/utils/localStorage';
 import DashboardBanner from 'common/ui/DashboardBanner';
-
 import OnBoarding, {
   getIsInvoicesEnabled,
   getIsAllowedResetInvoicesOnBoarding,
 } from './OnBoarding';
 
 import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import lazy from 'merchant/routes/LazyLoader';
+
+const MonetizationChargesBanner = lazy(() =>
+  import(
+    /* webpackChunkName: 'InvoicesMonetizationChargesBanner' */ 'merchant/components/Announcements/MonetizationCharges'
+  ),
+);
 
 // eslint-disable-next-line react/no-unsafe
 
@@ -99,6 +106,9 @@ class InvoicesContainer extends Component {
     return (
       <React.Fragment>
         <div className="banner-container">
+          <SuspenseWithLoader>
+            <MonetizationChargesBanner userId={user?.current} screen="invoices" user={user} />
+          </SuspenseWithLoader>
           <DashboardBanner />
           <ShowWhen
             additionalCondition={(currentUser) =>

@@ -1595,6 +1595,10 @@ export default class User {
     return this.isFeatureEnabled('enable_merchant_expiry_pl');
   }
 
+  get isNocodeappFeeApplicable() {
+    return this.isFeatureEnabled('nocodeapp_fee_applicable');
+  }
+
   get isEmailMandatoryOnL1() {
     return false;
   }

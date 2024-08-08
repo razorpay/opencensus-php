@@ -6,7 +6,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import Image from 'common/ui/Image';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { DASHBOARD_LANDING_URL } from 'merchant/components/SidebarV2/constants/constants';
@@ -26,6 +26,8 @@ import {
 } from './styled';
 
 import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import getPricingPlan from 'merchant/components/Announcements/MonetizationCharges/utils/getPricingPlan';
 
 const CustomBadge = ({ text }: { text: string }) => {
   return (
@@ -70,6 +72,9 @@ const NavLinkItem = ({
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
+  const pricingPlanForMerchant = getPricingPlan(user);
+
+  const noCodeMonetizationApps = ['Payment Links', 'Payment Pages', 'Invoices', 'Razorpay.me Link'];
 
   const onNavLinkItemClick = () => {
     analyticsTrack({
@@ -86,6 +91,27 @@ const NavLinkItem = ({
       },
     });
     toggleMobileMenu?.();
+    if (noCodeMonetizationApps.includes(title)) {
+      analyticsTrack({
+        objectName: 'NC App Widget',
+        actionName: 'Clicked',
+        screen: title,
+        toCleverTap: true,
+        properties: {
+          event_name: 'nc_app_widget.click.initiated',
+          source: getDeviceSource(),
+          page: title,
+          email_id: user?.email,
+          url: window.location.href,
+          browser: window.razorpayAnalytics?.utils?.getBrowserDetails(),
+          activation_status: user?.activation_status,
+          device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
+          exp_name: 'NoCode Monetization',
+          pricing: pricingPlanForMerchant,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
   };
 
   const Tags = getTags(tags);

@@ -16,8 +16,18 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 
 import { RouteGuard } from 'merchant/components/ShowWhen';
-
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import lazy from 'merchant/routes/LazyLoader';
+import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
+const MonetizationChargesBanner = lazy(() =>
+  import(
+    /* webpackChunkName: 'PaymentPagesMonetizationChargesBanner' */ 'merchant/components/Announcements/MonetizationCharges'
+  ),
+);
 
 @connect((state) => {
   return {
@@ -26,6 +36,27 @@ import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/Paymen
   };
 })
 export default class PaymentPagesContainer extends Component {
+  componentDidMount() {
+    analyticsTrack({
+      objectName: 'NC App Page Dashboard',
+      actionName: 'Render Success',
+      screen: 'Payment Pages',
+      toCleverTap: true,
+      properties: {
+        event_name: 'nc_app_.render.success',
+        source: getDeviceSource(),
+        page: 'Payment Pages',
+        email_id: this.props?.user?.email,
+        url: window.location.href,
+        browser: window.razorpayAnalytics?.utils?.getBrowserDetails(),
+        activation_status: this.props?.user?.activation_status,
+        device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
+        exp_name: 'NoCode Monetization',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }
+
   render() {
     const { user, location } = this.props;
     const { isQuickGuideOpen, showOnboarding } = this.props.paymentPageProductOnBoarding;
@@ -38,6 +69,13 @@ export default class PaymentPagesContainer extends Component {
     return (
       <>
         <div className="banner-container">
+          <SuspenseWithLoader>
+            <MonetizationChargesBanner
+              userId={user?.current}
+              screen="paymentAndStorefrontPages"
+              user={user}
+            />
+          </SuspenseWithLoader>
           <DashboardBanner />
         </div>
         {isQuickGuideOpen && (
