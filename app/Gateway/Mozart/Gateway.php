@@ -454,7 +454,7 @@ class Gateway extends Base\Gateway
         $recurrence = $this->getRecurrence($input);
 
         $content = [
-            IntentParams::TXN_AMOUNT     => number_format($input['upi_mandate']['max_amount'] / 100, 2),
+            IntentParams::TXN_AMOUNT     => number_format($input['upi_mandate']['max_amount'] / 100, 2, '.', ''),
             IntentParams::TXN_NOTE       => $this->getPaymentRemark($input),
             IntentParams::TXN_TYPE       => 'CREATE',
             IntentParams::PAYEE_NAME     => preg_replace('/\s+/', '',
@@ -470,7 +470,7 @@ class Gateway extends Base\Gateway
             IntentParams::BLOCK          => 'N',
             IntentParams::RECUR_VALUE    => $recurrence['recurring_value'],
             IntentParams::MODE           => '04',
-            IntentParams::FAM            => number_format($input['payment']['amount'] / 100, 2),
+            IntentParams::FAM            => number_format($input['payment']['amount'] / 100, 2, '.', ''),
             IntentParams::FREQUENCY      => $recurrence['frequency'],
             IntentParams::TXN_REF_ID     => $input['upi']['gateway_data']['id'],
             IntentParams::PURPOSE        => '14',
