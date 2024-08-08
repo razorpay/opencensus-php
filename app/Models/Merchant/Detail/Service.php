@@ -647,7 +647,7 @@ class Service extends Base\Service
 
                 $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
 
-                $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
+                $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
             }
         }
 
@@ -5190,6 +5190,8 @@ class Service extends Base\Service
                 return $this->core->updateMerchantStoreInternal($merchantId, $input);
             case 'DELETE_FROM_CACHE':
                 return $this->core->deleteMerchantStoreInternal($merchantId, $input);
+            case DetailConstants::SALES_ASSISTED_FORM_SUBMISSION:
+                return $this->core->submitSalesAssistedActivationForm($merchantId);
             default:
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
                 return $this->core->submitMerchantInternal($input, $merchantDetails);

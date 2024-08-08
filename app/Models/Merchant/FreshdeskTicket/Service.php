@@ -706,9 +706,16 @@ class Service extends Base\Service
         return $noteResponse;
     }
 
-    public function getAgentDetailForFreshdeskTicket($ticketId)
+    public function getAgentDetailForFreshdeskTicket($ticketId,$input)
     {
-        $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId);
+        $urlKey = Constants::URLIND;
+
+        if (empty($input[Constants::FD_INSTANCE]) === false)
+        {
+            $urlKey = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $input[Constants::FD_INSTANCE]);
+        }
+
+        $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId,$urlKey);
 
         $this->validateTicketResponse($freshdeskTicketResponse, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
 
@@ -2034,7 +2041,7 @@ class Service extends Base\Service
         return $this->app['config']->get('applications.freshdesk.group_ids.plugin_merchant');
     }
 
-        public function patchTicketInternal($id, $content)
+    public function patchTicketInternal($id, $content)
     {
         if(empty($this->merchant) === true)
         {
@@ -2042,6 +2049,10 @@ class Service extends Base\Service
 
             $fdInstance = Constants::RZPIND;
 
+            if (empty($content[Constants::FD_INSTANCE]) === false)
+            {
+                $fdInstance = $content[Constants::FD_INSTANCE];
+            }
             $ticketId = $id;
         }
         else
@@ -2054,6 +2065,8 @@ class Service extends Base\Service
 
             $ticketId = $ticket->getTicketId();
         }
+
+        unset($content[Constants::FD_INSTANCE]);
 
         $this->trace->info(TraceCode::FRESHDESK_OLD_INSTANCE, [
             'content to fd'    =>  $content,

@@ -452,6 +452,7 @@ class Constants
     const IFSC_PREFIX    = "ifsc_prefix";
 
     const FEE_BASED_GATING_FLOW  = "fee_based_gating_flow";
+    const SALES_ASSISTED_FORM_SUBMISSION  = "SALES_ASSISTED_FORM_SUBMISSION";
 
     const VIRTUAL_BANK_ACCOUNTS_PREFIX = [
         [
@@ -794,6 +795,7 @@ class Constants
 
     const POS_DETAILS_REQUIRED_STATUS          = 'pos_details_required_status';
     const POS_ACTIVATION_FORM_SUBMISSION_KAFKA = 'pos_activation_form_submission_kafka_event';
+    const POS_V2_ACTIVATION_FORM_SUBMISSION_KAFKA = 'pos_v2_activation_form_submission_kafka_event';
 
     const PROCESS_TIMESTAMP         = 'process_timestamp';
 
@@ -831,6 +833,7 @@ class Constants
     const ONBOARDING_TYPE_POS              = 'pos';
     const ONBOARDING_TYPE_PG_AND_POS       = 'pgAndPos';
     const CMMA_POS_ACTIVATION_CASE_TYPE    = 'activationPosv1';
+    const CMMA_POS_V2_ACTIVATION_CASE_TYPE = 'activationPosv2';
     const CMMA_OPEN_CASE_TYPE              = 'open';
     const WORKFLOW_STATUS_CHANGE_OPEN_TYPE = 'workflow_status_change';
     const CMMA_CASE_STATUS_TYPE            = 'status';

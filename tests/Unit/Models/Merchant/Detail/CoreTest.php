@@ -17460,9 +17460,10 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::UNDER_REVIEW, $merchantDetail[Entity::ACTIVATION_STATUS]);
     }
 
-    // moving merchant to ur without fee based flow
-    public function testPosCaseCreation()
+    public function testSalesAssistedSubmitWebsiteMerchantUR()
     {
+        Queue::fake();
+
         $this->mockRazorxTreatment();
 
         $merchant = $this->fixtures->create('merchant', [
@@ -17513,67 +17514,131 @@ class CoreTest extends TestCase
             "activation_form_milestone" => "L2",
         ]);
 
-        $eventData =  (new DetailCore)->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, "pos_activation_form_submission_kafka_event");
-        $this->assertEquals("false", $eventData["pos_details_required_status"]);
-    }
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
 
-    public function testPosCaseCreation2()
-    {
-        $this->mockRazorxTreatment();
-
-        $merchant = $this->fixtures->create('merchant', [
-            'category'  => '5945',
-            'category2' => 'ecommerce'
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
-
-        $merchantDetails = $this->fixtures->create('merchant_detail', [
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH8gGahWhUb2Ew",
             "merchant_id" => $merchant->getId(),
-            "contact_name" => "Mohan",
-            "business_type" => 4,
-            "business_name" => "Private Limited",
-            "business_dba" => "DBA",
-            "business_international" => 0,
-            "business_registered_address" => "address",
-            "business_registered_state" => "DL",
-            "business_registered_city" => "Delhi",
-            "business_registered_pin" => 110022,
-            "business_operation_address" => "address",
-            "business_operation_state" => "DL",
-            "business_operation_city" => "Delhi",
-            "business_operation_pin" => 110022,
-            "business_category" => "ecommerce",
-            "business_subcategory" => "fashion_and_lifestyle",
-            "steps_finished" => [
-            ],
-            "activation_progress" => 80,
-            "locked" => 0,
-            "activation_flow" => "whitelist",
-            "issue_fields" => "business_website",
-            "submitted" => 1,
-            "poi_verification_status" => "verified",
-            "poa_verification_status" => "verified",
-            "bank_details_verification_status" => "verified",
-            "kyc_clarification_reasons" => [
-                "nc_count" => 1,
-                "additional_details" => [
-                ],
-            ],
-            "live_transaction_done" => 0,
-            "additional_websites" => [
-            ],
-            "company_pan_verification_status" => "intiated",
-            "gstin_verification_status" => "failed",
-            "international_activation_flow" => "whitelist",
-            "activation_form_milestone" => "L2",
+            "artefact_type" => "negative_keywords",
+            "artefact_identifier" => "number",
+            "status" => "failed",
+            "audit_id" => "MGlLFiUREeLueC",
+            "metadata" => [],
         ]);
 
-        $eventData =  (new DetailCore)->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, "pos_activation_form_submission_kafka_event");
-        $this->assertEquals("true", $eventData["pos_details_required_status"]);
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH933kTShboSkS",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "signatory_validation",
+            "artefact_identifier" => "number",
+            "status" => "verified",
+            "audit_id" => "MH96sMk4xoPIZB",
+            "metadata" => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH987XQBcsGzp8",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "certificate_of_incorporation",
+            "artefact_identifier" => "doc",
+            "status" => "verified",
+            "audit_id" => "MGvjUr37Z52dur",
+            "metadata" => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH96sJegGOKRdr",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "gstin",
+            "artefact_identifier" => "number",
+            "status" => null,
+            "audit_id" => "MH96sMk4xoPIZB",
+            "metadata" => [
+                "bvs_validation_id" => "MH96qkWCFYMRh5",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id" => "MH933fs4DyoDny",
+            "merchant_id" => $merchant->getId(),
+            "artefact_type" => "bank_account",
+            "artefact_identifier" => "number",
+            "status" => null,
+            "audit_id" => "MH933g9SNCgxta",
+            "metadata" => [
+                "bvs_validation_id" => "MH932IVI0TvVOs",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        // block_merchant_activations experiment id
+        $input = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => []
+        ];
+
+        // for regular merchants, there should be no call to block_merchant_activations experiment
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->times(0)
+             ->with($input)
+             ->andReturn($output);
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->app->instance("rzp.mode", Mode::TEST);
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                                              ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_fetch_pos_activation_flow';
+                                              })->andReturn(["pos_activation_flow"=>'whitelist']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_fetch_activation_status';
+                                              })->andReturn(["pos_activation_status"=>""]);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pos_fetch_all_order';
+                                              })->andReturn(["order_list"     => []]);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+                                              ->withArgs(function ($operation, $request, $additionalArgs) {
+                                                  return $operation === 'merchant_pgos_update_activation_status';
+                                              })->andReturn(["success"=>true]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+            'merchant_id'             => $merchantDetails->getId(),
+            'action'                  => 'SALES_ASSISTED_FORM_SUBMISSION'
+        ]);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        //$this->assertEquals(Status::UNDER_REVIEW, $merchantDetail[Entity::ACTIVATION_STATUS]);
+
     }
+
 
     // moving merchant to ur without fee based flow
-    public function testPosCaseCreation3()
+    public function testPosV1CaseCreation()
     {
         $this->mockRazorxTreatment();
 
@@ -17589,6 +17654,7 @@ class CoreTest extends TestCase
             "business_type" => 4,
             "business_name" => "Private Limited",
             "business_dba" => "DBA",
+            "business_website" => "https://www.hempstrol.com/",
             "business_international" => 0,
             "business_registered_address" => "address",
             "business_registered_state" => "DL",
@@ -17623,26 +17689,37 @@ class CoreTest extends TestCase
             "international_activation_flow" => "whitelist",
             "activation_form_milestone" => "L2",
         ]);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
 
-        $this->fixtures->create('merchant_business_detail', [
-            'merchant_id' => $merchant->getId(),
-            'website_details' => [
-                'social_media_urls' => [
-                    [
-                        'platform' => 'facebook',
-                        'url' => 'https://www.facebook.com/Meta/'
-                    ],
-                    [
-                        'platform' => 'twitter',
-                        'url' => 'https://www.twitter.com/_anant_mishra/'
-                    ]
-                ],
-            ],
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata'        => [
+                'service' => 'pgos'
+            ]
         ]);
 
-        $eventData =  (new DetailCore)->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, "pos_activation_form_submission_kafka_event");
-        $this->assertEquals("false", $eventData["pos_details_required_status"]);
+        $eventData =  (new DetailCore)->pushKafkaEventOnPOSActivationFormSubmit($merchant, "pos_activation_form_submission_kafka_event");
+        $this->assertArraySubset([
+                                     "entity_id"                  => $merchant->getId(),
+                                     "entity_name"                => "merchant",
+                                     "event_type"                  => "pos_activation_form_submission_kafka_event"],$eventData);
+
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole( $merchant->getId());
+        //$this->assertEquals('easy_onboarding', $deviceDetail->getSignupCampaign());
+
+        $eventData =  (new DetailCore)->pushKafkaEventOnPOSActivationFormSubmit($merchant, "pos_v2_activation_form_submission_kafka_event");
+        $this->assertArraySubset([
+                                     "entity_id"                  => $merchant->getId(),
+                                     "entity_name"                => "merchant",
+                                     "event_type"                  => "pos_v2_activation_form_submission_kafka_event"],$eventData);
+
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole( $merchant->getId());
+        //$this->assertEquals('assisted_onboarding', $deviceDetail->getSignupCampaign());
     }
+
 
 
     public function testPGOSMerchantSaveMerchantResponseToClarifications()

@@ -644,12 +644,20 @@ class Core extends Base\Core
 
     private function publishKakfaEventForPOSNeedsClarificationResponded($merchantId)
     {
+
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+        $caseType = DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
+        $signupCampaign = $deviceDetail->getSignupCampaign();
+
+        if ($signupCampaign === DeviceDetailConstants::ASSISTED_ONBOARDING)
+            $caseType = DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE;
+
         $cmmaCaseEventData = [
             DEConstants::CMMA_CASE_STATUS_TYPE          => DEConstants::CMMA_OPEN_CASE_TYPE,
             DifferEntity::ENTITY_ID                     => $merchantId,
             DifferEntity::ENTITY_NAME                   => Constants::MERCHANT,
             DEConstants::EVENT_TYPE                     => DEConstants::CMMA_POS_CASE_NC_EVENT_TYPE,
-            DEConstants::CASE_TYPE                      => DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE,
+            DEConstants::CASE_TYPE                      => $caseType,
         ];
 
         $cmmaCaseEventTopic = env(DetailConstants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
@@ -5153,6 +5161,41 @@ class Core extends Base\Core
                 'MerchantId'    => $merchantId,
                 'CacheKey'      => $input['cache_key'],
                 'ErrorMessage'  => $e->getMessage()
+            ]);
+
+            return ['success' => false];
+        }
+
+        return ['success' => true];
+    }
+    public function submitSalesAssistedActivationForm(string $merchantId): array
+    {
+        try
+        {
+            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
+            $merchant        = $merchantDetails->merchant;
+            $this->setMerchantForInternalApi($merchant);
+
+            //pg submission
+            $hasBusinessWebsiteOrAppurls = $this->hasBusinessWebsiteOrAppUrls($merchant);
+            $hasSocialMediaUrls          = $this->hasSocialMediaUrls($merchant);
+            if ($hasBusinessWebsiteOrAppurls === true or $hasSocialMediaUrls === true)
+            {
+                $input[Entity::ACTIVATION_FORM_MILESTONE] = DEConstants::L2_SUBMISSION;
+                $this->saveMerchantDetails($input, $merchant);
+            }
+
+            //pos submission
+            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
+
+            $this->pushKafkaEventOnPOSActivationFormSubmit($merchant, DEConstants::POS_V2_ACTIVATION_FORM_SUBMISSION_KAFKA);
+        }
+        catch (\Throwable $e)
+        {
+
+            $this->trace->error(TraceCode::SUBMIT_MERCHANT_INTERNAL, [
+                'MerchantId'   => $merchantId,
+                'ErrorMessage' => $e->getMessage()
             ]);
 
             return ['success' => false];
@@ -13376,22 +13419,56 @@ class Core extends Base\Core
         return ($isExpEnabledForGreylistedInclusion === true);
 
     }
-    public function pushKafkaEventOnPOSActivationFormSubmit($oldMerchantDetail, $merchant, $eventType)
+
+    private function changeSignupCampaign($signupCampaign, $merchant)
     {
-        $merchantId = $merchant->getId();
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole( $merchant->getId());
 
-        $hasBusinessWebsiteOrAppurls = $this->hasBusinessWebsiteOrAppUrls($merchant);
-        $hasSocialMediaUrls = $this->hasSocialMediaUrls($merchant);
-        $isPosDetailRequiredInCmma = ($hasBusinessWebsiteOrAppurls === true or $hasSocialMediaUrls === true) ? "false": "true";
+        $this->app['trace']->info(TraceCode::CHANGE_SIGNUP_CAMPAIGN, [
+            'merchant_id'             => $merchant->getId(),
+            'current_signup_campaign' => $deviceDetail->getSignupCampaign(),
+            'next_signup_campaign'    => $signupCampaign
+        ]);
 
-        $kafkaActivationFormSubmissionEventData = $this->constructEventDataForCMMACase($oldMerchantDetail, $merchant, $eventType, $isPosDetailRequiredInCmma);
+        $deviceDetail->edit(['signup_campaign'=> $signupCampaign,
+                             "user_id"=>$deviceDetail->getUserId(),
+                             "merchant_id"=>$deviceDetail->getMerchantId()]);
+
+        $this->repo->user_device_detail->saveOrFail($deviceDetail);
+    }
+
+    public function pushKafkaEventOnPOSActivationFormSubmit($merchant, $eventType): array
+    {
+        try
+        {
+            if ($eventType == DetailConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA)
+            {
+                $this->changeSignupCampaign(DeviceDetailConstants::EASY_ONBOARDING, $merchant);
+            }
+            else
+            {
+                if ($eventType == DetailConstants::POS_V2_ACTIVATION_FORM_SUBMISSION_KAFKA)
+                {
+                    $this->changeSignupCampaign(DeviceDetailConstants::ASSISTED_ONBOARDING, $merchant);
+                }
+            }
+        } catch (\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::POS_ACTIVATION_SINGUP_CAMPAIGN_UPDATE_FAILED,
+                [
+                    "singup_campaign" => DeviceDetailConstants::EASY_ONBOARDING,
+                ]);
+        }
+        $kafkaActivationFormSubmissionEventData = $this->constructEventDataForCMMACase($merchant, $eventType);
 
         $activationFormSubmissionEventTopic = env(DEConstants::ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
 
         $this->app['trace']->info(TraceCode::POS_ACTIVATION_FORM_SUBMISSION_EVENT_KAFKA_PUBLISH, [
                                                                                                    'data'        => $kafkaActivationFormSubmissionEventData,
                                                                                                    'topic'       => $activationFormSubmissionEventTopic,
-                                                                                                   'merchant_id' => $merchantId,
+                                                                                                   'merchant_id' => $merchant->getId(),
                                                                                                    'event_type'  => $eventType
                                                                                                ]
         );
@@ -13402,7 +13479,7 @@ class Core extends Base\Core
 
             $this->app['trace']->info(TraceCode::POS_ACTIVATION_FORM_SUBMISSION_EVENT_KAFKA_PUBLISH, [
                                                                                                        'data'        => "event got published",
-                                                                                                       'merchant_id' => $merchantId,
+                                                                                                       'merchant_id' => $merchant->getId(),
                                                                                                    ]
             );
         }
@@ -13421,26 +13498,19 @@ class Core extends Base\Core
 
     }
 
-    public function constructEventDataForCMMACase($oldMerchantDetail, $merchant, $eventType, $isPosDetailRequiredInCmma)
+    public function constructEventDataForCMMACase($merchant, $eventType)
     {
-        $merchantId = $merchant->getId();
-
-        $newMerchantDetail       = $this->repo->merchant_detail->findOrFailPublic($merchantId);
-
         $processTimestamp = Carbon::now()->getTimestamp();
-        if ($this->shouldAddDelayInProcessing($merchantId) === true)
+        if ($this->shouldAddDelayInProcessing($merchant->getId()) === true)
         {
             $processTimestamp = Carbon::now()->getTimestamp() + DEConstants::CASE_CREATION_DELAY_SECONDS;
         }
 
         $kafkaActivationFormSubmissionEventData = [
-            DifferEntity::ENTITY_ID                  => $merchantId,
-            DEConstants::OLD_ACTIVATION_DATA         => $oldMerchantDetail,
-            DEConstants::UPDATED_ACTIVATION_DATA     => $newMerchantDetail,
+            DifferEntity::ENTITY_ID                  => $merchant->getId(),
             DifferEntity::ENTITY_NAME                => Constants::MERCHANT,
             DEConstants::EVENT_TYPE                  => $eventType,
             DEConstants::PROCESS_TIMESTAMP           => $processTimestamp,
-            DEConstants::POS_DETAILS_REQUIRED_STATUS => $isPosDetailRequiredInCmma,
         ];
 
         return $kafkaActivationFormSubmissionEventData;

@@ -11,6 +11,8 @@ class Instance
     const RZPIND        = 'rzpind';
     const RZPCAP        = 'rzpcap';
 
+    const EZETAP        = 'Ezetap';
+
     public static function isValidFdInstance($fdInstanceString)
     {
         $key = __CLASS__ . '::' . strtoupper($fdInstanceString);
