@@ -1,0 +1,39 @@
+name: Verify Merge Restrictions for special branches
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  verify-merge-restrictions:
+    strategy:
+      matrix:
+        release_branch:
+          - singapore_release
+            # Add more special branches as needed
+
+      fail-fast: false
+
+    runs-on: [k8s-runner, linux-amd64]
+
+    steps:
+      - name: Check base branch and source branch
+        id: check_branches
+        run: |
+          if [[ "${{ github.base_ref }}" == "main" || "${{ github.base_ref }}" == "master" ]] && [[ "${{ github.head_ref }}" == "${{ matrix.release_branch }}" ]]; then
+            echo "Merging from '${{ matrix.release_branch }}' branch to 'main/master' is NOT allowed."
+            echo "is_restricted=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_restricted=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fail if merge is restricted
+        if: steps.check_branches.outputs.is_restricted == 'true'
+        run: |
+          echo "Error: Merging from '${{ matrix.release_branch }}' to 'main/master' is not allowed."
+          exit 1
+
+      - name: Allow merge if not restricted
+        if: steps.check_branches.outputs.is_restricted == 'false'
+        run: |
+          echo "Merge from '${{ github.head_ref }}' to '${{ github.base_ref }}' is allowed."

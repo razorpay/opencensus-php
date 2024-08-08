@@ -36,7 +36,7 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Check if target branch exists
+      - name: Check if '${{ matrix.release_branch }}' target branch exists
         id: check_branch
         run: |
           if git ls-remote --heads origin ${{ matrix.release_branch }} | grep -q 'refs/heads/${{ matrix.release_branch }}'; then
@@ -47,7 +47,7 @@ jobs:
             exit 0
           fi
 
-      - name: Checkout target branch
+      - name: Checkout '${{ matrix.release_branch }}' target branch
         if: steps.check_branch.outputs.branch_exists == 'true'
         run: |
           git fetch origin ${{ matrix.release_branch }}
@@ -59,7 +59,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Merge incoming changes
+      - name: Test merging of '${{ github.ref }}' branch into '${{ matrix.release_branch }}' branch
         id: merge
         if: steps.check_branch.outputs.branch_exists == 'true'
         run: |
@@ -82,13 +82,15 @@ jobs:
             fi
           fi
 
-      - name: Push changes
+      - name: Merge and Push changes
         if: steps.check_branch.outputs.branch_exists == 'true' && steps.merge.outputs.merge_status == 'success'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          git branch -a
-          git merge --no-ff --allow-unrelated-histories ${{ github.ref }}
+          git merge --no-ff --allow-unrelated-histories ${{ github.ref }} --cleanup=verbatim -m "[Automated] Merge branch '${GITHUB_REF#refs/heads/}' into ${{ matrix.release_branch }}
+
+
+          skip-checks: true"
           git push -u origin ${{ matrix.release_branch }}
 
       - name: Report merge status
