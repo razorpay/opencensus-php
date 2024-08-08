@@ -71,9 +71,7 @@ export const getCatalogDataFromModularConfig = ({
     fieldName: MODULAR_DEVICE_FIELDS.DEVICE_ORDER_ITEMS_SUMMARY_FIELD,
   });
 
-  const { addedDevices } =
-    modularField && isOrderSummaryItem(modularField) ? modularField : { addedDevices: [] };
-
+  const { addedDevices } = modularField && isOrderSummaryItem(modularField) ? modularField : { addedDevices: [] };
   return {
     deviceConfig: (component?.meta?.deviceConfig as DeviceConfig[]) ?? null,
     addedDevices,

@@ -240,6 +240,7 @@ export const MODULAR_CONFIG = gql`
       accessibilityLabel
       hideOnReviewScreen
       dataType
+      selectionType
       options {
         label
         value
@@ -445,6 +446,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
       accessibilityLabel
       hideOnReviewScreen
       dataType
+      selectionType
       options {
         label
         value

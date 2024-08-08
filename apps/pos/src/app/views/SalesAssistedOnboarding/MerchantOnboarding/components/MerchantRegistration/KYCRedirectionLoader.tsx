@@ -4,9 +4,10 @@ import ModalWithBottomSheet from 'apps/pos/src/app/components/ModalWithBottomShe
 
 interface KYCRedirectionLoaderProps {
   isOpen: boolean;
+  message?: string;
 }
 
-const KYCRedirectionLoader = ({ isOpen }: KYCRedirectionLoaderProps): JSX.Element => {
+const KYCRedirectionLoader = ({ isOpen, message = ''  }: KYCRedirectionLoaderProps): JSX.Element => {
   return (
     <ModalWithBottomSheet
       isOpen={isOpen}
@@ -20,7 +21,7 @@ const KYCRedirectionLoader = ({ isOpen }: KYCRedirectionLoaderProps): JSX.Elemen
             marginBottom="spacing.3"
           />
           <Text size="medium" marginBottom="spacing.11">
-            Redirecting you to the onboarding journey....
+            {message || 'Redirecting you to the onboarding journey....'}
           </Text>
         </Box>
       }

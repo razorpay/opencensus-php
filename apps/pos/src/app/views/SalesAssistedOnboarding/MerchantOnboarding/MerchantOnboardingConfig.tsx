@@ -5,6 +5,7 @@ import {
   ShoppingCartIcon,
   CheckCircleIcon,
   FilePlusIcon,
+  CoinsIcon,
 } from '@razorpay/blade/components';
 import { OnboardingStatesType, OnboardingValuesType } from './providers/useOnboardingContext';
 import DeviceDeliveryAddressForSaleSalesAgent from './components/DeviceOrdering/DeviceDeliveryAddress/DeviceDeliveryAddressForSaleSalesAgent';
@@ -27,6 +28,7 @@ import {
   isDevicePricingAdditionalDetailsCompleted,
 } from 'apps/pos/src/app/utils/modularConfig';
 import { getDeviceStepStatus } from 'apps/pos/src/app/utils/deviceSelection';
+import PaymentMethods from './components/PaymentMethods';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
 import { getAgreementStepStatus } from 'apps/pos/src/app/utils/agreementSigning';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
@@ -147,6 +149,44 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
         view: <DevicePaymentForPosSalesAgent />,
         title: 'Device Payment',
         isFullScreenLayout: true,
+      },
+    ],
+  },
+  {
+    slug: AvailableSteps.PAYMENT_METHODS,
+    modularKey: 'pricing_step',
+    title: 'Payment Methods & Service Selection',
+    description: 'Provide merchant’s business information to start the POS journey ',
+    getStatus: ({ states }) => {
+      return getProgressFromModularStep({
+        modularConfig: states.modularConfig,
+        step: 'pricing_step',
+      });
+    },
+    checkIfDisabled: ({ values, states }) => {
+      return !values.merchantId || !states.merchantDetails?.activation.isFormSubmitted;
+    },
+    checkIfCompleted: ({ states }) =>
+      getProgressFromModularStep({
+        modularConfig: states.modularConfig,
+        step: 'pricing_step',
+      }) === 'completed',
+    icon: <CoinsIcon />,
+    components: [
+      {
+        slug: AvailableComponents.PAYMENT_METHODS,
+        modularKey: 'pricing_step',
+        checkIfLandingPossible: () => true,
+        view: <PaymentMethods />,
+        title: '',
+        getNextComponent: () => AvailableComponents.NACH_FORM,
+      },
+      {
+        slug: AvailableComponents.NACH_FORM,
+        modularKey: 'pricing_step',
+        checkIfLandingPossible: () => true,
+        view: <PaymentMethods nach />,
+        title: '',
       },
     ],
   },

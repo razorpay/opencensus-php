@@ -18,6 +18,8 @@ interface UseModular {
   isModularLoading: boolean;
   isModularFetchError: boolean;
   isModularUpdateError: boolean;
+  isRefetching: boolean;
+  refetchModular: () => void;
 }
 interface UseModularArgs {
   merchantId: string;
@@ -46,6 +48,8 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     data: modularData,
     isLoading: isModularLoading,
     isError: isModularFetchError,
+    refetch: refetchModular,
+    isRefetching: isRefetching,
   } = useQuery<MerchantModularOnboardingDetailsSuccessResponse | null>(
     ['modularConfig', merchantId],
     async () => {
@@ -149,6 +153,8 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     isUpdateModularLoading,
     isModularFetchError,
     isModularUpdateError,
+    isRefetching,
+    refetchModular,
   };
 };
 

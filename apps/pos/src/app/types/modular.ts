@@ -175,12 +175,12 @@ export interface ModularOnboardingFieldWithStringValue extends ModularOnboarding
 
 // Modular Onboarding Field with String Array Value
 export interface ModularOnboardingFieldWithStringArrayValue extends ModularOnboardingFieldParent {
-  value: string[];
+  stringArrayValue: string[];
 }
 
 // Modular Onboarding Field with Boolean Value
 export interface ModularOnboardingFieldWithBooleanValue extends ModularOnboardingFieldParent {
-  value: boolean;
+  booleanValue: boolean;
 }
 
 // Modular Onboarding Field for Document Upload

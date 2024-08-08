@@ -4,12 +4,28 @@ import {
   ModularOnboardingFieldForOrderSummaryItem,
   ModularOnboardingFieldForArrayOfDocumentsUpload,
   ModularOnboardingFieldWithStringValue,
+  ModularOnboardingFieldWithBooleanValue,
+  ModularOnboardingStepWithModularComponents,
+  ModularOnboardingStep,
+  ModularOnboardingFieldWithStringArrayValue,
 } from 'apps/pos/src/app/types/modular';
 
 export function isStringValue(
   field: ModularOnboardingField | null,
 ): field is ModularOnboardingFieldWithStringValue {
   return typeof (field as ModularOnboardingFieldWithStringValue)?.stringValue === 'string';
+}
+
+export function isBooleanValue(
+  field: ModularOnboardingField | null,
+): field is ModularOnboardingFieldWithBooleanValue {
+  return typeof (field as ModularOnboardingFieldWithBooleanValue)?.booleanValue === 'boolean';
+}
+
+export function isStringArrayValue(
+  field: ModularOnboardingField | null,
+): field is ModularOnboardingFieldWithStringArrayValue {
+  return typeof (field as ModularOnboardingFieldWithStringArrayValue)?.stringArrayValue === 'object';
 }
 
 export function isDeviceCharges(
@@ -40,4 +56,12 @@ export function isArrayOfDocumentsUpload(
   const documents = (field as ModularOnboardingFieldForArrayOfDocumentsUpload)
     ?.arrayOfDocumentsUploadValue;
   return Array.isArray(documents) && documents?.[0]?.hasOwnProperty('fileStoreId');
+}
+
+export function isStepModularComponents(
+  field: ModularOnboardingStep | null,
+): field is ModularOnboardingStepWithModularComponents {
+  const modularComponents = (field as ModularOnboardingStepWithModularComponents)
+    ?.modularComponents;
+  return modularComponents && modularComponents.length > 0;
 }

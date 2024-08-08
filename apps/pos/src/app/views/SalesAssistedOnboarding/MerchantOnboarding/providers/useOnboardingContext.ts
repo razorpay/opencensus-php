@@ -46,6 +46,7 @@ export interface OnboardingStatesType {
   updateModularConfig: (args: Record<string, unknown>) => void;
   isUpdateModularLoading: boolean;
   isModularFetchError: boolean;
+  isRefetching: boolean;
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
 }
 
@@ -60,6 +61,7 @@ export interface OnboardingHandlers {
     componentSlug?: OnboardingComponentType,
   ) => Component | undefined;
   updateModularConfig: (args: Record<string, unknown>) => void;
+  refetchModularConfig: () => void;
 }
 
 interface UseOnboardingContext {
@@ -79,10 +81,12 @@ const useOnboardingContext = ({
   const navigate = useNavigate();
   const {
     isModularLoading,
+    isRefetching,
     modularConfig,
     updateModularConfig,
     isUpdateModularLoading,
     isModularFetchError,
+    refetchModular,
   } = useModular({ merchantId, onModularConfigUpdate });
   const { merchantDetails } = useMerchantActivation({
     merchantId,
@@ -102,6 +106,7 @@ const useOnboardingContext = ({
     isModularLoading,
     isUpdateModularLoading,
     isModularFetchError,
+    isRefetching,
     modularConfig,
     updateModularConfig,
   };
@@ -172,6 +177,7 @@ const useOnboardingContext = ({
       getComponentConfigFromStep,
       getOnboardingProgress,
       updateModularConfig,
+      refetchModularConfig: refetchModular,
     },
   };
 };

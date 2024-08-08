@@ -25,6 +25,7 @@ export enum AvailableSteps {
   MERCHANT_REGISTRATION = 'merchantRegistration',
   MERCHANT_KYC = 'merchantKyc',
   DEVICE_SELECTION = 'deviceSelection',
+  PAYMENT_METHODS = 'paymentMethods',
   AGREEMENT_SIGNING = 'agreementSigning',
   ADDITIONAL_DETAILS = 'additionalDetails',
 }
@@ -38,12 +39,15 @@ export enum AvailableComponents {
   ADDITIONAL_DETAILS = 'merchantAdditionalDetails',
   DEVICE_DELIVERY_ADDRESS = 'deviceDeliveryAddress',
   DEVICE_PAYMENT = 'devicePayment',
+  PAYMENT_METHODS = 'vasForm',
+  NACH_FORM = 'nachForm',
 }
 
 export type OnboardingStepType =
   | AvailableSteps.MERCHANT_REGISTRATION
   | AvailableSteps.MERCHANT_KYC
   | AvailableSteps.DEVICE_SELECTION
+  | AvailableSteps.PAYMENT_METHODS
   | AvailableSteps.AGREEMENT_SIGNING
   | AvailableSteps.ADDITIONAL_DETAILS;
 
@@ -55,7 +59,9 @@ export type OnboardingComponentType =
   | AvailableComponents.AGREEMENT_SIGNING
   | AvailableComponents.ADDITIONAL_DETAILS
   | AvailableComponents.DEVICE_DELIVERY_ADDRESS
-  | AvailableComponents.DEVICE_PAYMENT;
+  | AvailableComponents.DEVICE_PAYMENT
+  | AvailableComponents.PAYMENT_METHODS
+  | AvailableComponents.NACH_FORM;
 
 export type RouteConfig = {
   fallback: string;

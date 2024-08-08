@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Link, OTPInput, TextInput, Text } from '@razorpay/blade/components';
+import { Box, Button, Link, OTPInput, Text, TextInput } from '@razorpay/blade/components';
 import KYCRedirectionLoader from './KYCRedirectionLoader';
 
 interface MerchantNumberVerifyProps {
