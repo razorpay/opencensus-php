@@ -274,6 +274,11 @@ class Constants
     const SKIP_NOTES_MERGING              = 'skip_notes_merging';
     const ENABLE_SINGLE_RECON             = 'enable_single_recon';
 
+
+    // feature flags to enable/disable optimizer cfb
+    const OPTIMIZER_CFB_STANDARD   = 'optimizer_cfb_standard';
+    const OPTIMIZER_CFB_CUSTOM     = 'optimizer_cfb_custom';
+
     const OPTIMIZER_RAZORPAY_VAS          = 'optimizer_razorpay_vas';
 
     // Ledger constants
@@ -2613,6 +2618,8 @@ class Constants
         self::SKIP_NOTES_MERGING                           => true,
         self::ENABLE_SINGLE_RECON                          => true,
         self::OPTIMIZER_RAZORPAY_VAS                       => true,
+        self::OPTIMIZER_CFB_STANDARD                       => true,
+        self::OPTIMIZER_CFB_CUSTOM                         => true,
         self::PAYMENTLINKS_V2                              => true,
         self::RECURRING_DEBIT_UMRN                         => true,
         self::NACH_FORM_DIRECT_DOWNLOAD                    => true,
