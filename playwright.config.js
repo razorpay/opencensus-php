@@ -16,7 +16,7 @@ module.exports = {
   reporter: getReporter(),
   fullyParallel: true,
   // This includes retries also in the maxFailures count (45/3 = 15 unique failures - worst case scenario)
-  maxFailures: isCI ? 45 : undefined,
+  // maxFailures: isCI ? 45 : undefined,
   expect: {
     timeout: 30 * 1000,
   },

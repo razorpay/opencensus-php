@@ -48,6 +48,13 @@ async function searchSettlementById(
   return settlementRecord;
 }
 
+async function visitSettlementsPage({ page }) {
+  await page.goto(routes.SETTLEMENTS);
+  const response = await page.waitForResponse('**/merchant/api/live/settlements?**');
+  await waitAndClickViewSettlements({ page });
+  return response;
+}
+
 // roast test settlemetsTest
 test.describe(
   'Test Settlements view when no settlments are present @flow=settlements @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast',
@@ -105,11 +112,7 @@ test.describe(
     test('should search settlements by UTR, status and settlement id @priority=normal', async ({
       page,
     }) => {
-      const [response] = await Promise.all([
-        page.waitForResponse('**/merchant/api/live/settlements?**'),
-        page.goto(routes.SETTLEMENTS),
-        waitAndClickViewSettlements({ page }),
-      ]);
+      const response = await visitSettlementsPage({ page });
 
       // Extract the response JSON
       const settlementsApiData = await response.json();
@@ -128,11 +131,7 @@ test.describe(
     });
 
     test('should reset settlements seach on click of clear @priority=normal', async ({ page }) => {
-      const [response] = await Promise.all([
-        page.waitForResponse('**/merchant/api/live/settlements?**'),
-        page.goto(routes.SETTLEMENTS),
-        waitAndClickViewSettlements({ page }),
-      ]);
+      const response = await visitSettlementsPage({ page });
 
       // Extract the response JSON
       const settlementsApiData = await response.json();
@@ -151,12 +150,12 @@ test.describe(
     });
 
     test('should show settlement cycle @priority=normal', async ({ page }) => {
+      await page.goto(routes.SETTLEMENTS);
       await Promise.all([
         page.waitForResponse('**/merchant/api/live/settlements?**'),
         page.waitForResponse('**/merchant/api/live/settlement/holidays**'),
-        page.goto(routes.SETTLEMENTS),
-        waitAndClickViewSettlements({ page }),
       ]);
+      await waitAndClickViewSettlements({ page });
 
       const settlementCycleCTA = await page.getByText('View Settlement Cycle');
       expect(settlementCycleCTA).toBeVisible();
@@ -175,11 +174,7 @@ test.describe(
     test('should show correct details for settlement with created status  @priority=normal', async ({
       page,
     }) => {
-      const [response] = await Promise.all([
-        page.waitForResponse('**/merchant/api/live/settlements?**'),
-        page.goto(routes.SETTLEMENTS),
-        waitAndClickViewSettlements({ page }),
-      ]);
+      const response = await visitSettlementsPage({ page });
 
       // Extract the response JSON
       const settlementsApiData = await response.json();
@@ -208,11 +203,7 @@ test.describe(
     test('should show correct details for settlement with processed status  @priority=normal', async ({
       page,
     }) => {
-      const [response] = await Promise.all([
-        page.waitForResponse('**/merchant/api/live/settlements?**'),
-        page.goto(routes.SETTLEMENTS),
-        waitAndClickViewSettlements({ page }),
-      ]);
+      const response = await visitSettlementsPage({ page });
 
       // Extract the response JSON
       const settlementsApiData = await response.json();
@@ -238,11 +229,7 @@ test.describe(
     });
 
     test('should show gross entities for settlement @priority=normal', async ({ page }) => {
-      await Promise.all([
-        page.waitForResponse('**/merchant/api/live/settlements?**'),
-        page.goto(routes.SETTLEMENTS),
-        waitAndClickViewSettlements({ page }),
-      ]);
+      await visitSettlementsPage({ page });
 
       const GrossEntitiesSettlements = {
         devstack: 'setl_EG6rVbvzzmltIR',
@@ -275,11 +262,7 @@ test.describe(
     });
 
     test('should show deduction entities for settlement @priority=normal', async ({ page }) => {
-      await Promise.all([
-        page.waitForResponse('**/merchant/api/live/settlements?**'),
-        page.goto(routes.SETTLEMENTS),
-        waitAndClickViewSettlements({ page }),
-      ]);
+      await visitSettlementsPage({ page });
 
       const DeductionsEntitiesSettlements = {
         devstack: 'setl_EG6rVbvzzmltIR',

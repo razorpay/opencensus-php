@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { routes } from '@dashboard/shared-utils/e2e/constants/paths';
 import { switchToTestMode } from '@dashboard/shared-utils/e2e/utils';
@@ -15,10 +16,39 @@ export const navigateToTransactions = async (page, mode?: string) => {
 };
 
 export const searchTransactionById = async ({ page, id }) => {
+  let retries = 3;
   await page.getByPlaceholder('Search').fill(id);
   await page.getByRole('button', { name: 'Search' }).click();
-  await expect(page.getByRole('cell', { name: id })).toBeVisible();
+
+  while (retries > 0) {
+    try {
+      await expect(page.getByRole('cell', { name: id })).toBeVisible({ timeout: 10000 });
+      // If the assertion passes, exit the function
+      return;
+    } catch (error) {
+      retries--;
+      if (retries > 0) {
+        // If the assertion fails and there are retries left, click the refresh button
+        await toggleDateFilter({ page });
+      }
+    }
+  }
+  throw new Error(`${id}: Transaction not found.`);
 };
+
+async function toggleDateFilter({ page }) {
+  try {
+    const last7DaysDate = page.getByRole('button', { name: 'Last 7 days' });
+    await expect(last7DaysDate).toBeVisible({ timeout: 10000 });
+    await last7DaysDate.click();
+    await page.getByRole('menuitem', { name: 'Today' }).click();
+  } catch (err) {
+    const todayDate = page.getByTestId('payments-filter').getByRole('button', { name: 'Today' });
+    await expect(todayDate).toBeVisible();
+    await todayDate.click();
+    await page.getByRole('menuitem', { name: 'Last 7 days' }).click();
+  }
+}
 
 export const waitForListingLoader = async ({ page }) => {
   await page.waitForSelector('.PlaceholderLoader', { state: 'visible', strict: false });
@@ -33,7 +63,27 @@ export const gotoTransactionDetailsPageById = async ({ page, id, listSelector })
     .getByRole('button', { name: 'Details' })
     .click();
   await expect(page).toHaveURL(new RegExp(id));
+  await checkDetailsWithRetries(page);
 };
+
+async function checkDetailsWithRetries(page) {
+  let retries = 3;
+
+  while (retries > 0) {
+    try {
+      await expect(page.getByText('Details', { exact: true })).toBeVisible({ timeout: 10000 });
+      // If the assertion passes, exit the function
+      return;
+    } catch (error) {
+      retries--;
+      if (retries > 0) {
+        // If the assertion fails and there are retries left, click the refresh button
+        await page.locator('text="Refresh"').click(); // Adjust the selector for the refresh button as needed
+      }
+    }
+  }
+  throw new Error(`Details page not loaded.`);
+}
 
 export const assertIssueRefundButton = async ({ page, testId }) => {
   await expect(
@@ -106,9 +156,11 @@ export const assertPaymentDetails = async ({ page, details }) => {
 export const assertCollapsibleSettlementRetryTimeline = async ({ page, count = 0 }) => {
   await expect(page.getByRole('heading', { name: 'Timeline' })).toBeVisible();
   const collapsibleSettlementRetryTimeline = page.getByTestId('transaction-timeline').nth(count);
-  collapsibleSettlementRetryTimeline
-    .getByRole('button', { name: 'View previous retry details' })
-    .click();
+  const viewPreviousRetryDetailsButton = collapsibleSettlementRetryTimeline.getByRole('button', {
+    name: 'View previous retry details',
+  });
+  expect(viewPreviousRetryDetailsButton).toBeVisible();
+  await viewPreviousRetryDetailsButton.click();
   expect(collapsibleSettlementRetryTimeline.getByText('Settlement failed').first()).toBeVisible();
 };
 
