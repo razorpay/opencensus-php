@@ -5,6 +5,7 @@ namespace RZP\Models\Reversal;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
@@ -21,7 +22,7 @@ class Validator extends Base\Validator
         Entity::FEE                  => 'sometimes|integer|min:0',
         Entity::TAX                  => 'sometimes|integer|min:0',
         Entity::CHANNEL              => 'sometimes|string|max:30',
-        Entity::CURRENCY             => 'required|string|size:3|in:INR',
+        Entity::CURRENCY             => 'required|string|size:3|custom',
         Entity::NOTES                => 'sometimes|notes',
         Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',
         Entity::REFUND_TO_CUSTOMER   => 'sometimes|boolean',
@@ -110,6 +111,24 @@ class Validator extends Base\Validator
                         'transfer_id' => $transfer->getId()
                     ]);
             }
+        }
+    }
+
+    protected function validateCurrency($attribute, $currency)
+    {
+
+        $merchantCurrency = Currency::INR;
+
+        $merchant = app('basicauth')->getMerchant();
+
+        if (isset($merchant) === true)
+        {
+            $merchantCurrency = $merchant->getCurrency();
+        }
+
+        if ($currency !== $merchantCurrency)
+        {
+            throw new Exception\BadRequestValidationFailureException("Reversal and Merchant's acceptance currency should be same, Reversal currency : " . $currency . ", Merchant's currency " . $merchantCurrency);
         }
     }
 }

@@ -1563,4 +1563,43 @@ return [
             "internal_error_code" => "BAD_REQUEST_ERROR"
         ],
     ],
+
+    'testTransferAndReversalForMY' => [
+        'request' => [
+            'url' => '/transfers',
+            'method' => 'post',
+            'content' => [
+                'account_code' => 'code-007',
+                'amount' => 10000,
+                'currency' => 'MYR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'recipient' => 'acc_10000000000001',
+                'account_code' => 'code-007',
+                'amount' => 10000,
+                'currency' => 'MYR',
+            ],
+        ],
+    ],
+    'testTransferToAccountCurrencyMisMatch' => [
+        'request' => [
+            'url' => '/transfers',
+            'method' => 'post',
+            'content' => [
+                'account_code' => 'code-007',
+                'amount' => 10000,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'recipient' => 'acc_10000000000001',
+                'account_code' => 'code-007',
+                'amount' => 10000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
 ];

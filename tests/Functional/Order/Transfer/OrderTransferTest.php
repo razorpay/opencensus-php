@@ -539,6 +539,62 @@ class OrderTransferTest extends TestCase
 
         $this->assertEquals('online', $transfer['source_channel']);
 
+    }
+
+    public function captureOrderPaymentMy($order)
+    {
+        $payment = $this->fixtures->payment->createAuthorized(
+            [
+                'amount'   => $order['amount'],
+                'currency' => 'MYR',
+                'order_id' => $order['id'],
+            ]);
+
+        return $this->capturePayment(
+            'pay_' . $payment['id'],
+            $order['amount'], 'MYR',$order['amount']);
+    }
+
+    public function testCreateOrderTransfersForMY()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+
+        $this->fixtures->merchant->edit('10000000000001', ['country_code' => 'MY']);
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $response = $this->startTest();
+
+        $order = $this->getDbEntityById('order', $response['id']);
+
+        $payment = $this->captureOrderPaymentMy($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('MYR', $transfer['currency']);
+
+        $this->assertEquals('order_'.$order['id'], $transfer['source']);
+
+        $this->assertEquals('processed',$transfer['status']);
 
     }
+
+    public function testCreateOrderAndTransferCurrencyMismatch()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+
+        $this->fixtures->merchant->edit('10000000000001', ['country_code' => 'MY']);
+
+        try
+        {
+            $this->startTest();
+        }
+        catch(\Exception $e)
+        {
+            $this->assertEquals('BAD_REQUEST_VALIDATION_FAILURE',$e->getCode());
+            $this->assertEquals("Transfer and Order currency should be same, Transfer currency : MYR, Order currency INR", $e->getMessage());
+        }
+
+    }
+
 }

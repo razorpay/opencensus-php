@@ -6,6 +6,7 @@ use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Admin;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -17,13 +18,24 @@ use RZP\Models\Merchant\BvsValidation\Constants as BvsConstants;
 
 class Validator extends Base\Validator
 {
+    /**
+     * @var Merchant\Entity
+     */
+    public $merchant;
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $this->merchant = app('basicauth')->getMerchant();
+    }
+
     protected static $createRules = [
         ToType::ACCOUNT              => 'sometimes|string|size:18',
         ToType::CUSTOMER             => 'sometimes|string|size:19',
         Entity::ACCOUNT_CODE         => 'sometimes|custom',
         ToType::BALANCE              => 'string|in:fee_credit,refund_credit,reserve_balance|custom',
         Entity::AMOUNT               => 'required|integer|min:100',
-        Entity::CURRENCY             => 'required|size:3|in:INR',
+        Entity::CURRENCY             => 'required|size:3',
         Entity::NOTES                => 'sometimes|notes',
         Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',
         Entity::ON_HOLD              => 'required_with:on_hold_until|boolean',
@@ -82,6 +94,25 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateCurrency($merchant, $currency)
+    {
+        if(isset($this->merchant) === false)
+        {
+            $this->merchant = $merchant;
+        }
+        $merchantCurrency = Currency::INR;
+
+        if (isset($this->merchant) === true)
+        {
+            $merchantCurrency = $this->merchant->getCurrency();
+        }
+
+        if ($currency !== $merchantCurrency)
+        {
+            throw new Exception\BadRequestValidationFailureException("Transfer and Merchant's acceptance currency should be same, Transfer currency : " . $currency . ", Merchant's currency " . $merchantCurrency);
+        }
+    }
+
     public static function validateOrigin($origin)
     {
         if (Origin::isOriginValid($origin) === false)
@@ -103,6 +134,8 @@ class Validator extends Base\Validator
         foreach ($transfers as $transfer)
         {
             $this->validateInput('create', $transfer);
+
+            $this->validateCurrency($this->merchant, $transfer[Entity::CURRENCY]);
 
             $transferSum += (int) $transfer[Entity::AMOUNT];
 
@@ -331,6 +364,8 @@ class Validator extends Base\Validator
         foreach ($transfers as $transfer)
         {
             $this->validateInput('create', $transfer);
+
+            $this->validateCurrency($this->merchant, $transfer[Entity::CURRENCY]);
 
             $transferNotes = $transfers[Entity::NOTES] ?? [];
 

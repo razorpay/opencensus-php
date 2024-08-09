@@ -114,10 +114,14 @@ class PreCreateHook extends Hook
                     'Partial payment not allowed for transfers');
             }
 
-            if ($this->orderInput[Entity::CURRENCY] !== Currency::INR)
+            foreach ($input as $transfer)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The currency should be INR for transfers');
+                if (is_array($transfer) and $this->orderInput[Entity::CURRENCY] !== $transfer[Entity::CURRENCY])
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Transfer and Order currency should be same, Transfer currency : " . $transfer[Entity::CURRENCY]. ", Order currency " .$this->orderInput[Entity::CURRENCY] );
+                }
+
             }
 
             (new Transfer\Core())->validateTransfersInput($this->orderInput[Entity::AMOUNT], $input, $this->merchant);

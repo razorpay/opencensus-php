@@ -23,6 +23,7 @@ use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
+use function PHPUnit\Framework\assertEquals;
 
 class PaymentMarketplaceTransferTest extends TestCase
 {
@@ -2031,4 +2032,116 @@ class PaymentMarketplaceTransferTest extends TestCase
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
     }
+
+    public function prepareMYTest()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+
+        $this->fixtures->merchant->edit('10000000000001', ['country_code' => 'MY']);
+
+        $payment = $this->fixtures->payment->createAuthorized(
+            [
+                'amount'   => 5000,
+                'currency' => 'MYR',
+            ]);
+
+        return $this->capturePayment(
+            'pay_' . $payment['id'],
+            5000, 'MYR',5000);
+    }
+
+    public function testTransfersPaymentAsyncForMY()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $payment = $this->prepareMYTest();
+
+        $this->ba->privateAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->willReturn('on');
+
+        $this->startTest($payment['id']);
+
+        $transferEntities = $this->getEntities('transfer', [],true);
+
+        $this->assertEquals($payment['id'], $transferEntities['items'][0]['source']);
+        $this->assertEquals('online',$transferEntities['items'][0]['source_channel']);
+        $this->assertEquals($payment['currency'],$transferEntities['items'][0]['currency']);
+
+    }
+
+    public function testTransferAndMerchantCurrencyMismatch()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $payment = $this->prepareMYTest();
+
+        $this->ba->privateAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->willReturn('on');
+        try
+        {
+            $this->startTest($payment['id']);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals('BAD_REQUEST_VALIDATION_FAILURE',$e->getCode());
+            $this->assertEquals('Transfer and Merchant\'s acceptance currency should be same, Transfer currency : INR, Merchant\'s currency MYR', $e->getMessage());
+        }
+
+    }
+    public function testTransferPaymentInSyncForMY()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        $payment = $this->prepareMYTest();
+
+        (new Admin\Service)->setConfigKeys([
+            Admin\ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG  => [
+                'limit'          => 3,
+                'retry_interval' => 0.1,
+                'retries'        => 5
+            ]
+        ]);
+
+        $transfers[0] = [
+            'account_code'  => 'code-007',
+            'amount'        => $payment['amount'],
+            'currency'      => 'MYR',
+        ];
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'on');
+
+        $response = $this->transferPayment($payment['id'], [$transfers[0]]);
+        $transfer = $response['items'][0];
+        $this->assertEquals('transfer', $transfer['entity']);
+        $this->assertEquals($payment['id'], $transfer['source']);
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertNotNull($transfer['processed_at']);
+        $this->assertEquals('acc_10000000000001', $transfer['recipient']);
+        $this->assertEquals('code-007', $transfer['account_code']);
+        $this->assertEquals($payment['amount'], $transfer['amount']);
+        $this->assertEquals('online', $transfer['source_channel']);
+        $this->assertEquals($payment['currency'], $transfer['currency']);
+    }
+
 }

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Transfer;
 
 use Mail;
+use Mailgun\Exception;
 use Mockery;
 
 use RZP\Constants\Mode;
@@ -2008,6 +2009,7 @@ class TransferTest extends TestCase
             'type'          => 'transfer',
             'entity_id'     => $transfer['id'],
             'debit'         => $transfer['amount'],
+            'currency'      => $transfer['currency'],
             'credit'        => 0,
             'settled'       => false,
             'fee'           => 0,
@@ -2036,6 +2038,7 @@ class TransferTest extends TestCase
             'amount'        => $transfer['amount'],
             'on_hold'       => $transfer['on_hold'],
             'on_hold_until' => $transfer['on_hold_until'],
+            'currency'      => $transfer['currency'],
         ];
 
         $this->assertArraySelectiveEquals($expectedPayment, $payment);
@@ -2047,6 +2050,7 @@ class TransferTest extends TestCase
             'entity_id'     => $payment['id'],
             'credit'        => $transfer['amount'],
             'on_hold'       => $transfer['on_hold'],
+            'currency'      => $transfer['currency'],
             'settled'       => false,
             'fee'           => 0,
             'tax'           => 0,
@@ -3401,5 +3405,70 @@ class TransferTest extends TestCase
             $this->assertEquals(0, count($transfersCreated));
         }
 
+    }
+
+    public function prepareMYTest()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY']);
+
+        $this->fixtures->merchant->addFeatures('route_code_support');
+
+        $this->fixtures->merchant->edit('10000000000001', [
+            'country_code' => 'MY',
+            'account_code' => 'code-007'
+        ]);
+
+    }
+    public function testTransferAndReversalForMY()
+    {
+        $this->prepareMYTest();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $transfer =  $this->getLastEntity('transfer', true);
+
+        $this->assertEquals($transfer['amount'], $this->getBalance($this->linkedAccountId));
+
+        $this->assertEquals('MYR', $transfer['currency']);
+
+        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'tax' => 0]);
+
+        $this->checkPaymentAndTxnRecords($transfer);
+
+        $reversal = $this->createReversal($transfer['id'], $transfer['amount']);
+
+        $expected = [
+            'amount'        => $transfer['amount'],
+            'transfer_id'   => $transfer['id'],
+            'currency'      => $transfer['currency'],
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $reversal);
+
+        $transaction = $this->getSingleTxn('reversal', $reversal['id']);
+
+        $this->assertEquals('10000000000000',$transaction['balance_id']);
+
+        $this->assertEquals($reversal['amount'], $transaction['credit']);
+
+        $this->assertEquals($reversal['currency'], $transaction['currency']);
+    }
+
+    public function testTransferToAccountCurrencyMisMatch()
+    {
+        $this->prepareMYTest();
+
+        $this->ba->privateAuth();
+
+        try {
+            $this->startTest();
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals('BAD_REQUEST_VALIDATION_FAILURE',$e->getCode());
+            $this->assertEquals('Transfer and Merchant\'s acceptance currency should be same, Transfer currency : INR, Merchant\'s currency MYR', $e->getMessage());
+        }
     }
 }

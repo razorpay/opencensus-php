@@ -174,6 +174,8 @@ class Core extends Base\Core
 
         $validator->validateInput('create', $input);
 
+        $validator->validateCurrency($merchant,$input[Entity::CURRENCY]);
+
         $validator->validateTransferMaxAmount($input[Entity::AMOUNT], $merchant);
 
         $transfer = null;
@@ -248,7 +250,11 @@ class Core extends Base\Core
             $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($transfer, $parentMerchant);
         }
 
-        (new Validator)->validateTransfers($payment, $input, $allTransfers);
+        $validator = new Validator();
+
+        $validator->merchant = $this->merchant;
+
+        $validator->validateTransfers($payment, $input, $allTransfers);
 
         $totalTransferAmount = 0;
 
@@ -745,6 +751,8 @@ class Core extends Base\Core
 
         $validator->validateInput('create', $input);
 
+        $validator->validateCurrency($merchant,$input[Entity::CURRENCY]);
+
         $transfer = null;
 
         if (isset($input[ToType::CUSTOMER]) === true)
@@ -1127,6 +1135,8 @@ class Core extends Base\Core
         $this->validateMerchantForTransfer($this->merchant);
 
         $validator = new Validator();
+
+        $validator->merchant = $this->merchant;
 
         $publicKey = $transfers[Order\Entity::PUBLIC_KEY] ?? null;
 
@@ -2159,7 +2169,7 @@ class Core extends Base\Core
 
             $request = [
                 Adjustment\Entity::AMOUNT      => (int) ($refundAmount * 0.05),
-                Adjustment\Entity::CURRENCY    => 'INR',
+                Adjustment\Entity::CURRENCY    => $transferPayment->getCurrency(),
                 Adjustment\Entity::DESCRIPTION => 'Reverse adjustment for '. $adjustment->getId()
             ];
 

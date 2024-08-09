@@ -613,7 +613,7 @@ class Core extends Base\Core
 
         $txnData = [
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CURRENCY        => $payment->getCurrency(),
             Transaction\Entity::CHANNEL         => $payment->merchant->getChannel(),
         ];
 
@@ -1092,7 +1092,7 @@ class Core extends Base\Core
         $data = [
             Transaction\Entity::DEBIT           => 0,
             Transaction\Entity::CREDIT          => $amount,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CURRENCY        => $reversal->getCurrency(),
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => $settleTimestamp,

@@ -840,4 +840,72 @@ return [
             ],
         ],
     ],
+    'testCreateOrderTransfersForMY' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'MYR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '50000',
+                        'currency' => 'MYR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'    => 50000,
+                'currency'  => 'MYR',
+                'transfers' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 50000,
+                        'currency'  => 'MYR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testCreateOrderAndTransferCurrencyMismatch' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '50000',
+                        'currency' => 'MYR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ]
 ];
