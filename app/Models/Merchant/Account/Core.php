@@ -472,9 +472,14 @@ class Core extends Merchant\Core
                 list($testEntity, $liveEntity, $asvEntity) = $this->repo->merchant->FetchRecordFromAllDBs($linkedAccount->getId());
 
                 $this->trace->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_DEBUG_LOGS,[
+                    "id"     => $linkedAccount->getId(),
                     "testEntity empty" => empty($testEntity),
                     "liveEntity empty" => empty($liveEntity),
-                    "asvEntity empty" => empty($asvEntity)
+                    "asvEntity empty" => empty($asvEntity),
+                    "testEntity name" => empty($testEntity) === false ? $testEntity->getName() : null,
+                    "liveEntity name" => empty($liveEntity) === false ? $liveEntity->getName() : null,
+                    "asvEntity name" => empty($asvEntity) === false ? $asvEntity->getName() : null,
+                    "is txn active" => $this->repo->isTransactionActive()
                 ]);
             }
             catch( \Exception $e)
