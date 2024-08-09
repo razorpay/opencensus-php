@@ -82,3 +82,9 @@ export type ActivationStatusKeys =
   | 'kycQualifiedStb'
   | 'pending'
   | 'underReview';
+
+declare global {
+  interface Window {
+    cdnBaseUrl: string;
+  }
+}

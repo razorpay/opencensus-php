@@ -10,12 +10,16 @@ import PageError from 'apps/pos/src/app/components/PageError';
 
 export const queryClient = new QueryClient();
 
+const isProd = process.env.STAGE == 'production';
+
 const Wrapper = (): JSX.Element => {
   React.useEffect(() => {
-    console.log('Injected Manifest!!!!');
+    console.log('Injected Manifest!!!!', isProd);
     const link = document.createElement('link');
     link.rel = 'manifest';
-    link.href = `${process.env.UNIVERSE_PUBLIC_ASSETS_URL}/build/browser/manifest.json`;
+    link.href = isProd
+      ? `${window.cdnBaseUrl}/static/assets/pos/sales-assisted/manifests/app-prod-manifest.json`
+      : `${process.env.UNIVERSE_PUBLIC_ASSETS_URL}/build/browser/manifest.json`;
     document.head.appendChild(link);
     return () => {
       document.head.removeChild(link);
