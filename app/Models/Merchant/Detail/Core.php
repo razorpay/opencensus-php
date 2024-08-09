@@ -11239,7 +11239,7 @@ class Core extends Base\Core
                 {
                     $documentType = Constant::ARTEFACT_TYPE_MAPPING[$artefactType] ?? '';
                     if ( $documentType !== '') {
-                        $document = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeFromDatabase($merchantId, $documentType);
+                        $document = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentType($merchantId, $documentType);
                     }
                 }
                 else {
