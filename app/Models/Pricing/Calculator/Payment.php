@@ -23,6 +23,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Constants\Entity ;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 
 
 // Terminal Calculator extends Payment Calculator.
@@ -311,8 +312,9 @@ class Payment extends Base
     protected function getRelevantPricingRuleForProcurer($rules)
     {
         $payment = $this->entity;
-
-        if ($payment->merchant->isFeeBearerCustomerOrDynamic() === true)
+        // For optimizer merchants we need to do procurer based filtering for all payments
+        // as we started supporting customer fee on optimizer merchants
+        if ($payment->merchant->isFeeBearerCustomerOrDynamic() === true && $payment->merchant->isFeatureEnabled(Feature\Constants::RAAS) == false)
         {
             return $rules;
         }
@@ -1293,22 +1295,26 @@ class Payment extends Base
 
     private function getBasicPricingRuleFiltersForFeature(string $product, $feature, $method)
     {
+        $filters = [
+            [Pricing\Entity::PRODUCT, $product, false, null],
+            [Pricing\Entity::FEATURE, $feature, false, null]
+        ];
+
         if (in_array($feature, Pricing\Feature::METHOD_AGNOSTIC_FEATURES))
         {
-            $filters = [
-                [Pricing\Entity::PRODUCT,        $product, false, null],
-                [Pricing\Entity::FEATURE,        $feature, false, null],
-                [Pricing\Entity::PAYMENT_METHOD, $method,  true, null],
-            ];
+            return array_merge($filters, [
+                [Pricing\Entity::PAYMENT_METHOD, $method, true, null]
+            ]);
 
-            return $filters;
+        }
+        // For optimizer convenience fee feature, we need to filter based on gateway
+        if($feature === Pricing\Feature::OPTIMIZER_CONVENIENCE_FEE && $this->entity->getEntity() === Entity::PAYMENT)
+        {
+            $gateway = $this->entity->getGateway();
+            $filters[] = [Pricing\Entity::GATEWAY, $gateway, true, null];
         }
 
-        $filters = [
-            [Pricing\Entity::PRODUCT,        $product, false, null],
-            [Pricing\Entity::FEATURE,        $feature, false, null],
-            [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
-        ];
+        $filters[] = [Pricing\Entity::PAYMENT_METHOD, $method,  false, null];
 
         return $filters;
     }

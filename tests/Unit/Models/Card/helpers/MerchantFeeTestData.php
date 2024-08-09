@@ -49,6 +49,84 @@ return [
         ]
     ],
 
+    'testOptimizerConvenienceFeeCalculation' => [
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 50,
+            'tax' => 0,
+            'gateway' => 'payu',
+            'fee_components' => [
+                'payment' => 20,
+                'optimizer_convenience_fee' => 30,
+                'tax' => 0,
+            ],
+        ],
+        [
+            'amount' => '225100',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 3837,
+            'tax' => 586,
+            'gateway' =>  null,
+            'fee_components' => [
+                'payment' => 1000,
+                'tax' => 586,
+                'optimizer_convenience_fee' => 2251,
+            ]
+        ],
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 30,
+            'tax' => 0,
+            'gateway' =>  'cashfree',
+            'fee_components' => [
+                'payment' => 20,
+                'tax' => 0,
+                'optimizer_convenience_fee' => 10,
+            ]
+        ]
+    ],
+
+    'testOptimizerConvenienceFeeCalculationWithoutDefaultPlan' => [
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 50,
+            'tax' => 0,
+            'gateway' => 'payu',
+            'fee_components' => [
+                'payment' => 20,
+                'optimizer_convenience_fee' => 30,
+                'tax' => 0,
+            ],
+        ],
+        [
+            'amount' => '225100',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 1180,
+            'tax' => 180,
+            'gateway' =>  null,
+            'fee_components' => [
+                'payment' => 1000,
+                'tax' => 180,
+                'optimizer_convenience_fee' => 0,
+            ]
+        ],
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 20,
+            'tax' => 0,
+            'gateway' =>  'cashfree',
+            'fee_components' => [
+                'payment' => 20,
+                'tax' => 0,
+                'optimizer_convenience_fee' => 0,
+            ]
+        ]
+    ],
+
     'testInterstateGstForCardWithPercentScaleFactor' => [
         [
             'amount' => '1000',

@@ -961,6 +961,11 @@ class Validator extends Base\Validator
 
     protected function matchGateway($planRule, $input)
     {
+        // if the plan contains optimizer convenience fee feature, then no need to match gateway
+        if($planRule->getFeature() === Feature::OPTIMIZER_CONVENIENCE_FEE)
+        {
+            return ;
+        }
         $gateway = $planRule->getGateway();
 
         if ($gateway !== null)

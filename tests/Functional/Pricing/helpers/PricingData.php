@@ -1192,6 +1192,58 @@ return [
         ],
     ],
 
+    'testCreatePricingPlanWithOptimizerConvenienceFeeFeature' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'TestOptiConveniencePlan1',
+                'rules'     => [
+                    [
+                        'feature' => 'optimizer_convenience_fee',
+                        'payment_method'        => 'card',
+                        'payment_method_type'   => 'credit',
+                        'payment_network'       => 'DICL',
+                        'payment_issuer'        => 'HDFC',
+                        'percent_rate'          => 100,
+                        'international'         => '0',
+                        'amount_range_active'   => '0',
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        'min_fee'               => null,
+                        'max_fee'               => null,
+                        'gateway'               => 'payu',
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'TestOptiConveniencePlan1',
+                'entity' => 'pricing',
+                'count' => 1,
+                'rules' => [
+                    [
+                        'feature'               => 'optimizer_convenience_fee',
+                        'payment_method'        => 'card',
+                        'payment_method_type'   => 'credit',
+                        'payment_network'       => 'DICL',
+                        'payment_issuer'        => 'HDFC',
+                        'percent_rate'          => 100,
+                        'international'         => false,
+                        'amount_range_active'   => false,
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        //Defaults to 0
+                        'min_fee'               => 0,
+                        'max_fee'               => null,
+                        'gateway'               => 'payu',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePricingPlanByRZPAdmin' => [
         'request'  => [
             'content' => [
@@ -1878,6 +1930,70 @@ return [
             ],
         ],
     ],
+
+    'testAddPricingPlanOptimizerConvenienceFeeRule' => [
+        'request' => [
+            'content' => [
+                'feature'               => 'optimizer_convenience_fee',
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'credit',
+                'payment_network'       => 'DICL',
+                'payment_issuer'        => 'HDFC',
+                'percent_rate'          => 100,
+                'amount_range_active'   => '0',
+                'amount_range_min'      => null,
+                'amount_range_max'      => null,
+                'min_fee'               => null,
+                'max_fee'               => null,
+                'gateway'               => 'payu',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'             => 'TestPlan1',
+                'feature'               => 'optimizer_convenience_fee',
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'credit',
+                'payment_network'       => 'DICL',
+                'payment_issuer'        => 'HDFC',
+                'percent_rate'          => 100,
+                'gateway'               => 'payu',
+                'type'                  => 'pricing',
+            ],
+        ],
+    ],
+
+    'testAddOptimizerConveniencePricingPlanPaymentFeeRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'credit',
+                'payment_network'       => 'DICL',
+                'payment_issuer'        => 'HDFC',
+                'percent_rate'          => 100,
+                'amount_range_active'   => '0',
+                'amount_range_min'      => null,
+                'amount_range_max'      => null,
+                'min_fee'               => null,
+                'max_fee'               => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'             => 'TestOptiConveniencePlan1',
+                'feature'               => 'payment',
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'credit',
+                'payment_network'       => 'DICL',
+                'payment_issuer'        => 'HDFC',
+                'percent_rate'          => 100,
+                'type'                  => 'pricing',
+            ],
+        ],
+    ],
+
     'testUpdatePricingSubType' => [
         'request' => [
             'url'=> '/merchants/pricing/bulk/update',

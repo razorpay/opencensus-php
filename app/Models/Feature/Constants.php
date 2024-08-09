@@ -271,6 +271,7 @@ class Constants
     const SR_SENSITIVE                    = 'sr_sensitive';
     const RAAS                            = 'raas';
     const OPTIMIZER_SMART_ROUTER          = 'optimizer_smart_router';
+
     const SKIP_NOTES_MERGING              = 'skip_notes_merging';
     const ENABLE_SINGLE_RECON             = 'enable_single_recon';
 
@@ -2261,6 +2262,10 @@ class Constants
         self::RECURRING_AUTO,
     ];
 
+    const OPTIMIZER_CFB_FEATURES = [
+        self::OPTIMIZER_CFB_STANDARD,
+        self::OPTIMIZER_CFB_CUSTOM,
+    ];
     const CHECKOUT_FEATURES = [
         self::GOOGLE_PAY,
         DcsConstants::EligibilityCheckDecline,

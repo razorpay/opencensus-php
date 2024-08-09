@@ -29,6 +29,9 @@ class Feature
     const AFFORDABILITY           = 'affordability';
     const NOCODEAPPS              = 'nocodeapps';
 
+    // optimizer convenience fee features
+    const OPTIMIZER_CONVENIENCE_FEE = 'optimizer_convenience_fee';
+
     const FEATURE_LIST = [
         self::MAGIC_CHECKOUT,
         self::BUYER_PROTECTION,
@@ -46,6 +49,7 @@ class Feature
         self::TOKEN_HQ,
         self::AFFORDABILITY_WIDGET,
         self::REWARD,
+        self::OPTIMIZER_CONVENIENCE_FEE,
         self::NOCODEAPPS,
     ];
 

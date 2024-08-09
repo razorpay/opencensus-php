@@ -441,8 +441,11 @@ class Entity extends Base\PublicEntity
 
         $input[self::PLAN_ID] = $rule->getAttribute(self::PLAN_ID);
         $input[self::PLAN_NAME] = $rule->getAttribute(self::PLAN_NAME);
-        $input[self::GATEWAY] = $rule->getAttribute(self::GATEWAY);
-
+        // incase feature is optimizer convenience we can have multiple gateways for the same plan
+        if($input[self::FEATURE] != Feature::OPTIMIZER_CONVENIENCE_FEE)
+        {
+            $input[self::GATEWAY] = $rule->getAttribute(self::GATEWAY);
+        }
         return $this->fill($input);
     }
 

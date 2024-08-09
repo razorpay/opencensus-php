@@ -323,6 +323,12 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePricingPlanWithOptimizerConvenienceFeeFeature()
+    {
+        $this->startTest();
+    }
+
+
     public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
         $this->startTest();
@@ -335,6 +341,51 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanOptimizerConvenienceFeeRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddOptimizerConveniencePricingPlanPaymentFeeRule()
+    {
+        $content = $this->createOptimizerConveniencePricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    protected function createOptimizerConveniencePricingPlan($pricingPlan = [])
+    {
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestOptiConveniencePlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'optimizer_convenience_fee',
+            'gateway'             => 'payu',
+        ];
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $plan = $plan->toArray();
+
+        $plan['id'] = $plan['plan_id'];
+
+        return $plan;
     }
 
     public function testAddPricingPlanBankTransferRuleWithoutMaxFee()

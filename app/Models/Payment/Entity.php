@@ -5961,7 +5961,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $features[] = Pricing\Feature::OPTIMIZER;
         }
 
-
+        if ($this->merchant->isAtLeastOneFeatureEnabled(Feature\Constants::OPTIMIZER_CFB_FEATURES) === true &&
+            $this->isOptimizerTerminal() == true)
+        {
+            $features[] = Pricing\Feature::OPTIMIZER_CONVENIENCE_FEE;
+        }
 
 
         $order = $this->getOrderAttribute();
@@ -5992,6 +5996,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $features;
+    }
+
+    protected function isOptimizerTerminal()
+    {
+        $terminal = $this->getTerminalAttribute();
+        if($terminal != null)
+        {
+            return $terminal->isOptimizer();
+        }
+        return true;
     }
 
 
