@@ -1,22 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import {
-  expectSuccessNotification,
-  switchToTestMode,
-  generateRandomText,
-  clickSkipAndStartBtn,
-} from 'utils';
+import { expectSuccessNotification, generateRandomText, clickSkipAndStartBtn } from 'utils';
 
 test.describe.serial('Test subscription @flow=subscription @project=no-code', () => {
   let planName = '';
   let subscriptionId = '';
 
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
-    await switchToTestMode({ page });
     await page.goto(routes.SUBSCRIPTIONS);
     await clickSkipAndStartBtn({ page });
   });

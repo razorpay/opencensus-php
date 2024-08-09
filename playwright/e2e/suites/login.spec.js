@@ -14,6 +14,8 @@ const { test, expect } = require('@playwright/test');
 
 const { getCredentials } = require('../../utils/config');
 
+const getTestModeStoragePage = (path) => path.replace('.json', '-test-mode.json');
+
 test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => {
   const { emailCred, activatedNotIe, mobileCred, posCredentials } = getCredentials();
   // testing for multiple credentials using email login
@@ -48,6 +50,27 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       await page.context().storageState({
         path: cred.storagePath,
       });
+
+      if (cred.hasTestMode) {
+        let retry = 3;
+
+        while (retry > 0) {
+          try {
+            const modeSwitchToggle = page.locator('a.switch-modes-toggle');
+            await expect(modeSwitchToggle).toBeVisible();
+            await modeSwitchToggle.click();
+            await page.locator('li[data-test="Test Mode"]').click();
+            await page.waitForSelector("text=/YOU'RE IN TEST MODE/i");
+            await page.context().storageState({
+              path: getTestModeStoragePage(cred.storagePath),
+            });
+            return;
+          } catch (error) {
+            retry--;
+          }
+        }
+        throw new Error('Failed to switch to test mode');
+      }
     });
   }
 

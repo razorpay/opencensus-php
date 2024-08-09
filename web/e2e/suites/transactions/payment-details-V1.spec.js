@@ -1,5 +1,4 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { switchToTestMode } from 'utils';
 import { expect, test } from 'utils/base';
 import { navigateTo } from 'utils/common';
 
@@ -21,13 +20,11 @@ test.describe.parallel(
   'Payments transactions (Live Mode) @flow=transactionsV1 @project=payments',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+      storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {
       await navigateTo(page, routes.PAYMENTS);
-      await switchToTestMode({ page });
-      await page.goto(routes.PAYMENTS);
     });
     test.describe.parallel('Payment details', () => {
       // There are payments which happens via external PGs using Optimizer

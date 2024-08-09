@@ -4,15 +4,13 @@ import { test } from 'utils/base';
 
 import { PAYMENT_PAGES_TYPES, paymentPagesEcommerceData } from './constants';
 import { createPaymentPage } from './utils';
-import { switchToTestMode } from '../../utils';
 
 test.describe.parallel('Test Payments Pages V2 @flow=payment-pages-v2 @project=no-code', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
-    await switchToTestMode({ page });
     await page.goto(routes.PAYMENT_PAGES);
     await clickSkipAndStartBtn({ page });
   });

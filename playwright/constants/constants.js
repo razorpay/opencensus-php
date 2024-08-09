@@ -35,6 +35,7 @@ const getEmailCredentials = () => {
       username: ENV.ACTIVATED_RZP_MERCHANT_USERNAME,
       password: ENV.ACTIVATED_RZP_MERCHANT_PASSWORD,
       storagePath: StorageStatePath.ACTIVATED_RZP_MERCHANT,
+      hasTestMode: true,
     },
     {
       type: 'desktop-settlement-login.json',

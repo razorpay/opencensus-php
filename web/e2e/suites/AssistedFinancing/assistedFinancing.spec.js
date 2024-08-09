@@ -1,20 +1,15 @@
-import { switchToTestMode } from '../../utils';
-import { navigateTo } from '../../utils/common';
-
 const { test, expect } = require('utils/base');
 
 const { routes, getStorageStatePath, BASE_PATH } = require('../../constants');
 
 const navigateToAssistedFinancingPage = async (page) => {
-  await navigateTo(page, routes.DASHBOARD);
-  await switchToTestMode({ page });
   await page.goto(routes.ASSISTED_FINANCING);
   await expect(page).toHaveURL(routes.ASSISTED_FINANCING);
 };
 
 test.describe('Test Assisted financing @flow=assistedFinancing @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

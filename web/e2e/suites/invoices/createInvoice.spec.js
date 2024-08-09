@@ -1,16 +1,15 @@
 import { test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { switchToTestMode, clickSkipAndStartBtn } from 'utils';
+import { clickSkipAndStartBtn } from 'utils';
 
 import { invoiceData } from './constants';
 import { createInvoice, searchInvoiceAndOpenDetails } from './utils';
 test.describe.parallel('Test Invoices @flow=invoices @project=no-code', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
-    await switchToTestMode({ page });
     await page.goto(routes.INVOICES);
     await clickSkipAndStartBtn({ page });
   });

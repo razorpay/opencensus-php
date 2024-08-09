@@ -7,18 +7,16 @@ import {
   validateDownloadSampleFile,
   createBatchPaymentPageWithLateFee,
 } from './utils';
-import { switchToTestMode } from '../../utils';
 import { clickSkipAndStartBtn } from 'utils';
 
 test.describe.parallel(
   'Test Batch Payments Pages @flow=batch-payment-pages @project=no-code-stable',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+      storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {
-      await switchToTestMode({ page });
       await page.goto(routes.PAYMENT_PAGES);
       await clickSkipAndStartBtn({ page });
       await page.waitForTimeout(1000);

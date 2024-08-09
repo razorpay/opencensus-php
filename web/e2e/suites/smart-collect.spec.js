@@ -1,11 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import {
-  expectSuccessNotification,
-  switchToTestMode,
-  getRandomCustomerData,
-  clickSkipAndStartBtn,
-} from 'utils';
+import { expectSuccessNotification, getRandomCustomerData, clickSkipAndStartBtn } from 'utils';
 
 async function createVirtulaAccount({ page }) {
   await page.getByRole('button', { name: 'Create Customer Identifier' }).click();
@@ -53,13 +48,12 @@ async function searchAndOpenDetails({ page, virtualAccountId }) {
 
 test.describe.serial('Test smart collect @flow=smart-collect @project=no-code', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
   });
 
   let virtualAccountId = '';
 
   test.beforeEach(async ({ page }) => {
-    await switchToTestMode({ page });
     await page.goto(routes.SMART_COLLECT);
     await clickSkipAndStartBtn({ page });
   });

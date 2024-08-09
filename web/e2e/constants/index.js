@@ -1,24 +1,37 @@
 const BASE_PATH = '../playwright/.auth';
 
 // TODO: consume this from shared-utils in future
-const getStorageStatePath = (BASE_PATH) => ({
-  // NOTE: Please use ACTIVATED_RZP_MERCHANT for all the new tests unless you need to test a specific scenario which requires a different user.
-  ACTIVATED_RZP_MERCHANT: `${BASE_PATH}/activated-rzp-merchant.json`,
-  SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
-  ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
-  CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/capital-reseller-partner-desktop-test-mode-login.json`,
-  RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
-  RESELLER_PARTNER_POS_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-pos-desktop-test-mode-login.json`,
-  RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-agent-desktop-test-mode-login.json`,
-  AGGREGATOR_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/aggregator-partner-desktop-test-mode-login.json`,
-  PLATFORM_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/platform-partner-desktop-test-mode-login.json`,
-  POS_LOGIN_STATE: `${BASE_PATH}/pos-login.json`,
-  POS_ORDER_DETAILS_LOGIN_STATE: `${BASE_PATH}/pos-login-order-details.json`,
-  // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
-  OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
-  CURLEC_TEST_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-login.json`,
-  CURLEC_TEST_CAW_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-caw-login.json`,
-});
+const getStorageStatePath = (BASE_PATH, mode = 'live') => {
+  const STORAGE_PATH_MAPPING = {
+    // NOTE: Please use ACTIVATED_RZP_MERCHANT for all the new tests unless you need to test a specific scenario which requires a different user.
+    ACTIVATED_RZP_MERCHANT: `${BASE_PATH}/activated-rzp-merchant.json`,
+    SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
+    ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
+    CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/capital-reseller-partner-desktop-test-mode-login.json`,
+    RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
+    RESELLER_PARTNER_POS_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-pos-desktop-test-mode-login.json`,
+    RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-agent-desktop-test-mode-login.json`,
+    AGGREGATOR_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/aggregator-partner-desktop-test-mode-login.json`,
+    PLATFORM_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/platform-partner-desktop-test-mode-login.json`,
+    POS_LOGIN_STATE: `${BASE_PATH}/pos-login.json`,
+    POS_ORDER_DETAILS_LOGIN_STATE: `${BASE_PATH}/pos-login-order-details.json`,
+    // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
+    OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
+    CURLEC_TEST_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-login.json`,
+    CURLEC_TEST_CAW_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-caw-login.json`,
+  };
+
+  const isTestMode = mode === 'test';
+
+  const updatedStoragePathMapping = Object.keys(STORAGE_PATH_MAPPING).reduce((acc, key) => {
+    acc[key] = isTestMode
+      ? STORAGE_PATH_MAPPING[key].replace('.json', '-test-mode.json')
+      : STORAGE_PATH_MAPPING[key];
+    return acc;
+  }, {});
+
+  return updatedStoragePathMapping;
+};
 
 const routes = {
   SIGN_IN_PATH: '/?screen=sign_in&isTestEnv=true',
