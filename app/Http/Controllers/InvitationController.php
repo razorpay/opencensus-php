@@ -57,6 +57,15 @@ class InvitationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deleteWithOtpVerification(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->deleteWithOtpVerification($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAction(string $id, string $action)
     {
         $input = Request::all();

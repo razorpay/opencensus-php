@@ -4032,6 +4032,33 @@ return [
         ],
     ],
 
+    'testChangePasswordWithOtpVerificationFailure' => [
+        'request' => [
+            'url'     => '/users/password/otp_verify',
+            'method'  => 'PUT',
+            'content' => [
+                'otp'                   => '0000',
+                'token'                 => '10000000000000',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'old_password'          => '12345',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
     'testChangePasswordMatchesLastNPasswords' => [
         'request' => [
             'url'     => '/users/password',
@@ -4108,6 +4135,31 @@ return [
                 'contact_mobile' => null,
                 'confirmed'      => true
             ],
+        ],
+    ],
+
+    'testDetachMerchantWithOtpVerificationFailed' => [
+        'request' => [
+            'url'    => '/users/id/detach',
+            'method' => 'PUT',
+            'content' => [
+                'otp'         => '0000',
+                'token'       => '10000000000000',
+                'role'        => 'owner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
         ],
     ],
 
@@ -4190,6 +4242,31 @@ return [
                 'contact_mobile' => null,
                 'confirmed'      => true
             ],
+        ],
+    ],
+
+    'testUpdateMerchantWithOtpVerificationFailed' => [
+        'request' => [
+            'url'    => '/users/id/update',
+            'method' => 'PUT',
+            'content' => [
+                'otp'         => '0000',
+                'token'       => '10000000000000',
+                'role'        => 'manager',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
         ],
     ],
 

@@ -1701,6 +1701,20 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function changePasswordWithOtpVerification(array $input): array
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        $this->core->verifyOtp($input + ['action' => 'change_password'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        $changePasswordInput = array_except($input, ['otp', 'token']);
+
+        return $this->changePassword($changePasswordInput);
+    }
+
     public function changePassword(array $input): array
     {
         $user = $this->user;
@@ -2279,6 +2293,20 @@ class Service extends Base\Service
         }
 
         return [];
+    }
+
+    public function updateMerchantManageTeamWithOtpVerification(string $userId, array $input): array
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        $this->core->verifyOtp($input + ['action' => 'update_user'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        $updateUserInput = array_except($input, ['otp', 'token']);
+
+        return $this->updateMerchantManageTeam($userId, $updateUserInput);
     }
 
     public function updateMerchantManageTeam(string $userId, array $input): array

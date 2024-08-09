@@ -17,6 +17,15 @@ class WebhookV2Controller extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createWithOtpVerification()
+    {
+        $input = Request::all();
+
+        $data = (new Service)->createForMerchantWithOtpVerification($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createForOAuthApp(string $appId)
     {
         $input = Request::all();
@@ -31,6 +40,15 @@ class WebhookV2Controller extends Controller
         $input = Request::all();
 
         $data = (new Service)->update($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateWithOtpVerification($id)
+    {
+        $input = Request::all();
+
+        $data = (new Service)->updateWithOtpVerification($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -52,6 +70,15 @@ class WebhookV2Controller extends Controller
     public function delete(string $id)
     {
         (new Service)->delete($id);
+
+        return ApiResponse::json([]);
+    }
+
+    public function deleteWithOtpVerification(string $id)
+    {
+        $input = Request::all();
+
+        (new Service)->deleteWithOtpVerification($id, $input);
 
         return ApiResponse::json([]);
     }

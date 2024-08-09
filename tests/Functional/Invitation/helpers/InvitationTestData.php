@@ -757,6 +757,30 @@ return [
         ]
     ],
 
+    'testDeleteMerchantInvitationWithOtpVerificationFailed' => [
+        'request' => [
+            'url'    => '/invitations/8hd48md930kel3',
+            'method' => 'delete',
+            'content' => [
+                'otp' => '0000',
+                'token' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
     'testGetPendingInvitations' => [
         'request' => [
             'url'    => '/invitations',

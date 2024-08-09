@@ -1255,6 +1255,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateMerchantFeaturesWithOtpVerification()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addOrRemoveMerchantFeaturesWithOtpVerification($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchantFeatures()
     {
         $data = $this->service()->getMerchantFeatures();

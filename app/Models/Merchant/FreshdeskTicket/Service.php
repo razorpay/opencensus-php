@@ -964,6 +964,7 @@ class Service extends Base\Service
         return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity, $type);
     }
 
+
     protected function freshdeskCreateTicketInputLog($log, $input)
     {
         if (array_key_exists(Constants::CF_REQUESTOR_CATEGORY, $input[Constants::CUSTOM_FIELDS]))

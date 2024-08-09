@@ -5819,6 +5819,19 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function addOrRemoveMerchantFeaturesWithOtpVerification(array $input)
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp','token']));
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'feature_flag_update'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        $updateInput = array_except($input, ['otp', 'token']);
+
+        return $this->addOrRemoveMerchantFeatures($updateInput);
+    }
+
     /**
      * used for fetching referred merchants of a particular merchant
      */

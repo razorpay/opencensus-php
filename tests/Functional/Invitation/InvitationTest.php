@@ -343,7 +343,7 @@ class InvitationTest extends TestCase
         Mail::fake();
 
         $response = $this->startTest();
-        
+
         $metadata = $response['metadata'];
 
         $this->assertNotNull($metadata);
@@ -863,6 +863,39 @@ class InvitationTest extends TestCase
             ->first();
 
         $this->assertNull($invite);
+    }
+
+    public function testDeleteMerchantInvitationWithOtpVerification()
+    {
+        $invitation = $this->fixtures->create('invitation', ['email' => 'delete@razorpay.com']);
+
+        $testData = $this->testData['testDeleteMerchantInvitation'];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] . '/otp_verify';
+        $testData['request']['content']['otp'] = '0007';
+        $testData['request']['content']['token'] = '100000000000000';
+
+        $this->startTest($testData);
+
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+
+        $this->assertNull($invite);
+    }
+
+    public function testDeleteMerchantInvitationWithOtpVerificationFailed()
+    {
+        $invitation = $this->fixtures->create('invitation', ['email' => 'delete@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] . '/otp_verify';
+        $testData['request']['content']['otp'] = '0000';
+        $testData['request']['content']['token'] = '100000000000000';
+
+        $this->startTest();
     }
 
     public function testGetPendingInvitations()

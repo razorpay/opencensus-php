@@ -100,6 +100,7 @@ class UserRolesScope
             // invitation routes
             'invitation_create' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'invitation_delete' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'invitation_delete_with_otp_verification' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR, Role::ADMIN_READONLY],
@@ -165,16 +166,19 @@ class UserRolesScope
             'merchant_ip_config_create' => [Role::OWNER, Role::ADMIN],
 
             // Merchant user routes
-            'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'user_merchant_mapping_action'                          => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'user_merchant_mapping_action_with_otp_verification'    => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
             //2fa
             'merchant_2fa_change_setting' => [Role::OWNER],
 
             // webhook routes
-            'webhook_create'            => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'webhook_fetch_multiple'    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::ADMIN_READONLY],
-            'webhook_edit'              => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'webhook_delete'            => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'webhook_create'                            => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'webhook_create_with_otp_verification'      => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'webhook_fetch_multiple'                    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::ADMIN_READONLY],
+            'webhook_edit'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'webhook_edit_with_otp_verification'        => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'webhook_delete'                            => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // omni pos endpoints
             'payment_create_pos'                            => [Role::OWNER],
@@ -908,6 +912,7 @@ class UserRolesScope
             'merchant_website_section_page_load'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_tnc_details_by_mid'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::ADMIN_READONLY],
             'merchant_tpv_create'                                  => [Role::OWNER, Role::ADMIN, Role::FINANCE],
+            'merchant_tpv_create_with_otp_verification'            => [Role::OWNER, Role::ADMIN, Role::FINANCE],
             'merchant_verify_attributes'                           => [Role::OWNER, Role::ADMIN],
             'merchant_workflow_details'                            => Role::ALL_ROLES,
             'merchant_consents_admin_fetch'                        => [Role::ADMIN, Role::ADMIN_READONLY],

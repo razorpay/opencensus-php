@@ -222,9 +222,27 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function cancelUserInviteWithOtpVerification($invite_id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->cancelUserInviteWithOtpVerification($invite_id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function deleteUser(string $id)
     {
         $response = $this->xperience->deleteUser($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteUserWithOtpVerification(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->deleteUserWithOtpVerification($id, $input);
 
         return ApiResponse::json($response);
     }
@@ -236,6 +254,15 @@ class XperienceController extends Controller
         $response = $this->xperience->editUser($id, $input);
 
         return ApiResponse::json($response);
+    }
+
+    public function editUserWithOtpVerification(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->xperience->editUserWithOtpVerification($id, $input);
+
+        return ApiResponse::json($data);
     }
 
     public function getUser(string $id)

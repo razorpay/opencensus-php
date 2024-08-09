@@ -35,6 +35,9 @@ return [
         'user_change_password' => [
             'header_params' => [RequestHeader::X_DASHBOARD_USER_ID],
         ],
+        'user_change_password_with_otp_verification' => [
+            'header_params' => [RequestHeader::X_DASHBOARD_USER_ID],
+        ],
         'admin_forgot_password' => [
             'request_params' => ['email'],
         ],

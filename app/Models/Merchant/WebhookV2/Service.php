@@ -21,6 +21,7 @@ use RZP\Constants\Product;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Models\Partner\Core;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\Event\Entity as EventEntity;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -113,6 +114,20 @@ class Service extends Base\Service
         return $this->create($input);
     }
 
+    public function createForMerchantWithOtpVerification(array $input, string $merchantId = null): array
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'create_webhook'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        $createInput = array_except($input, ['otp', 'token']);
+
+        return $this->createForMerchant($createInput, $merchantId);
+    }
+
     /**
      * This method handles the merchant's create webhook
      * use case and just adds a few implicit fields to the input.
@@ -166,6 +181,20 @@ class Service extends Base\Service
                                                               AccountEntity::MERCHANT_ID => $merchantId]);
 
         return $this->storkToApiFormat($res);
+    }
+
+    public function updateWithOtpVerification(string $webhookId, array $input, string $merchantId = null): array
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'update_webhook'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        $updateInput = array_except($input, ['otp', 'token']);
+
+        return $this->update($webhookId, $updateInput, $merchantId);
     }
 
     /**
@@ -271,6 +300,18 @@ class Service extends Base\Service
         }
 
         return $res;
+    }
+
+    public function deleteWithOtpVerification(string $webhookId, array $input)
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'delete_webhook'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        $this->delete($webhookId);
     }
 
     /**

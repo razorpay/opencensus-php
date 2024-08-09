@@ -160,6 +160,7 @@ class FreshdeskTicketController extends Controller
         return ApiResponse::json($response);
     }
 
+
     public function insertIntoDB()
     {
         $input = Request::all();

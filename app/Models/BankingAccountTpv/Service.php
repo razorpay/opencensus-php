@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountTpv;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 
 class Service extends Base\Service
 {
@@ -56,5 +57,23 @@ class Service extends Base\Service
         $this->validator->validateInput('merchant_dashboard_create', $input);
 
         return $this->core()->createTpvFromXDashboard($input);
+    }
+
+    public function createTpvFromXDashboardWithOtpVerification($input)
+    {
+        $ba = app('basicauth');
+        $user = $ba->getUser();
+
+        $user->validateInput('verifyOtp', array_only($input, ['otp','token']));
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'source_account_create'],
+            $this->merchant,
+            $user,
+            $this->mode === Mode::TEST);
+
+        $updateInput = array_except($input, ['otp', 'token']);
+
+        $this->validator->validateInput('merchant_dashboard_create', $updateInput);
+
+        return $this->core()->createTpvFromXDashboard($updateInput);
     }
 }

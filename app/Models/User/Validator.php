@@ -461,7 +461,18 @@ class Validator extends Base\Validator
                                  . 'delete_workflow_config,'
                                  . 'ip_whitelist,'
                                  . 'x_invite_user_otp,'
-                                 . 'approve_bulk_payouts,',
+                                 . 'approve_bulk_payouts,'
+                                 . 'remove_tnd_user,'
+                                 . 'cancel_tnd_user_invite,'
+                                 . 'source_account_create,'
+                                 . 'feature_flag_update,'
+                                 . 'edit_tnd_user,'
+                                 . 'create_webhook,'
+                                 . 'update_webhook,'
+                                 . 'delete_webhook,'
+                                 . 'change_password,'
+                                 . 'update_user,'
+                                 . 'delete_invitation,',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.

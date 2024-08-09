@@ -71,4 +71,13 @@ class BankingAccountTpvController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createTpvFromXDashboardWithOtpVerification()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createTpvFromXDashboardWithOtpVerification($input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -642,6 +642,22 @@ class Xperience
         return $this->makeRequest($url, [], [], self::DELETE);
     }
 
+    public function cancelUserInviteWithOtpVerification(string $invite_id, array $input)
+    {
+        $ba = app('basicauth');
+        $merchant = $ba->getMerchant();
+        $user = $ba->getUser();
+
+        $user->validateInput('verifyOtp', array_only($input, ['otp','token']));
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'cancel_tnd_user_invite'],
+            $merchant,
+            $user,
+            $this->mode === Mode::TEST);
+
+        return $this->cancelUserInvite($invite_id);
+    }
+
+
     public function deleteUser(string $id)
     {
         $url = $this->getConstructedUrl(sprintf(self::SINGLE_USER_DETAILS_PATH, $id));
@@ -649,11 +665,43 @@ class Xperience
         return $this->makeRequest($url, [], [], self::DELETE);
     }
 
+    public function deleteUserWithOtpVerification(string $id, array $input)
+    {
+        $ba = app('basicauth');
+        $merchant = $ba->getMerchant();
+        $user = $ba->getUser();
+
+        $user->validateInput('verifyOtp', array_only($input, ['otp','token']));
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'remove_tnd_user'],
+            $merchant,
+            $user,
+            $this->mode === Mode::TEST);
+
+        return $this->deleteUser($id);
+    }
+
     public function editUser(string $id, array $input)
     {
         $url = $this->getConstructedUrl(sprintf(self::SINGLE_USER_DETAILS_PATH, $id));
 
         return $this->makeRequest($url, $input, [], self::PATCH);
+    }
+
+    public function editUserWithOtpVerification(string $id,array $input)
+    {
+        $ba = app('basicauth');
+        $merchant = $ba->getMerchant();
+        $user = $ba->getUser();
+
+        $user->validateInput('verifyOtp', array_only($input, ['otp','token']));
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'edit_tnd_user'],
+            $merchant,
+            $user,
+            $this->mode === Mode::TEST);
+
+        $editInput = array_except($input, ['otp','token']);
+
+        return $this->editUser($id, $editInput);
     }
 
     public function getUser(string $id, array $input)

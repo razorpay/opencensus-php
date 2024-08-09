@@ -6556,6 +6556,44 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testChangePasswordWithOtpVerification()
+    {
+        $user = $this->fixtures->create('user', ['password' => '12345']);
+
+        $testData = $this->testData['testChangePassword'];
+
+        $content = [
+            'otp'                   => '0007',
+            'token'                 => '10000000000000',
+            'password'              => 'hello123',
+            'password_confirmation' => 'hello123',
+            'old_password'          => '12345',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['url'] = '/users/password/otp_verify';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testChangePasswordWithOtpVerificationFailure()
+    {
+        $user = $this->fixtures->create('user', ['password' => '12345']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testChangePasswordRateLimit()
     {
         $user = $this->fixtures->create('user', ['password' => '12345']);
@@ -6929,6 +6967,87 @@ class UserTest extends TestCase
         $this->assertEquals(count($merchants), 1);
     }
 
+    public function testDetachMerchantWithOtpVerification()
+    {
+        $user = $this->fixtures->create('user');
+
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
+
+        $testData = $this->testData['testDetachMerchant'];
+
+        $content = [
+            'otp'         => '0007',
+            'token'       => '10000000000000',
+            'role'        => 'owner',
+            'merchant_id' => $merchant['id']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/detach/otp_verify';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $this->startTest($testData);
+
+        $merchants = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'role');
+
+        $this->assertEquals(count($merchants), 1);
+    }
+
+    public function testDetachMerchantWithOtpVerificationFailed()
+    {
+        $user = $this->fixtures->create('user');
+
+        $ownerUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/detach/otp_verify';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $this->startTest();
+
+        $merchants = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'role');
+
+        $this->assertEquals(count($merchants), 1);
+    }
+
     public function testUpdateMerchant()
     {
         $user = $this->fixtures->create('user');
@@ -6971,6 +7090,83 @@ class UserTest extends TestCase
         $this->assertEquals(count($merchants), 2);
 
         $this->assertEquals($merchants['manager'], $merchant['id']);
+    }
+
+    public function testUpdateMerchantWithOtpVerification()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $ownerUser = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
+
+        $testData = $this->testData['testUpdateMerchant'];
+
+        $content = [
+            'otp'         => '0007',
+            'token'       => '10000000000000',
+            'role'        => 'manager',
+            'merchant_id' => $merchant['id']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/update/otp_verify';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $this->startTest($testData);
+
+        $merchants = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'role');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertEquals($merchants['manager'], $merchant['id']);
+    }
+
+    public function testUpdateMerchantWithOtpVerificationFailed()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $ownerUser = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/update/otp_verify';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
+
+        $this->startTest();
     }
 
     public function testUpdateUserRoleByOwner()

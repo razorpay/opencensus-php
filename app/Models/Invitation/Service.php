@@ -130,6 +130,18 @@ class Service extends Base\Service
         return $invitation->toArrayPublic();
     }
 
+    public function deleteWithOtpVerification(string $inviteId, array $input): array
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        (new \RZP\Models\User\Core())->verifyOtp($input + ['action' => 'delete_invitation'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        return $this->delete($inviteId);
+    }
+
     /**
      * This operation will only be done by merchant.
      *

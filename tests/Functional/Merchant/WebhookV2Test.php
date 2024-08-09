@@ -240,6 +240,49 @@ class WebhookV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWebhookForBankingWithMFNFeatureEnabledWithOtpVerification()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::MFN]);
+
+        $testData = $this->testData['testCreateWebhookForBankingWithMFNFeatureEnabled'];
+        $testData['request']['url'] .= '/otp_verify';
+        $testData['request']['content']['otp'] = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateWebhookForBankingWithMFNFeatureEnabledWithOtpVerificationFailure()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::MFN]);
+
+        $testData = $this->testData['testCreateWebhookForBankingWithMFNFeatureEnabled'];
+        $testData['request']['url'] .= '/otp_verify';
+        $testData['request']['content']['otp'] = '0000';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+
+        $testData['response']['content']['error']['description'] = 'Verification failed because of incorrect OTP.';
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_INCORRECT_OTP;
+
+        $this->startTest($testData);
+    }
+
     public function testCreateWebhookWithPayoutCreatedEvent()
     {
         $this->fixtures->create('merchant_detail',[
@@ -263,6 +306,45 @@ class WebhookV2Test extends TestCase
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->startTest();
+    }
+
+    public function testUpdateWebhookWithPayoutCreatedEventWithOtpVerification()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 4
+        ]);
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $testData = $this->testData['testUpdateWebhookWithPayoutCreatedEvent'];
+        $testData['request']['url'] .= '/otp_verify';
+        $testData['request']['content']['otp'] = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdateWebhookWithPayoutCreatedEventWithOtpVerificationFailure()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 4
+        ]);
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $testData = $this->testData['testUpdateWebhookWithPayoutCreatedEvent'];
+        $testData['request']['url'] .= '/otp_verify';
+        $testData['request']['content']['otp'] = '0000';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+
+        $testData['response']['content']['error']['description'] = 'Verification failed because of incorrect OTP.';
+
+        $testData['exception']['class'] = \RZP\Exception\BadRequestException::class;
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_INCORRECT_OTP;
+
+        $this->startTest($testData);
     }
 
     public function testCreateWebhookForPrimary()

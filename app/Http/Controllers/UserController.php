@@ -155,6 +155,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function changeUserPasswordWithOtpVerification()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->changePasswordWithOtpVerification($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getCheckUserHasSetPassword()
     {
         $data = $this->service()->checkUserHasSetPassword();
@@ -196,6 +205,17 @@ class UserController extends Controller
         $input['action'] = $action;
 
         $data = $this->service()->updateMerchantManageTeam($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateUserMappingWithOtpVerification(string $id, string $action)
+    {
+        $input = Request::all();
+
+        $input['action'] = $action;
+
+        $data = $this->service()->updateMerchantManageTeamWithOtpVerification($id, $input);
 
         return ApiResponse::json($data);
     }
