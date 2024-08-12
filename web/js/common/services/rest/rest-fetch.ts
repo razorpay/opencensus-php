@@ -92,6 +92,7 @@ export async function fetchUCS<T extends any>(
         Accept: 'application/json, text/plain, */*',
         'X-Razorpay-Mode': getMode(),
         'X-Razorpay-Merchant-Id': window.rzp_user.current,
+        'X-User-Id': window.rzp_user?.user?.id,
         ...options?.headers,
       },
     });
