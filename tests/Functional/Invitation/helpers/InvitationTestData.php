@@ -145,6 +145,31 @@ return [
         ]
     ],
 
+    'testPostSendInvitationToNewUserWithMobile' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'contact_mobile' => '+918888888888',
+                'role'           => 'partner_agent',
+                'sender_name'    => 'sender name',
+                'metadata'       => [
+                    'name'       => 'invitee name'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'    => '1000InviteMerc',
+                'contact_mobile' => '+918888888888',
+                'role'           => 'partner_agent',
+                'metadata'       => [
+                    'name'       => 'invitee name'
+                ]
+            ]
+        ]
+    ],
+
     'testPostSendInvitationToNewUserForPartnerAgent' => [
         'request' => [
             'url'    => '/invitations',
@@ -164,7 +189,6 @@ return [
         ]
     ],
 
-
     'testAddingMetadataToInvitationEntityForPartnerAgent' => [
         'request' => [
             'url'    => '/invitations',
@@ -173,12 +197,12 @@ return [
                 'email'       => 'testteaminvite@razorpay.com',
                 'role'        => 'partner_agent',
                 'sender_name' => 'partner_name',
+                'contact_mobile'    => '73555206348',
                 'metadata' => [
-                    'employee_code' => '133456',
-                    'city' => 'Khalilabad',
-                    'hiring_manager'=>'Udit Mishra',
-                    'team'=>'omni_acquisition',
-                    'contact_mobile'=> '73555206348',
+                    'employee_code'     => '133456',
+                    'city'              => 'Khalilabad',
+                    'hiring_manager'    => 'Udit Mishra',
+                    'team'              => 'omni_acquisition',
                 ]
             ]
         ],
@@ -186,7 +210,8 @@ return [
             'content' => [
                 'merchant_id' => '1000InviteMerc',
                 'email'       => 'testteaminvite@razorpay.com',
-                'role'        => 'partner_agent'
+                'role'        => 'partner_agent',
+                'contact_mobile'    => '73555206348',
             ]
         ]
     ],
@@ -299,6 +324,32 @@ return [
         ],
     ],
 
+    'testPostSendInvitationToExistingTeamUserWithMobile' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'token'          => str_random(40),
+                'contact_mobile' => 'dummy-replace',
+                'role'           => 'partner_agent',
+                'sender_name'    => 'sender_name',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    // 'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'User with given phone number is already a member of the team',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER_FOR_PHONE,
+        ],
+    ],
+
     'testPostSendInvitationToInvitedUser' => [
         'request' => [
             'url'     => '/invitations',
@@ -322,6 +373,35 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_INVITED,
+        ],
+    ],
+
+    'testPostSendInvitationToInvitedUserWithMobile' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile' => '+918888888888',
+                'token'          => str_random(40),
+                'role'           => 'partner_agent',
+                'sender_name'    => 'sender_name',
+                'metadata'       => [
+                    'name'       => 'invitee name'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    // 'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVITATION_USER_ALREADY_INVITED_FOR_PHONE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_INVITED_FOR_PHONE,
         ],
     ],
 
@@ -440,6 +520,26 @@ return [
         ]
     ],
 
+    'testPostResendInvitationWithMobile' => [
+        'request' => [
+            'url'     => '/invitations/8hd48md930kel3/resend',
+            'method'  => 'PUT',
+            'content' => [
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile' => '+918888888888',
+                'role'           => 'partner_agent',
+                'merchant_id'    => '1000InviteMerc',
+                'metadata'       => [
+                    'name'       => 'invitee name'
+                ]
+            ]
+        ]
+    ],
+
     'testEmailDraftInvitations' => [
         'request' => [
             'url'     => '/draft_invitations/accept',
@@ -477,6 +577,55 @@ return [
                 'email'       => 'testteaminvite@razorpay.com',
             ]
         ]
+    ],
+
+    'testAcceptInvitationWithMobile' => [
+        'request' => [
+            'url'     => '/invitations/dummy-replace/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'role'           => 'partner_agent',
+                'user_id'        => '1000InviteUser',
+                'merchant_id'    => '1000InviteMerc',
+                'contact_mobile' => '5688776655',
+            ]
+        ]
+    ],
+
+    'testAcceptInvitationForRestrictedUserWithMobile' => [
+        'request'   => [
+            'url'     => '/invitations/dummy-replace-id/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVITATION_ACCEPT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_ACCEPT_FAILED,
+        ],
     ],
 
     'testAcceptInvitationByAlreadyExistingUserOnX' => [
@@ -604,6 +753,28 @@ return [
         ]
     ],
 
+    'testRejectInvitationWithMobile' => [
+        'request' => [
+            'url'     => '/invitations/8hd48md930kel3/reject',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id'        => '1000InviteUser',
+                'merchant_id'    => '1000InviteMerc',
+                'role'           => 'partner_agent',
+                'contact_mobile' => '5688776655',
+            ],
+        ]
+    ],
+
     'testInvalidResponseToInvitation' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3/something',
@@ -670,6 +841,29 @@ return [
                 'role'        => 'finance',
                 'email'       => 'update@razorpay.com',
                 'merchant_id' => '1000InviteMerc',
+            ]
+        ]
+    ],
+
+    'testUpdateInvitationWithMobile' => [
+        'request' => [
+            'url'     => '/invitations/dummy-replace-id',
+            'method'  => 'PATCH',
+            'content' => [
+                'role'  => 'partner_agent',
+                'metadata' => [
+                    'name' => 'name2'
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'role'           => 'partner_agent',
+                'contact_mobile' => '+918888888888',
+                'merchant_id'    => '1000InviteMerc',
+                'metadata' => [
+                    'name' => 'name2'
+                ],
             ]
         ]
     ],
@@ -797,6 +991,14 @@ return [
                     'role'        => 'finance',
                     'email'       => 'pending2@razorpay.com',
                     'merchant_id' => '1000InviteMerc',
+                ],
+                [
+                    'role'           => 'partner_agent',
+                    'contact_mobile' => '918888888888',
+                    'merchant_id'    => '1000InviteMerc',
+                    'metadata'       => [
+                        'name'       => 'invitee name'
+                    ]
                 ],
             ],
         ]
@@ -1519,5 +1721,5 @@ return [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCOUNTING_PAYOUTS_SERVICE_FAILED
         ],
-    ]
+    ],
 ];

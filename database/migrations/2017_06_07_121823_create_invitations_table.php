@@ -26,7 +26,15 @@ class CreateInvitationsTable extends Migration
             $table->char(Invitation::USER_ID, Invitation::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Invitation::EMAIL);
+            $table->string(Invitation::EMAIL)->nullable();
+
+            $table->string(Invitation::NAME)->nullable();
+
+            $table->string(Invitation::CONTACT_MOBILE, 15)
+                  ->nullable();
+            
+            $table->json(Invitation::METADATA)
+                  ->nullable();
 
             $table->string(Invitation::TOKEN, Invitation::TOKEN_LENGTH)
                   ->unique();
@@ -47,6 +55,8 @@ class CreateInvitationsTable extends Migration
             $table->integer(Invitation::UPDATED_AT);
 
             $table->index(Invitation::EMAIL);
+
+            $table->index(Invitation::CONTACT_MOBILE);
 
             $table->index(Invitation::CREATED_AT);
 

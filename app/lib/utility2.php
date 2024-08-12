@@ -207,3 +207,41 @@ if (! function_exists('convert_to_header_format'))
         return $header;
     }
 }
+
+
+if (! function_exists('trim_string_to_width'))
+{
+
+    /**
+     * This function can be used while preparing payload to send notifications via stork (to fit 160 char limit for SMS)
+     *
+     * @param string $string
+     * @param int    $width
+     * @param string $suffix
+     */
+    function trim_string_to_width($string, $width = 25, $suffix = "")
+    {
+        return mb_strimwidth($string ?? "", 0, $width, $suffix);
+    }
+}
+
+if (! function_exists('merge_jsons'))
+{
+    function merge_jsons($existingDetails, $newDetails)
+    {
+        if (empty($existingDetails) === true)
+        {
+            return $newDetails;
+        }
+
+        if (empty($newDetails) === false)
+        {
+            foreach ($newDetails as $key => $value)
+            {
+                $existingDetails[$key] = $value;
+            }
+        }
+
+        return $existingDetails;
+    }
+}

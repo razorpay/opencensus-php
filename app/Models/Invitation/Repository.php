@@ -4,6 +4,7 @@ namespace RZP\Models\Invitation;
 
 use RZP\Models\Base;
 use RZP\Models\Invitation\Entity;
+use Lib\PhoneBook;
 
 class Repository extends Base\Repository
 {
@@ -22,6 +23,14 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, $id)
                     ->where(Entity::EMAIL, $email)
                     ->firstOrFailPublic();
+    }
+
+    public function findByIdAndEmailNullable(string $id, string $email)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, $id)
+                    ->where(Entity::EMAIL, $email)
+                    ->first();
     }
 
     public function updateIsDraftToFalse($inviteIdArray)
@@ -59,5 +68,18 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::IS_DRAFT, 1)
             ->get()->callOnEveryItem('toArrayPublic');
+    }
+
+    public function findByIdAndContactMobile(string $id, string $rawContactMobile)
+    {
+
+        $validContactMobileFormats = (new PhoneBook($rawContactMobile, true))->getMobileNumberFormats();
+        // Add unformatted contact to the query
+        array_unshift($validContactMobileFormats, $rawContactMobile);
+
+        return $this->newQuery()
+            ->where(Entity::ID, $id)
+            ->whereIn(Entity::CONTACT_MOBILE, $validContactMobileFormats)
+            ->firstOrFailPublic();
     }
 }

@@ -772,7 +772,9 @@ class Core extends Base\Core
         }
 
         //Fetch Metadata from invitation entity
-        $metadata = $input['invitation']['metadata'];
+        $metadata = $input['invitation']['metadata'] ?? null;
+
+        $contactMobile = $input['invitation']['contact_mobile'] ?? null;
 
         unset($input[MerchantEntity::SIGNUP_SOURCE]);
 
@@ -786,18 +788,16 @@ class Core extends Base\Core
 
         $user = $this->getUserEntity()->build($input, $operation);
 
+        //If contact mobile is present then set same contact mobile to user->contact_mobile and mark it as not verified
+        if (empty($contactMobile) == false)
+        {
+            $user->setContactMobile($contactMobile);
+            $user->setContactMobileVerified(false);
+        }
+
         // If metadata fetched from invitations entity is not empty set same metadata to user's Metadata
-        if (empty($metadata) == false) {
-
-            //If contact mobile is present inside metadata then set same contact mobile to user->contactMobile and mark setContactMobileVerified as false(Not verified)
-            if (empty($metadata['contact_mobile'] == false)){
-                $user->setContactMobile($metadata['contact_mobile']);
-                $user->setContactMobileVerified(false);
-            }
-
-           // Removing contact mobile from metadata before setting it to users metadata
-            unset($metadata['contact_mobile']);
-
+        if (empty($metadata) == false)
+        {
             $user->metadata = $metadata;
         }
 
@@ -6046,7 +6046,6 @@ class Core extends Base\Core
                               ->get()
                               ->callOnEveryItem('toArrayUser');
         }
-
         // this is to verify if user has access to merchant
         // for the given product
         $merchantForCurrentProduct = array_filter(

@@ -14,14 +14,17 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes, AsvGetAttribute;
 
-    const USER_ID      = 'user_id';
-    const EMAIL        = 'email';
-    const TOKEN        = 'token';
-    const ROLE         = 'role';
-    const ROLE_NAME    = 'role_name';
-    const DELETED_AT   = 'deleted_at';
-    const PRODUCT      = 'product';
-    const METADATA     = 'metadata';
+    const USER_ID           = 'user_id';
+    // Note: name is stored inside metadata
+    const METADATA          = 'metadata';
+    const NAME              = 'name';
+    const EMAIL             = 'email';
+    const CONTACT_MOBILE    = 'contact_mobile';
+    const TOKEN             = 'token';
+    const ROLE              = 'role';
+    const ROLE_NAME         = 'role_name';
+    const DELETED_AT        = 'deleted_at';
+    const PRODUCT           = 'product';
 
     const INVITATIONTYPE = 'invitation_type';
     const INVITATION_DETAILS = 'invitation_details';
@@ -41,6 +44,8 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::EMAIL,
+        self::CONTACT_MOBILE,
+        self::METADATA,
         self::ROLE,
         self::USER_ID,
         self::PRODUCT,
@@ -53,6 +58,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ROLE,
         self::EMAIL,
+        self::CONTACT_MOBILE,
+        self::METADATA,
         self::TOKEN,
         self::PRODUCT,
         self::IS_DRAFT,
@@ -64,7 +71,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::METADATA                       => null
+        self::METADATA                  => null
     ];
 
     protected $hidden = [
@@ -121,6 +128,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMAIL);
     }
 
+    public function getContactMobile()
+    {
+        return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
+    public function getMetadata()
+    {
+        if (empty($this->getAttribute(self::METADATA)) === true) return [];
+        return $this->getAttribute(self::METADATA);
+    }
+
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
@@ -163,14 +181,16 @@ class Entity extends Base\PublicEntity
         $app = App::getFacadeRoot();
 
         $attributes = [
-            self::ID            => $this->getAttribute(self::ID),
-            self::EMAIL         => $this->getAttribute(self::EMAIL),
-            self::ROLE          => $this->getAttribute(self::ROLE),
-            self::USER_ID       => $this->getAttribute(self::USER_ID),
-            self::MERCHANT_ID   => $this->getAttribute(self::MERCHANT_ID),
-            self::PRODUCT       => $this->getAttribute(self::PRODUCT),
-            self::IS_DRAFT      => $this->getAttribute(self::IS_DRAFT),
-            self::MERCHANT_NAME => $this->merchant->getName(),
+            self::ID                => $this->getAttribute(self::ID),
+            self::EMAIL             => $this->getAttribute(self::EMAIL),
+            self::CONTACT_MOBILE    => $this->getAttribute(self::CONTACT_MOBILE),
+            self::METADATA          => $this->getMetadata(),
+            self::ROLE              => $this->getAttribute(self::ROLE),
+            self::USER_ID           => $this->getAttribute(self::USER_ID),
+            self::MERCHANT_ID       => $this->getAttribute(self::MERCHANT_ID),
+            self::PRODUCT           => $this->getAttribute(self::PRODUCT),
+            self::IS_DRAFT          => $this->getAttribute(self::IS_DRAFT),
+            self::MERCHANT_NAME     => $this->merchant->getName(),
         ];
 
         if($this->getAttribute(self::PRODUCT) ===  Product::BANKING)

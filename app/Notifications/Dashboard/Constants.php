@@ -8,7 +8,10 @@ class Constants
 {
     const PARAMS                                   = 'params';
 
+    // SMS namespaces
     const PAYMENTS_DASHBOARD                       = 'payments_dashboard';
+    
+    const PARTNERSHIPS                             = 'partnerships';
 
     const MERCHANT                                 = 'merchant';
 

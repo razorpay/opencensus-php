@@ -7245,5 +7245,8 @@ ALTER TABLE credit_transaction
 
 ALTER TABLE transfers ADD COLUMN source_channel varchar(15) DEFAULT 'online';
 
+ALTER TABLE invitations ADD COLUMN contact_mobile VARCHAR(15) DEFAULT NULL, ADD INDEX `contact_mobile_index` (`contact_mobile`);
+ALTER TABLE invitations MODIFY COLUMN email VARCHAR(255) DEFAULT NULL;
+
 ALTER TABLE invitations ADD COLUMN metadata JSON DEFAULT NULL;
 ALTER TABLE users ADD COLUMN metadata JSON DEFAULT NULL;

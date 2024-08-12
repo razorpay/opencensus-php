@@ -4053,6 +4053,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_ACCEPT_FAILED                              = 'INVITATION_ACCEPT_FAILED';
     const INVITATION_SEND_NOTIFICATION_TO_OWNER_FAILED          = 'INVITATION_SEND_NOTIFICATION_TO_OWNER_FAILED';
     const INVITATION_ALREADY_EXISTS                             = 'INVITATION_ALREADY_EXISTS';
+    const SEND_PARTNER_AGENT_INVITE_SMS                         = 'SEND_PARTNER_AGENT_INVITE_SMS';
+    const SEND_PARTNER_AGENT_INVITE_SMS_FAILED                  = 'SEND_PARTNER_AGENT_INVITE_SMS_FAILED';
 
     // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                           = 'GATEWAY_RULE_CREATE_REQUEST';

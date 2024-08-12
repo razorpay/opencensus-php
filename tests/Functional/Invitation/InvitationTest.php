@@ -10,8 +10,13 @@ use Nyholm\Psr7\Factory\HttplugFactory;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Tests\Traits\MocksSplitz;
+use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Services\Elfin\Service as ElfinService;
+use RZP\Tests\Functional\Merchant\MerchantTest;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Mail\Invitation\Razorpayx\IntegrationInvite as XAccountingIntegrationInviteMail;
 use RZP\Mail\Invitation\Razorpayx\InvitationNotificationToOwner as XInvitationNotificationToOwner;
@@ -25,12 +30,16 @@ use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 
+
 class InvitationTest extends TestCase
 {
     use CustomBrandingTrait;
+    use MocksSplitz;
     use RequestResponseFlowTrait;
+    use WebhookTrait;
 
     const DEFAULT_MERCHANT_ID = '1000InviteMerc';
+    const DEFAULT_USER_MERCHANT_CONTACT_MOBILE = '+918877665544';
 
     const DEFAULT_X_MERCHANT_ID = '100XInviteMerc';
 
@@ -46,7 +55,13 @@ class InvitationTest extends TestCase
 
         $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_MERCHANT_ID ]);
 
-        $this->merchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID, [
+            'contact_mobile' => self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE,
+        ]);
+
+        $this->merchantTestUtil = new MerchantTest();
+
+        $this->mockStorkService();
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID, $this->merchantUser->getId());
     }
@@ -317,6 +332,30 @@ class InvitationTest extends TestCase
         });
     }
 
+    public function testPostSendInvitationToNewUserWithMobile()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'contact_mobile' => self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE,
+        ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockGimliURLShortener("https://rzp.io/i/test");
+
+        $this->merchantTestUtil->expectStorkSmsRequest(
+            $this->storkMock,
+            'sms.partnerships.invite_partner_agent',
+            '+918888888888',
+            [
+                'name'             => 'invitee name',
+                'inviteLink'       => "https://rzp.io/i/test",
+                'partnerContact'   => self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE
+            ]
+        );
+        $this->startTest();
+
+    }
 
     public function testPostSendInvitationToNewUserForPartnerAgent()
     {
@@ -351,7 +390,6 @@ class InvitationTest extends TestCase
         $this->assertEquals('Khalilabad', $metadata['city']);
         $this->assertEquals('Udit Mishra', $metadata['hiring_manager']);
         $this->assertEquals('omni_acquisition', $metadata['team']);
-        $this->assertEquals('73555206348', $metadata['contact_mobile']);
 
         Mail::assertQueued(InvitationMail::class, function ($mail)
         {
@@ -500,10 +538,24 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
+    public function testPostSendInvitationToExistingTeamUserWithMobile()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['contact_mobile'] = self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE;
+        $this->startTest();
+    }
+
     public function testPostSendInvitationToInvitedUser()
     {
         $this->fixtures->create('invitation');
 
+        $this->startTest();
+    }
+
+    public function testPostSendInvitationToInvitedUserWithMobile()
+    {
+        // Get validation error even if country code is missing
+        $this->fixtures->create('invitation', ['contact_mobile' => '8888888888']);
         $this->startTest();
     }
 
@@ -558,6 +610,27 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
+    public function testPostResendInvitationWithMobile()
+    {
+        $invitation = $this->fixtures->create(
+            'invitation',
+            [
+                'contact_mobile' => '+918888888888',
+                'role'           => 'partner_agent',
+                'email'          => null,
+                'metadata'       => [
+                    'name'  => 'invitee name'
+                ]
+            ]
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/resend';
+
+        $this->startTest();
+    }
+
     public function testAcceptInvitation()
     {
         $this->fixtures->create('user',
@@ -591,6 +664,106 @@ class InvitationTest extends TestCase
         $this->assertEquals('manager', $merchants->role);
     }
 
+    public function testAcceptInvitationWithMobile()
+    {
+        $this->fixtures->create('user',
+            [
+                'id'    => '1000InviteUser',
+                'contact_mobile' => '5688776655'
+            ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'contact_mobile' => '5688776655',
+            'role'           => 'partner_agent',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
+
+        $this->ba->frontendGraphqlAuth();
+
+        $this->startTest();
+
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+
+        $this->assertNull($invite);
+
+        $merchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', '1000InviteUser')
+            ->where('merchant_id', self::DEFAULT_MERCHANT_ID)
+            ->first();
+
+        $this->assertEquals('partner_agent', $merchantUser->role);
+    }
+
+    public function testRejectInvitationWithMobile()
+    {
+        $this->fixtures->create('user',
+            [
+                'id'    => '1000InviteUser',
+                'contact_mobile' => '5688776655'
+            ]);
+
+        $invitation = $this->fixtures->create('invitation',
+            [
+                'user_id'        => '1000InviteUser',
+                'contact_mobile' => '5688776655',
+                'role'           => 'partner_agent',
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/reject';
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNotNull('deleted_at')
+            ->first();
+
+        $this->assertNotNull($invite);
+
+        $merchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', '1000InviteUser')
+            ->where('merchant_id', self::DEFAULT_MERCHANT_ID)
+            ->first();
+
+        $this->assertNull($merchantUser);
+    }
+
+    public function testAcceptInvitationForRestrictedUserWithMobile()
+    {
+        $this->mockRazorxTreatment();
+
+        $user = $this->fixtures->create('user',
+            [
+                'id'             => '1000InviteUser',
+                'contact_mobile' => '5688776655',
+                'email'          => null
+            ]);
+
+        $merchantIdsCaller = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->edit($merchantIdsCaller[0], ['restricted' => true]);
+
+        $invitation = $this->fixtures->create('invitation',
+            ['contact_mobile' => '5688776655']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
     public function testAcceptInvitationByAlreadyExistingUserOnX()
     {
         $this->mockRazorxTreatment('on');
@@ -785,10 +958,10 @@ class InvitationTest extends TestCase
         $this->fixtures->create('user',
             [
                 'id'    => '1000InviteUser',
-                'email' => 'testteaminvite@razorpay.com'
+                'email' => 'testteaminvite@razorpay.com',
             ]);
 
-        $invitation = $this->fixtures->create('invitation', [ 'email' => 'other@razorpay.com']);
+        $invitation = $this->fixtures->create('invitation', [ 'email' => 'other@razorpay.com', 'contact_mobile' => null]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -802,6 +975,17 @@ class InvitationTest extends TestCase
     public function testUpdateInvitation()
     {
         $invitation = $this->fixtures->create('invitation', ['email' => 'update@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'];
+
+        $this->startTest();
+    }
+
+    public function testUpdateInvitationWithMobile()
+    {
+        $invitation = $this->fixtures->create('invitation', ['contact_mobile' => '+918888888888']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -908,11 +1092,20 @@ class InvitationTest extends TestCase
                 'role'        => 'finance',
             ]);
 
+        $this->fixtures->create(
+            'invitation',
+            [
+                'contact_mobile' => '+918888888888',
+                'role'           => 'partner_agent',
+                'email'          => null,
+            ]
+        );
+
         $testData = & $this->testData[__FUNCTION__];
 
         $response = $this->makeRequestAndGetContent($testData['request']);
 
-        $this->assertEquals(count($response), 2);
+        $this->assertEquals(count($response), 3);
     }
 
     public function testGetPendingInvitationsForBanking()
@@ -1926,4 +2119,18 @@ class InvitationTest extends TestCase
 
         return $httpMock;
     }
+
+    protected function mockGimliURLShortener($url = "https://rzp.io/i/token")
+    {
+        $gimli = $this->createMock(Gimli::class);
+        $gimli->method('expandAndGetMetadata')->willReturn(null);
+
+        $elfin = $this->createMock(ElfinService::class);
+        $elfin->method('driver')->willReturn($gimli);
+        $elfin->method('shorten')->willReturn($url);
+
+        $this->app->instance('elfin', $elfin);
+    }
+
+
 }

@@ -927,6 +927,8 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT                          = 'User doesn\'t belong to the current merchant';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
+    const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED_FOR_PHONE                 = 'Invitation is already sent to the phone number';
+    const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER_FOR_PHONE                  = 'User with given phone number is already a member of the team';
     const BAD_REQUEST_INVITATION_CREATE_FAILED                                  = 'Invitation create failed either due to user invited is restricted or merchant is restricted';
     const BAD_REQUEST_INVITATION_ACCEPT_FAILED                                  = 'Invitation accept failed either due to user invited is restricted or merchant is restricted';
     const BAD_REQUEST_INVITATION_DETAILS_FIRST_NAME_MISSING                     = 'First name not present in invitation details';

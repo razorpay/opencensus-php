@@ -12654,16 +12654,16 @@ class UserTest extends TestCase
         $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
 
         $invitation = $this->fixtures->create('invitation', [
-            'email'       => 'vendorportal@razorpay.com',
-            'merchant_id' => '1DummyMerchant',
-            'role'        => 'vendor',
-            'product'     => 'banking',
+            'email'             => 'vendorportal@razorpay.com',
+            'contact_mobile'    => '7355206348',
+            'merchant_id'       => '1DummyMerchant',
+            'role'              => 'vendor',
+            'product'           => 'banking',
             'metadata' => [
-                'employee_code' => '133456',
-                'city' => 'Khalilabad',
-                'hiring_manager'=>'Udit Mishra',
-                'team'=>'omni_acquisition',
-                'contact_mobile'=> '7355206348',
+                'employee_code'  => '133456',
+                'city'           => 'Khalilabad',
+                'hiring_manager' => 'Udit Mishra',
+                'team'           => 'omni_acquisition',
             ]
         ]);
 

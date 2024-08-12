@@ -26,16 +26,15 @@ class Service extends Base\Service
     public function create(array $input): array
     {
         $input[Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
-
         $properties = [
-            'id'            => $input[Entity::EMAIL],
+            'id'            => $input[Entity::EMAIL] ?? null,
             'experiment_id' => $this->app['config']->get('app.invite_merchant_with_2FA_experiment_id'),
         ];
 
         $isLinkedAccount = $this->merchant->isLinkedAccount();
 
-        $isOtpVerificationExperimentEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enabled');
-
+        $isOtpVerificationExperimentEnabled = empty($input[Entity::EMAIL]) === false ? $this->core()->isSplitzExperimentEnable($properties, 'enabled') : false;
+        
         if ($isLinkedAccount === false && ($this->auth->getProduct() === Product::BANKING || $isOtpVerificationExperimentEnabled))
         {
             (new Validator())->setStrictFalse()->validateInput(Validator::CREATE_INVITATION_VERIFY_OTP, $input);
@@ -168,12 +167,33 @@ class Service extends Base\Service
     {
         $user = $this->app['basicauth']->getUser();
 
-        $userEmail = $user ? $user->getEmail() : $input['email'];
+        // Fill default email/contact from user's session if available
+        $input[Entity::EMAIL] = optional($user)->getEmail() ?? $input[Entity::EMAIL] ?? null;
+        $input[Entity::CONTACT_MOBILE] = optional($user)->getContactMobile() ?? $input[Entity::CONTACT_MOBILE] ?? null;
+        
+        // Validate including user's session email/mobile
+        (new Entity)->getValidator()->setStrictFalse()->validateInput(Validator::ACCEPT_REJECT_INVITATION, $input);
 
-        unset($input['email']);
+        // Try to find given invitation by id and email from input/user session
+        if (empty($input[Entity::EMAIL]) === false)
+        {
+            $invitation = $this->repo->invitation->findByIdAndEmailNullable($inviteId, $input[Entity::EMAIL]);
+        }
+        
+        // Find by contact mobile if invitation not found
+        if (empty($invitation) === true and empty($input[Entity::CONTACT_MOBILE]) === false){
+            $invitation = $this->repo->invitation->findByIdAndContactMobile($inviteId, $input[Entity::CONTACT_MOBILE]);
+        }
+        
+        // Throw no records found exception if invitation not found by both contact and email
+        if (empty($invitation) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+        }
 
-        $invitation = $this->repo->invitation->findByIdAndEmail($inviteId, $userEmail);
-
+        // Unset inputs for core action
+        unset($input[Entity::EMAIL]);
+        unset($input[Entity::CONTACT_MOBILE]);
         $this->core()->action($invitation, $input);
 
         return $invitation->toArrayPublic();

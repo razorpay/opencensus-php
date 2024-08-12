@@ -20,6 +20,7 @@ use RZP\Jobs\XperienceUserInviteAcceptedRequestJob;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Mail\Invitation\Invite as InvitationMail;
+use RZP\Notifications\Dashboard\Constants as NotificationConstants;
 use RZP\Mail\Invitation\Razorpayx\BankLmsInvite as BankLmsInvite;
 use RZP\Mail\Invitation\Razorpayx\IntegrationInvite as XAccountingIntegrationInviteMail;
 use RZP\Mail\Invitation\Razorpayx\InvitationNotificationToOwner;
@@ -27,6 +28,7 @@ use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
 use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite as VendorPortalInvitationMail;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Invitation\Constants as InvitationConstants;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\User;
@@ -35,6 +37,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Tests\P2p\Service\Base\Traits;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
+use RZP\Models\User\Role;
 
 define('JOINING_INTEGRATION_INVITATION', 'joining_integration_invitation');
 
@@ -56,6 +59,7 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
+        $this->elfin = $this->app['elfin'];
 
         $this->vendorPortalService = $this->app['vendor-portal'];
 
@@ -70,11 +74,16 @@ class Core extends Base\Core
 
         $invitation->merchant()->associate($this->merchant);
 
+        if (empty($input[Entity::METADATA]) === false)
+        {
+            $input[Entity::METADATA] = merge_jsons($invitation->getMetadata(), $input[Entity::METADATA]);
+        }
+        
         $invitation->build($input);
 
         $senderName = $this->getSenderName($input);
 
-        $invitedUser = $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL]));
+        $invitedUser = empty($input[Entity::EMAIL]) === false ? $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL])) :  null;
 
         $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
 
@@ -116,11 +125,6 @@ class Core extends Base\Core
             $invitation->user()->associate($invitedUser);
         }
 
-        // Handle saving the invitation entity, including metadata
-        if (empty($input['metadata']) == false) {
-            $invitation->metadata = $input['metadata'];
-        }
-
         $this->repo->saveOrFail($invitation);
 
         $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());
@@ -137,7 +141,10 @@ class Core extends Base\Core
         }
 
         $invitationDetails = $input[Entity::INVITATION_DETAILS] ?? [];
-        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $isIntegrationInvite, $invitationDetails);
+
+        $this->sendEmailIfApplicable($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $isIntegrationInvite, $invitationDetails);
+        
+        $this->sendSMSIfApplicable($invitation, $invitedUserExists, 'create');
 
         $this->pushSelfServeSuccessEventsToSegmentForMemberInvitation();
 
@@ -332,16 +339,16 @@ class Core extends Base\Core
         unset($input[Entity::INVITATION_DETAILS]);
 
         $invitation->edit($input, 'resend');
-
+        
         $senderName = $this->getSenderName($input);
-
-        $invitedUser = $this->repo->user->getUserFromEmail($invitation->getEmail());
-
+        $invitationEmail = $invitation->getEmail();
+        $invitedUser = empty($invitationEmail) === false ? $this->repo->user->getUserFromEmail($invitationEmail) : null;
         $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
-
         $invitedUserExists = (empty($invitedUser) === false);
 
-        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, false, $invitationDetails);
+        $this->sendEmailIfApplicable($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, false, $invitationDetails);
+
+        $this->sendSMSIfApplicable($invitation, $invitedUserExists, 'resend');
 
         return $invitation;
     }
@@ -362,7 +369,7 @@ class Core extends Base\Core
 
             $invitedUserExists = (empty($invitedUser) === false);
 
-            $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
+            $this->sendEmailIfApplicable($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
 
         }
         $arr = $this->merchant->invitations()->get()->callOnEveryItem('toArrayPublic');
@@ -529,13 +536,77 @@ class Core extends Base\Core
         }
     }
 
-    protected function sendEmail(Entity     $invitation,
+    private function sendSMSForPartnerAgentInvite(Entity     $invitation, bool $invitedUserExists)
+    {
+        $token = $invitation->getToken();
+        $partnerMerchant = $this->merchant;
+
+        $metadata = $invitation->getMetadata();
+        $trimmedName = trim_string_to_width($metadata["name"] ?? '', 13, "");
+
+        $appInstallUrl = sprintf(InvitationConstants::PARTNER_AGENT_APP_INSTALL_URL, $token);
+        $inviteLink = $this->elfin->shorten($appInstallUrl);
+
+        $contentParams = [
+            'name'             => $trimmedName,
+            'inviteLink'       => $inviteLink,
+            'partnerContact'   => optional($partnerMerchant->merchantDetail)->getContactMobile() ?? '',
+        ];
+
+        $smsPayload = [
+            'language'          => NotificationConstants::ENGLISH,
+            'ownerType'         => NotificationConstants::MERCHANT,
+            'templateNamespace' => NotificationConstants::PARTNERSHIPS,
+            'destination'       => $invitation->getContactMobile(),
+            'orgId'             => $partnerMerchant->getOrgId(),
+            'ownerId'           => $partnerMerchant->getId(),
+            'contentParams'     => $contentParams,
+            'sender'            => NotificationConstants::RZRPAY,
+            'templateName'      => InvitationConstants::PARTNER_AGENT_APP_INVITE_SMS_TEMPLATE,
+        ];
+
+        $tracePayload = [
+            'partner_id'        => $partnerMerchant->getId(),
+            'invite_id'         => $invitation->getId(),
+            'templateName'      => InvitationConstants::PARTNER_AGENT_APP_INVITE_SMS_TEMPLATE,
+        ];
+        $traceCode      = TraceCode::SEND_PARTNER_AGENT_INVITE_SMS;
+        $errorTraceCode = TraceCode::SEND_PARTNER_AGENT_INVITE_SMS_FAILED;
+
+        try {
+            $this->app->stork_service->sendSms($this->mode, $smsPayload);
+
+            $this->trace->info($traceCode, $tracePayload);
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, Trace::CRITICAL, $errorTraceCode, $tracePayload);
+        }
+    }
+
+    private function sendSMSIfApplicable(Entity     $invitation, bool $invitedUserExists, string $inviteMode)
+    {
+        if (empty($invitation->getContactMobile()) === true)
+        {
+            return;
+        }
+
+        if ($invitation->getRole() === Role::PARTNER_AGENT && ($inviteMode === 'create' || $inviteMode === 'resend'))
+        {
+            $this->sendSMSForPartnerAgentInvite($invitation, $invitedUserExists);
+        }
+    }
+
+    protected function sendEmailIfApplicable(Entity     $invitation,
                                  string     $senderName,
                                  bool       $invitedUserExists,
                                  Collection $allMerchantsForInvitedUser = null,
                                  bool       $isIntegrationInvite = false,
                                  array      $invDetails = null)
     {
+        if (empty($invitation->getEmail()) === true) 
+        {
+            return;
+        }
+
         $product = $invitation->getProduct();
 
         $org = OrgWiseConfig::getOrgDataForEmail($this->merchant);
@@ -979,4 +1050,5 @@ class Core extends Base\Core
 
         return $this->create($input);
     }
+
 }
