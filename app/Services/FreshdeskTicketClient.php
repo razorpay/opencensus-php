@@ -45,7 +45,8 @@ class FreshdeskTicketClient
         Constants::URLX        => 'tokenx',
         Constants::URLCAP      => 'tokencap',
         Constants::URLIND      => 'tokenind',
-        Constants::URL_EZETAP  => 'token_ezetap'
+        Constants::URL_EZETAP  => 'token_ezetap',
+        Constants::URLMY      => 'tokenmy'
     ];
 
     public function __construct(Application $app)
@@ -99,7 +100,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(self::FILTER_TICKETS . '?' . $queryString, $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
@@ -119,7 +120,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(self::CREATE_TICKET, $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
 
@@ -139,7 +140,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(self::SEND_OUTBOUND_EMAIL, $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
 
@@ -163,7 +164,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(sprintf(self::FETCH_CONVERSATIONS, $ticketId) . '?' . $queryString, $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
@@ -184,7 +185,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(sprintf(self::FETCH_TICKET, $ticketId) . '?include=stats', $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
@@ -197,7 +198,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(self::LIST_TICKETS . '?' . $queryString.'&include=description', $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
@@ -210,7 +211,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(self::FETCH_AGENTS . '?' . $queryString, $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
@@ -223,7 +224,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(sprintf(self::FETCH_TICKET, $ticketId) . '?include=requester', $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
@@ -236,7 +237,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(sprintf(self::FETCH_AGENT, $agentId), $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
@@ -249,7 +250,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(sprintf(self::UPDATE_TICKET, $ticketId), $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_PUT, $url, $auth, $input);
 
@@ -262,7 +263,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(sprintf(self::UPDATE_NOTE, $ticketId), $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
 
@@ -284,7 +285,7 @@ class FreshdeskTicketClient
 
         $url = $this->getUrl(sprintf(self::POST_TICKET_REPLY, $ticketId), $urlKey);
 
-        $auth = $this->getAuth($authKey);
+        $auth = $this->getAuth($authKey, $urlKey);
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
 
@@ -297,11 +298,19 @@ class FreshdeskTicketClient
      * @param $urlKey
      * @return string
      */
-    protected function getUrl($route, $urlKey = 'urlind') : string
+    protected function getUrl($route, $urlKey = 'urlind'): string
     {
-        if ($this->isSandbox === true)
-        {
-            return trim($this->config['sandbox_url']) . '/' . $route;
+        if ($this->isSandbox === true) {
+            $sandboxUrl = ($urlKey === Constants::URLMY)
+                ? trim($this->config['sandbox_url_my']) . '/' . $route
+                : trim($this->config['sandbox_url']) . '/' . $route;
+
+            $this->trace->info(
+                TraceCode::FRESHDESK_SUPPORT_TICKETS_INSTANCE,
+                ['final_URL' => $sandboxUrl]
+            );
+
+            return $sandboxUrl;
         }
 
         return trim($this->config[$urlKey]) . '/' . $route;
@@ -352,9 +361,11 @@ class FreshdeskTicketClient
     {
         $fdInstance = $this->getFdInstanceFromUrl($request['url']);
 
+        $trace_request = $this->getRedactedRequest($request);
         $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_INSTANCE,
-            [ '$fdInstance', $fdInstance]
+            [TraceCode::FRESHDESK_INSTANCE, $fdInstance, TraceCode::FD_URL, $request['url'], 'request', $trace_request]
         );
+
         $startTimeMs = round(microtime(true) * 1000);
 
         $response = Requests::request(
@@ -626,7 +637,7 @@ class FreshdeskTicketClient
         return $request;
     }
 
-    private function getAuth($authKey = 'token') : string
+    private function getAuth($authKey = 'token', $urlKey = Constants::URLIND): string
     {
         if ($this->isMock === true)
         {
@@ -634,7 +645,9 @@ class FreshdeskTicketClient
         }
         else if ($this->isSandbox === true)
         {
-            return $this->config['sandbox_token'];
+            return $urlKey === Constants::URLMY
+                ? $this->config['sandbox_token_my']
+                : $this->config['sandbox_token'];
         }
         else if ($authKey === 'token_ezetap')
         {

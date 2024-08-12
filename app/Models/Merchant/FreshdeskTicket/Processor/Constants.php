@@ -15,6 +15,6 @@ class Constants  extends FDConstants
     ];
 
     const SCHEDULER_VS_FD_INSTANCES = [
-        self::GetAgentCreatedTicket => [Instance::RZPIND, Instance::RZPCAP]
+        self::GetAgentCreatedTicket => [Instance::RZPIND, Instance::RZPCAP, Instance::RZPMY]
     ];
 }

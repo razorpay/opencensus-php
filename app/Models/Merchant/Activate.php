@@ -99,7 +99,9 @@ class Activate extends Base\Core
     {
         $merchantDetail = $merchant->merchantDetail;
 
-        $merchant->getValidator()->validateBeforeActivate();
+        if (!$this->isMalaysianMerchant($merchant)) {
+            $merchant->getValidator()->validateBeforeActivate();
+        }
 
         $this->validateMethodsAndPricing($merchant);
 
@@ -408,7 +410,9 @@ class Activate extends Base\Core
         $merchantDetail = $merchant->merchantDetail;
 
         // @todo: add a check - should be through an instantly_activated state
-        $merchant->getValidator()->validateBeforeKycVerified();
+        if (!$merchant->getCountry() == 'MY') {
+            $merchant->getValidator()->validateBeforeKycVerified();
+        }
 
         if ($triggerWorkflow)
         {
@@ -1203,7 +1207,7 @@ class Activate extends Base\Core
     protected function shouldCreateBankAccount($merchantDetail): bool
     {
         return ((Detail\Core::shouldSkipBankAccountRegistration() === false) and
-                ($merchantDetail->hasBankAccountDetails() === true));
+            ($merchantDetail->hasBankAccountDetails() === true));
     }
 
     protected function setDbAndModelConnectionWithMode(string $mode, Merchant\Entity $merchant)

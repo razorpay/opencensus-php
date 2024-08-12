@@ -407,20 +407,25 @@ return [
 
     'freshdesk' => [
         'url'           => env('FRESHDESK_URL'),
+        'fd_curlec_org_id' => env('FD_CURLEC_ORG_ID'),
         'urlind'        => env('FRESHDESK_URL_IND'),
+        'urlmy'        => env('FRESHDESK_URL_MY'),
         'url2'          => env('FRESHDESK_URL2'),
         'urlx'          => env('FRESHDESK_URLX'),
         'urlcap'        => env('FRESHDESK_URL_CAP'),
         'url_ezetap'    => env('FRESHDESK_URL_EZETAP'),
         'sandbox'       => env('FRESHDESK_SANDBOX', false),
         'sandbox_url'   => env('FRESHDESK_SANDBOX_URL'),
+        'sandbox_url_my'   => env('FRESHDESK_SANDBOX_URL_MY'),
         'token'         => env('FRESHDESK_TOKEN'),
         'tokenind'      => env('FRESHDESK_TOKEN_IND'),
+        'tokenmy'      => env('FRESHDESK_TOKEN_MY'),
         'token2'        => env('FRESHDESK_TOKEN2'),
         'tokenx'        => env('FRESHDESK_TOKENX'),
         'tokencap'      => env('FRESHDESK_TOKEN_CAP'),
         'token_ezetap'  => env('FRESHDESK_TOKEN_EZETAP'),
         'sandbox_token' => env('FRESHDESK_SANDBOX_TOKEN'),
+        'sandbox_token_my' => env('FRESHDESK_SANDBOX_TOKEN_MY'),
         'mock'          => env('FRESHDESK_MOCK', false),
 
         'instance_subcategory_group_ids' => [

@@ -4057,7 +4057,9 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
-        (new Validator())->validateRiskTags($input, $merchant);
+        if (!$this->isMalaysianMerchant($merchant)) {
+            (new Validator())->validateRiskTags($input, $merchant);
+        }
 
         $websiteDetail = $merchantDetails->merchantWebsite;
 
@@ -6422,7 +6424,7 @@ class Core extends Base\Core
     {
         $countryCode = $merchant->getCountry();
 
-        if ($countryCode === 'MY')
+        if ($countryCode !== null && $countryCode === 'MY')
         {
             return true;
         }
