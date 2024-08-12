@@ -231,8 +231,8 @@ class CheckoutInternationalPreferencesTest extends TestCase {
 
         $response = $this->startTest($testData);
 
-        $this->assertNotNull($response['methods']['intl_bank_transfer']);
-        $this->assertEmpty($response['methods']['intl_bank_transfer']);
+        $this->assertEquals(1,$response['methods']['intl_bank_transfer']['usd']);
+        $this->assertEquals(1,$response['methods']['intl_bank_transfer']['swift']);
     }
 
     public function testGetCheckoutPreferencesForCurrencyCloudWithAmountLessThanMinAmount()
