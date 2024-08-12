@@ -1606,6 +1606,37 @@ class Service extends Base\Service
 
     public function settlementTimeline(array $input) : array
     {
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        // shadow mode experiment
+        $shadow = $this->app->razorx->getTreatment($experimentVariable,
+            Settlement\Constants::RAZORX_SETL_FETCH_DETAILS_FROM_NSS_SHADOW,
+            $this->mode
+        );
+
+        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
+        {
+            $nssResponse = app('settlements_dashboard')->settlementFetchDetails($input);
+
+            $experimentVariable = UniqueIdEntity::generateUniqueId();
+            // shadow mode experiment
+            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
+                Settlement\Constants::RAZORX_SETL_FETCH_DETAILS_FROM_NSS_REVERSE_SHADOW,
+                $this->mode
+            );
+
+            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+            {
+                return $nssResponse;
+            }
+            $apiResponse = $this->settlementTimelineOld($input);
+            $this->compareSettlementEntityAndLogDifference($apiResponse, $nssResponse, false, ['method_name' => __FUNCTION__]);
+
+            return $apiResponse;
+        }
+        return $this->settlementTimelineOld($input);
+    }
+    public function settlementTimelineOld(array $input) : array
+    {
         $merchant = $this->merchant;
         $merchantId = $merchant->getId();
 

@@ -74,6 +74,7 @@ class Dashboard extends Base
     const DAILY_SETTLEMENT ='daily_settlement';
 
     const SETTLEMENTS_FETCH = '/v1/settlements';
+    const SETTLEMENTS_FETCH_DETAILS = '/v1/settlements/fetch_details';
     const SETTLEMENTS_FETCH_SOURCE_DETAILS = '/v1/settlements/%s/transaction_source_details';
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
     const PASSPORT_AUD = 'settlements';
@@ -654,6 +655,12 @@ class Dashboard extends Base
         $url = self::SETTLEMENTS_FETCH . "/" . $id;
         $this->addPassportToken();
         return $this->makeRequest($url, [], self::SERVICE_DASHBOARD, null, Requests::GET);
+    }
+
+    public function settlementFetchDetails($input)
+    {
+        $this->addPassportToken();
+        return $this->makeRequest(self::SETTLEMENTS_FETCH_DETAILS, $input, self::SERVICE_DASHBOARD);
     }
 
     public function settlementFetchMultiple(array $input)
