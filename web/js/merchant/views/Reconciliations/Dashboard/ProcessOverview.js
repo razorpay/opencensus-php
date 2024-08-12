@@ -7,17 +7,37 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { formatAmount } from 'common/utils/rzp-utils';
 import { dateRangePresets } from 'merchant/views/Reconciliations/Dashboard/constants';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
-const ProcessDetail = ({ activeProcess, stats, currency, setDates, dateRange, error }) => {
+const ProcessOverview = ({ activeProcess, stats, currency, setDates, dateRange, error }) => {
   const end = dateRange.endDate.format('ll');
   const start = dateRange.startDate.format('ll');
 
   const handleDateChange = (startDate, endDate) => {
     setDates({ startDate, endDate });
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessOverview,
+      objectName: 'recon date range',
+      actionName: 'selected',
+      properties: {
+        startDate: startDate.format('lll'),
+        endDate: endDate.format('lll'),
+      },
+    });
   };
+
+  useReconTracking({
+    objectName: 'recon process overview',
+    screen: ReconScreens.ProcessOverview,
+    properties: {
+      processId: activeProcess?.id,
+    },
+  });
 
   return (
     <Box paddingTop="spacing.4" testID="recon-overview-page">
@@ -94,4 +114,4 @@ export default compose(
   connect((state) => ({
     currency: state.session.user?.merchant?.currency,
   })),
-)(ProcessDetail);
+)(ProcessOverview);

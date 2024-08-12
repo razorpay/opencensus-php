@@ -15,8 +15,11 @@ import {
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
 const cols = ['Name', 'Product', 'Type', 'Last Run', ''];
 
@@ -49,8 +52,32 @@ const Processes = ({ openDetail }) => {
   };
 
   const createConfig = () => {
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessListing,
+      objectName: 'recon new configuration',
+      actionName: 'click',
+    });
     navigate(`/reconciliations/create-config/2`);
   };
+
+  const handleOpenDetail = (item) => {
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessListing,
+      objectName: 'recon process detail',
+      actionName: 'click',
+      properties: {
+        processId: item?.id,
+        processName: item?.name,
+        processType: item?.type,
+      },
+    });
+    openDetail(item);
+  };
+
+  useReconTracking({
+    objectName: 'recon process list',
+    screen: ReconScreens.ProcessListing,
+  });
 
   useEffect(() => {
     fetchProcesses();
@@ -83,7 +110,7 @@ const Processes = ({ openDetail }) => {
                       {item?.last_run === 0 ? 'N.A' : moment(item?.last_run * 1000).format('lll')}
                     </TableCell>
                     <TableCell>
-                      <Link onClick={() => openDetail(item)}>Details</Link>
+                      <Link onClick={() => handleOpenDetail(item)}>Details</Link>
                     </TableCell>
                   </TableRow>
                 ))}

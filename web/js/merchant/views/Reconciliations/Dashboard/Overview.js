@@ -18,7 +18,9 @@ import {
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
 
 import ProcessCharts from './ProcessCharts';
 import ProcessOverview from './ProcessOverview';
@@ -36,7 +38,18 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
   const [error, setError] = useState(false);
 
   const navigate = useNavigate();
+
   const triggerRun = () => {
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessOverview,
+      objectName: 'recon new reconciliation',
+      actionName: 'click',
+      properties: {
+        processId: activeProcess?.id,
+        processName: activeProcess?.name,
+        processType: activeProcess?.type,
+      },
+    });
     navigate('/reconciliations/new-run', { state: activeProcess });
   };
 

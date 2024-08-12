@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Box } from '@razorpay/blade/components';
 
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import RunsListTable from 'merchant/views/Reconciliations/Dashboard/RunsListTable';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
 export default function ProcessRunsDetail({ activeProcess, openRunDetail }) {
   const [runsList, setRunsList] = useState([]);
@@ -51,6 +54,16 @@ export default function ProcessRunsDetail({ activeProcess, openRunDetail }) {
     }
   };
 
+  useReconTracking({
+    objectName: 'recon run listing',
+    screen: ReconScreens.ProcessListing,
+    properties: {
+      processId: activeProcess?.id,
+      processName: activeProcess?.name,
+      processType: activeProcess?.type,
+    },
+  });
+
   useEffect(() => {
     fetchRuns();
   }, []);
@@ -67,15 +80,31 @@ export default function ProcessRunsDetail({ activeProcess, openRunDetail }) {
     }
   };
 
+  const handleDetailClick = (runId) => {
+    openRunDetail(runId);
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessRunListing,
+      objectName: 'recon run detail',
+      actionName: 'click',
+      properties: {
+        runId,
+        processId: activeProcess?.id,
+        processName: activeProcess?.name,
+        processType: activeProcess?.type,
+      },
+    });
+  };
+
   return (
     <Box testID="recon-process-runs">
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
         <RunsListTable
           nodes={runsList}
-          ctaAction={openRunDetail}
+          ctaAction={handleDetailClick}
           currentPage={currentPage}
           handlePagination={handlePagination}
           paginationData={paginationData}
+          screen={ReconScreens.ProcessRunListing}
         />
       </RenderErrorLoadingOrChild>
     </Box>

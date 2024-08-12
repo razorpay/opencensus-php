@@ -28,6 +28,7 @@ import {
 import moment from 'moment';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
   dateRangePresets,
@@ -37,6 +38,8 @@ import {
   BladeDropdownWrapper,
   RenderErrorLoadingOrChild,
 } from 'merchant/views/Reconciliations/commonComponents';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
 export default function Detail({ fileWorkflowId, closeDetail, openDetail, activeProcess }) {
   const [detailsList, setDetailsList] = useState([]);
@@ -148,6 +151,15 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
     }
   };
 
+  useReconTracking({
+    objectName: 'recon run detail',
+    screen: ReconScreens.RunDetailView,
+    properties: {
+      ...(activeProcess?.id ? { processId: activeProcess?.id } : {}),
+      runId: fileWorkflowId,
+    },
+  });
+
   useEffect(() => {
     fetchRuns();
   }, []);
@@ -195,6 +207,21 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
     closeDetail();
   };
 
+  const handleDateChange = (startDate, endDate) => {
+    setStartEndDates({ startDate: startDate.unix(), endDate: endDate.unix() });
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.RunDetailView,
+      objectName: 'recon date range',
+      actionName: 'selected',
+      properties: {
+        ...(activeProcess?.id ? { processId: activeProcess?.id } : {}),
+        startDate: startDate.format('lll'),
+        endDate: endDate.format('lll'),
+        runId: fileWorkflowId,
+      },
+    });
+  };
+
   return (
     <>
       <Box
@@ -233,9 +260,7 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
           </BladeDropdownWrapper>
           <div className="date-range-container">
             <DateRangePicker
-              onDatesChange={(startDate, endDate) => {
-                setStartEndDates({ startDate: startDate.unix(), endDate: endDate.unix() });
-              }}
+              onDatesChange={handleDateChange}
               presets={dateRangePresets}
               allowSingleDaySelect
             />

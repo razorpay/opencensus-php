@@ -19,7 +19,10 @@ import {
 import moment from 'moment';
 import styled from 'styled-components';
 
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
 const SuccessBox = styled.div(
   ({ theme }) => `
@@ -32,8 +35,19 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
   const [step, setStep] = useState(1);
   const [selectedEmails, setSelectedEmails] = useState([]);
   const [emails, setEmails] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const submitReportRequest = async () => {
+    setIsLoading(true);
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessTransactionView,
+      objectName: 'recon export view',
+      actionName: 'click',
+      properties: {
+        processId: merchantProcessId,
+        emails: selectedEmails.join(','),
+      },
+    });
     const obj = {
       merchant_process_id: merchantProcessId,
       filters: [],
@@ -50,6 +64,7 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
     if (res?.status_code === 200) {
       setStep(2);
     }
+    setIsLoading(false);
   };
 
   const handleShare = () => {
@@ -68,7 +83,7 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
 
   const fetchEmails = async () => {
     const res = await merchantFetch({
-      url: `recon-saas/recon_process/emails`,
+      url: `recon-saas/merchant_config/emails`,
       mode: 'live',
       method: 'get',
     });
@@ -80,6 +95,14 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
   useEffect(() => {
     fetchEmails();
   }, []);
+
+  useReconTracking({
+    objectName: 'recon export view',
+    screen: ReconScreens.ProcessTransactionView,
+    properties: {
+      processId: merchantProcessId,
+    },
+  });
 
   const from = moment(filters?.startEndDates?.startDate * 1000).format('DD MMM YYYY');
   const to = moment(filters?.startEndDates?.endDate * 1000).format('DD MMM YYYY');
@@ -149,6 +172,7 @@ export default function ExportReportModal({ isOpen, setIsOpen, filters, merchant
             onClick={handleShare}
             isFullWidth
             isDisabled={step === 1 && selectedEmails.length === 0}
+            isLoading={isLoading}
           >
             {step === 1 ? 'Share' : 'Close'}
           </Button>

@@ -26,6 +26,7 @@ import {
 import moment from 'moment';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
   dateRangePresets,
@@ -35,6 +36,8 @@ import {
   BladeDropdownWrapper,
   RenderErrorLoadingOrChild,
 } from 'merchant/views/Reconciliations/commonComponents';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
 import ExportReportModal from './ExportReportModal';
 
@@ -199,6 +202,16 @@ export default function ProcessTransactions({ activeProcess }) {
     fetchRuns();
   }, []);
 
+  useReconTracking({
+    objectName: 'recon process transaction',
+    screen: ReconScreens.ProcessTransactionView,
+    properties: {
+      processId: activeProcess?.id,
+      processName: activeProcess?.name,
+      processType: activeProcess?.type,
+    },
+  });
+
   const handlePagination = (type) => {
     switch (type) {
       case 'prev':
@@ -219,11 +232,34 @@ export default function ProcessTransactions({ activeProcess }) {
   const handleDateChange = (startDate, endDate) => {
     setCurrentPage(0);
     setStartEndDates({ startDate: startDate.unix(), endDate: endDate.unix() });
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessTransactionView,
+      objectName: 'recon date range',
+      actionName: 'selected',
+      properties: {
+        startDate: startDate.format('lll'),
+        endDate: endDate.format('lll'),
+      },
+    });
   };
 
   const handleFilterChange = ({ value }) => {
     setCurrentPage(0);
     setFilter(value);
+  };
+
+  const openExportModal = () => {
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.ProcessTransactionView,
+      objectName: 'recon open export view',
+      actionName: 'click',
+      properties: {
+        processId: activeProcess?.id,
+        processName: activeProcess?.name,
+        processType: activeProcess?.type,
+      },
+    });
+    setIsOpen(true);
   };
 
   return (
@@ -265,7 +301,7 @@ export default function ProcessTransactions({ activeProcess }) {
             />
           </div>
         </Box>
-        <Button icon={DownloadIcon} iconPosition="left" onClick={() => setIsOpen(true)}>
+        <Button icon={DownloadIcon} iconPosition="left" onClick={openExportModal}>
           Export View
         </Button>
       </Box>

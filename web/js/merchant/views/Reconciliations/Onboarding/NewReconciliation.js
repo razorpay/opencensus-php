@@ -27,8 +27,10 @@ import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { compose } from 'redux';
 
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { FileUploadStatus } from 'merchant/views/Reconciliations/commonComponents';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
 import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
 
 import EnterPasswordModal from './EnterPasswordModal';
@@ -65,6 +67,14 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
     });
     if (res?.status_code === 200) {
       handleCtaClick();
+      analyticsTrackWithUserInfo({
+        screen: ReconScreens.NewConfiguration,
+        objectName: 'recon config creation',
+        actionName: 'success',
+        properties: {
+          masterProcessId: reconType.master_process_id,
+        },
+      });
     } else {
       showNotification({
         type: 'error',

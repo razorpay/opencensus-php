@@ -21,6 +21,7 @@ import {
 import ReconciledIcon from 'assets/reconciliations/reconciled.svg';
 import moment from 'moment';
 
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { FILE_WORKFLOW_KEY } from 'merchant/views/Reconciliations/Dashboard/constants';
 
@@ -32,8 +33,17 @@ export default function RunsListTable({
   currentPage,
   handlePagination,
   paginationData,
+  screen,
 }) {
   const downloadReport = async (id) => {
+    analyticsTrackWithUserInfo({
+      screen,
+      objectName: 'recon download report',
+      actionName: 'click',
+      properties: {
+        runId: id,
+      },
+    });
     const res = await merchantFetch({
       url: `recon-saas/file_detail/report/signed_url?${FILE_WORKFLOW_KEY}=${id}`,
       mode: 'live',

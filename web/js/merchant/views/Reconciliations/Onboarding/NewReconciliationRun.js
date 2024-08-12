@@ -18,6 +18,8 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { merchantFetch } from 'merchant/utils/ajax';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
 import { FileUploadStatus } from './../commonComponents';
 import EnterPasswordModal from './EnterPasswordModal';
@@ -156,6 +158,16 @@ export default function NewReconciliationRun() {
     }
     setIsLoading(false);
   };
+
+  useReconTracking({
+    objectName: 'new reconciliation',
+    screen: ReconScreens.NewReconView,
+    properties: {
+      processId: processDetails?.id,
+      processName: processDetails?.name,
+      processType: processDetails?.type,
+    },
+  });
 
   return (
     <Box paddingTop="spacing.1">
