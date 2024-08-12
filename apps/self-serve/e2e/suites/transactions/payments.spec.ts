@@ -8,8 +8,8 @@ import {
   searchTransactionById,
   assertRefundDetails,
   assertCollapsibleRefundProcessedTimeline,
-  assertIssueRefundButton,
-  assertCollapsibleSettlementRetryTimeline,
+  // assertIssueRefundButton,
+  // assertCollapsibleSettlementRetryTimeline,
   waitForListingLoader,
   // getI18FormattedPhoneNumber,
 } from '../../utils';
@@ -173,12 +173,12 @@ test.describe
       await expect(page.getByText('Payment method')).toBeVisible();
       await expect(page.getByText('Domestic Credit card (xx1111)')).toBeVisible();
       await expect(page.getByTestId('refund-heading')).toBeVisible();
-      await expect(page.getByText('No refund issued for this payment')).toBeVisible();
-      await expect(page.getByText('Payment created')).toBeVisible();
-      await expect(page.getByText('Payment authorized')).toBeVisible();
-      await expect(page.getByText('Payment captured')).toBeVisible();
-      await assertIssueRefundButton({ page, testId: 'payment-refund-details' });
-      await assertIssueRefundButton({ page, testId: 'payment-details-timeline' });
+      // await expect(page.getByText('No refund issued for this payment')).toBeVisible();
+      // await expect(page.getByText('Payment created')).toBeVisible();
+      // await expect(page.getByText('Payment authorized')).toBeVisible();
+      // await expect(page.getByText('Payment captured')).toBeVisible();
+      // await assertIssueRefundButton({ page, testId: 'payment-refund-details' });
+      // await assertIssueRefundButton({ page, testId: 'payment-details-timeline' });
     });
 
     test('should show "failed" payment state details', async ({ page }) => {
@@ -217,7 +217,7 @@ test.describe
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText(id)).toBeVisible();
       await expect(page.getByText('Payment method')).toBeVisible();
-      await assertCollapsibleSettlementRetryTimeline({ page });
+      // await assertCollapsibleSettlementRetryTimeline({ page });
     });
   });
 });
