@@ -784,6 +784,38 @@ jobs:
           CLOVER_NAME: qr_status_check
           RUN_FIXTURES: false
           RUN_FIXTURES_ONCE: false
+      - name: QR Code Refactor Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "QR Code Refactor Test Suite"
+          CLOVER_NAME: qr_refactor
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
       - name: Sonar Analysis
         uses: sonarsource/sonarcloud-github-action@v1.6
         env:
@@ -792,7 +824,7 @@ jobs:
           SONAR_HOST: https://sonar.razorpay.com
           GIT_COMMIT_ID: ${{ github.sha }}
           SONAR_PROJECT_ID: API_QR_PAYMENT_UT
-          SOURCE_DIR: app/Models/QrCode,app/Models/QrPayment,app/Models/BharatQr,app/Models/QrPaymentRequest
+          SOURCE_DIR: app/Models/QrCode,app/Models/QrPayment,app/Models/BharatQr,app/Models/QrPaymentRequest,app/Models/QrGatewayModule
           EXCLUDE_FILES: app/Models/QrCode/Upi/**
         with:
           args: >
@@ -802,7 +834,7 @@ jobs:
             -Dsonar.projectVersion=${{ env.GIT_COMMIT_ID }}
             -Dsonar.login=${{ env.SONAR_TOKEN }}
             -Dsonar.sources=${{ env.SOURCE_DIR }}
-            -Dsonar.php.coverage.reportPaths=clover_files/clover_cov_non_va_qr.xml,clover_files/clover_cov_bqr.xml,clover_files/clover_cov_yesbank_qr.xml,clover_files/clover_cov_kotak_qr.xml,clover_files/clover_cov_mindgate_qr.xml,clover_files/clover_cov_qrv1.xml,clover_files/clover_cov_airtel_qr.xml,clover_files/clover_cov_entity_qr.xml,clover_files/clover_cov_checkout_orders.xml,clover_files/clover_cov_qr_dedicated_terminal_test.xml,clover_files/clover_cov_qr_status_check.xml
+            -Dsonar.php.coverage.reportPaths=clover_files/clover_cov_non_va_qr.xml,clover_files/clover_cov_bqr.xml,clover_files/clover_cov_yesbank_qr.xml,clover_files/clover_cov_kotak_qr.xml,clover_files/clover_cov_mindgate_qr.xml,clover_files/clover_cov_qrv1.xml,clover_files/clover_cov_airtel_qr.xml,clover_files/clover_cov_entity_qr.xml,clover_files/clover_cov_checkout_orders.xml,clover_files/clover_cov_qr_dedicated_terminal_test.xml,clover_files/clover_cov_qr_status_check.xml,clover_files/clover_cov_qr_refactor.xml
             -Dsonar.exclusions=${{ env.EXCLUDE_FILES }}
     services:
       redis:

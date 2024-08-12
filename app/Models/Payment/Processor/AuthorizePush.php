@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode as TraceCode;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Models\QrGatewayModule\QrGatewayModule;
 
 trait AuthorizePush
 {
@@ -98,6 +99,24 @@ trait AuthorizePush
         $mode = $this->app['basicauth']->getMode();
 
         $gateway = $terminal->getGateway();
+
+        if (QrGatewayModule::checkIfNewQrPaymentGateway($gateway) === true)
+        {
+            $gatewayPayment = $this->app['repo']->upi->fetchByMerchantReference($callbackData['upi']['merchant_reference']);
+
+            if ($gatewayPayment !== null)
+            {
+                throw new Exception\LogicException(
+                    'Duplicate Gateway payment found',
+                    null,
+                    [
+                        'callbackData' => $callbackData,
+                    ]
+                );
+            }
+
+            return;
+        }
 
         // We validate duplicate unexpected payment creation for amount mismatch in authorizePush
         // We might not be able to verify the payment with gateway if this is multiple credit

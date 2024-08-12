@@ -673,7 +673,9 @@ class Processor extends Base\Core
         }
     else
         {
-            $this->qrCode = (new NonVirtualAccountQrCode\Repository())->find($merchantReference);
+            // Adding two calls here to account for new flow QRs which should only be queried using merchant reference
+            $this->qrCode = (new QrRepo)->findByMerchantReference($merchantReference) ??
+                (new NonVirtualAccountQrCode\Repository())->find($merchantReference);
         }
 
 

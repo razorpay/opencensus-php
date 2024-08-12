@@ -52,6 +52,41 @@ class Repository extends Base\Repository
         return null;
     }
 
+    /**
+     * This method is used to find the entity and the mode against which we got a callback for a QR Payment.
+     * @param $merchantReference - The merchant reference field received in the callback
+     *
+     * @return array|null[] Either return the QR Code entity and the mode, or return null
+     */
+    public function returnLiveOrTestModeQrCodeByMerchantReference($merchantReference)
+    {
+        $obj = $this->connection(Mode::LIVE)->findByMerchantReference($merchantReference);
+
+        if ($obj !== null)
+        {
+            return [$obj, Mode::LIVE];
+        }
+
+        $obj = $this->connection(Mode::TEST)->findByMerchantReference($merchantReference);
+
+        if ($obj !== null)
+        {
+            return [$obj, Mode::TEST];
+        }
+
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
+        $this->connection(null);
+
+        return [null, null];
+    }
+
     public function fetchQrCodesForMpanTokenization($count)
     {
         $mpanTokenized = $this->dbColumn(Entity::MPANS_TOKENIZED);

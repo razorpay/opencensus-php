@@ -452,6 +452,11 @@ class Generator extends QrCode\Generator
             $gateway = GATEWAY::UPI_AIRTEL;
             $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $vpa);
         }
+        elseif (str_contains($qrCode['qr_string'], '@axis') === true)
+        {
+            $gateway = GATEWAY::UPI_AXIS;
+            $params  = array(Terminal\Entity::VPA => $vpa);
+        }
         else
         {
             $gateway = GATEWAY::SHARP;
@@ -1242,12 +1247,22 @@ class Generator extends QrCode\Generator
     {
         $response = (new QrGatewayModule($this->app))->generateIntentQr($qrCode, $terminal);
 
-        //TODO: This change to be taken later
-        // if (empty($response[EntityConstants::QR_CODE][Entity::REFERENCE]) === false)
-        // {
-        //    $qrCode->setReference($response[EntityConstants::QR_CODE][Entity::REFERENCE]);
-        // }
+        if (empty($response[EntityConstants::QR_CODE][Entity::QR_STRING]) === true or
+            empty($response[EntityConstants::QR_CODE][Entity::REFERENCE]) === true)
+        {
+            throw new Exception\ServerErrorException(
+                "Missing QR String or Merchant Reference in QR Response",
+                ErrorCode::SERVER_ERROR_QR_CODE_GENERATION_FAILURE,
+                [
+                    'response' => $response,
+                ]
+            );
+        }
 
+        $qrCode->setReference($response[EntityConstants::QR_CODE][Entity::REFERENCE]);
+        $qrCode->setQrString($response[EntityConstants::QR_CODE][Entity::QR_STRING]);
+
+        // Returning the QR string as that is what is expected from this function
         return $response[EntityConstants::QR_CODE][Entity::QR_STRING];
     }
 }

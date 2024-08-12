@@ -2,7 +2,12 @@
 
 namespace RZP\Models\QrGatewayModule;
 
+use App;
+use Cache;
+
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode\Entity as QrCodeEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 
@@ -11,6 +16,9 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
  */
 class QrGatewayModule
 {
+    const QR_GATEWAY_CACHE_PREFIX = 'qr_gateway_';
+    const QR_EXISTING_GATEWAY_CACHE_PREFIX = 'qr_existing_gateway_';
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -21,6 +29,11 @@ class QrGatewayModule
 
         if (isset($this->app['rzp.mode'])) {
             $this->mode = $this->app['rzp.mode'];
+        }
+        else
+        {
+            $this->mode = Mode::LIVE;
+            $this->app['rzp.mode'] = Mode::LIVE;
         }
     }
 
@@ -36,7 +49,7 @@ class QrGatewayModule
         ];
 
         $response = $this->app['mozart']->sendMozartRequest(
-            namespace  : Namespaces::QR_CODES,
+            namespace  : Namespaces::PAYMENTS,
             gateway    : $terminal->getGateway(),
             action     : Action::INTENT_QR,
             input      : $input,
@@ -58,9 +71,9 @@ class QrGatewayModule
         ];
 
         $response = $this->app['mozart']->sendMozartRequest(
-            namespace  : Namespaces::QR_CODES,
+            namespace  : Namespaces::PAYMENTS,
             gateway    : $terminal->getGateway(),
-            action     : Action::QR_STATUS_CHECK,
+            action     : Action::VERIFY_QR,
             input      : $input,
             addEntities: false
         );
@@ -68,17 +81,17 @@ class QrGatewayModule
         return $response['data'];
     }
 
-    public function preProcessQrCallback(array $callbackData, string $gateway): array
+    public function preProcessQrCallback($callbackData, string $gateway): array
     {
+        $payload = json_encode($callbackData, JSON_THROW_ON_ERROR);
+
         $input = [
-            'gateway' => [
-                'payload' => $callbackData,
-                'gateway' => $gateway,
-            ],
+            'payload' => $payload,
+            'gateway' => $gateway,
         ];
 
         $response = $this->app['mozart']->sendMozartRequest(
-            namespace  : Namespaces::QR_CODES,
+            namespace  : Namespaces::PAYMENTS,
             gateway    : $gateway,
             action     : Action::QR_PRE_PROCESS,
             input      : $input,
@@ -86,5 +99,53 @@ class QrGatewayModule
         );
 
         return $response['data'];
+    }
+
+    public static function checkIfNewQrPaymentGateway(string $gateway, $mode = Mode::LIVE)
+    {
+        // Fetch the variant from cache
+        $qrVariant = Cache::get(self::QR_GATEWAY_CACHE_PREFIX . $gateway);
+
+        // If there is no entry in cache
+        if (empty($qrVariant) === true)
+        {
+            $app = App::getFacadeRoot();
+
+            // Fetch the variant value from the experiment
+            $qrVariant = $app['razorx']->getTreatment(
+                $gateway,
+                RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY,
+                $mode
+            );
+
+            // Set the cache for a TTL of 3 mins
+            Cache::set(self::QR_GATEWAY_CACHE_PREFIX . $gateway, strtolower($qrVariant), 180);
+        }
+
+        return (strtolower($qrVariant) === RazorxTreatment::RAZORX_VARIANT_ON);
+    }
+
+    public static function checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow(string $gateway, $mode = Mode::LIVE)
+    {
+        // Fetch the variant from cache
+        $qrVariant = Cache::get(self::QR_EXISTING_GATEWAY_CACHE_PREFIX . $gateway);
+
+        // If there is no entry in cache
+        if (empty($qrVariant) === true)
+        {
+            $app = App::getFacadeRoot();
+
+            // Fetch the variant value from the experiment
+            $qrVariant = $app['razorx']->getTreatment(
+                $gateway,
+                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY,
+                $mode
+            );
+
+            // Set the cache for a TTL of 3 mins
+            Cache::set(self::QR_EXISTING_GATEWAY_CACHE_PREFIX . $gateway, strtolower($qrVariant), 180);
+        }
+
+        return (strtolower($qrVariant) === RazorxTreatment::RAZORX_VARIANT_ON);
     }
 }

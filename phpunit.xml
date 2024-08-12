@@ -446,6 +446,9 @@
         <testsuite name="QR Code Config Test Suite">
             <file>./tests/Functional/QrCodeConfig/QrCodeConfigTest.php</file>
         </testsuite>
+        <testsuite name="QR Code Refactor Test Suite">
+            <file>./tests/Functional/QrCode/QrCodeRefactorTest.php</file>
+        </testsuite>
         <testsuite name="Route Test Suite">
             <directory>./tests/Functional/Transfer/</directory>
             <directory>./tests/Functional/Payment/Transfers/</directory>

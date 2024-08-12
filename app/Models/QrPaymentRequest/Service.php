@@ -4,6 +4,7 @@ namespace RZP\Models\QrPaymentRequest;
 
 use Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Models\QrCode\Metric;
 use RZP\Models\Payment\Method;
@@ -59,6 +60,28 @@ class Service extends Base\Service
         return null;
     }
 
+    public function createForQrPaymentTriggeredViaNewGatewayAdapter($input, $callbackData, $isFailure = false)
+    {
+        try
+        {
+            return $this->core->create($input, $callbackData, $isFailure);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::QR_PAYMENT_SAVE_REQUEST_FAILED,
+                [
+                    Entity::QR_CODE_ID            => $input[Entity::QR_CODE_ID],
+                    Entity::TRANSACTION_REFERENCE => $input[Entity::TRANSACTION_REFERENCE]
+                ]
+            );
+        }
+
+        return null;
+    }
+
     public function initGatewayCallForQrStatusCheck(string $id): void
     {
         /**
@@ -67,14 +90,24 @@ class Service extends Base\Service
         $qrCode = $this->repo->qr_code->findOrFail($id) ;
         $this->app['basicauth']->setMerchantById($qrCode->getMerchantId());
 
+        $qrVariant = false;
+
         // $callbackData shall store the response received from the gateway
-        $gatewayData = (new Core())->qrPaymentStatusCheck($qrCode);
+        $gatewayData = (new Core())->qrPaymentStatusCheck($qrCode, $qrVariant);
 
         if ($gatewayData !== null)
         {
             try
             {
-                (new \RZP\Models\BharatQr\Service())->processPayment($gatewayData['callbackData'], $gatewayData['gateway']);
+                if ($qrVariant === true)
+                {
+                    (new \RZP\Models\QrPayment\Service())->processQrPaymentForNewGatewayFlow(
+                        $qrCode, $gatewayData, $gatewayData['terminal']['gateway'], true);
+                }
+                else
+                {
+                    (new \RZP\Models\BharatQr\Service())->processPayment($gatewayData['callbackData'], $gatewayData['gateway']);
+                }
             }
             catch (\Throwable $e)
             {

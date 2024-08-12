@@ -619,6 +619,26 @@ class Service extends Base\Service
 
     public function updateQrCodeInCallbackIfApplicable(&$input, $terminal)
     {
+        $staticQrId = $this->findQrCodeIdFromQrCodeConfig($terminal);
+
+        if ($staticQrId === null)
+        {
+            return null;
+        }
+
+        $input['data']['meta']['qrCodeId'] = $staticQrId;
+
+        $this->trace->info(TraceCode::QR_PAYMENT_CALLBACK_UPDATED_FROM_QR_CODE_CONFIG, [
+            '$terminal' => $terminal->getId(),
+            '$staticQrId' => $staticQrId,
+            'message'   => 'qrCodeId is set in the Callback meta data for processing unrecognized merchant reference ',
+        ]);
+
+        return $staticQrId;
+    }
+
+    public function findQrCodeIdFromQrCodeConfig($terminal)
+    {
         if ($terminal === null)
         {
             return null;
@@ -647,22 +667,7 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setModeAndDbConnection($mode);
 
-        $staticQrId = (new QrCodeConfig\Service())->fetchStaticQrCodeConfig($terminal);
-
-        if ($staticQrId === null)
-        {
-            return null;
-        }
-
-        $input['data']['meta']['qrCodeId'] = $staticQrId;
-
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-            '$terminal' => $terminal->getId(),
-            '$staticQrId' => $staticQrId,
-            'message'   => 'qrCodeId is set in the Callback meta data for processing unrecognized merchant reference ',
-        ]);
-
-        return $staticQrId;
+        return (new QrCodeConfig\Service())->fetchStaticQrCodeConfig($terminal);
     }
 
     private function isQrCreatedinDB($qrData)

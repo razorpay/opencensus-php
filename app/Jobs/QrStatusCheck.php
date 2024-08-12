@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as QrService;
 use \RZP\Models\QrPaymentRequest\Service as QrPaymentReqService;
@@ -60,6 +61,7 @@ class QrStatusCheck extends Job implements ShouldBeUnique
 
         $app = App::getFacadeRoot();
         $app['basicauth']->init();
+        $app['basicauth']->setModeAndDbConnection($this->mode);
 
         try
         {

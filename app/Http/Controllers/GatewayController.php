@@ -47,6 +47,7 @@ use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Gateway\Utility as GatewayUtility;
 use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Models\Customer\Token\RecurringStatus;
+use RZP\Models\QrGatewayModule\QrGatewayModule;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Models\Gateway\Priority as GatewayPriority;
@@ -491,7 +492,18 @@ class GatewayController extends Controller
                 }
                 else
                 {
-                    $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
+                    if (QrGatewayModule::checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow($gatewayDriver) === true)
+                    {
+                        $data = (new QrPayment\Service())
+                            ->processQrPaymentCallbackThroughNewGatewayAdapterForExistingGateways(
+                                $gatewayDriver,
+                                $input['data']
+                            );
+                    }
+                    else
+                    {
+                        $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
+                    }
 
                     $this->logCallbackResponseTime($startTime, $gatewayDriver, false, true);
                 }
@@ -812,6 +824,13 @@ class GatewayController extends Controller
         $traceInput = $input;
 
         $data = ( new GatewayUtility())->gatewayTrace($gateway, $traceInput);
+
+        if (QrGatewayModule::checkIfNewQrPaymentGateway($gateway) === true)
+        {
+            $data = (new QrPayment\Service())->processQrPaymentCallbackThroughNewGatewayAdapter($gateway, $input);
+
+            return ApiResponse::json($data);
+        }
 
         switch ($gateway)
         {

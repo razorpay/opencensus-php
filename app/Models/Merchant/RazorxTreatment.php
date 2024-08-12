@@ -1214,6 +1214,7 @@ final class RazorxTreatment
      */
     const QR_CODE_CREATE_REFACTOR_GATEWAY = 'qr_code_create_refactor_gateway';
     const QR_PAYMENT_REFACTOR_GATEWAY     = 'qr_payment_refactor_gateway';
+    const QR_PAYMENT_REFACTOR_EXISTING_GATEWAY     = 'qr_payment_refactor_existing_gateway';
 
     const BAJAJ_FINSERV_REDIRECT_FLOW = 'bajaj_finserv_redirect_flow';
 }

@@ -60,6 +60,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer\Token;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
+use RZP\Models\QrPayment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\UpiMandate;
 use RZP\Models\CardMandate;
@@ -102,6 +103,8 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Models\Notification as Notifications;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Models\QrGatewayModule\QrGatewayModule;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use CodeOrange\RedisCountingSemaphore\Semaphore;
@@ -8619,8 +8622,6 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        // add skip for new QR here
-        // create UPI entity else where
         if ($this->shouldCallGatewayFunction() === false)
         {
             return;
@@ -8774,6 +8775,20 @@ class Processor
                     case Payment\Entity::REARCH_UPI_PAYMENT_SERVICE:
                         return $this->callUpiPaymentServiceAction($this->payment, $gateway, $action, $gatewayData);
                 }
+            }
+
+            if (($this->payment->getReceiverType() === Receiver::QR_CODE) and
+                ((QrGatewayModule::checkIfNewQrPaymentGateway($gateway) === true) or
+                    (QrGatewayModule::checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow($gateway) === true)))
+            {
+                $input = $gatewayData;
+
+                $input[UpiEntity::NPCI_REFERENCE_ID]  = $input['data']['upi'][UpiEntity::NPCI_REFERENCE_ID] ?? '';
+                $input[UpiEntity::MERCHANT_REFERENCE] = $input['data']['upi'][UpiEntity::MERCHANT_REFERENCE] ?? '';
+                $input[UpiEntity::VPA]                = $input['data']['upi'][UpiEntity::VPA] ?? '';
+                $input[UpiEntity::TYPE]               = \RZP\Gateway\Upi\Base\Type::PAY;
+
+                return (new QrPayment\Service())->createUpiEntityForQrPayment($input, \RZP\Gateway\Mozart\Action::AUTHORIZE);
             }
 
             return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);

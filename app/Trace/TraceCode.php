@@ -122,6 +122,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
     const QR_PAYMENT_ES_DEBUG                                   = 'QR_PAYMENT_ES_DEBUG';
     const QR_PAYMENT_GET_ROUTE_OR_WORKER_NAME_EXCEPTION         = 'QR_PAYMENT_GET_ROUTE_OR_WORKER_NAME_EXCEPTION';
+
+    const QR_PAYMENT_CALLBACK_GATEWAY_FAILURE                   = 'QR_PAYMENT_CALLBACK_GATEWAY_FAILURE';
+    const QR_STATUS_CHECK_GATEWAY_FAILURE                       = 'QR_STATUS_CHECK_GATEWAY_FAILURE';
+    const QR_PAYMENT_CALLBACK_PRE_PROCESS_FAILURE               = 'QR_PAYMENT_CALLBACK_PRE_PROCESS_FAILURE';
+
+    const QR_PAYMENT_CALLBACK_UPDATED_FROM_QR_CODE_CONFIG       = 'QR_PAYMENT_CALLBACK_UPDATED_FROM_QR_CODE_CONFIG';
     /*
      * Payment component error messages
      */
@@ -2406,6 +2412,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const COLLECTX_YESB_RESPONSE                                = "COLLECTX_YESB_RESPONSE";
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
+
+    const QR_PAYMENT_PROCESS_REQUEST                            = 'QR_PAYMENT_PROCESS_REQUEST';
+
     const BAD_REQUEST_BQR_PAYMENT_FAILED                        = 'BAD_REQUEST_BQR_PAYMENT_FAILED';
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST_INTERNAL            = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST_INTERNAL';
     const BHARAT_QR_PAYMENT_PROCESSING_FAILED                   = 'BHARAT_QR_PAYMENT_PROCESSING_FAILED';
