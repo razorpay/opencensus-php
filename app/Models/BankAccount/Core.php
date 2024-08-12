@@ -796,6 +796,11 @@ class Core extends Base\Core
             return false;
         }
 
+        // email templates not updated for non-indian countries
+        if(strtolower($merchant->getCountry()) != Country::IN){
+            return false;
+        }
+
         // Do not email linked accounts
         if ($merchant->isLinkedAccount() === true)
         {
