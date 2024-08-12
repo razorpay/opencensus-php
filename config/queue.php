@@ -779,6 +779,11 @@ return [
         'test'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_V3'),
     ],
 
+    'merchant_based_balance_update_reverse_shadow' => [
+        'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_REVERSE_SHADOW'),
+        'test'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_REVERSE_SHADOW'),
+    ],
+
     'merchant_based_balance_update_common_1' => [
         'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_1'),
     ],

@@ -53,6 +53,7 @@ use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Jobs\MerchantBasedBalanceUpdateV1;
 use RZP\Jobs\MerchantBasedBalanceUpdateV2;
 use RZP\Jobs\MerchantBasedBalanceUpdateV3;
+use RZP\Jobs\MerchantBalanceUpdateReverseShadowQueue;
 
 trait Capture
 {
@@ -2223,6 +2224,11 @@ trait Capture
             else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'Queue3'))
             {
                 MerchantBasedBalanceUpdateV3::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return true;
+            }
+            else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'QueueReverseShadow'))
+            {
+                MerchantBalanceUpdateReverseShadowQueue::dispatch($input, $this->mode, $asyncBalancePushedAt);
                 return true;
             }
         }
