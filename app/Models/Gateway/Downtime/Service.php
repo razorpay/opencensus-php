@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Models\Admin\Query\Validator;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment\Downtime\DowntimeManagerService;
 use RZP\Services\DowntimeSlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
@@ -18,6 +19,11 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
+        if ($this->shouldUseDowntimeManagerService() === true)
+        {
+            return (new DowntimeManagerService($this->app))->createDowntimesAdmin($input);
+        }
+
         $downtime = $this->core()->create($input);
 
         return $downtime->toArrayAdmin();
@@ -25,6 +31,11 @@ class Service extends Base\Service
 
     public function edit($id, array $input)
     {
+        if ($this->shouldUseDowntimeManagerService() === true)
+        {
+            return (new DowntimeManagerService($this->app))->editDowntimesAdmin($input, $id);
+        }
+
         $downtime = $this->core()->edit($id, $input);
 
         return $downtime->toArrayAdmin();
@@ -46,6 +57,11 @@ class Service extends Base\Service
 
     public function getGatewayDowntimeDataForDashboard(): array
     {
+        if ($this->shouldUseDowntimeManagerService() === true)
+        {
+            return (new DowntimeManagerService($this->app))->fetchAllDowntimesForAdmin();
+        }
+
         $downtimes = $this->core()->getCurrentAndFutureGatewayDowntimeData();
 
         return $downtimes->toArrayAdmin();
@@ -211,5 +227,14 @@ class Service extends Base\Service
         {
             $this->trace->traceException($e, null, TraceCode::FAILED_DOWNTIME_SLACK_NOTIFICATION, ["downtime" => $input]);
         }
+    }
+
+    private function shouldUseDowntimeManagerService(): bool
+    {
+        if (app()->isEnvironmentProduction() === true) {
+            return true;
+        }
+
+        return false;
     }
 }

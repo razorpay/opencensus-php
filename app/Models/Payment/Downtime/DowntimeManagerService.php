@@ -19,8 +19,11 @@ class DowntimeManagerService
     const JSON_METHOD = ['POST', 'PUT', 'PATCH'];
     const FETCH_ONGOING_PAYMENT_DOWNTIMES_FOR_MERCHANT = 'v2/payments/downtimes/ongoing';
     const FETCH_PAYMENT_DOWNTIME_BY_ID = 'v2/payments/downtimes/';
-
     const FETCH_RESOLVED_DOWNTIMES_FOR_MERCHANT = 'v2/payments/downtime/resolved';
+
+    const CREATE_DOWNTIMES_ADMIN = 'v2/admin/downtimes';
+    const FETCH_DOWNTIMES_ADMIN = 'v2/admin/downtimes';
+    const EDIT_DOWNTIMES_ADMIN = 'v2/admin/downtimes/'; // + id
 
     private $srConfig;
     private $srBasePath;
@@ -39,6 +42,30 @@ class DowntimeManagerService
         $this->srBasePath = $this->srConfig['basePath'];
         $this->app = $app;
     }
+
+    // Admin Dashboard APIs
+
+    public function createDowntimesAdmin(array $input) : array {
+        $response = $this->sendRequest(self::CREATE_DOWNTIMES_ADMIN, DowntimeManagerController::POST, $input, "admin_dashboard");
+        unset($response["status_code"]);
+        return $response;
+    }
+
+    public function editDowntimesAdmin(array $input, string $id) : array {
+        $path = self::EDIT_DOWNTIMES_ADMIN . $id;
+        $response = $this->sendRequest($path, DowntimeManagerController::PUT, $input, "admin_dashboard");
+        unset($response["status_code"]);
+        return $response;
+    }
+
+    public function fetchAllDowntimesForAdmin() : array {
+        $response = $this->sendRequest(self::FETCH_DOWNTIMES_ADMIN, DowntimeManagerController::GET, null, "admin_dashboard");
+        unset($response["status_code"]);
+        return $response;
+    }
+
+
+    // Merchant Dashboard APIs
 
     public function fetchOngoingPaymentDowntimesForMerchant() : array {
         $path = self::FETCH_ONGOING_PAYMENT_DOWNTIMES_FOR_MERCHANT;

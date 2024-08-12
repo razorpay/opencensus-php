@@ -38,6 +38,7 @@ class DowntimeManagerController extends Controller
             '^metadata\/methods$',
             '^metadata\/[[:alnum:]]{14}\/methods$',
             '^metadata\/methodmapping$',
+            '^api\/v1\/merchants\/sr_booster_pdf$'
         ],
         self::POST => [
             '^instruments$',
