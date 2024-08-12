@@ -59,6 +59,8 @@ class Gateway
     const RBL_JSW                = 'rbl_jsw';
     const AXIS                   = 'axis';
     const IDFC                   = 'idfc';
+    const YESBANK                = 'yesbank';
+
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';

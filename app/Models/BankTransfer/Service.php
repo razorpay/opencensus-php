@@ -172,6 +172,21 @@ class Service extends Base\Service
         {
             return $this->routeForCollectXUPIRequest($input);
         }
+        if ($input['gateway'] === Gateway::YESBANK || strpos($input['input']['payee_ifsc'], "YESB") === 0 ){
+            $this->trace->error(
+                TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                [
+                    'Request' => $input
+                ]);
+                $response = array(
+                    "error" => array(
+                        "code" => TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                        "description" => "Payment Method not allowed for the gateway",
+                    )
+                );
+            return $response;
+        }
+
         $response = $this->processValidationRequest($input, $provider);
 
         if (empty($response) === false) {
