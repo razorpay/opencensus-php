@@ -35,10 +35,12 @@ class Constants
     public static array $merchantMapForCustomAdjustments = [
         '10000000000000' => '100DemoAccount', // used for unit test
         '7LAuMvKMcy7s0f' => 'KgIs6yuCiDxhbB',
+        'HYoOyjS1kCr9aq' => 'Of7loSljwwMQu5',
     ];
 
     public static array $merchantMapForAdjustmentsDescription = [
         '10000000000000' => 'test adjustment creation _', // used for unit test
         '7LAuMvKMcy7s0f' => 'PB NC EMI adjustment _',
+        'HYoOyjS1kCr9aq' => 'ID NC EMI adjustment _',
     ];
 }
