@@ -364,6 +364,15 @@ class Core extends Base\Core
                     DetailEntity::SUBMIT => '1',
                 ];
 
+                //data for saving in merchant entity
+                foreach ($merchantDetailData as $key=>$value )
+                {
+                    if(empty($entry[$key]) === false and strtolower($entry[$key]) != 'na')
+                    {
+                        $submitData = array_merge($submitData, [$value => $entry[$key]]);
+                    }
+                }
+
                 $response = $this->merchantDetailCore->saveMerchantDetails($submitData, $merchant);
 
                 if ($response[DetailEntity::SUBMITTED] === false)
@@ -443,6 +452,30 @@ class Core extends Base\Core
                 }
 
                 $parser->filterRules($plan, $entry);
+
+                //update plan rules
+                foreach ($plan as $rule)
+                {
+                    $editRulekeys = [
+                        Pricing\Entity::PERCENT_RATE,
+                        Pricing\Entity::FIXED_RATE,
+                        Pricing\Entity::MIN_FEE,
+                        Pricing\Entity::MAX_FEE,
+                        Pricing\Entity::FEE_BEARER
+                    ];
+                    $rule1 = array_filter($rule->toArray(), function ($k) use ($editRulekeys)
+                    {
+                        if (in_array($k, $editRulekeys, true) === true)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    },
+                        ARRAY_FILTER_USE_KEY);
+
+                    (new Pricing\Core)->editPlanRule($plan->getId(), $rule->getId(), $rule1, 'org_' . $merchant->org->getId());
+                }
 
                 $this->repo->saveOrFail($merchant);
 
