@@ -1762,6 +1762,10 @@ class PaymentCreateController extends Controller
             {
                 return $this->generateUpiJson($data);
             }
+            elseif (($data['type'] === 'in_app'))
+            {
+                return $this->generateTurboUpiJson($data);
+            }
             elseif (($data['type'] === 'respawn') and
                 (($data['method'] === Payment\Method::CARDLESS_EMI) or ($data['method'] === Payment\Method::PAYLATER)))
             {
@@ -1826,6 +1830,32 @@ class PaymentCreateController extends Controller
                 "url"    => $pollUrl,
             ]);
 
+        $response['next'] = $next;
+
+        return $response;
+    }
+
+    protected function generateTurboUpiJson($data)
+    {
+        $response = [];
+
+        $response['razorpay_payment_id'] = $data['payment_id'];
+
+        $next = [];
+
+        if ($data['type'] === 'in_app')
+        {
+            array_push($next,
+                [
+                    "action"      => "intent_web",
+                    "data" => [
+                        "vpa"         => $data['data']['vpa'],
+                        "npci_txn_id" => $data['data']['npci_txn_id'],
+                        "merchant_category_code" => $data['data']['merchant']['category'] ?? '',
+                        "merchant_name" => $data['data']['merchant']['name']?? '',
+                    ],
+                ]);
+        }
         $response['next'] = $next;
 
         return $response;
