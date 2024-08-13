@@ -250,6 +250,8 @@ final class RazorxTreatment
 
     const BATCH_PAYOUTS_SUMMARY_EMAIL = 'batch_payouts_summary_email';
 
+    const BATCH_PAYOUTS_IKEY_ROLLOUT = 'batch_payouts_ikey_rollout';
+
     // Experiment to send login email notification to user
     const USER_LOGIN_EMAIL_NOTIFICATION = 'user_login_email_notification';
 

@@ -6,6 +6,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants;
+use RZP\Models\Vpa;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
@@ -462,5 +463,15 @@ class Service extends Base\Service
         $fundAccounts = $this->core->fetchBySourceTypeAndId($sourceType, $sourceId);
 
         return $fundAccounts->toArrayPublic();
+    }
+
+    public function getFundAccountIDFromAccountInput(array $item, $merchant)
+    {
+        $input = FundAccountHelper::getFundAccountInputWithoutContact($item);
+
+        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $merchant);
+
+        return $fundAccount?->getId();
+
     }
 }

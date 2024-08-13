@@ -146,6 +146,12 @@ class Service extends Base\Service
     const ENTITY    = 'entity';
     const MODES     = 'modes';
 
+    const EXISTING_PAYOUT_BEHAVIOUR_RETURN_SAME = 'return_same';
+
+    const EXISTING_PAYOUT_BEHAVIOUR_RETURN_ERROR = 'return_error';
+
+    const EXISTING_PAYOUT_BEHAVIOUR_RETURN_NEW = 'return_new';
+
     const DISPATCH_LIMIT_FOR_PAYOUTS_SCHEDULED_POST_APPROVAL = 25000;
 
     /**
@@ -2784,9 +2790,52 @@ class Service extends Base\Service
         {
             $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
 
+            $batchPayoutIdempotencyKeyRollout = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT,
+                $this->mode);
+
+            if (strtolower($batchPayoutIdempotencyKeyRollout) === 'on')
+            {
+                $idempotencyKeyString = "batch_payout_" . $this->merchant->getId() . "_" . $idempotencyKey;
+
+                $fundAccountID = $this->fundAccountService->getFundAccountIDFromAccountInput($item, $this->merchant);
+
+                $fetchExistingPayout = function() use ($fundAccountID, $item, $idempotencyKey, $batchId)
+                {
+                    // checking for the payout presence in the last 24 hours since ikey becomes trivial after 24 hours.
+                    return $this->repo->payout->fetchBulkByFundAccountIDAndIdempotencyKey($idempotencyKey,
+                                                                     $this->merchant->getId(), $fundAccountID, 24
+                    );
+                };
+
+                if (isset($fundAccountID))
+                {
+                    $existingPayoutBehaviour = self::EXISTING_PAYOUT_BEHAVIOUR_RETURN_ERROR;
+                }
+                else
+                {
+                    $existingPayoutBehaviour = self::EXISTING_PAYOUT_BEHAVIOUR_RETURN_NEW;
+                }
+            }
+            else
+            {
+                $idempotencyKeyString = "batch_payout_" . $batchId . "_" . $idempotencyKey;
+
+                $fetchExistingPayout = function() use ($item, $idempotencyKey, $batchId)
+                {
+                    return $this->repo->payout->fetchByIdempotentKey($idempotencyKey,
+                                                                     $this->merchant->getId(),
+                                                                     $batchId
+                    );
+                };
+
+                $existingPayoutBehaviour = self::EXISTING_PAYOUT_BEHAVIOUR_RETURN_SAME;
+            }
+
             $mutex->acquireAndRelease(
-                "batch_payout_" . $batchId . "_" . $idempotencyKey,
-                function() use ($item, $input, $idempotencyKey, $batchId, $validator, $payoutBatch, $createDuplicate)
+                $idempotencyKeyString,
+                function() use ($fetchExistingPayout, $existingPayoutBehaviour, $item, $input, $idempotencyKey, $batchId, $validator, $payoutBatch, $createDuplicate)
                 {
                     try
                     {
@@ -2799,10 +2848,15 @@ class Service extends Base\Service
 
                         $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
-                        $existingPayout = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
-                                                                                    $this->merchant->getId(),
-                                                                                    $batchId
-                        );
+
+                        if ($existingPayoutBehaviour != self::EXISTING_PAYOUT_BEHAVIOUR_RETURN_NEW)
+                        {
+                            $existingPayout = $fetchExistingPayout();
+                        }
+                        else
+                        {
+                            $existingPayout = null;
+                        }
 
                         if ($existingPayout !== null)
                         {
@@ -2812,8 +2866,31 @@ class Service extends Base\Service
                                                    Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
                                                ]);
 
-                            $payoutBatch->push($existingPayout->toArrayPublic() +
-                                               [Entity::IDEMPOTENCY_KEY => $existingPayout->getIdempotencyKey()]);
+                            if ($existingPayoutBehaviour === self::EXISTING_PAYOUT_BEHAVIOUR_RETURN_ERROR)
+                            {
+                                $exceptionData = [
+                                    Entity::BATCH_ID        => $batchId,
+                                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                                    'error'                 => [
+                                        Error::DESCRIPTION       => 'Duplicate Payout with same idempotency key found: ' . $existingPayout->getId(),
+                                        Error::PUBLIC_ERROR_CODE => ErrorCode::BAD_REQUEST_ERROR,
+                                    ],
+                                    Error::HTTP_STATUS_CODE => 400,
+                                ];
+
+                                if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH))
+                                {
+                                    (new PayoutsBatch\Core())
+                                        ->pushWebhookForPayoutCreationFailure($exceptionData, $item, $this->merchant);
+                                }
+
+                                $payoutBatch->push($exceptionData);
+                            }
+                            else
+                            {
+                                $payoutBatch->push($existingPayout->toArrayPublic() +
+                                                   [Entity::IDEMPOTENCY_KEY => $existingPayout->getIdempotencyKey()]);
+                            }
                         }
                         else
                         {

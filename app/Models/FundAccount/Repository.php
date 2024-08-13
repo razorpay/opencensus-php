@@ -44,16 +44,34 @@ class Repository extends Base\Repository
         switch ($input[Entity::ACCOUNT_TYPE])
         {
             case Type::BANK_ACCOUNT:
+                if($contact == null)
+                {
+                    $account = $this->fetchFundAccountOfTypeBankAccountWithoutContact($merchant, $input);
+                    break;
+                }
+
                 $account = $this->fetchFundAccountOfTypeBankAccountForContact($merchant, $contact, $input);
 
                 break;
 
             case Type::VPA:
+                if($contact == null)
+                {
+                    $account = $this->fetchFundAccountOfTypeVpaWithoutContact($merchant, $input);
+                    break;
+                }
+
                 $account = $this->fetchFundAccountOfTypeVpaForContact($merchant, $contact, $input);
 
                 break;
 
             case Type::WALLET_ACCOUNT:
+                if($contact == null)
+                {
+                    $account = $this->fetchFundAccountOfTypeWalletAccountWithoutContact($merchant, $input);
+                    break;
+                }
+
                 $account = $this->fetchFundAccountOfTypeWalletAccountForContact($merchant, $contact, $input);
 
                 break;
@@ -194,6 +212,50 @@ class Repository extends Base\Repository
         }
     }
 
+    public function fetchFundAccountOfTypeBankAccountWithoutContact(Merchant\Entity $merchant,
+                                                                array $input)
+    {
+        $bankAccount = $input[Type::BANK_ACCOUNT];
+
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $bankAccountTable = $this->repo->bank_account->getTableName();
+
+        $bankAccountIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $bankAccountAccountNumberColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+
+        $bankAccountBeneficiaryName = $this->repo->bank_account->dbColumn(BankAccount\Entity::BENEFICIARY_NAME);
+
+        $bankAccountIfscCodeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::IFSC_CODE);
+
+        $bankAccountBankIdentifierCodeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::BANK_IDENTIFIER);
+
+        $bankAccountTypeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::TYPE);
+
+        $bankAccountMerchantIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::MERCHANT_ID);
+
+        $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
+
+        $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
+
+            // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
+            $ifsc = substr(strtoupper($bankAccount[BankAccount\Entity::IFSC]), 0, 4);
+
+            return $this->newQuery()
+                        ->select($allFundAccountAttributes)
+                        ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
+                        ->where($bankAccountTypeColumn, '=', E::CONTACT)
+                        ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
+                        ->where($bankAccountIfscCodeColumn, 'LIKE', $ifsc . '%')
+                        ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
+                        ->orderBy($faActiveColumn, 'desc')
+                        ->orderBy(Entity::CREATED_AT, 'asc')
+                        ->first();
+    }
+
     public function fetchFundAccountOfTypeVpaForContact(Merchant\Entity $merchant,
                                                         Contact\Entity $contact,
                                                         array $input)
@@ -228,6 +290,44 @@ class Repository extends Base\Repository
                     ->select($allFundAccountAttributes)
                     ->join($vpaTable, $faAccountIdColumn, '=', $vpaIdColumn)
                     ->where($faSourceIdColumn, '=', $contact->getId())
+                    ->where($vpaTypeColumn, '=', E::CONTACT)
+                    ->where($vpaUsernameColumn, $username)
+                    ->where($vpaHandleColumn, $handle)
+                    ->where($vpaMerchantIdColumn, '=', $merchant->getId())
+                    ->orderBy($faActiveColumn, 'desc')
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->first();
+    }
+
+    public function fetchFundAccountOfTypeVpaWithoutContact(Merchant\Entity $merchant, array $input)
+    {
+        $vpa = $input[Type::VPA];
+
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $vpaTable = $this->repo->vpa->getTableName();
+
+        $vpaIdColumn = $this->repo->vpa->dbColumn(Vpa\Entity::ID);
+
+        $vpaTypeColumn = $this->repo->vpa->dbColumn(Vpa\Entity::ENTITY_TYPE);
+
+        $vpaCreatedAtColumn = $this->repo->vpa->dbColumn(Vpa\Entity::CREATED_AT);
+
+        $vpaUsernameColumn = $this->repo->vpa->dbColumn(Vpa\Entity::USERNAME);
+
+        $vpaHandleColumn = $this->repo->vpa->dbColumn(Vpa\Entity::HANDLE);
+
+        $vpaMerchantIdColumn = $this->repo->vpa->dbColumn(Vpa\Entity::MERCHANT_ID);
+
+        $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
+
+        list($username, $handle) = explode(Vpa\Entity::AROBASE, $vpa[Vpa\Entity::ADDRESS]);
+
+        return $this->newQuery()
+                    ->select($allFundAccountAttributes)
+                    ->join($vpaTable, $faAccountIdColumn, '=', $vpaIdColumn)
                     ->where($vpaTypeColumn, '=', E::CONTACT)
                     ->where($vpaUsernameColumn, $username)
                     ->where($vpaHandleColumn, $handle)
@@ -394,6 +494,40 @@ class Repository extends Base\Repository
                     ->select($allFundAccountAttributes)
                     ->join($walletAccountTable, $faAccountIdColumn, '=', $walletAccountIdColumn)
                     ->where($faSourceIdColumn, '=', $contact->getId())
+                    ->where($walletAccountTypeColumn, '=', E::CONTACT)
+                    ->where($walletAccountPhoneNoColumn, '=', $walletAccount[WalletAccount\Entity::PHONE])
+                    ->where($walletAccountProviderColumn, '=', $walletAccount[WalletAccount\Entity::PROVIDER])
+                    ->where($walletAccountMerchantIdColumn, '=', $merchant->getId())
+                    ->orderBy($faActiveColumn, 'desc')
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->first();
+    }
+
+    public function fetchFundAccountOfTypeWalletAccountWithoutContact(Merchant\Entity $merchant, array $input)
+    {
+        $walletAccount = $input[Type::WALLET_ACCOUNT];
+
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $walletAccountTable = $this->repo->wallet_account->getTableName();
+
+        $walletAccountIdColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::ID);
+
+        $walletAccountTypeColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::ENTITY_TYPE);
+
+        $walletAccountProviderColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::PROVIDER);
+
+        $walletAccountPhoneNoColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::PHONE);
+
+        $walletAccountMerchantIdColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::MERCHANT_ID);
+
+        $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
+
+        return $this->newQuery()
+                    ->select($allFundAccountAttributes)
+                    ->join($walletAccountTable, $faAccountIdColumn, '=', $walletAccountIdColumn)
                     ->where($walletAccountTypeColumn, '=', E::CONTACT)
                     ->where($walletAccountPhoneNoColumn, '=', $walletAccount[WalletAccount\Entity::PHONE])
                     ->where($walletAccountProviderColumn, '=', $walletAccount[WalletAccount\Entity::PROVIDER])

@@ -1995,6 +1995,19 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchBulkByFundAccountIDAndIdempotencyKey(string $idempotentKey,
+                                         string $merchantId, string $fundAccountId, int $lookBackPeriod = 0)
+    {
+        $createdAtGreaterThan = Carbon::now(Timezone::IST)->subHours($lookBackPeriod)->getTimestamp();
+
+        return $this->newQuery()
+                    ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotentKey)
+                    ->where(Entity::FUND_ACCOUNT_ID, $fundAccountId)
+                    ->where(Entity::CREATED_AT, '>=', $createdAtGreaterThan)
+                    ->merchantId($merchantId)
+                    ->first();
+    }
+
     protected function addQueryParamReversedFrom($query, $params)
     {
         $reversedFrom  = $params[Entity::REVERSED_FROM];
