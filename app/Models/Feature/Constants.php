@@ -2256,6 +2256,13 @@ class Constants
      */
     const POS_CHANNEL_PARTNERSHIP = 'pos_channel_partnership';
 
+    /**
+     * Feature flag will be enabled on partner.
+     * All submerchants associated with the partner can
+     * have a custom terminal procurement mapping
+     */
+    const CUSTOM_TERMINAL_PROC = 'custom_terminal_proc';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3139,6 +3146,7 @@ class Constants
         self::HIDE_AGGREGATOR_FIELDS         => true,
 
         self::POS_CHANNEL_PARTNERSHIP                => true,
+        self::CUSTOM_TERMINAL_PROC                   => true,
     ];
 
     // Entity type constants
@@ -4547,6 +4555,11 @@ class Constants
             'display_name'  => 'POS CHANNEL PARTNERSHIP',
             'documentation' => 'feature to control the eKYC functionalities for reseller partners',
         ],
+        self::CUSTOM_TERMINAL_PROC => [
+            'feature'       => self::CUSTOM_TERMINAL_PROC,
+            'display_name'  => 'Custom Terminal Procurement',
+            'documentation' => 'Feature flag to allow partner to procure custom terminal for sub-merchants',
+        ]
     ];
 
     /**
