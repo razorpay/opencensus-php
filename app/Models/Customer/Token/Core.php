@@ -2015,13 +2015,6 @@ class Core extends Base\Core
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
 
-            if (isset($input['via_push_provisioning']) === false)
-            {
-                if (empty($input[Token\Entity::AUTHENTICATION]['authentication_reference_number']) === true)
-                {
-                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_NOT_ELIGIBLE_FOR_TOKENISATION);
-                }
-            }
         }
 
         else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
