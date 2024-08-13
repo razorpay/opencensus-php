@@ -1575,9 +1575,6 @@ export const getOptimizerOnboardingStorageKey = (user) =>
 
 export const shouldShowRules = (user) => user?.isOptimizerEnabled;
 
-export const shouldShowOnBoarding = (user) =>
-  user?.isOptimizerOnboardingEnabled && !user?.isOptimizerEnabled;
-
 export const WalletLabels = {
   itzcash: 'ItzCash',
   payzapp: 'PayZapp',

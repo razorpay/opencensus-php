@@ -16,8 +16,20 @@ export const CLICK_BACK_ON_FEATURES = {
   screen: 'Optimizer - Onboarding',
 };
 
-export const CLICK_ACTIVATE_NOW_ON_FEATURES = {
-  objectName: `Optimizer Activate Now on features`,
+export const CLICK_NEXT_ON_FEATURES = {
+  objectName: `Optimizer Next on features`,
+  actionName: 'clicked',
+  screen: 'Optimizer - Onboarding',
+};
+
+export const CLICK_BACK_ON_BRANDS = {
+  objectName: `Optimizer Back on Brands`,
+  actionName: 'clicked',
+  screen: 'Optimizer - Onboarding',
+};
+
+export const CLICK_NEXT_ON_BRANDS = {
+  objectName: `Optimizer Next on Brands`,
   actionName: 'clicked',
   screen: 'Optimizer - Onboarding',
 };
@@ -39,19 +51,6 @@ export const clickBookDemo = (details) => ({
   actionName: 'clicked',
   screen: 'Optimizer - Onboarding',
   properties: { ...details },
-});
-
-export const CLICK_BACK_ON_PRICING_PLAN = {
-  objectName: `Optimizer Back on Pricing Plan`,
-  actionName: 'clicked',
-  screen: 'Optimizer - Onboarding',
-};
-
-export const clickActivateNowOnPricingPlan = (isActivated) => ({
-  objectName: `Optimizer Activate Now on pricing plan`,
-  actionName: 'clicked',
-  screen: 'Optimizer - Onboarding',
-  properties: { isActivated },
 });
 
 export const onboardPageVisit = ({ active, ...rest }) => ({

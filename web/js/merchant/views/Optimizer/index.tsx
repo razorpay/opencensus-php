@@ -9,7 +9,7 @@ import { withSplitzService } from 'common/splitz';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { fetchRules, fetchRule, fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import lazy from 'merchant/routes/LazyLoader';
-import { shouldShowRules, shouldShowOnBoarding } from 'merchant/views/Navigator/components/util';
+import { shouldShowRules } from 'merchant/views/Navigator/components/util';
 import { isIntegrationAuditEnabled } from 'merchant/views/Optimizer/AddProvider/utils';
 
 const AddProvider = lazy(
@@ -107,11 +107,7 @@ const Optimizer = ({ fetchRules, fetchTerminalProviders, user, splitz }): JSX.El
             <Route
               path="onboarding/*"
               element={
-                <RouteGuard
-                  additionalCondition={(user) =>
-                    shouldShowOnBoarding(user) || shouldShowRules(user)
-                  }
-                >
+                <RouteGuard additionalCondition={(user) => !shouldShowRules(user)}>
                   <OnBoarding />
                 </RouteGuard>
               }

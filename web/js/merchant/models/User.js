@@ -1023,10 +1023,6 @@ export default class User {
     return this.isFeatureEnabled('wallet_paytm_auto_debit');
   }
 
-  get isOptimizerOnboardingEnabled() {
-    return this.getExpStatus('optimizer_onboarding');
-  }
-
   get isHidePIDetails() {
     return this.getExpStatus('hide_PI_details');
   }

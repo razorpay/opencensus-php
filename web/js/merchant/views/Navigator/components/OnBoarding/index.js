@@ -26,17 +26,17 @@ const Highlights = lazy(() =>
   ),
 );
 
+const Brands = lazy(() =>
+  import(
+    /* webpackChunkName: 'Brands' */ 'merchant/views/Navigator/components/OnBoarding/components/Brands'
+  ),
+);
+
 const Survey = lazy(() =>
   import(
     /* webpackChunkName: 'Survey' */ 'merchant/views/Navigator/components/OnBoarding/components/Survey'
   ),
 );
-
-// const PricingPlan = lazy(() =>
-//   import(
-//     /* webpackChunkName: 'PricingPlan' */ 'merchant/views/Navigator/components/OnBoarding/components/PricingPlan'
-//   ),
-// );
 
 function OptimizerOnBoarding() {
   const {
@@ -134,6 +134,8 @@ function OptimizerOnBoarding() {
 
           {(sliderProps) => <Highlights sliderProps={sliderProps} />}
 
+          {(sliderProps) => <Brands sliderProps={sliderProps} />}
+
           {(sliderProps) => (
             <Survey
               sliderProps={sliderProps}
@@ -143,8 +145,6 @@ function OptimizerOnBoarding() {
               isHelpDetailsValid={isHelpDetailsValid}
             />
           )}
-
-          {/* {(sliderProps) => <PricingPlan sliderProps={sliderProps} />} */}
         </Slider>
       </SuspenseWithLoader>
     </OnBoardingWrapper>

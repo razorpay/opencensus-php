@@ -347,11 +347,8 @@ function MerchantNavLinks(props) {
         type="product"
         icon="i i-routing text-warm temp-icon-style"
         to="/optimizer"
-        additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('optimizer') &&
-          (currentUser.isOptimizerEnabled || currentUser.isOptimizerOnboardingEnabled)
-        }
-        isNew={user?.isOptimizerOnboardingEnabled && !user?.isOptimizerEnabled}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('optimizer')}
+        isNew={!user?.isOptimizerEnabled}
       />
 
       <MainNavLink

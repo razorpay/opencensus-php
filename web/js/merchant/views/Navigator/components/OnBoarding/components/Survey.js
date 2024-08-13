@@ -10,7 +10,7 @@ import {
 import ShowWhen from 'merchant/components/ShowWhen';
 import { RZPFeatures } from 'merchant/helpers/data';
 import {
-  IMG_URL,
+  SURVEY_IMG_URL,
   GATEWAYS_OPTIONS,
   HAVE_MULTIPLE_GATEWAYS_OPTIONS,
 } from 'merchant/views/Navigator/components/OnBoarding/constants';
@@ -55,7 +55,7 @@ function Survey({
     >
       <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
         <div className="Landing--Image">
-          <img src={IMG_URL} alt="landing-image" />
+          <img src={SURVEY_IMG_URL} alt="landing-image" />
         </div>
       </ShowWhen>
 
