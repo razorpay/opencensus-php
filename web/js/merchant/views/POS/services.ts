@@ -151,6 +151,7 @@ export const agreeToPosMerchantAgreement = async ({
   tncId,
   pricingId,
   privacyId,
+  agreement_consented_at_field,
 }: PosAgreementSignIds) => {
   const payload: PosAgreementSignPayload = {
     terms_and_conditions_consent_field: {
@@ -161,6 +162,7 @@ export const agreeToPosMerchantAgreement = async ({
       type: 'Privacy Policy',
       templateId: privacyId,
     },
+    agreement_consented_at_field,
   };
   if (pricingId) {
     payload.pricing_consent_field = {

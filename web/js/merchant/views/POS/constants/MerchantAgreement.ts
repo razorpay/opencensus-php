@@ -23,6 +23,7 @@ export const PRICING_AGREEMENT_FAILED_TO_LOAD =
 export const POS_AGREEMENT_FAILED_TO_LOAD =
   'Unable to load POS Agreement Details. Please try again!';
 export const POS_AGREEMENT_SIGN_FAILED = 'Failed to agree. Please try again!';
+export const AGREEMENT_CONSENTED_AT_FIELD = 'agreement_consented_at_field';
 
 //TODO: Move this template to templating service
 export const getPosPricingTemplate = (org, pricingTableV2) => {

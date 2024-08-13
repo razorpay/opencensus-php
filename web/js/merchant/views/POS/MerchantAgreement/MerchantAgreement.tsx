@@ -14,6 +14,7 @@ import {
   StyledHandshake,
 } from 'merchant/views/POS/MerchantAgreement/styles';
 import {
+  AGREEMENT_CONSENTED_AT_FIELD,
   COMPLETED,
   CONSENT_COMPONENT,
   CONSENT_STEP,
@@ -92,7 +93,10 @@ const PosMerchantAgreement = (): JSX.Element => {
   };
 
   const handleAgreeBtnClick = () => {
-    signAllAgreements(getAgreementIds(workflowConfig?.data));
+    signAllAgreements({
+      ...getAgreementIds(workflowConfig?.data),
+      [AGREEMENT_CONSENTED_AT_FIELD]: Math.floor(Date.now() / 1000),
+    });
   };
 
   useEffect(() => {

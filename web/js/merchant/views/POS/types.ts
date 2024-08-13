@@ -512,6 +512,7 @@ export type PosAgreementSignIds = {
   tncId: string;
   privacyId: string;
   pricingId?: string;
+  agreement_consented_at_field: number;
 };
 
 type ConsentField = {
@@ -523,6 +524,7 @@ export type PosAgreementSignPayload = {
   terms_and_conditions_consent_field: ConsentField;
   privacy_consent_field: ConsentField;
   pricing_consent_field?: ConsentField;
+  agreement_consented_at_field: number;
 };
 
 export type WorkflowData = {
