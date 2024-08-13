@@ -17,6 +17,7 @@ use RZP\Models\Order\ProductType;
 use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Services\CredcaseSigner;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class PlinkController extends Controller
 {
@@ -66,11 +67,17 @@ class PlinkController extends Controller
 
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
-        if ($routeName === 'payment_links_create' &&
-            $this->service(E::INVOICE)->shouldLimitNoCodeAppCreation(ProductType::PAYMENT_LINK)
-        ) {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED, null, null);
+        if ($routeName === 'payment_links_create') {
+            if ($this->service(E::INVOICE)->shouldBlockNoCodeAppCreationBasedOnKeywords($request->post(), ProductType::PAYMENT_LINK)) {
+                $msg = "Request not allowed due to restrictions";
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            if ($this->service(E::INVOICE)->shouldLimitNoCodeAppCreation(ProductType::PAYMENT_LINK)) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED, null, null);
+            }
         }
 
         try {

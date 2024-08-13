@@ -617,6 +617,8 @@ return array(
 
     'nocodeapps_ratelimit_experiment_id' => env('NOCODEAPPS_RATELIMIT_EXPERIMENT_ID'),
 
+    'nocodeapps_block_keywords_experiment_id' => env('NOCODEAPPS_BLOCK_KEYWORDS_EXPERIMENT_ID'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),

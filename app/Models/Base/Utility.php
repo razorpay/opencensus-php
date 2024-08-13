@@ -141,6 +141,40 @@ class Utility
         return $result;
     }
 
+    public static function findMatchingKeyInArray(array $input, string $matchKey): ?array
+    {
+        try {
+            foreach ($input as $key => $value)
+            {
+                if (is_string($key) && stripos($key, $matchKey) !== false)
+                {
+                    return ['inputKey' => $key, 'inputValue' => $value, 'keyword' => $matchKey];
+                }
+                elseif (is_string($value) && stripos($value, $matchKey) !== false)
+                {
+                    return ['inputKey' => $key, 'inputValue' => $value, 'keyword' => $matchKey];
+                }
+                elseif (is_array($value))
+                {
+                    $containsKey = self::findMatchingKeyInArray($value, $matchKey);
+                    if ($containsKey !== null)
+                    {
+                        return $containsKey;
+                    }
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException($ex,
+                null,
+                TraceCode::ARRAY_KEY_MATCH_EXCEPTION
+            );
+        }
+
+        return null;
+    }
+
     // note: this is a temporary fix to solve the following issue: https://razorpay.slack.com/archives/C027FDDSZ0F/p1716188016901139
     // context: only for the race condition pattern we are observing all 3 columns: activated_at, activated, live to get unset.
     // hence to handle the race condition, we will override this behaviour behind an experiment after log verification.

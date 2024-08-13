@@ -49,6 +49,18 @@ class Service extends Base\Service
     const TEST_NOCODEAPP_MAX_CREATIONS_PER_DAY = 300;
     const LIVE_NOCODEAPP_MAX_CREATIONS_PER_DAY = 10000;
 
+    // keyword got from security (btc,BTC,PayPal,Crypto,norton,mcafee, bitcoin, ethereum)
+    const BLACKLISTED_KEYWORDS = [
+        "bitcoin",
+        "ethereum",
+        "crypto",
+        "binance",
+        "btc",
+        "paypal",
+        "norton",
+        "mcafee"
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -61,6 +73,12 @@ class Service extends Base\Service
     public function create(array $input): array
     {
         $batchId = null;
+
+        if ($this->shouldBlockNoCodeAppCreationBasedOnKeywords($input, ProductType::INVOICE)) {
+            $msg = "Request not allowed due to restrictions";
+
+            throw new Exception\BadRequestValidationFailureException($msg);
+        }
 
         if ($this->shouldLimitNoCodeAppCreation(ProductType::INVOICE)) {
             throw new Exception\BadRequestException(
@@ -928,6 +946,52 @@ class Service extends Base\Service
 
         return false;
     }
+
+    public function shouldBlockNoCodeAppCreationBasedOnKeywords(array $input, string $appType): bool {
+        try
+        {
+            $merchantId = $this->merchant->getId();
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.nocodeapps_block_keywords_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId, 'mode' => $this->mode, 'app' => $appType]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant !== 'variant_on') {
+                return false;
+            }
+
+            foreach (self::BLACKLISTED_KEYWORDS as $blacklistKey) {
+                $blockedKeywordMatch = Base\Utility::findMatchingKeyInArray($input, $blacklistKey);
+
+                if ($blockedKeywordMatch !== null) {
+                    $this->trace->info(TraceCode::NOCODEAPP_CREATION_BLOCKED_DUE_TO_KEYWORD, [
+                        'appType'       => $appType,
+                        'merchantId'    => $merchantId,
+                        'mode'          => $this->mode,
+                        'keywordMatchDetails'   => $blockedKeywordMatch,
+                    ]);
+
+                    return true;
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::NOCODEAPP_KEYWORD_CHECK_FAILED
+            );
+        }
+
+        return false;
+    }
+
 
     protected function serializeOrgPropertiesForHostedForPaymentLinkService()
     {

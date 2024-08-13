@@ -21,6 +21,7 @@ use RZP\Models\Feature\Constants as Feature;
 use Illuminate\Http\Response as ResponseCodes;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Order\ProductType;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class InvoiceController extends Controller
 {
@@ -41,6 +42,12 @@ class InvoiceController extends Controller
 
         if ($this->shouldForwardToPaymentLinkService($input, true) === true)
         {
+            if ($this->service()->shouldBlockNoCodeAppCreationBasedOnKeywords($input, ProductType::PAYMENT_LINK)) {
+                $msg = "Request not allowed due to restrictions";
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
             if ($this->service()->shouldLimitNoCodeAppCreation(ProductType::PAYMENT_LINK)) {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED, null, null);
