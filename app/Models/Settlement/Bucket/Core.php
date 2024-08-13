@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Settlement\Metric;
 use RZP\Models\Settlement\SettlementServiceMigration;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
@@ -560,7 +561,9 @@ class Core extends Base\Core
                     'merchant_id'               => $txn->getMerchantId(),
                 ]);
 
-            throw new Exception\LogicException('Transaction meta details not found for JPMC');
+            $this->trace->count(Metric::TRANSACTIONS_META_DETAILS_MISSING,[
+                'channel' => "jpmc"
+            ]);
         }
 
         $paymentDetails = [

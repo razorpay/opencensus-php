@@ -59,6 +59,11 @@ final class Metric
      */
     const DISPATCH_FOR_SETTLEMENT_INITIATE                  = 'dispatch_for_settlement_initiate';
 
+    /**
+     * Method: Count
+     */
+    const TRANSACTIONS_META_DETAILS_MISSING                 = 'transaction_meta_details_missing';
+
     // ------ Histograms ------
 
     /**
