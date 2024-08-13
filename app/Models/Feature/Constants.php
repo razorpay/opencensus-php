@@ -4347,6 +4347,11 @@ class Constants
             'display_name'  => 'Feature to disallow payment-links reminder EMAIL notifications ',
             'documentation' => '',
         ],
+        self::NOCODEAPP_FEE_APPLICABLE => [
+            'feature'       => self::NOCODEAPP_FEE_APPLICABLE,
+            'display_name'  => 'Feature to decide whether no code app product addon fee is applicable or not.',
+            'documentation' => '',
+        ],
         self::WEBSITE_AUTOMATED_CHECKS_FEATURE => [
             'feature'       => self::WEBSITE_AUTOMATED_CHECKS_FEATURE,
             'display_name'  => 'Feature to track website update automation validation progress',
