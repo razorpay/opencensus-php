@@ -65,16 +65,21 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
   const end_time = moment().format('X');
   const start_time = moment(end_time, 'X').subtract(1, 'months').format('X');
 
-  return createLog({
-    start_time,
-    end_time,
-    config_id,
-    generated_by,
+  return createLog(
+    {
+      start_time,
+      end_time,
+      config_id,
+      generated_by,
+      // eslint-disable-next-line consistent-return
+    },
+    undefined,
+    isPurePlatform,
     // eslint-disable-next-line consistent-return
-  }).then((logResponse) => {
+  ).then((logResponse) => {
     if (logResponse.data.id) {
       return poll({
-        fetchFunc: () => getLog(logResponse.data.id),
+        fetchFunc: () => getLog(logResponse.data.id, undefined, isPurePlatform),
 
         validator: (validatorResp) => {
           const timeElapsed = new Date() - startTime;

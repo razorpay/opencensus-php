@@ -18,7 +18,7 @@ const emailReportErrorMsg = {
   error: 'Oops!, Unable to email report',
 };
 
-const handleError = e => {
+const handleError = (e) => {
   console.error(e);
   return downloadReportErrorMsg;
 };
@@ -58,21 +58,21 @@ const updateLog = (data, accountId, shouldAppendHeader) => {
   });
 };
 
-export const getConfigs = shouldFetchPartnerConfigs => {
+export const getConfigs = (shouldFetchPartnerConfigs) => {
   return merchantFetch({
     url: 'reporting/configs',
     headers: appendReportTypeHeader(shouldFetchPartnerConfigs),
   });
 };
 
-export const saveReportConfigs = _ => {
+export const saveReportConfigs = (_) => {
   return {
     type: SAVE_REPORT_CONFIGS,
     payload: getConfigs(),
   };
 };
 
-export const generateReport = ajaxParams => {
+export const generateReport = (ajaxParams) => {
   return {
     type: GENERATE_REPORT,
     payload: ajax(ajaxParams),
@@ -87,7 +87,7 @@ export const generateReportV2 = (
   isMerchantAccount,
   onProgress,
   onPollStart,
-  isPartnerReport
+  isPartnerReport,
 ) => {
   const startTime = new Date(),
     accountHeaderVal = !isMerchantAccount && params.generated_by;
@@ -96,7 +96,7 @@ export const generateReportV2 = (
     timeElapsed = 0;
 
   return createLog(params, accountHeaderVal, isPartnerReport)
-    .then(resp => {
+    .then((resp) => {
       if (!resp.success || !resp.data || !resp.data.id) {
         onProgress && onProgress(resp.data);
         return downloadReportErrorMsg;
@@ -107,9 +107,8 @@ export const generateReportV2 = (
       const logId = resp.data.id;
 
       const logPoll = poll({
-        fetchFunc: () =>
-          getLog(resp.data.id, accountHeaderVal, isPartnerReport),
-        validator: resp => {
+        fetchFunc: () => getLog(resp.data.id, accountHeaderVal, isPartnerReport),
+        validator: (resp) => {
           numCallsMade++;
           timeElapsed = new Date() - startTime;
 
@@ -147,14 +146,10 @@ export const generateReportV2 = (
       onPollStart(logId, logPoll);
 
       return logPoll.promise
-        .then(resp => {
+        .then((resp) => {
           // `resp.data.status` will be `created` in
           // case of timeout
-          if (
-            resp.error ||
-            resp.data.status === 'failed' ||
-            resp.data.status === 'created'
-          ) {
+          if (resp.error || resp.data.status === 'failed' || resp.data.status === 'created') {
             onProgress && onProgress({ ...resp.data, status: 'failed' });
             return downloadReportErrorMsg;
           }
@@ -171,7 +166,7 @@ export const generateReportV2 = (
           }
 
           return getFile(fileId, accountHeaderVal)
-            .then(resp => {
+            .then((resp) => {
               if (!resp.success) {
                 return downloadReportErrorMsg;
               }
@@ -184,7 +179,7 @@ export const generateReportV2 = (
         })
         .catch(handleError);
     })
-    .catch(response => {
+    .catch((response) => {
       if (response.errors) {
         const error = response.errors[0];
         return { error };
@@ -193,42 +188,37 @@ export const generateReportV2 = (
     });
 };
 
-export const emailReportV2 = (
-  params,
-  isMerchantAccount,
-  shouldUpdate = false,
-  isPartnerReport
-) => {
+export const emailReportV2 = (params, isMerchantAccount, shouldUpdate = false, isPartnerReport) => {
   const accountHeaderVal = !isMerchantAccount && params.generated_by;
   const reqFunc = shouldUpdate ? updateLog : createLog;
 
   return reqFunc(params, accountHeaderVal, isPartnerReport)
-    .then(resp => {
+    .then((resp) => {
       if (!resp.success || !resp.data || !resp.data.id) {
         return emailReportErrorMsg;
       }
       return resp;
     })
-    .catch(err => {
+    .catch((err) => {
       return emailReportErrorMsg;
     });
 };
 
-export const addReportToList = report => {
+export const addReportToList = (report) => {
   return {
     type: ADD_REPORT,
     report,
   };
 };
 
-export const updateReportInList = report => {
+export const updateReportInList = (report) => {
   return {
     type: UPDATE_REPORT,
     report,
   };
 };
 
-export const removeReportFromList = reportId => {
+export const removeReportFromList = (reportId) => {
   return {
     type: REMOVE_REPORT,
     reportId,
@@ -245,7 +235,7 @@ export const addPollInstance = (logId, pollInstance) => {
   };
 };
 
-export const areReportsStillDownloading = reports => {
+export const areReportsStillDownloading = (reports) => {
   const list = Object.keys(reports);
   let isDownloading = false;
 
