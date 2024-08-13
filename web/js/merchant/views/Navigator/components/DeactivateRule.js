@@ -1,9 +1,6 @@
 import { Component, Fragment } from 'react';
-import * as dragula from 'react-dragula';
-import { rule } from './CreateRule';
 import ModalHeader from 'common/ui/ModalHeader';
 import { RulesTable } from './RulesTable';
-import Spinner from 'common/ui/Spinner';
 import { connect } from 'react-redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 

@@ -27,7 +27,7 @@ const ProviderDetailsV2 = lazy(
 const CreateRule = lazy(
   () =>
     import(
-      /* webpackChunkName: 'OptimizerCreateRule' */ 'merchant/views/Navigator/components/CreateRule'
+      /* webpackChunkName: 'OptimizerCreateRule' */ 'merchant/views/Optimizer/Rules/CreateRule'
     ),
 );
 

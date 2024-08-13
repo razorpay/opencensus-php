@@ -1,5 +1,14 @@
 import { RULE_GROUP } from 'merchant/views/Optimizer/__test__/mock';
-import { getValue, removeMid, getRuleStatus, uniqueArray, findProviderName } from '../utils';
+import {
+  getValue,
+  removeMid,
+  getRuleStatus,
+  uniqueArray,
+  findProviderName,
+  createMappedProviders,
+  setRuleMode,
+  liveRulesList,
+} from '../utils';
 
 const TERMINAL_PROVIDERS = [
   {
@@ -110,5 +119,77 @@ describe('Optimizer Utils > findProviderName', () => {
   it('should return the provider name', () => {
     const result = findProviderName(TERMINAL_PROVIDERS, 'HdvEjdKKJMBX89');
     expect(result).toEqual('payu test');
+  });
+});
+
+describe('Optimizer Utils > createMappedProviders', () => {
+  it('should return the mapped providers', () => {
+    const RAZORPAY = [
+      {
+        Provider_name: 'razorpay',
+        Description: 'Razorpay provider',
+        Gateway: 'razorpay',
+        Gateway_details: {
+          'Payment Methods': ['card', 'netbanking', 'upi', 'wallet'],
+          wallet_metadata: {
+            wallets: [
+              'mpesa',
+              'mobikwik',
+              'phonepeswitch',
+              'sbibuddy',
+              'phonepe',
+              'paypal',
+              'jiomoney',
+              'amazonpay',
+              'freecharge',
+              'bajajpay',
+              'olamoney',
+              'openwallet',
+              'razorpaywallet',
+              'payumoney',
+              'airtelmoney',
+              'paytm',
+              'mcash',
+              'boost',
+              'touchngo',
+              'grabpay',
+              'payzapp',
+            ],
+          },
+        },
+        Currency: ['INR'],
+        Gateway_acquirer: 'razorpay',
+        Status: '',
+        created_at: 0,
+        updated_at: 0,
+      },
+    ];
+    const result = createMappedProviders([...TERMINAL_PROVIDERS, ...RAZORPAY]);
+    expect(result).toEqual([
+      {
+        id: 'payu_HdvEjdKKJMBX89',
+        name: 'payu test',
+        value: 'payu_HdvEjdKKJMBX89',
+      },
+      {
+        id: 'razorpay',
+        name: 'razorpay',
+        value: 'razorpay',
+      },
+    ]);
+  });
+});
+
+describe('Optimizer Utils > setRuleMode', () => {
+  it('should update rule mode', () => {
+    const result = setRuleMode(RULE_GROUP.rules, 'test');
+    expect(result[0].expression.operands[1].operands[0].value).toEqual('test');
+  });
+});
+
+describe('Optimizer Utils > liveRulesList', () => {
+  it('should return the live rules list', () => {
+    const result = liveRulesList([RULE_GROUP]);
+    expect(result).toEqual([RULE_GROUP]);
   });
 });

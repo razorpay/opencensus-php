@@ -1,4 +1,4 @@
-import { Parameter, Operator, LogicalOperator, Provider } from './types';
+import { Parameter, Operator, LogicalOperator, Rule, RuleGroup, Provider } from './types';
 
 export const OPERATORS: Operator[] = [
   {
@@ -1151,8 +1151,44 @@ export const getValue = (type, value) => {
   return r.find((p) => p.value == value) || { name: '' };
 };
 
-export const mapRulesArrayToObject = (rules) => {
-  const rulesObj = {};
+export const getUnique = () => Math.floor(Math.random() * 100000000000);
+
+export const createMappedProviders = (terminalProviders) => {
+  const mappedProviders: {
+    id: string;
+    name: string;
+    value: string;
+  }[] = [];
+  terminalProviders.forEach((provider) => {
+    if (RZP_GATEWAYS.includes(provider.Gateway)) {
+      mappedProviders.push({
+        id: provider.Gateway,
+        name: provider.Provider_name,
+        value: provider.Gateway,
+      });
+    } else if (provider?.Status === 'activated') {
+      mappedProviders.push({
+        id: `${provider.Gateway}_${provider.Terminal_id}`,
+        name: provider.Provider_name || provider.Gateway,
+        value: `${provider.Gateway}_${provider.Terminal_id}`,
+      });
+    }
+  });
+  return mappedProviders;
+};
+
+export const isExpressionValid = (expression) => {
+  return (
+    expression.operands &&
+    expression.operands[0] &&
+    expression.operands[0].value &&
+    expression.operands[1].value &&
+    expression.value
+  );
+};
+
+export const mapRulesArrayToObject = (rules: Rule[]): { [key: string]: Rule[] } => {
+  const rulesObj: { [key: string]: Rule[] } = {};
   rules.forEach((r) => {
     const provider_priority = r.additional_attribute[0].value;
     if (!rulesObj[provider_priority]) {
@@ -1163,15 +1199,53 @@ export const mapRulesArrayToObject = (rules) => {
   return rulesObj;
 };
 
+export const mapRulesObjectToArray = (rulesObj: { [key: string]: Rule[] }): Rule[] => {
+  const rules: Rule[] = [];
+  Object.keys(rulesObj).forEach((key) => {
+    rules.push(...rulesObj[key]);
+  });
+  return rules;
+};
+
+export const appendMid = (value: string): string => {
+  return `${value}_${window.rzp_user.current}`;
+};
+
 export const removeMid = (value: string): string => {
   const temp = value.split('_');
   temp.pop();
   return temp.join('_');
 };
 
-export const getRuleStatus = (r): string => {
-  const status = r.additional_attributes[0].values[0] || 'test';
+const setRuleModeOperand = (rule, mode) => {
+  rule.expression?.operands?.forEach((o) => {
+    if (o.operands && o.operands.length > 1) {
+      if (o.operands[1]?.type === 'variable' && o.operands[1]?.value === '$payment.rule_mode') {
+        o.operands[0].value = mode;
+      } else if (
+        o.operands[0]?.type === 'variable' &&
+        o.operands[0]?.value === '$payment.rule_mode'
+      ) {
+        o.operands[1].value = mode;
+      }
+    }
+  });
+};
+
+export const setRuleMode = (rules, mode) => {
+  rules.forEach((r) => {
+    setRuleModeOperand(r, mode);
+  });
+  return rules;
+};
+
+export const getRuleStatus = (ruleGroup: RuleGroup): string => {
+  const status = ruleGroup.additional_attributes[0].values[0] || 'test';
   return status;
+};
+
+export const liveRulesList = (rules: RuleGroup[]): RuleGroup[] => {
+  return rules.filter((r) => getRuleStatus(r) === 'live');
 };
 
 export const uniqueArray = (arr) => {
