@@ -7,24 +7,26 @@ import errorService from '@razorpay/universe-cli/errorService';
 
 import App from 'apps/pos/src/app';
 import PageError from 'apps/pos/src/app/components/PageError';
+import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
 
 export const queryClient = new QueryClient();
 
-const isProd = process.env.STAGE == 'production';
-
 const Wrapper = (): JSX.Element => {
+  const { isProduction, cdnBaseUrl } = useEnv();
+
   React.useEffect(() => {
-    console.log('Injected Manifest!!!!', isProd);
+    console.log('Injected Manifest!!!!', { isProduction });
     const link = document.createElement('link');
     link.rel = 'manifest';
-    link.href = isProd
-      ? `${window.cdnBaseUrl}/static/assets/pos/sales-assisted/manifests/app-prod-manifest.json`
+    link.href = isProduction
+      ? `${cdnBaseUrl}/static/assets/pos/sales-assisted/manifests/app-prod-manifest.json`
       : `${process.env.UNIVERSE_PUBLIC_ASSETS_URL}/build/browser/manifest.json`;
     document.head.appendChild(link);
     return () => {
       document.head.removeChild(link);
     };
   }, []);
+
   return (
     <BladeProvider themeTokens={bladeTheme}>
       <QueryClientProvider client={queryClient}>

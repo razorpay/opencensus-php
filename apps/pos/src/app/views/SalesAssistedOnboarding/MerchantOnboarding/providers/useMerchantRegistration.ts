@@ -7,7 +7,6 @@ import {
   MerchantRegisterApiResponse,
   AddMerchantErrorResponse,
   MerchantOTPVerifyAPIResponse,
-  MerchantOTPVerifyErrorResponse,
 } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
 import useMerchantSwitch from 'apps/pos/src/app/utils/hooks/useMerchantSwitch';
@@ -80,7 +79,7 @@ const useMerchantRegistration = (): UseMerchantRegistration => {
 
   const { mutate: initiateVerifyOTP, isLoading: isVerifyOTPLoading } = useMutation<
     MerchantOTPVerifyAPIResponse,
-    APIResponse<null, MerchantOTPVerifyErrorResponse>,
+    APIResponse<null, string>,
     OTPsubmitprops
   >({
     mutationFn: async (variables) => {
@@ -95,8 +94,10 @@ const useMerchantRegistration = (): UseMerchantRegistration => {
       handleSwitchMerchant(response?.data?.merchants?.[0].id as string);
     },
     onError: (data) => {
-      const error = data?.errors?.[0];
-      setError(error?.description as string);
+      const error: string = data?.errors?.[0] ?? '';
+      const genericError: string = MERCHANT_REGISTRATION_ERRORS.GENERIC_ERROR?.description;
+
+      setError(error || genericError);
     },
   });
 

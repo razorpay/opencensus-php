@@ -50,6 +50,7 @@ export interface MerchantOTPVerifyRequestAPIArgs {
   token: string;
   signup_campaign: 'assisted_onboarding';
   skip_sms_request?: boolean;
+  captcha_disable: 'DISABLE_THE_CAPTCHA_YOU_SHALL';
 }
 
 export interface MerchantOTPVerifySuccessResponse {

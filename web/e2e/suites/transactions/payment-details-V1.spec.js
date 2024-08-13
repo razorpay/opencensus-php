@@ -16,30 +16,28 @@ const openPaymentDetails = async (page, paymentId) => {
     .click();
 };
 
-test.describe.parallel(
-  'Payments transactions (Live Mode) @flow=transactionsV1 @project=payments',
-  () => {
-    test.use({
-      storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
-    });
+test.describe
+  .parallel('Payments transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
+  test.use({
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+  });
 
-    test.beforeEach(async ({ page }) => {
-      await navigateTo(page, routes.PAYMENTS);
+  test.beforeEach(async ({ page }) => {
+    await navigateTo(page, routes.PAYMENTS);
+  });
+  test.describe.parallel('Payment details', () => {
+    // There are payments which happens via external PGs using Optimizer
+    // and these payments are not settled via razorpay
+    // In this case we don't want merchant to create transfer,
+    // so we are hiding create transfer button for these payments
+    test('should not show create transfer button', async ({ page }) => {
+      await expect(page).toHaveURL(routes.PAYMENTS);
+      const id = payments.paymentId.authorized.netbanking;
+      const paymentsFilter = page.getByTestId('payments-filter');
+      await searchPaymentId(paymentsFilter, id);
+      await openPaymentDetails(page, id);
+      await expect(page.getByText('Transfer', { exact: true })).toBeVisible();
+      expect(page.getByRole('button', { name: 'Create transfer' })).not.toBeVisible();
     });
-    test.describe.parallel('Payment details', () => {
-      // There are payments which happens via external PGs using Optimizer
-      // and these payments are not settled via razorpay
-      // In this case we don't want merchant to create transfer,
-      // so we are hiding create transfer button for these payments
-      test('should not show create transfer button', async ({ page }) => {
-        await expect(page).toHaveURL(routes.PAYMENTS);
-        const id = payments.paymentId.authorized.netbanking;
-        const paymentsFilter = page.getByTestId('payments-filter');
-        await searchPaymentId(paymentsFilter, id);
-        await openPaymentDetails(page, id);
-        await expect(page.getByText('Transfer', { exact: true })).toBeVisible();
-        expect(page.getByRole('button', { name: 'Create transfer' })).not.toBeVisible();
-      });
-    });
-  },
-);
+  });
+});

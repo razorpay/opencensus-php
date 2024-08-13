@@ -41,6 +41,7 @@ export const verifyMerchantOTP = ({
       contact_mobile: String(contactMobile),
       captcha: 'Faked',
       signup_campaign: 'assisted_onboarding',
+      captcha_disable: 'DISABLE_THE_CAPTCHA_YOU_SHALL',
       ...(mockSend ? { skip_sms_request: !!mockSend } : {}),
     },
   });
