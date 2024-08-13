@@ -219,7 +219,9 @@ const ApplicationForm = ({
                 onFormChange(name, value);
               }}
               validationState={
-                formik.touched.phoneNumber && formik.errors.phoneNumber ? 'error' : 'none'
+                (defaultPhoneNumber || formik.touched.phoneNumber) && formik.errors.phoneNumber
+                  ? 'error'
+                  : 'none'
               }
               errorText={formik.errors.phoneNumber}
               isDisabled={defaultPhoneNumber}

@@ -1,10 +1,12 @@
 import * as Yup from 'yup';
-import ServiceProvided from './ApplicationFlow/Components/ServiceProvided';
-import EvaluateUseCase from './ApplicationFlow/Components/EvaluateUseCase';
+
+import { ShowNotificationT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+
 import ApplicationForm from './ApplicationFlow/Components/ApplicationForm';
 import ApplicationReceived from './ApplicationFlow/Components/ApplicationReceived';
+import EvaluateUseCase from './ApplicationFlow/Components/EvaluateUseCase';
 import HaveAllCapabilities from './ApplicationFlow/Components/HaveAllCapabilities';
-import { ShowNotificationT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
+import ServiceProvided from './ApplicationFlow/Components/ServiceProvided';
 
 export const SERVICE_PROVIDED = 'SERVICE_PROVIDED';
 export const EVALUATE_USE_CASE = 'EVALUATE_USE_CASE';
@@ -56,7 +58,8 @@ export const validationSchema = Yup.object().shape({
   phoneNumber: Yup.string()
     .trim()
     .required('Mobile Number is a required field')
-    .length(10, 'Please enter a valid 10-digit mobile number')
+    .min(10, 'Mobile Number must be at least 10 characters long')
+    .max(13, 'Mobile Number cannot be more than 13 characters long')
     .matches(/^$|\+?[0-9]{8,15}$/, 'Please enter a valid number'),
   websiteURL: Yup.string()
     .required('Required!')
