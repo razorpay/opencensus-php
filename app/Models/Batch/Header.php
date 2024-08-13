@@ -1010,6 +1010,8 @@ class Header
     const TERMINAL_CREATION_TYPE                 = 'Type';
     const TERMINAL_CREATION_MODE                 = 'Mode';
     const TERMINAL_CREATION_TPV                  = 'TPV';
+    const TERMINAL_CREATION_DEVICE_ID            = 'Device Id';
+    const TERMINAL_CREATION_LABEL                = 'Label';
     const TERMINAL_CREATION_INTERNATIONAL        = 'International';
     const TERMINAL_CREATION_CORPORATE            = 'Corporate';
     const TERMINAL_CREATION_EXPECTED             = 'Expected';
@@ -1668,7 +1670,7 @@ class Header
     const CREATE_BULK_GIFT_CARD_REQUEST_ID = "Request ID (Optional)";
     const CREATE_BULK_GIFT_CARD_CONTACT = 'Contact (Optional)';
     const CREATE_BULK_GIFT_CARD_BUYER_USER_ID = 'Buyer User ID (Optional)';
-    
+
     // Wallet update Gift Cards expiry
     const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID = "Gift Card ID";
     const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER = "Gift Card Number";
@@ -2226,6 +2228,8 @@ class Header
                 self::TERMINAL_CREATION_EMI_DURATION,
                 self::TERMINAL_CREATION_TYPE,
                 self::TERMINAL_CREATION_MODE,
+                self::TERMINAL_CREATION_DEVICE_ID,
+                self::TERMINAL_CREATION_LABEL,
                 self::TERMINAL_CREATION_TPV,
                 self::TERMINAL_CREATION_INTERNATIONAL,
                 self::TERMINAL_CREATION_CORPORATE,
@@ -2266,6 +2270,8 @@ class Header
                 self::TERMINAL_CREATION_EMI_DURATION,
                 self::TERMINAL_CREATION_TYPE,
                 self::TERMINAL_CREATION_MODE,
+                self::TERMINAL_CREATION_DEVICE_ID,
+                self::TERMINAL_CREATION_LABEL,
                 self::TERMINAL_CREATION_TPV,
                 self::TERMINAL_CREATION_INTERNATIONAL,
                 self::TERMINAL_CREATION_CORPORATE,
