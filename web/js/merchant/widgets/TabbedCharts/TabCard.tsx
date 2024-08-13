@@ -14,7 +14,7 @@ const TabCard: React.FC<TabCardProps> = ({ isActive, tabData, cardPosition }) =>
   const title = tabData.title ?? '';
   const change = convertToNumber(tabData.data.change);
   const changeType = tabData.data.change_type;
-  const currency = tabData.data.currency ?? 'INR';
+  const currency = tabData.data.currency || 'INR';
   const value = parseInt(`${tabData.data.value}`, 10) ?? 0;
   const formattedValue = convertToMajorUnit(value, { currency: currency as any });
   const trendText = `${change}%`;
