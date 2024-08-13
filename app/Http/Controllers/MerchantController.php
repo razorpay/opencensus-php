@@ -4441,6 +4441,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function rizePaymentLinkCallback()
+    {
+        $input = Request::getContent();
+
+        $response = $this->service(E::MERCHANT)->rizePaymentLinkCallback($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function posCreateDeviceOrder()
     {
         $input = Request::all();

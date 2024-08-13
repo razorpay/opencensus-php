@@ -113,6 +113,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const PGOS_FETCH_DEVICE_ORDER            = 'merchant_pos_fetch_order';
     const PGOS_FETCH_ALL_DEVICE_ORDER        = 'merchant_pos_fetch_all_order';
     const MERCHANT_POS_PAYMENT_CALLBACK      = 'merchant_pos_payment_callback';
+
+    const MERCHANT_RIZE_PAYMENTLINK_CALLBACK      = 'merchant_rize_paymentlink_callback';
     const MERCHANT_POS_FETCH_LATEST_ORDER    = 'merchant_pos_fetch_latest_order';
 
     const MERCHANT_FETCH_POS_ACTIVATION_FLOW     = 'merchant_fetch_pos_activation_flow';
@@ -283,6 +285,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::PGOS_FETCH_DEVICE_ORDER                       => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchOrderById',
         self::PGOS_FETCH_ALL_DEVICE_ORDER                   => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchAllOrdersForMerchant',
         self::MERCHANT_POS_PAYMENT_CALLBACK                 => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/MerchantDevicePaymentCallback',
+        self::MERCHANT_RIZE_PAYMENTLINK_CALLBACK            => '/twirp/rzp.pg_onboarding.external.rize.v1.PaymentService/PLCallback',
         self::MERCHANT_POS_FETCH_LATEST_ORDER               => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchLatestOrder',
         self::MERCHANT_FETCH_POS_ACTIVATION_FLOW            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchPosActivationFlow',
         self::PGOS_FETCH_PGOS_ACTIVATION_STATUS             => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetPosActivationStatus',
@@ -340,6 +343,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::PGOS_FETCH_DEVICE_ORDER,
         self::PGOS_FETCH_ALL_DEVICE_ORDER,
         self::MERCHANT_POS_PAYMENT_CALLBACK,
+        self::MERCHANT_RIZE_PAYMENTLINK_CALLBACK,
         self::MERCHANT_POS_FETCH_LATEST_ORDER,
         self::GET_MERCHANT_BMC_RESPONSE,
         self::SAVE_MERCHANT_BMC_RESPONSE,
