@@ -284,20 +284,25 @@ class UpiMetadataTransformer extends UpiTransformer
 
             $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->input[Entity::PAYMENT]['id'], $this->input[Entity::PAYMENT]['merchant_id'], $this->upi);
 
-            $token = $this->input[Entity::PAYMENT][Payment\Entity::TOKEN];
+            $upiMandate = $this->input['upi_mandate'] ?? null;
 
-            $app = \App::getFacadeRoot();
+            if(isset($upiMandate) === false)
+            {
+                $tokenId = $this->input[Entity::PAYMENT]['token_id'] ?? null;
 
-            $upiMandate = $app['repo']->upi_mandate->findByTokenId($token['id']);
+                if(isset($tokenId) === false)
+                {
+                    return null;
+                }
+                $upiMandate = $app['repo']->upi_mandate->findByTokenId($tokenId);
+            }
 
             if ((($canRetry === true) and ($attempt >= 10)) or
                 (($canRetry === false) and ($attempt >= 3)) or
-                (($upiMandate->getFrequency() === Frequency::ONETIME) and ($attempt >= 10)))
+                (($upiMandate['frequency'] === Frequency::ONETIME) and ($attempt >= 10)))
             {
                 return null;
             }
-
-            $app = \App::getFacadeRoot();
 
             $variant = $app['razorx']->getTreatment($this->input[Entity::PAYMENT]['merchant_id'],
                 Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES_TIME_GAP,
@@ -323,7 +328,7 @@ class UpiMetadataTransformer extends UpiTransformer
                 $remindAfter =  (pow(2, $attempt) * 15);
             }
 
-            if($upiMandate->getFrequency() === Frequency::ONETIME)
+            if($upiMandate['frequency'] === Frequency::ONETIME)
             {
                 $interval = $this->getReattemptIntervalForOneTimeMandate($this->input[Entity::PAYMENT]['merchant_id']);
 
@@ -332,9 +337,7 @@ class UpiMetadataTransformer extends UpiTransformer
                     $remindAfter = $interval;
                 }
             }
-
-            $upiMandate = $this->input['upi_mandate'] ?? null;
-
+            
             if((empty($remindAfter) === false) and
                 ($upiMandate !== null) and
                 ($upiMandate['frequency'] !== Frequency::AS_PRESENTED) and
