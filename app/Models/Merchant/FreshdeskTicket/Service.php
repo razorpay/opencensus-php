@@ -1902,7 +1902,9 @@ class Service extends Base\Service
 
     protected function makeInputForInternalPostTicket($input)
     {
-        $input['custom_fields'][Constants::CF_MERCHANT_ID] = $this->auth->getMerchantId();
+        if($this->auth->getMerchantId() != null){
+            $input['custom_fields'][Constants::CF_MERCHANT_ID] = $this->auth->getMerchantId();
+        }
 
         if (empty ($input[Constants::TICKET_STATUS]) === true)
         {

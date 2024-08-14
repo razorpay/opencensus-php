@@ -4165,6 +4165,7 @@ class Route
         'fd_insert_into_db'                       => ['post',      'fd/insert_into_db',                                         'FreshdeskTicketController@insertIntoDB',                      ],
         'internal_fd_create_ticket'               => ['post',      'internal/fd/ticket',                                        'FreshdeskTicketController@internalPostTicketV2',              ],
         'internal_fd_add_note'                    => ['post',      'internal/fd/ticket/{id}/note',                              'FreshdeskTicketController@addNoteToTicket',                   ],
+        'pricing_fetch_plan_internal'             => ['get',       'internal/pricing/plan/{id}',                                'PricingController@fetchPlan'                                  ],
         'internal_fd_create_ticket_graphql'       => ['post',      'internal_create/fd/ticket',                                 'FreshdeskTicketController@internalPostTicketV2',              ],
         'internal_fd_add_note_graphql'            => ['post',      'internal_create/fd/ticket/{id}/note',                       'FreshdeskTicketController@addNoteToTicket',                   ],
         'internal_fd_fetch_agent_detail_for_ticket' => ['get',     'fd/ticket/{id}/agent',                                      'FreshdeskTicketController@getAgentDetailForFreshdeskTicket'   ],
@@ -5708,6 +5709,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'pricing_fetch_plan_internal',
         'internal_fetch_merchant_users',
         'internal_workflow_create',
         'internal_post_website_update',
@@ -18005,6 +18007,7 @@ class Route
         ],
 
         'pgos' => [
+            'pricing_fetch_plan_internal',
             'internal_fetch_merchant_users',
             'merchant_entities_info',
             'merchant_submit_internal',
