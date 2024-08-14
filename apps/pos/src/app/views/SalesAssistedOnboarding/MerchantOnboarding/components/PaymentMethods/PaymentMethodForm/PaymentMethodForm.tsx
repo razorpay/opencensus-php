@@ -62,6 +62,12 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
       AggregatorModelFormKeys.includes(key as keyof AggregatorModelForm),
     ).length > 0;
 
+  const getDefaultFiles = (form) => {
+    if (!form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value) return [];
+    if (form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value === '0') return [];
+    return form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value;
+  };
+
   return (
     <Box maxWidth="768px" padding="spacing.5" height="80vh" overflow="scroll">
       <Box display="flex" flexDirection="row" justifyContent="space-between">
@@ -115,10 +121,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             maxSize={5 * 1024 * 1023}
             maxLimit={5}
             isLoading={false}
-            defaultValue={
-              (form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]
-                .value as Array<any>) || []
-            }
+            defaultValue={getDefaultFiles(form)}
             onError={() =>
               toast.show({
                 content: `Some Error Occured while upload file. Please try again later`,
@@ -160,26 +163,17 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                     justifyContent="space-between"
                     marginBottom="spacing.5"
                   >
-                    <Box display="flex" gap="spacing.3" alignItems="flex-start">
-                      <Checkbox
-                        name={key}
-                        size="medium"
-                        isChecked
-                        onChange={() => onFieldCheckboxChange(key)}
-                        isDisabled
-                      ></Checkbox>
-                      <Box
-                        display={'flex'}
-                        flexDirection={'column'}
-                        gap={'spacing.1'}
-                        justifyContent={'center'}
-                        alignItems={'flex-start'}
-                      >
-                        <Text color="surface.text.gray.subtle"> {field.title} </Text>
-                        <Text color="surface.text.gray.muted" variant="caption">
-                          {field.description}
-                        </Text>
-                      </Box>
+                    <Box
+                      display={'flex'}
+                      flexDirection={'column'}
+                      gap={'spacing.1'}
+                      justifyContent={'center'}
+                      alignItems={'flex-start'}
+                    >
+                      <Text color="surface.text.gray.subtle"> {field.title} </Text>
+                      <Text color="surface.text.gray.muted" variant="caption">
+                        {field.description}
+                      </Text>
                     </Box>
                     <Box width="spacing.11" minWidth={'80px'} maxWidth={'120px'}>
                       {isMDREditEnabled ? (

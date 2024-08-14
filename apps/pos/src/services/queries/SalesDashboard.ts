@@ -105,6 +105,7 @@ export const MODULAR_CONFIG = gql`
                         name
                         size
                         fileStoreId
+                        fileId
                       }
                     }
                     ... on ModularOnboardingFieldForDeviceCharges {
@@ -163,6 +164,7 @@ export const MODULAR_CONFIG = gql`
                     template
                     title
                     validations
+                    defaultValues
                     deviceConfig {
                       title
                       icon
@@ -311,6 +313,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
                         name
                         size
                         fileStoreId
+                        fileId
                       }
                     }
                     ... on ModularOnboardingFieldForDeviceCharges {
@@ -369,6 +372,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
                     template
                     title
                     validations
+                    defaultValues
                     deviceConfig {
                       title
                       icon

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
@@ -32,7 +32,12 @@ import {
   PaymentMethodsFieldKeyNames,
   PricingStepComponents,
 } from 'apps/pos/src/app/types/PaymentsAndService';
-import { OPTIONAL_FIELDS } from 'apps/pos/src/app/constants/PaymentsAndService';
+import {
+  extractPricingRates,
+  getStandardPosPricingRates,
+  hasEditedStandardRates,
+  validatePricingRates,
+} from 'apps/pos/src/app/utils/paymentsAndServices';
 
 const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   const defaultFormValue: PaymentMethodFormValue = {
@@ -75,6 +80,42 @@ const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   return methodForm;
 };
 
+const getFieldValue = (field, defaultValues: Record<string, number> | undefined) => {
+  const handleArrayValue = (f) => {
+    if (Array.isArray(f.stringArrayValue) && !f.stringArrayValue.length) return [];
+    if (Array.isArray(f.arrayOfDocumentsUploadValue) && !f.arrayOfDocumentsUploadValue.length)
+      return [];
+    if (isStringArrayValue(f)) return f.stringArrayValue;
+    if (isArrayOfDocumentsUpload(f)) return f.arrayOfDocumentsUploadValue;
+  };
+
+  let value = isBooleanValue(field)
+    ? field.booleanValue
+    : (isStringValue(field) && field.stringValue.toString()) ||
+      handleArrayValue(field) ||
+      defaultValues?.[field.name]?.toString() ||
+      '0';
+  return value;
+};
+
+const getFieldCheckedStatus = (field, defaultValues: Record<string, number> | undefined) => {
+  const handleArrayValue = (f) => {
+    if (Array.isArray(f.stringArrayValue) && !f.stringArrayValue.length) return false;
+    if (Array.isArray(f.arrayOfDocumentsUploadValue) && !f.arrayOfDocumentsUploadValue.length)
+      return false;
+    if (isStringArrayValue(f)) return true;
+    if (isArrayOfDocumentsUpload(f)) return true;
+  };
+
+  let value = isBooleanValue(field)
+    ? field.booleanValue
+    : (isStringValue(field) && field.stringValue.toString() && true) ||
+      handleArrayValue(field) ||
+      (defaultValues?.[field.name]?.toString() && true) ||
+      false;
+  return value;
+};
+
 const populateFormWithModularConfigData = (
   form: PaymentMethodForm,
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
@@ -90,28 +131,16 @@ const populateFormWithModularConfigData = (
         : PricingStepComponents.VAS_RATES_COMPONENT,
   });
 
+  const defaultValues = component?.meta.defaultValues;
+
   if (component) {
     const fields = component?.fields;
-
     fields?.forEach((f) => {
       if (f && f.name && f.meta) {
         newForm.form[f.name] = {
-          checked:
-            (isStringValue(f) && Number(f.meta.defaultValue)) ||
-            (isStringValue(f) && f.stringValue !== '0') ||
-            (isBooleanValue(f) && f.booleanValue) ||
-            (isStringArrayValue(f) && f.stringArrayValue.length) ||
-            (isArrayOfDocumentsUpload(f) && f.arrayOfDocumentsUploadValue.length)
-              ? true
-              : false,
-          value: isBooleanValue(f)
-            ? f.booleanValue
-            : (isStringValue(f) && Number(f.meta.defaultValue)) ||
-              (isStringValue(f) && Number(f.stringValue)) ||
-              (isStringArrayValue(f) && f.stringArrayValue) ||
-              (isArrayOfDocumentsUpload(f) && f.arrayOfDocumentsUploadValue) ||
-              '0',
-          defaultValue: f.meta.defaultValue,
+          checked: getFieldCheckedStatus(f, defaultValues),
+          value: getFieldValue(f, defaultValues),
+          defaultValue: defaultValues?.[f.name] || null,
           isRequired: f.isRequired,
           isDisabled: f.isDisabled,
           isHidden: f.isHidden,
@@ -190,6 +219,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   );
   const [nachForm, setNachForm] = useState<NachFormObject>(createDefaultNACHForm());
   const [modelIsOpen, setModelIsOpen] = useState<boolean>(!nach);
+  const standardRatesRef = useRef<Record<string, string> | null>();
 
   const updateConfigHandler = (form) => {
     const payload: any = {};
@@ -198,31 +228,6 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
 
     Object.keys(form).forEach((k) => {
       if (k !== PaymentMethodsFieldKeyNames.PREVIOUS_CUSTOM_RATES_DOCUMENTS_FIELD) {
-        if (k === PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD) {
-          if (
-            Array.isArray(form[k].value) &&
-            (form[k].value as Array<any>).length === 0 &&
-            form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD].value
-          ) {
-            toast.show({
-              content: `Please upload custom rates document`,
-              color: 'negative',
-            });
-            error = true;
-            return;
-          }
-        } else if (
-          form[k].isRequired &&
-          !form[k].checked &&
-          !OPTIONAL_FIELDS.includes(k as PaymentMethodsFieldKeyNames)
-        ) {
-          toast.show({
-            content: `${form[k].title} field should be enabled`,
-            color: 'negative',
-          });
-          error = true;
-          return;
-        }
         payload[k] = form[k].value;
       }
     });
@@ -235,7 +240,35 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       setNachForm(newNACH);
       handleProceedToNextComponent();
     };
+
+    const pricingRates = extractPricingRates(payload);
+    const { errFieldName } = validatePricingRates(pricingRates);
+    if (errFieldName) {
+      toast.show({
+        color: 'negative',
+        content: `Please enter valid ${form[errFieldName]?.title} value`,
+      });
+      return;
+    }
+    const { isRateEdited } = hasEditedStandardRates({
+      stdRates: standardRatesRef.current,
+      currentRates: pricingRates,
+    });
+    const customRateProof = payload[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD];
+    const isCustomProofPresent = () => {
+      if (customRateProof === '0') return false;
+      if (Array.isArray(customRateProof) && customRateProof?.length) return true;
+      return false;
+    };
+    if (isRateEdited && !isCustomProofPresent()) {
+      toast.show({
+        color: 'negative',
+        content: 'Please upload custom pricing proof',
+      });
+      return;
+    }
     const updatedPayload = processFormDataForModularSubmit(payload);
+    delete updatedPayload[PaymentMethodsFieldKeyNames.MDR_VAS_PRICING_FIELD];
     updateModularConfig(updatedPayload);
   };
 
@@ -397,6 +430,19 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       setMethodFormValue('type', initialMethodType);
     }
   }, [isModularLoading, isUpdateModularLoading, isRefetching, modularConfig, nach]);
+
+  useEffect(() => {
+    if (modularConfig && !standardRatesRef.current) {
+      const componentName =
+        paymentMethodType === PaymentMethodFormType.AGGREGATOR
+          ? PricingStepComponents.MDR_VAS_RATES_COMPONENT
+          : PricingStepComponents.VAS_RATES_COMPONENT;
+      standardRatesRef.current = getStandardPosPricingRates({
+        modularConfig,
+        componentName,
+      });
+    }
+  }, [modularConfig]);
 
   useEffect(() => {
     handlers.refetchModularConfig();

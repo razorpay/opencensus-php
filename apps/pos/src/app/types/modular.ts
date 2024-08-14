@@ -133,6 +133,7 @@ export interface ModularComponentMeta {
   modals?: JSONObject;
   isConfirmationComponent?: boolean;
   ruleEngine?: JSONObject;
+  defaultValues?: Record<string, number>;
 }
 
 // Content Meta
