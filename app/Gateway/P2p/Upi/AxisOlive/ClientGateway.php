@@ -41,9 +41,13 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
             }
         }
 
+        $merch_id = $this->getMerchantId();
+        if($route == Fields::AXIS_2P) {
+            $merch_id = $this->app['basicauth']->getMerchantId();
+        }
 
         $request->merge([
-                Fields::MERCHANT_ID              => $this->getMerchantId(),
+                Fields::MERCHANT_ID              => $merch_id,
                 Fields::MERCHANT_CHANNEL_ID      => $this->getMerchantChannelId(),
                 Fields::SUB_MERCHANT_ID          => $this->getSubMerchantId(),
                 Fields::MCC_CODE                 => $this->getMerchantCategoryCode(),
@@ -66,6 +70,23 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
                    Fields::GATEWAY_TOKEN => $gatewayResponse[Fields::DATA][Fields::DATA][Fields::MERCHANT_AUTH_TOKEN],
                ],
         ]);
+
+        // The customer id will be passed in the response for Axis2P Integration only
+        if($route == Fields::AXIS_2P)
+        {
+            $data = $response->data();
+
+            if ($data instanceof ArrayBag)
+            {
+                $data->putMany([
+                    Entity::CUSTOMER => [
+                        Fields::ID => $gatewayResponse[Fields::DATA][Fields::DATA][Fields::CUSTOMER_REFERENCE]
+                    ]
+                ]);
+
+                $response->setData($data->all());
+            }
+        }
     }
 
     public function checkCustomerRewardEligibility($input)

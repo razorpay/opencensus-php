@@ -45,6 +45,10 @@ class Fields
     const GATEWAY_TOKEN                     = 'gateway_token';
     const EXPIRE_AT                         = 'expire_at';
 
+    // --------------------------- CUSTOMER --------------- //
+    const ID                                = 'id';
+    const CUSTOMER_REFERENCE                = 'customer_reference';
+
     // --------------------------- RESPONSE --------------- //
     const CODE                              = 'code';
     const RESULT                            = 'result';

@@ -92,6 +92,7 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([
                       Entity::GATEWAY_CONFIG  => 'required',
                       Entity::TOKEN           => 'required',
+                      Entity::CUSTOMER        => 'sometimes',
                   ]);
 
         return $rules;
