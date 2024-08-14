@@ -2,7 +2,6 @@ import React from 'react';
 import DeviceQR from './DeviceQR';
 import DevicePaymentSuccess from './DevicePaymentSuccess';
 import { ModularPayload } from 'apps/pos/src/app/types/modular';
-import PageError from 'apps/pos/src/app/components/PageError';
 
 interface DevicePaymentProps {
   qrCodeIntent: string;
@@ -23,8 +22,6 @@ const DevicePayment = ({
   handleGoToNextStep,
   handleModularUpdate,
 }: DevicePaymentProps): JSX.Element => {
-  if (!qrCodeIntent) return <PageError description="QR code intent not found" />;
-
   return isPaymentSuccessfull ? (
     <DevicePaymentSuccess handleGoToNextStep={handleGoToNextStep} />
   ) : (

@@ -67,12 +67,14 @@ const DeviceQR = ({
 
   return (
     <Box padding="spacing.5" width="100%">
-      <IconButton
-        icon={ChevronLeftIcon}
-        onClick={handleBackPress}
-        accessibilityLabel="back-btn"
-        size="large"
-      />
+      <Box position="relative" zIndex={1}>
+        <IconButton
+          icon={ChevronLeftIcon}
+          onClick={handleBackPress}
+          accessibilityLabel="back-btn"
+          size="large"
+        />
+      </Box>
       <Box
         display="flex"
         flexDirection="column"
