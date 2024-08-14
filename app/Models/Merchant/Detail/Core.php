@@ -12135,6 +12135,14 @@ class Core extends Base\Core
                 if (empty($data["business_subcategory"]) === true) {
                     unset($data["business_subcategory"]);
                 }
+                /*
+                 * There is an edge case due to concurrent request, which is leading to a scenario where activation
+                 * form milestone is set in API but due to dual writes it is being set to null as it is not set in PGOS.
+                 * We should ensure once form milestone is set it is not reset due to empty values.
+                 */
+                if (empty($data["activation_form_milestone"]) === true) {
+                    unset($data["activation_form_milestone"]);
+                }
 
                 $merchantDetails->edit($data);
 
