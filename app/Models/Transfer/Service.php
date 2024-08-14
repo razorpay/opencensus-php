@@ -1208,7 +1208,7 @@ class Service extends Base\Service
 
         $linkedAccountId = $settlement->getMerchantId();
 
-        if (in_array($linkedAccountId, Merchant\Preferences::TRANSFER_SETTLED_WEBHOOK_MIDS) === false)
+        if (in_array($linkedAccountId, Constant::TRANSFER_SETTLED_WEBHOOK_MIDS) === false)
         {
             return;
         }

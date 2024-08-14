@@ -84,4 +84,19 @@ final class Constant
      */
     const MIDS_FOR_ASYNC_BALANCE_UPDATE_FOR_TRANSFER_DEBIT_TXNS_WITH_FEE = [
     ];
+
+    const MID_BSE          = 'FlaHVYQCGKbK2t';
+    const MID_INDIABONDS   = 'IanlMZTWfq1Y7v';
+    const MID_ICIC_SEC     = 'Kj3sw5mDSZkyXs';
+    const MID_CRED_AVENUE  = 'LJO3Ll3t8JXabv';
+    const MID_INDIABONDS_1 = 'OSCUKkCy2XT7gh';
+
+
+    const TRANSFER_SETTLED_WEBHOOK_MIDS = [
+        self::MID_BSE,
+        self::MID_INDIABONDS,
+        self::MID_ICIC_SEC,
+        self::MID_CRED_AVENUE,
+        self::MID_INDIABONDS_1,
+    ];
 }
