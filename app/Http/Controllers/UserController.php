@@ -949,6 +949,11 @@ class UserController extends Controller
 
         $submitted = $details['submitted'] ?? null;
 
+        if (($signupCampaign === 'easy_onboarding') and ($details['activation_status'] === 'edd_pending'))
+        {
+            return true;
+        }
+
         if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding')) and
             (empty($details['activation_form_milestone']) === true) and
             ($submitted == 0))
