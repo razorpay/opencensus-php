@@ -1,11 +1,6 @@
 name: Build Image - API
 on:
-  pull_request:
-    branches:
-      - master
-  push:
-    branches:
-      - master  
+  push:  
   workflow_dispatch:
 
 concurrency:
@@ -31,7 +26,7 @@ jobs:
     name: Validate PHP Syntax
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
       - name: "Cache dependencies installed with composer"
         uses: "actions/cache@v3.0.0"
         with:
@@ -60,7 +55,7 @@ jobs:
     name: Validate PHP Syntax - Misc
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
       - name: "Cache dependencies installed with composer"
         uses: "actions/cache@v3.0.0"
         with:
@@ -87,8 +82,6 @@ jobs:
     continue-on-error: false
     name: Build Credstash Native
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Login to Harbor
         uses: docker/login-action@v2
         with:
@@ -101,10 +94,8 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          add-hosts: github.com:172.20.36.152
-          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.sha }}-${{ matrix.platform }}
           push: true
-          context: .
           file: ./Dockerfile.fetchCredstash
           build-args: |
             API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
@@ -131,10 +122,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=fetch-credstash-${{ github.event.pull_request.head.sha || github.sha }}
+          flavor: suffix=fetch-credstash-${{ github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.event.pull_request.head.sha || github.sha }}
+          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -153,8 +144,6 @@ jobs:
     continue-on-error: false
     name: Build Web Native
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Login to Harbor
         uses: docker/login-action@v2
         with:
@@ -167,14 +156,12 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          add-hosts: github.com:172.20.36.152
-          tags: c.rzp.io/razorpay/api:${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:${{ github.sha }}-${{ matrix.platform }}
           push: true
-          context: .
           file: ./Dockerfile.web
           build-args: |
-            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
-            CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
+            GIT_COMMIT_HASH=${{ github.sha }}
+            CACHEBUST=${{ github.sha }}
             GIT_USERNAME=rzp
             API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
             CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
@@ -201,10 +188,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=-${{ github.event.pull_request.head.sha || github.sha }}
+          flavor: suffix=-${{ github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:${{ github.event.pull_request.head.sha || github.sha }}
+          tags: c.rzp.io/razorpay/api:${{ github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -223,8 +210,6 @@ jobs:
     continue-on-error: false
     name: Build Worker Native
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Login to Harbor
         uses: docker/login-action@v2
         with:
@@ -237,15 +222,13 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          add-hosts: github.com:172.20.36.152
-          tags: c.rzp.io/razorpay/api:worker-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}-${{ matrix.platform }}
           push: true
-          context: .
           file: ./Dockerfile.worker
           build-args: |
-            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
+            GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
-            CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
+            CACHEBUST=${{ github.sha }}
             API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker-v2
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
@@ -269,10 +252,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=worker-${{ github.event.pull_request.head.sha || github.sha }}
+          flavor: suffix=worker-${{ github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:worker-${{ github.event.pull_request.head.sha || github.sha }}
+          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -291,8 +274,6 @@ jobs:
     continue-on-error: false
     name: Build Checkout Native
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Login to Harbor
         uses: docker/login-action@v2
         with:
@@ -305,13 +286,11 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          add-hosts: github.com:172.20.36.152
-          tags: c.rzp.io/razorpay/api:checkout-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}-${{ matrix.platform }}
           push: true
-          context: .
           file: ./Dockerfile.checkout
           build-args: |
-            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
+            GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
             NGINX_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:nginx-alpine-3.12
           secrets: |
@@ -336,10 +315,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=checkout-${{ github.event.pull_request.head.sha || github.sha }}
+          flavor: suffix=checkout-${{ github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:checkout-${{ github.event.pull_request.head.sha || github.sha }}
+          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -364,13 +343,12 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          add-hosts: github.com:172.20.36.152
           file: ./e2e/Dockerfile
           context: e2e
           secrets: git_token=${{ secrets.GIT_TOKEN }}
           build-args: GIT_USERNAME=rzp
           push: true
-          tags: c.rzp.io/razorpay/api:e2e_${{ github.event.pull_request.head.sha || github.sha }}
+          tags: c.rzp.io/razorpay/api:e2e_${{ github.sha }}
 
   # Triggers end-to-end test execution with argo workflow as executor
   #disabling this the E2E tests are migrated to orchestrator
@@ -402,7 +380,7 @@ jobs:
   #              "kube_manifests_ref": "master",
   #              "self": {
   #                  "name": "api",
-  #                  "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
+  #                  "commit_id": "${{ github.sha }}",
   #                  "chart_values": {
   #                     "replicas": 2,
   #                     "web_requests_cpu": "150m",
@@ -457,7 +435,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          add-hosts: github.com:172.20.36.152
           file: ./slit/Dockerfile
           context: slit
           build-args: |
@@ -467,7 +444,7 @@ jobs:
             git_token=${{ secrets.GIT_TOKEN }}
             SONAR_TOKEN=${{ secrets.SONARQUBE_TOKEN }}
           push: true
-          tags: c.rzp.io/razorpay/api:slit_${{ github.event.pull_request.head.sha || github.sha }}
+          tags: c.rzp.io/razorpay/api:slit_${{ github.sha }}
 
   # Triggers end-to-end test execution with argo workflow as executor
   slit-test-webhook:
@@ -498,7 +475,7 @@ jobs:
                "kube_manifests_ref": "master",
                "self": {
                    "name": "api",
-                   "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
+                   "commit_id": "${{ github.sha }}",
                    "chart_values": {
                       "replicas": 2,
                       "web_requests_cpu": "150m",
@@ -519,7 +496,7 @@ jobs:
       - name: Webhook
         run: |
           curl -X POST -H "Content-Type: application/json" \
-          -d '{ "branch" : "master" , "commit" : "${{ github.event.pull_request.head.sha || github.sha }}" , "repo" : "api" }' \
+          -d '{ "branch" : "master" , "commit" : "${{ github.sha }}" , "repo" : "api" }' \
           https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression
 
   trigger-e2e-execution-master:
@@ -541,8 +518,9 @@ jobs:
           data: >
             {
               "service_under_test": "api",
-              "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
+              "commit_id": "${{ github.sha }}",
               "end_to_end_tests_ref": "master",
               "status": "Pending",
               "config_overrides": "{}"
             }
+  
