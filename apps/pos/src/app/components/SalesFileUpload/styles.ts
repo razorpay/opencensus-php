@@ -11,10 +11,13 @@ export const UploadFileContainer = styled.div(
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: ${theme.spacing[3]}px;
     `,
 );
 
-export const UploadFileLabel = styled.label`
-  width: 100%;
-`;
+export const UploadFileLabel = styled.label(
+  ({ isDisabled }: { isDisabled?: boolean }) => `
+    width: 100%;
+    cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+    opacity: ${isDisabled ? 0.5 : 1};
+    `,
+);

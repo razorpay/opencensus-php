@@ -116,7 +116,7 @@ const SalesFileUpload = ({
     <Box marginBottom="spacing.5">
       <Text marginBottom="spacing.3">{label}</Text>
       {isShowFileUploadBtn ? (
-        <UploadFileLabel htmlFor="file" className="file-upload-label">
+        <UploadFileLabel htmlFor="file" className="file-upload-label" isDisabled={isDisabled}>
           <UploadFileContainer>
             <input
               type="file"
@@ -133,7 +133,12 @@ const SalesFileUpload = ({
         </UploadFileLabel>
       ) : null}
       {!!(isError || error || internalError) ? (
-        <Text color="feedback.text.negative.intense" marginBottom="spacing.3">
+        <Text
+          color="feedback.text.negative.intense"
+          marginBottom="spacing.3"
+          size="small"
+          variant="caption"
+        >
           {error || internalError || 'Some error occurred while uploading file!'}
         </Text>
       ) : null}

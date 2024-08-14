@@ -18,6 +18,7 @@ const defaultProps = {
   isDisabled: false,
   handleUpdateModular: jest.fn(),
   handleGoToNextStep: jest.fn(),
+  isCustomRatesApplicable: true,
 };
 
 const renderApp = (props = {}) => {
@@ -55,11 +56,31 @@ describe('DeviceConfirmation', () => {
   });
 
   test('should trigger modular with correct payload when clicked on Confirm cta', async () => {
-    renderApp();
+    renderApp({
+      isCustomRatesApplicable: false,
+      customPricingDocuments: [{ fileStoreId: '2312312' }],
+    });
     await userEvent.click(screen.getByText('Confirm Order'));
     expect(defaultProps.handleUpdateModular).toHaveBeenCalledWith({
       device_order_confirmation_field: true,
       modular_callback: expect.any(Function),
     });
+  });
+
+  test('should show custom pricing component if isCustomRatesApplicable is true', () => {
+    renderApp();
+    expect(screen.getByText('Upload custom pricing proof')).toBeInTheDocument();
+  });
+
+  test('should not show custom pricing component if isCustomRatesApplicable is true', () => {
+    renderApp({ isCustomRatesApplicable: false });
+    expect(screen.queryByText('Upload custom pricing proof')).not.toBeInTheDocument();
+  });
+
+  test('should show error if custom pricing documents are not uploaded', async () => {
+    renderApp();
+    expect(screen.getByText('Upload custom pricing proof')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Confirm Order'));
+    expect(screen.getByText('Please upload custom pricing proof to proceed')).toBeInTheDocument();
   });
 });

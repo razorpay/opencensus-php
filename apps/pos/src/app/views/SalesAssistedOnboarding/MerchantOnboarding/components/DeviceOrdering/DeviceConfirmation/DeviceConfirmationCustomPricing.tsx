@@ -9,11 +9,15 @@ import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
 interface DeviceConfirmationCustomPricingProps {
   defaultValues: ArrayOfDocumentFieldsUpload[];
   handleModularUpdate: (payload: ModularPayload) => void;
+  isDisabled?: boolean;
+  error?: string;
 }
 
 const DeviceConfirmationCustomPricing = ({
   defaultValues,
   handleModularUpdate,
+  isDisabled,
+  error,
 }: DeviceConfirmationCustomPricingProps): JSX.Element => {
   const [isLoading, setIsLoading] = React.useState(false);
   const toast = useToast();
@@ -49,6 +53,8 @@ const DeviceConfirmationCustomPricing = ({
         maxLimit={1}
         isLoading={isLoading}
         defaultValue={defaultUploadedDocs}
+        error={error}
+        isDisabled={isDisabled}
         onError={() => {
           toast.show({
             content: 'Failed to upload pricing proof',

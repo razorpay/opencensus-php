@@ -17,6 +17,7 @@ import DevicePaymentForPosSalesAgent from './components/DeviceOrdering/DevicePay
 import MerchantKYC from './components/MerchantKYC';
 import AgreementSigning from './components/AgreementSigning';
 import MerchantAdditionalDetails from './components/MerchantAdditionalDetails';
+import PaymentMethods from './components/PaymentMethods';
 import {
   OnboardingStepType,
   AvailableSteps,
@@ -28,11 +29,11 @@ import {
   isDevicePricingAdditionalDetailsCompleted,
 } from 'apps/pos/src/app/utils/modularConfig';
 import { getDeviceStepStatus } from 'apps/pos/src/app/utils/deviceSelection';
-import PaymentMethods from './components/PaymentMethods';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
 import { getAgreementStepStatus } from 'apps/pos/src/app/utils/agreementSigning';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 import { MODULAR_AGREEMENT_FIELDS } from 'apps/pos/src/app/types/AgreementSigning';
+import { checkIfKycComplete } from 'apps/pos/src/app/utils/merchantActivation';
 
 export interface Component {
   slug: OnboardingComponentType;
@@ -88,7 +89,9 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     title: 'Merchant KYC',
     description: 'Provide merchant’s business information to start the POS jounrey .',
     getStatus: ({ states }) => {
-      if (states?.merchantDetails?.activation?.isFormSubmitted) return 'kyc_completed';
+      const { merchantDetails } = states;
+      if (merchantDetails && checkIfKycComplete({ merchant: merchantDetails }))
+        return 'kyc_completed';
       return 'pending';
     },
     checkIfDisabled: ({ values }) => !values.merchantId,

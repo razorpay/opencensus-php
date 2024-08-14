@@ -528,6 +528,58 @@ export const MERCHANT_DETAILS = gql`
             }
           }
         }
+        paymentAcceptanceChannels {
+          websites {
+            urls {
+              value
+            }
+            accept
+            complianceConsent
+          }
+          ios {
+            urls {
+              value
+            }
+            accept
+          }
+          android {
+            urls {
+              value
+            }
+            accept
+          }
+          offlineStore {
+            accept
+          }
+          socialMedia {
+            accept
+            socialMediaUrls {
+              url
+              platform
+            }
+          }
+          whatsappSmsEmail {
+            accept
+          }
+          others {
+            accept
+            value
+          }
+        }
+      }
+      document {
+        shopFront {
+          values {
+            id
+            fileName
+          }
+        }
+        shopInterior {
+          values {
+            id
+            fileName
+          }
+        }
       }
     }
   }

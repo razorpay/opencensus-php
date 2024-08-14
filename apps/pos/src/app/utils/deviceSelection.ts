@@ -1,6 +1,7 @@
 import { MerchantDetails } from '../types/SalesAssistedOnboarding';
 import {
   isArrayOfDocumentsUpload,
+  isBooleanValue,
   isDeviceCharges,
   isOrderSummaryItem,
   isStringValue,
@@ -71,7 +72,8 @@ export const getCatalogDataFromModularConfig = ({
     fieldName: MODULAR_DEVICE_FIELDS.DEVICE_ORDER_ITEMS_SUMMARY_FIELD,
   });
 
-  const { addedDevices } = modularField && isOrderSummaryItem(modularField) ? modularField : { addedDevices: [] };
+  const { addedDevices } =
+    modularField && isOrderSummaryItem(modularField) ? modularField : { addedDevices: [] };
   return {
     deviceConfig: (component?.meta?.deviceConfig as DeviceConfig[]) ?? null,
     addedDevices,
@@ -86,6 +88,7 @@ interface GetOrderSummaryFieldsFromModularConfig {
   orderSummary: DeviceCharges;
   addedDevices: OrderSummaryItemWithDeviceConfig[];
   customPricingDocuments: ArrayOfDocumentFieldsUpload[];
+  isCustomRatesApplicable: boolean;
 }
 
 export const getOrderSummaryFieldsFromModularConfig = ({
@@ -116,6 +119,13 @@ export const getOrderSummaryFieldsFromModularConfig = ({
     fieldName: MODULAR_DEVICE_FIELDS.DEVICE_CUSTOM_PRICING_DOCS,
   });
 
+  const deviceCustomRatesApplicableField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_STEP,
+    component: MODULAR_DEVICE_FIELDS.DEVICE_CART_COMPONENT,
+    fieldName: MODULAR_DEVICE_FIELDS.DEVICE_CUSTOM_RATES_APPLICABLE,
+  });
+
   const addedDevices = isOrderSummaryItem(addedDevicesField) ? addedDevicesField.addedDevices : [];
   const addedDeviceWithDeviceConfig = addedDevices.map((device) => {
     const deviceConfigItem = deviceConfig?.find((config) => config?.title === device.deviceName);
@@ -131,6 +141,9 @@ export const getOrderSummaryFieldsFromModularConfig = ({
     customPricingDocuments: isArrayOfDocumentsUpload(arrayOfDocumentsUploadValueField)
       ? arrayOfDocumentsUploadValueField.arrayOfDocumentsUploadValue
       : [],
+    isCustomRatesApplicable: isBooleanValue(deviceCustomRatesApplicableField)
+      ? deviceCustomRatesApplicableField.booleanValue
+      : false,
   };
 };
 

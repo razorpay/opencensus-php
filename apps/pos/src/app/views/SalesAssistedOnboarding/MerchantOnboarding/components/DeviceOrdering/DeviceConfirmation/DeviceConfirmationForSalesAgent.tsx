@@ -21,7 +21,12 @@ const DeviceConfirmationForSalesAgent = (): JSX.Element | null => {
     return getOrderSummaryFieldsFromModularConfig({ modularConfig });
   }, [modularConfig]);
 
-  const { addedDevices = [], orderSummary, customPricingDocuments = [] } = deviceSummary ?? {};
+  const {
+    addedDevices = [],
+    orderSummary,
+    customPricingDocuments = [],
+    isCustomRatesApplicable,
+  } = deviceSummary ?? {};
 
   if (!componentConfig || !modularConfig || !stepConfig?.modularKey || !orderSummary) return null;
 
@@ -41,6 +46,7 @@ const DeviceConfirmationForSalesAgent = (): JSX.Element | null => {
       isUpdateModularLoading={isUpdateModularLoading}
       handleUpdateModular={updateModularConfig}
       handleGoToNextStep={handleProceedToNextComponent}
+      isCustomRatesApplicable={!!isCustomRatesApplicable}
       isDisabled={isDeviceSelectionCompleted}
     />
   );

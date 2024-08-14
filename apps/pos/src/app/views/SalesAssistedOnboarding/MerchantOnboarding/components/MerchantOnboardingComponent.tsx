@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@razorpay/blade/components';
+import { Box, ProgressBar } from '@razorpay/blade/components';
 import useOnboardingContext from '../providers/useOnboardingContext';
 import OnboardingHeader from 'apps/pos/src/app/components/OnboardingHeader';
 import PageError from 'apps/pos/src/app/components/PageError/PageError';
@@ -36,7 +36,7 @@ const MerchantOnboardingComponent = (): JSX.Element => {
         backgroundColor="surface.background.gray.intense"
         paddingTop={componentConfig?.isFullScreenLayout ? 'spacing.5' : '0px'}
       >
-        {isModularLoading ? 'Loading...' : component}
+        {isModularLoading ? <ProgressBar isIndeterminate margin="spacing.5" /> : component}
       </Box>
     </React.Fragment>
   );

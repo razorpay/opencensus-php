@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Box, Divider, Heading } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 import DeviceOrderSummaryItem from './DeviceOrderSummaryItem';
@@ -25,6 +25,7 @@ interface DeviceConfirmationProps {
   merchantId: string;
   isUpdateModularLoading: boolean;
   isDisabled: boolean;
+  isCustomRatesApplicable: boolean;
   handleUpdateModular: (data: ModularPayload) => void;
   handleGoToNextStep: () => void;
 }
@@ -37,10 +38,16 @@ const DeviceConfirmation = ({
   merchantId,
   isUpdateModularLoading,
   isDisabled,
+  isCustomRatesApplicable,
   handleUpdateModular,
   handleGoToNextStep,
 }: DeviceConfirmationProps): JSX.Element | null => {
   const navigate = useNavigate();
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    setError('');
+  }, [addedDevices]);
 
   const handleNavigateToCatalog = () => {
     navigate(
@@ -49,6 +56,11 @@ const DeviceConfirmation = ({
   };
 
   const handleOrderConfirmation = (): void => {
+    if (isCustomRatesApplicable && customPricingDocuments.length === 0) {
+      setError('Please upload custom pricing proof to proceed');
+      return;
+    }
+
     const payload = {
       ...MODULAR_FLAGS.CONFIRM_ORDER,
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: handleGoToNextStep,
@@ -72,10 +84,14 @@ const DeviceConfirmation = ({
         />
       ) : (
         <Box marginBottom="100px">
-          <DeviceConfirmationCustomPricing
-            defaultValues={customPricingDocuments ?? []}
-            handleModularUpdate={handleUpdateModular}
-          />
+          {isCustomRatesApplicable ? (
+            <DeviceConfirmationCustomPricing
+              defaultValues={customPricingDocuments ?? []}
+              handleModularUpdate={handleUpdateModular}
+              isDisabled={isDisabled}
+              error={error}
+            />
+          ) : null}
           {addedDevices?.map((device, index) => (
             <React.Fragment key={device.itemId}>
               <DeviceOrderSummaryItem
