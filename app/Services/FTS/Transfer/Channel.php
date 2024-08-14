@@ -11,4 +11,5 @@ class Channel
     const ICICI     = 'icici';
     const YESBANK   = 'yesbank';
     const IDFC      = 'idfc';
+    const HDFC      = 'hdfc';
 }

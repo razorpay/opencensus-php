@@ -17,6 +17,7 @@ class Channel
     const KOTAK   = FTAChannel::KOTAK;
     const AXIS    = FTAChannel::AXIS;
     const M2P     = FTAChannel::M2P;
+    const HDFC    = FTAChannel::HDFC;
 
     public static $directTypeChannels = [
         self::RBL,
@@ -34,7 +35,8 @@ class Channel
         self::RBL,
         self::ICICI,
         self::AXIS,
-        self::M2P
+        self::M2P,
+        self::HDFC,
     ];
 
     protected static $defaultSharedTypeChannels = [

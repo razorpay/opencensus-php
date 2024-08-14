@@ -322,7 +322,8 @@ class Channel
             self::AMAZONPAY_FTS,
             self::M2P,
             self::MCS,
-            self::OCBC
+            self::OCBC,
+            self::HDFC
         ];
     }
 
