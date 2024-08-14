@@ -10,12 +10,14 @@ const getPricingPlan = (user: any) => {
 
   switch (pricingPlanId) {
     case 'Og341WhcTYm2JZ':
-      return '0.1%';
+      return '2.1%';
     case 'Og362mlR9xxuoY':
-      return '0.2%';
+      return '2.2%';
     case 'Og373UFu1pj3i1':
-      return '0.5%';
+      return '2.5%';
     case '1In3Yh5Mluj605':
+      return isNoCodeMonetizationExperimentOn ? '2%' : null;
+    case 'FL6zMNWhnSUooe':
       return isNoCodeMonetizationExperimentOn ? '2%' : null;
     default:
       return null;

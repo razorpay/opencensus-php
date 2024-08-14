@@ -28,7 +28,8 @@ const MonetizationChargesBanner = ({
   const [hidden, setHidden] = useState(false);
   const pricingPlanForMerchant = getPricingPlan(user);
   const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
-  const showBanner = user?.isNocodeappFeeApplicable || isNoCodeMonetizationExperimentOn;
+  const showBanner =
+    (user?.isNocodeappFeeApplicable || isNoCodeMonetizationExperimentOn) && pricingPlanForMerchant;
 
   const openModal = () => {
     analyticsTrack({
