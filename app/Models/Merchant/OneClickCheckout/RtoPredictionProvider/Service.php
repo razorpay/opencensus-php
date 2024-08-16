@@ -17,6 +17,7 @@ class Service
     const DELETE_COD_ELIGIBILITY_ATTRIBUTE      = "delete_cod_eligibility_attribute";
     const DELETE_BY_COD_ELIGIBILITY_ATTRIBUTE   = "delete_by_cod_eligibility_attribute";
     const PATH                                  = 'path';
+    const ONE_CLICK_CHECKOUT                    = "one_click_checkout";
 
     const COD_ELIGIBILITY_ATTRIBUTES = "cod_eligibility_attributes";
     const ATTRIBUTE_TYPE             = "attribute_type";
@@ -24,6 +25,8 @@ class Service
     const COD_ELIGIBILITY_TYPE       = "cod_eligibility_type";
     const CREATED_BY                 = "created_by";
     const MERCHANT_ID                = "merchant_id";
+    const LINE_ITEMS                 = "line_items";
+
 
     const GET_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES    = "get_merchant_order_review_automation_rules";
     const UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES = "upsert_merchant_order_review_automation_rules";
@@ -99,6 +102,8 @@ class Service
 
         $orderDetails = (new Order\Service())->fetchByIdForRTOPrediction($orderId);
 
+        $lineItems = $this->getLineItems((new Order\Service())->fetchCompleteOrderById($orderId));
+
         $uniqueId = $orderId . ':' . Str::uuid();
 
         $rtoServiceRequestContent['id'] = $uniqueId;
@@ -132,6 +137,8 @@ class Service
         $order['device']['pathname'] = $_SERVER['REQUEST_URI'] ?? "";
 
         $order['device']['search'] = $_SERVER['QUERY_STRING'] ?? "";
+
+        $order[self::LINE_ITEMS] = $lineItems ?? [];
 
         // for new features
         $order['shipping_charges'] = $orderDetails['shipping_fee'];
@@ -192,6 +199,24 @@ class Service
         $params = self::PARAMS[self::BULK_UPSERT_COD_ELIGIBILITY_ATTRIBUTE];
 
         return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    private function getLineItems($order)
+    {
+        $arrayInternal = [];
+        $orderMetaArray = $order['order_metas'];
+
+        foreach ($orderMetaArray as $orderMeta)
+        {
+            if ($orderMeta['type'] === self::ONE_CLICK_CHECKOUT)
+            {
+                $value = $orderMeta['value'];
+
+                $arrayInternal[self::LINE_ITEMS] = $value[self::LINE_ITEMS] ?? 0;
+            }
+        }
+
+        return $arrayInternal[self::LINE_ITEMS];
     }
 
     private function addCreatedByAndMerchantID($input, $merchantId, $userEmail, $codEligibilityType) : array
