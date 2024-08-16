@@ -17229,6 +17229,7 @@ class Route
             'invoice_send_notification_proxy',
             'virtual_account_create_for_internal',
             'qr_code_payment_links_create',
+            'feature_add_internal',
             'payment_links_sign_payload_internal',
             'payment_refund',
             'entity_origin_create',
