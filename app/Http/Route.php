@@ -17952,6 +17952,8 @@ class Route
         ],
 
         'care' => [
+            'order_payments',
+            'payment_fetch_by_id',
             'internal_workflow_create',
             'internal_post_website_update',
             'internal_merchant_fetch',
@@ -18264,6 +18266,9 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
+            'fd_create_ticket',
+            'care_service_dashboard_proxy',
+            'care_service_get_dashboard_proxy',
             'internal_workflow_create',
             'internal_post_website_update',
             'fetch_merchant_sr',

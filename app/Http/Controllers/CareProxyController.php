@@ -69,6 +69,10 @@ class CareProxyController extends Controller
     const CHAT_PUT_HOLIDAYS               = 'twirp/rzp.care.chat.v1.ChatService/PutChatHolidays';
     const CHAT_CHECK_AVAILABILITY         = 'twirp/rzp.care.chat.v1.ChatService/CheckChatAvailability';
 
+    //ray APIs
+    const RAY_GET_LANDING_PAGE_DATA        = 'twirp/rzp.care.ray.v1.RayService/GetLandingPageData';
+    const RAY_GET_SIGNED_URL               = 'twirp/rzp.care.ray.v1.RayService/GetSignedURL';
+
     const CALLBACK_GET_DATE_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig';
     const CALLBACK_GET_WEEK_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig';
 
@@ -189,17 +193,17 @@ class CareProxyController extends Controller
     const DASHBOARD_WEBSITE_UPDATE = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/UpdateMerchantWebsite';
 
     const DASHBOARD_WEBSITE_STATUS_FETCH = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsiteVerificationStatus';
-    
+
     const DASHBOARD_WEBSITE_SAVE_POLICY_COMPLIANCE_DETAIL = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/SaveMerchantPolicyComplianceDetails';
-    
+
     const DASHBOARD_WEBSITE_GET_POLICY_COMPLIANCE_DETAIL = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantPolicyComplianceDetails';
-    
+
     const DASHBOARD_WEBSITE_GET_POLICY_PREVIEW = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/GetMerchantWebsitePolicyPreview';
-    
+
     const DASHBOARD_WEBSITE_PUBLISH_POLICY_PAGE = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/PublishMerchantPolicySection';
-    
+
     const DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE = 'twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService/MerchantConsentsSave';
-    
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -312,6 +316,8 @@ class CareProxyController extends Controller
         self::DASHBOARD_WEBSITE_GET_POLICY_PREVIEW,
         self::DASHBOARD_WEBSITE_PUBLISH_POLICY_PAGE,
         self::DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE,
+        self::RAY_GET_LANDING_PAGE_DATA,
+        self::RAY_GET_SIGNED_URL,
     ];
 
     const MERCHANT_GET_ROUTES = [
