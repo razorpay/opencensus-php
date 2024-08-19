@@ -3469,4 +3469,106 @@ class PartnerTest extends OAuthTestCase
 
         $this->startTest($testData);
     }
+
+
+    /** test nocodeapp_fee_applicable feature is removed when a merchant is made a submerchant of a partner
+     * @group nocodeapps
+     */
+    public function testPartnerSubMerchantMapNoCodeAppPricing()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::NOCODEAPP_FEE_APPLICABLE], self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->ba->batchAppAuth();
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->assertFeatureIsPresent(FeatureConstants::NOCODEAPP_FEE_APPLICABLE, self::DEFAULT_SUBMERCHANT_ID);
+
+        $testData = $this->testData['testPartnerSubmerchantMap'];
+
+        $this->startTest($testData);
+
+        $this->assertFeatureIsAbsent(FeatureConstants::NOCODEAPP_FEE_APPLICABLE, self::DEFAULT_SUBMERCHANT_ID);
+    }
+
+
+    /** test nocodeapp_fee_applicable feature is removed when a merchant is marked as partner
+     * @group nocodeapps
+     */
+    public function testApprovingMarkAsPartnerMerchantRequestWithNoCodeAppPricing()
+    {
+        // Create a merchant request
+        $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, true);
+
+        $this->mockPartnershipsServiceTreatment([], [], 'onboardPartnerToLedgerEvent');
+
+        $merchant = $merchantRequest->merchant;
+
+
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        // Set the admin auth
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData["testApprovingMarkAsPartnerMerchantRequest"];
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::NOCODEAPP_FEE_APPLICABLE], self::DEFAULT_MERCHANT_ID);
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->assertFeatureIsPresent(FeatureConstants::NOCODEAPP_FEE_APPLICABLE, self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest($testData);
+
+        $this->assertFeatureIsAbsent(FeatureConstants::NOCODEAPP_FEE_APPLICABLE, self::DEFAULT_MERCHANT_ID);
+
+    }
+
+
+    protected function assertFeatureIsPresent(
+        string $featureName,
+        string $merchantId = self::DEFAULT_MERCHANT_ID): void
+    {
+        $featuresArray = $this->getFeatures($merchantId);
+
+        $this->assertContains($featureName, $featuresArray);
+    }
+
+    protected function assertFeatureIsAbsent(
+        string $featureName,
+        string $merchantId = self::DEFAULT_MERCHANT_ID): void
+    {
+        $featuresArray = $this->getFeatures($merchantId);
+
+        $this->assertNotContains($featureName, $featuresArray);
+    }
+
+
+    protected function getFeatures(string $merchantId)
+    {
+        $result = $this->getDbEntity(
+            'feature',
+            [
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant'
+            ]);
+
+        $features = $result ? $result->pluck('name')->toArray() : [];
+
+        return $features;
+    }
 }

@@ -195,6 +195,8 @@ class Core extends Base\Core
             }
         });
 
+        $this->merchantCore->disableNoCodeAppsPricingFeature($merchant);
+
         return $accessMapping;
     }
 

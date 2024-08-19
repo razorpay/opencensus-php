@@ -388,6 +388,63 @@ class Core extends Base\Core
     }
 
 
+    /**
+     * @param Entity $merchant
+     * @return null
+     * disables the nocodeapp_fee_applicable feature for the merchant so that the merchant is not charged for no code apps
+     */
+    public function disableNoCodeAppsPricingFeature(Entity $merchant) {
+        try
+        {
+            $this->removeFeatureFromMerchant($merchant, FeatureConstants::NOCODEAPP_FEE_APPLICABLE, true);
+
+            return null;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::NOCODEAPPS_PRICING_FEATURE_REMOVE_EXCEPTION,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                ]);
+
+            return null;
+        }
+    }
+
+    public function removeFeatureFromMerchant(Merchant\Entity $merchant, string $featureName, bool $shouldSync = false): void
+    {
+
+        $feature  = $this->repo->feature->findByEntityTypeEntityIdAndName(
+            Constants::MERCHANT,
+            $merchant->getId(),
+            $featureName);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_REMOVE_REQUEST,
+            [
+                'merchant_id'    => $merchant->getId(),
+                'feature_name'   => $featureName,
+                'feature' => $feature
+            ]);
+
+        if ($feature !== null)
+        {
+            // this throws an exception on failure
+            $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_FEATURE_REMOVED,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                    'feature_name'   => $featureName,
+                ]);
+        }
+    }
+
+
     private function addMerchantRelevantFeatures($merchant,$tokenData)
     {
         if ($tokenData !== null)
@@ -4087,6 +4144,8 @@ class Core extends Base\Core
             },
             Constants::MARK_AS_PARTNER_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS);
+
+        $this->disableNoCodeAppsPricingFeature($merchant);
 
         //send create_ledger event to PRTS
         $this->app['partnerships']->onboardPartnerToLedgerEvent($merchant->getId());
