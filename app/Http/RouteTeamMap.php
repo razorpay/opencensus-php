@@ -22,6 +22,7 @@ class RouteTeamMap
     const TEAM_SCROOGE                  = 'scrooge_devs';
     const TEAM_CAPITAL_LOC              = 'capital-loc';
     const TEAM_UPI_QR_CODE              = 'upi_qr';
+    const TEAM_NOCODE_APP            = 'no_code_app_devs';
 
     /**
      * Team Slack Handle mapping
@@ -36,7 +37,8 @@ class RouteTeamMap
         self::TEAM_PAYMENTS_CORE            => '<!subteam^SP8Q9CNF9>',
         self::TEAM_SCROOGE                  => '<!subteam^SSXQFHE2W>',
         self::TEAM_CAPITAL_LOC              => '<!subteam^S06BW9W0CUR>',
-        self::TEAM_UPI_QR_CODE              => '<!subteam^S04L2JD3VR8>'
+        self::TEAM_UPI_QR_CODE              => '<!subteam^S04L2JD3VR8>',
+        self::TEAM_NOCODE_APP               => '<!subteam^S06DMDSQL9Y>'
     ];
 
     protected static $routeTeamMap = [
@@ -580,7 +582,10 @@ class RouteTeamMap
         'loc_service'                                     => [self::TEAM_CAPITAL_LOC],
 
         //qr_code route
-        'qr_code_create'                                  => [self::TEAM_UPI_QR_CODE]
+        'qr_code_create'                                  => [self::TEAM_UPI_QR_CODE],
+
+        //no_code_apps
+        'payment_links_create'                            => [self::TEAM_NOCODE_APP],
     ];
 
     /**
