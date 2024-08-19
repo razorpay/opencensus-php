@@ -143,6 +143,7 @@ final class Shield
     CONST LINE_ITEMS_TYPE             = 'line_item_type';
     CONST SKU                         = 'sku';
     CONST CUSTOMER_CONTACT            = 'customer_contact';
+    CONST DEVICE_REFERENCE            = 'device_reference';
 
     // Response constants
     const ACTION_KEY              = 'action';

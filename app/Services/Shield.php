@@ -444,7 +444,7 @@ class Shield
         $isAmazonGcValidationsEnabled = $payment->merchant->isFeatureEnabled(Constants::AMAZON_GC_VALIDATIONS);
         if ($isAmazonGcValidationsEnabled === true)
         {
-            $this->trace->info(TraceCode::UPDATE_SHIELD_REQUEST_AMAZON_GIFTCARD,
+            $this->trace->info(TraceCode::UPDATING_SHIELD_REQUEST_AMAZON_GIFTCARD,
                 ['payment_id' => $payment->getId()]);
 
             $lineItems = $cartInfo['line_items'];
@@ -452,10 +452,22 @@ class Shield
             {
                 if ($lineItem['type'] == 'amazon_giftcard')
                 {
+                    $this->trace->info(TraceCode::UPDATING_SHIELD_REQUEST_AMAZON_GIFTCARD,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'line_item_type' => $lineItem['type'],
+                        'sku' => $lineItem['sku'],
+                        'customer_contact' => strlen($cartInfo['customer_details']['contact']),
+                    ]);
                     $payloadDetails[ShieldConstants::ORDER_TYPE] = Type::CART_INFO;
                     $payloadDetails[ShieldConstants::LINE_ITEMS_TYPE] = $lineItem['type'];
                     $payloadDetails[ShieldConstants::SKU] = $lineItem['sku'] ?? '';
                     $payloadDetails[ShieldConstants::CUSTOMER_CONTACT] = $cartInfo['customer_details']['contact'] ?? '';
+                    # Check if device details are present in cart info before adding device_reference to payload
+                    if (isset($cartInfo['device_details']) === true)
+                    {   
+                        $payloadDetails[ShieldConstants::DEVICE_REFERENCE] = isset($cartInfo['device_details']['device_reference']) ? $cartInfo['device_details']['device_reference'] : '';
+                    }
                 }
             }
         }
