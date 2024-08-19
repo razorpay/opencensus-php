@@ -389,9 +389,7 @@ class Core extends Base\Core
 
                 $customerRefundJournal = reset($filteredCustomerRefundJournal);
 
-                $isExpEnabledCustomerRefund = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($customerRefund->merchant);
-
-                if (empty($customerRefundJournal) === false and $isExpEnabledCustomerRefund === true)
+                if (empty($customerRefundJournal) === false)
                 {
                     $this->dispatchToSettlementFromJournalForRefund($customerRefundJournal, $customerRefundId);
                 }
@@ -415,9 +413,7 @@ class Core extends Base\Core
 
                 $reversalJournal = reset($filteredReversalJournal);
 
-                $isExpEnabledReversal = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($reversal->merchant);
-
-                if (empty($reversalJournal) === false and $isExpEnabledReversal === true)
+                if (empty($reversalJournal) === false)
                 {
                     $this->dispatchToSettlementFromJournalForReversal($reversalJournal);
                 }
@@ -441,9 +437,7 @@ class Core extends Base\Core
 
                 $dummyRefundJournal = reset($filteredRefundJournal);
 
-                $isExpEnabledDummyRefund = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForReversals($dummyRefund->merchant);
-
-                if (empty($dummyRefundJournal) === false and $isExpEnabledDummyRefund === true)
+                if (empty($dummyRefundJournal) === false)
                 {
                     $this->dispatchToSettlementFromJournalForRefund($dummyRefundJournal, $dummyRefundId);
                 }

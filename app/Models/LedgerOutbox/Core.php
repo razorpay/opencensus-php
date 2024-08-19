@@ -2009,24 +2009,15 @@ class Core extends Base\Core
 
     private function dispatchToSettlementFromJournalIfApplicableForReversal($journal)
     {
-            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+            $bucketCore = new Bucket\Core;
 
-            $reversal = $this->repo->reversal->findByPublicId($transactorPublicId);
+            $virtualReversalTransaction = $this->transformJournalResponseToTransactionEntityForReversal($journal);
 
-            $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($reversal->merchant);
+            $status = $bucketCore->shouldProcessViaNewService($virtualReversalTransaction->getMerchantId());
 
-            if ($isExpEnabled === true)
+            if ($status === true)
             {
-                $bucketCore = new Bucket\Core;
-
-                $virtualReversalTransaction = $this->transformJournalResponseToTransactionEntityForReversal($journal);
-
-                $status = $bucketCore->shouldProcessViaNewService($virtualReversalTransaction->getMerchantId());
-
-                if ($status === true)
-                {
-                    $bucketCore->publishForSettlement($virtualReversalTransaction);
-                }
+                $bucketCore->publishForSettlement($virtualReversalTransaction);
             }
     }
 
