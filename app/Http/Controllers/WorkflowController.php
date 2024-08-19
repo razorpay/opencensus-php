@@ -65,6 +65,14 @@ class WorkflowController extends Controller
 
         return $this->getActionDetails($id);
     }
+    public function bulkCloseWorkflowAction()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::WORKFLOW_ACTION)->bulkCloseAction($input);
+
+        return ApiResponse::json($response);
+    }
 
     public function updateWorkflowAction(string $id)
     {

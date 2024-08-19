@@ -4,6 +4,8 @@ namespace RZP\Models\Workflow\Action;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Comment\Core as CommentCore;
+use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -12,6 +14,8 @@ use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Workflow\Action\Constants as WorkflowActionConstants;
 use RZP\Models\Workflow\Action\State\Entity as WorkflowActionStateEntity;
+use RZP\Models\RiskWorkflowAction;
+use RZP\Models\Comment;
 
 class Service extends Base\Service
 {
@@ -178,6 +182,61 @@ class Service extends Base\Service
         $action = $this->repo->workflow_action->findOrFailPublic($id);
 
         return $action->toArrayPublic();
+    }
+    public function bulkCloseAction(array $input)
+    {
+        $this->trace->info(TraceCode::BULK_WORKFLOW_CLOSE_REQUEST_START, $input);
+
+        $workflowIDs = $input["workflow_ids"];
+        $workflowComments = $input["workflow_comments"];
+
+        $successIDs = array();
+
+        $failIDs = array();
+
+        foreach($workflowIDs as $workflowId)
+        {
+            try
+            {
+                $action = $this->repo->workflow_action->findOrFailPublic($workflowId);
+
+                $this->core()->close($action, $this->maker);
+
+                $action = $this->repo->workflow_action->findOrFailPublic($workflowId);
+
+                $workflowCommentsEntity = (new CommentCore)->create([
+                    CommentEntity::COMMENT  => $workflowComments
+                ]);
+
+                $workflowCommentsEntity->entity()->associate($action);
+
+                $this->repo->saveOrFail($workflowCommentsEntity);
+
+                array_push($successIDs, $workflowId);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->error(TraceCode::BULK_WORKFLOW_CLOSE_REQUEST_ERROR, [
+                    'workflow_id' => $workflowId,
+                ]);
+
+                array_push($failIDs, $workflowId);
+            }
+        }
+
+        $response = [
+            'total_workflows' => count($workflowIDs),
+            'successful_workflow_count' => count($successIDs),
+            'success_workflows' => $successIDs,
+            'failed_workflows_count' => count($failIDs),
+            'failed_workflows' => $failIDs,
+        ];
+
+        $this->trace->info(TraceCode::BULK_WORKFLOW_CLOSE_REQUEST_COMPLETE,[
+            'response' => $response
+        ]);
+
+        return $response;
     }
 
     public function executeAction(string $id, Role\Entity $role = null, Base\PublicEntity $checkerEntity = null)
