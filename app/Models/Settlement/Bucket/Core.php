@@ -271,252 +271,268 @@ class Core extends Base\Core
      */
     public function publishForSettlement(Transaction\Entity $txn, Balance\Entity $balance = null, $initialRamp = false)
     {
-        $meta         = null;
-        $balanceType  = ($balance === null) ? Balance\Type::PRIMARY : $balance->getType();
-
-        // Only primary and commission balance are eligible for settlement
-        if (Balance\Type::isSettleableBalanceType($balanceType) === false)
+        try
         {
-            return;
-        }
+            $meta         = null;
+            $balanceType  = ($balance === null) ? Balance\Type::PRIMARY : $balance->getType();
 
-        //$settledBy by should be passed mandatory by the txn pushing service.
-        $settledBy = 'Razorpay';
-
-        // currently meta details present only for payment type
-        if ($txn->isTypePayment() === true)
-        {
-            $payment = $txn->source;
-
-            if ($payment->getSettledBy() !== 'Razorpay')
+            // Only primary and commission balance are eligible for settlement
+            if (Balance\Type::isSettleableBalanceType($balanceType) === false)
             {
-                $settledBy = $payment->getSettledBy();
+                return;
             }
 
-            $meta = [
-                'method'        => $payment->getMethod(),
-                'international' => $payment->isInternational(),
-            ];
+            //$settledBy by should be passed mandatory by the txn pushing service.
+            $settledBy = 'Razorpay';
 
-            if (($payment->merchant->isLinkedAccount() === true) and
-                ($payment->getMethod() === Payment\Method::TRANSFER))
+            // currently meta details present only for payment type
+            if ($txn->isTypePayment() === true)
             {
-                try
-                {
-                    $this->addOriginMethodForLinkedAccount($payment, $meta);
-                }
-                catch(\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_ORIGIN_METHOD_FETCH_FAILED,
-                        [
-                            'transaction_id' => $txn->getId(),
-                            'source_id' => $txn->getEntityId()
-                        ]);
+                $payment = $txn->source;
 
-                    throw new Exception\LogicException('Either transfer not found or transfer source not found');
+                if ($payment->getSettledBy() !== 'Razorpay')
+                {
+                    $settledBy = $payment->getSettledBy();
+                }
+
+                $meta = [
+                    'method'        => $payment->getMethod(),
+                    'international' => $payment->isInternational(),
+                ];
+
+                if (($payment->merchant->isLinkedAccount() === true) and
+                    ($payment->getMethod() === Payment\Method::TRANSFER))
+                {
+                    try
+                    {
+                        $this->addOriginMethodForLinkedAccount($payment, $meta);
+                    }
+                    catch(\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_ORIGIN_METHOD_FETCH_FAILED,
+                            [
+                                'transaction_id' => $txn->getId(),
+                                'source_id' => $txn->getEntityId()
+                            ]);
+
+                        throw new Exception\LogicException('Either transfer not found or transfer source not found');
+                    }
+                }
+
+                if($payment->isInternational() === true)
+                {
+                    $commissionAmount = null;
+                    $commissionConversionAmount = null;
+
+                    if ($payment->isB2BExportCurrencyCloudPayment() or $payment->isBankTransfer())
+                    {
+                        $commissionAmount = $payment->getMccMarkDownCommisionAmount() + $txn->getFee();
+                        $commissionConversionAmount = (new \RZP\Models\Currency\Core())->convertAmount($commissionAmount, Currency::INR, Currency::USD);
+                    }
+
+                    $meta += [
+                        'gateway'       => $payment->getGateway(),
+                        'remitter_info' => [
+                            "remitter_name"    => $this->getRemitterName($payment),
+                            "remitter_address" => $this->getRemitterAddress($payment),
+                            "remitter_country" => $this->getRemitterCountry($payment)
+                        ],
+                        'amount_meta'   => [
+                            "conversion_amount"             => $this->getConversionAmount($payment, Currency::USD),
+                            "conversion_currency"           => Currency::USD,
+                            "settlement_currency"           => $this->getSettlementCurrencyOfPayment($payment)
+                        ],
+                    ];
+                    if ( $commissionAmount != null)
+                    {
+                        $meta['amount_meta'] +=[
+                            "intl_commission_amount"             => $commissionAmount,
+                            "intl_commission_conversion_amount"  => $commissionConversionAmount,
+                        ];
+                    }
+
+                    if (Payment\Gateway::isOPGSPSettlementGateway($payment->getGateway()) === true &&
+                        (empty($meta['remitter_info']['remitter_name']) or empty($meta['remitter_info']['remitter_address'])))
+                    {
+                        $this->trace->info(
+                            TraceCode::REMITTER_DETAILS_MISSING_FOR_INTL_PAYMENT_SETTLEMENT,
+                            [
+                                'payment_id'    => $payment->getId(),
+                                'merchant_id'   => $payment->getMerchantId(),
+                                'gateway'       => $payment->getGateway()
+                            ]);
+
+                        throw new Exception\LogicException('Remitter Name or Address not found for OPGSP Settlement Gateway');
+                    }
                 }
             }
 
-            if($payment->isInternational() === true)
-            {
-                $commissionAmount = null;
-                $commissionConversionAmount = null;
+            // If this feature flag is enabled on a merchant, we do settlements on currency level
+            // Transactions like payments, refunds, adjustments on disputes / payments can be handled
+            // on basis of currencies. In case of reversals or adjustments without payments linkage
+            // we use INR as default with assumptions INR balance will always be greater than any other
+            // currencies balance.
+            // Handling Payment, Adjustments and any other type of transactions here expect refunds.
+            // which is currently handled in below getMetaForSource function to avoid multiple DB Fetch
+            // for external entities.
 
-                if ($payment->isB2BExportCurrencyCloudPayment() or $payment->isBankTransfer())
+            if($txn->merchant->isSettlementByCurrencyEnabled() === true)
+            {
+                $payment = null;
+
+                if ($txn->isTypePayment() === true)
                 {
-                    $commissionAmount = $payment->getMccMarkDownCommisionAmount() + $txn->getFee();
-                    $commissionConversionAmount = (new \RZP\Models\Currency\Core())->convertAmount($commissionAmount, Currency::INR, Currency::USD);
+                    $payment = $txn->source;
+                }
+
+                if ($txn->isTypeAdjustment() === true)
+                {
+                    $adjustment = $txn->source;
+
+                    if(isset($adjustment) === true)
+                    {
+                        if ($adjustment->getEntityType() === Transaction\Type::DISPUTE)
+                        {
+                            $payment = $adjustment->entity->payment;
+                        }
+
+                        if($adjustment->getEntityType() === Transaction\Type::PAYMENT)
+                        {
+                            $payment = $adjustment->entity;
+                        }
+                    }
+                }
+
+                if(empty($meta) === true || isset($meta) === false)
+                {
+                    $meta = [];
                 }
 
                 $meta += [
-                    'gateway'       => $payment->getGateway(),
-                    'remitter_info' => [
-                        "remitter_name"    => $this->getRemitterName($payment),
-                        "remitter_address" => $this->getRemitterAddress($payment),
-                        "remitter_country" => $this->getRemitterCountry($payment)
-                    ],
-                    'amount_meta'   => [
-                        "conversion_amount"             => $this->getConversionAmount($payment, Currency::USD),
-                        "conversion_currency"           => Currency::USD,
-                        "settlement_currency"           => $this->getSettlementCurrencyOfPayment($payment)
-                    ],
+                    "settlement_by_currency" => true,
+                    "payment_currency" => $payment ? $payment->getCurrency() : Currency::INR
                 ];
-                if ( $commissionAmount != null)
-                {
-                    $meta['amount_meta'] +=[
-                        "intl_commission_amount"             => $commissionAmount,
-                        "intl_commission_conversion_amount"  => $commissionConversionAmount,
-                    ];
-                }
-
-                if (Payment\Gateway::isOPGSPSettlementGateway($payment->getGateway()) === true &&
-                    (empty($meta['remitter_info']['remitter_name']) or empty($meta['remitter_info']['remitter_address'])))
-                {
-                    $this->trace->info(
-                        TraceCode::REMITTER_DETAILS_MISSING_FOR_INTL_PAYMENT_SETTLEMENT,
-                        [
-                            'payment_id'    => $payment->getId(),
-                            'merchant_id'   => $payment->getMerchantId(),
-                            'gateway'       => $payment->getGateway()
-                        ]);
-
-                    throw new Exception\LogicException('Remitter Name or Address not found for OPGSP Settlement Gateway');
-                }
-            }
-        }
-
-        // If this feature flag is enabled on a merchant, we do settlements on currency level
-        // Transactions like payments, refunds, adjustments on disputes / payments can be handled
-        // on basis of currencies. In case of reversals or adjustments without payments linkage
-        // we use INR as default with assumptions INR balance will always be greater than any other
-        // currencies balance.
-        // Handling Payment, Adjustments and any other type of transactions here expect refunds.
-        // which is currently handled in below getMetaForSource function to avoid multiple DB Fetch
-        // for external entities.
-
-        if($txn->merchant->isSettlementByCurrencyEnabled() === true)
-        {
-            $payment = null;
-
-            if ($txn->isTypePayment() === true)
-            {
-                $payment = $txn->source;
             }
 
-            if ($txn->isTypeAdjustment() === true)
+            // For merchants who have omni feature enabled, settlements will be done separately for online
+            // and offline source_channel. To enable this, we will be passing omni meta details
+            // along with the transaction entity.
+            if($txn->merchant->isOmniEnabled() === true)
             {
-                $adjustment = $txn->source;
+                $payment = null;
 
-                if(isset($adjustment) === true)
+                if ($txn->isTypePayment() === true)
                 {
-                    if ($adjustment->getEntityType() === Transaction\Type::DISPUTE)
-                    {
-                        $payment = $adjustment->entity->payment;
-                    }
+                    $payment = $txn->source;
+                }
 
-                    if($adjustment->getEntityType() === Transaction\Type::PAYMENT)
+                if ($txn->isTypeAdjustment() === true)
+                {
+                    $adjustment = $txn->source;
+
+                    if(isset($adjustment) === true)
                     {
-                        $payment = $adjustment->entity;
+                        if ($adjustment->getEntityType() === Transaction\Type::DISPUTE)
+                        {
+                            $payment = $adjustment->entity->payment;
+                        }
+
+                        if($adjustment->getEntityType() === Transaction\Type::PAYMENT)
+                        {
+                            $payment = $adjustment->entity;
+                        }
                     }
                 }
+
+                if(empty($meta) === true || isset($meta) === false)
+                {
+                    $meta = [];
+                }
+
+                $meta += [
+                    "omni_details" => [
+                        "enabled" => true,
+                        "source_channel" => $payment ? $payment->getSourceChannel(): "online"
+                    ]
+                ];
             }
 
-            if(empty($meta) === true || isset($meta) === false)
+            // Add meta details for refund type txn
+            if (($txn->isTypeRefund() === true) || ($txn->isTypeTransfer() === true))
             {
-                $meta = [];
+                $meta = $this->getMetaForSource($txn);
             }
 
-            $meta += [
-                "settlement_by_currency" => true,
-                "payment_currency" => $payment ? $payment->getCurrency() : Currency::INR
+            if($txn->merchant->isJpmcImportFlowEnabled() === true)
+            {
+                if(empty($meta) === true || isset($meta) === false)
+                {
+                    $meta = [];
+                }
+
+                $meta = $this->getMetaforJpmcImportFlow($txn, $meta);
+            }
+
+            $onHoldReason = ($txn->getOnHold() === true) ? 'created with transaction on hold' : '';
+
+            $payload = [
+                'id'                => $txn->getId(),
+                'merchant_id'       => $txn->getMerchantId(),
+                'source_id'         => $txn->getEntityId(),
+                'source_type'       => $txn->getType(),
+                'balance_type'      => strtoupper($balanceType),
+                'currency'          => $txn->getCurrency(),
+                'credit'            => $txn->getCredit(),
+                'debit'             => $txn->getDebit(),
+                'fee'               => $txn->getFee(),
+                'tax'               => $txn->getTax(),
+                'settled_by'        => $settledBy,
+                'on_hold'           => $txn->getOnHold(),
+                'on_hold_reason'    => $onHoldReason,
+                'meta'              => (object) $meta,
             ];
-        }
 
-        // For merchants who have omni feature enabled, settlements will be done separately for online
-        // and offline source_channel. To enable this, we will be passing omni meta details
-        // along with the transaction entity.
-        if($txn->merchant->isOmniEnabled() === true)
-        {
-            $payment = null;
-
-            if ($txn->isTypePayment() === true)
+            if ($initialRamp === true)
             {
-                $payment = $txn->source;
+                $payload['created_at'] = $txn->getCreatedAt();
             }
 
-            if ($txn->isTypeAdjustment() === true)
+            try
             {
-                $adjustment = $txn->source;
+                $this->app['sns']->publish(json_encode($payload), self::SETTLEMENT_TRANSACTION);
 
-                if(isset($adjustment) === true)
-                {
-                    if ($adjustment->getEntityType() === Transaction\Type::DISPUTE)
-                    {
-                        $payment = $adjustment->entity->payment;
-                    }
-
-                    if($adjustment->getEntityType() === Transaction\Type::PAYMENT)
-                    {
-                        $payment = $adjustment->entity;
-                    }
-                }
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SERVICE_TRANSACTION_PUSH_SUCCESSFUL,
+                    [
+                        'transaction_id' => $txn->getId(),
+                        'merchant_id'    => $txn->getMerchantId(),
+                        'payload'        => $payload,
+                    ]);
             }
-
-            if(empty($meta) === true || isset($meta) === false)
+            catch (\Throwable $e)
             {
-                $meta = [];
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SETTLEMENT_TRANSACTION_STREAMING_FAILED,
+                    $payload);
+
+                throw $e;
             }
-
-            $meta += [
-                "omni_details" => [
-                    "enabled" => true,
-                    "source_channel" => $payment ? $payment->getSourceChannel(): "online"
-                ]
-            ];
-        }
-
-        // Add meta details for refund type txn
-        if (($txn->isTypeRefund() === true) || ($txn->isTypeTransfer() === true))
-        {
-            $meta = $this->getMetaForSource($txn);
-        }
-
-        if($txn->merchant->isJpmcImportFlowEnabled() === true)
-        {
-            if(empty($meta) === true || isset($meta) === false)
-            {
-                $meta = [];
-            }
-
-            $meta = $this->getMetaforJpmcImportFlow($txn, $meta);
-        }
-
-        $onHoldReason = ($txn->getOnHold() === true) ? 'created with transaction on hold' : '';
-
-        $payload = [
-            'id'                => $txn->getId(),
-            'merchant_id'       => $txn->getMerchantId(),
-            'source_id'         => $txn->getEntityId(),
-            'source_type'       => $txn->getType(),
-            'balance_type'      => strtoupper($balanceType),
-            'currency'          => $txn->getCurrency(),
-            'credit'            => $txn->getCredit(),
-            'debit'             => $txn->getDebit(),
-            'fee'               => $txn->getFee(),
-            'tax'               => $txn->getTax(),
-            'settled_by'        => $settledBy,
-            'on_hold'           => $txn->getOnHold(),
-            'on_hold_reason'    => $onHoldReason,
-            'meta'              => (object) $meta,
-        ];
-
-        if ($initialRamp === true)
-        {
-            $payload['created_at'] = $txn->getCreatedAt();
-        }
-
-        try
-        {
-            $this->app['sns']->publish(json_encode($payload), self::SETTLEMENT_TRANSACTION);
-
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_PUSH_SUCCESSFUL,
-                [
-                    'transaction_id' => $txn->getId(),
-                    'merchant_id'    => $txn->getMerchantId(),
-                    'payload'        => $payload,
-                ]);
         }
         catch (\Throwable $e)
         {
+            $dimensions = ['message' => str_replace(' ', '_', $e->getMessage())];
+            $this->trace->count(Metric::NSS_PUSH_FAILED, $dimensions);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SETTLEMENT_TRANSACTION_STREAMING_FAILED,
-                $payload);
+                TraceCode::SETTLEMENT_TRANSACTION_PUSH_EXCEPTION,
+                ['txn_id' => $txn->getId(), 'type' => $txn->getType(), 'entity_id' => $txn->getEntityId()]);
 
             throw $e;
         }

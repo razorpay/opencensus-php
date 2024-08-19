@@ -99,4 +99,5 @@ final class Metric
     const TOTAL_MERCHANTS_COUNT                 = 'total_merchants_count';
     const USING_QUEUE                           = 'using_queue';
     const TIME_TAKEN_IN_MILLI                   = 'time_taken_in_milli';
+    const NSS_PUSH_FAILED                       = 'nss_push_failed';
 }
