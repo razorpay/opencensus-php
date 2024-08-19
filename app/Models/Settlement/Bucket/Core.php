@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement\Bucket;
 
+use App;
 use Cache;
 use Config;
 use Carbon\Carbon;
@@ -36,6 +37,8 @@ class Core extends Base\Core
     const JPMC_IMPORT_FLOW_TRANSACTION_TYPES = [
         'payment',
     ];
+
+    const SOURCE_SETTLED_REMOVAL_EXP = 'source_settled_removal_exp';
 
     protected $preference;
 
@@ -796,13 +799,19 @@ class Core extends Base\Core
                 $metaSource = $txnSource;
         }
 
+        $sourceSettledRemovalExpEnabled = $this->isSourceSettledRemovalExperimentEnabled($txn->getMerchantId());
+
         $meta = [
             'source_type'       => $metaSource->getEntity(),
             'source_id'         => $metaSource->getId(),
             'source_method'     => $metaSource->getMethod(),
-            'source_settled'    => $metaSource->transaction->isSettled(),
             'international'     => $international
         ];
+
+        if ($sourceSettledRemovalExpEnabled === false)
+        {
+            $meta['source_settled'] = $metaSource->transaction->isSettled();
+        }
 
         if($txn->merchant->isSettlementByCurrencyEnabled() === true && $metaSource->getEntity() === Transaction\Type::PAYMENT)
         {
@@ -1087,5 +1096,16 @@ class Core extends Base\Core
         }
 
         return ['success' => false];
+    }
+
+    private function isSourceSettledRemovalExperimentEnabled($merchantId)
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchantId,
+            self::SOURCE_SETTLED_REMOVAL_EXP,
+            $this->mode
+        );
+
+        return $variant === 'on';
     }
 }
