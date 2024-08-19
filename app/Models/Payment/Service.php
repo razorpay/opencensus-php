@@ -3048,7 +3048,7 @@ class Service extends Base\Service
 
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
 
-                $dccInfo['show_markup'] = $merchant->isDCCMarkupVisible();
+                $dccInfo['show_markup'] = $this->showMarkupExperimentEnabled($merchant->getId(), $iinEntity->getNetwork());
 
                 $data = array_merge($data, $dccInfo);
             }
@@ -8838,4 +8838,49 @@ class Service extends Base\Service
 
         return $isExperimentEnabled;
     }
+
+    /** showMarkupExperimentEnabled(string $merchantId) checks
+     * if show dcc markup experiment is enabled or not this experiment
+     * replaces PAYMENT_SHOW_DCC_MARKUP feature flag
+     **/
+    public function showMarkupExperimentEnabled(string $merchantId, string $network): bool
+    {
+            try
+            {
+                $experimentIdConfigKey = null;
+
+                if ($network === "Visa") {
+                    $experimentIdConfigKey = 'app.show_dcc_markup_visa_experiment_id';
+                } elseif ($network === "MasterCard") {
+                    $experimentIdConfigKey = 'app.show_dcc_markup_mc_experiment_id';
+                }
+
+                if ($experimentIdConfigKey === null) {
+                    return false;
+                }
+
+                $properties = [
+                    'id'            => UniqueIdEntity::generateUniqueId(),
+                    'experiment_id' => $this->app['config']->get($experimentIdConfigKey),
+                    'request_data'  => json_encode(['merchant_id' => $merchantId]),
+                ];
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+                $versionValue = "";
+                $variables = $response['response']['variant']['variables'];
+                foreach ($variables as $variable) {
+                    $versionValue = $variable['value'];
+                }
+                return $versionValue === "v4";
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::SHOW_DCC_EXPERIMENT_SPLITZ_ERROR
+                );
+            }
+        return false;
+    }
+
 }

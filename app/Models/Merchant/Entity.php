@@ -3015,26 +3015,6 @@ class Entity extends Base\PublicEntity
             array_pull($array, self::RISK_THRESHOLD);
         }
     }
-
-    /** To compute if dcc markup is to be shown in frontend or not
-     * @param $input
-     * @param $merchant
-     * @return bool
-     */
-    public function isDCCMarkupVisible(): bool
-    {
-        $result = false;
-
-        //Check either of merchant feature or admin config is enabled
-        if (((bool) Admin\ConfigKey::get(Admin\ConfigKey::PAYMENT_SHOW_DCC_MARKUP, false) == true) or
-            ($this->isFeatureEnabled(Feature\Constants::PAYMENT_SHOW_DCC_MARKUP) == true))
-        {
-            $result = true;
-        }
-
-        return $result;
-    }
-
     public function getDccMarkupPercentage()
     {
         $dccPaymentConfigEntity = $this->firstDccPaymentConfig();

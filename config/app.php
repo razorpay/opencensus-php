@@ -949,4 +949,8 @@ return array(
     'is_idfb_v2_emi_plans_experiment_id' => env('IS_IDFB_V2_EMI_PLANS_EMPERIMENT_ID'),
 
     'is_yesb_v2_emi_plans_experiment_id' => env('IS_YESB_V2_EMI_PLANS_EMPERIMENT_ID'),
+
+    'show_dcc_markup_visa_experiment_id' => env('SHOW_DCC_MARKUP_VISA_EXPERIMENT_ID'),
+
+    'show_dcc_markup_mc_experiment_id' => env('SHOW_DCC_MARKUP_MC_EXPERIMENT_ID'),
 );

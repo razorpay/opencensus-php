@@ -5360,13 +5360,11 @@ class ReconciliationFileTest extends TestCase
         $responseContent = json_decode($response->getContent(), true);
         $cardCurrency = $responseContent['card_currency'];
         $currencyRequestId = $responseContent['currency_request_id'];
-        $showMarkup = $responseContent['show_markup'];
         $convertedAmount = $responseContent['all_currencies']['KWD']['amount'];
 
         $this->assertEquals("KWD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
-        $this->assertEquals(false, $showMarkup);
         $this->assertEquals(0, $convertedAmount%10); // last digit should be 0 for 3 decimal currency
 
         $this->payment = $this->getPaymentArrayInternational();
@@ -5474,13 +5472,11 @@ class ReconciliationFileTest extends TestCase
         $responseContent = json_decode($response->getContent(), true);
         $cardCurrency = $responseContent['card_currency'];
         $currencyRequestId = $responseContent['currency_request_id'];
-        $showMarkup = $responseContent['show_markup'];
         $convertedAmount = $responseContent['all_currencies']['KWD']['amount'];
 
         $this->assertEquals("KWD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
-        $this->assertEquals(false, $showMarkup);
         $this->assertEquals(0, $convertedAmount%10); // last digit should be 0 for 3 decimal currency
 
         $this->payment = $this->getPaymentArrayInternational();

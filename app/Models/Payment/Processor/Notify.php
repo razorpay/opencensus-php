@@ -591,7 +591,8 @@ class Notify
                 'orderId'              => $this->payment->getOrderId(),
                 'risk'                 => $this->merchant->getRiskRating(),
 
-                'dcc'                  => ($this->payment->isDCC() and $this->merchant->isDCCMarkupVisible()),
+                'dcc'                  => $this->payment->isDCC() && isset($this->payment->card) &&
+                                          (new Payment\Service())->showMarkupExperimentEnabled($this->merchant->getId(), $this->payment->card->getNetwork()),
                 'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC()),
                 'currency'             => $this->payment->getCurrency(),
                 'amount_without_symbol'=> $this->payment->getFormattedAmountWithoutSymbol()
@@ -696,7 +697,7 @@ class Notify
                 $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $paymentMeta->getDccMarkUpPercent(), $denominationFactor);
 
                 $data['payment']['exchange_rate'] = round(($gatewayAmount / $gatewayCurrencyDenomination) / ($paymentAmount / $paymentCurrencyDenomination), 5);
-                if ($this->merchant->isDCCMarkupVisible()) {
+                if (isset($this->payment->card) && (new Payment\Service())->showMarkupExperimentEnabled($this->merchant->getId(), $this->payment->card->getNetwork())) {
                     $reducedDccMarkupPercent = ceil($paymentMeta->getDccMarkUpPercent() - ($paymentMeta->getDccMarkUpPercent() * (MerchantEntity::VARIABLE_DCC_MARKUP_PERCENT / 100)));
                     $fee = $this->payment->getCurrencyConversionFee($this->payment->getAmount(), $paymentMeta->getForexRate(), $reducedDccMarkupPercent, $denominationFactor);
                 }

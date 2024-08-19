@@ -356,9 +356,6 @@ class ConfigKey
     // this is to route 0loc traffic to scrooge service
     const SCROOGE_0LOC_ENABLED = self::PREFIX.'scrooge_0loc_enabled';
 
-    //Admin config used to control visibility of dcc markup on frontend
-    const PAYMENT_SHOW_DCC_MARKUP = self::PREFIX.'payment_show_dcc_markup';
-
     const MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION
         = self::PREFIX . 'min_hours_to_start_ticket_creation_after_activation_form_submission';
 
@@ -615,7 +612,6 @@ class ConfigKey
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
         self::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
         self::RX_FUND_LOADING_REFUNDS_VIA_X,
-        self::PAYMENT_SHOW_DCC_MARKUP,
         self::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS,
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES,
         self::RBL_CA_BALANCE_UPDATE_LIMITS,

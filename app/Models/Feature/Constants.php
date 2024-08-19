@@ -1225,11 +1225,6 @@ class Constants
     const SKIP_EXPOSE_FEE_RECOVERY = 'skip_expose_fee_recovery';
 
     /**
-     * Merchant feature used to control visibility of dcc markup on frontend
-     */
-    const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
-
-    /**
      * Merchant feature used to control visibility of MOR details on frontend
      */
     const SHOW_MOR_TNC   =   'show_mor_tnc';
@@ -2774,7 +2769,6 @@ class Constants
         self::PL_BLOCK_CUSTOMER_PREFILL                    => true,
         self::ALLOW_VA_TO_VA_PAYOUTS                       => true,
         self::AXIS_ACCESS                                  => true,
-        self::PAYMENT_SHOW_DCC_MARKUP                      => true,
         self::EXPOSE_SETTLED_BY                            => true,
         self::PAYPAL_CC                                    => true,
         self::ORG_HIDE_ACTIVATION_FORM                     => true,
