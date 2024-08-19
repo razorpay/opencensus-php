@@ -1393,7 +1393,7 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->hasInvoice() === false)
+        if ($payment->hasInvoiceOrProductTypeInvoice() === false)
         {
             return;
         }

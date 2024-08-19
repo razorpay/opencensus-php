@@ -2636,6 +2636,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->isAttributeNotNull(self::INVOICE_ID));
     }
 
+    public function isProductTypeInvoice(): bool
+    {
+        if ($this->hasOrder() && $this->order !== null &&
+            $this->order->getProductId() != null && $this->order->getProductType() === Order\ProductType::INVOICE
+        ) {
+            return true;
+        }
+
+       return false;
+    }
+
+    public function hasInvoiceOrProductTypeInvoice(): bool
+    {
+        if ($this->isAttributeNotNull(self::INVOICE_ID) ||
+            $this->isProductTypeInvoice()) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function hasTransfer()
     {
         return ($this->isAttributeNotNull(self::TRANSFER_ID));
