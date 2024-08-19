@@ -1985,7 +1985,7 @@ class Core extends Base\Core
             return;
         }
 
-        $paymentMerchant = $payment->merchant;
+        $paymentMerchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
 
         if (($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false) or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {

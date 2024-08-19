@@ -50,16 +50,132 @@ class Core extends Base\Core
     const PAYMENT_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY = 100;
     const PAYMENT_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY = 200;
 
+    const PG_LEDGER_ACK_PROCESSING_ATTEMPT_COUNT = "PG_LEDGER_ACK_PROCESSING_ATTEMPT_COUNT";
+
+    const MAX_RETRY_COUNT                        = 5;
+    const RETRY_ATTEMPT_COUNT                    = 'retry_attempt_count';
+    const PG_LEDGER_ACK_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC = 10800;
+
     use ReverseShadowTrait;
     use CaptureTrait;
 
     protected $mutex;
+
+    protected $cache;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->cache = $this->app['cache'];
+    }
+
+    public function validateAttemptsAndProcessLedgerAcknowledgement(array $outboxPayload)
+    {
+        try
+        {
+            $outboxPayloadAfter = $outboxPayload['after'];
+
+            $clsLedgerOutboxId = $outboxPayloadAfter['id'];
+
+            if ($this->isKafkaMessageProcessingAttemptExceeded($clsLedgerOutboxId, $outboxPayloadAfter, self::PG_LEDGER_ACK_PROCESSING_ATTEMPT_COUNT) === true)
+            {
+                return;
+            }
+
+            $this->incrementKafkaMessageProcessingAttempt($clsLedgerOutboxId, self::PG_LEDGER_ACK_PROCESSING_ATTEMPT_COUNT);
+
+            $this->processLedgerAcknowledgement($outboxPayload);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->count(Metric::PG_LEDGER_KAFKA_ACKNOWLEDGMENT_FAILED);
+
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PG_LEDGER_ACK_PROCESSING_ERROR,
+                $outboxPayload);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @param string $clsLedgerOutboxId
+     * @param array  $payload
+     *
+     * @return bool
+     */
+    protected function isKafkaMessageProcessingAttemptExceeded(string $clsLedgerOutboxId, array $payload, string $attribute): bool
+    {
+        $retryAttemptsCount = $this->getPgLedgerAckProcessingAttempts($clsLedgerOutboxId, $attribute);
+
+        $retryAttemptMetrics = [
+            self::RETRY_ATTEMPT_COUNT => $retryAttemptsCount
+        ];
+
+        $this->trace->count(Metric::PG_LEDGER_ACKNOWLEDGMENT_RETRY_COUNT_ATTEMPT, $retryAttemptMetrics);
+
+        if ($retryAttemptsCount >= self::MAX_RETRY_COUNT)
+        {
+            $this->trace->info(TraceCode::PG_LEDGER_ACK_JOB_RETRY_EXCEEDED, $payload);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Increment the retry count.
+     *
+     * @param string $clsLedgerOutboxId
+     */
+    protected function incrementKafkaMessageProcessingAttempt(string $clsLedgerOutboxId, string $attribute): void
+    {
+        $pgLedgerAckProcessingAttempt = $this->getPgLedgerAckProcessingAttempts($clsLedgerOutboxId, $attribute);
+
+        $this->updatePgLedgerAckProcessingAttempts($clsLedgerOutboxId, $pgLedgerAckProcessingAttempt + 1, $attribute);
+    }
+
+    /**
+     * @param string $clsLedgerOutboxId
+     *
+     * @return int return the retry count for the validationId
+     */
+    protected function getPgLedgerAckProcessingAttempts(string $clsLedgerOutboxId, string $attribute): int
+    {
+        $pgLedgerAckProcessingAttemptKey = $this->getPgLedgerAckProcessingAttemptKey($clsLedgerOutboxId, $attribute);
+
+        return $this->cache->get($pgLedgerAckProcessingAttemptKey) ?? 0;
+    }
+
+    /**
+     * Redis Key for PG Ledger Ack Id retry.
+     *
+     * @param string $clsLedgerOutboxId
+     *
+     * @return string
+     */
+    protected function getPgLedgerAckProcessingAttemptKey(string $clsLedgerOutboxId, string $attribute): string
+    {
+        return $attribute . $clsLedgerOutboxId;
+    }
+
+    /**
+     * Updates the redis key with the retry count
+     *
+     * @param string $validationId
+     * @param int    $count
+     */
+    protected function updatePgLedgerAckProcessingAttempts(string $clsLedgerOutboxId, int $count,  string $attribute): void
+    {
+        $pgLedgerProcessingAttemptRedisKey = $this->getPgLedgerAckProcessingAttemptKey($clsLedgerOutboxId, $attribute);
+
+        $this->cache->put($pgLedgerProcessingAttemptRedisKey, $count, self::PG_LEDGER_ACK_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC);
     }
 
     public function processLedgerAcknowledgement(array $outboxPayload)
@@ -1924,24 +2040,15 @@ class Core extends Base\Core
 
         if (($transactorEvent === LedgerConstants::MERCHANT_CAPTURED))
         {
-            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+            $bucketCore = new Bucket\Core;
 
-            $payment = $this->repo->payment->findByPublicId($transactorPublicId);
+            $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForPayments($journal);
 
-            $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
+            $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
 
-            if ($isExpEnabled === true)
+            if ($status === true)
             {
-                $bucketCore = new Bucket\Core;
-
-                $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForPayments($journal);
-
-                $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
-
-                if ($status === true)
-                {
                 $bucketCore->publishForSettlement($virtualPaymentTransaction);
-                }
             }
         }
         else if ($transactorEvent === LedgerConstants::CUSTOMER_WALLET_LOADING)

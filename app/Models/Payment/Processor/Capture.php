@@ -381,8 +381,9 @@ trait Capture
 
     public function createLedgerEntriesForGatewayCapture(Payment\Entity $payment)
     {
-        if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
-        or ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+        $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+        if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        or ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {
             return;
         }
@@ -950,7 +951,8 @@ trait Capture
             */
             $originalPaymentFee = $payment->getFee();
 
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
                 list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
             }
@@ -1209,18 +1211,17 @@ trait Capture
         {
             $this->createLedgerEntriesForMerchantCapture($payment, $txn);
 
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
                 $this->processTransferIfApplicable($payment);
             }
-
-            $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForPayments($payment->merchant);
 
             $shouldDispatchSettlementBucket = true;
 
             // If API Payment and merchant is on reverse shadow, that payment would have been dispatched to
             // settlement from ack worker, we need not to dispatch again after api transaction creation
-            if (($isEarlyDispatchExpEnabled === true) and ($payment->isExternal() === false) and
+            if (($payment->isExternal() === false) and
                 ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
             {
                 $shouldDispatchSettlementBucket = false;

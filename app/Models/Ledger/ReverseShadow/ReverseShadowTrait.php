@@ -734,7 +734,14 @@ trait ReverseShadowTrait
 
         $merchantReceivableLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::RECEIVABLE, Constants::MERCHANT_INVOICE);
 
-        $merchantId = $this->getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry,$merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry, $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry);
+        $merchantRefundCreditLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_REFUND_CREDITS);
+
+        $merchantGmvLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_GMV);
+
+        $merchantReserveBalanceLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse,Constants::PAYABLE, Constants::MERCHANT_RESERVE_BALANCE);
+
+        $merchantId = $this->getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry,$merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry, $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry,
+            $merchantRefundCreditLedgerEntry, $merchantGmvLedgerEntry, $merchantReserveBalanceLedgerEntry);
 
         if ($merchantId === null)
         {
@@ -748,7 +755,7 @@ trait ReverseShadowTrait
             $merchant = $this->repo->merchant->findOrFail($merchantId);
         }
 
-        $credit = 0; $debit = 0;
+        $credit = 0; $debit = 0; $feeCredits = 0;
 
         if (isset($merchantBalanceLedgerEntry) === true)
         {
@@ -761,17 +768,23 @@ trait ReverseShadowTrait
 
         $fees = $commissionLedgerEntry !== null ? ($commissionLedgerEntry[Constants::AMOUNT] + $tax) : 0;
 
-        $feeCredits =  $merchantFeeCreditsLedgerEntry !== null ?  $merchantFeeCreditsLedgerEntry[Constants::AMOUNT] : 0;
-
         $creditType = CreditType::DEFAULT;
 
         if ($merchantFeeCreditsLedgerEntry !== null)
         {
             $creditType = CreditType::FEE;
+
+            $feeCredits = $merchantFeeCreditsLedgerEntry[Constants::AMOUNT];
         }
         else if ($merchantAmountCreditsLedgerEntry !== null)
         {
             $creditType = CreditType::AMOUNT;
+        }
+        else if ($merchantRefundCreditLedgerEntry !== null)
+        {
+            $creditType = CreditType::REFUND;
+
+            $feeCredits = $merchantRefundCreditLedgerEntry[Constants::AMOUNT];
         }
 
         $feeModel = $merchantReceivableLedgerEntry !== null ? Merchant\FeeModel::POSTPAID : Merchant\FeeModel::PREPAID;
@@ -809,7 +822,9 @@ trait ReverseShadowTrait
         return $txn;
     }
 
-    private function getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry, $merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry, $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry)
+    private function getMerchantIdFromLedgerEntries($merchantBalanceLedgerEntry, $merchantFeeCreditsLedgerEntry, $merchantAmountCreditsLedgerEntry,
+                                                    $merchantReceivableLedgerEntry, $merchantVASAmountLedgerEntry, $merchantRefundCreditLedgerEntry,
+                                                    $merchantGmvLedgerEntry, $merchantReserveBalanceLedgerEntry)
     {
         if(isset($merchantBalanceLedgerEntry) === true)
         {
@@ -830,6 +845,18 @@ trait ReverseShadowTrait
         else if (isset($merchantVASAmountLedgerEntry) === true)
         {
             return $merchantVASAmountLedgerEntry[Constants::MERCHANT_ID];
+        }
+        else if (isset($merchantRefundCreditLedgerEntry) === true)
+        {
+            return $merchantRefundCreditLedgerEntry[Constants::MERCHANT_ID];
+        }
+        else if (isset($merchantGmvLedgerEntry) === true)
+        {
+            return $merchantGmvLedgerEntry[Constants::MERCHANT_ID];
+        }
+        else if (isset($merchantReserveBalanceLedgerEntry) === true)
+        {
+            return $merchantReserveBalanceLedgerEntry[Constants::MERCHANT_ID];
         }
 
         return null;

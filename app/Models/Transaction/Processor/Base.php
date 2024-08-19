@@ -239,9 +239,7 @@ abstract class Base extends BaseCore
 
             if ($this->txn->getType() === Transaction\Type::ADJUSTMENT)
             {
-                $isEarlyDispatchExpEnabled = (new LedgerOutboxCore())->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($this->txn->merchant);
-
-                if (($isEarlyDispatchExpEnabled === true) and ($this->txn->accountBalance->getType() === Balance\Type::PRIMARY) and
+                if (($this->txn->accountBalance->getType() === Balance\Type::PRIMARY) and
                     ($this->txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
                 {
                     $shouldDispatchSettlementBucket = false;

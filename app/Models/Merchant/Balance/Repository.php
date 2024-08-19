@@ -201,7 +201,9 @@ class Repository extends Base\Repository
 
         $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        if(($balance->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and $balance->getType() === BalanceType::PRIMARY)
+        $merchant = $this->repo->merchant->findOrFailPublic($balance->getMerchantId());
+
+        if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and $balance->getType() === BalanceType::PRIMARY)
         {
             if ($enableTidbStreaming === false)
             {
@@ -230,7 +232,8 @@ class Repository extends Base\Repository
 
         $enableTidbStreaming = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
 
-        if($balance->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        $merchant = $this->repo->merchant->findOrFailPublic($balance->getMerchantId());
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
 
             if ($enableTidbStreaming === false) {

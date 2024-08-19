@@ -11444,7 +11444,8 @@ trait Authorize
 
                 $this->repo->saveOrFail($txn);
 
-                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+                if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
                     (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment, $txn->getId());
                 }

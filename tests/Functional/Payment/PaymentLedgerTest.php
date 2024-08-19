@@ -5100,6 +5100,47 @@ class PaymentLedgerTest extends TestCase
 
     }
 
+
+
+    public function testKafkaRetryLogicForAckWorker()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        // dummy payment id so that repo fetch fails with exception
+        $paymentId = "pay_OmfNGD74w5Y3rt";
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        // retrying the process multiple times
+        $firstAttemptResult = (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+        $sixthAttemptResult = (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+
+        $this->assertFalse($firstAttemptResult);
+        $this->assertTrue($sixthAttemptResult);
+    }
+
     // optimizer, esautomatic, recurring
     public function testKafkaSuccessForPaymentMerchantCaptureEventWithFeeSplit()
     {

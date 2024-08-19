@@ -6998,6 +6998,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
     const RESPONSE_STATUS_AT_AUTH_MIDDLEWARE                    = 'RESPONSE_STATUS_AT_AUTH_MIDDLEWARE';
 
+    const PG_LEDGER_ACK_PROCESSING_ERROR                        = 'PG_LEDGER_ACK_PROCESSING_ERROR';
+    const PG_LEDGER_ACK_JOB_RETRY_EXCEEDED                      = 'PG_LEDGER_ACK_JOB_RETRY_EXCEEDED';
+
     const PARTNER_AUTH_NOT_ALLOWED                              = 'PARTNER_AUTH_NOT_ALLOWED';
     const ACCOUNT_AUTH_NOT_ALLOWED                              = 'ACCOUNT_AUTH_NOT_ALLOWED';
 

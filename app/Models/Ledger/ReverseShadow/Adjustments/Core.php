@@ -303,13 +303,6 @@ class Core extends Base\Core
     {
         $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
-        $isExpEnabled = $this->checkIfEarlyDispatchOfTxnForSettlementsExperimentIsEnabledForAdjustments($adjustment->merchant);
-
-        if ($isExpEnabled === false)
-        {
-            return;
-        }
-
         if (($transactorEvent === LedgerConstants::RAZORPAY_DISPUTE_DEDUCT) OR ($transactorEvent === LedgerConstants::RAZORPAY_DISPUTE_REVERSAL))
         {
             $virtualAdjustmentTransaction = $this->transformJournalResponseToTransactionEntityForDispute($journal, $adjustment);

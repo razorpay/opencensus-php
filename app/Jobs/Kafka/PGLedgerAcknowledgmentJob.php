@@ -29,6 +29,6 @@ class PGLedgerAcknowledgmentJob extends Job
 
         $core = new Core();
 
-        $core->processLedgerAcknowledgement($this->payload);
+        $core->validateAttemptsAndProcessLedgerAcknowledgement($this->payload);
     }
 }

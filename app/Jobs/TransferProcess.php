@@ -194,7 +194,8 @@ class TransferProcess extends Job
             return true;
         }
 
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
+        $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
         {
             $journal = (new ReverseShadow\Payments\Core())->fetchLedgerJournalForPaymentMerchantCapture($payment);
 
