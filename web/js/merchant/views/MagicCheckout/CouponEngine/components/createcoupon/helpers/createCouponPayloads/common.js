@@ -24,9 +24,10 @@ export function sanitizePayload(obj) {
           }
           break;
         case 'combined_coupons':
-          if (!value[0].type) {
-            obj[key] = [];
-          }
+          obj[key] =
+            value?.filter((combineCoupon) => {
+              return combineCoupon.type;
+            }) || [];
           break;
         case 'discover_rules':
           if (Array.isArray(value)) {

@@ -36,7 +36,7 @@ export const publishCoupon = (data: any): any => {
 
 export const deleteCoupon = (data: any): any => {
   return merchantFetch({
-    url: `1cc/dashboard/ce/coupons?id=${data.id}`,
+    url: `1cc/dashboard/ce/coupons?id=${data.id}&app_type=${data.app_type}`,
     method: 'delete',
   });
 };

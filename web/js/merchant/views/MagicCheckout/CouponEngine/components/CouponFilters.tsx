@@ -13,6 +13,7 @@ import {
   COUPON_SOURCES,
   COUNT,
   getCouponTypesList,
+  COUPON_NAMES,
 } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 // Define the shape of the form data
@@ -57,12 +58,15 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
   const [formData, setFormData] = useState<FormData>(initialFiltersState);
   const { abExperiments } = useSplitzService();
   /**
-   * For MagicX , Free shipping coupon type is not available
+   * For MagicX , Free shipping coupon and bulk discount coupon type is not available
    */
-  const shouldShowFreeShippingCoupon =
-    !isRcodEnabled && abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
+  const excludedCouponTypes = isRcodEnabled
+    ? abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on'
+      ? [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER]
+      : [COUPON_NAMES.BULK_ORDER]
+    : [];
 
-  const COUPON_TYPES = getCouponTypesList(shouldShowFreeShippingCoupon);
+  const COUPON_TYPES = getCouponTypesList(excludedCouponTypes);
 
   useEffect(() => {
     if (tabName === 'active' || tabName === 'expired' || tabName === 'published') {

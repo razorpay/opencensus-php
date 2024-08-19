@@ -166,6 +166,7 @@ export type CreateCouponFormProps = {
   openModal: (modal: any) => void;
   closeModal: () => void;
   flow: 'cretaed' | 'edit' | 'duplicate';
+  dashboardView: string;
 };
 
 export type HandleCreateUpdateCouponFnProps = {

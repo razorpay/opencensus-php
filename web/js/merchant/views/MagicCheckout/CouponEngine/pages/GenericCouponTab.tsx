@@ -55,10 +55,11 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
       const res = await listCoupons(filters);
       const coupons = res?.data?.coupons;
       /**
-       * For MagicX , Free shipping coupon type is not available
+       * For MagicX , Free shipping coupon type and bulk order discount is not available
        */
+      const excludedCouponsForMagicX = [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER];
       const couponsList = isRcodEnabled
-        ? coupons?.filter((coupon) => coupon?.type !== COUPON_NAMES.FREE_SHIPPING)
+        ? coupons?.filter((coupon) => !excludedCouponsForMagicX.includes(coupon.type))
         : coupons;
       setAllCouponsList(couponsList || []);
     } catch (err) {

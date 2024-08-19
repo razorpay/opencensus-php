@@ -81,10 +81,14 @@ export const COUPON_TYPES = [
 ];
 
 //todo: remove it post 100% rollout
-export const getCouponTypesList = (includeFreeShippingCoupon = true) => {
+export const getCouponTypesList = (excludedCouponTypes = []) => {
   const couponTypes = [...COUPON_TYPES];
-  if (!includeFreeShippingCoupon) {
-    couponTypes.pop();
+  if (excludedCouponTypes.length) {
+    return couponTypes.filter((coupon) => {
+      if (!excludedCouponTypes.includes(coupon.name)) {
+        return coupon;
+      }
+    });
   }
   return couponTypes;
 };
@@ -149,10 +153,14 @@ export const AVAILABLE_COUPON_TYPES = [
 ];
 
 //todo: remove it post 100% rollout
-export const getAvailableCouponTypes = (includeFreeShippingCoupon = true) => {
+export const getAvailableCouponTypes = (excludeCoupons = []) => {
   const couponTypes = [...AVAILABLE_COUPON_TYPES];
-  if (!includeFreeShippingCoupon) {
-    couponTypes.pop();
+  if (excludeCoupons.length) {
+    return couponTypes.filter((coupon) => {
+      if (!excludeCoupons.includes(coupon.type)) {
+        return coupon;
+      }
+    });
   }
   return couponTypes;
 };

@@ -23,8 +23,16 @@ import {
 // helpers imports
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
+import { getAppType } from 'merchant/views/MagicCheckout/utils/getAppType';
 
-const ModifyCouponStatus = ({ closeModal, coupon, showNotification, status, updateCouponsCb }) => {
+const ModifyCouponStatus = ({
+  closeModal,
+  coupon,
+  showNotification,
+  status,
+  updateCouponsCb,
+  dashboardView,
+}) => {
   const [isLoading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -42,7 +50,10 @@ const ModifyCouponStatus = ({ closeModal, coupon, showNotification, status, upda
       }
     }
     try {
-      const { data } = await actionFunctionMap[status](coupon);
+      const { data } = await actionFunctionMap[status]({
+        ...coupon,
+        app_type: getAppType(dashboardView),
+      });
       showNotification({
         type: 'success',
         message: successToastMessageMap[status],
@@ -86,4 +97,8 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(ModifyCouponStatus);
+const mapStateToProps = (state: any) => ({
+  dashboardView: state.magicCheckout.dashboard_view,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ModifyCouponStatus);

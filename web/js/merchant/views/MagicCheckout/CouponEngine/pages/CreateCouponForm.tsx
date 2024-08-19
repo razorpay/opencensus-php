@@ -38,12 +38,14 @@ import {
   CreateCouponFormProps,
   HandleCreateUpdateCouponFnProps,
 } from 'merchant/views/MagicCheckout/CouponEngine/types';
+import { getAppType } from 'merchant/views/MagicCheckout/utils/getAppType';
 
 const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
   showNotification,
   flow = 'created',
   openModal,
   closeModal,
+  dashboardView,
 }) => {
   const { couponName, code } = useParams();
   const navigate = useNavigate();
@@ -154,7 +156,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
     }
 
     // using form data to create api payload
-    const apiData = createApiData(couponName, {
+    let apiData = createApiData(couponName, {
       couponDetails: widgetsData.couponDetails,
       discountDetails: widgetsData.discountDetails,
       couponValidity: widgetsData.couponValidity,
@@ -168,6 +170,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
       source: widgetsData.source,
       id: widgetsData.id,
     });
+    apiData = { ...apiData, app_type: getAppType(dashboardView) };
 
     try {
       await createCoupon(apiData);
@@ -256,4 +259,8 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(CreateCouponForm);
+const mapStateToProps = (state: any) => ({
+  dashboardView: state.magicCheckout.dashboard_view,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateCouponForm);

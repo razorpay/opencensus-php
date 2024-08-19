@@ -15,7 +15,10 @@ import {
 } from 'merchant/views/MagicCheckout/CouponEngine/components/CreateCouponModal/CreateCouponModalStyles';
 
 // helpers and constants
-import { getAvailableCouponTypes } from 'merchant/views/MagicCheckout/CouponEngine/constants';
+import {
+  COUPON_NAMES,
+  getAvailableCouponTypes,
+} from 'merchant/views/MagicCheckout/CouponEngine/constants';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 const CreateCouponModal = ({ closeModal, isRcodEnabled }) => {
@@ -29,12 +32,14 @@ const CreateCouponModal = ({ closeModal, isRcodEnabled }) => {
     closeModal();
   };
   /**
-   * For MagicX , Free shipping coupon type is not available
+   * For MagicX , Free shipping coupon and bulk order discount type is not available
    */
-  const shouldShowFreeShippingCoupon =
-    !isRcodEnabled && abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
-
-  const AVAILABLE_COUPON_TYPES = getAvailableCouponTypes(shouldShowFreeShippingCoupon);
+  const excludedCoupons: string[] = isRcodEnabled
+    ? abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on'
+      ? [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER]
+      : [COUPON_NAMES.BULK_ORDER]
+    : [];
+  const AVAILABLE_COUPON_TYPES = getAvailableCouponTypes(excludedCoupons);
 
   return (
     <Fragment>
