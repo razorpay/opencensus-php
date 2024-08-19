@@ -638,16 +638,19 @@ class RepositoryManager extends Illuminate\Support\Manager
         // instance on relationship based queries.
         //
         $currentConnection = $this->getDefaultDbConn();
+        $connections = [Mode::LIVE, Connection::ASV_WRITER, Mode::TEST];
 
-        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::LIVE);
-        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::TEST);
-        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Connection::ASV_WRITER);
+        foreach ($connections as $connection)
+        {
+            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, $connection);
+        }
 
         //$this->changeTransactionIsolationLevelForAccountServiceRoutes();
 
-        $this->db->connection(Mode::TEST)->beginTransaction();
-        $this->db->connection(Mode::LIVE)->beginTransaction();
-        $this->db->connection(Connection::ASV_WRITER)->beginTransaction();
+        foreach ($connections as $connection)
+        {
+            $this->db->connection($connection)->beginTransaction();
+        }
 
         // We'll simply execute the given callback within a try / catch block
         // and if we catch any exception we can rollback the transaction
@@ -656,9 +659,24 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             $result = $callback($this);
 
-            $this->db->connection(Mode::LIVE)->commit();
-            $this->db->connection(Mode::TEST)->commit();
-            $this->db->connection(Connection::ASV_WRITER)->commit();
+            foreach ($connections as $connection)
+            {
+                try
+                {
+                    $this->db->connection($connection)->commit();
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->app['trace']->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_COMMIT, [
+                        'info' => "Error throw in transactionOnLiveAndTestAndAsv commit in ".$connection." db",
+                        'error' => $ex->getMessage(),
+                    ]);
+                    throw $ex;
+                }
+            }
         }
 
             // If we catch an exception, we will roll back so nothing gets messed
@@ -666,30 +684,42 @@ class RepositoryManager extends Illuminate\Support\Manager
             // be handled how the developer sees fit for their applications.
         catch (\Throwable $e)
         {
-            $this->db->connection(Mode::LIVE)->rollBack();
-            $this->db->connection(Mode::TEST)->rollBack();
-            $this->db->connection(Connection::ASV_WRITER)->rollBack();
-
             $this->app['trace']->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::LIVE_AND_TEST_AND_ASV_DB_TRANSACTION_ERROR, [
                 'info' => "Error throw in transactionOnLiveAndTestAndAsv",
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-
             ]);
 
-
+            foreach ($connections as $connection)
+            {
+                try
+                {
+                    $this->db->connection($connection)->rollBack();
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->app['trace']->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_ROLLBACK, [
+                        'info' => "Error throw in transactionOnLiveAndTestAndAsv rollback in ".$connection." db",
+                        'error' => $ex->getMessage(),
+                    ]);
+                    throw $ex;
+                }
+            }
 
             throw $e;
         }
         finally
         {
             $this->setDefaultDbConn($currentConnection);
-            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Mode::LIVE);
-            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Mode::TEST);
-            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Connection::ASV_WRITER);
+            foreach ($connections as $connection)
+            {
+                $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, $connection);
+            }
         }
 
         return $result;

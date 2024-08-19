@@ -9719,6 +9719,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_SPLITZ_RESPONSE                                   = 'ASV_SPLITZ_RESPONSE';
 
     const LIVE_AND_TEST_AND_ASV_DB_TRANSACTION_ERROR            = 'LIVE_AND_TEST_AND_ASV_DB_TRANSACTION_ERROR';
+    const LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_ROLLBACK            = 'LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_ROLLBACK';
+    const LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_COMMIT              = 'LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_COMMIT';
 
     const ASV_SPLITZ_RESPONSE_ERROR                             = 'ASV_SPLITZ_RESPONSE_ERROR';
     const ASV_SPLITZ_ERROR                                      = 'ASV_SPLITZ_ERROR';
