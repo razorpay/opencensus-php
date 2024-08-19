@@ -52,7 +52,7 @@ class Core extends Base\Core
                                Constants::INPUT => $input
                            ]);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input) {
 
             $consent = new Entity();
 

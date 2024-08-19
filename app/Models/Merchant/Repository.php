@@ -126,7 +126,7 @@ class Repository extends Base\Repository
 
     public function __findOrFail($id) {
 
-        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($id) {
             $merchantFromApi = $this->findOrFail($id);
             return (new MerchantWrapper())->FindOrFail($id, $merchantFromApi);
         });
@@ -134,7 +134,7 @@ class Repository extends Base\Repository
 
     public function __findOrFailPublic($id) {
 
-        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($id) {
             $merchantFromApi = $this->findOrFailPublic($id);
             $id = Entity::stripDefaultSign($id);
             return (new MerchantWrapper())->FindOrFail($id, $merchantFromApi);
@@ -3379,7 +3379,7 @@ class Repository extends Base\Repository
      */
     public function __saveOrFail(MerchantEntity $entity, bool $testAndLive)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($testAndLive, $entity) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($testAndLive, $entity) {
             if ($testAndLive === true) {
                 $this->saveOrFail($entity);
             } else {

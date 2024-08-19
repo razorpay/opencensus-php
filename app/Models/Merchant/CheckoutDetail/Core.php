@@ -15,7 +15,7 @@ class Core extends Base\Core
 
     public function createOrEditCheckoutDetail(Detail\Entity $merchantDetails, $input)
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantDetails, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchantDetails, $input) {
 
             $merchantId = $merchantDetails->getMerchantId();
 

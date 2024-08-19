@@ -90,7 +90,7 @@ class Repository extends Base\Repository
     }
 
     public function __saveOrFail($businessDetail) {
-        return $this->repo->transactionOnLiveAndTest(function () use ($businessDetail) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($businessDetail) {
             $this->saveOrFail($businessDetail);
             (new MerchantBusinessDetailWrapper())->SaveOrFail($businessDetail);
         });

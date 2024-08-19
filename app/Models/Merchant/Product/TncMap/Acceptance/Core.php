@@ -56,7 +56,7 @@ class Core extends Base\Core
 
     public function acceptTnc(Merchant\Entity $merchant, TncMap $tncMap, string $ip = null, string $channel = 'API')
     {
-        return $this->repo->transactionOnLiveAndTest(function() use($ip, $merchant, $tncMap, $channel) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use($ip, $merchant, $tncMap, $channel) {
 
             $request = (new Entity)->generateId();
 

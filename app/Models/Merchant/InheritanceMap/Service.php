@@ -27,7 +27,7 @@ class Service extends Base\Service
         $partner = $this->checkPartnerConstraintAndReturnPartner($merchantId, $parentMerchantId);
 
         $inheritanceMap = (new Core)->create($merchant, $partner);
-        
+
         return $inheritanceMap;
     }
 
@@ -59,7 +59,7 @@ class Service extends Base\Service
                     Entity::IDEMPOTENCY_KEY    => $idempotencyKey,
                     Entity::SUCCESS            => true,
                 ];
-    
+
                 $response->push($data);
             }
             catch (Exception\BaseException $exception)
@@ -96,7 +96,7 @@ class Service extends Base\Service
     {
         $inheritanceMap = $this->repo->merchant_inheritance_map->findInheritanceMapByMerchantIdOrFailPublic($merchantId);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($inheritanceMap)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($inheritanceMap)
         {
             $this->repo->merchant_inheritance_map->deleteOrFail($inheritanceMap);
         });

@@ -44,7 +44,7 @@ class Core extends Base\Core
 
         $input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE] = $formattedContactNumber;
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $merchant, $input, $otpLog) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantId, $merchant, $input, $otpLog) {
 
             if (empty($otpLog) === false)
             {

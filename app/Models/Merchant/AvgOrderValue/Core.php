@@ -16,7 +16,7 @@ class Core extends Base\Core
 
     public function createOrEditAvgOrderValue(Detail\Entity $merchantDetails, $input)
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantDetails, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchantDetails, $input) {
 
             $avgOrderValue = $merchantDetails->avgOrderValue;
 

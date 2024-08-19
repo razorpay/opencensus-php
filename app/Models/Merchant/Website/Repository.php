@@ -170,7 +170,7 @@ class Repository extends Base\Repository
      */
     public function __saveOrFail(MerchantWebsiteEntity $entity)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($entity) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($entity) {
             $this->saveOrFail($entity);
             $merchantWebsiteWrapper = new MerchantWebsiteWrapper();
             $merchantWebsiteWrapper->SaveOrFail($entity);

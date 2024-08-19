@@ -693,7 +693,7 @@ class Core extends Base\Core
 
         if(empty($emailUser) === true)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($user, $input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input) {
                 $user->setEmail($input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($user);
             });

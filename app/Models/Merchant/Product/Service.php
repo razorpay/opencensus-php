@@ -172,7 +172,7 @@ class Service extends Base\Service
                 }
             });
 
-            $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $payload, $productName) {
+            $response = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $payload, $productName) {
 
                 $input = ['product_name' => $productName];
 

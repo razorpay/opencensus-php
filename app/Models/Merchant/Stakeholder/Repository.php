@@ -151,7 +151,7 @@ class Repository extends Base\Repository
      * @throws \Throwable
      */
     public function __findOrFail(string $id) {
-        return $this->repo->transactionOnLiveAndTest(function () use ($id) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($id) {
             $apiStakeholder = $this->findOrFail($id);
             return (new MerchantStakeholderWrapper())->processFetchStakeholderById($id, $apiStakeholder);
         });
@@ -166,7 +166,7 @@ class Repository extends Base\Repository
      */
     public function __saveOrFail(MerchantStakeholderEntity $entity, bool $testAndLive)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($testAndLive, $entity) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($testAndLive, $entity) {
             if ($testAndLive === true) {
                 $this->saveOrFail($entity);
             } else {

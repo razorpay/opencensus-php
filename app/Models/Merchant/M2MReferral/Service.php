@@ -318,7 +318,7 @@ class Service extends Base\Service
             ];
             $referrerData = (new StoreCore())->fetchMerchantStore($referrer->getId(), $data, StoreConstants::INTERNAL);
 
-            $this->repo->transactionOnLiveAndTest(function() use ($m2mReferral) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($m2mReferral) {
 
                 $this->rewardReferrer($m2mReferral);
 

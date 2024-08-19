@@ -32,7 +32,7 @@ class Core extends Base\Core
                                MerchantConstants::INPUT       => $input
                            ]);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($referralEntity, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($referralEntity, $input) {
 
             $mutexResource = self::M2M_REFERRAL_CREATE_MUTEX_PREFIX . $referralEntity->getMerchantId();
 
@@ -92,7 +92,7 @@ class Core extends Base\Core
                                MerchantConstants::INPUT       => $input
                            ]);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
 
             $mutexResource = self::M2M_REFERRAL_CREATE_MUTEX_PREFIX . $merchant->getMerchantId();
 

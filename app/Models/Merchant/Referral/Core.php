@@ -324,7 +324,7 @@ class Core extends Base\Core
 
         $productConfig[Product::POS] = $productConfig[Product::PRIMARY];
 
-        $this->repo->transactionOnLiveAndTest(function() use ($partners, $productConfig) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partners, $productConfig) {
 
             $ids = $partners->pluck(Entity::ID)->toArray();
 
