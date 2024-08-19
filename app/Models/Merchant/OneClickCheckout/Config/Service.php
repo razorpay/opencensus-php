@@ -1363,7 +1363,7 @@ class Service extends Base\Service
         $appName =  (new Shopify\Service())->getShopifyAppName($input);
         $merchantAuthConfigs = (new Merchant\OneClickCheckout\AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
 
-        $merchantConfigs = $this->get1ccConfigFlagsStatus($this->merchant);
+        $merchantConfigs = $this->get1ccConfigFlagsStatus($this->merchant, true);
 
         $requestedKeys = explode(',', $input[Constants::KEYS]);
 

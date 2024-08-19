@@ -157,6 +157,9 @@ class Constants
     const TERRA_WALLET = "terra_wallet";
     const TERRA_WALLET_VALUE = "terra_wallet_value";
 
+    const ONE_CC_SHOPIFY_DRAFT_ORDER = 'one_cc_draft_order';
+    const ONE_CC_SHOPIFY_ACC_CREATE = 'one_cc_shopify_acc_create';
+
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,
         self::ADMIN_REST,
@@ -318,9 +321,15 @@ class Constants
 
     const INTERNAL_CONFIGS = [
         self::ONE_CC_ADDRESS_SYNC_OFF,
+        self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING,
+        // Tax settings for Shopify.
         self::ONE_CC_OPT_SHIPPING_TAX,
         self::ONE_CC_TAX_INCLUSION,
-        self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING
+        // Custom workflows post Complete Checkout for Shopify.
+        self::ONE_CC_SHOPIFY_ACC_CREATE,
+        self::ONE_CC_ENABLE_GUPSHUP,
+        // To force use draft order for Shopify merchants - currently not in use.
+        self::ONE_CC_SHOPIFY_DRAFT_ORDER
     ];
 
     const SHOPIFY_RESETTABLE_CONFIGS = [
