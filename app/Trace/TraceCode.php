@@ -10509,6 +10509,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_KYC_DONE_AFTER_PARSER                                  = 'AUTO_KYC_DONE_AFTER_PARSER';
     const AUTO_KYC_NOT_ENABLED                                        = 'AUTO_KYC_NOT_ENABLED';
     const LINKED_ACCOUNT_VERIFICATION_CONDITIONS_SET                  = 'LINKED_ACCOUNT_VERIFICATION_CONDITIONS_SET';
+    const MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS                   = 'MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS';
 
     const MTU_COUPON_APPLY_FAILURE                              = 'MTU_COUPON_APPLY_FAILURE';
     const PENNY_TESTING_ATTEMPT_EXCEEDED                        = 'PENNY_TESTING_ATTEMPT_EXCEEDED';

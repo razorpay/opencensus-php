@@ -11106,6 +11106,8 @@ class Core extends Base\Core
 
                 $merchantInfo['merchant']['default_pricing_plan_id'] = $planId;
 
+                $merchantInfo['merchant']['risk_tags'] = $merchant->tagNames();
+
                 $merchantInfo['merchant_business_detail']['website_details'] = count(optional($merchant->merchantBusinessDetail)->getWebsiteDetails() ?? []) > 0 ?
                     optional($merchant->merchantBusinessDetail)->getWebsiteDetails() : (new \stdClass());
 

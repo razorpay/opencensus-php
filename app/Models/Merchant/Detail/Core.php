@@ -7123,6 +7123,13 @@ class Core extends Base\Core
             // Merchant should not go in AMP from NC or UR if already been in NC
         );
 
+        $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+            'merchant_id'               => $merchantDetails->getId(),
+            'current_activation_flow'   => $currentActivationFlow,
+            'is_impersonated'           => $isImpersonated,
+            'eligible_for_AMP'          => $eligibleForAMP
+        ]);
+
         $merchantId = $merchantDetails->getMerchantId();
 
         $negativeKeyword = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
@@ -7152,6 +7159,13 @@ class Core extends Base\Core
             }
         }
 
+        $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+            'merchant_id'                          => $merchantDetails->getId(),
+            'updated_eligibility_for_AMP'          => $eligibleForAMP,
+            'website_policy'                       => optional($websitePolicy)->getStatus(),
+            'negative_keywords'                    => optional($negativeKeyword)->getStatus()
+        ]);
+
         if ($eligibleForAMP === true)
         {
             // Experiment Name For Automation Activation
@@ -7175,6 +7189,10 @@ class Core extends Base\Core
                 $activationStatusAutomation = Status::KYC_QUALIFIED_UNACTIVATED;
             }
 
+            $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                'automation_activation_status'               => $activationStatusAutomation,
+            ]);
+
             try
             {
                 (new Service)->saveBusinessDetailsForMerchant($merchantId, [
@@ -7193,6 +7211,10 @@ class Core extends Base\Core
                 if (($activationStatusAutomation === Status::ACTIVATED_MCC_PENDING) and
                     ($this->blockMerchantActivations($merchantDetails->merchant) === true))
                 {
+                    $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                        'block_merchant_activations'                 => 'true',
+                    ]);
+
                     $activationStatusAutomation = Status::UNDER_REVIEW;
                 }
 
@@ -7424,6 +7446,10 @@ class Core extends Base\Core
         // Ensure all required policies are validated or meet the criteria
         foreach ($requiredPolicyNames as $policyName) {
             if (!isset($policyValidationResults[$policyName]) || $policyValidationResults[$policyName] !== true) {
+                $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                    'merchant_id'        => $merchantDetails->getId(),
+                    'policy_not_found'   => $policyName
+                ]);
                 return false;
             }
         }
