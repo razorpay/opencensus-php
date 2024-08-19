@@ -12,7 +12,6 @@ class Instance
     const RZPCAP        = 'rzpcap';
 
     const EZETAP        = 'Ezetap';
-    const RZPMY        = 'rzpmy';
 
     public static function isValidFdInstance($fdInstanceString)
     {

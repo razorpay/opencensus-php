@@ -123,9 +123,6 @@ class Constants
 
     // URLs
     const URLIND        = 'urlind';
-
-    const URLMY         = 'urlmy';
-    const RZPMY         = 'rzpmy';
     const URLCAP        = 'urlcap';
     const URLX          = 'urlx';
     const URL2          = 'url2';
@@ -135,24 +132,22 @@ class Constants
     const ONBOARDING_TYPE = "onboarding_type";
 
     const FRESHDESK_INSTANCES = [
-        Type::SUPPORT_DASHBOARD_X => [self::RZPX => self::URLX,
-            self::RZPCAP => self::URLCAP],
-        Type::SUPPORT_DASHBOARD => [self::RZPIND => self::URLIND,
-            self::RZPCAP => self::URLCAP,
-            self::RZPMY => self::URLMY,
-            self::EZETAPIND => self::URL_EZETAP]
+        Type::SUPPORT_DASHBOARD_X => [self::RZPX   => self::URLX,
+                                      self::RZPCAP => self::URLCAP],
+        Type::SUPPORT_DASHBOARD   => [self::RZPIND => self::URLIND,
+                                      self::RZPCAP => self::URLCAP,
+                                      self::EZETAPIND => self::URL_EZETAP]
     ];
 
     const URL_VS_INSTANCES = [
         self::URLX       => self::RZPX,
         self::URLCAP     => self::RZPCAP,
         self::URLIND     => self::RZPIND,
-        self::URLMY      => self::RZPMY,
         self::URL        => self::RZP,
         self::URL_EZETAP => self::EZETAPIND
     ];
 
-    const FRESHDESK_URL_LIST = [self::URL, self::URLIND, self::URLMY, self::URLCAP, self::URLX, self::URL_EZETAP];
+    const FRESHDESK_URL_LIST = [self::URL, self::URLIND, self::URLCAP, self::URLX, self::URL_EZETAP];
 
     // Active tickets and work in progress tickets
     const ACTIVE_STATUSES = [2, 3, 8, 9, 10, 11];

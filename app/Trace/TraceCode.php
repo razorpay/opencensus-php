@@ -4166,7 +4166,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FRESHDESK_DISPUTE_REQUEST                             = 'FRESHDESK_DISPUTE_REQUEST';
     const FRESHDESK_OLD_INSTANCE                                = 'FRESHDESK_OLD_INSTANCE';
-    const FD_URL                                = 'FD_URL';
     const FRESHDESK_DISPUTE_REQUEST_ERROR                       = 'FRESHDESK_DISPUTE_REQUEST_ERROR';
     const FRESHDESK_DISPUTE_TICKET_ACTION                       = 'FRESHDESK_DISPUTE_TICKET_ACTION';
     const FRESHDESK_DISPUTE_AUTOMATION_RAZORX_VARIANT           = 'FRESHDESK_DISPUTE_AUTOMATION_RAZORX_VARIANT';
@@ -7399,8 +7398,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TICKET_DETAILS                                        = 'TICKET_DETAILS';
 
     const FRESHDESK_SUPPORT_TICKETS_INSTANCE                    = 'FRESHDESK_SUPPORT_TICKETS_INSTANCE';
-    const FRESHDESK_INSTANCE                                    = 'FRESHDESK_INSTANCE';
-
     const FRESHDESK_SUPPORT_TICKETS_REQUEST                     = 'FRESHDESK_SUPPORT_TICKETS_REQUEST';
     const FRESHDESK_SUPPORT_TICKETS_RESPONSE                    = 'FRESHDESK_SUPPORT_TICKETS_RESPONSE';
     const FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE              = 'FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE';
