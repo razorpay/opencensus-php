@@ -31,6 +31,7 @@ const DeviceDeliveryAddressForSaleSalesAgent = (): JSX.Element | null => {
 
   return (
     <DeviceDeliveryAddress
+      countryCode={modularConfig?.countryCode as string}
       addedDevices={addedDevices}
       orderSummary={orderSummary}
       title={componentConfig?.title as string}

@@ -10,6 +10,7 @@ import { MOCK_MERCHANT_DETAILS } from 'apps/pos/src/services/mocks/fixtures/merc
 
 const defaultProps = {
   title: 'Device delivery address',
+  countryCode: 'IN',
   addedDevices: [TestAddedDeviceWithDeviceConfig],
   orderSummary: TestDeviceOrderSummary,
   merchantDetails: MOCK_MERCHANT_DETAILS as unknown as Merchant,
@@ -52,7 +53,7 @@ describe('DeviceDeliveryAddress', () => {
       device_delivery_address_field: {
         city: 'Bengaluru',
         contact: '1234567890',
-        country: 'India',
+        country: 'IN',
         landmark: '',
         line1: '32, 1st ave',
         line2: '420',

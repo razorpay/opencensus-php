@@ -120,6 +120,7 @@ describe('deviceSelection utils', () => {
     test('should return delivery address from merchant details', () => {
       const { registered, operation } = getFieldsForDeliveryAddressFromMerchantDetails({
         merchant: MOCK_MERCHANT_DETAILS as unknown as Merchant,
+        countryCode: 'IN',
       });
 
       expect(registered).toEqual({
@@ -128,7 +129,7 @@ describe('deviceSelection utils', () => {
         line1: '32, 1st ave',
         line2: '420',
         city: 'Bengaluru',
-        country: 'India',
+        country: 'IN',
         state: 'Karnataka',
         zipcode: '560034',
         landmark: '',
@@ -140,7 +141,7 @@ describe('deviceSelection utils', () => {
         line1: '32, 1st ave',
         line2: '420',
         city: 'Bengaluru',
-        country: 'India',
+        country: 'IN',
         state: 'Karnataka',
         zipcode: '560034',
         landmark: '',

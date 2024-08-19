@@ -180,10 +180,12 @@ export const getDeviceChargesFromModularConfig = ({
 
 interface GetFieldsForDeliveryAddressFromMerchantDetailsProps {
   merchant: MerchantDetails;
+  countryCode: string;
 }
 
 export const getFieldsForDeliveryAddressFromMerchantDetails = ({
   merchant,
+  countryCode,
 }: GetFieldsForDeliveryAddressFromMerchantDetailsProps): DeliveryAddresses => {
   const { contactPerson, business } = merchant;
   const { address } = business;
@@ -192,7 +194,7 @@ export const getFieldsForDeliveryAddressFromMerchantDetails = ({
     name: contactPerson?.name.value ?? '',
     contact: contactPerson?.phone.value.number ?? '',
     city: address[type]?.city?.value ?? '',
-    country: address[type]?.country?.value ?? '',
+    country: countryCode,
     line1: address[type]?.line1?.value ?? '',
     line2: address[type]?.line2?.value ?? '',
     state: address[type]?.state?.value ?? '',

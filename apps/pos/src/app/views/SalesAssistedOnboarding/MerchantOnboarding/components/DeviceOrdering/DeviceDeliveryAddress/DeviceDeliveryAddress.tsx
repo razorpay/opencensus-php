@@ -22,6 +22,7 @@ import PageError from 'apps/pos/src/app/components/PageError';
 
 interface DeviceDeliveryAddressProps {
   title: string;
+  countryCode: string;
   addedDevices: OrderSummaryItemWithDeviceConfig[];
   orderSummary: DeviceCharges;
   merchantDetails: Merchant;
@@ -33,6 +34,7 @@ interface DeviceDeliveryAddressProps {
 
 const DeviceDeliveryAddress = ({
   title,
+  countryCode,
   addedDevices,
   orderSummary,
   merchantDetails,
@@ -53,7 +55,10 @@ const DeviceDeliveryAddress = ({
     handleGoToNextStep();
   };
 
-  const addresses = getFieldsForDeliveryAddressFromMerchantDetails({ merchant: merchantDetails });
+  const addresses = getFieldsForDeliveryAddressFromMerchantDetails({
+    merchant: merchantDetails,
+    countryCode,
+  });
 
   const handleOnDeliveryAddressClick = (): void => {
     const addressData = addresses?.[addressType];

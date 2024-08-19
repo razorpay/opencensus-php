@@ -530,6 +530,15 @@ export const MERCHANT_DETAILS = gql`
             line1 {
               value
             }
+            line2 {
+              value
+            }
+            state {
+              value
+            }
+            zipCode {
+              value
+            }
           }
         }
         paymentAcceptanceChannels {
