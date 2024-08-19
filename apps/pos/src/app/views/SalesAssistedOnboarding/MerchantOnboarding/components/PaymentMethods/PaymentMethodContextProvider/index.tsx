@@ -379,6 +379,11 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     handlers.handleProceedToNextComponent();
   };
 
+  const shouldRenderComponent = () => {
+    if (states.isModularLoading || states.isUpdateModularLoading || modelIsOpen) return false;
+    return true;
+  };
+
   let contextValue = {
     // props for form
 
@@ -450,29 +455,22 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
 
   const RenderComponent: React.FC<PaymentMethodFormProps | NachFormProps> = component;
 
+  if (states.isModularFetchError) {
+    return <PageError description="Failed to fetch pricing config. Please try again later" />;
+  }
+
   return (
     <>
-      {states.isModularLoading || states.isUpdateModularLoading ? (
-        <KYCRedirectionLoader
-          isOpen={states.isModularLoading || states.isUpdateModularLoading}
-          message="Loading..."
-        />
-      ) : (
-        <>
-          <OnboardingModel
-            isOpen={modelIsOpen}
-            setIsOpen={setModelIsOpen}
-            setFormType={setPaymentMethodTypeHandler}
-          />
-          {!modelIsOpen ? (
-            !states.isModularFetchError ? (
-              <RenderComponent {...contextValue} />
-            ) : (
-              <PageError description="Failed to fetch pricing config. Please try again later" />
-            )
-          ) : null}
-        </>
-      )}
+      <KYCRedirectionLoader
+        isOpen={states.isModularLoading || states.isUpdateModularLoading}
+        message="Loading..."
+      />
+      <OnboardingModel
+        isOpen={modelIsOpen}
+        setIsOpen={setModelIsOpen}
+        setFormType={setPaymentMethodTypeHandler}
+      />
+      {shouldRenderComponent() ? <RenderComponent {...contextValue} /> : null}
     </>
   );
 };

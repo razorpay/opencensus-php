@@ -23,4 +23,4 @@ export const OPTIONAL_FIELDS = [
   PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD,
 ];
 
-export const CHARGES_REGEX = /^\d+(\.\d+)?$/;
+export const CHARGES_REGEX = /^\d{1,2}(\.\d+)?$/;
