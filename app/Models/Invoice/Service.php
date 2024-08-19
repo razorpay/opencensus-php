@@ -55,7 +55,7 @@ class Service extends Base\Service
         "ethereum",
         "crypto",
         "binance",
-        "btc",
+        " btc ",
         "paypal",
         "norton",
         "mcafee"
