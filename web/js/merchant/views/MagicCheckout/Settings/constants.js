@@ -414,8 +414,16 @@ export const ROUTES = {
       onRCODOnly: true,
     },
     {
+      className: 'shipping-settings',
+      label: 'Shipping Setup',
+      path: '/magic/setup-settings/shipping-setup',
+      Component: ShippingSettingsTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
       className: 'cod-settings',
-      label: 'COD',
+      label: 'COD Setup',
       path: '/magic/setup-settings/cod',
       Component: CODComponentV2,
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
@@ -426,14 +434,6 @@ export const ROUTES = {
       label: 'RTO Reduction Setup',
       path: '/magic/setup-settings/rto-reduction-setup',
       Component: RTOReductionSetupV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
-    },
-    {
-      className: 'shipping-settings',
-      label: 'Shipping Setup',
-      path: '/magic/setup-settings/shipping-setup',
-      Component: ShippingSettingsTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
     },
@@ -454,7 +454,7 @@ export const ROUTES = {
     },
     {
       className: 'analytics-settings',
-      label: 'Analytics Setup',
+      label: 'Analytics and ads setup',
       path: '/magic/setup-settings/analytics-setup',
       Component: AnalyticsSettings,
       condition: (_, abExperiments) =>
@@ -492,9 +492,16 @@ export const ROUTES = {
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'shipping-settings',
+      path: '/magic/setup-settings/shipping-setup',
+      label: 'Shipping Setup',
+      Component: WoocShippingTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
       className: 'cod-settings',
       path: '/magic/setup-settings/cod',
-      label: 'COD',
+      label: 'COD Setup',
       Component: CODComponentV2,
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
     },
@@ -504,13 +511,6 @@ export const ROUTES = {
       Component: RTOReductionSetupV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
-    },
-    {
-      className: 'shipping-settings',
-      path: '/magic/setup-settings/shipping-setup',
-      label: 'Shipping Setup',
-      Component: WoocShippingTab,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
       className: 'automation-settings',

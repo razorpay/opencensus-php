@@ -21,12 +21,21 @@ import {
   onRequestCountChange,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
 
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
   BREAKDOWN_MAP,
   MANUAL_REVIEW_ORDERS_SPLIT_CHARTS,
   NO_GRAPH_DATA,
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+import {
+  COD_REVIEW_WORKFLOW_ROUTE_V2,
+  COD_REVIEW_WORKFLOW_ROUTE,
+  RTO_REDUCTION_SETUP_ROUTE_V2,
+  RTO_REDUCTION_SETUP_ROUTE,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/constants';
 
 const ManualReviewOrderSplitChartOptions = {
   tooltips: {
@@ -177,11 +186,25 @@ const ManualReviewOrderSplit = ({
         <div className="manual-review-order-split-nudging-message">
           <p>
             Reduce your RTOs by enabling{' '}
-            <NavLink to="/magic/settings/cod-review-workflow" className="magic-link">
+            <NavLink
+              to={
+                useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
+                  ? COD_REVIEW_WORKFLOW_ROUTE_V2
+                  : COD_REVIEW_WORKFLOW_ROUTE
+              }
+              className="magic-link"
+            >
               Automation
             </NavLink>{' '}
             or turn on{' '}
-            <NavLink to="/magic/settings/rto-settings" className="magic-link">
+            <NavLink
+              to={
+                useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
+                  ? RTO_REDUCTION_SETUP_ROUTE_V2
+                  : RTO_REDUCTION_SETUP_ROUTE
+              }
+              className="magic-link"
+            >
               COD Intelligence
             </NavLink>{' '}
             to auto block risky COD orders.

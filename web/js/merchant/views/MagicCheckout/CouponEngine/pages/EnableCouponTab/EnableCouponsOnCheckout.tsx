@@ -62,14 +62,14 @@ const EnableCouponsOnCheckout: React.FC<EnableCouponsOnCheckoutProps> = ({
 
   return (
     <>
-      <Title>Enable Coupons On Magic checkout</Title>
+      <Title>Enable Coupons for Customers</Title>
       <div className="settings-card" style={{ marginTop: '12px' }}>
         <div className="settings-card-widget padding-20">
           <div className="display-flex settings-card-widget-wrapper flex--column">
             <EnableCouponsOnCheckoutWrapper>
               <LogoWrapper>
                 <LogoImage src={rzpLogo} alt="Razorpay" />
-                <Title>Coupons on Magic</Title>
+                <Title>Enable Coupons</Title>
               </LogoWrapper>
               <ToggleWrapper>
                 {isLoading ? (

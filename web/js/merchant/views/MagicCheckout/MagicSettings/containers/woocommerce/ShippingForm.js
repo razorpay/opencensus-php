@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Heading } from '@razorpay/blade/components';
+import { Heading } from '@razorpay/blade/components';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -28,6 +28,16 @@ const ShippingForm = ({ settings, updateSettings }) => {
   const [feeRule, setFeeRule] = useState(DEFAULT_RULE);
   const [shippingUrl, setShippingUrl] = useState();
   const [shippingSettings, setShippingSettings] = useState([]);
+  const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
+
+  useEffect(() => {
+    if (isMagicDashboardV2Enabled) {
+      const index = SHIPPING_SETTINGS.findIndex(
+        (setting) => setting.key === 'one_cc_capture_billing_address',
+      );
+      if (index >= 0) SHIPPING_SETTINGS?.splice(index, 1);
+    }
+  }, [isMagicDashboardV2Enabled]);
 
   const updateRule = useCallback((_, value) => {
     const rule = {
@@ -95,52 +105,44 @@ const ShippingForm = ({ settings, updateSettings }) => {
   }, []);
 
   return (
-    <>
-      <Box
-        padding="spacing.6"
-        paddingLeft="spacing.0"
-        paddingRight="spacing.0"
-        backgroundColor="surface.background.gray.intense"
-      >
-        <Heading size="medium">Shipping Settings</Heading>
-      </Box>
-      <div className="woocommerce-shipping-container">
-        <div className="padding-16">
-          <div className="display-flex align-center woo-url-wrapper">
-            <label className="wooc-url-label">URL for shipping info</label>
-            <Input
-              disabled={true}
-              required={true}
-              value={shippingUrl}
-              name="shipping_info_url"
-              placeholder="Enter API URL for shipping info"
-              id="shipping_info_url"
-              className="Magic-Settings--Input"
-            />
-          </div>
-          <FeeConfiguration
-            required={false}
-            type={FEE_RULES.COD_FEE_RULE}
-            updateUserFeeRule={updateRule}
-            feeRule={feeRule}
+    <div className="woocommerce-shipping-container">
+      <Heading size="medium" marginX="spacing.3">
+        Shipping Settings
+      </Heading>
+      <div className="padding-16">
+        <div className="display-flex align-center woo-url-wrapper">
+          <label className="wooc-url-label">URL for shipping info</label>
+          <Input
+            disabled={true}
+            required={true}
+            value={shippingUrl}
+            name="shipping_info_url"
+            placeholder="Enter API URL for shipping info"
+            id="shipping_info_url"
+            className="Magic-Settings--Input"
           />
-          {!useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) &&
-            shippingSettings.map((setting) => (
-              <SettingsToggle key={setting.label} setting={setting} onToggle={onToggle} />
-            ))}
         </div>
-        <AsyncBtn.Primary
-          type="button"
-          isPending={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
-          showLoader={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
-          onClick={onSave}
-          disabled={!formValid}
-          className="settings-cta"
-        >
-          Save Settings
-        </AsyncBtn.Primary>
+        <FeeConfiguration
+          required={false}
+          type={FEE_RULES.COD_FEE_RULE}
+          updateUserFeeRule={updateRule}
+          feeRule={feeRule}
+        />
+        {shippingSettings.map((setting) => (
+          <SettingsToggle key={setting.label} setting={setting} onToggle={onToggle} />
+        ))}
       </div>
-    </>
+      <AsyncBtn.Primary
+        type="button"
+        isPending={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
+        showLoader={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
+        onClick={onSave}
+        disabled={!formValid}
+        className="settings-cta"
+      >
+        Save Settings
+      </AsyncBtn.Primary>
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 
 import { withRouter } from 'common/deprecated/withRouter';
@@ -20,6 +20,7 @@ import { RCOD_APP_NAME, SOPC_APP_NAME } from 'merchant/views/MagicCheckout/commo
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { isRouteAuthorised } from 'merchant/views/MagicCheckout/utils/genericRouteCheck';
 
 let redirectPath, magicCheckoutRoutes;
 /**
@@ -56,63 +57,85 @@ const RouteContainer = ({
       magicCheckoutRoutes = convertMagicRoutesToConfigurationFlow(magicCheckoutRoutes);
   }, [isMagicDashboardV2Enabled, configFlag]);
 
-  const renderNav = useCallback(
-    (item) => {
-      if (
-        item.tabName === 'RTO Analytics' &&
-        !isCODIntelligenceEnabled &&
-        (!user.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled)
-      )
-        return null;
+  /**
+   * Orders Tab has 3 sub-tabs and checks for atleast one of the sub-tab should be true for the Orders Tab
+   * to be rendered
+   */
+  const shouldEnableOrdersTab = () => {
+    const isCODOrderConversionEnabled =
+      platform !== 'native' && isPrepayCODEnabled && !isRcodEnabled;
+    const isEditOrders =
+      platform === PLATFORMS.VALUES.SHOPIFY &&
+      user.isMagicShopifyOrderEditEnabled &&
+      !isRcodEnabled;
+    return isCODOrderControlEnabled || isCODOrderConversionEnabled || isEditOrders;
+  };
 
-      //If checks for both Order Analytics and RTO Analytics fail , we do not render Reports & Analytics
-      if (
-        item.tabName === 'Reports & Analytics' &&
-        !isCODIntelligenceEnabled &&
-        (!user?.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled) &&
-        !user.isMagicOrderAnalyticsEnabled
-      )
-        return null;
+  const customRouteCheck = (item) => {
+    if (
+      item.tabName === 'RTO Analytics' &&
+      !isCODIntelligenceEnabled &&
+      (!user.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled)
+    )
+      return null;
 
-      if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
-      if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
-        return null;
-      if (item.condition && !item.condition(user, abExperiments, platform, dashboardView))
-        return null;
-      if (item.tabName === 'Edit Orders' && platform !== PLATFORMS.VALUES.SHOPIFY) return null;
-      if (
-        item.tabName === 'Settings' &&
-        !ACCESS_ROLES.includes(user.role) &&
-        !isCODOrderControlEnabled
-      )
-        return null;
+    if (item.condition && !item.condition(user, abExperiments, platform, dashboardView))
+      return null;
 
-      if (!item.onRCOD && isRcodEnabled) {
-        return null;
-      }
+    /**
+     * Checks for Dashboard Revamp(V2) Routes
+     */
+    if (
+      (item.tabName === 'Reports & Analytics' || item.tabName === 'Magic Dashboard') &&
+      !isCODIntelligenceEnabled &&
+      (!user?.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled) &&
+      !user.isMagicOrderAnalyticsEnabled
+    )
+      return null;
 
-      if (!redirectPath) {
-        redirectPath = item.path;
-      }
-      return (
-        <NavLink key={item.path} to={item.path}>
-          {getTabName(item.tabName, dashboardView)}
-        </NavLink>
-      );
-    },
-    [
-      redirectPath,
-      user,
-      isCODIntelligenceEnabled,
-      isCODOrderControlEnabled,
-      platform,
-      abExperiments,
-      isRcodEnabled,
-      isPrepayCODEnabled,
-      dashboardView,
-    ],
-  );
+    if (item.tabName === 'Orders') return shouldEnableOrdersTab();
 
+    /**
+     * Checks for Original(V1) Routes
+     */
+    if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
+    if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
+      return null;
+    if (item.condition && !item.condition(user, abExperiments, platform, dashboardView))
+      return null;
+    if (
+      (item.tabName === 'Edit Orders' || item.tabName === 'Coupons') &&
+      platform !== PLATFORMS.VALUES.SHOPIFY
+    )
+      return null;
+    if (
+      (item.tabName === 'Settings' || item.tabName === 'Setup & Settings') &&
+      !ACCESS_ROLES.includes(user.role) &&
+      !isCODOrderControlEnabled
+    )
+      return null;
+    return true;
+  };
+
+  const routeCheck = (item) => {
+    if (!isRouteAuthorised(item, user, abExperiments, isRcodEnabled)) return null;
+
+    if (!customRouteCheck(item)) return null;
+    return true;
+  };
+
+  const renderNav = (item) => {
+    if (!routeCheck(item)) return null;
+    if (!redirectPath) {
+      redirectPath = item.path;
+    }
+
+    return (
+      <NavLink key={item.path} to={item.path}>
+        {getTabName(item.tabName, dashboardView)}
+      </NavLink>
+    );
+  };
   return (
     <SuspenseWithLoader type="center">
       <tabbed-container>
@@ -137,11 +160,7 @@ const RouteContainer = ({
                       key={item.path}
                       path={path}
                       element={
-                        <RouteGuard
-                          additionalCondition={(_user) =>
-                            !item.condition || item.condition(_user, abExperiments, platform)
-                          }
-                        >
+                        <RouteGuard additionalCondition={(_user) => routeCheck(item)}>
                           <item.Component />
                         </RouteGuard>
                       }

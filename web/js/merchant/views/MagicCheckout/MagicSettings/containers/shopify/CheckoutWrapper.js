@@ -45,7 +45,7 @@ const CheckoutWrapper = ({
       const index = SHOPIFY_CHECKOUT_SETTINGS?.findIndex(
         (Setting) => Setting.key === 'one_cc_international_shipping',
       );
-      SHOPIFY_CHECKOUT_SETTINGS?.splice(index, 1);
+      index >= 0 && SHOPIFY_CHECKOUT_SETTINGS?.splice(index, 1);
     }
   }, [isMagicDashboardV2Enabled]);
 

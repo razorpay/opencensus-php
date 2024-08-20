@@ -69,7 +69,7 @@ const CheckoutWrapper = ({
         const index = checkoutSettings.findIndex(
           (setting) => setting.key === 'one_cc_hide_cod_when_disabled',
         );
-        checkoutSettings.splice(index, 1);
+        if (index >= 0) checkoutSettings.splice(index, 1);
       }
 
       const tempCheckoutSettings = getInitialSettings(checkoutSettings, prevSettings);

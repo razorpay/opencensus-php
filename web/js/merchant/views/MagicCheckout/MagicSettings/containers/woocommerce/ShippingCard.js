@@ -22,32 +22,25 @@ const ShippingCard = ({
 
   return (
     <>
-      <Box
-        padding="spacing.6"
-        paddingLeft="spacing.0"
-        paddingRight="spacing.0"
-        backgroundColor="surface.background.gray.intense"
-      >
+      <Box marginX="spacing.6" marginY="spacing.3">
         <Heading size="medium">Shipping Settings</Heading>
       </Box>
       <div className="platform-settings-card-wrapper">
         <div className="platform-settings-card bg-white">
           <div className="platform-settings-card-info flex--column flex gap--12 p--14">
             <SettingsCard.Item label="API For Shipping Info" value={shipping_info} />
+            <SettingsCard.Item
+              label="International Shipping"
+              value={getSettingValue(one_cc_international_shipping)}
+            />
             {/**
-             * We will be removing Capture Billing(moving to checkout setup) & International Shipping(Shipping Setup) from wooc specific shipping
+             * We will be removing Capture Billing from wooc specific shipping to checkout setup
              */}
             {!useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) && (
-              <>
-                <SettingsCard.Item
-                  label="International Shipping"
-                  value={getSettingValue(one_cc_international_shipping)}
-                />
-                <SettingsCard.Item
-                  label="Capture Billing Address"
-                  value={getSettingValue(one_cc_capture_billing_address)}
-                />
-              </>
+              <SettingsCard.Item
+                label="Capture Billing Address"
+                value={getSettingValue(one_cc_capture_billing_address)}
+              />
             )}
             <div className="platform-settings-edit pointer" onClick={onEdit}>
               <i className="i i-edit_board platform-settings-edit-icon" />

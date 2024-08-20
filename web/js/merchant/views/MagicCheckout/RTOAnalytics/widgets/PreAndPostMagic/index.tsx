@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { AnyAction, bindActionCreators, Dispatch } from 'redux';
+import { useNavigate } from 'react-router-dom';
 
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
-import LastUpdated from 'merchant/components/Home/LastUpdated';
 import Graph from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/PreAndPostMagic/Graph';
+import { Link } from '@razorpay/blade/components';
 
 import { fetchWidgetData } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 
@@ -26,6 +27,13 @@ import {
   StyledNudgingMessage,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/PreAndPostMagic/styled';
 
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
+import {
+  RTO_HISTORY_UPLOAD_ROUTE,
+  RTO_DELIVERY_DATA_UPLOAD_ROUTE,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/constants';
+
 type InitialDateType = {
   startTime: number;
   endTime: number;
@@ -33,20 +41,20 @@ type InitialDateType = {
 
 const DEFAULT_DURATION = [-90, 'days'];
 const widgetName = 'rto_rate';
+const RTO_DATA_TIME_RANGE = 'Displaying data for the last 2 months.';
 
 const PreAndPostMagic = ({ widgetData, fetchWidgets, fetchingTimedWidgetsData }): JSX.Element => {
   const [chartData, setChartData] = useState<Record<string, any> | null>(null);
 
   const breakdown: string = BREAKDOWN.months;
   const [requestCount, setRequestCount] = useState<number>(0);
-
+  const navigate = useNavigate();
   const [isPreMagicRTORateAvailable, setIsPreMagicRTORateAvailable] = useState<boolean>(false);
   const [isPostMagicRTORateAvailable, setIsPostMagicRTORateAvailable] = useState<boolean>(false);
 
-  const { data, loading, updatedAt } = widgetData;
+  const { data, loading } = widgetData;
 
   const { startTime, endTime }: InitialDateType = getStartAndEndTime(DEFAULT_DURATION);
-
   const fetchData = useCallback((): void => {
     const additionalInfo = {
       premagic_flag: true,
@@ -103,6 +111,35 @@ const PreAndPostMagic = ({ widgetData, fetchWidgets, fetchingTimedWidgetsData })
     onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
+  const DeliveryDataUploadCTA = ({ subtitle, link }) => {
+    return (
+      <>
+        <span>
+          {subtitle}
+          {useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT) && (
+            <span>
+              <Link onClick={() => navigate(link)}>Click here</Link> to Upload
+            </span>
+          )}
+        </span>
+      </>
+    );
+  };
+
+  const PreMagicDataUploadCTA = (
+    <DeliveryDataUploadCTA
+      subtitle={NO_GRAPH_DATA.preMagicSubtitle}
+      link={RTO_HISTORY_UPLOAD_ROUTE}
+    />
+  );
+
+  const PostMagicDataUploadCTA = (
+    <DeliveryDataUploadCTA
+      subtitle={NO_GRAPH_DATA.postMagicSubtitle}
+      link={RTO_DELIVERY_DATA_UPLOAD_ROUTE}
+    />
+  );
+
   return (
     <div className="costSaved-container">
       <GenericPanel
@@ -119,9 +156,7 @@ const PreAndPostMagic = ({ widgetData, fetchWidgets, fetchingTimedWidgetsData })
           id="cost-saved-body"
           customTitle={NO_GRAPH_DATA.customTitle}
           customSubtitle={
-            !isPreMagicRTORateAvailable
-              ? NO_GRAPH_DATA.preMagicSubtitle
-              : NO_GRAPH_DATA.postMagicSubtitle
+            !isPreMagicRTORateAvailable ? PreMagicDataUploadCTA : PostMagicDataUploadCTA
           }
         >
           {isPreMagicRTORateAvailable && isPostMagicRTORateAvailable && !loading ? (
@@ -154,7 +189,11 @@ const PreAndPostMagic = ({ widgetData, fetchWidgets, fetchingTimedWidgetsData })
           ) : null}
         </PanelBody>
         <PanelFooter id="cost-saved-footer">
-          <LastUpdated at={updatedAt} customIcon="i-clock" />
+          <small>
+            <i className="i i-info-circle" />
+            &nbsp;
+            <span>{RTO_DATA_TIME_RANGE}</span>
+          </small>
         </PanelFooter>
       </GenericPanel>
     </div>
