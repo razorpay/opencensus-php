@@ -1024,9 +1024,7 @@ class Content extends Component {
               <RouteGuard
                 isTagDependent
                 additionalCondition={(currentUser) =>
-                  mode === 'live' &&
-                  currentUser.isSuccessRateEnabled &&
-                  currentUser.isAllowedView('success_rate')
+                  mode === 'live' && currentUser.isAllowedView('success_rate')
                 }
               >
                 {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
@@ -1038,9 +1036,7 @@ class Content extends Component {
               element={
                 <RouteGuard
                   additionalCondition={(currentUser) =>
-                    mode === 'live' &&
-                    currentUser.isSuccessRateEnabled &&
-                    currentUser.isAllowedView('success_rate')
+                    mode === 'live' && currentUser.isAllowedView('success_rate')
                   }
                 >
                   <SuccessRate />

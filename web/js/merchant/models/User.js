@@ -1001,11 +1001,6 @@ export default class User {
     return ((this.experiments || user?.experiments || {})[name] || {}).result === 'on';
   }
 
-  // For all Optimizer merchants success rate dashboard should be visible
-  get isSuccessRateEnabled() {
-    return this.findTag('success_rate') || this.isOptimizerEnabled;
-  }
-
   /** Optimizer related getters - start */
   get isOptimizerRZPVASEnabled() {
     return this.isFeatureEnabled('optimizer_razorpay_vas');

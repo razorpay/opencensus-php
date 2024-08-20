@@ -276,9 +276,7 @@ class TransactionsContainer extends Component {
             </ShowWhen>
             <ShowWhen
               additionalCondition={(currentUser) =>
-                mode === 'live' &&
-                currentUser.isSuccessRateEnabled &&
-                currentUser.isAllowedView('success_rate')
+                mode === 'live' && currentUser.isAllowedView('success_rate')
               }
             >
               <NavLink

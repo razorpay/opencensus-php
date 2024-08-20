@@ -353,45 +353,6 @@ describe('User model', () => {
     });
   });
 
-  describe('isSuccessRateEnabled', () => {
-    const user = getDefaultUserObj();
-    test('should return true if isOptimizerEnabled is true and success_rate tag is not present', () => {
-      user.isFeatureEnabled = jest
-        .fn()
-        .mockReturnValueOnce(true) // raas feature is enabled
-        .mockReturnValueOnce(false); // optimizer_razorpay_vas feature is disabled
-      jest.spyOn(user, 'findTag').mockReturnValue(false);
-      expect(user.isSuccessRateEnabled).toBe(true);
-    });
-
-    test('should return true if success_rate tag is present and isOptimizerEnabled is false', () => {
-      user.isFeatureEnabled = jest
-        .fn()
-        .mockReturnValueOnce(true) // raas feature is enabled
-        .mockReturnValueOnce(true); // optimizer_razorpay_vas feature is enabled
-      jest.spyOn(user, 'findTag').mockReturnValue(true);
-      expect(user.isSuccessRateEnabled).toBe(true);
-    });
-
-    test('should return false if isOptimizerEnabled is false and success_rate tag is not present', () => {
-      user.isFeatureEnabled = jest
-        .fn()
-        .mockReturnValueOnce(true) // raas feature is enabled
-        .mockReturnValueOnce(true); // optimizer_razorpay_vas feature is enabled
-      jest.spyOn(user, 'findTag').mockReturnValue(false);
-      expect(user.isSuccessRateEnabled).toBe(false);
-    });
-
-    test('should return true if isOptimizerEnabled is true and success_rate tag is present', () => {
-      user.isFeatureEnabled = jest
-        .fn()
-        .mockReturnValueOnce(true) // raas feature is enabled
-        .mockReturnValueOnce(false); // optimizer_razorpay_vas feature is enabled
-      jest.spyOn(user, 'findTag').mockReturnValue(true);
-      expect(user.isSuccessRateEnabled).toBe(true);
-    });
-  });
-
   describe('isInternationalMethodsHidden', () => {
     const user = getDefaultUserObj();
 
