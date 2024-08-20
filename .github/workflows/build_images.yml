@@ -1,6 +1,12 @@
 name: Build Image - API
 on:
-  push:  
+  pull_request:
+    branches:
+      - 'master'
+  push:
+    branches:
+      - 'master'
+      - 'hotfix**'
   workflow_dispatch:
 
 concurrency:
@@ -26,7 +32,9 @@ jobs:
     name: Validate PHP Syntax
     steps:
       - name: Checkout
-        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: "Cache dependencies installed with composer"
         uses: "actions/cache@v3.0.0"
         with:
@@ -55,7 +63,9 @@ jobs:
     name: Validate PHP Syntax - Misc
     steps:
       - name: Checkout
-        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: "Cache dependencies installed with composer"
         uses: "actions/cache@v3.0.0"
         with:
@@ -94,7 +104,7 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           file: ./Dockerfile.fetchCredstash
           build-args: |
@@ -122,10 +132,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=fetch-credstash-${{ github.sha }}
+          flavor: suffix=fetch-credstash-${{ github.event.pull_request.head.sha || github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:fetch-credstash-${{ github.event.pull_request.head.sha || github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -156,12 +166,12 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          tags: c.rzp.io/razorpay/api:${{ github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           file: ./Dockerfile.web
           build-args: |
-            GIT_COMMIT_HASH=${{ github.sha }}
-            CACHEBUST=${{ github.sha }}
+            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
+            CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
             API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
             CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
@@ -170,7 +180,7 @@ jobs:
             git_token=${{ secrets.GIT_TOKEN }}
 
   build-web-multiarch:
-  # This action combines the amd64 & arm64 docker images from the previous job (build-web-native) & form a multi-arch docker image
+    # This action combines the amd64 & arm64 docker images from the previous job (build-web-native) & form a multi-arch docker image
     needs:
       - build-web-native
     name: Build Web Harbor
@@ -188,10 +198,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=-${{ github.sha }}
+          flavor: suffix=-${{ github.event.pull_request.head.sha || github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:${{ github.event.pull_request.head.sha || github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -222,19 +232,19 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:worker-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           file: ./Dockerfile.worker
           build-args: |
-            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
-            CACHEBUST=${{ github.sha }}
+            CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
             API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker-v2
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
   build-worker-multiarch:
-  # This action combines the amd64 & arm64 docker images from the previous job (build-worker-native) & form a multi-arch docker image
+    # This action combines the amd64 & arm64 docker images from the previous job (build-worker-native) & form a multi-arch docker image
     needs:
       - build-worker-native
     name: Build Worker Harbor
@@ -252,10 +262,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=worker-${{ github.sha }}
+          flavor: suffix=worker-${{ github.event.pull_request.head.sha || github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:worker-${{ github.event.pull_request.head.sha || github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -286,18 +296,18 @@ jobs:
       - name: build
         uses: docker/build-push-action@v3
         with:
-          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}-${{ matrix.platform }}
+          tags: c.rzp.io/razorpay/api:checkout-${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.platform }}
           push: true
           file: ./Dockerfile.checkout
           build-args: |
-            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
             NGINX_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:nginx-alpine-3.12
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
   build-checkout-multiarch:
-  # This action combines the amd64 & arm64 docker images from the previous job (build-checkout-native) & form a multi-arch docker image
+    # This action combines the amd64 & arm64 docker images from the previous job (build-checkout-native) & form a multi-arch docker image
     needs:
       - build-checkout-native
     name: Build Checkout Harbor
@@ -315,10 +325,10 @@ jobs:
         id: metadata
         with:
           images: c.rzp.io/${{ github.repository }}
-          flavor: suffix=checkout-${{ github.sha }}
+          flavor: suffix=checkout-${{ github.event.pull_request.head.sha || github.sha }}
       - uses: int128/docker-manifest-create-action@v1
         with:
-          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:checkout-${{ github.event.pull_request.head.sha || github.sha }}
           suffixes: |
             -linux-amd64
             -linux-arm64
@@ -348,72 +358,7 @@ jobs:
           secrets: git_token=${{ secrets.GIT_TOKEN }}
           build-args: GIT_USERNAME=rzp
           push: true
-          tags: c.rzp.io/razorpay/api:e2e_${{ github.sha }}
-
-  # Triggers end-to-end test execution with argo workflow as executor
-  #disabling this the E2E tests are migrated to orchestrator
-  # e2e-test-webhook:
-  #   name: E2E test webhook
-  #   runs-on:
-  #     - self-hosted
-  #     - api
-  #     - X64
-  #   needs: [ build-e2e ]
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Find current pr
-  #       # Find the PR associated with this push, if there is one.
-  #       uses: jwalton/gh-find-current-pr@v1.3.0
-  #       id: findPr
-  #       with:
-  #         # Can be "open", "closed", or "all".  Defaults to "open".
-  #         state: open
-  #     - name: Triggers argo workflows webhook to execute e2e tests
-  #       if: ${{ steps.findPr.outputs.pr != '' }}
-  #       uses: fjogeleit/http-request-action@master
-  #       with:
-  #         url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/api'
-  #         method: 'POST'
-  #         bearerToken: ${{ secrets.ARGO_TOKEN }}
-  #         data: >
-  #           {
-  #              "kube_manifests_ref": "master",
-  #              "self": {
-  #                  "name": "api",
-  #                  "commit_id": "${{ github.sha }}",
-  #                  "chart_values": {
-  #                     "replicas": 2,
-  #                     "web_requests_cpu": "150m",
-  #                     "web_requests_memory": "200Mi"
-  #                  }
-  #              },
-  #              "dependencies": [
-  #                     {
-  #                         "name": "pg-router",
-  #                         "commit_id": "",
-  #                         "chart_values": {
-  #                             "ephemeral_db": false,
-  #                             "replicas": 1
-  #                         }
-  #                     },
-  #                     {
-  #                         "name": "terminals",
-  #                         "commit_id": "",
-  #                         "chart_values": {
-  #                             "ephemeral_db": false,
-  #                             "replicas": 1
-  #                         }
-  #                     },
-  #                     {
-  #                         "name": "payment-links",
-  #                         "commit_id": "",
-  #                         "chart_values": {
-  #                             "ephemeral_db": false,
-  #                             "replicas": 1
-  #                         }
-  #                     }
-  #                 ]
-  #           }
+          tags: c.rzp.io/razorpay/api:e2e_${{ github.event.pull_request.head.sha || github.sha }}
 
   build-slit:
     name: SLIT test build
@@ -438,13 +383,13 @@ jobs:
           file: ./slit/Dockerfile
           context: slit
           build-args: |
-            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha }}
+            GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
             SONAR_TOKEN=${{ secrets.SONARQUBE_TOKEN }}
           push: true
-          tags: c.rzp.io/razorpay/api:slit_${{ github.sha }}
+          tags: c.rzp.io/razorpay/api:slit_${{ github.event.pull_request.head.sha || github.sha }}
 
   # Triggers end-to-end test execution with argo workflow as executor
   slit-test-webhook:
@@ -455,7 +400,9 @@ jobs:
       - X64
     needs: [ build-slit ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Find current pr
         # Find the PR associated with this push, if there is one.
         uses: jwalton/gh-find-current-pr@v1.3.0
@@ -475,7 +422,7 @@ jobs:
                "kube_manifests_ref": "master",
                "self": {
                    "name": "api",
-                   "commit_id": "${{ github.sha }}",
+                   "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
                    "chart_values": {
                       "replicas": 2,
                       "web_requests_cpu": "150m",
@@ -496,7 +443,7 @@ jobs:
       - name: Webhook
         run: |
           curl -X POST -H "Content-Type: application/json" \
-          -d '{ "branch" : "master" , "commit" : "${{ github.sha }}" , "repo" : "api" }' \
+          -d '{ "branch" : "master" , "commit" : "${{ github.event.pull_request.head.sha || github.sha }}" , "repo" : "api" }' \
           https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression
 
   trigger-e2e-execution-master:
@@ -518,9 +465,8 @@ jobs:
           data: >
             {
               "service_under_test": "api",
-              "commit_id": "${{ github.sha }}",
+              "commit_id": "${{ github.event.pull_request.head.sha || github.sha }}",
               "end_to_end_tests_ref": "master",
               "status": "Pending",
               "config_overrides": "{}"
             }
-  
