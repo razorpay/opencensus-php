@@ -122,7 +122,7 @@ export const HAS_UPI_FEATURES = [
   'billdesk_optimizer',
   'pay10',
 ];
-export const HAS_NETBANKING_FEATURES = ['atom', 'netbanking_axis', 'billdesk_optimizer'];
+export const HAS_NETBANKING_FEATURES = ['atom', 'netbanking_axis', 'billdesk_optimizer', 'pay10'];
 
 export const ACCOUNT_TYPE_OPTIONS = [
   { label: 'Regular', value: false },
