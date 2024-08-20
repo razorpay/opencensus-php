@@ -89,7 +89,9 @@ export const PRODUCTS_DATA = {
   },
   optimizer: {
     icon: 'i-routing',
-    additionalCondition: (user: any): boolean => user.isAllowedView('optimizer'),
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('optimizer') &&
+      (user.isOptimizerEnabled || user.isOptimizerOnboardingEnabled),
   },
   bbps: {
     icon: 'i-chart',

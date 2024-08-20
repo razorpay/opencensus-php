@@ -107,7 +107,11 @@ const Optimizer = ({ fetchRules, fetchTerminalProviders, user, splitz }): JSX.El
             <Route
               path="onboarding/*"
               element={
-                <RouteGuard additionalCondition={(user) => !shouldShowRules(user)}>
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isOptimizerOnboardingEnabled && !user.isOptimizerEnabled
+                  }
+                >
                   <OnBoarding />
                 </RouteGuard>
               }

@@ -1010,6 +1010,10 @@ export default class User {
     return this.isFeatureEnabled('raas') && !this.isOptimizerRZPVASEnabled;
   }
 
+  get isOptimizerOnboardingEnabled() {
+    return this.isOrgRZP && this.isINCountry;
+  }
+
   get isSodexoInstrumentEnabled() {
     return getSplitzExperimentVariant('sodexo_instrument')?.variables?.result === 'on';
   }
