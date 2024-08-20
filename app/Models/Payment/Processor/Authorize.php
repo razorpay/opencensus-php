@@ -1102,17 +1102,54 @@ trait Authorize
                return (strtolower($variant) === "on");
            }
 
-           $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
+           // Combine network and acquirer to form the alt_id
+           $altId = $payment->getGateway() . "_" . $payment->card->getNetworkCode() . "_" . $payment->terminal->getGatewayAcquirer();
 
-           $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+           // Check if alt_id matches any of the specified cases
+           switch ($altId) {
+              case 'card_fss_RUPAY_barb':
+              case 'card_fss_VISA_barb':
+              case 'card_fss_MC_barb':
+              case 'cybersource_VISA_axis':
+              case 'cybersource_VISA_hdfc':
+              case 'cybersource_MC_hdfc':
+              case 'cybersource_MC_axis':
+              case 'first_data_VISA_icic':
+              case 'first_data_MC_icic':
+              case 'fulcrum_VISA_ratn':
+              case 'fulcrum_MC_ratn':
+              case 'hdfc_VISA_hdfc':
+              case 'hdfc_MC_hdfc':
+              case 'hdfc_RUPAY_hdfc':
+              case 'hitachi_MC_ratn':
+              case 'hitachi_VISA_ratn':
+              case 'isg_VISA_kotak':
+              case 'isg_MC_kotak':
+              case 'isg_RUPAY_kotak':
+              case 'mpgs_VISA_axis':
+              case 'mpgs_MC_axis':
+                  $skip = true;
+                  break;
+              default:
+                  $skip = false;
+                  break;
+           }
 
-           $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
-                'payment_id' => $payment->getId(),
-                'feature'    => $razorxFeature,
-                'variant'    => $variant
-           ]);
+           if(!$skip || $payment->isInternational() === true){
+               $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
 
-           return (strtolower($variant) === "on");
+               $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+
+               $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
+                  'payment_id' => $payment->getId(),
+                  'feature'    => $razorxFeature,
+                  'variant'    => $variant
+               ]);
+
+                  return (strtolower($variant) === "on");
+               } else {
+                  return true;
+               }
        }
        catch (\Exception $e)
        {
