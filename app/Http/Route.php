@@ -17815,6 +17815,13 @@ class Route
             'pricing_fetch_plan'
         ],
 
+        'optimizer' => [
+            'fetch_iin_by_token_iin',
+            'api_entity_fetch',
+            'internal_payment_pricing',
+            'internal_pricing',
+        ],
+
         'otpelf' => [
             'otpelf_iin_flow_enable',
             'cps_iin_flow_disable'

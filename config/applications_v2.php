@@ -1620,4 +1620,25 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_OPTIMIZER')               => [
+        "name"        => "optimizer",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_OPTIMIZER'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_OPTIMIZER'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.optimizer"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_OPTIMIZER'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_OPTIMIZER'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.optimizer"
+                ]
+            ]
+        ]
+    ]
 ];

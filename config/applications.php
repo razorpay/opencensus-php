@@ -1200,6 +1200,13 @@ return [
         ],
     ],
 
+    'optimizer' => [
+        'mock'      => env('OPTIMIZER_SERVICE_MOCK', false),
+        'secret'    => env('OPTIMIZER_SERVICE_SECRET'),
+        'username'  => env('OPTIMIZER_SERVICE_KEY'),
+        'password'  => env('OPTIMIZER_SERVICE_SECRET'),
+    ],
+
     'nbplus_payment_service' => [
         'mock'      => env('NBPLUS_PAYMENT_SERVICE_MOCK', false),
         'secret'    => env('NBPLUS_PAYMENT_SERVICE_SECRET'),
