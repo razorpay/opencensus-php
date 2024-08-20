@@ -584,9 +584,20 @@ const Reconciliations = lazy(() =>
 const ReconOnboarding = lazy(() =>
   import(/* webpackChunkName: "ReconOnboarding" */ 'merchant/views/Reconciliations/Onboarding'),
 );
-const ReconRun = lazy(() =>
+
+const ReconNewRun = lazy(() =>
   import(
-    /* webpackChunkName: "ReconRun" */ 'merchant/views/Reconciliations/Onboarding/NewReconciliationRun'
+    /* webpackChunkName: "ReconNewRun" */ 'merchant/views/Reconciliations/Onboarding/NewReconciliationRun'
+  ),
+);
+const ReconProcessDetail = lazy(() =>
+  import(
+    /* webpackChunkName: "ReconProcessDetail" */ 'merchant/views/Reconciliations/Dashboard/Overview'
+  ),
+);
+const ReconRunDetail = lazy(() =>
+  import(
+    /* webpackChunkName: "ReconRunDetail" */ 'merchant/views/Reconciliations/Dashboard/RunDetail'
   ),
 );
 const PosMerchantAgreement = lazy(() =>
@@ -2331,9 +2342,9 @@ class Content extends Component {
               }
             />
           </Route>
-          <Route path="reconciliations/*">
+          <Route path="reconciliations">
             <Route
-              path="dashboard"
+              path="dashboard/*"
               element={
                 <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
                   <Reconciliations />
@@ -2341,10 +2352,34 @@ class Content extends Component {
               }
             />
             <Route
+              path="dashboard/processes/:processId/*"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <ReconProcessDetail />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="dashboard/runs/:runId"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <ReconRunDetail />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="dashboard/processes/:processId/runs/:runId"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <ReconRunDetail />
+                </RouteGuard>
+              }
+            />
+            <Route
               path="new-run"
               element={
                 <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
-                  <ReconRun />
+                  <ReconNewRun />
                 </RouteGuard>
               }
             />
@@ -2356,6 +2391,7 @@ class Content extends Component {
                 </RouteGuard>
               }
             />
+            <Route path="*" element={<Navigate to="/reconciliations/dashboard/processes" />} />
           </Route>
           <Route
             path="assisted-financing"

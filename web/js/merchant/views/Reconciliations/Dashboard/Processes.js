@@ -3,8 +3,8 @@ import {
   Box,
   PlusIcon,
   Button,
-  Link,
   Table,
+  Link as BladeLink,
   TableHeader,
   TableHeaderRow,
   TableHeaderCell,
@@ -21,13 +21,12 @@ import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/common
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
 import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
+import { DashboardTabs, ProcessTabs } from './constants';
 const cols = ['Name', 'Product', 'Type', 'Last Run', ''];
-
-const Processes = ({ openDetail }) => {
+const Processes = () => {
   const [processList, setProcessList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
-
   const navigate = useNavigate();
   const fetchProcesses = async () => {
     try {
@@ -50,7 +49,6 @@ const Processes = ({ openDetail }) => {
       setIsLoading(false);
     }
   };
-
   const createConfig = () => {
     analyticsTrackWithUserInfo({
       screen: ReconScreens.ProcessListing,
@@ -59,26 +57,25 @@ const Processes = ({ openDetail }) => {
     });
     navigate(`/reconciliations/create-config/2`);
   };
-
-  const handleOpenDetail = (item) => {
+  const goToProcessListingPage = ({ processData }) => {
     analyticsTrackWithUserInfo({
       screen: ReconScreens.ProcessListing,
       objectName: 'recon process detail',
       actionName: 'click',
       properties: {
-        processId: item?.id,
-        processName: item?.name,
-        processType: item?.type,
+        activeProcessId: processData?.id,
+        activeProcessName: processData?.name,
+        aciveProcessType: processData?.type,
       },
     });
-    openDetail(item);
+    navigate(
+      `/reconciliations/dashboard/${DashboardTabs.PROCESSES}/${processData?.id}/${ProcessTabs.OVERVIEW}`,
+    );
   };
-
   useReconTracking({
     objectName: 'recon process list',
     screen: ReconScreens.ProcessListing,
   });
-
   useEffect(() => {
     fetchProcesses();
   }, []);
@@ -110,7 +107,9 @@ const Processes = ({ openDetail }) => {
                       {item?.last_run === 0 ? 'N.A' : moment(item?.last_run * 1000).format('lll')}
                     </TableCell>
                     <TableCell>
-                      <Link onClick={() => handleOpenDetail(item)}>Details</Link>
+                      <BladeLink onClick={() => goToProcessListingPage({ processData: item })}>
+                        Details
+                      </BladeLink>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -122,5 +121,4 @@ const Processes = ({ openDetail }) => {
     </Box>
   );
 };
-
 export default Processes;

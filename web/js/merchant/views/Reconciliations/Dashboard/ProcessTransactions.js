@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Radio,
@@ -22,11 +22,14 @@ import {
   TableCell,
   TableBody,
   ActionListItemText,
+  ToastContainer,
 } from '@razorpay/blade/components';
 import moment from 'moment';
+import { useParams } from 'react-router-dom';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
   dateRangePresets,
@@ -37,7 +40,7 @@ import {
   RenderErrorLoadingOrChild,
 } from 'merchant/views/Reconciliations/commonComponents';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
-import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
+import { useCalendarRange, useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
 import ExportReportModal from './ExportReportModal';
 
@@ -46,20 +49,19 @@ export default function ProcessTransactions({ activeProcess }) {
   const [paginationData, setPaginationData] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [filter, setFilter] = useState(null);
-  const [startEndDates, setStartEndDates] = useState({
-    startDate: moment().subtract(7, 'days').startOf('day').unix(),
-    endDate: moment().endOf('day').unix(),
-  });
   const [runsList, setRunsList] = useState([]);
   const [activeRun, setActiveRun] = useState('all');
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const { dateRange, handleRangeChange } = useCalendarRange();
+
+  const { processId: activeProcessesId } = useParams();
 
   const fetchRuns = async () => {
     const raw = {
       filter: {
-        merchant_process_id: [activeProcess?.id],
+        merchant_process_id: [activeProcessesId],
       },
       sort_key: '',
       page: 0,
@@ -77,126 +79,135 @@ export default function ProcessTransactions({ activeProcess }) {
     }
   };
 
-  const fetchDetails = async (props = {}) => {
-    try {
-      setError(false);
-      setLoading(true);
-      const body = {
-        merchant_process_id: activeProcess?.id,
-        filters: [],
-        page_size: 10,
-        from_date: startEndDates.startDate,
-        to_date: startEndDates.endDate,
-        ...props,
-      };
-      if (filter) {
-        body.filters.push({ key: 'recon_status', value: filter });
-      }
-      const res = await merchantFetch({
-        url: `recon-saas/recon_process/records`,
-        mode: 'live',
-        method: 'POST',
-        data: body,
-      });
-      if (res?.status_code === 200) {
-        const { items, ...pageData } = res.data;
-        if (Array.isArray(items)) {
-          setDetailsList(items);
+  const fetchDetails = useCallback(
+    async (props = {}) => {
+      try {
+        setError(false);
+        setLoading(true);
+        const body = {
+          merchant_process_id: activeProcessesId,
+          filters: [],
+          page_size: 10,
+          from_date: dateRange.startDate,
+          to_date: dateRange.endDate,
+          ...props,
+        };
+        if (filter) {
+          body.filters.push({ key: 'recon_status', value: filter });
         }
-        setPaginationData(pageData);
-        if (props?.first_id) {
-          setCurrentPage(currentPage - 1);
-        } else if (props?.last_id) {
-          setCurrentPage(currentPage + 1);
-        }
-      } else {
-        setError(true);
-      }
-    } catch (error) {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchRunSpecificDetails = async (props = {}) => {
-    if (activeRun === 'all') {
-      return;
-    }
-    try {
-      setError(false);
-      setLoading(true);
-      const runId = activeRun;
-      const body = {
-        filters: [
-          {
-            key: FILE_WORKFLOW_KEY,
-            value: runId,
-          },
-        ],
-        page_size: 10,
-        from_date: startEndDates?.startDate,
-        to_date: startEndDates?.endDate,
-        ...props,
-      };
-      if (filter) {
-        const from = startEndDates?.startDate;
-        const to = startEndDates?.endDate;
         const res = await merchantFetch({
-          url: `recon-saas/recon_output/stats/${activeRun}?from_date=${from}&to_date=${to}`,
+          url: `recon-saas/recon_process/records`,
           mode: 'live',
-          method: 'get',
+          method: 'POST',
+          data: body,
         });
         if (res?.status_code === 200) {
-          const stats = res.data;
-          let ruleIds = [];
-          if (filter === 'Reconciled') {
-            ruleIds = stats?.Reconciled?.rules;
-          } else if (filter === 'Unreconciled') {
-            ruleIds = stats?.Unreconciled?.rules;
+          const { items, ...pageData } = res.data;
+          if (Array.isArray(items)) {
+            setDetailsList(items);
           }
-          body.filters.push({ key: 'rule_id', value: ruleIds });
+          setPaginationData(pageData);
+          if (props?.first_id) {
+            setCurrentPage(currentPage - 1);
+          } else if (props?.last_id) {
+            setCurrentPage(currentPage + 1);
+          }
+        } else {
+          setError(true);
         }
-      }
-      const res = await merchantFetch({
-        url: `recon-saas/recon_output/list`,
-        mode: 'live',
-        method: 'POST',
-        data: body,
-      });
-
-      if (res?.status_code === 200) {
-        const { items, ...pageData } = res.data;
-        if (Array.isArray(items)) {
-          setDetailsList(items);
-        }
-        setPaginationData(pageData);
-        if (props?.first_id) {
-          setCurrentPage(currentPage - 1);
-        } else if (props?.last_id) {
-          setCurrentPage(currentPage + 1);
-        }
-      } else {
+      } catch (error) {
         setError(true);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [activeProcessesId, currentPage, dateRange.endDate, dateRange.startDate, filter],
+  );
 
-  const callRespectiveFetchApi = (props) => {
-    if (activeRun === 'all') {
-      fetchDetails(props);
-    } else {
-      fetchRunSpecificDetails(props);
-    }
-  };
+  const fetchRunSpecificDetails = useCallback(
+    async (props = {}) => {
+      if (activeRun === 'all') {
+        return;
+      }
+      try {
+        setError(false);
+        setLoading(true);
+        const runId = activeRun;
+        const body = {
+          filters: [
+            {
+              key: FILE_WORKFLOW_KEY,
+              value: runId,
+            },
+          ],
+          page_size: 10,
+          from_date: dateRange?.startDate,
+          to_date: dateRange?.endDate,
+          ...props,
+        };
+        if (filter) {
+          const from = dateRange?.startDate;
+          const to = dateRange?.endDate;
+          const res = await merchantFetch({
+            url: `recon-saas/recon_output/stats/${activeRun}?from_date=${from}&to_date=${to}`,
+            mode: 'live',
+            method: 'get',
+          });
+          if (res?.status_code === 200) {
+            const stats = res.data;
+            let ruleIds = [];
+            if (filter === 'Reconciled') {
+              ruleIds = stats?.Reconciled?.rules;
+            } else if (filter === 'Unreconciled') {
+              ruleIds = stats?.Unreconciled?.rules;
+            }
+            body.filters.push({ key: 'rule_id', value: ruleIds });
+          }
+        }
+        const res = await merchantFetch({
+          url: `recon-saas/recon_output/list`,
+          mode: 'live',
+          method: 'POST',
+          data: body,
+        });
+
+        if (res?.status_code === 200) {
+          const { items, ...pageData } = res.data;
+          if (Array.isArray(items)) {
+            setDetailsList(items);
+          }
+          setPaginationData(pageData);
+          if (props?.first_id) {
+            setCurrentPage(currentPage - 1);
+          } else if (props?.last_id) {
+            setCurrentPage(currentPage + 1);
+          }
+        } else {
+          setError(true);
+        }
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeRun, dateRange.startDate, dateRange.endDate, filter, currentPage],
+  );
+
+  const callRespectiveFetchApi = useCallback(
+    (props) => {
+      if (activeRun === 'all') {
+        fetchDetails(props);
+      } else {
+        fetchRunSpecificDetails(props);
+      }
+    },
+    [activeRun, fetchDetails, fetchRunSpecificDetails],
+  );
 
   useEffect(() => {
     callRespectiveFetchApi();
-  }, [filter, startEndDates, activeRun]);
+  }, [filter, dateRange.startDate, dateRange.endDate, activeRun, callRespectiveFetchApi]);
 
   useEffect(() => {
     fetchRuns();
@@ -206,9 +217,9 @@ export default function ProcessTransactions({ activeProcess }) {
     objectName: 'recon process transaction',
     screen: ReconScreens.ProcessTransactionView,
     properties: {
-      processId: activeProcess?.id,
-      processName: activeProcess?.name,
-      processType: activeProcess?.type,
+      activeProcessesId,
+      activeProcessName: activeProcess?.name,
+      activeProcessType: activeProcess?.type,
     },
   });
 
@@ -229,18 +240,21 @@ export default function ProcessTransactions({ activeProcess }) {
     setActiveRun(values[0]);
   };
 
-  const handleDateChange = (startDate, endDate) => {
-    setCurrentPage(0);
-    setStartEndDates({ startDate: startDate.unix(), endDate: endDate.unix() });
+  const handlePresetChange = ({ value }) => {
+    const dateObj = {
+      startDate: getStartDateFromDiff(value, moment()),
+      endDate: moment().endOf('day'),
+    };
     analyticsTrackWithUserInfo({
       screen: ReconScreens.ProcessTransactionView,
       objectName: 'recon date range',
       actionName: 'selected',
       properties: {
-        startDate: startDate.format('lll'),
-        endDate: endDate.format('lll'),
+        startDate: dateObj.startDate.format('lll'),
+        endDate: dateObj.endDate.format('lll'),
       },
     });
+    handleRangeChange(dateObj);
   };
 
   const handleFilterChange = ({ value }) => {
@@ -254,9 +268,9 @@ export default function ProcessTransactions({ activeProcess }) {
       objectName: 'recon open export view',
       actionName: 'click',
       properties: {
-        processId: activeProcess?.id,
-        processName: activeProcess?.name,
-        processType: activeProcess?.type,
+        activeProcessesId,
+        activeProcessName: activeProcess?.name,
+        activeProcessType: activeProcess?.type,
       },
     });
     setIsOpen(true);
@@ -295,9 +309,10 @@ export default function ProcessTransactions({ activeProcess }) {
           </BladeDropdownWrapper>
           <div className="date-range-container">
             <DateRangePicker
-              onDatesChange={handleDateChange}
               presets={dateRangePresets}
               allowSingleDaySelect
+              onClose={handleRangeChange}
+              onSelectPreset={handlePresetChange}
             />
           </div>
         </Box>
@@ -371,10 +386,11 @@ export default function ProcessTransactions({ activeProcess }) {
         <ExportReportModal
           isOpen={isOpen}
           setIsOpen={setIsOpen}
-          filters={{ type: filter, startEndDates }}
-          merchantProcessId={activeProcess?.id}
+          filters={{ type: filter, dateRange }}
+          merchantProcessId={activeProcessesId}
         />
       )}
+      <ToastContainer />
     </Box>
   );
 }

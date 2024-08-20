@@ -176,12 +176,16 @@ class DateRangePicker extends Component {
       horizontalMargin = 0,
       isOutsideRange,
       allowSingleDaySelect = false,
+      onClose,
     } = this.props;
 
     const otherProps = {};
 
     if (allowSingleDaySelect) {
       otherProps.minimumNights = 0; // ref - https://github.com/react-dates/react-dates/issues/914
+    }
+    if (onClose) {
+      otherProps.onClose = onClose;
     }
 
     const { presets, selectedPreset, startDate, endDate } = this.state;

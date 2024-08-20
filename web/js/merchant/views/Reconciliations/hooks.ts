@@ -1,4 +1,6 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useToast } from '@razorpay/blade/components';
+import moment, { Moment } from 'moment';
 
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
@@ -8,6 +10,10 @@ type UseReadTrackingProps = {
   properties?: object;
   readDelay?: number;
 };
+interface DateRange {
+  startDate: Moment;
+  endDate: Moment;
+}
 
 const useReconTracking = ({
   objectName,
@@ -35,4 +41,34 @@ const useReconTracking = ({
   }, []);
 };
 
-export { useReconTracking };
+const useCalendarRange = () => {
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: moment().subtract(7, 'days').startOf('day'),
+    endDate: moment().endOf('day'),
+  });
+
+  const toast = useToast();
+
+  const handleRangeChange = ({ startDate, endDate }): void => {
+    if (startDate && endDate) {
+      const diffInDays = endDate.diff(startDate, 'days');
+      if (diffInDays > 7) {
+        toast.show({
+          content:
+            'Currently max range allowed is 7 days. Please try again with shorter range of days',
+          color: 'notice',
+          autoDismiss: true,
+        });
+      } else {
+        setDateRange({ startDate, endDate });
+      }
+    }
+  };
+
+  return {
+    dateRange,
+    handleRangeChange,
+  };
+};
+
+export { useCalendarRange, useReconTracking };

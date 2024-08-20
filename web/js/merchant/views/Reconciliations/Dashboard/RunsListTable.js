@@ -7,7 +7,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Link,
+  Link as BladeLink,
   LoaderIcon,
   CheckIcon,
   Badge,
@@ -20,21 +20,27 @@ import {
 } from '@razorpay/blade/components';
 import ReconciledIcon from 'assets/reconciliations/reconciled.svg';
 import moment from 'moment';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { FILE_WORKFLOW_KEY } from 'merchant/views/Reconciliations/Dashboard/constants';
-
+import {
+  DashboardTabs,
+  ProcessTabs,
+  FILE_WORKFLOW_KEY,
+} from 'merchant/views/Reconciliations/Dashboard/constants';
+import { ReconScreens } from 'merchant/views/Reconciliations/const';
 const cols = ['Run ID', 'Process Name', 'Last Update', 'Run Completion', 'Summary', ''];
-
 export default function RunsListTable({
   nodes,
-  ctaAction,
   currentPage,
   handlePagination,
   paginationData,
   screen,
+  activeProcess,
 }) {
+  const navigate = useNavigate();
+  const { processId } = useParams();
   const downloadReport = async (id) => {
     analyticsTrackWithUserInfo({
       screen,
@@ -53,12 +59,28 @@ export default function RunsListTable({
       window.open(res?.data?.report_url, '_blank');
     }
   };
-
   const getPercentReconciled = (stats) => {
     const percent = Number(stats?.recon_output.Reconciled.percentage);
     return isNaN(percent) ? '' : `${Math.round(percent)}%`;
   };
-
+  const goToRunDetailsPage = ({ runId }) => {
+    analyticsTrackWithUserInfo({
+      screen: processId ? ReconScreens.ProcessRunListing : ReconScreens.GlobalRunListing,
+      objectName: 'recon run detail',
+      actionName: 'click',
+      properties: {
+        runId,
+        ...(processId && { activeProcessesId: processId }),
+        ...(activeProcess?.name && { activeProcessName: activeProcess.name }),
+        ...(activeProcess?.type && { activeProcessType: activeProcess.type }),
+      },
+    });
+    navigate(
+      processId
+        ? `/reconciliations/dashboard/${DashboardTabs.PROCESSES}/${processId}/${ProcessTabs.RUNS}/${runId}`
+        : `/reconciliations/dashboard/${DashboardTabs.RUNS}/${runId}`,
+    );
+  };
   return (
     <>
       <Table data={{ nodes }} gridTemplateColumns="1fr 1fr 1fr 1fr 1fr 1.5fr">
@@ -99,15 +121,17 @@ export default function RunsListTable({
                     <TableCell>
                       <Box display="flex" gap="spacing.6" alignItems="center">
                         {isComplete ? (
-                          <Link
+                          <BladeLink
                             onClick={() => downloadReport(item?.id)}
                             alignItems="center"
                             icon={DownloadIcon}
                           >
                             Download Report
-                          </Link>
+                          </BladeLink>
                         ) : null}
-                        <Link onClick={() => ctaAction(item.id)}>Details</Link>
+                        <BladeLink onClick={() => goToRunDetailsPage({ runId: item.id })}>
+                          Details
+                        </BladeLink>
                       </Box>
                     </TableCell>
                   </TableRow>

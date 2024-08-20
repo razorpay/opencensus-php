@@ -96,7 +96,7 @@ export const BASE_ROUTES = {
   gcms_funds: '/gcms/funds',
   gcms_reports: '/gcms/reports',
   riskAndFraud: '/risk-and-fraud',
-  reconciliations: '/reconciliations/dashboard',
+  reconciliations: '/reconciliations/dashboard/processes',
   assisted_financing: '/assisted-financing',
 };
 

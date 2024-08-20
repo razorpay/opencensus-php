@@ -62,7 +62,11 @@ export default function SelectProduct({ selectProduct, merchantMeta }) {
         alignItems="center"
         marginTop="spacing.6"
       >
-        <Button variant="secondary" icon={ArrowLeftIcon} onClick={() => navigate(-1)}>
+        <Button
+          variant="secondary"
+          icon={ArrowLeftIcon}
+          onClick={() => navigate(`/reconciliations/dashboard/processes`)}
+        >
           Back
         </Button>
       </Box>

@@ -7,3 +7,8 @@ export const ProcessTabs = {
   RUNS: 'runs',
   TRANSACTIONS: 'transactions',
 };
+
+export const DashboardTabs = {
+  PROCESSES: 'processes',
+  RUNS: 'runs',
+};

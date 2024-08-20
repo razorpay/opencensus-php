@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Box } from '@razorpay/blade/components';
 
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import RunsListTable from 'merchant/views/Reconciliations/Dashboard/RunsListTable';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
 import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
-export default function Runs({ openDetail }) {
+export default function Runs() {
   const [runsList, setRunsList] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -77,24 +76,11 @@ export default function Runs({ openDetail }) {
     fetchRuns();
   }, []);
 
-  const openRunDetail = (runId) => {
-    analyticsTrackWithUserInfo({
-      screen: ReconScreens.GlobalRunListing,
-      objectName: 'recon run detail',
-      actionName: 'click',
-      properties: {
-        runId,
-      },
-    });
-    openDetail(runId);
-  };
-
   return (
     <Box testID="recon-runs-listing">
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
         <RunsListTable
           nodes={runsList}
-          ctaAction={openRunDetail}
           currentPage={currentPage}
           handlePagination={handlePagination}
           paginationData={paginationData}

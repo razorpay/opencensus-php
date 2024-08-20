@@ -7,6 +7,9 @@ import styled from 'styled-components';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
+import { withSplitzService } from 'common/splitz';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -26,9 +29,6 @@ import ActivationProgress from './ActivationProgress';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
-import { withSplitzService } from 'common/splitz';
-import { checkIfPosSalesAgent } from 'common/utils/posAgent';
-import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -72,7 +72,7 @@ export const BASE_ROUTES = {
   developersWebhooks: '/developers/webhooks',
   paymentMetrics: '/payment-metrics',
   paymentHandle: '/payment-handle',
-  reconciliations: '/reconciliations/dashboard',
+  reconciliations: '/reconciliations/dashboard/processes',
   assistedFinancing: '/assisted-financing',
   posSales: '/pos-sales',
 };

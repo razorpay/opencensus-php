@@ -1,59 +1,77 @@
-import React, { useState } from 'react';
-import { Card, CardBody, Box, Tabs, TabList, TabItem, TabPanel } from '@razorpay/blade/components';
+import React, { useState, useEffect } from 'react';
+import { Card, CardBody, Box, Tabs, TabList, TabPanel } from '@razorpay/blade/components';
+import { useMatch } from 'react-router-dom';
 
-import Detail from './Detail';
-import Overview from './Overview';
 import Processes from './Processes';
 import Runs from './Runs';
+import { TabItemRouterLink } from './TabItemRouterLink';
+import { DashboardTabs } from './constants';
 
 const ReconDashboard = () => {
-  const [activeProcess, setActiveProcess] = useState({});
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [openWorkflowId, setOpenWorkflowId] = React.useState('');
+  const [dashboardActiveTab, setDashboardActiveTab] = useState(DashboardTabs.PROCESSES);
 
-  const openRunDetailModal = (id) => {
-    setOpenWorkflowId(id);
-    setIsOpen(true);
-  };
+  const dashboardMatch = useMatch('/reconciliations/dashboard/*');
+
+  useEffect(() => {
+    let activeTab = '';
+
+    if (dashboardMatch) {
+      const lastSegment = dashboardMatch.params['*'];
+
+      switch (lastSegment) {
+        case DashboardTabs.OVERVIEW:
+          activeTab = DashboardTabs.OVERVIEW;
+          break;
+        case DashboardTabs.RUNS:
+          activeTab = DashboardTabs.RUNS;
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (activeTab) {
+      setDashboardActiveTab(activeTab);
+    }
+  }, []);
+
   return (
     <Box paddingTop="spacing.1">
-      <Box />
-      {isOpen ? (
-        <Detail
-          closeDetail={() => setIsOpen(false)}
-          fileWorkflowId={openWorkflowId}
-          openDetail={openRunDetailModal}
-          activeProcess={activeProcess}
-        />
-      ) : !activeProcess?.id ? (
-        <Card margin="spacing.6">
-          <CardBody>
-            <Tabs variant="bordered" orientation="horizontal" isLazy>
-              <TabList>
-                <TabItem value="processes">Processes</TabItem>
-                <TabItem value="runs">Runs</TabItem>
-              </TabList>
-
-              <TabPanel value="processes">
-                <Box paddingTop="spacing.4">
-                  <Processes openDetail={setActiveProcess} />
-                </Box>
+      <Card margin="spacing.6">
+        <CardBody>
+          <Tabs
+            variant="bordered"
+            orientation="horizontal"
+            isLazy
+            defaultValue={DashboardTabs.PROCESSES}
+            value={dashboardActiveTab}
+            onChange={(tab) => setDashboardActiveTab(tab)}
+          >
+            <TabList>
+              <TabItemRouterLink
+                value={DashboardTabs.PROCESSES}
+                to={`/reconciliations/dashboard/${DashboardTabs.PROCESSES}`}
+              >
+                Processes
+              </TabItemRouterLink>
+              <TabItemRouterLink
+                value={DashboardTabs.RUNS}
+                to={`/reconciliations/dashboard/${DashboardTabs.RUNS}`}
+              >
+                Runs
+              </TabItemRouterLink>
+            </TabList>
+            <Box paddingTop="spacing.4">
+              <TabPanel value={DashboardTabs.PROCESSES}>
+                <Processes />
               </TabPanel>
-              <TabPanel value="runs">
-                <Box paddingTop="spacing.4">
-                  <Runs openDetail={openRunDetailModal} />
-                </Box>
+              <TabPanel value={DashboardTabs.RUNS}>
+                <Runs />
               </TabPanel>
-            </Tabs>
-          </CardBody>
-        </Card>
-      ) : (
-        <Overview
-          activeProcess={activeProcess}
-          closeDetail={setActiveProcess}
-          openRunDetail={openRunDetailModal}
-        />
-      )}
+            </Box>
+          </Tabs>
+        </CardBody>
+      </Card>
     </Box>
   );
 };

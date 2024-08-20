@@ -1,5 +1,9 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expectSuccessNotification, switchToTestModeShortCircuit, clickSkipAndStartBtn } from 'utils';
+import {
+  expectSuccessNotification,
+  switchToTestModeShortCircuit,
+  clickSkipAndStartBtn,
+} from 'utils';
 import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 

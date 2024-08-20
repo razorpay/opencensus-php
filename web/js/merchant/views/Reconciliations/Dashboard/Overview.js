@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Heading,
   Card,
@@ -7,7 +7,6 @@ import {
   Box,
   Tabs,
   TabList,
-  TabItem,
   TabPanel,
   Button,
   ArrowLeftIcon,
@@ -15,29 +14,30 @@ import {
   UploadIcon,
   InfoIcon,
 } from '@razorpay/blade/components';
-import moment from 'moment';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useMatch } from 'react-router-dom';
 
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
+import { useCalendarRange } from 'merchant/views/Reconciliations/hooks';
 
 import ProcessCharts from './ProcessCharts';
 import ProcessOverview from './ProcessOverview';
-import ProcessRunsDetail from './ProcessRunsDetail';
+import ProcessRunsList from './ProcessRunsList';
 import ProcessTransactions from './ProcessTransactions';
+import { TabItemRouterLink } from './TabItemRouterLink';
 import { ProcessTabs } from './constants';
 
-const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
-  const [activeTab, setActiveTab] = useState(ProcessTabs.OVERVIEW);
+const ProcessStats = () => {
+  const [processesActiveTab, setProcessesActiveTab] = useState(ProcessTabs.OVERVIEW);
   const [stats, setStats] = useState({});
-  const [startEndDates, setStartEndDates] = useState({
-    startDate: moment().subtract(7, 'days').startOf('day'),
-    endDate: moment().endOf('day'),
-  });
+  const [activeProcess, setActiveProcess] = useState({});
+  const { dateRange, handleRangeChange } = useCalendarRange();
   const [error, setError] = useState(false);
 
   const navigate = useNavigate();
+  const processesMatch = useMatch('/reconciliations/dashboard/processes/:processId/*');
+  const { processId: activeProcessId } = useParams();
 
   const triggerRun = () => {
     analyticsTrackWithUserInfo({
@@ -45,9 +45,9 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
       objectName: 'recon new reconciliation',
       actionName: 'click',
       properties: {
-        processId: activeProcess?.id,
-        processName: activeProcess?.name,
-        processType: activeProcess?.type,
+        activeProcessId,
+        activeProcessName: activeProcess?.name,
+        activeProcessType: activeProcess?.type,
       },
     });
     navigate('/reconciliations/new-run', { state: activeProcess });
@@ -58,13 +58,35 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
     return Array.isArray(filesConfigs) && filesConfigs.some((file) => file.allow_upload);
   };
 
-  const fetchStats = async () => {
+  const fetchReconProcessDetails = async () => {
+    try {
+      const res = await merchantFetch({
+        url: `recon-saas/recon_process/${activeProcessId}`,
+        mode: 'live',
+        method: 'get',
+      });
+      if (res?.status_code === 200) {
+        setActiveProcess(res.data);
+      } else {
+        setError(true);
+        setActiveProcess({});
+      }
+    } catch (error) {
+      setError(true);
+    }
+  };
+
+  const fetchStats = useCallback(async () => {
     try {
       setError(false);
-      const from = startEndDates.startDate.unix();
-      const to = startEndDates.endDate.unix();
+      if (!dateRange.startDate || !dateRange.endDate) {
+        return;
+      }
+      setStats({});
+      const from = dateRange.startDate.unix();
+      const to = dateRange.endDate.unix();
       const res = await merchantFetch({
-        url: `recon-saas/recon_process/stats/${activeProcess?.id}?from_date=${from}&to_date=${to}`,
+        url: `recon-saas/recon_process/stats/${activeProcessId}?from_date=${from}&to_date=${to}`,
         mode: 'live',
         method: 'get',
       });
@@ -76,23 +98,58 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
     } catch (error) {
       setError(true);
     }
-  };
+  }, [activeProcessId, dateRange]);
 
   const changeTab = (tab) => {
-    if (tab === ProcessTabs.OVERVIEW && activeTab !== ProcessTabs.OVERVIEW) {
+    if (tab === ProcessTabs.OVERVIEW && processesActiveTab !== ProcessTabs.OVERVIEW) {
       setStats({});
       fetchStats();
     }
-    setActiveTab(tab);
+    setProcessesActiveTab(tab);
+  };
+
+  const handleBackLinkButton = (e) => {
+    e.preventDefault();
+    navigate(-1);
   };
 
   useEffect(() => {
+    fetchReconProcessDetails();
+  }, []);
+
+  useEffect(() => {
+    let activeTab = '';
+
+    if (processesMatch) {
+      const lastSegment = processesMatch.params['*'];
+
+      switch (lastSegment) {
+        case ProcessTabs.OVERVIEW:
+          activeTab = ProcessTabs.OVERVIEW;
+          break;
+        case ProcessTabs.RUNS:
+          activeTab = ProcessTabs.RUNS;
+          break;
+        case ProcessTabs.TRANSACTIONS:
+          activeTab = ProcessTabs.TRANSACTIONS;
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (activeTab) {
+      setProcessesActiveTab(activeTab);
+    }
+  }, [processesMatch]);
+
+  useEffect(() => {
     fetchStats();
-  }, [startEndDates]);
+  }, [dateRange, fetchStats]);
 
   return (
     <Box padding="spacing.6">
-      <Link icon={ArrowLeftIcon} iconPosition="left" onClick={() => closeDetail({})}>
+      <Link icon={ArrowLeftIcon} iconPosition="left" onClick={(e) => handleBackLinkButton(e)}>
         Go Back
       </Link>
       <Card marginTop="spacing.6">
@@ -132,27 +189,42 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
           <Tabs
             variant="bordered"
             orientation="horizontal"
-            value={activeTab}
+            defaultValue={ProcessTabs.OVERVIEW}
+            value={processesActiveTab}
             onChange={changeTab}
             isLazy
           >
             <TabList>
-              <TabItem value={ProcessTabs.OVERVIEW}>Overview</TabItem>
-              <TabItem value={ProcessTabs.RUNS}>Runs</TabItem>
-              <TabItem value={ProcessTabs.TRANSACTIONS}>Transactions</TabItem>
+              <TabItemRouterLink
+                value={ProcessTabs.OVERVIEW}
+                to={`/reconciliations/dashboard/processes/${activeProcessId}/${ProcessTabs.OVERVIEW}`}
+              >
+                Overview
+              </TabItemRouterLink>
+              <TabItemRouterLink
+                value={ProcessTabs.RUNS}
+                to={`/reconciliations/dashboard/processes/${activeProcessId}/${ProcessTabs.RUNS}`}
+              >
+                Runs
+              </TabItemRouterLink>
+              <TabItemRouterLink
+                value={ProcessTabs.TRANSACTIONS}
+                to={`/reconciliations/dashboard/processes/${activeProcessId}/${ProcessTabs.TRANSACTIONS}`}
+              >
+                Transactions
+              </TabItemRouterLink>
             </TabList>
-
             <TabPanel value={ProcessTabs.OVERVIEW}>
               <ProcessOverview
-                dateRange={startEndDates}
-                setDates={setStartEndDates}
+                dateRange={dateRange}
+                handleRangeChange={handleRangeChange}
                 activeProcess={activeProcess}
                 stats={stats}
                 error={error}
               />
             </TabPanel>
             <TabPanel value={ProcessTabs.RUNS}>
-              <ProcessRunsDetail activeProcess={activeProcess} openRunDetail={openRunDetail} />
+              <ProcessRunsList activeProcess={activeProcess} />
             </TabPanel>
             <TabPanel value={ProcessTabs.TRANSACTIONS}>
               <ProcessTransactions activeProcess={activeProcess} />
@@ -160,7 +232,9 @@ const ProcessStats = ({ activeProcess, closeDetail, openRunDetail }) => {
           </Tabs>
         </CardBody>
       </Card>
-      {activeTab === ProcessTabs.OVERVIEW ? <ProcessCharts error={error} stats={stats} /> : null}
+      {processesActiveTab === ProcessTabs.OVERVIEW ? (
+        <ProcessCharts error={error} stats={stats} />
+      ) : null}
     </Box>
   );
 };

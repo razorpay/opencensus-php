@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Radio,
@@ -24,24 +24,29 @@ import {
   TableCell,
   TableBody,
   ActionListItemText,
+  ToastContainer,
 } from '@razorpay/blade/components';
 import moment from 'moment';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
   dateRangePresets,
   FILE_WORKFLOW_KEY,
+  DashboardTabs,
+  ProcessTabs,
 } from 'merchant/views/Reconciliations/Dashboard/constants';
 import {
   BladeDropdownWrapper,
   RenderErrorLoadingOrChild,
 } from 'merchant/views/Reconciliations/commonComponents';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
-import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
+import { useCalendarRange, useReconTracking } from 'merchant/views/Reconciliations/hooks';
 
-export default function Detail({ fileWorkflowId, closeDetail, openDetail, activeProcess }) {
+export default function RunDetail() {
   const [detailsList, setDetailsList] = useState([]);
   const [stats, setStats] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
@@ -49,11 +54,19 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
   const [filter, setFilter] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [runsList, setRunsList] = useState([]);
-  const [startEndDates, setStartEndDates] = useState({
-    startDate: moment().subtract(7, 'days').startOf('day').unix(),
-    endDate: moment().endOf('day').unix(),
-  });
   const [error, setError] = useState(false);
+  const { dateRange, handleRangeChange } = useCalendarRange();
+  const [selectdRunId, setSelectedRunId] = useState();
+  const [runChangeCounter, setRunChangeCounter] = useState(1);
+
+  const navigate = useNavigate();
+  const { runId: fileWorkflowId, processId: activeProcessId } = useParams();
+
+  useEffect(() => {
+    if (fileWorkflowId) {
+      setSelectedRunId(fileWorkflowId);
+    }
+  }, [fileWorkflowId]);
 
   const fetchRuns = async (props = {}) => {
     const fetchRunsPayload = {
@@ -68,8 +81,8 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
       page_size: 50,
       ...props,
     };
-    if (activeProcess?.id) {
-      fetchRunsPayload.filter.merchant_process_id = [activeProcess.id];
+    if (activeProcessId) {
+      fetchRunsPayload.filter.merchant_process_id = [activeProcessId];
     }
     const res = await merchantFetch({
       url: `recon-saas/recon_run`,
@@ -88,59 +101,62 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
     }
   };
 
-  const fetchDetails = async (props = {}) => {
-    try {
-      setError(false);
-      setIsLoading(true);
-      const body = {
-        filters: [
-          {
-            key: FILE_WORKFLOW_KEY,
-            value: fileWorkflowId,
-          },
-        ],
-        page_size: 10,
-        from_date: startEndDates.startDate,
-        to_date: startEndDates.endDate,
-        ...props,
-      };
-      if (filter) {
-        const filters = filter.split(',');
-        if (filters.length > 0) {
-          body.filters.push({ key: 'rule_id', value: filters });
+  const fetchDetails = useCallback(
+    async (props = {}) => {
+      try {
+        setError(false);
+        setIsLoading(true);
+        const body = {
+          filters: [
+            {
+              key: FILE_WORKFLOW_KEY,
+              value: fileWorkflowId,
+            },
+          ],
+          page_size: 10,
+          from_date: dateRange.startDate.unix(),
+          to_date: dateRange.endDate.unix(),
+          ...props,
+        };
+        if (filter) {
+          const filters = filter.split(',');
+          if (filters.length > 0) {
+            body.filters.push({ key: 'rule_id', value: filters });
+          }
         }
-      }
-      const res = await merchantFetch({
-        url: `recon-saas/recon_output/list`,
-        mode: 'live',
-        method: 'POST',
-        data: body,
-      });
+        const res = await merchantFetch({
+          url: `recon-saas/recon_output/list`,
+          mode: 'live',
+          method: 'POST',
+          data: body,
+        });
 
-      if (res?.status_code === 200) {
-        const { items, ...pageData } = res.data;
-        if (Array.isArray(items)) {
-          setDetailsList(items);
+        if (res?.status_code === 200) {
+          const { items, ...pageData } = res.data;
+          if (Array.isArray(items)) {
+            setDetailsList(items);
+          }
+          setPaginationData(pageData);
+          if (props?.first_id) {
+            setCurrentPage(currentPage - 1);
+          } else if (props?.last_id) {
+            setCurrentPage(currentPage + 1);
+          }
+        } else {
+          setError(true);
         }
-        setPaginationData(pageData);
-        if (props?.first_id) {
-          setCurrentPage(currentPage - 1);
-        } else if (props?.last_id) {
-          setCurrentPage(currentPage + 1);
-        }
-      } else {
+      } catch (error) {
         setError(true);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      setError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [fileWorkflowId, dateRange, filter, currentPage],
+  );
 
-  const fetchStats = async () => {
-    const from = startEndDates.startDate;
-    const to = startEndDates.endDate;
+  const fetchStats = useCallback(async () => {
+    const from = dateRange.startDate.unix();
+    const to = dateRange.endDate.unix();
     const res = await merchantFetch({
       url: `recon-saas/recon_output/stats/${fileWorkflowId}?from_date=${from}&to_date=${to}`,
       mode: 'live',
@@ -149,20 +165,20 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
     if (res?.status_code === 200) {
       setStats(res.data);
     }
-  };
+  }, [dateRange, fileWorkflowId]);
 
   useReconTracking({
     objectName: 'recon run detail',
     screen: ReconScreens.RunDetailView,
     properties: {
-      ...(activeProcess?.id ? { processId: activeProcess?.id } : {}),
+      ...(activeProcessId ? { activeProcessId } : {}),
       runId: fileWorkflowId,
     },
   });
 
   useEffect(() => {
     fetchRuns();
-  }, []);
+  }, [fileWorkflowId]);
 
   useEffect(() => {
     fetchDetails();
@@ -177,7 +193,7 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
       setFilter(null);
       fetchStats();
     }
-  }, [fileWorkflowId, startEndDates]);
+  }, [fileWorkflowId, dateRange, filter]);
 
   const handlePagination = (type) => {
     switch (type) {
@@ -188,11 +204,21 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
         paginationData?.has_more && fetchDetails({ last_id: paginationData.last_id });
         break;
       default:
+        break;
     }
   };
 
-  const handleRunChange = ({ values }) => {
-    openDetail(values[0]);
+  const handleRunChange = (event) => {
+    const currentValue = event.values[0];
+    if (currentValue) {
+      setRunChangeCounter((prevCount) => prevCount + 1);
+      setSelectedRunId(currentValue);
+      navigate(
+        activeProcessId
+          ? `/reconciliations/dashboard/${DashboardTabs.PROCESSES}/${activeProcessId}/${ProcessTabs.RUNS}/${currentValue}`
+          : `/reconciliations/dashboard/${DashboardTabs.RUNS}/${currentValue}`,
+      );
+    }
   };
 
   const handleRadioChange = ({ value }) => {
@@ -201,36 +227,34 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
   };
 
   const goBack = () => {
+    navigate(runChangeCounter * -1);
     setCurrentPage(0);
     setPaginationData(null);
     setRunsList([]);
-    closeDetail();
   };
 
-  const handleDateChange = (startDate, endDate) => {
-    setStartEndDates({ startDate: startDate.unix(), endDate: endDate.unix() });
+  const handlePresetChange = ({ value }) => {
+    const dateObj = {
+      startDate: getStartDateFromDiff(value, moment()),
+      endDate: moment().endOf('day'),
+    };
     analyticsTrackWithUserInfo({
       screen: ReconScreens.RunDetailView,
       objectName: 'recon date range',
       actionName: 'selected',
       properties: {
-        ...(activeProcess?.id ? { processId: activeProcess?.id } : {}),
-        startDate: startDate.format('lll'),
-        endDate: endDate.format('lll'),
+        ...(activeProcessId ? { activeProcessId } : {}),
+        startDate: dateObj.startDate.format('lll'),
+        endDate: dateObj.endDate.format('lll'),
         runId: fileWorkflowId,
       },
     });
+    handleRangeChange(dateObj);
   };
 
   return (
     <>
-      <Box
-        display="flex"
-        alignItems="center"
-        marginTop="spacing.6"
-        paddingX="spacing.6"
-        justifyContent="space-between"
-      >
+      <Box display="flex" alignItems="center" padding="spacing.6" justifyContent="space-between">
         <Box display="flex" alignItems="center">
           <Link icon={ArrowLeftIcon} iconPosition="left" onClick={goBack}>
             Go Back
@@ -238,7 +262,7 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
           <Divider orientation="vertical" marginX="spacing.6" />
           <BladeDropdownWrapper>
             <Dropdown value={fileWorkflowId} marginRight="spacing.4">
-              <SelectInput value={fileWorkflowId} prefix="Run: " onChange={handleRunChange} />
+              <SelectInput value={selectdRunId} prefix="Run: " onChange={handleRunChange} />
               <DropdownOverlay>
                 <ActionList>
                   {Array.isArray(runsList) &&
@@ -260,9 +284,10 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
           </BladeDropdownWrapper>
           <div className="date-range-container">
             <DateRangePicker
-              onDatesChange={handleDateChange}
               presets={dateRangePresets}
               allowSingleDaySelect
+              onClose={handleRangeChange}
+              onSelectPreset={handlePresetChange}
             />
           </div>
         </Box>
@@ -344,6 +369,7 @@ export default function Detail({ fileWorkflowId, closeDetail, openDetail, active
           </Box>
         </CardBody>
       </Card>
+      <ToastContainer />
     </>
   );
 }
