@@ -22,7 +22,7 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
-
+import { Spinner } from '@razorpay/blade/components';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import {
   isConfigurationViewAllowed,
@@ -503,6 +503,10 @@ const PayrollWidget = lazy(() =>
   import(/* webpackChunkName: "PayrollWidget" */ 'merchant/views/Payroll'),
 );
 
+const RayWidget = lazy(() =>
+  import(/* webpackChunkName: "RayWidget" */ 'merchant/components/RayWidget'),
+);
+
 const PaymentHandle = lazy(() =>
   import(/* webpackChunkName: "PaymentHandle" */ 'merchant/views/PaymentHandle'),
 );
@@ -646,6 +650,13 @@ class Content extends Component {
   checkIfAssistedOnboardingUser = () => {
     const { user } = this.props;
     return user?.user.signup_campaign === 'assisted_onboarding';
+  };
+
+  isRAYEnabled = () => {
+    const { user: { isINCountry } = {}, splitz: { abExperiments: { ray_ai } = {} } = {} } =
+      this.props;
+
+    return isINCountry && isExperimentEnabled(ray_ai);
   };
 
   setBaseLocation = (location) => {
@@ -2541,18 +2552,18 @@ class Content extends Component {
               this.checkIsHelpWidgetDisabled() ||
               window?.RZP?.appName == 'businessbanking' ||
               isPosSalesAgent
-            ) && (
+            ) ? (
               <ErrorBoundary
                 resetOnProps
                 rank={Ranks.P0}
-                team={Teams.CARE}
+                team={this.isRAYEnabled() ? Teams.RAY : Teams.CARE}
                 FallbackComponent={() => <></>}
               >
-                <Suspense fallback={null}>
-                  <HelpSection user={user} />
+                <Suspense fallback={<Spinner />}>
+                  {this.isRAYEnabled() ? <RayWidget /> : <HelpSection user={user} />}
                 </Suspense>
               </ErrorBoundary>
-            )}
+            ) : null}
           </Suspense>
         </ErrorBoundary>
       </main>

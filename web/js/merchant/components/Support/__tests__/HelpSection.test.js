@@ -20,7 +20,6 @@ describe('HelpSection Component', () => {
       <HelpSection
         history={{ location: { pathname: '/' } }}
         isHelpWidgetVisible={true}
-        openedCareWidget="none"
         user={{
           isINCountry: false,
         }}

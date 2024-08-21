@@ -26,7 +26,6 @@ import {
   updateModalConfigDetails,
 } from 'merchant/reducers/ModalConfigApi';
 import { toggleMobileMenu } from 'merchant/reducers/app';
-import { setCareOpenedWidget } from 'merchant/reducers/home';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -37,28 +36,10 @@ import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
 import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
-import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import { RayWrapper } from './styled';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
-import { importRemote } from 'merchant/utils/dynamic-remotes';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
-);
-
-// eslint-disable-next-line require-await
-const loadModule = async ({ module, scope }) =>
-  importRemote({
-    url: window.cdnDashboardAssetsUrl,
-    scope,
-    module,
-  });
-
-const RayChat = lazyLoader(() =>
-  /**  webpackChunkName: "Raychat" */ loadModule({
-    module: 'raychat',
-    scope: 'ray',
-  }),
 );
 
 // number of times to show MTU offer
@@ -99,13 +80,6 @@ class HeaderNav extends Component {
       });
     }
   };
-
-  isRAYEnabled() {
-    const { user: { isINCountry } = {}, splitz: { abExperiments: { ray_ai } = {} } = {} } =
-      this.props;
-
-    return isINCountry && ray_ai?.variables?.result === 'on';
-  }
 
   isRTUXHomepage() {
     const { abExperiments } = this.props.splitz;
@@ -182,14 +156,6 @@ class HeaderNav extends Component {
     }
   }
 
-  onRAYOpenCallback = () => {
-    this.props.setCareOpenedWidget('RAY');
-  };
-
-  onRAYCloseCallback = () => {
-    this.props.setCareOpenedWidget('');
-  };
-
   handleOnRefreshClick = () => {
     this.setState({ isRefreshLoading: true });
     window.location.reload();
@@ -211,7 +177,6 @@ class HeaderNav extends Component {
       isMobile,
       isSidebarV2,
       i18: { isConfigTagEnabled },
-      openedCareWidget,
       splitz,
     } = this.props;
     const { isSuccessfullyCouponApplied, mtuOfferCount, isRefreshLoading } = this.state;
@@ -390,24 +355,6 @@ class HeaderNav extends Component {
                         <AppSwitcher analytics={analytics} {...commonProps} />
                       </li>
                     </ShowWhen>
-                    {this.isRAYEnabled() ? (
-                      <RayWrapper>
-                        <ErrorBoundary
-                          rank={Ranks.P1}
-                          team={Teams.CARE}
-                          FallbackComponent={() => <></>}
-                        >
-                          <SuspenseWithLoader>
-                            <RayChat
-                              user={user}
-                              onRAYOpen={this.onRAYOpenCallback}
-                              onRAYClose={this.onRAYCloseCallback}
-                              isDrawerVisible={openedCareWidget === 'RAY'}
-                            />
-                          </SuspenseWithLoader>
-                        </ErrorBoundary>
-                      </RayWrapper>
-                    ) : null}
                     <li id="profile-dropdown">
                       <ProfileDropdown
                         analytics={analytics}
@@ -489,7 +436,6 @@ const mapStateToProps = (state) => ({
   org: state.session.org,
   referee: state.merchantReferral.data.referee,
   isMobile: state.app.isMobileResolution,
-  openedCareWidget: state.home.openedCareWidget,
 });
 
 const enhancedComponent = compose(
@@ -500,7 +446,6 @@ const enhancedComponent = compose(
     toggleMobileMenu,
     openModals: openModal,
     closeModals: closeModal,
-    setCareOpenedWidget,
   }),
 );
 

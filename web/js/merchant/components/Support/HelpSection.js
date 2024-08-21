@@ -41,7 +41,6 @@ const HelpSection = ({
   org,
   fetchTicketsRaisedByAgents: _fetchTickets,
   isHelpWidgetVisible,
-  openedCareWidget,
 }) => {
   const splitz = useSplitzService();
   const handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
@@ -189,7 +188,7 @@ const HelpSection = ({
           splitzHost={splitzHost}
           isDev={isDev}
           isPartnerDashboard={isPartnerDashboard}
-          hideSupportIcon={!isHelpWidgetVisible || openedCareWidget === 'RAY'}
+          hideSupportIcon={!isHelpWidgetVisible}
           hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user) || !user.activation_status}
           handleClose={handleSupportClose}
         />
@@ -205,7 +204,6 @@ export default withRouter(
         user: state.session.user,
         org: state.session.org,
         isHelpWidgetVisible: state.session.isHelpWidgetVisible,
-        openedCareWidget: state.home.openedCareWidget,
       };
     },
     {
