@@ -193,8 +193,10 @@ const PosMerchantAgreement = (): JSX.Element => {
               {isCustomRateEnabled(workflowConfig?.data) ? (
                 <Text color="interactive.text.neutral.muted" marginBottom="spacing.7">
                   You also agree to the pricing details outlined in our{' '}
-                  <Link href="/app/pos-merchant-agreement/pricing">Pricing Agreement</Link>. This
-                  agreement explains the fees associated with your plan and details about the
+                  <Link target="_blank" href="/app/pos-merchant-agreement/pricing">
+                    Pricing Agreement
+                  </Link>
+                  . This agreement explains the fees associated with your plan and details about the
                   devices subscribed by you.
                 </Text>
               ) : null}
