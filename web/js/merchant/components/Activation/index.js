@@ -2018,6 +2018,16 @@ class ActivationWizard extends React.Component {
         },
       });
     }
+
+    // change INDIVIDUAL business type value to be same as NOT REGISTERED for RBI compliance
+    if(fieldName === 'business_type' && fieldValue === '2') {
+      this.setState({
+        dirty: {
+          ...this.state.dirty,
+          business_type: '11'
+        },
+      });
+    }
   };
 
   onOptionChange = (args) => {

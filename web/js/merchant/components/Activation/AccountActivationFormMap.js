@@ -4,7 +4,7 @@ import { validatePANCard, validateIFSC } from 'common/utils/validators';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
-const INDIVIDUAL = 2;
+const INDIVIDUAL = 11;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
