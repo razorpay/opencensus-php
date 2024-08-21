@@ -2230,6 +2230,8 @@ class Constants
 
     const SHOW_PG_V3 = 'show_pg_v3';
 
+    const PG_V3_ONBOARDING_COMPLETED = 'pg_v3_onboarding_complete';
+
     /**
      * Feature flag to make idempotency key mandatory for the merchant while creating payouts.
      */
@@ -3134,6 +3136,7 @@ class Constants
         self::SHOW_OFFER_METHOD_AMT                  => true,
         self::SHOW_TRUST_MARKERS                     => true,
         self::SHOW_PG_V3                             => true,
+        self::PG_V3_ONBOARDING_COMPLETED             => true,
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
         self::BANKING_UPI_REARCH                     => true,
