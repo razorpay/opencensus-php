@@ -218,6 +218,9 @@ class Service extends Base\Service
             {
                 $this->trace->error(TraceCode::BULK_WORKFLOW_CLOSE_REQUEST_ERROR, [
                     'workflow_id' => $workflowId,
+                    'exception_message' => $ex->getMessage(),
+                    'exception_line' => $ex->getLine(),
+                    'exception_trace' => $ex->getTraceAsString(),
                 ]);
 
                 array_push($failIDs, $workflowId);
