@@ -168,6 +168,9 @@ class Validator extends Base\Validator
         Entity::APP                             => 'sometimes|string',
         Entity::OAUTH_PROVIDER                  => 'required|string|custom',
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
     ];
 
     protected static $editRules = [
