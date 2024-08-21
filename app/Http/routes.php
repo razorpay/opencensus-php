@@ -221,6 +221,7 @@ Route::group(['middleware' => ['web']], function () {
 
         // Update password
         Route::post('/password', 'UserController@postPassword')->name('change_password');
+        Route::post('/password/otp_verify', 'UserController@postPasswordWithOtpVerification')->name('change_password_with_otp_verification');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds')->name('add_funds');
         Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
         Route::get('/{mode}/customers/autocomplete', 'MerchantController@getCustomersForAutocomplete')->name('customer_autocomplete');

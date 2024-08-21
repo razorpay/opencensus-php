@@ -1053,6 +1053,29 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function changePasswordWithOtpVerification(array $input)
+    {
+        $user = Auth::user();
+
+        if ($user->currentMerchant() and $user->currentMerchant()->isTestAccount())
+        {
+            return [["Password change forbidden on this account"], null];
+        }
+
+        list($error, $data) = $this->updatePasswordOnApiWithOtpVerification($input);
+
+        if (empty($error) === true)
+        {
+            Session::forget(Constants::TWO_FA_VERIFIED);
+        }
+
+        $currentSessionId = Session::getId();
+
+        (new SessionTable\Entity)->deleteSessionsForUser($user->id, $currentSessionId);
+
+        return [$error, $data];
+    }
+
     /**
      * reissue user token on edge
      * @param string $merchantId
@@ -1170,6 +1193,32 @@ class Service extends Base\Service
         $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->processInput($passwordData)->send("users/password", 'PUT');
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
+    }
+
+    public function updatePasswordOnApiWithOtpVerification($data)
+    {
+        $passwordData = [
+            'password'              => $data['password'],
+            'password_confirmation' => $data['password_confirmation'],
+            'old_password'          => $data['old_password'],
+            'otp'                   => $data['otp'],
+            'token'                 => $data['token'],
+        ];
+
+        $request = new \App\Admin\ApiRequestAny();
+
+        list($error, $data) = $request->processInput($passwordData)->send("users/password/otp_verify", 'PUT');
 
         if (empty($error) === false)
         {
