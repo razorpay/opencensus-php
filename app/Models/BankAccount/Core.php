@@ -3,6 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Http\Controllers\CareProxyController;
 use RZP\Models\Base;
@@ -797,7 +798,7 @@ class Core extends Base\Core
         }
 
         // email templates not updated for non-indian countries
-        if(strtolower($merchant->getCountry()) != Country::IN){
+        if(strtolower($merchant->getCountry()) !== Country::IN){
             return false;
         }
 
