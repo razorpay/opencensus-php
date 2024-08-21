@@ -72,10 +72,10 @@ class AsvRouter
 
             $isExclusionFlow = AsvFlows::isExclusionFLow($routeOrWorkerName);
 
-            if($isExclusionFlow === true) {
-                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForEnableExclusionFlow();
-                $isExclusionFlow = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $routeOrWorkerName);
-            }
+//            if($isExclusionFlow === true) {
+//                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForEnableExclusionFlow();
+//                $isExclusionFlow = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $routeOrWorkerName);
+//            }
             // temporarily added this log if the check is working correctly.
             $this->trace->count(Metric::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT, [
                 'routeOrWorkerName' => $routeOrWorkerName,

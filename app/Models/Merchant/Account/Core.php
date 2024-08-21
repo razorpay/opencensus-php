@@ -479,7 +479,8 @@ class Core extends Merchant\Core
                     "testEntity name" => empty($testEntity) === false ? $testEntity->getName() : null,
                     "liveEntity name" => empty($liveEntity) === false ? $liveEntity->getName() : null,
                     "asvEntity name" => empty($asvEntity) === false ? $asvEntity->getName() : null,
-                    "is txn active" => $this->repo->isTransactionActive()
+                    "is txn active" => $this->repo->isTransactionActive(),
+                    "txn level" => $this->repo->getTransactionLevel()
                 ]);
             }
             catch( \Exception $e)
