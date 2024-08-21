@@ -18684,7 +18684,8 @@ class Route
         'payout_create_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
+            IdempotencyKey\Constants::FEATURE_FLAG_FOR_MANDATORY_IKEY => Feature::PAYOUT_IDEM_KEY_REQUIRED,
         ],
         'payout_create_2FA_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,

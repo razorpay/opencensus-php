@@ -42120,6 +42120,7 @@ class PayoutTest extends OAuthTestCase
 
     /*
      * Feature flag not enabled.
+     * razorx MANDATE_IDEMPOTENCY_KEY_EXPERIMENT on.
      * Idempotency Key header sent.
      * Success, idempotency key checked.
      */
@@ -42127,15 +42128,43 @@ class PayoutTest extends OAuthTestCase
     {
         $this->liveSetUp();
 
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
         $this->ba->privateAuth();
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+        ->will($this->returnCallback(
+        function ($mid, $feature, $mode)
+        {
+            if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT)
+            {
+                return 'on';
+            }else{
+                return 'control';
+            }
+        }));
 
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
+        $content = $this->getEntities('feature',admin: true);
+
+        $this->assertArrayHasKey('items', $content);
+        $this->assertNotEmpty($content['items']);
+
+        $features = array_column($content['items'], null, 'name');
 
         $iKey = $this->getDbEntity('idempotency_key', ['source_id' => $payout->id]);
 
         $this->assertNotNull($iKey);
+        $this->assertArrayHasKey('payout_idem_key_required', $features, 'Feature payout_idem_key_required not found.');
+        $this->assertEquals('payout_idem_key_required', $features['payout_idem_key_required']['name']);
+        $this->assertEquals('10000000000000', $features['payout_idem_key_required']['entity_id']);
     }
 
     /*

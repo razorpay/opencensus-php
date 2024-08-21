@@ -63,6 +63,8 @@ class MerchantIdempotencyHandler
      */
     const MUTEX_LOCK_TTL = 1200;
 
+    const IKEY_ENABLED_PAYOUT_ROUTES = ["payout_create", "payout_create_internal"];
+
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -117,6 +119,13 @@ class MerchantIdempotencyHandler
 
         $idempotencyKey = $request->headers->get($idempotencyHeader);
 
+        $merchant = $this->basicauth->getMerchant();
+
+        if (empty($merchant) === true)
+        {
+            return $next($request);
+        }
+
         if (empty($idempotencyKey) === true)
         {
             if ($this->isIdempotencyKeyMandatory() === true)
@@ -139,12 +148,11 @@ class MerchantIdempotencyHandler
 
             return $next($request);
         }
-
-        $merchant = $this->basicauth->getMerchant();
-
-        if (empty($merchant) === true)
-        {
-            return $next($request);
+        else {
+            // rampUp, payout_idem_key_required feature flag enable if merchant is sending Idempotency Key
+            if(in_array($this->route->getCurrentRouteName(), self::IKEY_ENABLED_PAYOUT_ROUTES)) {
+                (new Merchant\Activate())->addEnableIdemKeyRequiredFeatureOnX($merchant);
+            }
         }
 
         $mutexKey = $idempotencyKey . $merchant->getId();

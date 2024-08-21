@@ -65,9 +65,12 @@ class Core extends Base\Core
         // check experiment and onboard DA to ledger in reverse shadow or shadow mode
         $merchant = $balance->merchant;
 
-        if (($createdNow === true) and ($this->onBoardDAMerchantOnLedgerInShadow($balance->merchant, $this->app['rzp.mode']) === true)) {
-            (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
-            (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
+        if ($createdNow === true) {
+            if ($this->onBoardDAMerchantOnLedgerInShadow($balance->merchant, $this->app['rzp.mode']) === true){
+                (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
+                (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
+            }
+            (new Merchant\Activate())->addEnableIdemKeyRequiredFeatureOnX($merchant);
         }
 
         return [

@@ -13,6 +13,7 @@ use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
 use RZP\Models\FeeRecovery;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Services\Mock\BankingAccountService;
@@ -2488,7 +2489,16 @@ class BankingAccountTest extends TestCase
 
         // ledger shadow experiment is NOT enabled
         $this->app->razorx->method('getTreatment')
-            ->willReturn('control');
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT)
+                    {
+                        return 'on';
+                    }else{
+                        return 'control';
+                    }
+                }));
 
         $this->mockLedgerSns(0);
 
@@ -2638,10 +2648,21 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($counter['balance_id'], $balance['id']);
         $this->assertEquals($counter['account_type'], $balance['account_type']);
 
-        $feature = $this->getLastEntity('feature', true);
+        // default feature add/enable assertion
+        $content = $this->getEntities('feature',admin: true);
 
-        $this->assertEquals($feature['name'], 'enable_ip_whitelist');
-        $this->assertEquals($feature['entity_id'], '10000000000000');
+        $this->assertArrayHasKey('items', $content);
+        $this->assertNotEmpty($content['items']);
+
+        $features = array_column($content['items'], null, 'name');
+
+        $this->assertArrayHasKey('enable_ip_whitelist', $features, 'Feature enable_ip_whitelist not found.');
+        $this->assertEquals('enable_ip_whitelist', $features['enable_ip_whitelist']['name']);
+        $this->assertEquals('10000000000000', $features['enable_ip_whitelist']['entity_id']);
+
+        $this->assertArrayHasKey('payout_idem_key_required', $features, 'Feature payout_idem_key_required not found.');
+        $this->assertEquals('payout_idem_key_required', $features['payout_idem_key_required']['name']);
+        $this->assertEquals('10000000000000', $features['payout_idem_key_required']['entity_id']);
 
         Mail::assertNotQueued(Activated::class);
 

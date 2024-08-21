@@ -24769,13 +24769,13 @@ return [
             ],
             [
                 'route' => 'payout_create_internal',
-                'feature_flag_enabled' => true,
+                'feature_flag_enabled' => false,
                 'result' => false
             ],
             [
                 'route' => 'payout_create_internal',
                 'feature_flag_enabled' => true,
-                'result' => false
+                'result' => true
             ],
             [
                 'route' => 'payout_create_2FA_internal',
