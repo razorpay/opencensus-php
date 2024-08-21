@@ -98,7 +98,7 @@ const DeviceOrderSummaryItem = ({
           <Text color="surface.text.gray.muted" marginBottom="spacing.2">
             Qty: {device.quantity}
           </Text>
-          {device?.totalSetupCharge ? (
+          {!isNaN(device?.totalSetupCharge as number) ? (
             <Amount
               value={Number(device?.totalSetupCharge)}
               suffix="none"

@@ -72,7 +72,7 @@ export const processFormDataForModularSubmit = (
 ): Record<string, unknown> => {
   return Object.fromEntries(
     Object.entries(formData)
-      .filter(([, value]) => value !== undefined)
+      .filter(([, value]) => value !== undefined || value !== null)
       .map(([key, value]) => {
         // Check if the value is a string and can be converted to a number
         if (typeof value === 'string' && !isNaN(Number(value))) {

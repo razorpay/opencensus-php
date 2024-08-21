@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Heading, Text } from '@razorpay/blade/components';
-import EmptyTableIllustration from 'apps/pos/src/app/assets/emptyTable.svg';
+import EmptyTableIllustration from 'apps/pos/src/assets/emptyTable.svg';
 
 const EmptyScreen = (): JSX.Element => {
   return (

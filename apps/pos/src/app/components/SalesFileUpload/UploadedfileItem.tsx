@@ -10,6 +10,8 @@ import {
 } from '@razorpay/blade/components';
 import { formatBytes } from './helper';
 import DocIcon from 'apps/pos/src/assets/docsIcon.svg';
+import PngImageIcon from 'apps/pos/src/assets/pngImageIcon.svg';
+import JpegImageIcon from 'apps/pos/src/assets/jpgImageIcon.svg';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 
 interface UploadedfileItemProps extends FileItem {
@@ -17,6 +19,15 @@ interface UploadedfileItemProps extends FileItem {
   onDownloadClick: (fileStoreId: string) => void;
   onRemoveClick: (fileStoreId: string) => void;
 }
+
+const getFileUploadIcon = (name: string): string => {
+  if (name.endsWith('.jpeg') || name.endsWith('.jpg')) {
+    return JpegImageIcon;
+  } else if (name.endsWith('.png')) {
+    return PngImageIcon;
+  }
+  return DocIcon;
+};
 
 const UploadedfileItem = ({
   fileStoreId,
@@ -26,6 +37,8 @@ const UploadedfileItem = ({
   onDownloadClick,
   onRemoveClick,
 }: UploadedfileItemProps): JSX.Element => {
+  const fileIcon = getFileUploadIcon(name as string);
+
   return (
     <Box
       display="flex"
@@ -39,9 +52,9 @@ const UploadedfileItem = ({
       marginBottom="spacing.3"
     >
       <Box marginRight="spacing.3">
-        <img src={DocIcon} height="40px" alt="file icon" />
+        <img src={fileIcon} height="40px" alt="file icon" />
       </Box>
-      <Box>
+      <Box marginRight="spacing.3">
         <Box display="flex" alignItems="center">
           <Text wordBreak="break-all" truncateAfterLines={1} marginRight="spacing.3">
             {name}

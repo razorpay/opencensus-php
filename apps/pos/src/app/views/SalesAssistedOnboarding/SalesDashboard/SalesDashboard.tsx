@@ -6,7 +6,6 @@ import {
   CloseIcon,
   Heading,
   PlusIcon,
-  Spinner,
   Text,
   useToast,
 } from '@razorpay/blade/components';
@@ -195,15 +194,23 @@ const SalesDashboard = (): JSX.Element => {
           <Box
             display="flex"
             justifyContent="center"
-            position="fixed"
+            position={{ base: 'fixed', l: 'relative' }}
             bottom="0px"
             padding="spacing.4"
-            backgroundColor="surface.background.gray.intense"
+            backgroundColor={{
+              base: 'surface.background.gray.intense',
+              l: 'transparent',
+            }}
             left="0px"
             right="0px"
             zIndex="1"
           >
-            <Button icon={PlusIcon} onClick={handleOnAddMerchantClick} isFullWidth>
+            <Button
+              icon={PlusIcon}
+              onClick={handleOnAddMerchantClick}
+              size={isMobile ? 'medium' : 'large'}
+              isFullWidth
+            >
               Add Merchant
             </Button>
           </Box>
@@ -229,13 +236,9 @@ const SalesDashboard = (): JSX.Element => {
               />
             </Box>
             <Box display="flex">
-              {isLoading ? (
-                <Spinner marginRight="spacing.4" accessibilityLabel="Loading..." />
-              ) : (
-                <Button marginRight="spacing.4" onClick={handleOnApplyFilter}>
-                  Apply
-                </Button>
-              )}
+              <Button marginRight="spacing.4" isLoading={isLoading} onClick={handleOnApplyFilter}>
+                Apply
+              </Button>
               <Button
                 variant="tertiary"
                 icon={CloseIcon}

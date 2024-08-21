@@ -126,6 +126,7 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                         icon={ChevronRightIcon}
                         variant="anchor"
                         size="medium"
+                        onClick={() => handleOnDetailsClick(tableItem.merchantId as string)}
                       >
                         Details
                       </Link>

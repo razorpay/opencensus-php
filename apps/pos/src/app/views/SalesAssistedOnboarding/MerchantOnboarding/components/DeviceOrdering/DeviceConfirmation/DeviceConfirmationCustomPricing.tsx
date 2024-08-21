@@ -46,7 +46,7 @@ const DeviceConfirmationCustomPricing = ({
       <SalesFileUpload
         name="custom_pricing_proof"
         label="Upload custom pricing proof"
-        accept=".pdf"
+        accept=".pdf, .png, .jpeg, .jpg"
         uploadType="single"
         onChange={handleOnPricingFileUploadChange}
         maxSize={5 * 1024 * 1023}
