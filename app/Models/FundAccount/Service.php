@@ -469,6 +469,11 @@ class Service extends Base\Service
     {
         $input = FundAccountHelper::getFundAccountInputWithoutContact($item);
 
+        if ($input[Entity::ACCOUNT_TYPE] === Entity::WALLET)
+        {
+            $input = $this->core->constructWalletAccountFundAccountRequest($input);
+        }
+
         $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $merchant);
 
         return $fundAccount?->getId();

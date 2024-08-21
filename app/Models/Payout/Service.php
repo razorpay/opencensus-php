@@ -2795,11 +2795,70 @@ class Service extends Base\Service
                 RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT,
                 $this->mode);
 
+            $this->trace->info(
+                TraceCode::BULK_PAYOUTS_IKEY_ROLLOUT_EXPERIMENT,
+                [
+                    'feature'        => RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT,
+                    'output'         => $batchPayoutIdempotencyKeyRollout
+                ]);
+
             if (strtolower($batchPayoutIdempotencyKeyRollout) === 'on')
             {
                 $idempotencyKeyString = "batch_payout_" . $this->merchant->getId() . "_" . $idempotencyKey;
 
-                $fundAccountID = $this->fundAccountService->getFundAccountIDFromAccountInput($item, $this->merchant);
+                $fundAccountID = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+                if($fundAccountID == null)
+                {
+                    $fundAccountID = $this->fundAccountService->getFundAccountIDFromAccountInput($item, $this->merchant);
+
+                    $this->trace->info(
+                        TraceCode::BULK_PAYOUTS_FUND_ACCOUNT_RETRIEVED,
+                        [
+                            Entity::FUND_ACCOUNT_ID => $fundAccountID,
+                            'input'          => $item
+                        ]);
+                }
+                else
+                {
+                    try
+                    {
+                        $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountID);
+
+                        $fundAccountID = $fundAccount->getId();
+                    }
+                    catch (Exception\BaseException $exception)
+                    {
+                        $this->trace->traceException($exception,
+                                                     Trace::INFO,
+                                                     TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                        );
+
+                        $exceptionData = [
+                            Entity::BATCH_ID        => $batchId,
+                            Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                            'error'                 => [
+                                Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                                Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                            ],
+                            Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                        ];
+
+                        if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH))
+                        {
+                            (new PayoutsBatch\Core())
+                                ->pushWebhookForPayoutCreationFailure($exceptionData, $item, $this->merchant);
+                        }
+
+                        $payoutBatch->push($exceptionData);
+
+                        $this->trace->count(Metric::BULK_PAYOUTS_PROCESSING_BAD_REQUEST_ERROR, [
+                            Constants\Metric::LABEL_ERROR_CODE => $exception->getCode(),
+                        ]);
+
+                        continue;
+                    }
+                }
 
                 $fetchExistingPayout = function() use ($fundAccountID, $item, $idempotencyKey, $batchId)
                 {
@@ -2852,6 +2911,13 @@ class Service extends Base\Service
                         if ($existingPayoutBehaviour != self::EXISTING_PAYOUT_BEHAVIOUR_RETURN_NEW)
                         {
                             $existingPayout = $fetchExistingPayout();
+
+                            $this->trace->info(
+                                TraceCode::BULK_PAYOUTS_EXISTING_PAYOUT_RETRIEVED,
+                                [
+                                    Entity::FUND_ACCOUNT_ID => $existingPayout,
+                                    'input'          => $item
+                                ]);
                         }
                         else
                         {
