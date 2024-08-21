@@ -13,13 +13,6 @@ import { Text } from '@razorpay/blade/components';
 import { analyticsTrack } from 'common/utils/analytics';
 import { updateAppView } from 'merchant/reducers/magicCheckout';
 import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
-import styled from 'styled-components';
-
-const StyledInputWrapper = styled.div`
-  .Input-el[type='radio'] {
-    height: 0 !important;
-  }
-`;
 
 const PlatformSubText = ({
   nested_view_type,
@@ -108,18 +101,12 @@ const PlatformSubText = ({
               <Text size="medium" weight="semibold" marginRight="12px">
                 Toggle checkout platform:
               </Text>
-              {/*
-              Browser seems to be over-riding height property of radio button causing alignment issues , 
-              so wrapping with styled component where we define its importance(!important)
-               */}
-              <StyledInputWrapper>
-                <Input.Radio
-                  name="app_select"
-                  options={APP_VIEW_RADIO_OPTIONS}
-                  defaultValue={dashboard_view || MAGIC_APP_NAME}
-                  onChange={onAppChange}
-                />
-              </StyledInputWrapper>
+              <Input.Radio
+                name="app_select"
+                options={APP_VIEW_RADIO_OPTIONS}
+                defaultValue={dashboard_view || MAGIC_APP_NAME}
+                onChange={onAppChange}
+              />
             </div>
             <Text size="small" marginTop="8px" color="surface.text.gray.muted">
               Please select your active checkout on Shopify - Magic Checkout/Shopify One-page

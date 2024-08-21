@@ -1,13 +1,7 @@
 import { NavLink } from 'react-router-dom';
-
-import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
-
-import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
   UPLOAD_ORDER_STATUS_TAB,
   MAGIC_SETTINGS_TAB,
-  MAGIC_SETTINGS_TAB_DELIVERY_TRACKING,
-  UPLOAD_ORDER_STATUS_TAB_V2,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const FeedbackFooterText = ({ footerStatus, isShippingProviderAvailable }) => {
@@ -25,25 +19,11 @@ const FeedbackFooterText = ({ footerStatus, isShippingProviderAvailable }) => {
         <i className="i i-warning empty-status" />
         <span className="feedback-footer-info">
           Please provide{' '}
-          <NavLink
-            className="feedbackRate-links"
-            to={
-              useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-                ? UPLOAD_ORDER_STATUS_TAB_V2
-                : UPLOAD_ORDER_STATUS_TAB
-            }
-          >
+          <NavLink className="feedbackRate-links" to={UPLOAD_ORDER_STATUS_TAB}>
             data by uploading
           </NavLink>
           {' or '}
-          <NavLink
-            className="feedbackRate-links"
-            to={
-              useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT)
-                ? MAGIC_SETTINGS_TAB_DELIVERY_TRACKING
-                : MAGIC_SETTINGS_TAB
-            }
-          >
+          <NavLink className="feedbackRate-links" to={MAGIC_SETTINGS_TAB}>
             integrate with your delivery partner
           </NavLink>
         </span>

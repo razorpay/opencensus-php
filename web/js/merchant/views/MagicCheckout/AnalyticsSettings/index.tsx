@@ -85,7 +85,7 @@ const AnalyticsSettings = (props: AnalyticsSettingsPropsType): JSX.Element => {
   if (isLoading.authConfigs) {
     return (
       <div className="spinner-container">
-        <Spinner center />
+        <Spinner />
       </div>
     );
   }

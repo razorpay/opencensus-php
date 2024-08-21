@@ -61,6 +61,12 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
       Component: ShipRocketWrapper,
     },
     {
+      label: 'Delivery Data Upload',
+      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      onRCOD: true,
+      Component: DeliveryStatus,
+    },
+    {
       label: 'Allow List',
       id: 'allowlist',
       path: '/magic/setup-settings/rto-reduction-setup/allow-list',
@@ -74,12 +80,6 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: BlockList,
       onRCOD: true,
-    },
-    {
-      label: 'Delivery Data Upload',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
-      onRCOD: true,
-      Component: DeliveryStatus,
     },
     {
       label: 'RTO History',
@@ -106,6 +106,12 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
       onRCOD: true,
     },
     {
+      label: 'Delivery Data Upload',
+      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
+      onRCOD: true,
+      Component: DeliveryStatus,
+    },
+    {
       label: 'Allow List',
       id: 'allowlist',
       path: '/magic/setup-settings/rto-reduction-setup/allow-list',
@@ -119,12 +125,6 @@ export const RTO_REDUCTION_ROUTES: RoutesConfig = {
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: BlockList,
       onRCOD: true,
-    },
-    {
-      label: 'Delivery Data Upload',
-      path: '/magic/setup-settings/rto-reduction-setup/delivery-status',
-      onRCOD: true,
-      Component: DeliveryStatus,
     },
     {
       label: 'RTO History',

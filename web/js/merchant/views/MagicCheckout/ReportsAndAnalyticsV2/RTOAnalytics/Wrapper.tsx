@@ -15,8 +15,8 @@ const Wrapper = (props) => {
   return (
     <div className="rto-magic-container">
       <div className="tab-content" style={{ marginLeft: 0 }}>
-        {displayName === 'RiskReport' && rest?.isManualReviewOpted && <RiskReportBanner />}
-        <Header isManualReviewOpted={rest?.isManualReviewOpted} />
+        {displayName === 'RiskReport' && props?.isManualReviewOpted && <RiskReportBanner />}
+        <Header />
         <Component {...rest} />
       </div>
     </div>

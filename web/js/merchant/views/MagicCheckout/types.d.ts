@@ -6,9 +6,9 @@ export const PLATFORMS = {
 
 type Platform = keyof typeof PLATFORMS;
 
-export type GenericRecord = Record<string, unknown>;
+type GenericRecord = Record<string, unknown>;
 
-export type User = {
+type User = {
   role: string;
   isMagicOrderAnalyticsCREnabled: boolean;
   isMagicCODEngineEnabled: boolean;
@@ -17,7 +17,6 @@ export type User = {
   isCODOrderControlEnabled: boolean;
   isCODIntelligenceEnabled: boolean;
   isMagicRTOAnalyticsV3Enabled: boolean;
-  isMagicShopifyOrderEditEnabled: boolean;
   merchant: {
     id: string;
     [key: string]: unknown;

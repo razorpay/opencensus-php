@@ -40,13 +40,7 @@ export const FLAGGEDREASONS_DOUGHNUT_COLORS = [
 
 export const UPLOAD_ORDER_STATUS_TAB = '/magic/delivery-status/';
 
-export const UPLOAD_ORDER_STATUS_TAB_V2 =
-  '/magic/setup-settings/rto-reduction-setup/delivery-status';
-
 export const MAGIC_SETTINGS_TAB = '/magic/settings/rto-settings';
-
-export const MAGIC_SETTINGS_TAB_DELIVERY_TRACKING =
-  '/magic/setup-settings/rto-reduction-setup/delivery-tracking';
 
 export const DEFAULT_SHIPPING_CHARGE = 75;
 

@@ -24,7 +24,7 @@ import {
 interface NestedVerticalTabProps {
   PATH_PREFIX: string;
   NAV_ITEMS: RoutesConfig;
-  customRouteCheck?: (item: RouteItem, user: User) => boolean;
+  customRouteCheck: (item: RouteItem, user: User) => boolean;
   settings: GenericRecord;
   magicCheckout: GenericRecord;
   user: User;
@@ -37,7 +37,7 @@ interface NestedVerticalTabProps {
 const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
   settings,
   magicCheckout,
-  customRouteCheck = () => true,
+  customRouteCheck,
   user,
   PATH_PREFIX,
   NAV_ITEMS,

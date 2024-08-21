@@ -57,7 +57,7 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExp
       const index = SHOPIFY_CHECKOUT_SETTINGS.findIndex(
         (setting) => setting.key === 'one_cc_hide_cod_when_disabled',
       );
-      index >= 0 && SHOPIFY_CHECKOUT_SETTINGS.splice(index, 1);
+      SHOPIFY_CHECKOUT_SETTINGS.splice(index, 1);
     }
   }, [user, isHideCodWhenDisabledExperimentEnabled]);
 

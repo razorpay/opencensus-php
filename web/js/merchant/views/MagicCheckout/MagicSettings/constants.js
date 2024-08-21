@@ -395,8 +395,3 @@ export const WOOCOMMERCE_SHIPPING_SETTINGS_TYPE = [
 
 export const WOOC_SHIPPING_ENGINE_PLUGIN_UPDATE =
   'Note: To use custom shipping profile, please update your Razorpay WooCommerce plugin to version 4.6.2 or above.';
-
-export const WOOC_SHIPPING_ENGINE_DESC = "You're currently using Wooc Shipping Configs";
-
-export const ENABLE_MAGIC_SHIPPING =
-  'Enable Magic Shipping for a faster and seamless checkout experience';

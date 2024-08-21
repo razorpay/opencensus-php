@@ -38,6 +38,12 @@ describe('testing wooc shipping settings wrapper', () => {
   test('should be able to select wooc shipping type', async () => {
     renderApp();
 
+    const element = screen.getByRole('combobox', {
+      name: 'Shipping type:',
+    });
+
+    await userEvent.click(element);
+
     await userEvent.click(screen.getByText('Woocommerce Shipping'));
 
     await waitFor(() => {

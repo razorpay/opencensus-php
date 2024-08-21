@@ -11,10 +11,7 @@ import { fetchSummary } from 'merchant/reducers/magicCheckout/shippingEngine/act
 import { ShippingEngineStore } from 'merchant/reducers/magicCheckout/shippingEngine/types';
 import lazy from 'merchant/routes/LazyLoader';
 import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
-import {
-  PLATFORMS,
-  ENABLE_MAGIC_SHIPPING,
-} from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import {
   SWITCH_TEXTS,
   SHIPPING_SETTINGS_INFO,
@@ -36,7 +33,6 @@ import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicE
 import { ShippingSettingsWrapper, ShippingToggle } from './styles';
 import { verifyIfProfilesAreConfigured } from './helpers';
 
-import { StyledPluginUpdateWrapper } from 'merchant/views/MagicCheckout/MagicSettings/styled';
 import { StyledRCODShippingNoteWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
@@ -173,61 +169,58 @@ const ShippingSettingsTab = ({
   };
 
   return (
-    <>
-      <StyledPluginUpdateWrapper>{ENABLE_MAGIC_SHIPPING}</StyledPluginUpdateWrapper>
-      <ShippingSettingsWrapper>
-        <Heading size="medium">Shipping Settings </Heading>
-        {isMagicDashboardV2Enabled &&
-          (isIntlShippingLoading ? (
-            <Spinner center={false} />
-          ) : (
-            <ShippingToggle>
-              <SettingsToggle
-                setting={{
-                  label: 'International Shipping ',
-                  value: internationalShipping,
-                  description: 'Allow customers to select international pin code for delivery',
-                }}
-                onToggle={handleInternationalShipping}
-              />
-            </ShippingToggle>
-          ))}
-        <Text size="medium" marginTop="spacing.4" color="surface.text.gray.muted">
-          {!isRCOD ? SHIPPING_SETTINGS_INFO : RCOD_SHIPPING_SETTINGS_INFO}
-        </Text>
-        {!isRCOD ? (
+    <ShippingSettingsWrapper>
+      <Heading size="medium">Shipping Settings </Heading>
+      {isMagicDashboardV2Enabled &&
+        (isIntlShippingLoading ? (
+          <Spinner center={false} />
+        ) : (
           <ShippingToggle>
             <SettingsToggle
-              setting={{ label: 'Magic Shipping ', value: shippingSettings }}
-              onToggle={handleToggleClick}
+              setting={{
+                label: 'International Shipping ',
+                value: internationalShipping,
+                description: 'Allow customers to select international pin code for delivery',
+              }}
+              onToggle={handleInternationalShipping}
             />
           </ShippingToggle>
-        ) : null}
-        <Box marginTop="spacing.2">
-          <Text size="small" color="surface.text.gray.muted">
-            {!isRCOD ? MAGIC_SHIPPING_DESCRIPTION : RCOD_SHIPPING_DESCRIPTION}
-          </Text>
+        ))}
+      <Text size="medium" marginTop="spacing.4" color="surface.text.gray.muted">
+        {!isRCOD ? SHIPPING_SETTINGS_INFO : RCOD_SHIPPING_SETTINGS_INFO}
+      </Text>
+      {!isRCOD ? (
+        <ShippingToggle>
+          <SettingsToggle
+            setting={{ label: 'Magic Shipping ', value: shippingSettings }}
+            onToggle={handleToggleClick}
+          />
+        </ShippingToggle>
+      ) : null}
+      <Box marginTop="spacing.2">
+        <Text size="small" color="surface.text.gray.muted">
+          {!isRCOD ? MAGIC_SHIPPING_DESCRIPTION : RCOD_SHIPPING_DESCRIPTION}
+        </Text>
+      </Box>
+      {isRCOD ? (
+        <Box padding="spacing.6" paddingLeft="spacing.0" paddingRight="spacing.0">
+          <StyledRCODShippingNoteWrapper>{RCOD_SHIPPING_NOTE}</StyledRCODShippingNoteWrapper>
         </Box>
-        {isRCOD ? (
-          <Box padding="spacing.6" paddingLeft="spacing.0" paddingRight="spacing.0">
-            <StyledRCODShippingNoteWrapper>{RCOD_SHIPPING_NOTE}</StyledRCODShippingNoteWrapper>
-          </Box>
-        ) : null}
-        <Box marginY="spacing.6">
-          <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
-            <SuspenseWithLoader type="center">
-              {isLoading.summary ? (
-                <div className="page-spinner-container">
-                  <Spinner center />
-                </div>
-              ) : (
-                <ShippingSettings />
-              )}
-            </SuspenseWithLoader>
-          </ErrorBoundary>
-        </Box>
-      </ShippingSettingsWrapper>
-    </>
+      ) : null}
+      <Box marginY="spacing.6">
+        <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
+          <SuspenseWithLoader type="center">
+            {isLoading.summary ? (
+              <div className="page-spinner-container">
+                <Spinner center />
+              </div>
+            ) : (
+              <ShippingSettings />
+            )}
+          </SuspenseWithLoader>
+        </ErrorBoundary>
+      </Box>
+    </ShippingSettingsWrapper>
   );
 };
 
