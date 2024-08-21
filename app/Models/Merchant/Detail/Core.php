@@ -9,6 +9,7 @@ use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Country;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -4057,7 +4058,10 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
-        (new Validator())->validateRiskTags($input, $merchant);
+        if ($this->isMalaysianMerchant($merchant) === false)
+        {
+            (new Validator())->validateRiskTags($input, $merchant);
+        }
 
         $websiteDetail = $merchantDetails->merchantWebsite;
 
@@ -6422,7 +6426,7 @@ class Core extends Base\Core
     {
         $countryCode = $merchant->getCountry();
 
-        if ($countryCode === 'MY')
+        if ($countryCode !== null && $countryCode === Country::MY)
         {
             return true;
         }

@@ -296,7 +296,9 @@ class Service extends Base\Service
 
     protected function getFdInstanceWhileCreatingTickets($input)
     {
-        return Constants::RZPIND;
+        return (isset($input[Constants::FD_INSTANCE]) && $input[Constants::FD_INSTANCE] === Constants::RZPMY)
+            ? $input[Constants::FD_INSTANCE]
+            : Constants::RZPIND;
     }
 
     /**
@@ -726,7 +728,7 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_ASSIGNED);
         }
 
-        $agentDetail = $this->app[Constants::FRESHDESK_CLIENT]->fetchAgentById($responderID);
+        $agentDetail = $this->app[Constants::FRESHDESK_CLIENT]->fetchAgentById($responderID, $urlKey);
 
         $this->validateFetchAgentDetailResponse($agentDetail);
 
@@ -734,9 +736,16 @@ class Service extends Base\Service
         // using Razorpay Org id as default org for now,
         // TODO: this needs to be fixed by the code owner to get the right org for the email based on the flow
         // $admin =  (new \RZP\Models\Admin\Admin\Repository)->findByEmail($agentDetail[Constants::CONTACT][Constants::EMAIL]);
-        $admin = $this->repo->admin->findByOrgIdAndEmail(
-            Org\Entity::RAZORPAY_ORG_ID,
-            $agentDetail[Constants::CONTACT][Constants::EMAIL]);
+
+        if ($urlKey === Constants::URLMY) {
+            $admin = $this->repo->admin->findByOrgIdAndEmail(
+                Org\Entity::CURLEC_ORG_ID,
+                $agentDetail[Constants::CONTACT][Constants::EMAIL]);
+        } else {
+            $admin = $this->repo->admin->findByOrgIdAndEmail(
+                Org\Entity::RAZORPAY_ORG_ID,
+                $agentDetail[Constants::CONTACT][Constants::EMAIL]);
+        }
 
         return [
             Constants::AGENT_ID             => $admin->getPublicId(),
@@ -784,7 +793,11 @@ class Service extends Base\Service
 
     public function addRemoveValuesBeforeTicketCreation($input, $fdInstance)
     {
-        if ($fdInstance === Constants::RZPIND)
+        if ($fdInstance === Constants::RZPMY) {
+            return $input;
+        }
+
+            if ($fdInstance === Constants::RZPIND)
         {
             if (array_key_exists(Constants::CF_CATEGORY, $input[Constants::CUSTOM_FIELDS]) === false)
             {
@@ -824,7 +837,6 @@ class Service extends Base\Service
                     $input[Constants::TICKET_PRIORITY]  = Priority::getValueForPriorityString(Priority::HIGH);
                 }
             }
-
         }
 
         $merchantId = $this->auth->getMerchantId();

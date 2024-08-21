@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Services\TerminalsService;
 use Throwable;
@@ -99,7 +100,10 @@ class Activate extends Base\Core
     {
         $merchantDetail = $merchant->merchantDetail;
 
-        $merchant->getValidator()->validateBeforeActivate();
+        if ((new Detail\Core)->isMalaysianMerchant($merchant) === false)
+        {
+            $merchant->getValidator()->validateBeforeActivate();
+        }
 
         $this->validateMethodsAndPricing($merchant);
 
@@ -408,7 +412,9 @@ class Activate extends Base\Core
         $merchantDetail = $merchant->merchantDetail;
 
         // @todo: add a check - should be through an instantly_activated state
-        $merchant->getValidator()->validateBeforeKycVerified();
+        if ($merchant->getCountry() !== Country::MY) {
+            $merchant->getValidator()->validateBeforeKycVerified();
+        }
 
         if ($triggerWorkflow)
         {
@@ -1203,7 +1209,7 @@ class Activate extends Base\Core
     protected function shouldCreateBankAccount($merchantDetail): bool
     {
         return ((Detail\Core::shouldSkipBankAccountRegistration() === false) and
-                ($merchantDetail->hasBankAccountDetails() === true));
+            ($merchantDetail->hasBankAccountDetails() === true));
     }
 
     protected function setDbAndModelConnectionWithMode(string $mode, Merchant\Entity $merchant)
