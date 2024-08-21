@@ -82,6 +82,11 @@ class RblBankingAccountGatewayBalanceUpdate extends Job
                     ]);
                 }
 
+                $this->trace->count(Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_INIT, [
+                    'channel'            => $this->params[BankingAccount\Entity::CHANNEL],
+                    'is_priority_update' => $isHighPriorityBalanceUpdate
+                ]);
+
                 $response = $BACore->fetchAndUpdateGatewayBalanceWrapper($this->params, $isHighPriorityBalanceUpdate);
             }
 

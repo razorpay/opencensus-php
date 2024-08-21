@@ -91,6 +91,11 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
                     ]);
                 }
 
+                $this->trace->count(Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_INIT, [
+                    'channel'            => $this->params[BankingAccount\Entity::CHANNEL],
+                    'is_priority_update' => $isHighPriorityBalanceUpdate
+                ]);
+
                 $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($this->params, $isHighPriorityBalanceUpdate);
             }
 

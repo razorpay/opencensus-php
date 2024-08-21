@@ -1732,10 +1732,11 @@ class Core extends Base\Core
         /** @var BASDetails\Entity response */
         $response = $this->fetchAndUpdateGatewayBalance($basDetails);
 
-        if ($isHighPriorityBalanceUpdate === true && $response->getBalanceLastFetchedAt() == $lastBalanceUpdate)
+        if ($response->getBalanceLastFetchedAt() == $lastBalanceUpdate)
         {
-            $this->trace->count(Metrics::BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_FAILURE, [
-                'channel' => $channel
+            $this->trace->count(Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_FAILURE, [
+                'channel'            => $channel,
+                'is_priority_update' => $isHighPriorityBalanceUpdate
             ]);
         }
 
@@ -1743,7 +1744,8 @@ class Core extends Base\Core
             $response->getBalanceLastFetchedAt() - $lastBalanceUpdate : 0;
 
         $this->trace->histogram(Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LATENCY, $latency, [
-            'is_priority_update' => $isHighPriorityBalanceUpdate
+            'is_priority_update' => $isHighPriorityBalanceUpdate,
+            'channel'            => $channel
         ]);
 
         return $response;

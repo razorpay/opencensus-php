@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
+use RZP\Models\BankingAccount\Metrics;
 use RZP\Models\Settlement\SlackNotification;
 
 class ConnectedBankingAccountGatewayBalanceUpdate extends Job
@@ -57,6 +58,10 @@ class ConnectedBankingAccountGatewayBalanceUpdate extends Job
                         'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                         'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
                     ]);
+
+                $this->trace->count(Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_INIT, [
+                    'channel' => $this->params[BankingAccount\Entity::CHANNEL]
+                ]);
 
                 $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($this->params);
             }

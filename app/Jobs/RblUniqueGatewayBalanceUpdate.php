@@ -90,6 +90,11 @@ class RblUniqueGatewayBalanceUpdate extends Job implements ShouldBeUnique
                 ]);
             }
 
+            $this->trace->count(Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_INIT, [
+                'channel'            => $this->params[BankingAccount\Entity::CHANNEL],
+                'is_priority_update' => $isHighPriorityBalanceUpdate
+            ]);
+
             $BACore->fetchAndUpdateGatewayBalanceWrapper($this->params, $isHighPriorityBalanceUpdate);
         }
         catch (\Throwable $exception)
