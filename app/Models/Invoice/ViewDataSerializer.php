@@ -5,6 +5,7 @@ namespace RZP\Models\Invoice;
 use Carbon\Carbon;
 use Config;
 use RZP\Constants\Country;
+use RZP\Constants\Org;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Feature;
@@ -127,9 +128,16 @@ class ViewDataSerializer extends Base\Core
     {
         $org = $this->merchant->org;
 
+        $merchantCountryCode = $this->merchant->getCountry();
+        $defaultLogoForCountry = isset(Org::ORG_BRANDING[$merchantCountryCode]) ?
+            Org::ORG_BRANDING[$merchantCountryCode][Org::BRANDING_LOGO] : '';
+        $defaultBusinessNameForCountry = isset(Org::ORG_BRANDING[$merchantCountryCode]) ?
+            Org::ORG_BRANDING[$merchantCountryCode][Org::BUSINESS_NAME] : '';
+
         $branding = [
             'show_rzp_logo' => true,
-            'branding_logo' => '',
+            'branding_logo' => $org->getInvoiceLogo() ?: $defaultLogoForCountry,
+            'business_name' => $org->getBusinessName() ?: $defaultBusinessNameForCountry,
         ];
 
         $branding[ENTITY::PRODUCT_DOMAIN_NAME] = $this->invoice->getDomainName();
