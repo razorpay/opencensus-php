@@ -4091,8 +4091,7 @@ trait Refund
                 return true;
             }
 
-            // Processing refunds for upi recurring payments via fta since gateways dont support refund flows yet
-            if ($this->isPaymentAndGatewayUpiRecurring($payment) === true)
+            if ($this->shouldRouteUpiRecurringViaFTA($payment) === true)
             {
                 return true;
             }
@@ -4136,13 +4135,18 @@ trait Refund
         return false;
     }
 
-    protected function isPaymentAndGatewayUpiRecurring(Payment\Entity $payment): bool
+    protected function shouldRouteUpiRecurringViaFTA(Payment\Entity $payment): bool
     {
         if (($payment->isUpi() === true) and
             ($payment->isRecurring() === true) and
             (Payment\Gateway::isUpiRecurringSupportedGateway($payment->getGateway()) === true))
         {
-            return true;
+            $variant =  $this->app->razorx->getTreatment($payment->getGateway(),
+                Merchant\RazorxTreatment::UPI_AUTOPAY_GATEWAY_REFUND,
+                $this->mode);
+
+            return ($variant !== 'on');
+
         }
 
         return false;
