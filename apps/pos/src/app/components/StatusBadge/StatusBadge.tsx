@@ -1,4 +1,10 @@
-import { Badge, CheckIcon, ClockIcon, CloseIcon } from '@razorpay/blade/components';
+import {
+  AlertCircleIcon,
+  Badge,
+  CheckIcon,
+  ClockIcon,
+  CloseIcon,
+} from '@razorpay/blade/components';
 import React from 'react';
 
 interface StatusBadgeProps {
@@ -22,7 +28,7 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
       );
     case 'under_review':
       return (
-        <Badge icon={ClockIcon} color="neutral" size={size}>
+        <Badge icon={ClockIcon} color="information" size={size}>
           Under Review
         </Badge>
       );
@@ -34,7 +40,7 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
       );
     case 'kyc_qualified_stb':
       return (
-        <Badge icon={CheckIcon} color="primary" size={size}>
+        <Badge icon={CheckIcon} color="positive" size={size}>
           KYC Qualified
         </Badge>
       );
@@ -60,6 +66,13 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
     case 'kyc_completed':
       return (
         <Badge icon={CheckIcon} color="positive" size={size}>
+          KYC Completed
+        </Badge>
+      );
+
+    case 'needs_clarification':
+      return (
+        <Badge icon={AlertCircleIcon} color="notice" size={size}>
           KYC Completed
         </Badge>
       );

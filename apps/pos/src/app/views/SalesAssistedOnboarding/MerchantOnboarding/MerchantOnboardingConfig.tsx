@@ -90,8 +90,17 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     description: 'Provide merchant’s business information to start the POS jounrey .',
     getStatus: ({ states }) => {
       const { merchantDetails } = states;
-      if (merchantDetails && checkIfKycComplete({ merchant: merchantDetails }))
+      const posActivationStatus = merchantDetails?.activation?.posActivationStatus;
+      if (
+        !posActivationStatus &&
+        merchantDetails &&
+        checkIfKycComplete({ merchant: merchantDetails })
+      ) {
         return 'kyc_completed';
+      }
+
+      if (posActivationStatus) return posActivationStatus.toLowerCase();
+
       return 'pending';
     },
     checkIfDisabled: ({ values }) => !values.merchantId,
