@@ -65,6 +65,9 @@ class UserController extends Controller
 
     const RAZORPAY_SALES_ROLE = 'razorpay_sales';
 
+    const SALES_ASSISTED_ONBOARDING_SOURCE = 'sales_assisted_onboarding';
+
+    
     /**
      * @var \App\Admin\Service|null
      */
@@ -262,9 +265,14 @@ class UserController extends Controller
             $isPosSalesAgentRedirectApplicable = $details["role"] === self::RAZORPAY_SALES_ROLE;
 
             if ($isPosSalesAgentRedirectApplicable) {
+                $rzpSalesMid = $details['id'] ?? '';
                 $isSwitchComplete =  $this->switchToPosSalesAgent($details);
                 if($isSwitchComplete){
-                    return redirect('/');
+                    $queryParams = http_build_query([
+                        'source' =>  self::SALES_ASSISTED_ONBOARDING_SOURCE,
+                        'rzp_sales_mid' => $rzpSalesMid
+                    ]);
+                    return redirect('/app' . '?' . $queryParams);
                 }
             }
 

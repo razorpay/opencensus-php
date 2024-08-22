@@ -1,19 +1,23 @@
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
-import { matchFullPageView } from 'merchant/routes';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
+import { matchFullPageView } from 'merchant/routes';
 
 type HandleIndexProps = {
   user: User;
 };
+
+const SALES_ASSISTED_ONBOARDING = 'sales_assisted_onboarding';
+
 const HandleIndex = ({ user }: HandleIndexProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const i18 = useI18Service();
   // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
   const splitz = useSplitzService();
@@ -35,7 +39,17 @@ const HandleIndex = ({ user }: HandleIndexProps) => {
       navigate(newRoute);
     } else if (user.isPartnerAgentRole) {
       if (isPosSalesAgent) {
-        navigate('/pos-sales');
+        const isKYCOngoing = searchParams.get('source') === SALES_ASSISTED_ONBOARDING;
+        const rzpSalesMid = searchParams.get('rzp_sales_mid');
+        let navigationInfo = { pathname: '/pos-sales', search: '' };
+        if (isKYCOngoing && rzpSalesMid) {
+          navigate(navigationInfo, { replace: true });
+          navigationInfo = {
+            pathname: `/pos-sales/onboarding/${rzpSalesMid}`,
+            search: `?source=${SALES_ASSISTED_ONBOARDING}`,
+          };
+        }
+        navigate(navigationInfo);
         return;
       }
       navigate('/partners/submerchants/pos');

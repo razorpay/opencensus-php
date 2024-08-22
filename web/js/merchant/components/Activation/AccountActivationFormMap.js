@@ -15,7 +15,7 @@ const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
 
 // For marketplace linked account which required kyc
-const needsKYC = activation => !!activation.props.data.need_kyc;
+const needsKYC = (activation) => !!activation.props.data.need_kyc;
 
 export const BUSINESS_TYPE_OPTIONS = [
   { label: '--Select--', name: '' },
@@ -65,7 +65,7 @@ const bankAccountFields = [
   {
     name: 'bank_branch_ifsc',
     label: 'Branch IFSC Code',
-    info: function(e) {
+    info: function (e) {
       if (!e) {
         return null;
       }
@@ -78,17 +78,16 @@ const bankAccountFields = [
     {
       name: 'bank_account_number',
       label: 'Account Number',
-      info:
-        'Should be a current bank account of the company to which your payments will be settled.',
+      info: 'Should be a current bank account of the company to which your payments will be settled.',
       autoComplete: 'new-password',
       type: 'password',
-      onPaste: function(e) {
+      onPaste: function (e) {
         e.preventDefault();
       }, // Disable copy-paste in this field
-      onFocus: e => {
+      onFocus: (e) => {
         document.getElementsByName('bank_account_number')[0].type = 'text';
       },
-      onBlur: function(e) {
+      onBlur: function (e) {
         document.getElementsByName('bank_account_number')[0].type = 'password';
 
         const bankAccountNumber = this.state.dirty.bank_account_number;
@@ -109,16 +108,16 @@ const bankAccountFields = [
       autoComplete: 'new-password',
       info: 'Please re-enter the bank account number.',
       _autoRenderImpure: true, // Re-render to show the error
-      onPaste: function(e) {
+      onPaste: function (e) {
         e.preventDefault();
       }, // Disable copy-paste in this field
-      onFocus: e => {
+      onFocus: (e) => {
         document.querySelector('[data-name="account_no"]').type = 'text';
       },
-      onBlur: e => {
+      onBlur: (e) => {
         document.querySelector('[data-name="account_no"]').type = 'password';
       },
-      validator: function(value) {
+      validator: function (value) {
         if (!value) {
           return;
         }
@@ -129,7 +128,7 @@ const bankAccountFields = [
           return 'Account no. does not match';
         }
       },
-      _when: activation => {
+      _when: (activation) => {
         const isLocked = activation.props.data.locked;
 
         return !isLocked;
@@ -141,9 +140,8 @@ const bankAccountFields = [
     label: 'Beneficiary Name',
     maxLength: '120',
     minLength: '4',
-    info: function() {
-      const currentBusinessType =
-        this.state.dirty.business_type || this.props.data.business_type;
+    info: function () {
+      const currentBusinessType = this.state.dirty.business_type || this.props.data.business_type;
 
       let text = 'Company';
 
@@ -160,8 +158,7 @@ const uploadFields = [
   {
     name: 'address_proof_url',
     label: "Company's Bank Account Statement with Address",
-    description:
-      'Your Bank account number, IFSC code, and Company Name should be clearly visible',
+    description: 'Your Bank account number, IFSC code, and Company Name should be clearly visible',
     _cmp: Input.File,
   },
   {
@@ -190,14 +187,14 @@ const tabsData = [
  * Note: If some Form Tab is removed from `tabsData`, then it's corresponding fields must also be removed from formNamesMeta
  * The same you can check for data.need_kyc LA accounts
  */
-export const accountFormFieldNamesMeta = (function() {
+export const accountFormFieldNamesMeta = (function () {
   const formNames = [];
 
   for (let t = 0; t < tabsData.length; t++) {
     const tabNames = [];
-    tabsData[t].forEach(f => {
+    tabsData[t].forEach((f) => {
       if (Array.isArray(f)) {
-        return f.forEach(gf => {
+        return f.forEach((gf) => {
           // groups fields are array.
           if (gf.name) {
             tabNames.push(gf.name); // Check if this field has name attribute
