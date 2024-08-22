@@ -973,7 +973,7 @@ class ActivationWizard extends React.Component {
       ) {
         // Saving only the fields corresponding to currentActive tab.
         const fieldVal = currentDirty[name];
-        reqData[name] = fieldVal;
+        reqData[name] = typeof fieldVal === 'string' ? fieldVal.trim() : fieldVal;
 
         // For business website empty string => user don't have website. null => user didn't attempt the field.
         const allowEmptyString = [
