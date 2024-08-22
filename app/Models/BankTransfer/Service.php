@@ -79,6 +79,17 @@ class Service extends Base\Service
     const REGULAR = 'regular';
     const PRIORITY = 'priority';
 
+    const COLLECTX_VALIDATION_CALLBACK_IDENTIFER = 'validate';
+    const COLLECTX_NOTIFICATION_CALLBACK_IDENTIFER = 'notify';
+    const COLLECTX_YB_PAYLOAD_TRANSFER_TYPE = "transfer_type";
+
+    const TRANSFER_TYPE_UPI = "UPI";
+    const TRANSFER_TYPE_NEFT = "NEFT";
+    const TRANSFER_TYPE_RTGS = "RTGS";
+    const TRANSFER_TYPE_IMPS = "IMPS";
+    const TRANSFER_TYPE_FT = "FT";
+
+
     /**
      * Service constructor. Sets provider from app auth, and
      * sets request IP for use in validation of providers.
@@ -168,10 +179,11 @@ class Service extends Base\Service
         //are skipped.
         //$response is returned empty if it is not a validation request
 
-        if ($this->checkForCollectXValidateRequestForUPI($input) === true)
+        if ($this->checkForCollectXCallback($input) === true)
         {
-            return $this->routeForCollectXUPIRequest($input);
+            return $this->handleCollectXCallback($input);
         }
+
         if ($input['gateway'] === Gateway::YESBANK || strpos($input['input']['payee_ifsc'], "YESB") === 0 ){
             $this->trace->error(
                 TraceCode::YESBANK_GATEWAY_UNEXPECTED_PAYMENT_ERROR,
@@ -257,9 +269,145 @@ class Service extends Base\Service
         return false;
     }
 
+    protected function checkForCollectXCallback(array $input)
+    {
+        if (array_key_exists(self::COLLECTX_VALIDATION_CALLBACK_IDENTIFER, $input) or
+            array_key_exists(self::COLLECTX_NOTIFICATION_CALLBACK_IDENTIFER, $input))
+        {
+            return true;
+        }
+        return false;
+
+    }
+
+    protected function handleCollectXCallback(array $input)
+    {
+        if (array_key_exists(self::COLLECTX_YB_PAYLOAD_TRANSFER_TYPE, $input[self::COLLECTX_VALIDATION_CALLBACK_IDENTIFER]))
+        {
+            $transferMethod = $input[self::COLLECTX_VALIDATION_CALLBACK_IDENTIFER][self::COLLECTX_YB_PAYLOAD_TRANSFER_TYPE];
+        }
+
+        switch ($transferMethod){
+            case self::TRANSFER_TYPE_UPI:
+                return self::routeForCollectXUPIRequest($input);
+            case self::TRANSFER_TYPE_IMPS:
+            case self::TRANSFER_TYPE_NEFT:
+            case self::TRANSFER_TYPE_RTGS:
+            case self::TRANSFER_TYPE_FT:
+                return self::routeForCollectXBankTransferRequest($input, "bank_transfer_process");
+        }
+
+        return [];
+
+    }
+
     protected function routeForCollectXUPIRequest(array $input)
     {
         return (new UpiTransfer\Service())->processUpiTransferPayment(json_encode($input), Gateway::UPI_YESBANK, isCollectXPayment: true);
+    }
+
+    protected function formatYesbankInputForCollectX(array $input)
+    {
+        return [
+            "amount" => $input["transfer_amt"],
+            "description"=> $input["rmtr_to_bene_note"],
+            "mode" => $input["transfer_type"],
+            "payee_account" => $input["bene_account_no"],
+            "payee_ifsc" => $input["bene_account_ifsc"],
+            "payer_account" => $input["rmtr_account_no"],
+            "payer_ifsc" => $input["rmtr_account_ifsc"],
+            "payer_name" => $input["rmtr_full_name"],
+            "time" => Carbon::createFromFormat('Y-m-d H:i:s', $input["transfer_timestamp"], Timezone::IST)->timestamp,
+            "transaction_id" => $input["transfer_unique_no"]
+        ];
+    }
+
+    protected function routeForCollectXBankTransferRequest(array $input, string $routeName)
+    {
+        $input = $input[self::COLLECTX_VALIDATION_CALLBACK_IDENTIFER];
+
+        $this->trace->info(TraceCode::DEBUG_LOGGING, [
+            "input" => $input
+        ]);
+
+        $input = $this->formatYesbankInputForCollectX($input);
+
+        $this->trace->info(TraceCode::COLLECTX_YESB_FORMATTED_INPUT, [
+            "input" => $input
+        ]);
+
+        try
+        {
+            // Will throw an exception if duplicate request
+            $this->validateDuplicateRequest($input, $routeName, true);
+
+            $this->checkForUnexpectedBankTransferPayments($input);
+
+            $bankTransferRequest = (new BankTransferRequest\Core())->create(
+                $input,
+                Gateway::YESBANK,
+                $requestPayload ?? $input, [], $routeName
+            );
+
+            $this->dispatchBankTransferToQueue($bankTransferRequest, true);
+
+            $response = [
+                'validateResponse' => [
+                    'decision' => "pass"
+                ]
+            ];
+
+            $this->trace->info(TraceCode::COLLECTX_YESB_VALIDATE_RESPONSE, [
+                'response' => $response
+            ]);
+
+            return $response;
+
+        } catch (\Exception $ex) {
+            $this->trace->traceException($ex,
+                Trace::ERROR,
+                TraceCode::BANK_TRANSFER_SAVE_REQUEST_FAILED,
+                [
+                    'transaction_id' => $input[Entity::REQ_UTR]
+                ]);
+
+            $response = [
+                'validateResponse' => [
+                    'decision' => "reject"
+                ]
+            ];
+
+            $this->trace->info(TraceCode::COLLECTX_YESB_VALIDATE_RESPONSE, [
+                'response' => $response
+            ]);
+
+            return $response;
+        }
+
+    }
+
+    protected function checkForUnexpectedBankTransferPayments(array $input)
+    {
+        $accountNumber = $input["payee_account"];
+
+        $ifsc = $input["payee_ifsc"];
+
+        $bankAccount = $this->repo
+            ->bank_account
+            ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $ifsc, true);
+
+        // Throw error if bank account does not exist
+        if ($bankAccount === null) {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST, $input);
+        }
+
+        $virtualAccount = $bankAccount->source;
+
+        if($virtualAccount->getStatus() === "closed")
+        {
+            // Throw exception if VA is closed
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::COLLECTX_UNEXPECTED_PAYMENT_ON_CLOSED_VA, $input);
+        }
     }
 
     protected function processValidationRequest(array $input, string $provider = null)
@@ -324,7 +472,8 @@ class Service extends Base\Service
         BankTransferRequest\Entity $bankTransferRequest,
         string                     $provider = null,
         bool                       $checkForIfsc = false,
-        bool                       $skipPayeeAccountLengthValidation = false)
+        bool                       $skipPayeeAccountLengthValidation = false,
+        bool                       $isCollectXBankTransfer = false)
     {
         if ($bankTransferRequest !== null and $bankTransferRequest->getPayeeAccount() !== null) {
             if ($skipPayeeAccountLengthValidation === false) {
@@ -563,7 +712,9 @@ class Service extends Base\Service
         // For CollectX, money transfer is happening once the validation callback succeeds
         // This should be extended to record notification of money transfer but for now, giving 200 response
         // to all CollectX notification callbacks
-        if ($this->checkForCollectXNotifyRequestForUPI($input) === true)
+        if ($this->checkForCollectXCallback($input) === true and
+            array_key_exists(self::COLLECTX_NOTIFICATION_CALLBACK_IDENTIFER, $input)
+        )
         {
             $response = [
                 'notifyResult' => [
@@ -572,7 +723,7 @@ class Service extends Base\Service
             ];
 
             $this->trace->info(
-                TraceCode::COLLECTX_YESB_RESPONSE,
+                TraceCode::COLLECTX_YESB_NOTIFY_RESPONSE,
                 [
                     'response' => $response
                 ]);
@@ -805,7 +956,7 @@ class Service extends Base\Service
         return new $requestProcessor();
     }
 
-    private function dispatchBankTransferToQueue($bankTransferRequest)
+    private function dispatchBankTransferToQueue($bankTransferRequest, $isCollectXBankTransfer = false)
     {
         $isPushedToSqs = false;
         try {
@@ -819,7 +970,7 @@ class Service extends Base\Service
                 ]
             );
 
-            BankTransferCreateProcess::dispatch($this->mode, $bankTransferRequest->getId());
+            BankTransferCreateProcess::dispatch($this->mode, $bankTransferRequest->getId(), $isCollectXBankTransfer);
 
             $isPushedToSqs = true;
         } catch (\Exception $e) {
@@ -852,7 +1003,7 @@ class Service extends Base\Service
         }
     }
 
-    private function validateDuplicateRequest(array $input, $routeName = null)
+    private function validateDuplicateRequest(array $input, $routeName = null, $isCollectXValidation = false)
     {
         if ($routeName === null) {
             $routeName = $this->app['api.route']->getCurrentRouteName();
@@ -863,7 +1014,7 @@ class Service extends Base\Service
             ($routeName === 'bank_transfer_process_yesbank_internal') or
             ($routeName === 'bank_transfer_process_axis') or
             ($routeName === 'bank_transfer_process_axis_test') or
-            ($routeName === 'bank_transfer_process_axis_internal')) {
+            ($routeName === 'bank_transfer_process_axis_internal') or $isCollectXValidation) {
             if (!isset($input[Entity::AMOUNT], $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]) === true) {
                 throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
             }
@@ -887,7 +1038,7 @@ class Service extends Base\Service
             if ($duplicateBankTransfer !== null) {
                 if (($routeName === 'bank_transfer_process_axis') or
                     ($routeName === 'bank_transfer_process_axis_test') or
-                    ($routeName === 'bank_transfer_process_axis_internal')) {
+                    ($routeName === 'bank_transfer_process_axis_internal') or $isCollectXValidation) {
                     throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
                 }
                 return [

@@ -2413,7 +2413,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_PAYMENT_GATEWAY_CALLBACK                           = 'QR_PAYMENT_GATEWAY_CALLBACK';
     const PROCESS_QR_PAYMENT_REQUEST                            = 'PROCESS_QR_PAYMENT_REQUEST';
 
-    const COLLECTX_YESB_RESPONSE                                = "COLLECTX_YESB_RESPONSE";
+    const COLLECTX_YESB_VALIDATE_RESPONSE                       = "COLLECTX_YESB_VALIDATE_RESPONSE";
+    const COLLECTX_YESB_NOTIFY_RESPONSE                       = "COLLECTX_YESB_NOTIFY_RESPONSE";
+
+    const COLLECTX_YESB_FORMATTED_INPUT                         = "COLLECTX_YESB_FORMATTED_INPUT";
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
 
     const QR_PAYMENT_PROCESS_REQUEST                            = 'QR_PAYMENT_PROCESS_REQUEST';

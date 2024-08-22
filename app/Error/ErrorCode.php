@@ -465,6 +465,8 @@ class ErrorCode
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
     const LEDGER_MERCHANT_BALANCE_GET_ERROR                                         = 'LEDGER_MERCHANT_BALANCE_GET_ERROR';
     const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                      = 'BAD_REQUEST_INPUT_VALIDATION_FAILURE';
+    const COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST                                    = 'COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST';
+    const COLLECTX_UNEXPECTED_PAYMENT_ON_CLOSED_VA                                  = 'COLLECTX_UNEXPECTED_PAYMENT_ON_CLOSED_VA';
     const BAD_REQUEST_SIGNATURE_ERROR                                               = 'BAD_REQUEST_SIGNATURE_ERROR';
     const BAD_REQUEST_REMINDER_NOT_APPLICABLE                                       = 'BAD_REQUEST_REMINDER_NOT_APPLICABLE';
     const SERVER_ERROR_REMINDER_CALLBACK_FAILED                                     = 'SERVER_ERROR_REMINDER_CALLBACK_FAILED';

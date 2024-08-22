@@ -9829,9 +9829,11 @@ class Processor
 
         $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test', 'bank_transfer_process_rbl_internal'];
         $axisVaRoutes = ['bank_transfer_process_axis', 'bank_transfer_process_axis_test', 'bank_transfer_process_axis_internal'];
+        $yesbVaRoutes = ['bank_transfer_process'];
 
         if ((in_array(Route::currentRouteName(), $rblVaRoutes, true) === true) ||
-            (in_array(Route::currentRouteName(), $axisVaRoutes, true) === true))
+            (in_array(Route::currentRouteName(), $axisVaRoutes, true) === true) ||
+            (in_array(Route::currentRouteName(), $yesbVaRoutes, true) === true) )
         {
             return;
         }
@@ -10207,6 +10209,15 @@ class Processor
 
         if ($payment->isBankTransfer() === true)
         {
+            if ($payment->identifierForCollectxPayment() === true)
+            {
+                $response['should_auto_capture'] = true;
+
+                $response['reason'] = Constants::COLLECTX_PAYMENT;
+
+                return $response;
+            }
+
             $response['should_auto_capture'] = false;
 
             $response['reason'] = Constants::BANK_TRANSFER_PAYMENT;

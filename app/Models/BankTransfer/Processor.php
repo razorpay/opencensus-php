@@ -192,7 +192,17 @@ class Processor extends VirtualAccount\Processor
          */
         $tempBankTransfer = $bankTransfer;
 
-        $bankTransfer = $this->repo->transaction(function () use ($tempBankTransfer) {
+        $isCollectXBankTransferPayment = false;
+
+        if ($bankTransfer->isCollectXBankTransfer() === true)
+        {
+            $isCollectXBankTransferPayment = true;
+
+            // Removing the attribute as we don't need it anymore and the flag defined above can be used
+            $bankTransfer->removeCollectXAttributes();
+        }
+
+        $bankTransfer = $this->repo->transaction(function () use ($tempBankTransfer, $isCollectXBankTransferPayment) {
             $bankTransfer = clone $tempBankTransfer;
 
             // Bank transfer's relation association
@@ -202,7 +212,7 @@ class Processor extends VirtualAccount\Processor
 
             $bankTransfer->balance()->associate($this->virtualAccount->balance);
 
-            $this->verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer($bankTransfer);
+            $this->verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer($bankTransfer, false, $isCollectXBankTransferPayment);
 
             $balanceType = $this->virtualAccount->getBalanceType();
 
@@ -225,7 +235,14 @@ class Processor extends VirtualAccount\Processor
                     break;
 
                 case Balance\Type::BANKING:
-                    $this->processPaymentForBanking($bankTransfer);
+                    if ($isCollectXBankTransferPayment === true)
+                    {
+                        $this->processPaymentForPg($bankTransfer, $isCollectXBankTransferPayment);
+                    }
+                    else
+                    {
+                        $this->processPaymentForBanking($bankTransfer);
+                    }
                     break;
 
                 default:
@@ -240,7 +257,7 @@ class Processor extends VirtualAccount\Processor
         }, $deadlockRetryAttempts);
 
         // feature flag based call to Ledger service
-        if ($this->virtualAccount->isBalanceTypeBanking() === true) {
+        if ($this->virtualAccount->isBalanceTypeBanking() === true and $isCollectXBankTransferPayment === false) {
             if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) {
                 $this->processLedgerForReverseShadow($bankTransfer);
             } else {
@@ -249,7 +266,7 @@ class Processor extends VirtualAccount\Processor
         }
 
         // Currently dispatches transaction.created only for bank transfer on banking balance.
-        $this->sendEventForTransactionCreated($bankTransfer);
+        $this->sendEventForTransactionCreated($bankTransfer, $isCollectXBankTransferPayment);
 
         $this->refundOrCapturePayment($bankTransfer);
 
@@ -313,8 +330,13 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
-    protected function sendEventForTransactionCreated(Entity $bankTransfer)
+    protected function sendEventForTransactionCreated(Entity $bankTransfer, $isCollectXPayment = false)
     {
+        if ($isCollectXPayment === true)
+        {
+            // We do not need to dispatch for collectX payments
+            return;
+        }
         if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false) {
             if ($bankTransfer->isBalanceTypeBanking() === true) {
                 $this->dispatchEventForTransactionCreated($bankTransfer, $bankTransfer->transaction);
@@ -348,9 +370,12 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
-    protected function processPaymentForPg(Entity $bankTransfer)
+    protected function processPaymentForPg(Entity $bankTransfer, bool $isCollectXBankTransferPayment = false)
     {
-        assertTrue($this->virtualAccount->isBalanceTypePrimary(), 'Attempted processing VA payment incorrectly!');
+        if (!$isCollectXBankTransferPayment)
+        {
+            assertTrue($this->virtualAccount->isBalanceTypePrimary(), 'Attempted processing VA payment incorrectly!');
+        }
         assertTrue($this->repo->isTransactionActive(), 'Attempted processing VA payment without transaction!');
 
         $paymentInput = [];
@@ -370,7 +395,7 @@ class Processor extends VirtualAccount\Processor
                     break;
 
                 default:
-                    $this->createPaymentOrUnexpected($bankTransfer, $paymentInput, $gatewayData);
+                    $this->createPaymentOrUnexpected($bankTransfer, $paymentInput, $gatewayData, $isCollectXBankTransferPayment);
             }
 
             $payment = $this->getPaymentProcessor()->getPayment();
@@ -826,7 +851,9 @@ class Processor extends VirtualAccount\Processor
      */
     protected function verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer(
         Entity $bankTransfer,
-        bool   $isValidationFlow = false)
+        bool   $isValidationFlow = false,
+        bool   $isCollectXBankTransferPayment = false)
+
     {
         $balanceType = $this->virtualAccount->getBalanceType();
 
@@ -838,7 +865,9 @@ class Processor extends VirtualAccount\Processor
             ]
         );
 
-        if ($balanceType === Balance\Type::BANKING) {
+        if (($balanceType === Balance\Type::BANKING) and
+            ($isCollectXBankTransferPayment === false))
+        {
             if (!$isValidationFlow) {
                 $this->createAndAssociatePayerBankAccount($bankTransfer);
 

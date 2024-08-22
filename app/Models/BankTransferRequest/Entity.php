@@ -7,6 +7,7 @@ use App;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use Illuminate\Support\Arr;
 
 class Entity extends Base\PublicEntity
 {
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
     const PRODUCT_TYPE                  = 'product_type';
     const PRODUCT_ID                    = 'product_id';
     const MERCHANT_NAME                 = 'merchant_name';
+    const IS_COLLECTX_BANK_TRANSFER     = 'is_collectx_bank_transfer';
 
     const BANK_TRANSFER_REQUEST_ID      = 'bank_transfer_request_id';
 
@@ -198,6 +200,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function isCollectXBankTransfer(): bool
+    {
+        return $this->getAttribute(self::IS_COLLECTX_BANK_TRANSFER) === true;
+    }
+
     // -------------------- End Getters --------------------
 
     // -------------------- Setters --------------------
@@ -242,6 +249,20 @@ class Entity extends Base\PublicEntity
     public function setRequestSource($requestSource)
     {
         $this->setAttribute(self::REQUEST_SOURCE, $requestSource);
+    }
+
+    public function markAsCollectXBankTransfer()
+    {
+        $this->setAttribute(self::IS_COLLECTX_BANK_TRANSFER, true);
+    }
+
+    public function removeCollectXAttributes()
+    {
+        $this->removeAttributes([self::IS_COLLECTX_BANK_TRANSFER]);
+    }
+
+    private function removeAttributes($fieldToRemove) {
+        $this->attributes = Arr::except($this->attributes, $fieldToRemove);
     }
 
     // -------------------- End Setters --------------------

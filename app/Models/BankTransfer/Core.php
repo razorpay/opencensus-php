@@ -83,6 +83,11 @@ class Core extends Base\Core
 
         $bankTransfer->setStatus(Status::CREATED);
 
+        if($input[Entity::IS_COLLECTX_BANK_TRANSFER] === true)
+        {
+            $bankTransfer->setAttribute(Entity::IS_COLLECTX_BANK_TRANSFER, true);
+        }
+
         return $bankTransfer;
     }
 
@@ -218,6 +223,14 @@ class Core extends Base\Core
 
         try
         {
+            if ($bankTransferRequest->isCollectXBankTransfer())
+            {
+                $bankTransferInput[Entity::IS_COLLECTX_BANK_TRANSFER] = true;
+
+                // Removing the attribute from bank transfer request entity as we don't need it anymore
+                $bankTransferRequest->removeCollectXAttributes();
+            }
+
             $bankTransfer = $this->processBankTransferRequest($bankTransferRequest, $bankTransferInput, $provider);
 
             $paymentSuccess = ($bankTransfer !== null);
@@ -306,6 +319,11 @@ class Core extends Base\Core
             $isExpected = $bankTransfer->isExpected();
 
             $errorMessage = $errorMessage ?? $bankTransfer->getUnexpectedReason();
+        }
+
+        if ($bankTransferRequest->isCollectXBankTransfer())
+        {
+            $bankTransferRequest->removeCollectXAttributes();
         }
 
         $this->bankTransferRequestCore

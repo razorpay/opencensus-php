@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Entity::NARRATION               => 'nullable|string',
         Entity::FIRST_TIME_ON_TEST_MODE => 'sometimes|boolean',
         Entity::REQUEST_TYPE            => 'sometimes|string',
+        Entity::IS_COLLECTX_BANK_TRANSFER => 'sometimes|boolean'
     ];
 
     public static $rblRules = [

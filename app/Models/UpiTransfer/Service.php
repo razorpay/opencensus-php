@@ -65,7 +65,7 @@ class Service extends Base\Service
                 ];
 
                 $this->trace->info(
-                    TraceCode::COLLECTX_YESB_RESPONSE,
+                    TraceCode::COLLECTX_YESB_VALIDATE_RESPONSE,
                     [
                         'response' => $response
                     ]);

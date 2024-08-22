@@ -199,6 +199,8 @@ abstract class Processor extends Base\Core
             }
         }
 
+        //Apurva check if smart collect flow to be run on our va, check will be required to skip banking va checks and flow here
+
         $paymentExpected = $this->checkPaymentExpectedAndSetVirtualAccount($entity);
 
         $entity->setExpected($paymentExpected);

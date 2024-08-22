@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Illuminate\Support\Arr;
 use Razorpay\IFSC\IFSC;
 
 use RZP\Constants;
@@ -111,7 +112,7 @@ class Entity extends Base\PublicEntity
     const CALLBACK                      = 'callback';
     const SOURCE                        = 'source';
     const STATUS                        = 'status';
-
+    const IS_COLLECTX_BANK_TRANSFER     = 'is_collectx_bank_transfer';
     const REQUEST_TYPE                  = 'request_type';
 
     protected $requestSource;
@@ -129,6 +130,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::NARRATION,
         self::STATUS,
+        self::IS_COLLECTX_BANK_TRANSFER,
     ];
 
     protected $public = [
@@ -173,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::STATUS,
+        self::IS_COLLECTX_BANK_TRANSFER,
     ];
 
     protected $casts = [
@@ -578,7 +581,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function isCollectXBankTransfer(): bool
+    {
+        return $this->getAttribute(self::IS_COLLECTX_BANK_TRANSFER) === true;
+    }
+
     // ----------------------- Setters -----------------------------------------
+
+    public function removeCollectXAttributes()
+    {
+        $this->removeAttributes([self::IS_COLLECTX_BANK_TRANSFER]);
+    }
+
+    private function removeAttributes($fieldToRemove) {
+        $this->attributes = Arr::except($this->attributes, $fieldToRemove);
+    }
 
     public function setExpected(bool $expected)
     {
