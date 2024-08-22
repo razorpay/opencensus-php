@@ -1,6 +1,7 @@
 import { test } from '@playwright/test';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { clickSkipAndStartBtn } from 'utils';
+
 import { getPaymentId, searchPaymentId } from './utils';
 
 test.describe.parallel(

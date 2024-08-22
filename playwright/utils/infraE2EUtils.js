@@ -166,6 +166,7 @@ const getSelfPayload = ({ repoName, selfCommit, affectedProjects }) => {
     chart_values: {
       selfserve_image: getCommit('self-serve'),
       pos_image: getCommit('pos'),
+      digitalbills_image: getCommit('digital-bills'),
       web_requests_memory: '350Mi',
       web_requests_cpu: '500m',
       replicas: 2,

@@ -14,6 +14,7 @@
     "postinstall": "pnpm exec husky install",
     "start": "pnpm nx run web:dev:build-merchant",
     "start-self-serve": "pnpm nx run self-serve:start",
+    "start-digital-bills": "pnpm nx run digital-bills:start",
     "start-pos": "pnpm nx run pos:start",
     "start-newAuth": "pnpm nx run web:dev:build-newAuth",
     "start-pokedex": "pnpm nx run web:dev:build-pokedex",

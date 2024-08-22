@@ -1,0 +1,12 @@
+# editor configs
+.idea
+.vscode
+.gradle
+
+build
+
+# debug logs
+npm-debug.log*
+lerna-debug.log*
+
+node_modules

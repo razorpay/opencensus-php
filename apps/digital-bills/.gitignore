@@ -1,0 +1,27 @@
+# editor configs
+.idea
+.vscode
+.DS_Store
+.gradle
+build
+e2e-storage/
+
+# logs
+*-debug.log
+*-error.log
+
+node_modules
+/package-lock.json
+
+# local environment secrets files
+.env.*.secrets
+
+# Test coverage directory
+coverage
+.scannerwork
+.devspace
+
+lighthouse-reports/
+
+# typescript compilation output
+out

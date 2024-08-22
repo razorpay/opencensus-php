@@ -2,6 +2,7 @@ prefer-workspace-packages: true
 packages:
   - web
   - apps/self-serve
+  - apps/digital-bills
   - apps/pos
   - libs/shared-ui
   - libs/shared-utils

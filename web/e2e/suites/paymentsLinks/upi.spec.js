@@ -1,9 +1,9 @@
-import { test, expect } from 'utils/base';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
+import { clickSkipAndStartBtn } from 'utils';
+import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { upiLinksData } from './constants';
-import { clickSkipAndStartBtn } from 'utils';
 import {
   cancelPLCreated,
   clonePLCreated,

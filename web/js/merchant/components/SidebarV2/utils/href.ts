@@ -50,6 +50,7 @@ const ROUTE_REG = {
 export const BASE_ROUTES = {
   home: '/dashboard',
   transactions: '/payments',
+  digital_bills: '/digital-bills',
   settlements: '/settlements',
   settings: '/config',
   developers: '/developers/apis',

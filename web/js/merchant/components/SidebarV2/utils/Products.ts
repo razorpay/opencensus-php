@@ -27,6 +27,10 @@ export const PRODUCTS_DATA = {
     icon: 'i-repeat',
     additionalCondition: (user: any): boolean => user.isAllowedMultiple('payments orders refunds'),
   },
+  digital_bills: {
+    icon: 'i-digital-bills',
+    additionalCondition: (): boolean => false,
+  },
   settlements: {
     icon: 'i-done-all',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
@@ -303,6 +307,11 @@ export const COMMON_PRODUCTS = [
   {
     title: SIDEEBAR_PRODUCTS_TITLES.transactions,
     product_id: 'transactions',
+    tags: [],
+  },
+  {
+    title: SIDEEBAR_PRODUCTS_TITLES.digital_bills,
+    product_id: 'digital_bills',
     tags: [],
   },
   {

@@ -41,6 +41,7 @@ web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
 web/js/merchant/views/POS                         @amitabh-blade @DanishOnGit @AakashRaina @amanpatel6991
 plugins/i18n-rules                                @razorpay/i18n-fe
 smart-linter.js                                   @razorpay/i18n-fe
+apps/digital-bills                                @mihir-karbelkar-rp
 apps/pos                                          @amitabh-blade @DanishOnGit @AakashRaina @amanpatel6991 @loombarishav
 pnpm-lock.yaml                                    @aniketonweb @razorpay/ssab-fe
 web/js/common/utils/posAgent.ts                   @amitabh-blade @DanishOnGit @AakashRaina @amanpatel6991

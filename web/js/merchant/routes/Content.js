@@ -70,12 +70,20 @@ const loadModule = async ({ module, scope }) =>
     url: window.cdnDashboardAssetsUrl,
     scope,
     module,
+    isLoadedFromShell: true,
   });
 
 const SelfServe = lazy(() =>
   /**  webpackChunkName: "SelfServeRouter" */ loadModule({
     module: 'SelfServeRouter',
     scope: 'selfserve',
+  }),
+);
+
+const DigitalBills = lazy(() =>
+  /**  webpackChunkName: "DigitalBillsWrapper" */ loadModule({
+    module: 'DigitalBillsWrapper',
+    scope: 'digitalbills',
   }),
 );
 
@@ -816,6 +824,15 @@ class Content extends Component {
                 }
               >
                 <PartnerDashboard />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="digital-bills/*"
+            element={
+              <RouteGuard additionalCondition={() => false}>
+                <DigitalBills />
               </RouteGuard>
             }
           />

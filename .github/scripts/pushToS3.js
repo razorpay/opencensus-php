@@ -5,6 +5,7 @@ const { exec } = require('child_process');
 const PROJECT_BUILD_NAME_MAP = {
   'self-serve': 'selfserve',
   pos: 'pos',
+  'digital-bills': 'digitalbills',
 };
 
 const pushRemoteAppsToS3 = () => {
