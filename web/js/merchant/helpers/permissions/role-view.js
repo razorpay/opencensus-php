@@ -179,4 +179,5 @@ export default {
   // optimizer
   optimizer: [OWNER, ADMIN, MANAGER, OPERATIONS],
   provider_details: [OWNER, ADMIN, MANAGER, OPERATIONS],
+  ray: [OWNER, ADMIN, MANAGER],
 };
