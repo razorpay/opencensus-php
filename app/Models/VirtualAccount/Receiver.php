@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Models\QrCode;
 use RZP\Models\OfflineChallan;
 use RZP\Models\BankAccount\Generator;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\VirtualAccount\Entity as VAEntity;
 Use RZP\Models\Order;
@@ -77,6 +78,23 @@ class Receiver extends Base\Core
 
     public function buildBankAccount(Entity $virtualAccount, array $options): BankAccount
     {
+        if ($virtualAccount->merchant !== null)
+        {
+            $bankAccountLiveOnCollectX = $this->app->razorx->getTreatment($virtualAccount->merchant->getId(),
+                RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS,
+                $this->mode);
+
+            if ($bankAccountLiveOnCollectX === 'on')
+            {
+                if (($virtualAccount->merchant !== null) and ($virtualAccount->merchant->IsFeatureEnabled(Constants::COLLECTX_ENABLED) === true))
+                {
+                    $balance = $virtualAccount->merchant->directBankingBalance;
+
+                    $virtualAccount->balance()->associate($balance);
+                }
+            }
+        }
+
         $validator = $virtualAccount->getValidator();
 
         $validator->validateInput('bankAccountReceiverOption', $options);

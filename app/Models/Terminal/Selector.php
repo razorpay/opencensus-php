@@ -167,6 +167,12 @@ class Selector extends Base\Core
     {
         $payment = $this->input['payment'];
 
+        if($payment->identifierForCollectXPayment() === true)
+        {
+            return $this->returnBankTransferTerminalsForCollectX($payment);
+        }
+
+
         $allTerminals = [];
 
         $verbose = false;
@@ -1198,6 +1204,16 @@ class Selector extends Base\Core
                 'icon'      =>    ':x:'
             ]
         );
+    }
+
+    private function returnBankTransferTerminalsForCollectX($payment)
+    {
+        $paymentMethods = $payment->fetchPaymentMethods();
+        if (empty($paymentMethods) ===  false and $paymentMethods[0] === "bank_transfer")
+        {
+            $terminals =  $this->repo->terminal->findByMerchantIdAndMethod($payment->merchant->getId(), $paymentMethods[0]);
+            return $terminals;
+        }
     }
 
     private function shouldFetchApiTerminals($payment): bool

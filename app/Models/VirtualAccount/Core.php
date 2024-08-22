@@ -569,8 +569,11 @@ class Core extends Base\Core
      */
     protected function updateBalanceAccountNumberForBanking(Entity $virtualAccount)
     {
+        // We don't want to change this flow for CollectX use case
         if (($virtualAccount->isBalanceTypeBanking() === true) and
-            ($virtualAccount->hasBankAccount() === true))
+            ($virtualAccount->hasBankAccount() === true) and
+            ($virtualAccount->merchant !== null and ($virtualAccount->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === false))
+        )
         {
             $accountNumber = $virtualAccount->bankAccount->getAccountNumber();
 

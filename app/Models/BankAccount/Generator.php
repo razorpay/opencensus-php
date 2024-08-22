@@ -24,6 +24,7 @@ class Generator extends Base\Core
     const NUMERIC    = 'numeric';
     const DESCRIPTOR = 'descriptor';
     const BANKING    = 'banking';
+    const COLLECTX_VA = "collectx_va";
 
     // No 0s and Os
     // No 1s and Is
@@ -50,6 +51,7 @@ class Generator extends Base\Core
         self::NUMERIC    => true,
         // Banking option causes terminal selection to use one with corresponding type set.
         self::BANKING    => false,
+        self::COLLECTX_VA => false,
     ];
 
     public function __construct(Merchant\Entity $merchant, array $input)
@@ -117,6 +119,19 @@ class Generator extends Base\Core
             // Sets this option at this stage because in __construct the balance relation doesn't exist
             $this->options[self::BANKING] = $entity->isBalanceTypeBanking();
         }
+
+        $bankAccountLiveOnCollectX = $this->app->razorx->getTreatment($entity->merchant->getId(),
+            Merchant\RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS,
+            $this->mode);
+
+        if ($bankAccountLiveOnCollectX === 'on')
+        {
+            if($entity->merchant->isFeatureEnabled(Constants::COLLECTX_ENABLED) === true)
+            {
+                $this->options[self::COLLECTX_VA] = true;
+            }
+        }
+
 
         $bankAccount = $this->buildBankAccountEntity($entity);
 

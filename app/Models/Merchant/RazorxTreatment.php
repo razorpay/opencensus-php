@@ -397,6 +397,10 @@ final class RazorxTreatment
     const BT_RBL_CREATE_VIRTUAL_ACCOUNT = 'bt_rbl_create_virtual_account';
     const SC_STOP_QR_AS_RECEIVER_FOR_VIRTUAL_ACCOUNT = 'sc_stop_qr_as_receiver_for_virtual_account';
 
+    // This experiment COLLECTX_LIVE_ON_BANK_ACCOUNTS would be enabled for merchants who are live on bank accounts for collectx
+    // Since there could be merchants who are live on UPI but not on Bank Account, VAs should be created accordingly
+    const COLLECTX_LIVE_ON_BANK_ACCOUNTS = "collectx_live_on_bank_accounts";
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';

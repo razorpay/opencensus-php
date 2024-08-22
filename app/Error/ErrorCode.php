@@ -1680,6 +1680,8 @@ class ErrorCode
 
     // Heimdall Error Codes
     const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
+    const BAD_REQUEST_COLLECTX_REDIS_PREFIX_MAPPING_MISSING                         = "BAD_REQUEST_COLLECTX_REDIS_PREFIX_MAPPING_MISSING";
+    const NO_TERMINAL_FOR_COLLECTX_PREFIX_EXISTS                                    = "NO_TERMINAL_FOR_COLLECTX_PREFIX_EXISTS";
     const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                                  = 'BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED';
     const BAD_REQUEST_IP_NOT_WHITELISTED                                            = 'BAD_REQUEST_IP_NOT_WHITELISTED';
     const BAD_REQUEST_IP_FORMAT_INVALID                                             = 'BAD_REQUEST_IP_FORMAT_INVALID';

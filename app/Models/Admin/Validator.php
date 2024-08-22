@@ -154,6 +154,7 @@ class Validator extends Base\Validator
         ConfigKey::REMOVE_SETTLEMENT_BA_COOL_OFF                  => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS                   => 'filled|boolean',
         ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX                => 'filled|array',
+        ConfigKey::COLLECTX_SERIES_PREFIX                         => 'filled|array',
         ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS             => 'filled|array',
         ConfigKey::ENABLE_NB_KOTAK_ENCRYPTED_FLOW                 => 'filled|boolean', // Not used currently
         ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT                 => 'filled|integer',

@@ -16,6 +16,7 @@ use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
 use RZP\Models\Address;
 use RZP\Models\Address\Type;
+use RZP\Models\BankAccount\Generator;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
@@ -6269,6 +6270,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::NACH:
                 $paymentArray[self::RECURRING] = true;
                 break;
+        }
+
+        if($metadata[Generator::COLLECTX_VA] === true)
+        {
+            $paymentArray[Payment\Entity::REFERENCE14] = "collectx";
         }
 
         if (is_null($orderEntity) === false)

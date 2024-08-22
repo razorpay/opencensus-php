@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -63,12 +64,20 @@ class TerminalProcessor extends Base\Core
 
         $terminalsSelected = $terminalSelector->select();
 
+        $isCollectXMerchant = ($payment[Payment\Entity::REFERENCE14] === "collectx");
+
         // Filter terminals during X onboarding
         if ($payment->getReceiverType() !== 'pos' and
             (isset($payment->receiver->source->balance) === true) and
-            ($payment->receiver->source->balance->isTypeBanking() === true))
+            ($payment->receiver->source->balance->isTypeBanking() === true) and
+            ($isCollectXMerchant === false))
         {
             $terminalsSelected = $this->filterTerminalForRX($payment, $terminalsSelected);
+        }
+
+        if ($isCollectXMerchant ===  true)
+        {
+            $terminalsSelected = $this->filterTerminalForCollectX($payment, $terminalsSelected);
         }
 
         $this->populateTerminalSecretsIfApplicable($payment,$terminalsSelected);
@@ -569,6 +578,41 @@ class TerminalProcessor extends Base\Core
         throw new LogicException(
             'No terminal found for RX',
             null,
+            [
+                'series_prefix' => $seriesPrefix,
+            ]);
+    }
+
+    protected function filterTerminalForCollectX($payment, $terminals)
+    {
+        // Get account number series prefix for merchant
+        $seriesPrefix = Terminal\Core::getBankAccountSeriesPrefixForCollectX($payment->merchant, $this->mode);
+
+        if (empty($seriesPrefix))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_COLLECTX_REDIS_PREFIX_MAPPING_MISSING
+            );
+        }
+
+        $this->trace->info(
+            TraceCode::TERMINALS_FILTERED,
+            ['series_preifx' => $seriesPrefix]
+        );
+
+        foreach ($terminals as $terminal)
+        {
+            $gatewayMid = $terminal->getGatewayMerchantId();
+
+            if (starts_with($gatewayMid, $seriesPrefix) === true)
+            {
+                return array($terminal);
+            }
+        }
+
+        throw new LogicException(
+            'No terminal found for CollectX',
+            ErrorCode::NO_TERMINAL_FOR_COLLECTX_PREFIX_EXISTS,
             [
                 'series_prefix' => $seriesPrefix,
             ]);

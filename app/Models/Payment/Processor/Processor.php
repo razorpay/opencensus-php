@@ -9316,9 +9316,9 @@ class Processor
             $payment->generateId();
         }
 
-        if ($isCollectXPayment === true)
+        if ($isCollectXPayment === true or $input[Payment\Entity::REFERENCE14] === "collectx")
         {
-            $payment->setAttribute("reference14" , "collectx");
+            $payment->setAttribute(Payment\Entity::REFERENCE14 , "collectx");
         }
 
         $payment->merchant()->associate($this->merchant);

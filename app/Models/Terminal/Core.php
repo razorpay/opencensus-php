@@ -1152,6 +1152,33 @@ class Core extends Base\Core
         return $config[Merchant\Account::SHARED_ACCOUNT];
     }
 
+    public static function getBankAccountSeriesPrefixForCollectX(Merchant\Entity $merchant, string $mode): string
+    {
+        $merchantId = $merchant->getId();
+
+        try {
+            $config = (new Admin\Service)->getConfigKey(
+                ['key' => Admin\ConfigKey::COLLECTX_SERIES_PREFIX]);
+
+        } catch(\Exception $ex)
+        {
+            // Directly return empty string, exception would be thrown by caller method
+            return "";
+        }
+
+        if (empty($config) === true)
+        {
+            return "";
+        }
+
+        if (array_key_exists($merchantId, $config) === true)
+        {
+            return $config[strval($merchantId)];
+        }
+
+        return "";
+    }
+
     protected function processMerchantMccUpdateForTerminals($merchant, $oldCategory, $gateway, $traceCode) {
         $fetchParams = [
             Entity::GATEWAY  => $gateway,

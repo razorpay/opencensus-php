@@ -190,6 +190,8 @@ class ConfigKey
 
     const RX_ACCOUNT_NUMBER_SERIES_PREFIX       = self::PREFIX . 'rx_account_number_series_prefix';
 
+    const COLLECTX_SERIES_PREFIX = self::PREFIX . 'collectx_series_prefix';
+
     const PAYER_ACCOUNT_NUMBER_INVALID_REGEXES  = self::PREFIX . 'payer_account_number_invalid_regexes';
 
     const PAYER_ACCOUNT_NAME_INVALID_REGEXES  = self::PREFIX . 'payer_account_name_invalid_regexes';
