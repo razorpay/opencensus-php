@@ -649,7 +649,7 @@ trait EmandateRecurring
         {
             $terminal = $terminals[0];
 
-            if($this->isCitiTerminal($terminal, $payment->getMethod()) and $this->isCitiSdnRazorxEnabled())
+            if($this->isCitiTerminal($terminal, $payment->getMethod()) and $this->isCitiSdnRazorxEnabled($payment->getMerchantId()))
             {
                 $isBeneficiaryNameMatched = $this->isBeneficiaryNameMatched($token->getBeneficiaryName(), $payment);
 
@@ -727,10 +727,10 @@ trait EmandateRecurring
         return false;
     }
 
-    protected function isCitiSdnRazorxEnabled(): bool
+    protected function isCitiSdnRazorxEnabled($merchantId): bool
     {
         $variant = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(), RazorxTreatment::EMANDATE_CITI_SDN_IDENTIFICATION, $this->mode);
+            $merchantId, RazorxTreatment::EMANDATE_CITI_SDN_IDENTIFICATION, $this->mode);
 
         $this->trace->info(TraceCode::EMANDATE_CITI_SDN_RAZORX, ["variant"   => $variant]);
 
