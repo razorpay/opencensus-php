@@ -174,6 +174,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/razorassist/generate_chat_bot_token', 'MerchantController@generateChatBotToken')
             ->name('generate_chat_bot_token');
 
+        Route::post('/merchant/razorassist/event', 'MerchantController@pushRazorassistEvent')
+            ->name('push_razorassist_event');
+
         Route::get('/merchant/insightx/generate_superset_token', 'MerchantController@generateSupersetToken')
             ->name('generate_superset_token');
 

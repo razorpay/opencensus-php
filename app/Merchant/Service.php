@@ -404,7 +404,15 @@ class Service extends Base\Service
                 400);
         }
 
-        list($error, $data) = (new RazorassistClient())->generateAzureBotDirectLinkToken($merchant->id, $currentUser->name);
+        list($error, $data) = (new RazorassistClient())->generateAzureBotDirectLinkToken($merchant, $currentUser);
+
+        return [$error, $data];
+    }
+
+    public function pushRazorassistEvent($input)
+    {
+
+        list($error, $data) = (new RazorassistClient())->pushRazorassistEvent($input);
 
         return [$error, $data];
     }

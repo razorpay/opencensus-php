@@ -115,6 +115,15 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function pushRazorassistEvent()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)->pushRazorassistEvent($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function generateSupersetToken()
     {
         list($error, $data) = (new Merchant\Service)->generateSupersetToken();

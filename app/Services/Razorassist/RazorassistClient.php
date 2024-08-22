@@ -32,7 +32,7 @@ class RazorassistClient
 
     const DASHBOARD = 'dashboard';
 
-    const ERROR_GENERATING_AZURE_BOT_DIRECT_LINE_TOKEN = 'ERROR_GENERATING_DIRECT_LINE_TOKEN_FOR_AZURE_BOT';
+    const ERROR_WHILE_PROCESSING_REQUEST = 'ERROR_WHILE_PROCESSING_REQUEST';
 
     public function __construct()
     {
@@ -59,13 +59,36 @@ class RazorassistClient
     }
 
 
-    public function generateAzureBotDirectLinkToken($merchantId, $name)
+    public function generateAzureBotDirectLinkToken($merchant, $user)
     {
         $response  = null;
 
+        $user_array = $user->toArray();
+
+        $user_email = $user_array['email'] ?? "";
+
+        $user_contact_number = $user_array['contact_mobile'] ?? "";
+
+        // Construct the query parameters array
+        $query_params = [
+            'merchant_id' => $merchant->id,
+            'use_case' => 'ray_dashboard',
+            'user_name' => $user->name,
+            'user_id' => $user->id,
+            'user_role' => $merchant->role,
+        ];
+
+        // Add email and contact_mobile only if they are not empty
+        if (!empty($user_email)) {
+            $query_params['email'] = $user_email;
+        }
+        if (!empty($user_contact_number)) {
+            $query_params['contact_mobile'] = $user_contact_number;
+        }
+
         try
         {
-            $response  = $this->http_client->get(sprintf('chat/init?merchant_id=%s&use_case=ray_dashboard&name=%s',$merchantId, $name));
+            $response  = $this->http_client->get(sprintf('chat/init?%s', http_build_query($query_params)));
 
         } catch (\Exception $ex)
         {
@@ -90,7 +113,42 @@ class RazorassistClient
             'response' => $body
         ]);
 
-        return [[self::ERROR_GENERATING_AZURE_BOT_DIRECT_LINE_TOKEN], null];
+        return [[self::ERROR_WHILE_PROCESSING_REQUEST], null];
+    }
+
+    public function pushRazorassistEvent($input)
+    {
+
+        try
+        {
+            $response  = $this->http_client->post("chat/events", [
+                'json' => $input
+            ]);
+
+        } catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::RAZORASSIST_REQUEST_FAiLED, [
+                'error' => $ex->getMessage(),
+            ]);
+
+            return [[$ex->getMessage()], null];
+        }
+
+        $statusCode = $response->getStatusCode();
+
+        $body = json_decode($response->getBody(), true);
+
+        if($statusCode == 200)
+        {
+            return [null, $body];
+        }
+
+        $this->trace->error(TraceCode::RAZORASSIST_REQUEST_FAiLED, [
+            'status_code' => $statusCode,
+            'response' => $body
+        ]);
+
+        return [[self::ERROR_WHILE_PROCESSING_REQUEST], null];
     }
 }
 
