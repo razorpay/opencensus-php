@@ -11,6 +11,7 @@ use RZP\Base\ConnectionType;
 use RZP\Constants\HashAlgo;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Offer\OffersEngine;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Services\Shield;
@@ -874,6 +875,10 @@ class Processor
         }
 
         if($merchant->isFeeBearerCustomerOrDynamic() === true){
+            return false;
+        }
+
+        if($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID){
             return false;
         }
 
