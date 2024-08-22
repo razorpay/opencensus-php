@@ -26,7 +26,7 @@
   "dependencies": {
     "@razorpay/blade": "11.10.0",
     "@razorpay/i18nify-js": "1.4.0",
-    "@razorpay/universe-cli": "17.2.0",
+    "@razorpay/universe-cli": "18.5.1",
     "prop-types": "15.7.2",
     "react-dom": "17.0.2",
     "react-query": "2.23.0",
@@ -48,7 +48,6 @@
     "@types/styled-components": "5.1.28",
     "babel-plugin-graphql-tag": "3.1.0",
     "copy-webpack-plugin": "6.4.1",
-    "eslint-import-resolver-typescript": "3.6.1",
     "history": "4.10.1",
     "msw": "0.21.2",
     "node-polyfill-webpack-plugin": "2.0.1",

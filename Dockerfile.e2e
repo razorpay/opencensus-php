@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.31.1-focal
+FROM mcr.microsoft.com/playwright:v1.45.3-focal
 
 ARG INCLUDE_GROUPS
 ARG EXCLUDE_GROUPS
@@ -17,21 +17,25 @@ RUN --mount=type=secret,id=github_access_token set -eux && \
 
 RUN npm install -g pnpm@~9.0
 
+RUN pnpm run updateE2EDependencies
+
 RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
   pnpm config set unsafe-perm true && \
-  pnpm install --frozen-lockfile --ignore-scripts
+  pnpm install --ignore-scripts
 
 RUN rm -f ~/.GITHUB_ACCESS_TOKEN
 
-RUN npx playwright install --with-deps
+# Remove browsers that are not needed for docker size reduction (we use chrome only for now). Check playwright/utils/config.js
+RUN cd /ms-playwright && rm -rf firefox-* webkit-*
 
 RUN rm -f .npmrc && \
-    rm -f ./web/.npmrc && \
-    rm -f ./apps/self-serve/.npmrc && \ 
-    rm -f ./apps/pos/.npmrc && \
-    rm -f ./apps/digital-bills/.npmrc
+  rm -f ./web/.npmrc && \
+  rm -f ./apps/self-serve/.npmrc && \ 
+  rm -f ./apps/pos/.npmrc && \
+  rm -f ./apps/digital-bills/.npmrc
 
 CMD pnpm test:e2e:auth && \
   INCLUDE_GROUPS=$INCLUDE_GROUPS \
   EXCLUDE_GROUPS=$EXCLUDE_GROUPS \
   npx nx run-many --target=test:e2e --projects=$AFFFECTED_PROJECTS --parallel=1
+

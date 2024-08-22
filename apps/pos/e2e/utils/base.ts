@@ -1,5 +1,6 @@
 import { routes } from '@dashboard/shared-utils/e2e/constants/paths';
-import { test, expect } from '@playwright/test';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { test, expect } = require('@playwright/test');
 
 // Utility function to set a value in localStorage
 async function setTestConfigInLocalStorageForAnalytics(page, testInfo) {

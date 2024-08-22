@@ -4,3 +4,10 @@ web/node_modules
 vendor/
 docker_cache
 npm_cache
+.nx
+.changeset
+playwright-report
+public/docs
+public/js
+*/public/dist
+*/web/dist

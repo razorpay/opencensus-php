@@ -83,9 +83,10 @@ export function getProjects({ projectType, isCurlec = true }) {
   const browsers = [devices['Desktop Chrome']];
   const projects = [];
 
-  if (process.env.GIT_BRANCH === 'master') {
-    browsers.push(devices['Desktop Firefox'], devices['Desktop Safari']);
-  }
+  // We are running e2es on chrome only for now. Modify Dockerfile.e2e if using multiple browsers
+  // if (process.env.GIT_BRANCH === 'master') {
+  //   browsers.push(devices['Desktop Firefox'], devices['Desktop Safari']);
+  // }
 
   browsers.forEach((browser) => {
     projects.push({
