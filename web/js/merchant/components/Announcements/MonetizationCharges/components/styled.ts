@@ -37,6 +37,10 @@ export const MonetizationChargesDetailsWrapper = styled.div`
   .margin-0 {
     margin: 0;
   }
+
+  @media screen and (max-width: 768px) {
+    padding: 0px 12px 20px;
+  }
 `;
 
 export const CustomPricingWrapper = styled.div`
@@ -45,6 +49,10 @@ export const CustomPricingWrapper = styled.div`
   .bg-size-cover {
     background-size: cover;
     height: 100%;
+  }
+
+  @media screen and (max-width: 768px) {
+    padding: 0px 12px 20px;
   }
 `;
 
@@ -65,6 +73,11 @@ export const ProductWiseBenefitsWrapper = styled.div`
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
+  }
+
+  @media screen and (max-width: 768px) {
+    min-height: 436px;
+    padding: 0px 12px 20px;
   }
 `;
 

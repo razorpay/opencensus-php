@@ -2,7 +2,6 @@ import React from 'react';
 import { ArrowLeftIconWrapper, CustomPricingWrapper } from './styled';
 import { ArrowLeftIcon, Box, Text, Heading } from '@razorpay/blade/components';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
-import Image from 'common/ui/Image';
 import GetCustomPricing from 'assets/pricing-bundle/get-custom-pricing.svg';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
@@ -26,8 +25,8 @@ const RightSideImageBanner: React.FC = () => {
 
   return isDesktop ? (
     <LazyLoad once>
-      <Box alignSelf="stretch" maxWidth="384px" borderRadius="large">
-        <Image
+      <Box alignSelf="stretch" maxWidth="384px" borderRadius="large" height="100%">
+        <img
           src={GetCustomPricing}
           alt="get custom pricing for nocode apps"
           className="bg-size-cover"
@@ -76,7 +75,7 @@ const CustomPricing = ({
 
   return (
     <CustomPricingWrapper>
-      <Box display="flex" justifyContent="space-between" gap="24px">
+      <Box display="flex" justifyContent="space-between" gap="24px" alignItems="stretch">
         <Box flex="1">
           <Box display="flex" flexDirection="row" gap="12px" alignItems="center">
             <ArrowLeftIconWrapper
@@ -93,7 +92,7 @@ const CustomPricing = ({
             Monthly revenue over ₹5 lakh? Submit your details and we’ll contact you
           </Text>
           <Box display="flex" flexDirection="column" gap="24px">
-            <LeadFormLayout formCampaignId="NoCode Apps Pricing Form" onClose={handleClose} />
+            <LeadFormLayout formCampaignId="NoCode Apps Monetization" onClose={handleClose} />
           </Box>
         </Box>
         <RightSideImageBanner />

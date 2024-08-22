@@ -17,7 +17,7 @@ describe('ProductWiseBenefits', () => {
 
   it('renders the correct benefits and heading', () => {
     render(<ProductWiseBenefits {...defaultProps} />);
-    expect(screen.getByText('No Code Benefits')).toBeInTheDocument();
+    expect(screen.getByText('Product-wise Benefits')).toBeInTheDocument();
     expect(screen.getByText('Payment Links')).toBeInTheDocument();
     expect(screen.getByText('Create links to sell anywhere')).toBeInTheDocument();
   });

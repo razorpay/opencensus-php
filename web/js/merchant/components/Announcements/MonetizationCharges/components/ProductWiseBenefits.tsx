@@ -115,10 +115,10 @@ const ProductWiseBenefits: React.FC<ProductWiseBenefitsProps> = ({
           <ArrowLeftIcon color="interactive.icon.gray.muted" size="xlarge" />
         </ArrowLeftIconWrapper>
         <Heading color="surface.text.gray.subtle" size="large" weight="semibold">
-          No Code Benefits
+          Product-wise Benefits
         </Heading>
       </Box>
-      <Accordion variant="filled" margin={['24px', '0px']}>
+      <Accordion variant="filled" size="medium" margin={['24px', '0px']}>
         {noCodeApps.map((appName, index) => (
           <AccordionItem key={index}>
             <AccordionItemHeader title={content.monetizationCharges[appName].title} />

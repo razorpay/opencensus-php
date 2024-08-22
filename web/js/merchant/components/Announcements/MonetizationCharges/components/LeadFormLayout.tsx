@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { ArrowRightIcon, Box, Button } from '@razorpay/blade/components';
+import { ArrowRightIcon, Box, Button, useToast } from '@razorpay/blade/components';
 import useForm from '../hooks/useForm';
 import validate from '../utils/validator';
 import { FORM_FIELDS } from '../constants/fields';
@@ -59,6 +59,7 @@ const LeadFormLayout = ({
   };
 
   const { isDesktop } = useBladeBreakpoints();
+  const toast = useToast();
 
   const {
     values,
@@ -83,9 +84,19 @@ const LeadFormLayout = ({
 
   useEffect(() => {
     if (isSubmitted && submitError) {
+      toast.show({
+        content: 'Form submission failed',
+        color: 'negative',
+        autoDismiss: true,
+      });
       onSubmitError?.();
     }
     if (isSubmitted && !submitError) {
+      toast.show({
+        content: 'Form submitted successfully',
+        color: 'positive',
+        autoDismiss: true,
+      });
       onSubmitSuccess?.();
     }
     if (isSubmitted && closeOnSubmit) {

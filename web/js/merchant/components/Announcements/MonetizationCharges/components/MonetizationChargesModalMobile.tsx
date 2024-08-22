@@ -66,7 +66,7 @@ const MonetizationChargesModalMobile: React.FC<MonetizationChargesModalMobilePro
       <BottomSheet
         isOpen={isOpen}
         onDismiss={closeModal}
-        snapPoints={[0.65, 0.8, 1]}
+        snapPoints={[0.9, 0.9, 0.9]}
         zIndex={10000}
       >
         <BottomSheetHeader />

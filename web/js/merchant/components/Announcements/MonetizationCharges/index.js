@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import content from './constants/content';
-import { Box, Button } from '@razorpay/blade/components';
+import { Box, ToastContainer } from '@razorpay/blade/components';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
@@ -75,12 +75,12 @@ const MonetizationChargesBanner = ({
 
   const sendAnalyticsEvent = () => {
     analyticsTrack({
-      objectName: 'Pricing Modal : Close',
+      objectName: 'Pricing Banner : Close',
       actionName: 'Clicked',
       screen: title,
       toCleverTap: true,
       properties: {
-        event_name: 'nc_app.pricing_modal.close.click.initiated',
+        event_name: 'nc_app.pricing_banner.close.click.initiated',
         source: getDeviceSource(),
         page: title,
         email_id: user.email,
@@ -122,6 +122,7 @@ const MonetizationChargesBanner = ({
 
   return showBanner ? (
     <MonetizationChargesWrapper>
+      <ToastContainer />
       <AnnouncementBanner
         title="Charges"
         card_id={`${bannerId}-${userId}`}
@@ -142,9 +143,11 @@ const MonetizationChargesBanner = ({
           )}
         </Box>
         {!isDesktop && (
-          <Button marginTop="12px" onClick={openModal}>
-            View Pricing
-          </Button>
+          <Box marginTop="4px">
+            <Link className="btn-link" onClick={openModal}>
+              <strong>View Pricing</strong>
+            </Link>
+          </Box>
         )}
       </AnnouncementBanner>
       {isDesktop ? (

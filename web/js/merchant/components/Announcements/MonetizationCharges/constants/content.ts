@@ -3,7 +3,7 @@ const content = {
     bannerId: 'enable-monetization-charges',
     noCodeApps: ['paymentLinks', 'razorpayMeLink', 'paymentPages', 'storefrontPages', 'invoices'],
     noCodeAppsBenefits: [
-      'Accept payments instantly without any developer',
+      'Accept payments without any development or coding',
       'Create website-like experience for your customers',
       'Free hosting and SMS included',
       'Unlimited access to Razorpay APIs & custom integration',
@@ -16,10 +16,10 @@ const content = {
       bannerText: 'A reminder on how you’ll be charged for Payment Link transactions',
       benefits: [
         'Create links to sell anywhere',
-        'Send links via WhatsApp Business account',
         'We handle SMS and email notifications',
+        'Send links via WhatsApp Business account',
         'Integrate with ERP systems and other systems for automatic creation',
-        'Send auto-reminders for unpaid invoices to customers',
+        'Send auto-reminders for unpaid Links to customers',
       ],
     },
     razorpayMeLink: {
@@ -41,7 +41,7 @@ const content = {
       bannerText: 'A reminder on how you’ll be charged for Invoices transactions',
       benefits: [
         'Get paid faster with online invoices, no need to purchase additional invoice software',
-        'Get paid faster online',
+        'Create and send GST compliant invoices',
         'Track and send reminders for unpaid invoices',
         'Allow customers to save/download invoice PDFs',
         'Generate invoices in bulk with file upload',
@@ -53,10 +53,16 @@ const content = {
       bg: '#00A25117',
       benefits: [
         'Customise payment pages to match your Brand',
-        'Go online with zero coding',
-        'Create custom forms for customer inputs',
+        'Take your business online with zero coding',
+        'Create customer forms to capture custom inputs',
         'Send automated reciepts after purchase',
         'Use your own domain (add-on)',
+        {
+          boldAndLightStrikeThrough: true,
+          text: 'Connect with your own domain at',
+          bold: 'Rs 500',
+          lightStrike: 'Rs 1000',
+        },
       ],
     },
     storefrontPages: {
@@ -64,13 +70,13 @@ const content = {
       color: '#D92D20',
       bg: '#D92D2017',
       benefits: [
-        'Showcase products and accept orders',
+        'Showcase products and accept orders online',
         'Manage inventory and stock for multiple categories and products',
         'Add 100+ products and add detailed product descriptions',
         'Include multiple product images',
         {
           boldAndLightStrikeThrough: true,
-          text: 'Connect with you own domain at',
+          text: 'Connect with your own domain at',
           bold: 'Rs 500',
           lightStrike: 'Rs 1000',
         },

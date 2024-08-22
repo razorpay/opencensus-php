@@ -26,7 +26,7 @@ describe('MonetizationChargesModalDesktop', () => {
   it('renders ProductWiseBenefits when showProductWiseBenefits is true', () => {
     const props = { ...defaultProps, showProductWiseBenefits: true };
     render(<MonetizationChargesModalDesktop {...props} />);
-    expect(screen.getByText('No Code Benefits')).toBeInTheDocument();
+    expect(screen.getByText('Product-wise Benefits')).toBeInTheDocument();
     expect(screen.getByText('Payment Links')).toBeInTheDocument();
     expect(screen.getByText('Create links to sell anywhere')).toBeInTheDocument();
   });
