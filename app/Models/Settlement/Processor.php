@@ -12,6 +12,7 @@ use RZP\Models\Feature;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
@@ -1412,7 +1413,7 @@ class Processor extends Base\Core
 
             // we started updating failed state also in old service for all the settlements from new settlements
             // service so triggering this webhook only for the processed state
-            if ((in_array($merchant_id, MerchantModel\Preferences::TRANSFER_SETTLED_WEBHOOK_MIDS) === true)
+            if ((in_array($merchant_id, Transfer\Constant::TRANSFER_SETTLED_WEBHOOK_MIDS) === true)
                 and ($setl->getStatus() === Status::PROCESSED))
             {
                 $input['settlement_id'] = $setl->getId();
