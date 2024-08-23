@@ -707,6 +707,23 @@ class Repository extends \Razorpay\Spine\Repository
         return ($this->db->transactionLevel() > 0);
     }
 
+    public function isTransactionActiveOnConnection(string $connection)
+    {
+        $env = $this->app->environment();
+
+        if (in_array($env, ['testing', 'testing_docker'], true) === true)
+        {
+            return ($this->transactionLevelOnConnection($connection) > 1);
+        }
+
+        return ($this->transactionLevelOnConnection($connection) > 0);
+    }
+
+    public function transactionLevelOnConnection(string $connection)
+    {
+        return $this->db->connection($connection)->transactionLevel();
+    }
+
     public function assertTransactionActive()
     {
         assertTrue ($this->isTransactionActive());

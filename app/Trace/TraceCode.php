@@ -9723,6 +9723,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_CALL_SYNC_ACCOUNT_DEVIATION_ERROR                 = 'ASV_CALL_SYNC_ACCOUNT_DEVIATION_ERROR';
     const ASV_SPLITZ_REQUEST                                    = 'ASV_SPLITZ_REQUEST';
     const ASV_MERCHANT_UPDATE_EVENTS                            = 'ASV_MERCHANT_UPDATE_EVENTS';
+    const TXN_LEVELS_MISMATCH                                   = 'TXN_LEVELS_MISMATCH';
+    const EXCEPTION_IN_TXN_CHECKS                               = 'EXCEPTION_IN_TXN_CHECKS';
     const INVALID_PAYLOAD_FOR_MERCHANT_UPDATE_EVENTS            = 'INVALID_PAYLOAD_FOR_MERCHANT_UPDATE_EVENTS';
     const ES_PAYMENT_SYNC_EVENTS                                = 'ES_PAYMENT_SYNC_EVENTS';
     const INVALID_PAYLOAD_FOR_ES_PAYMENT_SYNC_EVENTS            = 'INVALID_PAYLOAD_FOR_MERCHANT_UPDATE_EVENTS';

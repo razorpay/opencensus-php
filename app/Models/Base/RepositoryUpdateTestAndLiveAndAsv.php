@@ -5,14 +5,10 @@ namespace RZP\Models\Base;
 use Config;
 use Database\Connection;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use RZP\Constants\Entity as ConstantEntity;
-use RZP\Models\Merchant\Entity as MerchantEntity;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
-use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 trait RepositoryUpdateTestAndLiveAndAsv
@@ -49,6 +45,8 @@ trait RepositoryUpdateTestAndLiveAndAsv
         {
             return $this->saveOrFailInLiveAndTest($entity, $options);
         }
+
+        $this->findAnomaliesTxn(__FUNCTION__);
 
         $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
@@ -106,6 +104,54 @@ trait RepositoryUpdateTestAndLiveAndAsv
     }
 
     /**
+     * Checks for anomalies in transactions across specific connections.
+     *
+     * This method logs the transaction status on live, test, and ASV connections, and prints the stack trace if:
+     * - The transaction levels on these connections do not match.
+     *
+     * @param string $method The name of the method being checked.
+     * @return void
+     */
+    public function findAnomaliesTxn(string $method): void
+    {
+        try {
+            $this->logTxnLevelMismatch($method);
+        }
+        catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXCEPTION_IN_TXN_CHECKS, [
+                'info' => "Exception during anomalies check on ".$method." db",
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function logTxnLevelMismatch(string $method): void
+    {
+        $txnLevelOnLive = $this->transactionLevelOnConnection(Mode::LIVE);
+        $txnLevelOnAsv = $this->transactionLevelOnConnection(Connection::ASV_WRITER);
+        $txnLevelOnTest = $this->transactionLevelOnConnection( Mode::TEST);
+
+        if (($txnLevelOnAsv === $txnLevelOnLive and $txnLevelOnTest === $txnLevelOnAsv) === false)
+        {
+            $stackTrace = $this->getStackTrace();
+
+            $logDimensions = [
+                "txnLevelOnLive" => $txnLevelOnLive,
+                "txnLevelOnAsv" => $txnLevelOnAsv,
+                "txnLevelOnTest" => $txnLevelOnTest,
+                "method" => $method,
+                "stackTrace" => $stackTrace
+            ];
+
+            $this->trace->info(TraceCode::TXN_LEVELS_MISMATCH, $logDimensions);
+            $this->trace->count(Metric::TXN_LEVELS_MISMATCH);
+        }
+    }
+
+    /**
      * @throws \Throwable
      */
     public function delete($entity)
@@ -121,6 +167,8 @@ trait RepositoryUpdateTestAndLiveAndAsv
 
             return;
         }
+
+        $this->findAnomaliesTxn(__FUNCTION__);
 
         $res = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($entity)
         {
@@ -209,5 +257,22 @@ trait RepositoryUpdateTestAndLiveAndAsv
         }
 
         return array($liveEntity, $testEntity, $asvEntity);
+    }
+
+    private function getStackTrace(): string
+    {
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $traceLines = [];
+
+        foreach ($backtrace as $trace) {
+            $traceLines[] = sprintf(
+                '%s:%d %s',
+                $trace['file'] ?? 'unknown file',
+                $trace['line'] ?? 'unknown line',
+                $trace['function'] ?? 'unknown function'
+            );
+        }
+
+        return implode("\n", $traceLines);
     }
 }
