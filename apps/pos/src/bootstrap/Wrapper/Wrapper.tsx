@@ -4,12 +4,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
-
+import { graphqlClient } from '@dashboard/shared-utils/graphql/graphql';
 import App from 'apps/pos/src/app';
 import PageError from 'apps/pos/src/app/components/PageError';
 import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
 
 export const queryClient = new QueryClient();
+graphqlClient.setHeader(
+  'apollographql-client-name',
+  process.env.UNIVERSE_PUBLIC_APP_NAME as string,
+);
 
 const Wrapper = (): JSX.Element => {
   const { isProduction, cdnBaseUrl } = useEnv();

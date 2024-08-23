@@ -44,7 +44,8 @@ const requestMiddleware = (request) => {
     headers: {
       ...request?.headers,
       'Content-Type': 'application/json',
-      'apollographql-client-name': 'merchant-dashboard',
+      'apollographql-client-name':
+        request.headers['apollographql-client-name'] ?? 'merchant-dashboard',
       ...(isProd ? { 'apollographql-client-version': window.__VERSION__ } : {}),
       'x-app-mode': mode,
       'x-dashboard-user-id': user?.user?.id,
