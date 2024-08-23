@@ -228,6 +228,8 @@ class Constants
     const SUGGESTED_BUSINESS_SUBCATEGORIES      = 'suggested_business_subcategories';
     const DISABLE_TRY_AGAIN_OTHERS_M3           = 'disable_try_again_others_m3';
 
+    const ACTIVATION_STATUS_FROM_PGOS           = 'activation_status_from_pgos';
+
     // Fee Based Gating Constants
     const FEE_BASED_GATING             = 'fee_based_gating';
     const IS_ELIGIBLE                  = 'is_eligible';

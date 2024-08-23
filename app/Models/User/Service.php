@@ -838,6 +838,14 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    // a single merchant_id can have multiple products. hence a single value of workflow_type is not sufficient. for each product, the workflow_type
+    // should be stored separately. as of now, this change is enforced only for one product but other products should also adopt this approach.
+    public function shouldStoreProductSpecificWorkflowType($product): bool
+    {
+        return ($product === DeviceDetailConstants::PRODUCT_PG_ONBOARDING);
+    }
+
     private function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
     {
         $shouldOnboardViaPGOS = false;
@@ -978,13 +986,20 @@ class Service extends Base\Service
         }
         else
         {
+            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
+
             if ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING)
             {
-                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS, DeviceDetailConstants::WORKFLOW_TYPE => DeviceDetailConstants::MODULAR_ONBOARDING ]];
-            }
-            else
-            {
-                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
+                if ($this->shouldStoreProductSpecificWorkflowType($product) === true)
+                {
+                    $productSpecificWorkflowTypeKey = sprintf(DeviceDetailConstants::PRODUCT_WORKFLOW_TYPE_TEMPLATE, $product);
+
+                    $ddInput[DeviceDetail\Entity::METADATA][DeviceDetailConstants::WORKFLOW_DETAILS][$productSpecificWorkflowTypeKey] = DeviceDetailConstants::MODULAR_ONBOARDING;
+                }
+                else
+                {
+                    $ddInput[DeviceDetail\Entity::METADATA][DeviceDetailConstants::WORKFLOW_TYPE] = DeviceDetailConstants::MODULAR_ONBOARDING;
+                }
             }
         }
 

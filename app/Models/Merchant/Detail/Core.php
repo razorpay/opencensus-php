@@ -1656,9 +1656,20 @@ class Core extends Base\Core
                 $merchant, $merchantDetails, null, [Detail\Constants::ACTIVATION], false);
         }
 
-        $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
+        if (isset($input[DEConstants::ACTIVATION_STATUS_FROM_PGOS]) === true)
+        {
+            $this->trace->info(TraceCode::ACTIVATION_STATUS_FETCHED_FROM_PGOS, [
+                'activation_status'      => $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS],
+            ]);
 
-        $this->handlePGOSL2Submit($merchant, $statusToBeUpdated, $orgId);
+            $statusToBeUpdated = $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS];
+        }
+        else
+        {
+            $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
+
+            $this->handlePGOSL2Submit($merchant, $statusToBeUpdated, $orgId);
+        }
 
         if ($isRiskyMerchant === true)
         {
@@ -2925,7 +2936,7 @@ class Core extends Base\Core
             {
                 try
                 {
-                    if($this->pgosProxyController->shouldRouteViaPGOSV2($merchant)){
+                    if($this->pgosProxyController->isModularMerchant($merchant)){
                         $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DETAILS_PATCH_V2, $input, $this->merchant, true);
                         return $this->repo->merchant_detail->find($merchant->getId());
                     }
@@ -5264,7 +5275,7 @@ class Core extends Base\Core
 
         $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $merchant = $this->repo->merchant->find($merchantId);
-        if( $merchant != null and $this->pgosProxyController->shouldRouteViaPGOSV2($merchant)){
+        if( $merchant != null and $this->pgosProxyController->isModularMerchant($merchant)){
             $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ACTIVATION_DOCUMENT_TYPES, [], $merchant);
             return $pgosResponse['data'];
         }
@@ -6163,7 +6174,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createResponse(Entity $merchantDetails): array
+    public function createResponse(Entity $merchantDetails, $input = null): array
     {
         $startTime = microtime(true);
 
@@ -6386,8 +6397,20 @@ class Core extends Base\Core
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getMerchantId());
             if (empty($userDeviceDetail) === false)
             {
-                $merchantWorkflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
-                $response[DeviceDetailConstants::WORKFLOW_TYPE] = $merchantWorkflowType;
+                $product = $input[DeviceDetailConstants::PRODUCT] ?? '';
+
+                if ((new User\Service)->shouldStoreProductSpecificWorkflowType($product) === true)
+                {
+                    $merchantWorkflowType = $this->pgosProxyController->getProductSpecificWorkflowType($userDeviceDetail, $product);
+
+                    $response[DeviceDetailConstants::WORKFLOW_TYPE] = $merchantWorkflowType;
+                }
+                else
+                {
+                    $merchantWorkflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+
+                    $response[DeviceDetailConstants::WORKFLOW_TYPE] = $merchantWorkflowType;
+                }
             }
         }
         catch (\Throwable $e)
@@ -6992,7 +7015,17 @@ class Core extends Base\Core
      */
     public function getApplicableActivationStatus(Entity $merchantDetails): string
     {
-        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
+        $merchant = $merchantDetails->merchant;
+
+        if ($this->pgosProxyController->isIndiaPgModularMerchant($merchant) === true)
+        {
+            // todo: the activation_status should be calculated by calling PGOS. This logic will be subsequently migrated.
+            // we are hardcoding the activation_status as Under-Review for now for India PG modular merchants to avoid network calls
+            // as initially for 1-2 weeks, auto-activation will be disabled.
+            return Status::UNDER_REVIEW;
+        }
+
+        if ($merchant->isNoDocOnboardingEnabled() === true)
         {
             $status = $this->getApplicableActivationStatusForNoDoc($merchantDetails);
 
@@ -7003,7 +7036,7 @@ class Core extends Base\Core
 
             return $status;
         }
-        else if($merchantDetails->merchant->isNoDocOnboardingPaymentsEnabled() === true)
+        else if($merchant->isNoDocOnboardingPaymentsEnabled() === true)
         {
             // A no-doc onboarded merchant who is partially activated, will not observe 'activated_mcc_pending' state. Thread: https://razorpay.slack.com/archives/C022737TP5Z/p1669787674798209
             return Status::UNDER_REVIEW;
@@ -7034,7 +7067,7 @@ class Core extends Base\Core
                     return $this->getApplicableActivationStatusForMerchant($merchantDetails);
 
                 case BusinessType::NGO:
-                    if ($merchantDetails->merchant->isLinkedAccount() === true)
+                    if ($merchant->isLinkedAccount() === true)
                     {
                         return $this->getApplicableActivationStatusForMerchant($merchantDetails);
                     }
@@ -12436,16 +12469,19 @@ class Core extends Base\Core
         // Malaysian Merchants should not be eligible for fee based gating
         $isMalaySianMerchant = $this->isMalaysianMerchant($merchant);
 
+        $isIndiaPgModularMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
+
         $splitzResultWebsiteMerchant = $this->getSplitzResponse($merchant->getId(), 'fee_based_gating_website_exp_id');
 
         $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY_INPUTS, [
-            'org'                   => $merchantOrg,
-            'businessType'          => $merchantBusinessType,
-            'isWebsitePresent'      => $hasBusinessWebsiteOrAppUrls,
-            'isRegularPgMerchant'   => $isPgMerchant,
-            'signupCampaign'        => $signupCampaign,
-            'malaySianMerchant'     => $isMalaySianMerchant,
-            'splitzWebsiteMerchant' => $splitzResultWebsiteMerchant
+            'org'                           => $merchantOrg,
+            'businessType'                  => $merchantBusinessType,
+            'isWebsitePresent'              => $hasBusinessWebsiteOrAppUrls,
+            'isRegularPgMerchant'           => $isPgMerchant,
+            'signupCampaign'                => $signupCampaign,
+            'malaysianMerchant'             => $isMalaySianMerchant,
+            'splitzWebsiteMerchant'         => $splitzResultWebsiteMerchant,
+            'isIndiaPgModularMerchant'      => $isIndiaPgModularMerchant,
         ]);
 
         if (($merchantOrg === Org\Entity::RAZORPAY_ORG_ID) and
@@ -12454,6 +12490,7 @@ class Core extends Base\Core
              (($splitzResultWebsiteMerchant === Constants::SPLITZ_TRUE) and $hasBusinessWebsiteOrAppUrls === true)) and
             ($activationFlow !== ActivationFlow::BLACKLIST) and
             ($isPgMerchant === true) and
+            ($isIndiaPgModularMerchant === false) and
             ($isMalaySianMerchant === false))
         {
             if (empty($signupCampaign) === false && $signupCampaign === DDConstants::EASY_ONBOARDING)

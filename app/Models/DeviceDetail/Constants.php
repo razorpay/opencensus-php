@@ -36,6 +36,8 @@ class Constants
 
     const WORKFLOW_TYPE = 'workflow_type';
 
+    const WORKFLOW_DETAILS = 'workflow_details';
+
     const PRODUCT  = "product";
 
     const PLATFORM = "platform";
@@ -58,6 +60,9 @@ class Constants
 
     const DEFAULT_VERSION = 'v1';
 
+    const PRODUCT_PG_ONBOARDING = 'pg_onboarding';
+
+    const PRODUCT_WORKFLOW_TYPE_TEMPLATE = '%s_workflow_type';
 
     const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION, self::SINGAPORE_SIGNUP] ;
 

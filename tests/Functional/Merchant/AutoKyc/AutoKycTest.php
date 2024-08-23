@@ -59,6 +59,41 @@ class AutoKycTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, (new DetailCore)->getApplicableActivationStatus($merchantDetails));
     }
 
+    public function testGetApplicableActivationStatusForIndiaModularMerchant()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setNonImpersonatedMerchant();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'    => '12345678901235',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            'merchant_id'    => $merchant->getId(),
+            Entity::POI_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::POA_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BUSINESS_TYPE => (new BusinessType())->getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            Entity::BUSINESS_CATEGORY => 'tours_and_travel',
+            Entity::BUSINESS_SUBCATEGORY => 'accommodation',
+        ]);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+            ]
+        ]);
+
+        $this->assertEquals(Status::UNDER_REVIEW, (new DetailCore)->getApplicableActivationStatus($merchantDetails));
+    }
+
     public function testGetApplicableActivationStatusForImpersonatedMerchantNotYetRegistered()
     {
         $this->mockRazorxAndMerchantRiskClient();

@@ -463,29 +463,75 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
 
 
-    public function  shouldRouteViaPGOSV2($merchant){
+    public function isModularMerchant($merchant): bool
+    {
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
+
+        if (empty($userDeviceDetail) === true)
+        {
+            return false;
+        }
+
+        if ($this->isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) === true)
+        {
+            return true;
+        }
+
+        $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+
+        return (empty($workflowType) === false && $workflowType === DeviceDetailConstants::MODULAR_ONBOARDING);
+    }
+
+    public function isIndiaPgModularMerchant($merchant): bool
+    {
+        if ($merchant->getCountry() !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
 
-        //Check for Google OAuth merchants
-        if (empty($userDeviceDetail) === false)
+        if (empty($userDeviceDetail) === true)
         {
-            $merchantOnboardedViaService = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
-
-            if (empty($merchantOnboardedViaService) === false)
-            {
-                if ($merchantOnboardedViaService === DeviceDetailConstants::MODULAR_ONBOARDING)
-                {
-                    return true;
-                }
-            }
+            return false;
         }
-        return false;
+
+        return $this->isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+    }
+
+    protected function isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
+    {
+        if ($merchant->getCountry() !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::PRODUCT_PG_ONBOARDING)
+            === DeviceDetailConstants::MODULAR_ONBOARDING;
+    }
+
+    public function getProductSpecificWorkflowType($userDeviceDetail, $product)
+    {
+        $workflowDetails = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
+
+        if (empty($workflowDetails) === true)
+        {
+            return false;
+        }
+
+        $productPgOnboardingWorkflowTypeKey = sprintf(DeviceDetailConstants::PRODUCT_WORKFLOW_TYPE_TEMPLATE, $product);
+
+        if (isset($workflowDetails[$productPgOnboardingWorkflowTypeKey]) === false)
+        {
+            return null;
+        }
+
+        return $workflowDetails[$productPgOnboardingWorkflowTypeKey];
     }
 
     public function  shouldRouteAdminViaPGOSV2($merchant){
 
-        if($this->app['basicauth']->isAdminAuth() === true and $this->shouldRouteViaPGOSV2($merchant)){
+        if($this->app['basicauth']->isAdminAuth() === true and $this->isModularMerchant($merchant)){
             return true;
         }
 

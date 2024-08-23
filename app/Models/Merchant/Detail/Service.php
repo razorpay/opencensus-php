@@ -216,7 +216,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMerchantDetails($isActivationDetailsFlow = false)
+    public function fetchMerchantDetails($isActivationDetailsFlow = false, $input = null)
     {
         $merchantId = $this->merchant->getId();
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $this->merchant->getCountry());
@@ -251,7 +251,7 @@ class Service extends Base\Service
         {
             $merchantDetails = $this->core->getMerchantDetails($this->merchant);
 
-            $response = $this->core->createResponse($merchantDetails);
+            $response = $this->core->createResponse($merchantDetails, $input);
 
             $this->getAdditionalMerchantDetailsData($merchantDetails, $response);
         }
