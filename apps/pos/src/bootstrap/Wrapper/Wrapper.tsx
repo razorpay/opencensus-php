@@ -4,12 +4,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
+import initSentry from 'apps/pos/src/services/obervability';
 import { graphqlClient } from '@dashboard/shared-utils/graphql/graphql';
 import App from 'apps/pos/src/app';
 import PageError from 'apps/pos/src/app/components/PageError';
 import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
+import { MODULES } from 'apps/pos/src/app/types/common';
 
 export const queryClient = new QueryClient();
+export const sentryHub = initSentry();
+
 graphqlClient.setHeader(
   'apollographql-client-name',
   process.env.UNIVERSE_PUBLIC_APP_NAME as string,
@@ -19,7 +23,6 @@ const Wrapper = (): JSX.Element => {
   const { isProduction, cdnBaseUrl } = useEnv();
 
   React.useEffect(() => {
-    console.log('Injected Manifest!!!!', { isProduction });
     const link = document.createElement('link');
     link.rel = 'manifest';
     link.href = isProduction
@@ -35,8 +38,9 @@ const Wrapper = (): JSX.Element => {
     <BladeProvider themeTokens={bladeTheme}>
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary
+          sentryHub={sentryHub?.sentryHub}
           rank={errorService.ErrorRank.P0}
-          tags={{ module: 'assisted-pos-onboarding' }}
+          tags={{ module: MODULES.SALES_DASHBOARD }}
           fallbackComponent={
             <Box marginTop="spacing.8">
               <PageError

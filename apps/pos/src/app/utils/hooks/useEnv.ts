@@ -6,6 +6,7 @@ declare global {
   interface Window {
     APP_ENV: string;
     cdnBaseUrl: string;
+    INSTANCE_TYPE: 'production' | 'canary' | '';
   }
 }
 

@@ -88,3 +88,15 @@ declare global {
     cdnBaseUrl: string;
   }
 }
+
+export enum MODULES {
+  SALES_DASHBOARD = 'Sales Dashboard',
+  MERCHANT_REGISTRATION = 'Merchant Registration',
+  MERCHANT_KYC = 'Merchant Kyc',
+  DEVICE_SELECTION = 'Device Selection',
+  DEVICE_ADDRESS = 'Device Address',
+  DEVICE_PAYMENT = 'Device Payment',
+  PAYMENT_METHODS = 'Payment Methods',
+  AGREEMENT_SIGNING = 'Agreement Signing',
+  ADDITIONAL_DETAILS = 'Additional Details',
+}

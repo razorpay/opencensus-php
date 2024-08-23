@@ -1,8 +1,14 @@
 import React from 'react';
 import DeviceSelectionCatalog from './DeviceSelectionCatalog';
+import { Box } from '@razorpay/blade/components';
 import { getCatalogDataFromModularConfig } from 'apps/pos/src/app/utils/deviceSelection';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import { getProgressFromModularStep } from 'apps/pos/src/app/utils/modularConfig';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
+import errorService from '@razorpay/universe-cli/errorService';
+import PageError from 'apps/pos/src/app/components/PageError';
+import { MODULES } from 'apps/pos/src/app/types/common';
 
 const DeviceSelectionCatalogForPosSalesAgent = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
@@ -29,15 +35,29 @@ const DeviceSelectionCatalogForPosSalesAgent = (): JSX.Element | null => {
     }) === 'completed';
 
   return (
-    <DeviceSelectionCatalog
-      heading={componentConfig?.title ?? ''}
-      deviceConfig={deviceConfig}
-      addedDevices={addedDevices}
-      isUpdateModularLoading={isUpdateModularLoading}
-      handleProceed={handleProceedToNextComponent}
-      handleModularUpdate={updateModularConfig}
-      isStepCompleted={isDeviceSelectionCompleted}
-    />
+    <ErrorBoundary
+      sentryHub={sentryHub?.sentryHub}
+      rank={errorService.ErrorRank.P0}
+      tags={{ module: MODULES.DEVICE_SELECTION }}
+      fallbackComponent={
+        <Box marginTop="spacing.8">
+          <PageError
+            title="Something went wrong!"
+            description="We are facing some issues. Please try again later."
+          />
+        </Box>
+      }
+    >
+      <DeviceSelectionCatalog
+        heading={componentConfig?.title ?? ''}
+        deviceConfig={deviceConfig}
+        addedDevices={addedDevices}
+        isUpdateModularLoading={isUpdateModularLoading}
+        handleProceed={handleProceedToNextComponent}
+        handleModularUpdate={updateModularConfig}
+        isStepCompleted={isDeviceSelectionCompleted}
+      />
+    </ErrorBoundary>
   );
 };
 

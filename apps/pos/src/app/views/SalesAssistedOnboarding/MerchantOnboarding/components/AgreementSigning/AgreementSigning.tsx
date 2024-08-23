@@ -1,6 +1,12 @@
 import React from 'react';
+import { Box } from '@razorpay/blade/components';
 import { PosAgreementMode } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/AgreementSigning/PosAgreementMode';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
+import errorService from '@razorpay/universe-cli/errorService';
+import PageError from 'apps/pos/src/app/components/PageError';
+import { MODULES } from 'apps/pos/src/app/types/common';
 
 const AgreementSigning = () => {
   const { states, handlers } = useOnboardingContext();
@@ -9,13 +15,28 @@ const AgreementSigning = () => {
   const { updateModularConfig } = handlers;
 
   if (!modularConfig) return null;
+
   return (
-    <PosAgreementMode
-      modularConfig={modularConfig}
-      isModularLoading={isModularLoading}
-      isUpdateModularLoading={isUpdateModularLoading}
-      updateModularConfig={updateModularConfig}
-    />
+    <ErrorBoundary
+      sentryHub={sentryHub?.sentryHub}
+      rank={errorService.ErrorRank.P0}
+      tags={{ module: MODULES.AGREEMENT_SIGNING }}
+      fallbackComponent={
+        <Box marginTop="spacing.8">
+          <PageError
+            title="Something went wrong!"
+            description="We are facing some issues. Please try again later."
+          />
+        </Box>
+      }
+    >
+      <PosAgreementMode
+        modularConfig={modularConfig}
+        isModularLoading={isModularLoading}
+        isUpdateModularLoading={isUpdateModularLoading}
+        updateModularConfig={updateModularConfig}
+      />
+    </ErrorBoundary>
   );
 };
 export default AgreementSigning;
