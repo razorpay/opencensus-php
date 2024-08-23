@@ -422,6 +422,7 @@ describe('utils', () => {
       const user = {
         isOrgCurlec: false,
         isOrgRZP: true,
+        isINCountry: true,
       };
       const result = isTransactionsV2Enabled(splitz, user);
       expect(result).toBe(true);

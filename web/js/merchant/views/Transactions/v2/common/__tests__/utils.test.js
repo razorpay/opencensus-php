@@ -336,7 +336,7 @@ describe('utils', () => {
       const splitz = {
         abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
       };
-      const user = { isOrgCurlec: false, isOrgRZP: true };
+      const user = { isOrgCurlec: false, isOrgRZP: true, isINCountry: true };
       const result = isTransactionsV2Enabled(splitz, user);
       expect(result).toBe(true);
     });

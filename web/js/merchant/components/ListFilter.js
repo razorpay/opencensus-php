@@ -24,9 +24,11 @@ export const isTransactionsV2Enabled = (splitz, user) => {
   if (user.isOrgCurlec) {
     return false;
   }
+
   return (
-    isExperimentEnabled(abExperiments.Transactions_Revamp) &&
-    (user.isOrgRZP || user.isVasTestingMerchant)
+    Boolean(user.isINCountry) &&
+    (user.isOrgRZP || user.isVasTestingMerchant) &&
+    isExperimentEnabled(abExperiments.Transactions_Revamp)
   );
 };
 
