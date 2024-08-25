@@ -198,6 +198,7 @@ class Route
         'payment_create_fees'                      => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
         'payment_create_pos'                       => ['post',     'payments/create/pos',                            'PaymentCreateController@postCreatePosPayment'                      ],
         'payment_calculate_fees'                   => ['post',     'payments/calculate/fees',                        'PaymentCreateController@postCalculatePaymentFees'                  ],
+        'payment_calculate_fees_with_gateway'      => ['post',     'payments/gateways/fees',                         'PaymentCreateController@calculatePaymentFeeWithGatewayFilter'      ],
         'payment_fees'                             => ['post',     'payments/fees',                                  'PaymentCreateController@postPaymentFees'                           ],
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
@@ -5888,6 +5889,7 @@ class Route
         'cps_iin_flow_disable',
         'add_token_iin',
         'fetch_iin_by_token_iin',
+        'payment_calculate_fees_with_gateway',
         'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
         'subscription_fetch_by_id_data_fix',
@@ -17820,6 +17822,7 @@ class Route
             'api_entity_fetch',
             'internal_payment_pricing',
             'internal_pricing',
+            'payment_calculate_fees_with_gateway'
         ],
 
         'otpelf' => [

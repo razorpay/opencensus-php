@@ -205,6 +205,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function optimizerInternalAppAuth($hostname = null, $mode = 'test'): void
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.optimizer')['secret'], $hostname);
+
+        $this->proxy = false;
+    }
+
     public function trustedBadgeInternalAppAuth($hostname = null, $mode = 'test'): void
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.trusted_badge')['secret'], $hostname);

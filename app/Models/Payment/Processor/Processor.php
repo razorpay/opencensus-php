@@ -3500,6 +3500,8 @@ class Processor
 
             $isPaCbPartnerPayment = (new \RZP\Models\Partner\Service())->isPaCbFeatureEnabledForPartner();
 
+            $isOptimizerCFBFlow = $this->merchant->isAtLeastOneFeatureEnabled(Features::OPTIMIZER_CFB_FEATURES);
+
             if (($isSplitPaymentRequest === false) and
                 ($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
@@ -3547,10 +3549,21 @@ class Processor
 
                 $this->convert3ds2BrowserDetails($input);
 
+                // for optimizer cfb flow, gateway is passed as input
+                // we should not pass gateway while building payment entity
+                if ($isOptimizerCFBFlow && isset($input['gateway'])) {
+                    $gateway = $input['gateway'] ;
+                    unset($input['gateway']);
+                }
+
                 $payment = $this->buildPaymentEntity($input, null, $isCollectXPayment);
                 if ($isPaCbPartnerPayment) {
                     $payment->setInternational();
                     $payment->setGateway(Payment\Gateway::PING_PONG);
+                }
+
+                if(isset($gateway)) {
+                    $payment->setGateway($gateway);
                 }
 
                 $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -5265,7 +5278,18 @@ class Processor
 
             unset($input['convenience_fee']);
         }
-
+        // In case of payment fee calculation with gateway filter
+        // we may get this field, and this field cannot be
+        // sent in input while building payment entity
+        if(isset($input['gateway']) === true)
+        {
+            $gateway = $input['gateway'];
+            unset($input['gateway']);
+        }
+        if(isset($input['gateway_convenience_flow']) == true ) {
+            $gatewayConvenienceFeeflow = $input['gateway_convenience_flow'];
+            unset($input['gateway_convenience_flow']);
+        }
         //
         // We only create a dummy payment entity for purpose
         // of pre-calculating fees and returning it.
@@ -5296,7 +5320,23 @@ class Processor
             $input['mcc_request_id'] = $res['mcc_request_id'];
         }
 
+        if(isset($gateway) == true)
+        {
+            $payment->setGateway($gateway);
+        }
+
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        // if it is gateway convenience flow skip dynamic convenience fee checks and return from here
+        if(isset($gatewayConvenienceFeeflow) == true) {
+            $data = [
+                'fee_split' => $feesSplit->toArray(),
+                'fees' => $fee,
+                'tax' => $tax,
+                'currency' => $input['currency'],
+            ];
+            return $data;
+        }
 
         if ($payment->merchant->isLRSFlowEnabled() === true)
         {
@@ -9387,6 +9427,12 @@ class Processor
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
+        // add gateway in input as we will be  un setting it in processAndReturnFees
+        if($payment->getGateway() !== null)
+        {
+            $input['gateway'] = $payment->getGateway();
+        }
+
         // This is not needed because FeeCalculator:calculateFee()
         // calculates the actual amount (amount - fee) in case of fee bearer merchant
         // $input['amount'] = $payment->getAmount() - $payment->getFee();

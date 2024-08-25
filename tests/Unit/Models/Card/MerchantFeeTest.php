@@ -2670,6 +2670,7 @@ class MerchantFeeTest extends TestCase
 
         $balance = $this->fixtures->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
 
+
         $this->fixtures->merchant->addFeatures(['optimizer_cfb_standard', 'raas']);
 
         $merchantDetails = $this->fixtures->create(
@@ -2729,6 +2730,7 @@ class MerchantFeeTest extends TestCase
         $this->fixtures->edit('merchant', '10000000000000',['fee_bearer' => 'customer']);
 
         $balance = $this->fixtures->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
+
 
         $this->fixtures->merchant->addFeatures(['optimizer_cfb_standard', 'raas']);
 

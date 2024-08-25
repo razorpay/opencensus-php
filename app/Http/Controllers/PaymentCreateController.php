@@ -8,6 +8,7 @@ use Redirect;
 use Response;
 use Request;
 use App;
+use RZP\Exception\BadRequestException;
 use RZP\Http\CheckoutView;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\CardMandate\MandateHubs\BillDeskSIHub\Constants;
@@ -723,6 +724,10 @@ class PaymentCreateController extends Controller
             unset($input['view']);
         }
 
+        if(isset($input['gateway_convenience_flow']) == true ) {
+            $gatewayConvenienceFeeflow = $input['gateway_convenience_flow'];
+        }
+
         $merchant =  $this->app['basicauth']->getMerchant();
 
         $this->addDummyEmailIfApplicable($input, $merchant);
@@ -745,6 +750,11 @@ class PaymentCreateController extends Controller
         else
         {
             $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+        }
+
+        // if it is gateway convenience flow skip checkout related data transformations
+        if(isset($gatewayConvenienceFeeflow) == true ) {
+            return $data;
         }
 
         // Converts all the amounts to rupees
@@ -2643,5 +2653,42 @@ class PaymentCreateController extends Controller
 
             return 'control';
         }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function calculatePaymentFeeWithGatewayFilter()
+    {
+        $input = Request::all();
+
+        if(isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
+        }
+
+        $merchantId = $input['merchant_id'] ;
+
+        $merchant  = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        // setting merchant in auth context as this will be used in the flows later.
+        $this->app['basicauth']->setMerchant($merchant);
+
+
+        $paymentInput = $input['payment'] ?? [];
+        $paymentInput['gateway_convenience_flow'] = true;
+        $this->logPaymentRequestEvent($paymentInput, true);
+
+        $gateways = $input['gateways'] ?? [];
+        $data = [];
+        foreach ($gateways as $gateway) {
+            if ($gateway !== 'razorpay') {
+                $paymentInput['gateway'] = $gateway;
+            }
+            $data[$gateway] = $this->createFeeBearerCustomerPayment($paymentInput);
+        }
+
+        return ApiResponse::json($data);
     }
 }
