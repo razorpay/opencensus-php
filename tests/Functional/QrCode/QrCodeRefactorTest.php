@@ -1251,6 +1251,399 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
     }
 
+    public function testCreateQrPaymentViaRefactorFlowForUpiRzpApb()
+    {
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_rzpapb_offline_terminal',
+            [
+                'merchant_id' => 'LiveAccountMer',
+                'gateway_merchant_id' => 'LiveAccountMer',
+            ]
+        );
+
+        $this->fixtures->on('live')->edit('terminal', '11LiveAccTrmnl', ['status' => 'deactivated']);
+        $this->fixtures->on('live')->edit('terminal', '101YesDedTrmnl', ['status' => 'deactivated']);
+
+        $this->mozartMock = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('mozart', $this->mozartMock);
+
+        $this->mozartMock
+            ->shouldReceive('sendRawRequest')
+            ->andReturnUsing(
+                function ($request) use (&$count) {
+                    ++$count;
+
+                    $reqArray = json_decode($request['content'], true);
+
+                    return json_encode([
+                                           'data' => [
+                                               'payment' => [
+                                                   'currency' => 'INR',
+                                               ],
+                                               'status' => 'intent_inititated',
+                                               'terminal' => [
+                                                   'gateway' => 'upi_rzpapb',
+                                                   'gateway_merchant_id' => 'LiveAccountMer',
+                                                   'vpa' => 'testvpa@rxairtel',
+                                               ],
+                                               'upi' => [
+                                                   'gateway_status_code' => 'created',
+                                                   'merchant_reference' => $reqArray['payment']['id'],
+                                               ],
+                                           ],
+                                           'error' => null,
+                                           'next' => [
+                                               'intent_url' => 'upi://pay?am=1.00&cu=INR&pa=' . 'testvpa@rxairtel' .
+                                                   '&pn=Retail+Brand+Updated+Final&tn=Test+Intent+Payment&tr=' .
+                                                   $reqArray['payment']['id'],
+                                           ],
+                                           'success' => true,
+                                       ]);
+                }
+            );
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
+                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+            ]
+        );
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'request_source' => 'ezetap',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->ba->directAuth();
+
+        $this->config['gateway.mock_upi_mozart'] = true;
+
+        $this->makeUpiRzpapbPayment($qrCodeEntity);
+
+        $qrpRequest = $this->getDbLastEntity('qr_payment_request', 'live');
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $qrCode = $this->getDbEntity('qr_code', ['id' => $qrCode->getId()], 'live');
+        $upi = $this->getDbLastEntity('upi', 'live');
+
+        $this->assertEquals(1, $qrpRequest->isCreated());
+        $this->assertEquals(1, $qrpRequest->expected);
+        $this->assertEquals($qrCode->getId(), $qrpRequest->getQrCodeId());
+        $this->assertEquals('002002002002', $qrpRequest->getTransactionReference());
+        $this->assertEmpty($qrpRequest->getFailureReason());
+
+        $this->assertTrue($qrPayment->expected);
+        $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
+        $this->assertEquals('002002002002', $qrPayment->getProviderReferenceId());
+        $this->assertEquals('upi_rzpapb', $qrPayment->getGateway());
+        $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
+        $this->assertEquals(100, $qrPayment->getAmount());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
+        $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
+
+        $this->assertEquals('002002002002', $payment->getReference16());
+        $this->assertEquals('qr_code', $payment->getReceiverType());
+        $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('payervpa@upi', $payment->getVpa());
+        $this->assertEquals('upi_rzpapb', $payment->getGateway());
+        $this->assertEquals('RzpApbOffTrmnl', $payment->getTerminalId());
+        $this->assertEquals('in_person', $payment->getReference13());
+        $this->assertEquals(100, $payment->getAmount());
+
+        $this->assertEquals('upi_rzpapb', $upi->getGateway());
+        $this->assertEquals($payment->getId(), $upi->getPaymentId());
+        $this->assertEquals('authorize', $upi->getAction());
+        $this->assertEquals('pay', $upi->getType());
+        $this->assertEquals(100, $upi->getAmount());
+        $this->assertEquals('payervpa@upi', $upi->getVpa());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $upi->getMerchantReference());
+        $this->assertEquals('002002002002', $upi->getNpciReferenceId());
+        $this->assertEquals('mozart', $upi->getAttribute('acquirer'));
+
+        $this->assertEquals('closed', $qrCode->getStatus());
+        $this->assertEquals(100, $qrCode->getAttribute('payments_amount_received'));
+        $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
+    }
+
+    public function testCreateQrPaymentViaRefactorFlowForUpiRzpApbWithOffer()
+    {
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_rzpapb_offline_terminal',
+            [
+                'merchant_id' => 'LiveAccountMer',
+                'gateway_merchant_id' => 'LiveAccountMer',
+            ]
+        );
+
+        $this->fixtures->on('live')->edit('terminal', '11LiveAccTrmnl', ['status' => 'deactivated']);
+        $this->fixtures->on('live')->edit('terminal', '101YesDedTrmnl', ['status' => 'deactivated']);
+
+        $this->mozartMock = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('mozart', $this->mozartMock);
+
+        $this->mozartMock
+            ->shouldReceive('sendRawRequest')
+            ->andReturnUsing(
+                function ($request) use (&$count) {
+                    ++$count;
+
+                    $reqArray = json_decode($request['content'], true);
+
+                    return json_encode([
+                                           'data' => [
+                                               'payment' => [
+                                                   'currency' => 'INR',
+                                               ],
+                                               'status' => 'intent_inititated',
+                                               'terminal' => [
+                                                   'gateway' => 'upi_rzpapb',
+                                                   'gateway_merchant_id' => 'LiveAccountMer',
+                                                   'vpa' => 'testvpa@rxairtel',
+                                               ],
+                                               'upi' => [
+                                                   'gateway_status_code' => 'created',
+                                                   'merchant_reference' => $reqArray['payment']['id'],
+                                               ],
+                                           ],
+                                           'error' => null,
+                                           'next' => [
+                                               'intent_url' => 'upi://pay?am=1.00&cu=INR&pa=' . 'testvpa@rxairtel' .
+                                                   '&pn=Retail+Brand+Updated+Final&tn=Test+Intent+Payment&tr=' .
+                                                   $reqArray['payment']['id'],
+                                           ],
+                                           'success' => true,
+                                       ]);
+                }
+            );
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
+                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+            ]
+        );
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'request_source' => 'ezetap',
+                'notes'          => [
+                    'payment_context' => 'offer',
+                ],
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->ba->directAuth();
+
+        $this->config['gateway.mock_upi_mozart'] = true;
+
+        $this->makeUpiRzpapbPaymentWithOffer($qrCodeEntity);
+
+        $qrpRequest = $this->getDbLastEntity('qr_payment_request', 'live');
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $qrCode = $this->getDbEntity('qr_code', ['id' => $qrCode->getId()], 'live');
+        $upi = $this->getDbLastEntity('upi', 'live');
+
+        $this->assertEquals(1, $qrpRequest->isCreated());
+        $this->assertEquals(1, $qrpRequest->expected);
+        $this->assertEquals($qrCode->getId(), $qrpRequest->getQrCodeId());
+        $this->assertEquals('002002002002', $qrpRequest->getTransactionReference());
+        $this->assertEmpty($qrpRequest->getFailureReason());
+
+        $this->assertTrue($qrPayment->expected);
+        $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
+        $this->assertEquals('002002002002', $qrPayment->getProviderReferenceId());
+        $this->assertEquals('upi_rzpapb', $qrPayment->getGateway());
+        $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
+        $this->assertEquals(90, $qrPayment->getAmount());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
+        $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
+
+        $this->assertEquals('002002002002', $payment->getReference16());
+        $this->assertEquals('qr_code', $payment->getReceiverType());
+        $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('payervpa@upi', $payment->getVpa());
+        $this->assertEquals('upi_rzpapb', $payment->getGateway());
+        $this->assertEquals('RzpApbOffTrmnl', $payment->getTerminalId());
+        $this->assertEquals('in_person', $payment->getReference13());
+        $this->assertEquals(90, $payment->getAmount());
+
+        $this->assertEquals('upi_rzpapb', $upi->getGateway());
+        $this->assertEquals($payment->getId(), $upi->getPaymentId());
+        $this->assertEquals('authorize', $upi->getAction());
+        $this->assertEquals('pay', $upi->getType());
+        $this->assertEquals(90, $upi->getAmount());
+        $this->assertEquals('payervpa@upi', $upi->getVpa());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $upi->getMerchantReference());
+        $this->assertEquals('002002002002', $upi->getNpciReferenceId());
+        $this->assertEquals('mozart', $upi->getAttribute('acquirer'));
+
+        $this->assertEquals('closed', $qrCode->getStatus());
+        $this->assertEquals(90, $qrCode->getAttribute('payments_amount_received'));
+        $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
+    }
+
+    public function testCreateQrPaymentViaRefactorFlowForUpiRzpApbWithEmi()
+    {
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_rzpapb_offline_terminal',
+            [
+                'merchant_id' => 'LiveAccountMer',
+                'gateway_merchant_id' => 'LiveAccountMer',
+            ]
+        );
+
+        $this->fixtures->on('live')->edit('terminal', '11LiveAccTrmnl', ['status' => 'deactivated']);
+        $this->fixtures->on('live')->edit('terminal', '101YesDedTrmnl', ['status' => 'deactivated']);
+
+        $this->mozartMock = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('mozart', $this->mozartMock);
+
+        $this->mozartMock
+            ->shouldReceive('sendRawRequest')
+            ->andReturnUsing(
+                function ($request) use (&$count) {
+                    ++$count;
+
+                    $reqArray = json_decode($request['content'], true);
+
+                    return json_encode([
+                                           'data' => [
+                                               'payment' => [
+                                                   'currency' => 'INR',
+                                               ],
+                                               'status' => 'intent_inititated',
+                                               'terminal' => [
+                                                   'gateway' => 'upi_rzpapb',
+                                                   'gateway_merchant_id' => 'LiveAccountMer',
+                                                   'vpa' => 'testvpa@rxairtel',
+                                               ],
+                                               'upi' => [
+                                                   'gateway_status_code' => 'created',
+                                                   'merchant_reference' => $reqArray['payment']['id'],
+                                               ],
+                                           ],
+                                           'error' => null,
+                                           'next' => [
+                                               'intent_url' => 'upi://pay?am=1.00&cu=INR&pa=' . 'testvpa@rxairtel' .
+                                                   '&pn=Retail+Brand+Updated+Final&tn=Test+Intent+Payment&tr=' .
+                                                   $reqArray['payment']['id'],
+                                           ],
+                                           'success' => true,
+                                       ]);
+                }
+            );
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',
+                RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'on',
+            ]
+        );
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'request_source' => 'ezetap',
+                'notes'          => [
+                    'payment_context' => 'emi',
+                ],
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->ba->directAuth();
+
+        $this->config['gateway.mock_upi_mozart'] = true;
+
+        $this->makeUpiRzpapbPaymentWithEmi($qrCodeEntity);
+
+        $qrpRequest = $this->getDbLastEntity('qr_payment_request', 'live');
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $qrCode = $this->getDbEntity('qr_code', ['id' => $qrCode->getId()], 'live');
+        $upi = $this->getDbLastEntity('upi', 'live');
+
+        $this->assertEquals(1, $qrpRequest->isCreated());
+        $this->assertEquals(1, $qrpRequest->expected);
+        $this->assertEquals($qrCode->getId(), $qrpRequest->getQrCodeId());
+        $this->assertEquals('002002002002', $qrpRequest->getTransactionReference());
+        $this->assertEmpty($qrpRequest->getFailureReason());
+
+        $this->assertTrue($qrPayment->expected);
+        $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
+        $this->assertEquals('002002002002', $qrPayment->getProviderReferenceId());
+        $this->assertEquals('upi_rzpapb', $qrPayment->getGateway());
+        $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
+        $this->assertEquals(90, $qrPayment->getAmount());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
+        $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
+
+        $this->assertEquals('002002002002', $payment->getReference16());
+        $this->assertEquals('qr_code', $payment->getReceiverType());
+        $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('payervpa@upi', $payment->getVpa());
+        $this->assertEquals('upi_rzpapb', $payment->getGateway());
+        $this->assertEquals('RzpApbOffTrmnl', $payment->getTerminalId());
+        $this->assertEquals('in_person', $payment->getReference13());
+        $this->assertEquals(90, $payment->getAmount());
+
+        $this->assertEquals('upi_rzpapb', $upi->getGateway());
+        $this->assertEquals($payment->getId(), $upi->getPaymentId());
+        $this->assertEquals('authorize', $upi->getAction());
+        $this->assertEquals('pay', $upi->getType());
+        $this->assertEquals(90, $upi->getAmount());
+        $this->assertEquals('payervpa@upi', $upi->getVpa());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $upi->getMerchantReference());
+        $this->assertEquals('002002002002', $upi->getNpciReferenceId());
+        $this->assertEquals('mozart', $upi->getAttribute('acquirer'));
+
+        $this->assertEquals('closed', $qrCode->getStatus());
+        $this->assertEquals(90, $qrCode->getAttribute('payments_amount_received'));
+        $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
+    }
+
     public function testQrStatusCheckViaRefactorFlowForFailedStatus()
     {
         $count = 0;

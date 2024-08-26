@@ -1651,10 +1651,21 @@ class ApiEventSubscriber extends Base\Core
     protected function getQrCodePaymentPayload(Payment\Entity $payment)
     {
         $receiver = $payment->getReceiver();
+        $paymentContext = $payment->getMetadata('payment_context') ?? null;
 
         $partialPayload[Constants\Entity::PAYMENT] = [
             'entity' => $payment->toArrayPublic()
         ];
+
+        if (empty($paymentContext['offer']) === false)
+        {
+            $partialPayload[Constants\Entity::PAYMENT]['entity']['upi']['offer'] = $paymentContext['offer'];
+        }
+
+        if (empty($paymentContext['emi']) === false)
+        {
+            $partialPayload[Constants\Entity::PAYMENT]['entity']['upi']['emi'] = $paymentContext['emi'];
+        }
 
         $qrCodeArray = $receiver->toArrayPublic();
 
@@ -1872,6 +1883,18 @@ class ApiEventSubscriber extends Base\Core
             $invoiceId = $order->getProductId();
 
             $payload[Constants\Entity::PAYMENT]['entity'][Payment\Entity::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
+        }
+
+        $paymentContext = $payment->getMetadata('payment_context') ?? null;
+
+        if (empty($paymentContext['offer']) === false)
+        {
+            $payload[Constants\Entity::PAYMENT]['entity']['upi']['offer'] = $paymentContext['offer'];
+        }
+
+        if (empty($paymentContext['emi']) === false)
+        {
+            $payload[Constants\Entity::PAYMENT]['entity']['upi']['emi'] = $paymentContext['emi'];
         }
 
         return $payload;

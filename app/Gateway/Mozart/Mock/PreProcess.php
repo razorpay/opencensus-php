@@ -634,6 +634,16 @@ class PreProcess extends Base\Mock\Server
             'id' => $payload['terminal_id'],
         ]);
 
+        if ($payload[Payment\Entity::DESCRIPTION] === 'create_success_for_offer')
+        {
+            $response->setOffer();
+        }
+
+        if ($payload[Payment\Entity::DESCRIPTION] === 'create_success_for_emi')
+        {
+            $response->setEmi();
+        }
+
         $response = $response->toArray();
 
         unset($response['next']);

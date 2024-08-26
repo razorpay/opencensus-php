@@ -59,6 +59,51 @@ class QrGatewayModule
         return $response['data'];
     }
 
+    public function generateIntentQrForUpiRzpApb(QrCodeEntity $qrCode, TerminalEntity $terminal, string $upiMode): array
+    {
+        $merchant = $qrCode->merchant;
+        $notes = $qrCode->getNotes();
+
+        $input = [
+            EntityConstants::PAYMENT  => [
+                'id'       => $qrCode->getId() . 'qrv2',
+                'amount'   => $qrCode->getAmount(),
+                'currency' => 'INR',
+            ],
+            EntityConstants::TERMINAL => $terminal->toArray(),
+            EntityConstants::MERCHANT => $merchant->toArray(),
+            'metadata'                => [
+                'flow'   => 'intent',
+                'remark' => 'Payment To ' . $merchant->getFilteredDba(),
+            ],
+            EntityConstants::UPI      => [
+                'merchant_reference' => $qrCode->getId() . 'qrv2',
+                'mode' => $upiMode,
+            ],
+        ];
+
+        if (empty($notes['payment_context'] === false))
+        {
+            $input['metadata']['payment_context'] = strtoupper($notes['payment_context']);
+        }
+
+        $response = $this->app['mozart']->sendMozartRequest(
+            namespace  : Namespaces::UPI_PAYMENTS,
+            gateway    : $terminal->getGateway(),
+            action     : Action::PAY_INIT,
+            input      : $input,
+            addEntities: false
+        );
+
+        $response['data'][EntityConstants::QR_CODE][QrCodeEntity::REFERENCE] =
+            $response['data'][EntityConstants::UPI][\RZP\Gateway\Upi\Base\Entity::MERCHANT_REFERENCE];
+
+        $response['data'][EntityConstants::QR_CODE][QrCodeEntity::QR_STRING] =
+            $response['next']['intent_url'];
+
+        return $response['data'];
+    }
+
     public function checkQrPaymentStatus(QrCodeEntity $qrCode, TerminalEntity $terminal): array
     {
         $merchant = $qrCode->merchant;

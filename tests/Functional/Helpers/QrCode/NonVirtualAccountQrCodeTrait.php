@@ -365,6 +365,72 @@ trait NonVirtualAccountQrCodeTrait
         $this->makeRequestAndGetContent($request);
     }
 
+    private function makeUpiRzpapbPayment($qrCodeEntity)
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/callback/upi_rzpapb',
+            'method' => 'POST',
+            'raw' => json_encode(
+                [
+                    'id' => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                    'amount' => 100,
+                    'description' => 'create_collect_success',
+                    'gateway' => 'upi_rzpapb',
+                    'terminal_id' => 'RzpApbOffTrmnl',
+                    'vpa' => 'payervpa@upi',
+                ]
+            ),
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    private function makeUpiRzpapbPaymentWithOffer($qrCodeEntity)
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/callback/upi_rzpapb',
+            'method' => 'POST',
+            'raw' => json_encode(
+                [
+                    'id' => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                    'amount' => 90,
+                    'description' => 'create_success_for_offer',
+                    'gateway' => 'upi_rzpapb',
+                    'terminal_id' => 'RzpApbOffTrmnl',
+                    'vpa' => 'payervpa@upi',
+                ]
+            ),
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    private function makeUpiRzpapbPaymentWithEmi($qrCodeEntity)
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/callback/upi_rzpapb',
+            'method' => 'POST',
+            'raw' => json_encode(
+                [
+                    'id' => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                    'amount' => 90,
+                    'description' => 'create_success_for_emi',
+                    'gateway' => 'upi_rzpapb',
+                    'terminal_id' => 'RzpApbOffTrmnl',
+                    'vpa' => 'payervpa@upi',
+                ]
+            ),
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     private function makeUpiMindgatePayment($qrCodeEntity,$terminal, $payment = [], $upiEntity = [])
     {
         $this->ba->directAuth();

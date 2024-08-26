@@ -424,6 +424,14 @@ class Processor extends Base\Core
             }
         }
 
+        $paymentContext = $this->callbackData['data']['payment_context'] ?? null;
+
+        if (empty($paymentContext) === false)
+        {
+            $paymentArray['_']['payment_context'] =
+                $this->parseOfferAndEmiFromPaymentContext($paymentContext);
+        }
+
         return $paymentArray;
     }
 
@@ -642,9 +650,25 @@ class Processor extends Base\Core
         if (($this->qrCode->hasFixedAmount() === true) and
             ($qrPayment->getAmount() !== $this->qrCode->getAmount()))
         {
-            $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH);
+            $paymentContext = $this->callbackData['data']['payment_context'] ?? null;
 
-            return;
+            if (empty($paymentContext['offer']['offer_id']) === false or
+                empty($paymentContext['emi']['offer_id']) === false)
+            {
+                $this->trace->info(
+                    TraceCode::QR_PAYMENT_AMOUNT_VALIDATION_SKIPPED_FOR_OFFERS,
+                    [
+                        'offer_offer_id' => $paymentContext['offer']['offer_id'] ?? null,
+                        'emi_offer_id' => $paymentContext['emi']['offer_id'] ?? null,
+                        'qr_code_id' => $this->qrCode->getId(),
+                    ]
+                );
+            }
+            else
+            {
+                $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH);
+                return;
+            }
         }
 
         if (($this->checkIfExperimentEnabled($qrPayment) == true)
@@ -888,5 +912,53 @@ class Processor extends Base\Core
                            ]);
 
         return $this->processPayment($qrPayment);
+    }
+
+    protected function parseOfferAndEmiFromPaymentContext(array $paymentContext)
+    {
+        if (empty($paymentContext['offer']) === false)
+        {
+            if (empty($paymentContext['offer']['discount_amount']) === false)
+            {
+                $discountAmount = (float) $paymentContext['offer']['discount_amount'] / 100.00;
+
+                $paymentContext['offer']['name'] = 'Saved Rs. ' .
+                    strval($discountAmount) .
+                    ' with Offer';
+            }
+            else
+            {
+                $paymentContext['offer']['name'] = 'Offer Applied';
+            }
+        }
+
+        if (empty($paymentContext['emi']) === false)
+        {
+            if (empty($paymentContext['emi']['interest_rate_amount']) === false and
+                empty($paymentContext['emi']['discount_amount']) === false)
+            {
+                if ($paymentContext['emi']['interest_rate_amount'] === $paymentContext['emi']['discount_amount'])
+                {
+                    $paymentContext['emi']['description'] = 'No cost EMI availed';
+                }
+                else
+                {
+                    $discountAmount = $paymentContext['emi']['discount_amount'];
+                    $interestRateAmount = $paymentContext['emi']['interest_rate_amount'];
+                    $finalDiscount = abs($discountAmount - $interestRateAmount);
+                    $finalDiscountInRupees = (float) $finalDiscount / 100.00;
+
+                    $paymentContext['emi']['description'] = 'Saved additional Rs. ' .
+                        strval($finalDiscountInRupees) .
+                        ' with No cost EMI';
+                }
+            }
+            else
+            {
+                $paymentContext['emi']['description'] = 'No cost EMI availed';
+            }
+        }
+
+        return $paymentContext;
     }
 }

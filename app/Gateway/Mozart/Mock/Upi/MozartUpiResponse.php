@@ -22,6 +22,9 @@ class MozartUpiResponse extends Collection
     const PAYMENT   = 'payment';
     const META      = 'meta';
     const STATUS    = 'status';
+    const PAYMENT_CONTEXT  = 'payment_context';
+    const OFFER  = 'offer';
+    const EMI  = 'emi';
 
     public function setNext(array $next)
     {
@@ -67,6 +70,44 @@ class MozartUpiResponse extends Collection
         $data = $this->getData();
 
         $data[self::TERMINAL] = $terminal;
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
+    public function setOffer()
+    {
+        $data = $this->getData();
+
+        $data[self::PAYMENT_CONTEXT] = [
+            self::OFFER => [
+                'offer_id'        => '1RandomOfferId',
+                'category'        => 'DISCOUNT',
+                'name'            => 'Test Discount',
+                'discount_amount' => 10,
+            ]
+        ];
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
+    public function setEmi()
+    {
+        $data = $this->getData();
+
+        $data[self::PAYMENT_CONTEXT] = [
+            self::EMI => [
+                'offer_id'             => 'offer_id',
+                'interest_rate_amount' => 100,
+                'discount_amount'      => 200,
+                'processing_fee'       => 50,
+                'tenure'               => 6,
+                'emi_amount'           => 400,
+            ],
+        ];
 
         $this->put(self::DATA, $data);
 

@@ -87,6 +87,9 @@ class Constants
     const QR_V2_VERSION         = '01';
     const QR_V2_MODE_STATIC     = '19';
     const QR_V2_MODE_DYNAMIC    = '22';
+
+    const QR_V2_MODE_STATIC_OFFLINE     = '01';
+    const QR_V2_MODE_DYNAMIC_OFFLINE    = '15';
     const QR_V2_QR_MEDIUM       = '04';
 
     // in seconds

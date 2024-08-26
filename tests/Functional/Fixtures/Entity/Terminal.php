@@ -4244,6 +4244,31 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDedicatedUpiRzpapbOfflineTerminal($attributes)
+    {
+        $termId = 'RzpApbOffTrmnl';
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_rzpapb',
+            'gateway_merchant_id'       => '10000000000000',
+            'vpa'                       => 'testvpa@rxairtel',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::OFFLINE           => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createUpiKotakTerminal()
     {
         $attributes = [];

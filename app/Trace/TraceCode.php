@@ -2225,6 +2225,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_PAYMENT_PROCESSING_FAILED                          = 'QR_PAYMENT_PROCESSING_FAILED';
     const PAYMENT_ENTITY_UPDATE                                 = 'PAYMENT_ENTITY_UPDATE';
     const QR_PAYMENT_SAVED                                      = 'QR_PAYMENT_SAVED';
+    const QR_PAYMENT_AMOUNT_VALIDATION_SKIPPED_FOR_OFFERS       = 'QR_PAYMENT_AMOUNT_VALIDATION_SKIPPED_FOR_OFFERS';
     const QR_CODE_PAYMENT_INFO_UPDATE                           = 'QR_CODE_PAYMENT_INFO_UPDATE';
     const QR_CODE_PAYMENT_INFO_UPDATE_COMPLETE                  = 'QR_CODE_PAYMENT_INFO_UPDATE_COMPLETE';
     const QR_CODE_UNAVAILABLE                                   = 'QR_CODE_UNAVAILABLE';

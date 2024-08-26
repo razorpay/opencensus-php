@@ -6,4 +6,5 @@ class Namespaces
 {
     const QR_CODES = 'qrCodes';
     const PAYMENTS = 'payments';
+    const UPI_PAYMENTS = 'upiPayments';
 }

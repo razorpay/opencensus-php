@@ -1053,6 +1053,38 @@ class Generator extends QrCode\Generator
         }
     }
 
+    private function getQrCodeModeAccountingForOnlineAndOfflineRequestSource($qrCode, Terminal\Entity $terminal)
+    {
+        $isOffline = $terminal->isOffline();
+        $isOnline = $terminal->isOnline();
+
+        if ($isOnline === true and
+            $qrCode->getUsageType() === UsageType::MULTIPLE_USE)
+        {
+            return QrCode\Constants::QR_V2_MODE_STATIC;
+        }
+
+        if ($isOnline === true and
+            $qrCode->getUsageType() === UsageType::SINGLE_USE)
+        {
+            return QrCode\Constants::QR_V2_MODE_DYNAMIC;
+        }
+
+        if ($isOffline === true and
+            $qrCode->getUsageType() === UsageType::MULTIPLE_USE)
+        {
+            return QrCode\Constants::QR_V2_MODE_STATIC_OFFLINE;
+        }
+
+        if ($isOffline === true and
+            $qrCode->getUsageType() === UsageType::SINGLE_USE)
+        {
+            return QrCode\Constants::QR_V2_MODE_DYNAMIC_OFFLINE;
+        }
+
+        return '04';
+    }
+
     /**
      * @param Entity $qrCode
      *
@@ -1074,6 +1106,11 @@ class Generator extends QrCode\Generator
             {
                 try
                 {
+                    if ($terminal->getGateway() === Gateway::UPI_RZPAPB)
+                    {
+                        return $this->generateQrIntentUrlViaGatewayModuleForUpiRzpApb($qrCode, $terminal);
+                    }
+
                     if
                     (
                         strtolower(
@@ -1246,6 +1283,31 @@ class Generator extends QrCode\Generator
     protected function generateQrIntentUrlViaGatewayModule(Entity $qrCode, mixed $terminal)
     {
         $response = (new QrGatewayModule($this->app))->generateIntentQr($qrCode, $terminal);
+
+        if (empty($response[EntityConstants::QR_CODE][Entity::QR_STRING]) === true or
+            empty($response[EntityConstants::QR_CODE][Entity::REFERENCE]) === true)
+        {
+            throw new Exception\ServerErrorException(
+                "Missing QR String or Merchant Reference in QR Response",
+                ErrorCode::SERVER_ERROR_QR_CODE_GENERATION_FAILURE,
+                [
+                    'response' => $response,
+                ]
+            );
+        }
+
+        $qrCode->setReference($response[EntityConstants::QR_CODE][Entity::REFERENCE]);
+        $qrCode->setQrString($response[EntityConstants::QR_CODE][Entity::QR_STRING]);
+
+        // Returning the QR string as that is what is expected from this function
+        return $response[EntityConstants::QR_CODE][Entity::QR_STRING];
+    }
+
+    protected function generateQrIntentUrlViaGatewayModuleForUpiRzpApb(Entity $qrCode, mixed $terminal)
+    {
+        $upiMode = $this->getQrCodeModeAccountingForOnlineAndOfflineRequestSource($qrCode, $terminal);
+
+        $response = (new QrGatewayModule($this->app))->generateIntentQrForUpiRzpApb($qrCode, $terminal, $upiMode);
 
         if (empty($response[EntityConstants::QR_CODE][Entity::QR_STRING]) === true or
             empty($response[EntityConstants::QR_CODE][Entity::REFERENCE]) === true)
