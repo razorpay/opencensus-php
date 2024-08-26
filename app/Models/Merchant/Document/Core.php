@@ -228,6 +228,14 @@ class Core extends Base\Core
         $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
         $merchantId = $merchant->getMerchantId();
 
+        $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
+            'request_body'       => $input,
+            "upload_only_set" => isset($input["upload_only"])
+        ]);
+        if (isset($input["upload_only"]) === true and $input["upload_only"])
+        {
+            return $fileAttributes;
+        }
         // route request to PGOS
         try {
 
@@ -554,19 +562,24 @@ class Core extends Base\Core
 
         $document = $this->repo->merchant_document->findDocumentById($documentId);
 
-        if($document === null)
+        if ($document === null)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR, null, $documentId, 'Document id is not valid.');
+            $document = $this->repo->merchant_document->findDocumentByFileStoreId($documentId);
+            if ($document === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, $documentId, 'Document id is not valid.');
+            }
         }
 
-        try {
+        try
+        {
             $signedUrl = (new Detail\Service())->getSignedUrl($document[Entity::FILE_STORE_ID], $document[Entity::MERCHANT_ID], $document[Entity::SOURCE]);
         }
-        catch (\Exception $e )
+        catch (\Exception $e)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_UFH_INTEGRATION, null , $documentId, 'Signed url could not be fetched for this document id.');
+                ErrorCode::BAD_REQUEST_UFH_INTEGRATION, null, $documentId, 'Signed url could not be fetched for this document id.');
         }
 
         return [

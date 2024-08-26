@@ -87,6 +87,16 @@ class Service extends Base\Service
 
     public function uploadActivationFileForMerchant(array $input, $merchant)
     {
+        if (isset($input["merchant_id"]) === true)
+        {
+            $merchantId = $input["merchant_id"];
+            $this->app['basicauth']->setMerchantById($merchantId);
+            unset($input["merchant_id"]);
+            $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, [
+                'merchant_id' => $merchantId,
+            ]);
+
+        }
         return $this->mutex->acquireAndRelease(
 
             $merchant->getId(),

@@ -860,7 +860,7 @@ class UserRolesScope
             'merchant_credits_balance_fetch'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT, Role::ADMIN_READONLY],
             'merchant_delete_config_logo'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER],
             'merchant_document_delete'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
-            'merchant_document_fetch'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
+            'merchant_document_fetch'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE,Role::RAZORPAY_SALES, Role::ADMIN_READONLY,Role::PARTNER_AGENT],
             'merchant_document_upload'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
             'merchant_document_url_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_edit_email2fa'                               => [Role::OWNER, Role::ADMIN],

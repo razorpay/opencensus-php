@@ -145,6 +145,44 @@ class MerchantDocumentTest Extends TestCase
         $this->assertArrayNotHasKey('promoter_address_url',$content['partner_activation']['verification']['required_fields']);
     }
 
+    //when partner agent is uploading the document for new merchant
+    //make sure there is no error in the api call when merchant id is passed and upload_only passed
+    //the function returned after ufh upload itself and did not proceed to storing to db tables
+    public function testPartnerAgentDocumentUpload()
+    {
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $ezetapMerchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->ba->proxyAuth('rzp_test_' . $ezetapMerchantId, $merchantUser['id']);
+
+        $merchantId='1cXSLlUU8V9sXl';
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+
+        //Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchantId
+            ]);
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+    }
     public function testUploadFilesByAgent()
     {
         $this->ba->adminAuth();

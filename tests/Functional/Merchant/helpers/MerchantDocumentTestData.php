@@ -269,7 +269,22 @@ return [
             ]
         ]
     ],
-
+    'testPartnerAgentDocumentUpload' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'nach',
+                'upload_only' => true,
+                'merchant_id' => '1cXSLlUU8V9sXl'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'nach' => [],
+            ]
+        ]
+    ],
     'testUploadFilesByAgent' => [
         'request' => [
             'url'     => '/merchant_document',

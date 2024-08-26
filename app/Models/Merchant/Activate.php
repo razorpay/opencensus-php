@@ -252,6 +252,8 @@ class Activate extends Base\Core
 
         $merchant->releaseFunds();
 
+        $merchant->liveEnable();
+
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
 
         $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $merchantDetail, $merchantCore)
