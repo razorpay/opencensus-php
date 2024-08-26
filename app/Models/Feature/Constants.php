@@ -2260,6 +2260,13 @@ class Constants
      */
     const CUSTOM_TERMINAL_PROC = 'custom_terminal_proc';
 
+    /**
+     * Feature flag will be enabled on partner.
+     * All submerchants associated with the partner can
+     * have a custom terminal procurement mapping
+     */
+    const VAS_ORG_IDENTIFIER = 'vas_org_identifier';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3072,6 +3079,7 @@ class Constants
         self::ONE_CC_SHOPIFY_DRAFT_ORDER                   => true,
         self::ONE_CC_ENABLE_NECTOR_COINS                   => true,
         self::ONE_CC_OPT_SHIPPING_TAX                      => true,
+        self::VAS_ORG_IDENTIFIER                           => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
         self::DEBIT_CARD_VALIDATION                  => true,
@@ -4556,6 +4564,11 @@ class Constants
             'feature'       => self::CUSTOM_TERMINAL_PROC,
             'display_name'  => 'Custom Terminal Procurement',
             'documentation' => 'Feature flag to allow partner to procure custom terminal for sub-merchants',
+        ],
+         self::VAS_ORG_IDENTIFIER => [
+            'feature' => self::VAS_ORG_IDENTIFIER,
+            'display_name' => "VAS ORG IDENTIFIER",
+            'documentation' => "Feature flag for determining if the organization is a VAS/Banking Program Org",
         ]
     ];
 
