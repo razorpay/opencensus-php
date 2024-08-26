@@ -50,6 +50,7 @@ class Metric extends Base\Core
     const TRANSFER_PROCESS_REVERSE_SHADOW               = 'transfer_process_reverse_shadow';
     const LEDGER_OUTBOX_RETRY_CRON_FOR_TRANSFER_FAILED  = 'ledger_outbox_retry_cron_for_transfer_failed';
     const PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH   = 'pg_ledger_transfer_merchants_onboarding_mismatch';
+    const TRANSFER_PROCESSING_EXCEPTION_MESSAGE         = 'transfer_processing_exception_message';
 
 
     public function pushCreateSuccessMetrics(array $input = [])
@@ -100,6 +101,7 @@ class Metric extends Base\Core
         $dimensions = [
             self::TRANSFER_ROUTE                    => $this->getRouteName(),
             self::TRANSFER_PROCESS_REVERSE_SHADOW   => $isReverseShadow,
+            self::TRANSFER_PROCESSING_EXCEPTION_MESSAGE => $e->getMessage(),
         ];
 
         $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $dimensions);
