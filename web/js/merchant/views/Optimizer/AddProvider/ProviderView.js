@@ -35,7 +35,7 @@ import { FD_TICKET_GROUP_ID } from 'merchant/views/Optimizer/utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { IntegrationTesting } from './components';
+import { IntegrationTesting, RaiseTicketSuccess } from './components';
 import {
   fetchPayments,
   fetchGatewayEnabledMethods,
