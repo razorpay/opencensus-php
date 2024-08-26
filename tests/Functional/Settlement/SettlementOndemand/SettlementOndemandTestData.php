@@ -1403,14 +1403,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Maximum amount that can be settled(in paisa) is 200',
+                    'description' => 'Amount that can be settled for the day is exhausted, please try again on the next working day',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_LIMIT_EXHAUSTED,
         ],
     ],
 

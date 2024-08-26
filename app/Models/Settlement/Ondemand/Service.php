@@ -78,7 +78,10 @@ class Service extends Base\Service
         if ($ondemandSettlement != null)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_DUPLICATE_REQUEST);
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_DUPLICATE_REQUEST,
+                null,
+                null,
+                "Duplicate ondemand settlement request");
         }
 
         $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
@@ -326,15 +329,15 @@ class Service extends Base\Service
 
         if($ondemandDisabled === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_NOT_ALLOWED,
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_LIMIT_EXHAUSTED,
                 null,
                 [
                     'merchantId'        => $this->merchant->getId(),
                     'maxLimit'          => $maxLimit,
                     'availableLimit'    => $availableLimit,
-                    'errorDescription'  => 'Ondemand settlement not allowed at the moment',
-                ]);
+                ],
+                'Amount that can be settled for the day is exhausted, please try again on the next working day');
         }
     }
 
@@ -470,15 +473,15 @@ class Service extends Base\Service
         if($amount > $settleableAmount)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_LIMIT_EXHAUSTED,
                 null,
                 [
-                    'merchantId'                         => $this->merchant->getId(),
+                    'merchantId'            => $this->merchant->getId(),
                     'settlement_ondemand_feature_config' => $featureConfig,
-                    'settlable_amount'                   => $settleableAmount,
-
+                    'requestedAmount'       => $amount,
+                    'settleableAmount'      => $settleableAmount,
                 ],
-            'Maximum amount that can be settled(in paisa) is '.$settleableAmount);
+                'Amount that can be settled for the day is exhausted, please try again on the next working day');
         }
     }
 
