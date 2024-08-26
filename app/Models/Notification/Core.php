@@ -54,6 +54,11 @@ class Core extends Base\Core
 
         $notification->setStatus('created');
 
+        // Update used count and sequence number in mandate table
+        $gatewayReq = $this->updateSequenceNumberOrUsedCount($notification);
+
+        $notification->setGatewayRequest($gatewayReq);
+
         $this->repo->saveOrFail($notification);
 
         $this->trace->info(
@@ -63,6 +68,8 @@ class Core extends Base\Core
                 'order_id'          => $order->getPublicId(),
                 'token_id'          => $input['token_id'],
                 'notification_id'   => $notification->getPublicId(),
+                'gatewayReq'        => $notification->getGatewayRequest(),
+
             ]
         );
         return $notification;
@@ -217,9 +224,6 @@ class Core extends Base\Core
 
         $terminal = (new TerminalProcessor)->getTerminalFromTerminalIds($terminalIds);
 
-        // Update used count and sequence number in mandate table
-        $this->updateSequenceNumberOrUsedCount($token->getId());
-
         $this->updateNotificationEntityWithGatewayRequest($terminal[0], $notification);
 
         $gatewayRequest = $this->prepareGatewayRequest($terminal[0], $notification);
@@ -297,23 +301,31 @@ class Core extends Base\Core
         $this->app['events']->dispatch('api.order.notification.failed', $eventPayload);
     }
 
-    protected function updateSequenceNumberOrUsedCount($tokenId)
+    protected function updateSequenceNumberOrUsedCount($notification)
     {
-        $this->upiMandate = $this->repo->upi_mandate->findByTokenId($tokenId);
+        $this->upiMandate = $this->repo->upi_mandate->findByTokenId($notification['token_id']);
 
-        $sequenceNo = $this->upiMandate['sequence_number'];
+        $newSequenceNo = $this->upiMandate->getSequenceNumberAttribute();
         $usedCount = $this->upiMandate->getUsedCount();
 
         $this->upiMandate->incrementUsedCount();
 
+        $this->repo->upi_mandate->saveOrFail($this->upiMandate);
+
+        if ($this->upiMandate->getFrequency() === Frequency::AS_PRESENTED)
+        {
+            $newSequenceNo = $this->upiMandate->getUsedCount();
+        }
+
         $this->trace->info(TraceCode::UPI_RECURRING_MANDATE_SEQ_NO_CHANGE, [
-            'oldSeqNo'              => $sequenceNo,
             'oldUsedCount'          => $usedCount,
-            'newSeqNo'              => $this->upiMandate['sequence_number'],
+            'newSeqNo'              => $newSequenceNo,
             'newUsedCount'          => $this->upiMandate->getUsedCount(),
         ]);
 
-        $this->repo->upi_mandate->saveOrFail($this->upiMandate);
+        return $gatewayRequest = [
+            Constants::SEQUENCE_NUMBER => $newSequenceNo
+        ];
     }
 
     protected function addDefaultsForNotificationInput(array & $input)
@@ -328,16 +340,22 @@ class Core extends Base\Core
     {
         $gateway = $terminal->getGateway();
 
-        $gatewayRequest = [
-            Constants::SEQUENCE_NUMBER  => $this->upiMandate['sequence_number'],
-            Constants::MERCHANT_TRAN_ID => $this->createMerchantTranId($notification),
-            Constants::FLOW             => $this->upiMandate['gateway_data']['flow'],
-            Constants::PAYMENT_SUCCESS  => false,
-        ];
+        $gatewayRequest = $notification->getGatewayRequest();
+
+        $gatewayRequest[Constants::MERCHANT_TRAN_ID] = $this->createMerchantTranId($notification);
+        $gatewayRequest[Constants::FLOW ] = $this->upiMandate['gateway_data']['flow'];
+        $gatewayRequest[Constants::PAYMENT_SUCCESS] = false;
+
+        // Updating payment after at the time of notification delivery as there can be some delay in queue
+        $paymentAfter = Carbon::createFromTimestamp($notification->getPaymentAfter(), Timezone::IST);
+        $notificationCreatedAt = Carbon::createFromTimestamp($notification->getCreatedAt(), Timezone::IST);
+        $diff = $paymentAfter->diffInHours($notificationCreatedAt);
+        $newPaymentAfter = Carbon::now(Timezone::IST)->addHours($diff)->getTimestamp();
 
         $notification->setGatewayMerchantId($terminal->getGatewayMerchantId());
         $notification->setGateway($gateway);
         $notification->setGatewayRequest($gatewayRequest);
+        $notification->setPaymentAfter($newPaymentAfter);
         $this->repo->saveOrFail($notification);
     }
 
