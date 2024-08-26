@@ -228,4 +228,52 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testInviteMerchantMailViaMailgun' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_email' => 'abc@xyz.com',
+                'contact_name'  => 'test user',
+                'merchant_type'  => 'Regular Test Merchant'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@xyz.com',
+                'form_data' => [
+                    'channel_code'  => 'RZP001',
+                    'contact_email' => 'abc@xyz.com',
+                    'contact_name'  => 'test user',
+                    'merchant_type'  => 'Regular Test Merchant'
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testInviteMerchantMailViaStork' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_email' => 'abc@xyz.com',
+                'contact_name'  => 'test user',
+                'merchant_type'  => 'Regular Test Merchant'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@xyz.com',
+                'form_data' => [
+                    'channel_code'  => 'RZP001',
+                    'contact_email' => 'abc@xyz.com',
+                    'contact_name'  => 'test user',
+                    'merchant_type'  => 'Regular Test Merchant'
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

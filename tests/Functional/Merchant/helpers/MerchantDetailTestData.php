@@ -1704,6 +1704,20 @@ return [
         ],
     ],
 
+    'testRejectionMailVialStork' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+        ],
+    ],
+
     'testMerchantActivationStatusWithCustomOnboarding' => [
         'request' => [
             'content' => [

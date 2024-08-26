@@ -8,6 +8,7 @@ use Symfony\Component\Mime\Email;
 use RZP\Mail\Base;
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\EmailHelper;
 
 class MerchantInvitation extends Base\Mailable
 {
@@ -113,5 +114,33 @@ class MerchantInvitation extends Base\Mailable
         $this->view('emails.admin.invite_merchant');
 
         return $this;
+    }
+
+    public function shouldSendEmailViaStork(): bool
+    {
+        return  (new EmailHelper)->isStorkSupported($this->admin['id'], $this->org['id'], '_invite_merchant') ?? false;
+    }
+
+    public function getParamsForStork(): array
+    {
+        $storkParams = 
+        [
+            'template_name' => 'banking_mail_invite_merchant',
+            'template_namespace' => 'payments_banking',
+            'params' => $this->data,
+        ];
+        
+        $storkParams['params']['sign_up_url'] = 'https://' . $this->data['hostname'] .'/#/access/signup?merchant_invitation=' . $this->data['invitation']['token'];
+        if($this->org['custom_code'] === 'rzp')
+        {
+            $storkParams['params']['login_url'] = 'https://razorpay.com';
+            $storkParams['params']['login_logo_url'] = public_path().'/img/logo_black.png';
+        }else
+        {
+            $storkParams['params']['login_url'] = 'https://' . $this->data['hostname'];
+            $storkParams['params']['login_logo_url'] = $this->org['login_logo_url'];
+        }
+
+        return $storkParams;
     }
 }

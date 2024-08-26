@@ -7,6 +7,7 @@ use Symfony\Component\Mime\Email;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Admin\Org;
+use RZP\Mail\Base\EmailHelper;
 
 class Rejection extends Mailable
 {
@@ -74,5 +75,30 @@ class Rejection extends Mailable
         });
 
         return $this;
+    }
+
+    public function shouldSendEmailViaStork(): bool
+    {
+        return  (new EmailHelper)->isStorkSupported($this->data['id'], $this->org['id'], '_rejection_notification') ?? false;
+    }
+
+    public function getParamsForStork(): array
+    {
+        $storkParams = 
+        [
+            'template_name' => 'banking_mail_rejection_notification',
+            'template_namespace' => 'payments_banking',
+            'params' => $this->data,
+        ];
+        //
+        if((empty($this->data['custom_branding']) === false) and ( $this->data['custom_branding'] === true) and (empty($this->data['email_logo']) === false))
+        {
+            $storkParams['params']['is_email_logo'] = true;
+        }else
+        {
+            $storkParams['params']['is_email_logo'] = false;
+        }
+
+        return $storkParams;
     }
 }
