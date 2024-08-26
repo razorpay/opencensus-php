@@ -22,6 +22,7 @@ describe('PaymentsListFilter', () => {
       isSingleReconEnabled: true,
       isOptimizerEnabled: true,
       isOmniChannelMerchant: true,
+      isRRNSearchEnabled: true,
       merchant: {
         country_code: 'IN',
       },
@@ -110,6 +111,16 @@ describe('PaymentsListFilter', () => {
     const bankReferenceNumber = '123456';
     await userEvent.type(bankReferenceNumberFilter, bankReferenceNumber);
     expect(bankReferenceNumberFilter).toHaveAttribute('value', bankReferenceNumber);
+  });
+
+  test('should allow to search by payment reference number', async () => {
+    render(<App />);
+    const showAllFiltersButton = screen.getByText(/Show All Filters/);
+    await userEvent.click(showAllFiltersButton);
+    const paymentReferenceNumberFilter = screen.getAllByRole('textbox')[5];
+    const paymentReferenceNumber = '123456';
+    await userEvent.type(paymentReferenceNumberFilter, paymentReferenceNumber);
+    expect(paymentReferenceNumberFilter).toHaveAttribute('value', paymentReferenceNumber);
   });
 
   test('should filter transaction and hit search anayltics with current params', async () => {

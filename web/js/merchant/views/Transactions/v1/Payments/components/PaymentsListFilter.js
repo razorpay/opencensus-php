@@ -4,11 +4,11 @@ import { Field } from 'redux-form';
 import { CountryCodeInput } from 'common/components/CountryCodeInput';
 import { useI18Service } from 'common/i18';
 import DateRangePicker from 'common/ui/DateRangePicker';
+import { getDialCodeFromCountryCode } from 'common/utils/rzp-utils';
 import ListFilter from 'merchant/components/ListFilter';
 import ProviderSelector from 'merchant/components/ProviderSelector';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { handleChangeTrack } from 'merchant/views/Transactions/v1/AnalyticsTrack';
-import { getDialCodeFromCountryCode } from 'common/utils/rzp-utils';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -183,6 +183,13 @@ export default ({ showBatchIdFilter, ...props }) => {
           class="form-control input-sm"
         />
       </div>
+
+      <ShowWhen additionalCondition={() => props?.user?.isRRNSearchEnabled}>
+        <div className="form-group list-filter-item">
+          <label style={{ width: '200px' }}>Payment Reference Number</label>
+          <Field name="rrn" component="input" class="form-control input-sm" />
+        </div>
+      </ShowWhen>
 
       {props.addonAfter}
     </ListFilter>

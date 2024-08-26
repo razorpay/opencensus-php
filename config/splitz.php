@@ -240,5 +240,8 @@ return [
 
         // disables capital Instant Settlements Settle Now button
         'CAPITAL_ES_BLOCKED_SPLITZ' => env('CAPITAL_ES_BLOCKED_SPLITZ', ''),
+
+        // enable rrn search in Payments
+        'VAS_RRN_SEARCH' => env('VAS_RRN_SEARCH', ''),
     ]
 ];

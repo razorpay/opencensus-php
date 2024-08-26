@@ -85,6 +85,7 @@ type Getters = {
   isAdminOrOwner: boolean;
   isOwner: boolean;
   isAdditionalDomainWhitelistSelfServeOn: boolean;
+  isRRNSearchEnabled: boolean;
 };
 
 type Merchant = {

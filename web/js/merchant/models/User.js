@@ -2068,6 +2068,13 @@ export default class User {
   get isMultiCouponsEnabled() {
     return this.isFeatureEnabled('one_cc_multi_coupons');
   }
+
+  get isRRNSearchEnabled() {
+    return (
+      this.isOrgFeatureEnabled('vas_merchant') &&
+      getSplitzExperimentVariant('vas_rrn_search')?.variables?.result === 'on'
+    );
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

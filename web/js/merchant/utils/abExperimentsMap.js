@@ -547,4 +547,11 @@ export default {
     //prod experiment ids,
     'OFCW2MWexDUNCB',
   ],
+  vas_rrn_search: [
+    //beta experiment ids
+    'OkJiGY1kFo8JOg',
+
+    //prod experiment ids,
+    'Okgdts0jp2QQse',
+  ],
 };

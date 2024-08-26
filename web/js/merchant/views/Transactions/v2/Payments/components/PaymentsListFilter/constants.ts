@@ -1,3 +1,5 @@
+import { getUser } from 'shell/commonStore';
+
 import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
 import {
   ALL_LABEL,
@@ -5,6 +7,8 @@ import {
   durationOptionsMap,
 } from 'merchant/views/Transactions/v2/common/constants';
 import { generateOptions } from 'merchant/views/Transactions/v2/common/utils';
+
+const user = getUser();
 
 export const paymentDurationOptionsMap = {
   ...durationOptionsMap,
@@ -77,6 +81,7 @@ export const searchByOptionsMap = {
   order_id: 'Order ID',
   id: 'Payment ID',
   notes: 'Notes',
+  ...(user?.isRRNSearchEnabled ? { rrn: 'Payment Reference Number' } : null),
 };
 export const searchBySectionOptions = generateOptions(searchByOptionsMap);
 export const searchBySectionName = 'Search by';

@@ -73,6 +73,7 @@ type Getters = {
   isOmniChannelMerchant: boolean;
   isOmniEnabledMerchant: boolean;
   isVasTestingMerchant: boolean;
+  isRRNSearchEnabled: boolean;
 };
 
 type UserProperties = {

@@ -106,7 +106,7 @@ function PaymentDetails(props) {
     ? lazy(() => import('merchant/views/Transactions/v1/Payments/components/PlatformFeeDetails'))
     : null;
 
-  const getBankReferenceNumber = (method, acquirer_data) => {
+  const getPaymentReferenceNumber = (method, acquirer_data) => {
     switch (method) {
       case 'netbanking':
         return acquirer_data?.bank_transaction_id;
@@ -593,8 +593,8 @@ function PaymentDetails(props) {
                 </EntityDetailRow>
 
                 <ShowWhen additionalCondition={() => isOrgFeatureExist('vas_merchant')}>
-                  <EntityDetailRow label="Bank Reference Number">
-                    {getBankReferenceNumber(payment.method, payment.acquirer_data)}
+                  <EntityDetailRow label="Payment Reference Number">
+                    {getPaymentReferenceNumber(payment.method, payment.acquirer_data)}
                   </EntityDetailRow>
                 </ShowWhen>
 
