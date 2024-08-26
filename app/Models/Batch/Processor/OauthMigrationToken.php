@@ -60,7 +60,7 @@ class OauthMigrationToken extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->repo->transactionOnLiveAndTest(function() use (& $entry)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use (& $entry)
         {
             $tokenInput[Header::MERCHANT_ID]    = $entry[Header::MERCHANT_ID];
             $tokenInput[H::PARTNER_MERCHANT_ID] = $this->merchant->getId();

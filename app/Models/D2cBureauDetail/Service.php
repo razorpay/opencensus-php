@@ -172,7 +172,7 @@ class Service extends Base\Service
 
             $report = $this->bureauReport->getReport($bureauDetail, $this->merchant, $this->user);
 
-            return $this->repo->transactionOnLiveAndTest(function() use ($bureauDetail, $input, $report)
+            return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($bureauDetail, $input, $report)
             {
                 // every bureau credit score pull cost us some money. So removing feature after pulling score once so
                 // that dashboard doesn't fetch score again.
@@ -263,7 +263,7 @@ class Service extends Base\Service
                 if ($e->getCode() === ErrorCode::BAD_REQUEST_INCORRECT_OTP)
                 {
                     throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_D2C_WRONG_OTP, null, $e->getData()); 
+                        ErrorCode::BAD_REQUEST_D2C_WRONG_OTP, null, $e->getData());
                 }
 
                 throw $e;

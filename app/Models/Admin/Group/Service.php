@@ -21,7 +21,7 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findOrFailPublic($this->adminOrgId);
 
-        $group = $this->repo->transactionOnLiveAndTest(function() use ($org, $input)
+        $group = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($org, $input)
         {
             return $this->core()->create($input, $org);
         });
@@ -46,7 +46,7 @@ class Service extends Base\Service
     {
         $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $this->adminOrgId);
 
-        $group = $this->repo->transactionOnLiveAndTest(function() use ($group, $input)
+        $group = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($group, $input)
         {
             return $this->core()->edit($group, $input);
         });

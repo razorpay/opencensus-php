@@ -502,7 +502,7 @@ class Repository extends Base\Repository
      */
     protected function saveAndSyncOrFail(Entity $entity)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($entity)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($entity)
         {
             $featureName = $entity->getName();
             $entityId    = $entity->getEntityId();
@@ -555,7 +555,7 @@ class Repository extends Base\Repository
      */
     protected function deleteAndSyncOrFail(Entity $entity)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($entity) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($entity) {
             $featureName = $entity->getName();
             $entityId = $entity->getEntityId();
             try

@@ -139,7 +139,7 @@ class BulkRecon extends Base\Core
 
         $entityProcessor = $this->getEntityProcessorClass($this->channel);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations, $chunks, $entityProcessor)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($ftaIds, $relations, $chunks, $entityProcessor)
         {
             try
             {

@@ -405,7 +405,7 @@ class Core extends Detail\Core
             $merchant->getId(),
             function() use ($input, $merchantDetails, $merchant) {
 
-                return $this->repo->transactionOnLiveAndTest(function() use (
+                return $this->repo->transactionOnLiveAndTestAndAsv(function() use (
                     $input,
                     $merchantDetails,
                     $merchant

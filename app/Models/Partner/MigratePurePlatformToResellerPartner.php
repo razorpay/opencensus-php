@@ -177,7 +177,7 @@ class MigratePurePlatformToResellerPartner extends Core
         $accessMaps = $this->repo->merchant_access_map->fetchAllMappingsByEntityIdAndEntityOwnerId($existingAppIds, $partnerId);
         $merchantApps = $this->repo->merchant_application->fetchMerchantApplicationByAppIds($existingAppIds);
 
-        $this->repo->transactionOnLiveAndTest(function () use (
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use (
             $partnerId, $partnerConfigs, $accessMaps, $merchantApps, $existingAppIds
         ) {
             $partnerConfigs->each(function ($config) {

@@ -90,7 +90,7 @@ class Core extends Base\Core
                 ];
             }
 
-            $this->repo->transactionOnLiveAndTest(function() use ($mobileNumber, $appName, $merchant) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($mobileNumber, $appName, $merchant) {
                 switch ($appName)
                 {
                     case Constant::PL_ON_WHATSAPP:

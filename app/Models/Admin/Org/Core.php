@@ -73,7 +73,7 @@ class Core extends Base\Core
 
         $org->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use($org, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($org, $input)
         {
             $this->repo->saveOrFail($org);
 
@@ -185,7 +185,7 @@ class Core extends Base\Core
         Permission\Entity $permission,
         Entity $org)
     {
-        $this->repo->transactionOnLiveAndTest(function() use($permission, $org)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($permission, $org)
         {
             $permId = $permission->getId();
 
@@ -203,7 +203,7 @@ class Core extends Base\Core
         Permission\Entity $permission,
         Entity $org)
     {
-        $this->repo->transactionOnLiveAndTest(function() use($permission, $org)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($permission, $org)
         {
 
             $permId = $permission->getId();

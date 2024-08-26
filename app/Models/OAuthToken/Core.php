@@ -27,7 +27,7 @@ class Core extends Base\Core
 
         $validator->validateInput('create', $input);
 
-        $output = $this->repo->transactionOnLiveAndTest(function() use (& $input)
+        $output = $this->repo->transactionOnLiveAndTestAndAsv(function() use (& $input)
         {
             $tokenInput[Header::MERCHANT_ID]    = $input[Header::MERCHANT_ID];
             $tokenInput[H::PARTNER_MERCHANT_ID] = $this->merchant->getId();

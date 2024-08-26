@@ -27,7 +27,7 @@ class Core extends Base\Core
                                "input"                   => $input
                            ]);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($entity, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($entity, $input) {
 
             $mutexResource = self::MUTEX_PREFIX . $entity->getId();
 
@@ -68,7 +68,7 @@ class Core extends Base\Core
                                Constants::INPUT => $input
                            ]);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input) {
 
             $ampEmail = new AMPEmailEntity();
 

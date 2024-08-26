@@ -544,7 +544,7 @@ class Core extends Base\Core
             }
         });
 
-        $this->repo->transactionOnLiveAndTest(function() use (
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use (
             $partnerActivation,
             $input,
             $maker, $merchant, $rejectionReasons,

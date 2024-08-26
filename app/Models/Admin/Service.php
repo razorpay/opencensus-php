@@ -307,7 +307,7 @@ class Service extends Base\Service
         {
             $response = AdminFetch::filterAttributesForExternalAdminFetchEntityById($entityType, $response);
         }
-        
+
         if ($inputEntityType === Entity::ORG)
         {
             $orgId = Org\Entity::verifyIdAndSilentlyStripSign($id);
@@ -1475,7 +1475,7 @@ class Service extends Base\Service
 
         $failed = $processed = [];
 
-        $this->repo->transactionOnLiveAndTest(function() use ($type, $dataList, &$processed, &$failed) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($type, $dataList, &$processed, &$failed) {
             foreach ($dataList as $data)
             {
                 try
