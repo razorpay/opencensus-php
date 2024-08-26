@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@razorpay/blade/components';
+import { NachFormKeyNames, NachFormObject, NachFormProps } from '../NACHForm/NACHForm';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
 import KYCRedirectionLoader from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/MerchantRegistration/KYCRedirectionLoader';
@@ -10,14 +12,13 @@ import {
 import {
   isArrayOfDocumentsUpload,
   isBooleanValue,
+  isDocumentUpload,
   isStringArrayValue,
   isStringValue,
 } from 'apps/pos/src/app/utils/modularTypeResolvers';
-import { NachFormKeyNames, NachFormObject, NachFormProps } from '../NACHForm/NACHForm';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 import { processFilesForModularSave } from 'apps/pos/src/app/components/SalesFileUpload/helper';
 import OnboardingModel from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/OnboardingModel/OnboardingModel';
-import { useToast } from '@razorpay/blade/components';
 import {
   getComponentFromStep,
   processFormDataForModularSubmit,
@@ -36,6 +37,7 @@ import {
   extractPricingRates,
   getStandardPosPricingRates,
   hasEditedStandardRates,
+  replaceEmptyValues,
   validatePricingRates,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
 
@@ -89,7 +91,7 @@ const getFieldValue = (field, defaultValues: Record<string, number> | undefined)
     if (isArrayOfDocumentsUpload(f)) return f.arrayOfDocumentsUploadValue;
   };
 
-  let value = isBooleanValue(field)
+  const value = isBooleanValue(field)
     ? field.booleanValue
     : (isStringValue(field) && field.stringValue.toString()) ||
       handleArrayValue(field) ||
@@ -107,7 +109,7 @@ const getFieldCheckedStatus = (field, defaultValues: Record<string, number> | un
     if (isArrayOfDocumentsUpload(f)) return true;
   };
 
-  let value = isBooleanValue(field)
+  const value = isBooleanValue(field)
     ? field.booleanValue
     : (isStringValue(field) && field.stringValue.toString() && true) ||
       handleArrayValue(field) ||
@@ -122,7 +124,7 @@ const populateFormWithModularConfigData = (
 ) => {
   const newForm: PaymentMethodForm = createDefaultForm(form.type);
 
-  let component = getComponentFromStep({
+  const component = getComponentFromStep({
     modularConfig,
     step: 'pricing_step',
     component:
@@ -163,7 +165,7 @@ const createDefaultNACHForm = (): NachFormObject => {
 };
 
 const populateNACHFormWithModularConfigData = (
-  modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
 ) => {
   const newForm: NachFormObject = createDefaultNACHForm();
 
@@ -172,7 +174,6 @@ const populateNACHFormWithModularConfigData = (
     step: 'pricing_step',
     component: 'nach_form_component',
   });
-
   if (component) {
     const fields = component?.fields;
 
@@ -182,6 +183,8 @@ const populateNACHFormWithModularConfigData = (
           if (isStringArrayValue(f)) newForm[f.name] = f.stringArrayValue;
           else if (isArrayOfDocumentsUpload(f)) {
             newForm[f.name] = f.arrayOfDocumentsUploadValue;
+          } else if (isDocumentUpload(f)) {
+            newForm[f.name] = [f.documentUploadValue];
           }
         } else if (f.name === NachFormKeyNames.NACH_FORM_COMMENTS_FIELD && isStringValue(f))
           newForm[f.name] = f.stringValue;
@@ -210,7 +213,9 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   const toast = useToast();
   const navigate = useNavigate();
   const { states, handlers } = useOnboardingContext();
-  const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig } = states;
+  const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig, merchantDetails } =
+    states;
+  const isFormDisabled = !!merchantDetails?.activation?.posActivationStatus;
   const [paymentMethodType, setPaymentMethodType] = useState<PaymentMethodFormType>(
     PaymentMethodFormType.AGGREGATOR,
   );
@@ -218,13 +223,11 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     createDefaultForm(paymentMethodType),
   );
   const [nachForm, setNachForm] = useState<NachFormObject>(createDefaultNACHForm());
-  const [modelIsOpen, setModelIsOpen] = useState<boolean>(!nach);
+  const [modelIsOpen, setModelIsOpen] = useState<boolean>(!nach && !isFormDisabled);
   const standardRatesRef = useRef<Record<string, string> | null>();
 
   const updateConfigHandler = (form) => {
     const payload: any = {};
-
-    let error = false;
 
     Object.keys(form).forEach((k) => {
       if (k !== PaymentMethodsFieldKeyNames.PREVIOUS_CUSTOM_RATES_DOCUMENTS_FIELD) {
@@ -232,14 +235,13 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       }
     });
 
-    if (error) return;
-
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
-    payload['modular_callback'] = (data) => {
+    const redirectToNachPage = (data) => {
       const newNACH = populateNACHFormWithModularConfigData(data);
       setNachForm(newNACH);
       handleProceedToNextComponent();
     };
+    payload.modular_callback = redirectToNachPage;
 
     const pricingRates = extractPricingRates(payload);
     const { errFieldName } = validatePricingRates(pricingRates);
@@ -269,6 +271,12 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     }
     const updatedPayload = processFormDataForModularSubmit(payload);
     delete updatedPayload[PaymentMethodsFieldKeyNames.MDR_VAS_PRICING_FIELD];
+    if (isFormDisabled) {
+      const newNACH = populateNACHFormWithModularConfigData(modularConfig);
+      setNachForm(newNACH);
+      handleProceedToNextComponent();
+      return;
+    }
     updateModularConfig(updatedPayload);
   };
 
@@ -306,13 +314,22 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     const newForm = JSON.parse(JSON.stringify(methodForm.form));
     if (typeof newForm[key].value === 'boolean') {
       newForm[key].value = !newForm[key].value;
-    } else {
-      if (newForm[key].value === 0) newForm[key].value = Number(newForm[key].defaultValue);
-      else newForm[key].value = 0;
+      newForm[key].checked = !newForm[key].checked;
     }
-    if (newForm[key].value === 0 || newForm[key].value === false) newForm[key].checked = false;
-    else newForm[key].checked = true;
     setMethodFormValue('form', newForm);
+  };
+
+  const autoCheckVasRateEnabledFields = (key, form) => {
+    const newForm = JSON.parse(JSON.stringify(form));
+    if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD) {
+      newForm[PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD].checked = true;
+      newForm[PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD].value = true;
+    }
+    if (key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD) {
+      newForm[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD].checked = true;
+      newForm[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD].value = true;
+    }
+    return newForm;
   };
 
   const onFieldInputChange = (key: string, value: any) => {
@@ -323,22 +340,21 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     } else {
       newForm[key].checked = true;
     }
+    if (
+      key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD ||
+      key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD
+    ) {
+      const updatedForm = autoCheckVasRateEnabledFields(key, newForm);
+      setMethodFormValue('form', updatedForm);
+      return;
+    }
     setMethodFormValue('form', newForm);
   };
 
   const updateFormValues = () => {
     const { form } = methodForm;
     const newForm = JSON.parse(JSON.stringify(form));
-    const vasCCField = 'vas_cc_emi_rate_field';
-    const vasDCField = 'vas_dc_emi_rate_field';
-    if (newForm[vasCCField]?.checked) {
-      newForm['vas_cc_emi_rate_enabled_field'].checked = true;
-      newForm['vas_cc_emi_rate_enabled_field'].value = true;
-    }
-    if (newForm[vasDCField]?.checked) {
-      newForm['vas_dc_emi_rate_enabled_field'].checked = true;
-      newForm['vas_dc_emi_rate_enabled_field'].value = true;
-    }
+    replaceEmptyValues(newForm, standardRatesRef.current);
     setMethodFormValue('form', newForm);
     return newForm;
   };
@@ -371,7 +387,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     payload[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD] =
       payload[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD][0];
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
-    payload['modular_callback'] = handleProceedToNextComponent;
+    payload.modular_callback = handleProceedToNextComponent;
     updateModularConfig(payload);
   };
 
@@ -384,14 +400,15 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     return true;
   };
 
-  let contextValue = {
+  const contextValue = {
     // props for form
-
+    isModularLoading,
     methodForm,
     onFileUploadChange,
     onFieldCheckboxChange,
     onFieldInputChange,
     onFormSubmitClick,
+    isFormDisabled,
 
     // props for NACH
     onNachTextAreaChange,
@@ -417,7 +434,9 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
           })
         ) {
           const stepObj = handlers.getStepConfigStepSlug();
-          setModelIsOpen(true);
+          if (!isFormDisabled) {
+            setModelIsOpen(true);
+          }
           navigate(
             `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${states.merchantDetails?.id}/${stepObj?.slug}/${stepObj?.components[0].slug}`,
           );

@@ -5,7 +5,7 @@ export enum PaymentMethodFormType {
 
 export type PaymentMethodFormValue = {
   checked: boolean;
-  value: number | boolean | Array<any>;
+  value: string | number | boolean | Array<any>;
   defaultValue: string;
   isRequired: boolean;
   isDisabled: boolean;

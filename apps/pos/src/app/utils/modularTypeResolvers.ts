@@ -3,6 +3,7 @@ import {
   ModularOnboardingFieldForDeviceCharges,
   ModularOnboardingFieldForOrderSummaryItem,
   ModularOnboardingFieldForArrayOfDocumentsUpload,
+  ModularOnboardingFieldForDocumentUpload,
   ModularOnboardingFieldWithStringValue,
   ModularOnboardingFieldWithBooleanValue,
   ModularOnboardingStepWithModularComponents,
@@ -25,7 +26,9 @@ export function isBooleanValue(
 export function isStringArrayValue(
   field: ModularOnboardingField | null,
 ): field is ModularOnboardingFieldWithStringArrayValue {
-  return typeof (field as ModularOnboardingFieldWithStringArrayValue)?.stringArrayValue === 'object';
+  return (
+    typeof (field as ModularOnboardingFieldWithStringArrayValue)?.stringArrayValue === 'object'
+  );
 }
 
 export function isDeviceCharges(
@@ -56,6 +59,13 @@ export function isArrayOfDocumentsUpload(
   const documents = (field as ModularOnboardingFieldForArrayOfDocumentsUpload)
     ?.arrayOfDocumentsUploadValue;
   return Array.isArray(documents) && documents?.[0]?.hasOwnProperty('fileStoreId');
+}
+
+export function isDocumentUpload(
+  field: ModularOnboardingField | null,
+): field is ModularOnboardingFieldForDocumentUpload {
+  const documents = (field as ModularOnboardingFieldForDocumentUpload)?.documentUploadValue;
+  return documents?.fileStoreId ? true : false;
 }
 
 export function isStepModularComponents(

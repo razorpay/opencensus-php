@@ -2,7 +2,6 @@ import { ArrowRightIcon, CheckCircleIcon, InfoIcon } from '@razorpay/blade/compo
 import moment from 'moment';
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
 import {
-  getComponentFromStep,
   getFieldFromComponent,
   getProgressFromModularStep,
 } from 'apps/pos/src/app/utils/modularConfig';
@@ -209,17 +208,6 @@ export const getAgreementTypeField = (
     fieldName: MODULAR_AGREEMENT_FIELDS.AGREEMENT_TYPE_FIELD,
   });
   return agreementTypeField;
-};
-
-export const getAgreementComponent = (
-  modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
-) => {
-  const agreementComponent = getComponentFromStep({
-    modularConfig,
-    step: MODULAR_AGREEMENT_FIELDS.AGREEMENT_STEP,
-    component: MODULAR_AGREEMENT_FIELDS.AGREEMENT_COMPONENT,
-  });
-  return agreementComponent;
 };
 
 interface GetSubmitBtnProps {

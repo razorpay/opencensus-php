@@ -35,6 +35,8 @@ export interface PaymentMethodFormProps {
   onFieldCheckboxChange: (key: string) => void;
   onFieldInputChange: (key: string, value: any) => void;
   onFormSubmitClick: () => void;
+  isFormDisabled: boolean;
+  isModularLoading?: boolean;
 }
 
 const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
@@ -43,6 +45,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   onFieldCheckboxChange,
   onFieldInputChange,
   onFormSubmitClick,
+  isFormDisabled,
 }) => {
   const { form } = methodForm;
   const toast = useToast();
@@ -68,11 +71,33 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
     return form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value;
   };
 
+  const getKeyName = (key: string) => {
+    if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD)
+      return PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD;
+    if (key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD)
+      return PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD;
+    return key;
+  };
+
+  const getCheckedStatus = (key: string, form) => {
+    if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD) {
+      return form[PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
+    }
+    if (key === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD) {
+      return form[PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD]?.checked ?? false;
+    }
+    return false;
+  };
+
+  const getHeading = (isAggregatorFieldsPresent) => {
+    if (isAggregatorFieldsPresent) return 'Choose MDR Rates & Value Added Services';
+    return 'Choose Value Added Services';
+  };
   return (
     <Box maxWidth="768px" padding="spacing.5" height="80vh" overflow="scroll">
       <Box display="flex" flexDirection="row" justifyContent="space-between">
         <Heading marginBottom="spacing.5" size="large">
-          Choose {isAggregatorFieldsPresent && `MDR Rates & `}Value Added Services
+          {getHeading(isAggregatorFieldsPresent)}
         </Heading>
         {!isAggregatorFieldsPresent ? (
           <Link
@@ -80,6 +105,8 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             icon={!isVASEditEnabled ? EditIcon : undefined}
             onClick={onEditVASClick}
             alignSelf="center"
+            isDisabled={isFormDisabled}
+            variant="button"
           >
             {isVASEditEnabled ? 'Save Changes' : 'Edit'}
           </Link>
@@ -99,6 +126,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             marginBottom="spacing.5"
           >
             <Checkbox
+              isDisabled={isFormDisabled}
               name={PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD}
               size="medium"
               isChecked={
@@ -128,7 +156,9 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                 color: 'negative',
               })
             }
-            isDisabled={!form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD].value}
+            isDisabled={
+              isFormDisabled || !form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD].value
+            }
           />
         </Box>
       ) : null}
@@ -142,10 +172,12 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
           >
             <Heading size="medium">MDR Rates</Heading>
             <Link
+              isDisabled={isFormDisabled}
               iconPosition="left"
               icon={!isMDREditEnabled ? EditIcon : undefined}
               onClick={onEditMDRClick}
               alignSelf="center"
+              variant="button"
             >
               {isMDREditEnabled ? 'Save Changes' : 'Edit'}
             </Link>
@@ -204,10 +236,12 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
           >
             <Heading size="medium">Affordability Category</Heading>
             <Link
+              isDisabled={isFormDisabled}
               iconPosition="left"
               icon={!isVASEditEnabled ? EditIcon : undefined}
               onClick={onEditVASClick}
               alignSelf="center"
+              variant="button"
             >
               {isVASEditEnabled ? 'Save Changes' : 'Edit'}
             </Link>
@@ -227,11 +261,12 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
               marginBottom="spacing.5"
             >
               <Checkbox
+                isDisabled={isFormDisabled}
                 name={key}
                 size="medium"
                 helpText={field.description}
-                isChecked={field.value}
-                onChange={() => onFieldCheckboxChange(key)}
+                isChecked={getCheckedStatus(key, form)}
+                onChange={() => onFieldCheckboxChange(getKeyName(key))}
               >
                 {field.title}
               </Checkbox>

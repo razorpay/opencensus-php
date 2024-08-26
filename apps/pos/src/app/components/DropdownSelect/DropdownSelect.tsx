@@ -37,6 +37,7 @@ const DropdownSelect = ({
   rules,
   necessityIndicator,
   validationState,
+  isDisabled,
 }: DropdownSelectProps) => {
   const { isMobile } = useScreen();
   const renderBody = (selectOptions) => {
@@ -53,6 +54,7 @@ const DropdownSelect = ({
   return (
     <Dropdown selectionType="single">
       <SelectInput
+        isDisabled={isDisabled}
         necessityIndicator={necessityIndicator}
         label={label}
         name={name}

@@ -186,7 +186,7 @@ export interface ModularOnboardingFieldWithBooleanValue extends ModularOnboardin
 
 // Modular Onboarding Field for Document Upload
 export interface ModularOnboardingFieldForDocumentUpload extends ModularOnboardingFieldParent {
-  value: DocumentUploadFieldValue;
+  documentUploadValue: DocumentUploadFieldValue;
 }
 
 // Modular Onboarding Field for Array of Documents Upload

@@ -38,9 +38,10 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
       navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${values.merchantId}`, { replace: true });
     },
   });
-  const { modularConfig, isUpdateModularLoading, isModularLoading } = states;
+  const { modularConfig, isUpdateModularLoading, isModularLoading, merchantDetails } = states;
   const { isMobile } = useScreen();
   const { updateModularConfig } = handlers;
+  const isFormDisabled = !!merchantDetails?.activation?.posActivationStatus;
 
   const defaultValues = getInitialMerchantAdditionalDetails({ modularConfig });
   const {
@@ -80,7 +81,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
   const renderContinueBtn = () => {
     return (
       <Button
-        isDisabled={!isValid}
+        isDisabled={isFormDisabled || !isValid}
         type="submit"
         isFullWidth={isMobile}
         iconPosition="right"
@@ -139,7 +140,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
                   rules={getFieldRules({ field: item, omcValue })}
                   selectOptions={item?.meta?.options ?? []}
                   defaultValue={isStringValue(item) ? item.stringValue : ''}
-                  isDisabled={item?.isDisabled}
+                  isDisabled={isFormDisabled || item?.isDisabled}
                 />
               ),
             )}

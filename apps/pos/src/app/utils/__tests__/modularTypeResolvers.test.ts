@@ -1,6 +1,7 @@
 import {
   isArrayOfDocumentsUpload,
   isDeviceCharges,
+  isDocumentUpload,
   isOrderSummaryItem,
   isStringValue,
 } from 'apps/pos/src/app/utils/modularTypeResolvers';
@@ -9,6 +10,7 @@ import {
   ModularOnboardingFieldForOrderSummaryItem,
   ModularOnboardingFieldForArrayOfDocumentsUpload,
   ModularOnboardingFieldWithStringValue,
+  ModularOnboardingFieldForDocumentUpload,
   DeviceCharges,
 } from 'apps/pos/src/app/types/modular';
 
@@ -209,5 +211,34 @@ describe('isArrayOfDocumentsUpload', () => {
     } as ModularOnboardingFieldForArrayOfDocumentsUpload;
 
     expect(isArrayOfDocumentsUpload(field)).toBe(undefined);
+  });
+});
+
+describe('isDocumentUpload', () => {
+  test('should return true if field is a ModularOnboardingFieldForDocumentUpload with a fileStoreId', () => {
+    const field: ModularOnboardingFieldForDocumentUpload = {
+      name: 'testField',
+      isDisabled: false,
+      isRequired: true,
+      documentUploadValue: {
+        fileStoreId: '12345',
+      },
+    };
+    expect(isDocumentUpload(field)).toBe(true);
+  });
+
+  test('should return false if field is a ModularOnboardingFieldForDocumentUpload without a fileStoreId', () => {
+    const field: ModularOnboardingFieldForDocumentUpload = {
+      name: 'testField',
+      isDisabled: false,
+      isRequired: true,
+      documentUploadValue: {},
+    };
+    expect(isDocumentUpload(field)).toBe(false);
+  });
+
+  test('should return false if field is null', () => {
+    const field = null;
+    expect(isDocumentUpload(field)).toBe(false);
   });
 });

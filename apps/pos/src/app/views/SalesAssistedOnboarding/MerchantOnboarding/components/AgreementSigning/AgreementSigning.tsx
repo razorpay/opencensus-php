@@ -1,17 +1,17 @@
 import React from 'react';
 import { Box } from '@razorpay/blade/components';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import errorService from '@razorpay/universe-cli/errorService';
 import { PosAgreementMode } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/AgreementSigning/PosAgreementMode';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
-import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
-import errorService from '@razorpay/universe-cli/errorService';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
 
 const AgreementSigning = () => {
   const { states, handlers } = useOnboardingContext();
 
-  const { modularConfig, isModularLoading, isUpdateModularLoading } = states;
+  const { modularConfig, isModularLoading, isUpdateModularLoading, merchantDetails } = states;
   const { updateModularConfig } = handlers;
 
   if (!modularConfig) return null;
@@ -35,6 +35,7 @@ const AgreementSigning = () => {
         isModularLoading={isModularLoading}
         isUpdateModularLoading={isUpdateModularLoading}
         updateModularConfig={updateModularConfig}
+        merchantDetails={merchantDetails}
       />
     </ErrorBoundary>
   );

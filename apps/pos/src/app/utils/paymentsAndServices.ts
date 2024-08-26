@@ -1,6 +1,9 @@
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
 import { getComponentFromStep } from 'apps/pos/src/app/utils/modularConfig';
-import { PricingStepComponents } from 'apps/pos/src/app/types/PaymentsAndService';
+import {
+  PaymentMethodFormValue,
+  PricingStepComponents,
+} from 'apps/pos/src/app/types/PaymentsAndService';
 import {
   AggregatorModelFormKeys,
   CHARGES_REGEX,
@@ -24,12 +27,11 @@ export const getStandardPosPricingRates = ({
     component: componentName,
   });
   const stdRates = component?.meta.defaultValues;
+  if (!stdRates) return null;
   const result = {};
-  if (stdRates) {
-    for (const key in stdRates) {
-      if (stdRates.hasOwnProperty(key)) {
-        result[key] = stdRates[key].toString();
-      }
+  for (const key in stdRates) {
+    if (stdRates.hasOwnProperty(key)) {
+      result[key] = stdRates[key].toString();
     }
   }
   return Object.keys(result).length ? result : null;
@@ -69,11 +71,29 @@ export const extractPricingRates = (allFields: Record<string, unknown>) => {
 
 export const validatePricingRates = (rates: Record<string, string>) => {
   let errFieldName = '';
-  for (let fieldName in rates) {
+  for (const fieldName in rates) {
     if (!CHARGES_REGEX.test(rates[fieldName])) {
       errFieldName = fieldName;
       break;
     }
   }
   return { errFieldName };
+};
+
+export const replaceEmptyValues = (
+  inputObj: Record<string, PaymentMethodFormValue>,
+  defaultValues,
+): Record<string, PaymentMethodFormValue> => {
+  for (const key in inputObj) {
+    if (inputObj.hasOwnProperty(key)) {
+      if (
+        inputObj[key].value === null ||
+        inputObj[key].value === undefined ||
+        inputObj[key].value === ''
+      ) {
+        inputObj[key].value = defaultValues?.[key] ?? '0';
+      }
+    }
+  }
+  return inputObj;
 };

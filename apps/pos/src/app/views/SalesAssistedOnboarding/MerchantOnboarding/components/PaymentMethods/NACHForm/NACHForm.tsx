@@ -25,6 +25,8 @@ export interface NachFormProps {
   onNachFileUploadChange: () => void;
   onNachSubmitClick: () => void;
   onNachSkipClick: () => void;
+  isFormDisabled: boolean;
+  isModularLoading?: boolean;
 }
 
 const NACHForm: React.FC<NachFormProps> = ({
@@ -33,8 +35,11 @@ const NACHForm: React.FC<NachFormProps> = ({
   onNachFileUploadChange,
   onNachSubmitClick,
   onNachSkipClick,
+  isFormDisabled,
+  isModularLoading,
 }) => {
   const toast = useToast();
+  if (isModularLoading) return null;
   return (
     <Box padding="spacing.5">
       <Heading marginBottom="spacing.5" size="large">
@@ -56,13 +61,14 @@ const NACHForm: React.FC<NachFormProps> = ({
             color: 'negative',
           })
         }
-        isDisabled={false}
+        isDisabled={isFormDisabled}
       />
       <Box>
         <Heading marginBottom="spacing.5" size="large">
           Additional Sales Comment
         </Heading>
         <TextArea
+          isDisabled={isFormDisabled}
           onChange={onNachTextAreaChange}
           placeholder="Add comments here for sales team"
           label=""
@@ -90,6 +96,7 @@ const NACHForm: React.FC<NachFormProps> = ({
           variant="primary"
           isFullWidth
           isDisabled={
+            isFormDisabled ||
             !(
               nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD] &&
               nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]?.length
@@ -105,6 +112,7 @@ const NACHForm: React.FC<NachFormProps> = ({
           variant="secondary"
           isFullWidth
           marginTop="spacing.5"
+          isDisabled={isFormDisabled}
         >
           Skip & add later
         </Button>

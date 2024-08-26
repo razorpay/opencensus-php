@@ -17,6 +17,7 @@ import {
   Spinner,
 } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
+import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
 import {
   StyledCard,
   StyledCardContainer,
@@ -39,8 +40,6 @@ import {
   COMPLETED,
   OFFLINE,
   ONLINE,
-  getAgreementComponent,
-  EXECUTED,
   getSubmitIcon,
 } from 'apps/pos/src/app/utils/agreementSigning';
 import SuccessIcon from 'apps/pos/src/assets/paymentSuccess.svg';
@@ -60,6 +59,7 @@ interface PosAgreementModeProps {
   isUpdateModularLoading: boolean;
   updateModularConfig: (args) => void;
   isModularLoading: boolean;
+  merchantDetails: Merchant | undefined;
 }
 
 export const PosAgreementMode = ({
@@ -67,6 +67,7 @@ export const PosAgreementMode = ({
   isUpdateModularLoading,
   updateModularConfig,
   isModularLoading,
+  merchantDetails,
 }: PosAgreementModeProps): JSX.Element | null => {
   const [agreementMode, setAgreementMode] = useState(getAgreementMode(modularConfig));
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
@@ -88,7 +89,8 @@ export const PosAgreementMode = ({
   const { isMobile } = useScreen();
   const toast = useToast();
   const navigate = useNavigate();
-  const isAgreementExecuted = getAgreementComponent(modularConfig)?.status === EXECUTED;
+  const isAgreementExecuted = getAgreementSatusValue(modularConfig) === COMPLETED;
+  const isFormDisabled = !!merchantDetails?.activation?.posActivationStatus;
 
   const handleOnlineAgreement = (data: MerchantModularOnboardingDetailsSuccessResponse) => {
     const agreementStatus = getAgreementSatusValue(data);
@@ -209,7 +211,7 @@ export const PosAgreementMode = ({
             maxLimit={5}
             isLoading={isHandlingFile}
             defaultValue={defaultUploadedDocs}
-            isDisabled={isAgreementExecuted}
+            isDisabled={isFormDisabled || isAgreementExecuted}
             onError={() => {
               toast.show({
                 content: 'Failed to upload agreement proof',
@@ -261,7 +263,7 @@ export const PosAgreementMode = ({
             setAgreementMode(item.value as AgreementModeType);
           }}
           defaultValue={!agreementMode ? ONLINE : agreementMode}
-          isDisabled={isAgreementExecuted}
+          isDisabled={isFormDisabled || isAgreementExecuted}
         >
           {getAgreementTypeField(modularConfig)?.meta?.options?.map((mode) => (
             <StyledCardContainer key={mode.value} selected={agreementMode === mode.value}>
@@ -296,6 +298,7 @@ export const PosAgreementMode = ({
             isLoading={isUpdateModularLoading}
             onClick={handleSubmit}
             accessibilityLabel="send-link-btn"
+            isDisabled={isFormDisabled}
           >
             {getSubmitBtnText({ modularConfig, mode: agreementMode })}
           </Button>

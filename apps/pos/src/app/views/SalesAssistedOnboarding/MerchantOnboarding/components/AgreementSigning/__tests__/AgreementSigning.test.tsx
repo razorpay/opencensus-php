@@ -240,6 +240,7 @@ describe('<AgreementSigning/>', () => {
         data: {
           agreementType: 'online',
           agreementComponentStatus: 'executed',
+          agreementStatusField: 'completed',
         },
       }),
     );
@@ -256,6 +257,7 @@ describe('<AgreementSigning/>', () => {
         data: {
           agreementType: 'offline',
           agreementComponentStatus: 'executed',
+          agreementStatusField: 'completed',
         },
       }),
     );
