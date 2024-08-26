@@ -15,6 +15,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Constants\IndianStates;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
@@ -27,8 +28,11 @@ use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Detail\Upload as DetailUpload;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
+use RZP\Models\Merchant\Detail\BusinessType as BusinessType;
 use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 
@@ -38,6 +42,9 @@ class Validator extends Base\Validator
 
     protected $app;
 
+    protected $trace;
+
+
     public function __construct($entity = null)
     {
         parent::__construct($entity);
@@ -45,6 +52,9 @@ class Validator extends Base\Validator
         $this->app = App::getFacadeRoot();
 
         $this->env = $this->app['env'];
+
+        $this->trace = $this->app['trace'];
+
     }
 
     const INVALID_REVIEWER                              = 'Invalid reviewer';
@@ -1988,7 +1998,7 @@ class Validator extends Base\Validator
      */
     public function validateBusinessWebsite(string $attribute, $value)
     {
-        $this->validateURL($value, "Invalid Business website");
+        $this->validateURL($attribute, $value, "Invalid Business website");
     }
 
     /**
@@ -2000,15 +2010,17 @@ class Validator extends Base\Validator
      */
     public function validateAdditionalWebsite(string $attribute, $value)
     {
-        $this->validateURL($value, "Invalid Additional website");
+        $this->validateURL($attribute, $value, "Invalid Additional website");
     }
 
     /**
      * validate any url - supports IPV6 and IPV4
      * @throws Exception\BadRequestValidationFailureException
      */
-    private function validateURL($value,$message)
+    private function validateURL($attribute, $value, $message)
     {
+        $merchant = $this->entity->merchant;
+
         if(empty($value) === true)
         {
             return;
@@ -2029,6 +2041,22 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException($message." ".$value);
             }
+        }
+
+        if($merchant !== null and $merchant->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        {
+            // Check if the Website is Razorpay URL
+            if (preg_match(DetailUpload\Validator::RAZORPAY_URL, $value) === 1) {
+                throw new BadRequestValidationFailureException('Invalid ' . $attribute . " : ". $value);
+            }
+
+            // Check if the URL is active
+            $this->validateActiveUrl($attribute, $value);
+
+            $this->trace->info(TraceCode::MERCHANT_VALIDATE, [
+                'attribute_name'   => $attribute,
+                'attribute_value' => $value,
+            ]);
         }
     }
 
@@ -2191,6 +2219,31 @@ class Validator extends Base\Validator
         )
         {
             throw new Exception\BadRequestValidationFailureException(self::ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS);
+        }
+    }
+    public function validateBusinessTypeForBankingMerchants(array &$input, MerchantEntity $merchant)
+    {
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        if($merchant->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        {
+            if(isset($input[Entity::BUSINESS_TYPE]) === false)
+            {
+                if($merchantDetail !== null and empty($merchantDetail->getBusinessType()) === true)
+                {
+                    throw new BadRequestValidationFailureException(sprintf('%s should not be null.', Constants::BUSINESS_TYPE));
+                }
+            }
+            else if($input[Entity::BUSINESS_TYPE] === strval(BusinessType::getIndexFromKey(BusinessType::INDIVIDUAL)))
+            {
+                $input[Entity::BUSINESS_TYPE] = strval(BusinessType::getIndexFromKey(BusinessType::NOT_YET_REGISTERED));
+            }
+
+            $this->trace->info(TraceCode::MERCHANT_VALIDATE, [
+                'BUSINESS_TYPE'   => $input[Entity::BUSINESS_TYPE],
+                'BUSINESS_TYPE_INDEX' => $merchantDetail->getBusinessType(),
+            ]);
         }
     }
 }

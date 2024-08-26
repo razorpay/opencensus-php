@@ -7,29 +7,63 @@ use App;
 
 use RZP\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Batch\Header;
+use RZP\Base\RepositoryManager;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use Lib\Gstin;
 use RZP\Models\Admin\Org;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity;
+use Razorpay\Trace\Logger as Trace;
+
 
 class Validator extends Base\Validator
 {
+    /**
+     * Application instance
+     *
+     * @var Application
+     */
+    protected $app;
+
+    /**
+     * Repository manager instance
+     *
+     * @var RepositoryManager
+     */
+    protected $repo;
+
+    /**
+     * Trace instance used for tracing
+     * @var Trace
+     */
+    protected $trace;
+
+    protected $orgId;
+
     const HTTPS_RULE = '/^https(.)+$/';
+    const RAZORPAY_URL = '/^https?:\/\/(www\.)?razorpay\.[a-z]{2,}(\/.*)?$/i';
     const COMPANY_CIN_REGEX = '/^[ulUL]{1}[0-9]{5}[A-Z|a-z]{2}[0-9]{4}[A-Z|a-z]{3}[0-9]{6}$/';
     const COMPANY_LLPIN_REGEX = '/^[A-Z|a-z]{3}-[0-9]{4}$/';
     const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
     const COMPANY_PAN_NUMBER_REGEX  = '/^[A-Za-z]{3}[CcHhFfAaTtBbLlJjGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
-
-    protected $app;
 
     public function __construct($entity = null)
     {
         parent::__construct($entity);
 
         $this->app = App::getFacadeRoot();
+
+        $this->orgId = $this->app['basicauth']->getOrgId();
+
+        $this->repo = $this->app['repo'];
+
+        $this->trace = $this->app['trace'];
+
     }
 
     protected static $uploadMerchantRules = [
@@ -618,6 +652,29 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException('Invalid ' . $attribute);
         }
+
+        if($this->orgId !== null)
+        {
+            $org = $this->repo->org->findOrFailPublic($this->orgId);
+
+            if($org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+            {
+                // Check if the Website is Razorpay URL
+                if (preg_match(self::RAZORPAY_URL, $value) === 1)
+                {
+                    throw new BadRequestValidationFailureException('Invalid ' . $attribute . " : ". $value);
+                }
+
+                // Check if the URL is active
+                $this->validateActiveUrl($attribute, $value);
+
+                $this->trace->info(TraceCode::MERCHANT_VALIDATE, [
+                    'attribute_name'   => $attribute,
+                    'attribute_value' => $value,
+                ]);
+            }
+        }
+
     }
 
     protected function validateWebsiteDetails($attribute, $value): void

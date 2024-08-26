@@ -13,6 +13,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as PName;
 use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\Merchant;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Admin\Org;
 
@@ -595,6 +596,110 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEmpty($response[Header::ERROR_CODE]);
 
         $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessWithNonRZPWebsiteUrl()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_ABOUT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_TERMS_CONDITIONS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CONTACT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRIVACY_POLICY] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRODUCT_PRICING] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_REFUNDS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CANCELLATION] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_SHIPPING_DELIVERY] = 'https://amazon.com';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantUploadMIQFailureWithRZPWebsiteUrl()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+
+        $this->assertEquals('Invalid Website : https://razorpay.com', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantUploadMIQFailureWithDummyWebsiteUrl()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://www.fictionalwebsite.com/';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+
+        $this->assertEquals('The Website is not a valid URL.', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantUploadMIQFailureBusinessTypeIndividual()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'individual';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+
+        $this->assertEquals('Invalid Business Type', $response[Header::ERROR_DESCRIPTION]);
     }
 
     public function testCreateMerchantUploadMIQInvalidPAN()

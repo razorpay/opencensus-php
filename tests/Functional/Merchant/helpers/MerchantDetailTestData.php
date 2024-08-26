@@ -5,6 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 return [
@@ -226,12 +227,113 @@ return [
         ],
     ],
 
+    'testUpdateBusinessTypeNotYetRegistered' => [
+        'request'  => [
+            'content' => [
+                'business_type' => '2',
+                'business_category' => 'education',
+                'business_subcategory' => 'college',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'business_type' => '11',
+                'business_category' => 'education',
+                'business_subcategory' => 'college'
+            ],
+        ],
+    ],
+
+    'testUpdateBusinessTypeNull' => [
+        'request'  => [
+            'content' => [
+                'business_category' => 'education',
+                'business_subcategory' => 'college',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'business_type should not be null.',
+                    'source'        =>  'business',
+                    'reason'        =>  'input_validation_failed'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUpdateBusinessWebsiteRZPUrl' => [
+        'request'  => [
+            'content' => [
+                'business_type' => '11',
+                'business_category' => 'education',
+                'business_subcategory' => 'college',
+                'business_website' => 'https://razorpay.com',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'Invalid business_website : https://razorpay.com',
+                    'source'        =>  'business',
+                    'reason'        =>  'input_validation_failed'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUpdateBusinessWebsiteDummyUrl' => [
+        'request'  => [
+            'content' => [
+                'business_type' => '11',
+                'business_category' => 'education',
+                'business_subcategory' => 'college',
+                'business_website' => 'https://www.fictionalwebsite.com',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The business_website is not a valid URL.',
+                    'source'        =>  'business',
+                    'reason'        =>  'input_validation_failed'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testSubmit' => [
         'request'  => [
             'content' => [
-                "submit"=>"1",
-                "company_cin" => "U67190TN2014PTC096971",
-                "gstin"=>"03AADCB1234M1ZX"
+                'submit'        =>  '1',
+                'company_cin'   =>  'U67190TN2014PTC096971',
+                "gstin"         =>  '03AADCB1234M1ZX',
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST'

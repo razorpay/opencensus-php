@@ -2,30 +2,71 @@
 
 namespace RZP\Models\Merchant\BusinessDetail;
 
+use App;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Constants\Timezone;
+use RZP\Base\RepositoryManager;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Detail\Upload as DetailUpload;
 
 class Validator extends Base\Validator
 {
+    /**
+     * Application instance
+     *
+     * @var Application
+     */
+    protected $app;
+
+    /**
+     * Repository manager instance
+     *
+     * @var RepositoryManager
+     */
+    protected $repo;
+
+    /**
+     * Trace instance used for tracing
+     * @var Trace
+     */
+    protected $trace;
+
+    protected $orgId;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $this->app = \App::getFacadeRoot();
+
+        $this->orgId = $this->app['basicauth']->getOrgId();
+
+        $this->repo = $this->app['repo'];
+
+        $this->trace = $this->app['trace'];
+
+    }
+
     protected static $createRules = [
         Entity::MERCHANT_ID                                                   => 'required|string|size:14',
         Entity::WEBSITE_DETAILS                                               => 'sometimes|array',
-        Entity::WEBSITE_DETAILS . '.' . Constants::TERMS                      => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::ABOUT                      => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::CONTACT                    => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::PRIVACY                    => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::REFUND                     => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::PRICING                    => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::LOGIN                      => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::CANCELLATION               => 'sometimes|custom:active_url|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::TERMS                      => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::ABOUT                      => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::CONTACT                    => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::PRIVACY                    => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::REFUND                     => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::PRICING                    => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::LOGIN                      => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::CANCELLATION               => 'sometimes|custom:website_details|max:255|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::COMMENTS                   => 'sometimes|string|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::PHYSICAL_STORE             => 'sometimes|boolean',
         Entity::WEBSITE_DETAILS . '.' . Constants::SOCIAL_MEDIA               => 'sometimes|boolean',
@@ -66,14 +107,14 @@ class Validator extends Base\Validator
 
     protected static $editRules   = [
         Entity::WEBSITE_DETAILS                                               => 'sometimes|array',
-        Entity::WEBSITE_DETAILS . '.' . Constants::TERMS                      => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::ABOUT                      => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::CONTACT                    => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::PRIVACY                    => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::REFUND                     => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::PRICING                    => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::LOGIN                      => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::CANCELLATION               => 'sometimes|custom:active_url|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::TERMS                      => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::ABOUT                      => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::CONTACT                    => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::PRIVACY                    => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::REFUND                     => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::PRICING                    => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::LOGIN                      => 'sometimes|custom:website_details|max:255|nullable',
+        Entity::WEBSITE_DETAILS . '.' . Constants::CANCELLATION               => 'sometimes|custom:website_details|max:255|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::COMMENTS                   => 'sometimes|string|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::PHYSICAL_STORE             => 'sometimes|boolean',
         Entity::WEBSITE_DETAILS . '.' . Constants::SOCIAL_MEDIA               => 'sometimes|boolean',
@@ -205,5 +246,35 @@ class Validator extends Base\Validator
                 throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INVALID_FIELD_TYPE, null, $validationData);
             }
         }
+    }
+
+    public function validateWebsiteDetails($attribute, $value)
+    {
+        if(empty($value) === true)
+        {
+            return;
+        }
+
+        if($this->orgId !== null)
+        {
+            $org = $this->repo->org->findOrFailPublic($this->orgId);
+
+            if($org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+            {
+                // Check if the Website is Razorpay URL for banking merchants
+                if (preg_match(DetailUpload\Validator::RAZORPAY_URL, $value) === 1)
+                {
+                    throw new BadRequestValidationFailureException('Invalid ' . $attribute . " : ". $value);
+                }
+
+                $this->trace->info(TraceCode::MERCHANT_VALIDATE, [
+                    'attribute_name'   => $attribute,
+                    'attribute_value' => $value,
+                ]);
+            }
+        }
+
+        // Check if the URL is active
+        $this->validateActiveUrl($attribute, $value);
     }
 }

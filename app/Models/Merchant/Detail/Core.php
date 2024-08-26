@@ -319,6 +319,8 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
+        $merchantDetails->getValidator()->validateBusinessTypeForBankingMerchants($input, $merchant);
+
         if ($merchant->isLinkedAccount() === true)
         {
             $merchantDetails->getValidator()->validateLinkedAccountBusinessNameInput(array_only($input,Entity::BUSINESS_NAME), $merchant->getParentId());
