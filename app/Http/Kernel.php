@@ -26,7 +26,6 @@ class Kernel extends HttpKernel {
     protected $middlewareGroups = [
         'web' => [
             \App\Edge\Middleware\EdgeResponseHandler::class,
-            \App\Edge\Middleware\RegionCookieHandler::class,
             \App\Http\Middleware\Cors::class,
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
@@ -38,6 +37,7 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\SessionInActivity::class,
             \App\Http\Middleware\CacheControl::class,
             \App\Http\Middleware\OTPVerificationSession::class,
+            \App\Edge\Middleware\RegionCookieHandler::class,
         ],
         'jwt_session' => [
             \App\Http\Middleware\EncryptCookies::class,

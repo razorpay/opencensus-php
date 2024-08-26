@@ -2,6 +2,8 @@
 
 namespace App\Edge\Middleware;
 
+use Auth;
+use App\Trace\TraceCode;
 use App\Merchant;
 use Closure;
 use Illuminate\Contracts\Support\Responsable;
@@ -23,14 +25,27 @@ class RegionCookieHandler
      */
     public function handle(Request $request, Closure $next)
     {
+        $region = (new Merchant\Service)->getCurrentMerchantRegion();
+        // We check the region in the cookie if it matches with the logged in merchant region,
+        // if it doesn't then we throw Bad Request Error and consider User has manually edited the Cookie
+        // and should result in a Client Error so the request would be Forbidden
+        $cookieRegion = $request->cookie(self::RZP_USER_MERCHANT_REGION);
+        if (!empty($region) && !empty($cookieRegion) && $region !== $cookieRegion) {
+            $merchantId = (new Merchant\Service)->getCurrentMerchantId();
+            app('trace')->info(TraceCode::USER_MERCHANT_REGION_MISMATCH, [
+                'message' => "Merchant Region Mismatch for Merchant $merchantId Cookie Region $cookieRegion Actual Region $region",
+            ]);
+            return response('Unauthorized', 401);
+        }
+
         $response = $next($request);
+
+        $region = (new Merchant\Service)->getCurrentMerchantRegion();
+        $config = config('session');
 
         if ($response instanceof Responsable) {
             $response = $response->toResponse($request);
         }
-
-        $region = (new Merchant\Service)->getCurrentMerchantRegion();
-        $config = config('session');
 
         // set the cookie only if region is available
         if (! empty($region)) {
