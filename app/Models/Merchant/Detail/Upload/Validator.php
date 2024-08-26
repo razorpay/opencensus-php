@@ -653,26 +653,33 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Invalid ' . $attribute);
         }
 
-        if($this->orgId !== null)
+        try
         {
-            $org = $this->repo->org->findOrFailPublic($this->orgId);
-
-            if($org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+            if($this->orgId !== null)
             {
-                // Check if the Website is Razorpay URL
-                if (preg_match(self::RAZORPAY_URL, $value) === 1)
+                $org = $this->repo->org->findByPublicId($this->orgId);
+
+                if($org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
                 {
-                    throw new BadRequestValidationFailureException('Invalid ' . $attribute . " : ". $value);
+                    // Check if the Website is Razorpay URL
+                    if (preg_match(self::RAZORPAY_URL, $value) === 1)
+                    {
+                        throw new BadRequestValidationFailureException('Invalid ' . $attribute . " : ". $value);
+                    }
+
+                    // Check if the URL is active
+                    $this->validateActiveUrl($attribute, $value);
+
+                    $this->trace->info(TraceCode::MERCHANT_VALIDATE, [
+                        'attribute_name'   => $attribute,
+                        'attribute_value' => $value,
+                    ]);
                 }
-
-                // Check if the URL is active
-                $this->validateActiveUrl($attribute, $value);
-
-                $this->trace->info(TraceCode::MERCHANT_VALIDATE, [
-                    'attribute_name'   => $attribute,
-                    'attribute_value' => $value,
-                ]);
             }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
         }
 
     }
