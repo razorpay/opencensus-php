@@ -294,7 +294,7 @@ class Core extends Base\Core
 
         $this->addToDefaultUnclaimedGroup($merchant);
 
-        $this->addMerchantRelevantFeatures($merchant,$tokenData);
+        $this->addMerchantRelevantFeatures($merchant, $tokenData, $noCodeAppPricingPlan);
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
@@ -344,19 +344,29 @@ class Core extends Base\Core
                 return null;
             }
 
-            $plService = $this->app['paymentlinkservice'];
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.nocodeapp_pricing_plans_exp_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id'    => $merchant->getId(),
+                        'merchant_name'  => $merchant->getName(),
+                        'merchant_email' => $merchant->getEmail(),
+                    ]),
+            ];
 
-            $response = $plService->getNoCodeAppsPricingPlanPreferences($merchant);
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-            if (!empty($response))
-            {
-                if ($response['nocodeapp_fee_applicable'] === true && $response['nocodeapp_plan_id'] !== null)
-                {
-                    return $response['nocodeapp_plan_id'];
-                }
-            }
+            $pricingPlanId = $response['response']['variant']['name'] ?? null;
 
-            return null;
+            $this->trace->info(
+                TraceCode::NOCODEAPPS_PRICING_PLAN_PREFERENCES_PLAN_VARIANT,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                    'pricing_plan_id' => $pricingPlanId,
+                ]);
+
+            return $pricingPlanId;
         }
         catch (\Exception $e)
         {
@@ -445,7 +455,7 @@ class Core extends Base\Core
     }
 
 
-    private function addMerchantRelevantFeatures($merchant,$tokenData)
+    private function addMerchantRelevantFeatures($merchant, $tokenData, $noCodeAppPricingPlan)
     {
         if ($tokenData !== null)
         {
@@ -465,6 +475,30 @@ class Core extends Base\Core
 
                     (new Feature\Service)->addFeatures($featureParams);
                 }
+            }
+        }
+
+        if ($noCodeAppPricingPlan != null) {
+            try
+            {
+                // enable nocodeapp_fee_applicable flag whenever ncapp pricing plan is applied
+                (new Feature\Core)->create([
+                    Feature\Entity::ENTITY_TYPE     => Feature\Constants::MERCHANT,
+                    Feature\Entity::ENTITY_ID       => $merchant->getId(),
+                    Feature\Entity::NAME            => Feature\Constants::NOCODEAPP_FEE_APPLICABLE,
+                ], true);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::EXCEPTION_WHILE_SETTING_NOCODEAPP_FEE_APPLICABLE_FF,
+                    [
+                        'merchant_id'    => $merchant->getId(),
+                    ]);
+
+                return null;
             }
         }
     }
