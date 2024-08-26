@@ -220,6 +220,8 @@ return array(
         'tech-cross-border-alerts' => 'C02C6G824TW',
 
         'x-acquisition-alerts'  => 'C03JZRN078C',
+
+        'payments-route-alerts'  => 'C03BH8ZG4RF',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

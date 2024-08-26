@@ -485,7 +485,7 @@ class Repository extends Base\Repository
      * @param $categoryCodes
      * @return int
      */
-    public function fetchPendingOrderTransfersCount($categoryCodes = null): int
+    public function fetchPendingOrderTransfersCount($categoryCodes = null, $merchantIds = null, $startOffsetMins = 30 * 24 * 60, $endOffsetMins = 24 * 60): int
     {
         $orderId            = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus      = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
@@ -505,16 +505,26 @@ class Repository extends Base\Repository
             ->where(Entity::SOURCE_TYPE, Constant::ORDER)
             ->where($transferStatus, Status::PENDING)
             ->where($paymentStatus, Payment\Status::CAPTURED)
-            ->where($updatedAt, '<', Carbon::now()->subDays(1)->getTimestamp());
+            ->where($updatedAt, '<', Carbon::now()->subMinutes($endOffsetMins)->getTimestamp());
 
-        if ($categoryCodes !== null)
+        if (empty($startOffsetMins) === false)
+        {
+            $query->where($updatedAt, '>=', Carbon::now()->subMinutes($startOffsetMins)->getTimestamp());
+        }
+
+        if (empty($categoryCodes) === false)
         {
             $query = $query->whereIn($merchantCategory, $categoryCodes);
         }
-        else
+        else if (empty($merchantIds) === true)
         {
             $category3Codes = array_merge(Constant::CATEGORY_1_MCC, Constant::CATEGORY_2_MCC);
             $query = $query->whereNotIn($merchantCategory, $category3Codes);
+        }
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn($transferMerchantId, $merchantIds);
         }
 
         $result =  $query->get();
@@ -534,14 +544,16 @@ class Repository extends Base\Repository
      *      and `merchants`.`category` in (?)
      *
      * @param $categoryCodes
-     * @return int     */
-    public function fetchPendingPaymentTransfersCount($categoryCodes = null): int
+     * @return int
+     */
+    public function fetchPendingPaymentTransfersCount($categoryCodes = null, $merchantIds = null, $startOffsetMins = 30 * 24 * 60, $endOffsetMins = 24 * 60): int
     {
         $merchantEntityId   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantCategory   = $this->repo->merchant->dbColumn(Merchant\Entity::CATEGORY);
         $transferMerchantId = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
         $sourceType         = $this->repo->transfer->dbColumn(Entity::SOURCE_TYPE);
         $status             = $this->repo->transfer->dbColumn(Entity::STATUS);
+        $createdAt          = $this->repo->transfer->dbColumn(Entity::CREATED_AT);
         $updatedAt          = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection());
@@ -551,16 +563,26 @@ class Repository extends Base\Repository
             ->selectRaw('COUNT(' . 'transfers.id' . ') AS count')
             ->where($sourceType, Constant::PAYMENT)
             ->where($status, Status::PENDING)
-            ->where($updatedAt, '<', Carbon::now()->subDays(1)->getTimestamp());
+            ->where($updatedAt, '<', Carbon::now()->subMinutes($endOffsetMins)->getTimestamp());
 
-        if ($categoryCodes !== null)
+        if (empty($startOffsetMins) === false)
+        {
+            $query->where($createdAt, '>=', Carbon::now()->subMinutes($startOffsetMins)->getTimestamp());
+        }
+
+        if (empty($categoryCodes) === false)
         {
             $query = $query->whereIn($merchantCategory, $categoryCodes);
         }
-        else
+        else if (empty($merchantIds) === true)
         {
             $category3Codes = array_merge(Constant::CATEGORY_1_MCC, Constant::CATEGORY_2_MCC);
             $query = $query->whereNotIn($merchantCategory, $category3Codes);
+        }
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn($transferMerchantId, $merchantIds);
         }
 
         $result = $query->get();

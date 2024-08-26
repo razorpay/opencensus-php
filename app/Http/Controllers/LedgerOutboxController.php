@@ -21,7 +21,8 @@ class LedgerOutboxController extends Controller {
         $this->trace->info(TraceCode::PG_LEDGER_OUTBOX_FETCH,
             [
                 Constants::SOURCE                   => Constants::CRON,
-                Constants::CRON_TYPE                => $cronType
+                Constants::CRON_TYPE                => $cronType,
+                'input'                             => $input
             ]
         );
 

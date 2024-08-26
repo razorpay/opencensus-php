@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity;
+use function Aws\boolean_value;
 
 class TransferController extends Controller
 {
@@ -233,7 +234,16 @@ class TransferController extends Controller
 
         $input = Request::all();
 
-        $response = $this->service()->fetchPendingTransfersCount($input);
+        $slackAlert = boolean_value($input['slack_alert']) ?? false;
+
+        if ($slackAlert === true)
+        {
+            $response = $this->service()->checkPendingTransfersAndPushAlert($input);
+        }
+        else
+        {
+            $response = $this->service()->fetchPendingTransfersCount($input);
+        }
 
         return ApiResponse::json($response);
     }

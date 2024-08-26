@@ -41,7 +41,7 @@ class Core extends Base\Core
 
 
     //pg-ledger outbox cron retries journal and txn creation for non-deleted outbox entries in reverse-shadow mode
-    public function retryFailedReverseShadowTransferTransactions($limit, $maxRetryCount) : array
+    public function retryFailedReverseShadowTransferTransactions($limit, $maxRetryCount, $startOffsetMins, $endOffsetMins) : array
     {
         $ledgerService = $this->app['ledger'];
 
@@ -57,8 +57,9 @@ class Core extends Base\Core
 
         $now = time();
 
-        $startTimestamp = $now - Constants::OUTBOX_RETRY_DEFAULT_START_TIME;
-        $endTimestamp = $now - Constants::OUTBOX_RETRY_DEFAULT_END_TIME;
+        $startTimestamp = Carbon::now()->subMinutes($startOffsetMins)->getTimestamp();
+
+        $endTimestamp = Carbon::now()->subMinutes($endOffsetMins)->getTimestamp();
 
         $entries = $this->repo->ledger_outbox->fetchOldOutboxEntriesForRetryByEntityType($limit, $startTimestamp, $endTimestamp, Constants::TRANSFER,  $maxRetryCount);
 

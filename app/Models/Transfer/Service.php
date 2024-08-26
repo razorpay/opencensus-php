@@ -2180,4 +2180,101 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function checkPendingTransfersAndPushAlert($input)
+    {
+        $merchantCategory = $input['category'] ?? null;
+
+        $startOffsetMins = $input['start_offset_mins'] ?? null;
+
+        $endOffsetMins = $input['end_offset_mins'] ?? null;
+
+        $alertData = [];
+
+        $orderTransfersCount = 0;
+
+        $paymentTransfersCount = 0;
+
+        if (empty($merchantCategory) === false)
+        {
+            if ($merchantCategory === Constant::CATEGORY_1)
+            {
+                $categoryCodes = Constant::CATEGORY_1_MCC;
+            }
+            else if ($merchantCategory === Constant::CATEGORY_2)
+            {
+                $categoryCodes = Constant::CATEGORY_2_MCC;
+            }
+            else
+            {
+                $categoryCodes = null;
+            }
+
+            $alertData['category'] = $merchantCategory;
+
+            [$orderTransfersCount, $paymentTransfersCount] = $this->fetchPendingTransfersCountForMerchants($categoryCodes, null, $startOffsetMins, $endOffsetMins);
+        }
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        if (empty($merchantIds) === false)
+        {
+            $alertData['merchant_ids'] = $merchantIds;
+
+            [$orderTransfersCount, $paymentTransfersCount] = $this->fetchPendingTransfersCountForMerchants(null, $merchantIds, $startOffsetMins, $endOffsetMins);
+        }
+
+        if ($orderTransfersCount > 0 || $paymentTransfersCount > 0)
+        {
+            $alertData['pending_order_transfers'] = $orderTransfersCount;
+
+            $alertData['pending_payment_transfers'] = $paymentTransfersCount;
+
+            $this->pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins);
+        }
+
+        $this->trace->info(
+            TraceCode::PENDING_TRANSFERS_COUNT,
+            [
+                'input' => $input,
+                'pending_order_transfers'   => $orderTransfersCount,
+                'pending_payment_transfers' => $paymentTransfersCount,
+            ]
+        );
+
+        return [
+            'pending_order_transfers'    => $orderTransfersCount,
+            'pending_payment_transfers'  => $paymentTransfersCount,
+        ];
+    }
+
+    public function fetchPendingTransfersCountForMerchants($categoryCodes, $merchantIds, $startOffsetMins, $endOffsetMins)
+    {
+        $order_transfers_count = $this->repo->transfer->fetchPendingOrderTransfersCount(
+            $categoryCodes, $merchantIds, $startOffsetMins, $endOffsetMins);
+
+        $payment_transfers_count = $this->repo->transfer->fetchPendingPaymentTransfersCount(
+            $categoryCodes, $merchantIds, $startOffsetMins, $endOffsetMins);
+
+        return [$order_transfers_count, $payment_transfers_count];
+    }
+
+    protected function pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins)
+    {
+        $channel = $this->app->config->get('slack.channels.payments-route-alerts');
+
+        $headline = sprintf('<!subteam^S01JSULB27N> P0 Alert: Pending transfers since %s minutes in last %s minutes',
+            $endOffsetMins, $startOffsetMins);
+
+        if ($this->app->config->get('slack.is_slack_enabled') === true)
+        {
+            $settings = [];
+            $settings['color'] = 'bad';
+            $settings['icon'] = ':rotating_light:';
+            $settings['pretext'] = 'P0: Pending transfers alert';
+            $settings['link_names'] = 1;
+            $settings['channel'] = $channel;
+
+            $this->app['slack']->queue($headline, $alertData, $settings);
+        }
+    }
 }
