@@ -5714,6 +5714,17 @@ class Core extends Base\Core
                 $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
 
             case Constants::X_INVITE_USER_OTP:
+            case Constants::REMOVE_TND_USER:
+            case Constants::CANCEL_TND_USER_INVITE:
+            case Constants::SOURCE_ACCOUNT_CREATE:
+            case Constants::FEATURE_FLAG_UPDATE:
+            case Constants::EDIT_TND_USER:
+            case Constants::CREATE_WEBHOOK:
+            case Constants::UPDATE_WEBHOOK:
+            case Constants::DELETE_WEBHOOK:
+            case Constants::CHANGE_PASSWORD:
+            case Constants::UPDATE_USER:
+            case Constants::DELETE_INVITATION:
                 $smsPayload['sender'] = 'RZPAYX';
                 $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
                 break;

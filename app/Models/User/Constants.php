@@ -484,6 +484,17 @@ class Constants
     const DELETE_WORKFLOW_CONFIG        = 'delete_workflow_config';
     const BULK_APPROVE_PAYOUT           = 'bulk_approve_payout';
     const BULK_PAYOUT_APPROVE           = 'bulk_payout_approve';
+    const REMOVE_TND_USER               = 'remove_tnd_user';
+    const CANCEL_TND_USER_INVITE        = 'cancel_tnd_user_invite';
+    const SOURCE_ACCOUNT_CREATE         = 'source_account_create';
+    const FEATURE_FLAG_UPDATE           = 'feature_flag_update';
+    const EDIT_TND_USER                 = 'edit_tnd_user';
+    const CREATE_WEBHOOK                = 'create_webhook';
+    const UPDATE_WEBHOOK                = 'update_webhook';
+    const DELETE_WEBHOOK                = 'delete_webhook';
+    const CHANGE_PASSWORD               = 'change_password';
+    const UPDATE_USER                   = 'update_user';
+    const DELETE_INVITATION             = 'delete_invitation';
 
     const SEND_SMS_VIA_STORK            = [
         self::X_SECOND_FACTOR_AUTH_ACTION,
@@ -495,6 +506,17 @@ class Constants
         self::DELETE_WORKFLOW_CONFIG,
         self::BULK_APPROVE_PAYOUT,
         self::APPROVE_BULK_PAYOUTS,
+        self::REMOVE_TND_USER,
+        self::CANCEL_TND_USER_INVITE,
+        self::SOURCE_ACCOUNT_CREATE,
+        self::FEATURE_FLAG_UPDATE,
+        self::EDIT_TND_USER,
+        self::CREATE_WEBHOOK,
+        self::UPDATE_WEBHOOK,
+        self::DELETE_WEBHOOK,
+        self::CHANGE_PASSWORD,
+        self::UPDATE_USER,
+        self::DELETE_INVITATION
     ];
 
     const LOGIN_OTP_ACTION_V2                      = 'login_otp_v2';
