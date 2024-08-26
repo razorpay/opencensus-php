@@ -6,6 +6,7 @@ use DB;
 use App;
 use Carbon\Carbon;
 use Database\Connection;
+use Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -62,6 +63,7 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Transfer\Payment as TransferPayment;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
+use RZP\Models\Gateway\File\Constants as GatewayConstants;
 
 class Repository extends Base\Repository
 {
@@ -666,8 +668,13 @@ EOT;
     /**
      *  refer: https://razorpay.slack.com/archives/CQ932EVNH/p1624709316068200
      */
-    public function fetchPaymentWithForceIndex(array $params, string $merchantId = null)
+    public function fetchPaymentWithForceIndex(array $params, $merchant = null)
     {
+        if (empty($merchant) === false)
+        {
+            $merchantId = $merchant->getId();
+        }
+
         $startTimeMsForTrace = round(microtime(true) * 1000);
 
         // Process params (sanitization, validation, modification, etc.)
@@ -695,6 +702,16 @@ EOT;
                 'error_message'    => $ex->getMessage(),
                 'route_name'       => $this->app['api.route']->getCurrentRouteName(),
             ]);
+        }
+
+        if (isset($params[Entity::RRN]) === true)
+        {
+            if ($this->isUpiRrnSearchEnabled($merchant) === true)
+            {
+                return $this->fetchUpiPaymentsByRrn($params, $merchant->getId());
+            }
+
+            unset($params[Entity::RRN]);
         }
 
         if (!is_null($merchantId) &&
@@ -935,6 +952,120 @@ EOT;
             throw $e;
         }
     }
+
+    public function isUpiRrnSearchEnabled($merchant)
+    {
+        if (empty($merchant) === true)
+        {
+            return false;
+        }
+
+        $featureResult = $merchant->org->isFeatureEnabled(Feature\Constants::VAS_MERCHANT);
+
+        if ($featureResult === false)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.upi_rrn_search_experiment_id'),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+        if ($variant === 'vas_rrn_search')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function fetchUpiPaymentsByRrn(array $params, string $merchantId): PublicCollection
+    {
+        $this->trace->info(TraceCode::FETCH_VAS_UPI_PAYMENTS_WITH_RRN, [
+            'param'     => $params,
+            'merchantId' => $merchantId
+        ]);
+
+        $response = $this->app['upi.payments']->fetchAuthorizeEntityViaRRN($params[Entity::RRN], [Constant::PAYMENT_ID]) ?? [];
+
+        $rearchPaymentIds = array_column($response, Constant::PAYMENT_ID);
+
+        // Setting limit to 100 as its rare to have payments with duplocate rrn for same merchant
+        $nonRearchPaymentIds = $this->repo->upi->findByMatchingNpciReferenceId(
+            $params[Entity::RRN],
+            [Constant::PAYMENT_ID],
+            100,
+            []
+        )->toArray();
+
+        $nonRearchPaymentIds = array_column($nonRearchPaymentIds, Constant::PAYMENT_ID);
+
+        $allPaymentIds = array_merge($rearchPaymentIds, $nonRearchPaymentIds);
+
+        unset($params[Entity::RRN]);
+
+        return $this->fetchPaymentsByPaymentIdsFromWarehouse($params, $allPaymentIds, $merchantId);
+    }
+
+
+    /**
+     * @param array $params
+     * @param array $allPaymentIds
+     * @param string $merchantId
+     * @param float $startTimeMsForTrace
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function fetchPaymentsByPaymentIdsFromWarehouse(array $params, array $allPaymentIds, string $merchantId)
+    {
+        $startTimeMsForTrace = round(microtime(true) * 1000);
+
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        $count = $mysqlParams[self::COUNT] ?? 25;
+        $skip = $mysqlParams[self::SKIP] ?? 0;
+        $from = $mysqlParams[self::FROM];
+        $to = $mysqlParams[self::TO];
+
+        unset($mysqlParams[Entity::RRN]);
+        unset($mysqlParams[self::COUNT]);
+        unset($mysqlParams[self::SKIP]);
+        unset($mysqlParams[self::FROM]);
+        unset($mysqlParams[self::TO]);
+
+        $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = parent::newQueryWithConnection($connection)
+            ->whereIn(Entity::ID, $allPaymentIds)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where($mysqlParams)
+            ->skip($skip)
+            ->take($count)
+            ->orderBy(Entity::CREATED_AT, 'desc');
+
+        if (empty($from) === false)
+        {
+            $query = $query->where(Payment\Entity::CREATED_AT, '>=', $from);
+        }
+
+        if (empty($to) === false)
+        {
+            $query = $query->where(Payment\Entity::CREATED_AT, '<=', $to);
+        }
+
+        $result = $query->get();
+
+        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection, true);
+
+        return $result;
+    }
+
+
 
     public function fetchNotesKeys($params) : array
     {

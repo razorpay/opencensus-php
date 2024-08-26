@@ -23,6 +23,7 @@ use Http\Discovery\Psr17FactoryDiscovery;
 use GuzzleHttp\Psr7\Request as Psr7Request;
 use Psr\Http\Client\NetworkExceptionInterface;
 use \RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Gateway\File\Constants as GatewayConstants;
 
 /**
  * Service implements the UPI Payments service client
@@ -281,6 +282,35 @@ class Service
         }
 
         return $terminalData;
+    }
+
+    /**
+     * @param $rrn1
+     * @return array
+     * @throws \Exception
+     */
+    public function fetchAuthorizeEntityViaRRN(string $rrn, array $requiredColumns)
+    {
+        $action = GatewayConstants::MULTIPLE_ENTITY_FETCH;
+
+        $input = [
+            GatewayConstants::MODEL => GatewayConstants::AUTHORIZE,
+            GatewayConstants::REQUIRED_FIELDS => $requiredColumns,
+            GatewayConstants::COLUMN_NAME => GatewayConstants::CUSTOMER_REFERENCE,
+            GatewayConstants::VALUES => [$rrn]
+        ];
+
+        try
+        {
+            return $this->action($action, $input, '');
+        }
+        catch (\Exception $e)
+        {
+            if ($e->getCode() !== ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
+            {
+                throw $e;
+            }
+        }
     }
 
     /**

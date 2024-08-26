@@ -37,6 +37,9 @@ class Constant
 
     const ERROR_RZP_ACTIONABLE    = 'error_rzp_actionable';
 
+
+    const PAYMENT_ID              = 'payment_id';
+
     const S0101 = 'S0101';
     const S0102 = 'S0102';
 

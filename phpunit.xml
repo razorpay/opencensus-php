@@ -632,6 +632,7 @@
         <testsuite name="UT_Banking_Test-1_Suite">
             <file>./tests/Functional/User/BankingUserTest.php</file>
             <file>./tests/Functional/Batch/MerchantUploadMiqBatchTest.php</file>
+            <file>./tests/Functional/Payment/UpiRrnPaymentFetchTest.php</file>
             <file>./tests/Unit/Models/Merchant/Detail/BankingCoreTest.php</file>
             <file>./tests/Functional/Admin/BankingAdminLeadTest.php</file>
             <file>./tests/Functional/VirtualAccount/VirtualAccountTest.php</file>

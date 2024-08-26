@@ -631,6 +631,8 @@ return array(
 
     'checkout_netbanking_corporate_splitz_experiment_id' => env('CHECKOUT_NETBANKING_CORPORATE_SPLITZ_EXPERIMENT_ID'),
 
+    'upi_rrn_search_experiment_id' => env('UPI_RRN_SEARCH_EXPERIMENT_ID'),
+
     'allow_order_transfers_on_rearch_ups_splitz_experiment_id' => env('ALLOW_ORDER_TRANSFERS_ON_REARCH_UPS_SPLITZ_EXPERIMENT_ID'),
 
     'validate_vpa_splitz_experiment_id' => env('VALIDATE_VPA_SPLITZ_EXPERIMENT_ID'),

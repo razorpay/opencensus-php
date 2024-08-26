@@ -2309,7 +2309,7 @@ class Service extends Base\Service
         $payments = $this->repo
                         ->payment
                         ->setExperimentForESearchOnCreatedAtFirst($isExpEnable)
-                        ->fetchPaymentWithForceIndex($input, $merchantId);
+                        ->fetchPaymentWithForceIndex($input, $this->merchant);
 
         // Get payment supporting documents for opgsp import flow on dashboard.
         if($this->auth->isProxyAuth() === true and

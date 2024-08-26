@@ -11166,6 +11166,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WDA_MERCHANT_AUTOKYC_HARD_LIMIT                = 'WDA_MERCHANT_AUTOKYC_HARD_LIMIT';
     const WDA_MERCHANT_ONBOARDING_CRONS                  = 'WDA_MERCHANT_ONBOARDING_CRONS';
 
+    const FETCH_VAS_UPI_PAYMENTS_WITH_RRN                 = 'FETCH_VAS_UPI_PAYMENTS_WITH_RRN';
+
     //3DS2.0 callback view experiment
     const CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR            = "CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR";
     const CALLBACK_VIEW_ON_3DS_PAYMENT                  = "CALLBACK_VIEW_ON_3DS_PAYMENT";

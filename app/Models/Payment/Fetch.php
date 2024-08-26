@@ -54,6 +54,7 @@ class Fetch extends BaseFetch
             Entity::VIRTUAL_ACCOUNT_ID           => 'sometimes|string|max:17',
             Entity::VIRTUAL_ACCOUNT              => 'sometimes|in:0,1',
             Entity::VA_TRANSACTION_ID            => 'sometimes|string',
+            Entity::RRN                          => 'sometimes|string',
             Entity::SETTLED_BY                   => 'sometimes',
             Entity::INTL_BANK_TRANSFER           => 'sometimes|in:0,1',
             EsRepository::QUERY                  => 'sometimes|string|min:1|max:100',
@@ -109,6 +110,7 @@ class Fetch extends BaseFetch
             Entity::ORDER_ID,
             EsRepository::QUERY,
             Constant::SOURCE_CHANNEL,
+            Entity::RRN,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::VERIFIED,
