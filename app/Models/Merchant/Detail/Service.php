@@ -13,6 +13,7 @@ use RZP\Constants\Environment;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Services\Segment\Constants as SegmentConstants;
@@ -2108,6 +2109,21 @@ class Service extends Base\Service
      */
     public function getBusinessCategories(): array
     {
+        $experimentResult = (new Merchant\Core)->isRazorxExperimentEnable(
+            $this->merchant->org->getId(),
+            RazorxTreatment::EASY_ONBOARDING_UPDATED_MCC);
+
+        $this->trace->info(TraceCode::BUSINESS_CATEGORIES_VAS_MERCHANT_DETAILS, [
+            'merchant_id' => $this->merchant->getId(),
+            'org_id'       => $this->merchant->org->getId(),
+            'experiment_result' => $experimentResult,
+        ]);
+
+        if ($experimentResult === true)
+        {
+            return $this->getBusinessCategoriesVasMerchant();
+        }
+
         $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP_OLD;
         $businessCategories    = [];
 
@@ -2130,6 +2146,37 @@ class Service extends Base\Service
                 {
                     $subCategoriesMetaData[$subCategory] = $this->getSubCategoryMetaDataFields($subcategoryMetaDataFields);
                 }
+
+            }
+            $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = BusinessCategory::DESCRIPTIONS[$businessCategory];
+            $businessCategories[$businessCategory][BusinessCategory::SUBCATEGORIES] = $subCategoriesMetaData;
+        }
+
+        return $businessCategories;
+    }
+
+    public function getBusinessCategoriesVasMerchant(): array
+    {
+        $businessCategoriesMap = BusinessCategoriesV2\BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategories    = [];
+
+        foreach ($businessCategoriesMap as $businessCategory => $subCategories)
+        {
+            $businessCategories[$businessCategory] = [];
+            $subCategoriesMetaData                 = [];
+
+            foreach ($subCategories as $subCategory)
+            {
+                if ($subCategory === BusinessCategoriesV2\BusinessParentCategory::OTHERS)
+                {
+                    $subcategoryMetaDataFields = BusinessCategoriesV2\BusinessSubCategoryMetaData::getMetaDataForOthersCategory();
+                }
+                else
+                {
+                    $subcategoryMetaDataFields = BusinessCategoriesV2\BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+                }
+
+                $subCategoriesMetaData[$subCategory] = $this->getSubCategoryMetaDataFields($subcategoryMetaDataFields);
 
             }
             $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = BusinessCategory::DESCRIPTIONS[$businessCategory];

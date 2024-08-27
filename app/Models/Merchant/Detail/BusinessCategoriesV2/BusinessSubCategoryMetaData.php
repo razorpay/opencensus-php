@@ -7816,6 +7816,7 @@ class BusinessSubCategoryMetaData
         return [
             Merchant::CATEGORY                                => '5399',
             Merchant::CATEGORY2                               => Category::ECOMMERCE,
+            self::DESCRIPTION                                 => Sub::DESCRIPTIONS[Sub::OTHERS],
             Entity::ACTIVATION_FLOW                           => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT           => 2500000,

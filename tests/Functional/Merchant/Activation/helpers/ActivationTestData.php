@@ -1009,6 +1009,29 @@ return [
         ],
     ],
 
+    'testMerchantActivationCategoriesResponseForVasMerchant' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/merchant/activation/business_categories',
+        ],
+        'response' => [
+            'content'     => [
+                'financial_services' => [
+                    'description'   => 'Financial Services',
+                    'subcategories' => [
+                        'mutual_fund' => [
+                            'description' => 'Mutual fund',
+                        ],
+                        'lending'     => [
+                            'description' => 'Lending',
+                        ],
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPostInstantActivationRequiredField' => [
         'request'   => [
             'method' => 'POST',

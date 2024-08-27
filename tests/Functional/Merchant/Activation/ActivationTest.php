@@ -143,6 +143,19 @@ class ActivationTest extends OAuthTestCase
                 }));
     }
 
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
+    }
+
     public function testInstantActivationWithActivationFormMilestoneAsL1Submission()
     {
         $merchant = $this->fixtures->create('merchant', [
@@ -236,6 +249,15 @@ class ActivationTest extends OAuthTestCase
     public function testMerchantActivationCategoriesResponseForNonAdminAuth()
     {
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationCategoriesResponseForVasMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockRazorxTreatment();
 
         $this->startTest();
     }

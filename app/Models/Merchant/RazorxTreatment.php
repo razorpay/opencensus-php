@@ -495,6 +495,8 @@ final class RazorxTreatment
 
     const FLIP_PAYMENT_READS = "flip_payment_reads";
 
+    const EASY_ONBOARDING_UPDATED_MCC = "easy_onboarding_updated_mcc";
+
     const ARCHIVED_REPLICA_QUERY_MOVEMENT = "archived_replica_query_movement";
 
     const POST_PAYMENT_TO_BILL_ME = "post_payment_to_bill_me";
