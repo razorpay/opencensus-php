@@ -5537,6 +5537,11 @@ class Service extends Base\Service
                     break;
                 case "payment_captured_event":
                     $processor->eventPaymentCaptured();
+
+                    if ($this->shouldTriggerInvoiceWebhooksForRearchPayments($payment->getMerchantId())) {
+                        $processor->eventInvoicePaid();
+                    }
+
                     break;
                 case "payment_failed_event":
                     $processor->eventPaymentFailed(null);
@@ -8880,6 +8885,34 @@ class Service extends Base\Service
                     TraceCode::SHOW_DCC_EXPERIMENT_SPLITZ_ERROR
                 );
             }
+        return false;
+    }
+
+    protected function shouldTriggerInvoiceWebhooksForRearchPayments(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.invoice_webhooks_payment_rearch_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::INVOICE_WEBHOOK_PAYMENT_REARCH_SPLITZ_ERROR
+            );
+        }
+
         return false;
     }
 

@@ -9570,9 +9570,13 @@ trait Authorize
             {
                 $this->fillReturnDataWithSubscription($payment, $returnData);
             }
-            else if ($payment->hasInvoice() === true)
+            else if ($payment->hasInvoiceOrProductTypeInvoice() === true)
             {
                 $invoice = $payment->invoice;
+
+                if(!isset($invoice) && isset($payment->order->invoice)) {
+                    $invoice = $payment->order->invoice;
+                }
 
                 // No assert check if invoice is of subscription registration type.
                 // For emandate auth links, the payment wont be captured immediately.
@@ -9650,6 +9654,10 @@ trait Authorize
     protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
     {
         $invoice = $payment->invoice;
+
+        if(!isset($invoice) && isset($payment->order->invoice)) {
+            $invoice = $payment->order->invoice;
+        }
 
         //
         // Need to refresh invoice entity as in recordCapture() method
@@ -9729,8 +9737,7 @@ trait Authorize
                 return;
             }
         }
-
-        if ($this->payment->hasInvoice() === true)
+        if ($this->payment->hasInvoiceOrProductTypeInvoice() === true)
         {
             $event = Payment\Event::INVOICE_PAYMENT_AUTHORIZED;
         }

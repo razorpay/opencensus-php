@@ -1350,7 +1350,7 @@ trait Capture
 
         $event = Payment\Event::CAPTURED;
 
-        if ($this->payment->hasInvoice() === true)
+        if ($this->payment->hasInvoiceOrProductTypeInvoice() === true)
         {
             $event = Payment\Event::INVOICE_PAYMENT_CAPTURED;
         }
@@ -1389,7 +1389,7 @@ trait Capture
         $this->app['events']->dispatch('api.order.paid', $eventPayload);
     }
 
-    protected function eventInvoicePaid()
+    public function eventInvoicePaid()
     {
         $payment = $this->payment;
 
@@ -1405,6 +1405,14 @@ trait Capture
         $invoice = $payment->order->invoice;
 
         $event = ($invoice->isPaid() === true) ? 'api.invoice.paid' : 'api.invoice.partially_paid';
+
+        $this->trace->info(
+            TraceCode::INVOICE_PAID_EVENT,
+            [
+                'payment_id'    => $payment->getId(),
+                'event'         => $event,
+                'invoiceStatus' => $invoice->getStatus(),
+            ]);
 
         $eventPayload = [
             ApiEventSubscriber::MAIN => $payment

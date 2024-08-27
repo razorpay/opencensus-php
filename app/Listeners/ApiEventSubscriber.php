@@ -1035,12 +1035,19 @@ class ApiEventSubscriber extends Base\Core
         // Pulls customer info from payment and updates invoice's if not set
         (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
+        $invoiceId = $payment->getInvoiceId();
+
+        // Check if the invoice ID is missing, then check the order's invoice ID
+        if (empty($invoiceId) && $payment->isProductTypeInvoice()) {
+            $invoiceId = $payment->order->getProductId();
+        }
+
         // Fires a job so in async pdf can be refreshed
-        InvoiceJob::dispatch($this->getMode(), InvoiceJob::CAPTURED, $payment->getInvoiceId());
+        InvoiceJob::dispatch($this->getMode(), InvoiceJob::CAPTURED, $invoiceId);
 
         $payload = $this->getInvoicePayloadWithPayment($payment);
 
-        $this->setContextForEntity($payment->getMerchantId(), 'invoice', $payment->getInvoiceId());
+        $this->setContextForEntity($payment->getMerchantId(), 'invoice', $invoiceId);
 
         $this->dispatchEventToStork($payload);
     }

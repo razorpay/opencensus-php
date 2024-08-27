@@ -85,9 +85,13 @@ class Notify
 
         $this->org = $this->merchant->org;
 
-        if ($this->payment->hasInvoice())
+        if ($this->payment->hasInvoiceOrProductTypeInvoice())
         {
             $this->invoice = $this->payment->invoice;
+
+            if(!isset($this->invoice) && isset($this->payment->order->invoice)) {
+                $this->invoice = $this->payment->order->invoice;
+            }
         }
 
         $this->mode = $this->app['rzp.mode'];

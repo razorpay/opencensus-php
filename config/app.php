@@ -946,6 +946,8 @@ return array(
 
     'invoice_card_payment_on_rearch_splitz_experiment_id' => env('INVOICE_CARD_PAYMENT_ON_REARCH_SPLITZ_EXPERIMENT_ID'),
 
+    'invoice_webhooks_payment_rearch_splitz_experiment_id' => env('INVOICE_WEBHOOKS_PAYMENT_REARCH_SPLITZ_EXPERIMENT_ID'),
+
     'storefront_card_payment_on_rearch_splitz_experiment_id' => env('STOREFRONT_CARD_PAYMENT_ON_REARCH_SPLITZ_EXPERIMENT_ID'),
 
     'is_kkbk_v2_emi_plans_experiment_id' => env('IS_KKBK_V2_EMI_PLANS_EMPERIMENT_ID'),

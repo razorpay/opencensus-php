@@ -465,7 +465,7 @@ class Shield
                     $payloadDetails[ShieldConstants::CUSTOMER_CONTACT] = $cartInfo['customer_details']['contact'] ?? '';
                     # Check if device details are present in cart info before adding device_reference to payload
                     if (isset($cartInfo['device_details']) === true)
-                    {   
+                    {
                         $payloadDetails[ShieldConstants::DEVICE_REFERENCE] = isset($cartInfo['device_details']['device_reference']) ? $cartInfo['device_details']['device_reference'] : '';
                     }
                 }
@@ -639,10 +639,15 @@ class Shield
 
         $method = $payment->getMethod();
 
-        if ($payment->hasInvoice() === true)
+        if ($payment->hasInvoiceOrProductTypeInvoice() === true)
         {
-            $invoiceType = $payment->invoice->getType();
-            $invoiceEntityType = $payment->invoice->getEntityType();
+            if (isset($payment->invoice)) {
+                $invoiceType = $payment->invoice->getType();
+                $invoiceEntityType = $payment->invoice->getEntityType();
+            } elseif (isset($payment->order->invoice)) {
+                $invoiceType = $payment->order->invoice->getType();
+                $invoiceEntityType = $payment->order->invoice->getEntityType();
+            }
         }
         if (($invoiceType === 'link') and (empty($invoiceEntityType) === true))
         {

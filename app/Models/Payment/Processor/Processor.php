@@ -10652,7 +10652,7 @@ class Processor
 
         if ($order->getPaymentCapture() === true)
         {
-            $isLateAuthInvoicePayment = ($payment->isLateAuthorized() === true and $payment->hasInvoice() === true);
+            $isLateAuthInvoicePayment = ($payment->isLateAuthorized() === true and $payment->hasInvoiceOrProductTypeInvoice() === true);
 
             if ($isLateAuthInvoicePayment === false)
             {
@@ -10971,7 +10971,7 @@ class Processor
         // Auto capturing a late authorized invoice has a little different logic.
         // Later, we would add logic for auto capturing a payment which is not
         // associated with an invoice also.
-        if ($payment->hasInvoice() === true)
+        if ($payment->hasInvoiceOrProductTypeInvoice() === true)
         {
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
         }
@@ -11011,6 +11011,10 @@ class Processor
     protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment)
     {
         $invoice = $payment->invoice;
+
+        if(!isset($invoice) && isset($payment->order->invoice)) {
+            $invoice = $payment->order->invoice;
+        }
 
         try
         {
