@@ -98,6 +98,8 @@ class Entity extends Base\PublicEntity
     const DUMMY_RUPAY_CARD       = '5085000000521234';
     const DUMMY_AXIS_TOKENHQ_CARD   = '4532712890380420';
     const DUMMY_CARD_NUMBER      = '4160210906566016';
+    const DUMMY_CARD_NUMBER_MC   = '5241937843779001';
+
 
     const DUMMY_IIN                   = '999999';
     const DUMMY_CARD_EXPIRY_MONTH     = '01';

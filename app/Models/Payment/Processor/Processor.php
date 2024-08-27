@@ -394,6 +394,8 @@ class Processor
 
     const FETCH_CRYPTOGRAM_VIA_CPS = 'fetch_cryptogram_via_cps';
 
+    const MC_SCOF_PAYMENTS_VIA_CPS = 'mc_scof_payments_via_cps';
+
     /**
      * Razorx flag to indicate if a payment with save option should go via PG Router and CPS or just via API service
      */
@@ -1516,14 +1518,35 @@ class Processor
                                         'type'      => $card->getType(),
                                     ],
                                 ] );
+
                                 $cpsCryptogramFetchResult = $this->app->razorx->getTreatment($merchant->getId(), self::FETCH_CRYPTOGRAM_VIA_CPS, $this->mode);
-                                if ($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(Feature::RAAS) === false)
+
+                                $mcScofTokenResult = $this->app->razorx->getTreatment($token->getId(), self::MC_SCOF_PAYMENTS_VIA_CPS, $this->mode);
+                                if ($mcScofTokenResult === 'on')
                                 {
-                                    $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input);
+                                    // $token->card->trivia = '3' for mastercard scof payments
+                                    $card->setTrivia('3');
+                                }
+
+                                if (($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(Feature::RAAS) === false) || ($mcScofTokenResult === 'on'))
+                                {
+                                    $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input, $token);
                                     //modify input for cards
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::TOKEN] = $token->getId();
-                                    $input["cryptogram_source"] = "cps";
+                                    if ($card->getTrivia() === '3')
+                                    {
+                                        $input["is_scof"] = true;
+                                        $this->trace->info(TraceCode::MC_SCOF_TOKENISED_PAYMENT_ROUTING, [
+                                            'tokenId'       => $token->getId(),
+                                            'routedThrough' => 'tokenisedCard',
+                                            'input'          => $input,
+                                        ] );
+                                    }
+                                    else
+                                    {
+                                        $input["cryptogram_source"] = "cps";
+                                    }
                                     return true;
                                 }
                                 else {
@@ -1883,18 +1906,52 @@ class Processor
         return false;
     }
 
-    protected function getCardInputWithoutCryptogramForRearch($card, $input)
+    protected function getCardInputWithoutCryptogramForRearch($card, $input, $token)
     {
-        $input = [
-            Card\Entity::NAME => $card->getName(),
-            Card\Entity::LAST4 => $card->getLast4(),
-            Card\Entity::TOKENISED => true,
-            Card\Entity::VAULT => "rzpvault",
-            Card\Entity::CVV => $input['card']['cvv'] ?? null,
-            Card\Entity::TOKEN_PROVIDER => 'Razorpay',
-            Card\Entity::REWARD => $input['card']['reward'],
-            Card\Entity::VAULT_TOKEN => $card->getVaultToken(),
-        ];
+        if ($card->getTrivia() === '3')
+        {
+            $input = [
+                Card\Entity::NAME => Card\Entity::DUMMY_NAME,
+                Card\Entity::NUMBER => Card\Entity::DUMMY_CARD_NUMBER_MC,
+                Card\Entity::COUNTRY => $card->getCountry(),
+                Card\Entity::ISSUER => $card->getIssuer(),
+                Card\Entity::TYPE => $card->getType(),
+                Card\Entity::NETWORK => $card->getNetwork(),
+                Card\Entity::SUBTYPE => $card->getSubType(),
+                Card\Entity::CATEGORY => $card->getCategory(),
+                Card\Entity::INTERNATIONAL => $card->isInternational(),
+                Card\Entity::EXPIRY_MONTH => $card->getTokenExpiryMonth(),
+                Card\Entity::EXPIRY_YEAR => $card->getTokenExpiryYear(),
+                Card\Entity::CVV => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                Card\Entity::VAULT_TOKEN => $card->getVaultToken(),
+                Card\Entity::TOKEN_IIN => $card->getTokenIin(),
+                Card\Entity::LAST4 => $card->getLast4(),
+                Card\Entity::TOKENISED => true,
+                Card\Entity::REWARD => $input['card']['reward']
+                ];
+
+            // fetch network token associated with payment
+            $networkToken = (new TokenCore())->fetchToken($token, true);
+
+
+            assertTrue(empty($networkToken) === false);
+            $trn = $networkToken[0][E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+
+            $input[E::TOKEN_REFERENCE_NUMBER ] =  $trn;
+        }
+        else
+        {
+            $input = [
+                Card\Entity::NAME => $card->getName(),
+                Card\Entity::LAST4 => $card->getLast4(),
+                Card\Entity::TOKENISED => true,
+                Card\Entity::VAULT => "rzpvault",
+                Card\Entity::CVV => $input['card']['cvv'] ?? null,
+                Card\Entity::TOKEN_PROVIDER => 'Razorpay',
+                Card\Entity::REWARD => $input['card']['reward'],
+                Card\Entity::VAULT_TOKEN => $card->getVaultToken(),
+            ];
+        }
 
         return $input;
     }
