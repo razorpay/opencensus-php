@@ -13720,11 +13720,11 @@ class Service extends Base\Service
         $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant, true);
     }
 
-    public function rizePaymentLinkCallback($input): void
+    public function rizePaymentsCallback(array $input, string $traceCode, string $pgosRoute): void
     {
 
         $this->trace->info(
-            TraceCode::MERCHANT_RIZE_PAYMENTLINK_CALLBACK,
+            $traceCode,
             [
                 'input'    => $input,
             ]
@@ -13738,7 +13738,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->pgosProxyController->handlePGOSProxyRequests('merchant_rize_paymentlink_callback', $callBackObj, $merchant, true);
+        $this->pgosProxyController->handlePGOSProxyRequests($pgosRoute, $callBackObj, $merchant, true);
     }
 
     public function posFetchLatestOrder($input)

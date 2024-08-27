@@ -64,7 +64,8 @@ class Route
         'pos_fetch_latest_order'          => ['get',      'merchant/device/order/latest',         'MerchantController@fetchLatestOrder'        ],
 
         // Rize paymentlink callback
-        'rize_incorporation_payment_link_callback'      => ['post',     'merchant/rize_incorporation/payment_link/callback',       'MerchantController@rizePaymentLinkCallback'      ],
+        'rize_incorporation_payment_link_callback'      => ['post',     'merchant/rize_incorporation/payment_link/callback',  'RizeIncorporationPaymentController@rizePaymentLinkCallback'      ],
+        'rize_incorporation_payment_callback'           => ['post',     'merchant/rize_incorporation/payment/callback',       'RizeIncorporationPaymentController@rizePaymentCallback'      ],
 
         // internal
         'internal_create'    => ['post', 'internal', 'InternalController@create'],
@@ -12038,6 +12039,7 @@ class Route
         'gateway_payment_callback_bharatqr',
         'pos_payment_callback',
         'rize_incorporation_payment_link_callback',
+        'rize_incorporation_payment_callback',
         'gateway_payment_validate_bharatqr',
         'upi_transfer_process',
         'upi_transfer_process_test',
@@ -14035,6 +14037,7 @@ class Route
             'fetch_device_config',
             'pos_payment_callback',
             'rize_incorporation_payment_link_callback',
+            'rize_incorporation_payment_callback',
             'pos_create_order',
             'pos_update_order',
             'pos_fetch_device_order',
@@ -16687,6 +16690,7 @@ class Route
             'fetch_device_config',
             'pos_payment_callback',
             'rize_incorporation_payment_link_callback',
+            'rize_incorporation_payment_callback',
             'pos_create_order',
             'pos_update_order',
             'pos_fetch_device_order',
@@ -18823,7 +18827,8 @@ class Route
         'gateway_payment_callback_bharatqr',
         'upi_transfer_process',
         'pos_payment_callback',
-        'rize_incorporation_payment_link_callback'
+        'rize_incorporation_payment_link_callback',
+        'rize_incorporation_payment_callback',
     ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
