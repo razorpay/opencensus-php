@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
+use RZP\Tests\Functional\Fixtures\Entity\Token;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\IIN;
@@ -607,6 +608,14 @@ class CardVault extends Base\Core
             'provider_type' => $cardInput['provider_type'],
             ];
         }
+        if ((empty($cardInput[Entity::TOKEN_REFERENCE_ID]) === false) &&
+            (empty($cardInput[Entity::CONVERSATION_ID]) === false) )
+        {
+            $input['rupay_push_prov_metadata'] = [
+                Entity::TOKEN_REFERENCE_ID  => $cardInput[Entity::TOKEN_REFERENCE_ID],
+                Entity::CONVERSATION_ID => $cardInput[Entity::CONVERSATION_ID],
+            ];
+        }
 
         if ($cardInput['via_push_provisioning'] === true){
             $input['via_push_provisioning'] = true;
@@ -625,6 +634,9 @@ class CardVault extends Base\Core
         {
             $input['customer_id'] = $cardInput['customer_id'];
         }
+        $this->trace->info(TraceCode::DEBUG_LOGGING, [
+            'VAULT INPUT DATA' => $input,
+        ]);
 
         return $this->app['card.cardVault']->migrateToTokenizedCard($input);
     }

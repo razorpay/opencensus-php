@@ -4711,6 +4711,7 @@ class Route
 
         //Push Token Provisioning
         'tokens_push'                             => ['post',          'tokens/push',                                          'TokenController@tokensPush'                                  ],
+        'rupay_push_token'                        => ['post',          'rupay/tokens/push',                                    'TokenController@rupaytokensPush'                                  ],
         'tokens_list'                             => ['post',          'tokens/list',                                          'TokenController@tokensList'                                  ],
         'tokens_push_fetch'                       => ['get',           'tokens/push/{id}',                                     'TokenController@tokensPushFetch'                             ],
 
@@ -5186,6 +5187,7 @@ class Route
         '1cc_shopify_checkout_update_preflight',
         'app_fetch_tokens_v2',
         'app_delete_tokens_v2',
+//        'rupay_push_token',
         '1cc_shopify_add_checkout_url',
         '1cc_shopify_add_checkout_url_preflight',
         '1cc_order_notes_update',
@@ -5711,6 +5713,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'rupay_push_token',
         'pricing_fetch_plan_internal',
         'internal_fetch_merchant_users',
         'internal_workflow_create',
@@ -18146,7 +18149,8 @@ class Route
         ],
 
         'card_vault' => [
-            'token_status'
+            'token_status',
+            'rupay_push_token',
         ],
 
         'growth_internal' => [

@@ -2203,6 +2203,14 @@ class Core extends Base\Core
                ];
            }
         }
+        if(!empty($callbackdata)){
+            if(isset($callbackdata[Token\Entity::TOKEN_REFERENCE_ID]) && isset($callbackdata[Token\Entity::CONVERSATION_ID]) ){
+                $cardInput += [
+                    'token_reference_id' => $callbackdata[Token\Entity::TOKEN_REFERENCE_ID],
+                    'conversation_id' => $callbackdata[Token\Entity::CONVERSATION_ID]
+                ];
+            }
+        }
 
         list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment, $asyncTokenisationJobId);
 
@@ -2246,7 +2254,7 @@ class Core extends Base\Core
         $tokenPan           = $serviceProviderTokens[0]['provider_data']['token_number'] ?? "";
         $cryptogramValue    = $serviceProviderTokens[0]['provider_data']['cryptogram_value'] ?? "";
 
-        return [$tokenPanVaultToken, $tokenPan, $cryptogramValue];
+        return [$tokenPanVaultToken, $tokenPan, $cryptogramValue, $serviceProviderTokens];
     }
 
     public function getIIN($input)

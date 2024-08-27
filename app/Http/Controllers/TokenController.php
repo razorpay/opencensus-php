@@ -72,6 +72,14 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+    public function rupaytokensPush()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->rupaytokensPush($input);
+
+        return ApiResponse::json($data);
+    }
 
     public function tokensList()
     {

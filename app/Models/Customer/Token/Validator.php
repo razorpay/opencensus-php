@@ -32,6 +32,7 @@ class Validator extends Base\Validator
     const FETCH_PAR_VALUE                               = 'fetch_par_value';
     const FETCH_MERCHANTS_WITH_TOKEN_PRESENT            = 'fetch_merchants_with_token_present';
     const TOKEN_PUSH                                    = 'token_push';
+    const RUPAY_PUSH_PROV                               = 'rupay_push_prov';
 
     /**
      * token epoch constrains :
@@ -48,6 +49,15 @@ class Validator extends Base\Validator
         Entity::CONSENT_IP           => 'required|ip',
         Entity::CONSENT_URL          => 'required|url',
         Entity::CONSENT_TIMESTAMP    => 'required|numeric'
+    ];
+    protected static $rupayPushProvRules = [
+        Entity::CUSTOMER_PHONE_NUMBER   => 'required|string',
+        Entity::TOKEN_BIN              => 'required',
+        Entity::MERCHANT_ID             => 'required|string',
+        Entity::CARD_LAST_FOUR          => 'required',
+        Entity::TOKEN_REFERENCE_ID      => 'required|string',
+        Entity::CONVERSATION_ID         => 'required|string',
+        Entity::TOKEN_EXPIRY            => 'required|string'
     ];
 
     protected static $fetchParValueRules = [

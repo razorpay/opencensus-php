@@ -8923,7 +8923,7 @@ trait Authorize
                 return;
             }
 
-            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue] = $core->migrateToTokenizedCard($token, $cardInput, $payment);
+            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens] = $core->migrateToTokenizedCard($token, $cardInput, $payment);
 
             $callbackData['token_pan_vault_token'] = $tokenPanVaultToken;
 

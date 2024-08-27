@@ -129,6 +129,15 @@ class Entity extends Base\PublicEntity
     const CONSENT_URL       = 'consent.url';
     const CONSENT_TIMESTAMP = 'consent.timestamp';
 
+    //Rupay Push Prov Validation Constant
+
+    const CUSTOMER_PHONE_NUMBER = 'customer_phone_number';
+    const TOKEN_BIN = 'token_bin';
+    const CARD_LAST_FOUR = 'card_last_four';
+    const TOKEN_REFERENCE_ID = 'token_reference_id';
+    const CONVERSATION_ID = 'conversation_id';
+    const TOKEN_EXPIRY = 'token_expiry';
+
     /**
      * We use this to set the max amount of the token entity.
      * By default, we have chosen ₹ 1,00,000 for emandate with aadhaar authtype and

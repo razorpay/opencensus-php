@@ -193,7 +193,7 @@ class Service extends Base\Service
 
             throw new Exception\BadRequestException($errorCode);
         }
-        
+
         return $token->toArrayInternalToken();
     }
 
@@ -2286,6 +2286,98 @@ class Service extends Base\Service
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS) === true)
         {
             $response['account_ids'] = $input['account_ids'];
+        }
+
+        return $response;
+    }
+    public function rupaytokensPush(& $input, $internalServiceRequest = false)
+    {
+        $startTime = microtime(true);
+
+        try {
+            $response = [];
+            (new Validator)->validateInput('rupay_push_prov', $input);
+            $tokenbin = $input['token_bin'];
+            $lastfour = $input['card_last_four'];
+            $token_expiry = $input['token_expiry'];
+            $expiryMonth = substr($token_expiry, 0, 2);
+            $expiryYear = substr($token_expiry, 2, 2);
+            $fullExpiryYear = '20' . $expiryYear;
+            $iins = $this->repo->tokenised_iin->findbyTokenIin($tokenbin);
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+            $merchantId = $input[TokenEntity::MERCHANT_ID];
+            $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($merchantId);
+            $this->merchant = $merchantPushProvisioning;
+
+
+            // validate merchant flag to check if this is issuer.
+            // throw error otherwise
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "push provisioning is not enabled for merchant");
+            }
+
+            if (empty($input['card']['number']) === true) {
+                $input['card']['number'] = $iins['iin'] . '000000' . $lastfour;
+            }
+
+           $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($merchantId);
+
+            $existingCustomer = $this->repo->customer->findByContactAndMerchant(
+                $input[TokenEntity::CUSTOMER_PHONE_NUMBER], $merchantPushProvisioning);
+
+            $customer = $existingCustomer;
+            if ($existingCustomer === null) {
+                $customer = (new Customer\Core)->createLocalCustomer([
+                    Customer\Entity::CONTACT => $input[TokenEntity::CUSTOMER_PHONE_NUMBER],
+                ], $merchantPushProvisioning, false);
+
+            }
+
+            $cardInput = [
+                    Card\Entity::NUMBER           => $input['card']['number'],
+                    Card\Entity::EXPIRY_MONTH     => $expiryMonth,
+                    Card\Entity::EXPIRY_YEAR      => $fullExpiryYear,
+                    Card\Entity::VAULT            => Card\Vault::RZP_VAULT,
+                    Card\Entity::CVV              => '123'
+                ];
+            $cardData = (new Card\Core)->createAndReturnWithSensitiveData($cardInput, $merchantPushProvisioning, false, false);
+
+            $tokenCreateInput = [
+                    Token\Entity::CARD_ID           => $cardData['id'],
+                    Token\Entity::METHOD            => Payment\Method::CARD
+                ];
+            $token = (new Token\Core)->create($customer, $tokenCreateInput);
+
+            $pushprovmetadata = [
+               TokenEntity::TOKEN_REFERENCE_ID           => $input[TokenEntity::TOKEN_REFERENCE_ID],
+                TokenEntity::CONVERSATION_ID           => $input[TokenEntity::CONVERSATION_ID]
+            ];
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'pushprovmetadata' => $pushprovmetadata,
+                'tokendata' => $token['id'],
+                'carddata' => $cardData,
+            ]);
+            $this->core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
+            $token->setUsedAt(Carbon::now()->getTimestamp());
+
+            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens] = $this->core->migrateToTokenizedCard($token, $cardInput, null,false,null,$pushprovmetadata);
+            $this->manualTriggerMerchantWebhook($token, $serviceProviderTokens);
+
+            $response['tokens'] = $token;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_PUSH_EXCEPTION);
+
+            (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::TOKEN_PUSH);
+            (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::FAILED, Token\Action::TOKEN_PUSH_SR);
+
+            throw $e;
+
         }
 
         return $response;
