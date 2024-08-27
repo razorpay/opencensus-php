@@ -1365,7 +1365,8 @@ class Processor
             }
 
             if ((empty($input['currency']) === false) and
-                ($input['currency'] !== Currency\Currency::INR))
+                ($input['currency'] !== Currency\Currency::INR) and
+                $this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === false)
             {
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "non_inr_currency",

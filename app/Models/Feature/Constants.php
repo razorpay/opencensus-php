@@ -1723,6 +1723,8 @@ class Constants
 
     const EXTERNAL_PA_TOKENISATION =  'external_pa_tokenisation';
 
+    const ROUTING_INT_WIBMO_REARCH = 'routing_int_wibmo_rearch' ;
+
     const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
 
     const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
@@ -2904,6 +2906,7 @@ class Constants
         self::DYNAMIC_PL_OFFSET                            => true,
         self::CUSTOM_TXN_TAB_VIEW                          => true,
         self::EXTERNAL_PA_TOKENISATION                     => true,
+        self::ROUTING_INT_WIBMO_REARCH                     => true,
         self::ENABLE_PAYMENT_LINK_SIGN                     => true,
         self::NOTIFY_VIA_WHATSAPP_PLINK                    => true,
         self::PL_V2_DISABLE_ALL_SMS                        => true,
