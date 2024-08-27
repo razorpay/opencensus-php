@@ -12191,13 +12191,6 @@ class Core extends Base\Core
                     unset($data["business_operation_address"]);
                 }
 
-                if (empty($data["business_category"]) === true) {
-                    unset($data["business_category"]);
-                }
-
-                if (empty($data["business_subcategory"]) === true) {
-                    unset($data["business_subcategory"]);
-                }
                 /*
                  * There is an edge case due to concurrent request, which is leading to a scenario where activation
                  * form milestone is set in API but due to dual writes it is being set to null as it is not set in PGOS.
@@ -12208,6 +12201,14 @@ class Core extends Base\Core
                 }
 
                 $merchantDetails->edit($data);
+
+                if ($data["business_category"] === "") {
+                    $merchantDetails->setBusinessCategory(null);
+                }
+
+                if ($data["business_subcategory"] === "") {
+                    $merchantDetails->setBusinessSubcategory(null);
+                }
 
                 $this->repo->saveOrFail($merchantDetails);
             }

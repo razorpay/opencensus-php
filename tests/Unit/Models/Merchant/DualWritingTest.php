@@ -272,6 +272,70 @@ class DualWritingTest extends TestCase
 
     }
 
+    public function testSaveEmptyCategoryAndSubCategoryPGOSDataToAPI()
+    {
+        $this->createAndFetchMocks('KqsQEszAud2PqZ');
+
+        $data = [
+            "database"            => "stage-pg_onboarding_service",
+            "table"               => "merchants",
+            "type"                => "update",
+            "ts"                  => 1673248693,
+            "xid"                 => 1389385481,
+            "commit"              => true,
+            "position"            => "mysql-bin-changelog.008996=>7826736",
+            "primary_key_columns" => [
+                "id"
+            ],
+            "data"                => [
+                "id"                 => "KqsQEszAud2PqZ",
+                "stakeholder"        => [
+                    "stakeholder_name"  => "Shwetabh Shekhar",
+                    "stakeholder_email" => ""
+                ],
+                "country_code"       => null,
+                "business_details"   => [
+                    "billing_label"               => "CHIZRINZ INFOWAY PRIVATE",
+                    "business_name"               => "CHIZRINZ INFOWAY PRIVATE",
+                    "business_type"               => "llp",
+                    "business_operation_address"  => null,
+                    "business_registered_address" => null,
+                    "business_category"           => "education",
+                    "business_subcategory"        => "",
+                ],
+            ],
+            "old"                 => [
+                "stakeholder" => [
+                    "stakeholder_name"  => "Shwetabh Shekhar old",
+                    "stakeholder_email" => ""
+                ]
+            ]
+        ];
+
+        (new Service)->savePGOSDataToAPI($data);
+
+        $merchant1 = (new \RZP\Models\Merchant\Repository)->find('KqsQEszAud2PqZ');
+
+        $this->assertArraySubset(["id"            => "KqsQEszAud2PqZ",
+                                  "name"          => "CHIZRINZ INFOWAY PRIVATE",
+                                  "email"         => "",
+                                  "billing_label" => "CHIZRINZ INFOWAY PRIVATE"],
+                                 $merchant1->toArray());
+
+        $merchantDetail1 = (new \RZP\Models\Merchant\Detail\Repository)->find('KqsQEszAud2PqZ');
+
+        $this->assertArraySubset(["merchant_id"          => "KqsQEszAud2PqZ",
+                                  "contact_name"         => "Shwetabh Shekhar",
+                                  "contact_email"        => "",
+                                  "business_dba"         => "CHIZRINZ INFOWAY PRIVATE",
+                                  "company_pan"          => "ABCCD1235B",
+                                  "promoter_pan"         => "ABCPD1234A",
+                                  "business_type"        => 6,
+                                  "business_category"    => "education",
+                                  "business_subcategory" => null,
+                                 ], $merchantDetail1->toArray());
+    }
+
     public function testSaveVerificationsPGOSDataToAPI()
     {
 
