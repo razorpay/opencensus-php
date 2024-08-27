@@ -473,6 +473,11 @@ class Processor
     const ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS = 'allow_upi_token_save_on_rearch_ups';
 
     /**
+     * Razorx flag for upi rearch offers
+     */
+    const ALLOW_UPI_OFFERS_ON_REARCH_UPS = 'allow_upi_offers_on_rearch_ups';
+
+    /**
      * Razorx flag to allow Apps merchants on re-arch flow
      */
     const ALLOW_APPS_MERCHANTS_ON_REARCH_UPS = 'allow_apps_merchants_on_rearch_ups';
@@ -2641,8 +2646,10 @@ class Processor
 
         if (empty($input[Payment\Entity::OFFER_ID]) === false)
         {
-            $routeViaReArch = false;
-            $dimensions[9] = 1;
+            if ($this->shouldRouteUpsReArchOffers($input) === false) {
+                $routeViaReArch = false;
+                $dimensions[9] = 1;
+            }
         }
 
         if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false)
@@ -12784,6 +12791,22 @@ class Processor
         }
 
         $feature = self::ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS ;
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $feature,
+        ]);
+
+        return str_starts_with($variant, 'on') === true;
+    }
+
+    private function shouldRouteUpsReArchOffers($input): bool
+    {
+        $feature = self::ALLOW_UPI_OFFERS_ON_REARCH_UPS;
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
 
