@@ -52,7 +52,7 @@ module.exports = [
   {
     name: 'Merc. Desktop',
     path: 'js/merchant/merchantDesktop.*.js',
-    limit: '142 KB',
+    limit: '143 KB',
     gzip: true,
   },
   {

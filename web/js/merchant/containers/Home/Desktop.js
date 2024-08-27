@@ -476,11 +476,13 @@ class AnalyticsDesktop extends Component {
       bannerCarouselData: { banner_carousel_items = [] } = {},
       internationalSettingStatus,
       i18: { isConfigTagEnabled },
+      splitz,
     } = this.props;
     const {
       data: { items },
     } = lateAuthConfig;
 
+    const { abExperiments: { CURLEC_M2_BANNER } = {} } = splitz;
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
 
@@ -561,6 +563,18 @@ class AnalyticsDesktop extends Component {
       <div className="home-analytics-desktop">
         <PaymentsRecapBanner bannerVariant="desktop" user={user} />
         <PricingSubscriptionWrapper />
+        {user.activation_form_milestone === 'L1' &&
+        user.isOrgCurlec &&
+        isExperimentActive(CURLEC_M2_BANNER) ? (
+          // curlec onboarding banner
+          <Announcement
+            mode={mode}
+            user={user}
+            payments={payments}
+            limitBreach={limitBreach}
+            shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
+          />
+        ) : null}
         <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.getting_started')}>
           {/* Announcement Banner Start */}
           <div

@@ -741,6 +741,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/dashboard'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'CURLEC_M2_BANNER',
+          experimentId: {
+            beta: 'OipA5KQj2vUTbS',
+            production: 'OpOwORnR9ZRKMU',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/dashboard', '/account-settings'],
       abExperiments: [
         {

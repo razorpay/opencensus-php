@@ -111,7 +111,22 @@ export default class InstantActivationAnnouncements extends Component {
 
     const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
 
-    if (user.isInstantActivationEnabled) {
+    if (user?.isOrgCurlec && !user?.merchant?.activated) {
+      theme = 'warning';
+      title = 'Complete KYC details';
+      content = (
+        <div class="announcement-container">
+          <div class="announcement-info">
+            Please submit your KYC details to get your account activated and start accepting
+            payments{' '}
+          </div>
+          <div className="big-circle-seprator" />
+          <Link to={window.EASY_DASHBOARD_CURLEC_URL} onClick={() => this.sendL2StartEvent()}>
+            Complete KYC
+          </Link>
+        </div>
+      );
+    } else if (user.isInstantActivationEnabled) {
       switch (activationState) {
         case 'L1_dedupe_blocked':
         case 'L2_dedupe_blocked': {
