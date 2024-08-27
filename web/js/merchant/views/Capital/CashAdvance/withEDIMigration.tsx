@@ -13,7 +13,6 @@ import { bladeTheme } from '@razorpay/blade/tokens';
 import styled, { createGlobalStyle } from 'styled-components';
 
 import CoinsImg from 'assets/capital/coins.png';
-import { useSplitzService } from 'common/splitz';
 import { NEW_CASH_ADVANCE_DASHBOARD } from 'merchant/views/Capital/CashAdvanceV2/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -143,21 +142,6 @@ const _RedirectToNewDashboard = (props) => {
   );
 };
 
-const RedirectToNewDashboard = connect(null, { showNotification })(_RedirectToNewDashboard);
+const CashAdvanceRedirectToX = connect(null, { showNotification })(_RedirectToNewDashboard);
 
-export default function withEDIMigration<T extends JSX.IntrinsicAttributes>(
-  Component: React.ComponentType<T>,
-) {
-  return function Validate(props: T) {
-    const { abExperiments } = useSplitzService();
-
-    const shouldUseNewDashboard =
-      abExperiments?.capital_edi_dashboard_migration?.variables?.result === 'on';
-
-    if (shouldUseNewDashboard) {
-      return <RedirectToNewDashboard />;
-    }
-
-    return <Component {...props} />;
-  };
-}
+export default CashAdvanceRedirectToX;

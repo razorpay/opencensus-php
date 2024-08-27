@@ -1,18 +1,7 @@
 import React from 'react';
-import withEDIMigration from 'merchant/views/Capital/CashAdvance/withEDIMigration';
-import { SpiltzContextState } from 'common/splitz/types';
+
+import CashAdvanceRedirectToX from 'merchant/views/Capital/CashAdvance/withEDIMigration';
 import { render, screen, waitFor, userEvent } from 'test-utils';
-
-const variantOn = { capital_edi_dashboard_migration: { variables: { result: 'on' } } };
-
-const defaultAbExperiments = {};
-let mockAbExperiments = defaultAbExperiments;
-
-jest.mock('common/splitz', () => ({
-  useSplitzService: () => ({ abExperiments: mockAbExperiments } as unknown as SpiltzContextState),
-}));
-
-const App = withEDIMigration(() => <p>Component</p>);
 
 const defaultWindowOpen = window.open;
 const mockedWindowOpen = jest.fn();
@@ -27,10 +16,9 @@ describe('withEDIMigration', () => {
     window.open = defaultWindowOpen;
   });
 
-  it('should render new dashboard redirection UI when experiment active', async () => {
-    mockAbExperiments = variantOn;
+  it('should render new dashboard redirection UI', async () => {
     const user = userEvent.setup();
-    render(<App />);
+    render(<CashAdvanceRedirectToX />);
     expect(screen.getByText('Cash Advance has been moved to a new dashboard')).toBeInTheDocument();
     expect(screen.getByText('Cash Advance')).toBeInTheDocument();
     expect(screen.getByText('Facilitated by')).toBeInTheDocument();
@@ -51,12 +39,5 @@ describe('withEDIMigration', () => {
       'https://x.razorpay.com/capital/cash-advance?from=dashboard',
     );
     expect(mockedWindowOpen).not.toHaveBeenCalled();
-  });
-
-  it('should render component when experiment inactive', () => {
-    mockAbExperiments = defaultAbExperiments;
-    render(<App />);
-    expect(screen.getByText('Component')).toBeInTheDocument();
-    expect(screen.queryByText(/Cash Advance/i)).not.toBeInTheDocument();
   });
 });

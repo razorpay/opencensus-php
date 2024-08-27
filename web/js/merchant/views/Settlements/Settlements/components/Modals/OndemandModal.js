@@ -913,7 +913,6 @@ class OndemandModal extends Component {
   };
 
   renderPostTransaction = () => {
-    const { closeModal } = this.props;
     const { hideCloseButton, isLinkedAccountActive, linkedAccountsSettlementBalance } = this.state;
 
     return (
@@ -944,14 +943,7 @@ class OndemandModal extends Component {
             )}
           </div>
 
-          {isLinkedAccountActive ? (
-            <EnableScheduledBanner />
-          ) : (
-            <UpsellBanners
-              closeModal={closeModal}
-              hideCloseButton={() => this.setState({ hideCloseButton: true })}
-            />
-          )}
+          {isLinkedAccountActive ? <EnableScheduledBanner /> : <UpsellBanners />}
         </div>
       </div>
     );

@@ -51,26 +51,32 @@ describe('capital/utils', () => {
       ],
     });
     // eligible for cash advance
-    expect(canViewCashAdvanceProduct(user)).toBe(true);
+    expect(canViewCashAdvanceProduct(user)).toBe(false);
     // not eligible for cash advance
     user.features = [];
     expect(canViewCashAdvanceProduct(user)).toBe(false);
     // eligible for cash advance
     user.features = [{ feature: 'cash_on_card' }];
     expect(canViewCashAdvanceProduct(user)).toBe(true);
+    // active
+    user.features = [{ feature: 'loc' }, { feature: 'withdraw_loc' }];
+    expect(canViewCashAdvanceProduct(user)).toBe(true);
   });
 
   test('canViewLOCEMIProduct', () => {
     const { user } = getUserInstance();
-    // eligible for loc emi
     user.features = [{ feature: 'withdraw_loc' }];
-    expect(canViewLOCEMIProduct(user)).toBe(true);
+    expect(canViewLOCEMIProduct(user)).toBe(false);
     user.features = [{ feature: 'loc_emi' }];
+    expect(canViewLOCEMIProduct(user)).toBe(false);
+    user.features = [{ feature: 'loc_emi' }, { feature: 'withdraw_loc' }];
     expect(canViewLOCEMIProduct(user)).toBe(true);
     // not eligible whe has cash advance
     user.features = [{ feature: 'loc' }];
     expect(canViewLOCEMIProduct(user)).toBe(false);
     user.features = [{ feature: 'cash_on_card' }];
+    expect(canViewLOCEMIProduct(user)).toBe(false);
+    user.features = [{ feature: 'loc' }, { feature: 'withdraw_loc' }];
     expect(canViewLOCEMIProduct(user)).toBe(false);
   });
 
@@ -105,10 +111,19 @@ describe('capital/utils', () => {
     it('should hava access for rzp org, IN region, admin role and non active loc merchants', () => {
       const { user } = getUserInstance();
       expect(canViewLoans(user)).toBe(true);
-    });
-    it('should not have access for active loc merchants', () => {
-      const { user } = getUserInstance({ features: [{ feature: 'withdraw_loc' }] });
+      // should not have access
+      user.features = [{ feature: 'loc' }, { feature: 'withdraw_loc' }];
       expect(canViewLoans(user)).toBe(false);
+      user.features = [{ feature: 'loc_emi' }, { feature: 'withdraw_loc' }];
+      expect(canViewLoans(user)).toBe(false);
+    });
+    it('should have access for non active loc merchants', () => {
+      const { user } = getUserInstance({ features: [{ feature: 'loc' }] });
+      expect(canViewLoans(user)).toBe(true);
+      user.features = [{ feature: 'loc_emi' }];
+      expect(canViewLoans(user)).toBe(true);
+      user.features = [{ feature: 'withdraw_loc' }];
+      expect(canViewLoans(user)).toBe(true);
     });
     it('should not have access for finance role', () => {
       const { user } = getUserInstance({ role: 'finance' });

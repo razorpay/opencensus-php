@@ -31,7 +31,6 @@ import {
   isTrustedBadgeAllowed,
   shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
 import {
   canViewCashAdvanceProduct,
   canViewLOCEMIProduct,
@@ -462,10 +461,6 @@ const PaypalOnboardRedirect = lazy(() =>
   ),
 );
 
-const LoanDetails = lazy(() =>
-  import(/* webpackChunkName: "CapitalLoans" */ 'merchant/views/Capital/Loans'),
-);
-
 const CapitalLoans = lazy(() =>
   import(/* webpackChunkName: "CapitalLoansV2" */ 'merchant/views/Capital/Loans/LoansV2'),
 );
@@ -474,12 +469,10 @@ const NonFldgLoans = lazy(() =>
   import(/* webpackChunkName: "NonFldgLoans" */ 'merchant/views/Capital/NonFldgLoans/NonFldgLoans'),
 );
 
-const FlashCreditLandingPage = lazy(() =>
-  import(/* webpackChunkName: "CapitalCashAdvance" */ 'merchant/views/Capital/CashAdvance/index'),
-);
-
-const CashAdvance = lazy(() =>
-  import(/* webpackChunkName: "CashAdvance" */ 'merchant/views/Capital/CashAdvance/CashAdvance'),
+const CashAdvanceRedirectToX = lazy(() =>
+  import(
+    /* webpackChunkName: "CashAdvanceX" */ 'merchant/views/Capital/CashAdvance/withEDIMigration'
+  ),
 );
 
 const CorporateCards = lazy(() =>
@@ -2006,27 +1999,17 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-
+          {/* TODO: delete capital BU deprecated products code and cleanup route setup */}
           <Route path="capital/*">
             <Route path=":product">
-              <Route
-                path="repayments-schedule/*"
-                additionalCondition={canViewCashAdvanceProduct}
-                element={
-                  <RouteGuard>
-                    <RepaymentsSchedule />
-                  </RouteGuard>
-                }
-              />
-
               <Route
                 path=":section/*"
                 element={
                   <RouteGuard
-                    defaultPath="/capital/line-of-credit"
+                    defaultPath="/capital/loans"
                     additionalCondition={canViewCashAdvanceProduct}
                   >
-                    <CashAdvance />
+                    <CashAdvanceRedirectToX />
                   </RouteGuard>
                 }
               />
@@ -2034,19 +2017,12 @@ class Content extends Component {
                 index
                 element={
                   <RouteGuard
+                    defaultPath="/capital/loans"
                     additionalCondition={(user) =>
                       canViewCashAdvanceProduct(user) || canViewLOCEMIProduct(user)
                     }
                   >
-                    <FlashCreditLandingPage />
-                  </RouteGuard>
-                }
-              />
-              <Route
-                path="apply"
-                element={
-                  <RouteGuard>
-                    <LoanDetails />
+                    <CashAdvanceRedirectToX />
                   </RouteGuard>
                 }
               />

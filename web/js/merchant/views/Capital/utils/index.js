@@ -262,6 +262,7 @@ const isRegionIN = (user) => {
   return user.merchant.country_code === 'IN';
 };
 
+/** Product is being deprecated, so only active merchants can view product */
 export const canViewCashAdvanceProduct = (user) => {
   // All Cash Adance merchants should have loc feature flag(withdraw_loc is common for LOC and LOC_EMI)
   // isAllowedView has checks for current user role and white labelled orgs - admin and owner can access
@@ -269,23 +270,24 @@ export const canViewCashAdvanceProduct = (user) => {
     user.isOrgRZP &&
     isRegionIN(user) &&
     (user.isLOCEnabled || user.isCashOnCardEnabled) &&
-    user.isAllowedView('cash_advance')
+    user.isAllowedView('cash_advance') &&
+    (user.isWithdrawFeatureEnabled || user.isCashOnCardEnabled)
   );
 };
 
 export const isCashAdvanceProductActive = (user) => {
-  return (
-    canViewCashAdvanceProduct(user) && (user.isWithdrawFeatureEnabled || user.isCashOnCardEnabled)
-  );
+  return canViewCashAdvanceProduct(user);
 };
 
+/** Product is being deprecated, so only active merchants can view product */
 export const canViewLOCEMIProduct = (user) => {
   return (
     !canViewCashAdvanceProduct(user) &&
     user.isOrgRZP &&
     isRegionIN(user) &&
-    (user.isLOCEMIEnabled || user.isWithdrawFeatureEnabled) &&
-    user.isAllowedView('cash_advance')
+    user.isLOCEMIEnabled &&
+    user.isAllowedView('cash_advance') &&
+    user.isWithdrawFeatureEnabled
   );
 };
 
@@ -293,8 +295,9 @@ export const canViewLoans = (user) => {
   return (
     user.isOrgRZP &&
     isRegionIN(user) &&
-    !user.isWithdrawFeatureEnabled &&
-    user.isAllowedView('cash_advance')
+    user.isAllowedView('cash_advance') &&
+    !canViewCashAdvanceProduct(user) &&
+    !canViewLOCEMIProduct(user)
   );
 };
 

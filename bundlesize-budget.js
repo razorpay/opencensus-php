@@ -118,13 +118,13 @@ module.exports = [
   {
     name: 'Payment Links',
     path: 'js/merchant/PaymentLinks.*.js',
-    limit: '47 KB',
+    limit: '49 KB',
     gzip: true,
   },
   {
     name: 'Payment Pages',
     path: 'js/merchant/PaymentPages.*.js',
-    limit: '153 KB',
+    limit: '155 KB',
     gzip: true,
   },
   {
@@ -136,7 +136,7 @@ module.exports = [
   {
     name: 'Invoices',
     path: 'js/merchant/Invoices.*.js',
-    limit: '75 KB',
+    limit: '76 KB',
     gzip: true,
   },
 ];

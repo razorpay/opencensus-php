@@ -1114,43 +1114,6 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: ['/capital/cash-advance/*'],
-      abExperiments: [
-        {
-          uniqueHashKey: 'capitalPreclosureEdiExp',
-          experimentId: {
-            beta: 'N0GTyuOXHLrynG',
-            production: 'N0GTyuOXHLrynG',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'on',
-              },
-            ],
-          },
-        },
-        {
-          uniqueHashKey: 'capital_edi_dashboard_migration',
-          experimentId: {
-            beta: 'NBQ0tT4tn9cn04',
-            production: 'NBS3tTVDFnFcEv',
-          },
-          defaultVariant: {
-            name: 'use x dashboard',
-            variables: [
-              {
-                key: 'result',
-                value: 'on',
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
       routesToMatch: ['/business-settings/gst'],
       abExperiments: [
         {

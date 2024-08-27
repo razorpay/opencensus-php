@@ -250,16 +250,6 @@ const CreditSubDetails = lazy(() =>
 const WebhookEntity = lazy(() =>
   import(/* webpackChunkName: "WebhooksEntity" */ 'merchant/views/Settings/Webhooks/Entity'),
 );
-const WithdrawalDetails = lazy(() =>
-  import(
-    /* webpackChunkName: "CashAdvanceWithdrawalDetails" */ '../views/Capital/CashAdvance/components/WithdrawalDetails'
-  ),
-);
-const RepaymentDetails = lazy(() =>
-  import(
-    /* webpackChunkName: "CashAdvanceWithdrawalDetails" */ '../views/Capital/CashAdvance/Repayments/RepaymentDetails'
-  ),
-);
 const LoansRepaymentDetails = lazy(() =>
   import(
     /* webpackChunkName: "LoansRepaymentDetails" */ '../views/Capital/Loans/LoansCollections/RepaymentHistory/RepaymentDetails'
@@ -484,14 +474,6 @@ const entityDetailsMap = {
     additionalCondition: (user) => user.isChargeAtWillEnabled,
   },
 
-  '/capital/cash-advance/withdrawals/:id': {
-    component: WithdrawalDetails,
-    additionalCondition: (user) => user.isLOCEnabled,
-  },
-  '/capital/cash-advance/repayments/:id': {
-    component: RepaymentDetails,
-    additionalCondition: (user) => user.isLOCEnabled,
-  },
   '/capital/loans/history/:id': {
     component: LoansRepaymentDetails,
     additionalCondition: (user) => user.isLoansEnabled,
