@@ -1,4 +1,5 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import {
   ArrowRightIcon,
   Box,
@@ -12,6 +13,7 @@ import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
 export enum NachFormKeyNames {
   NACH_FORM_DOCUMENT_FIELD = 'nach_form_document_field',
   NACH_FORM_COMMENTS_FIELD = 'nach_form_comments_field',
+  NACH_DOCUMENT_NAME = 'nach',
 }
 
 export type NachFormObject = {
@@ -38,6 +40,7 @@ const NACHForm: React.FC<NachFormProps> = ({
   isFormDisabled,
   isModularLoading,
 }) => {
+  const { id } = useParams();
   const toast = useToast();
   if (isModularLoading) return null;
   return (
@@ -46,7 +49,8 @@ const NACHForm: React.FC<NachFormProps> = ({
         Upload NACH Form
       </Heading>
       <SalesFileUpload
-        name={NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD}
+        merchantId={id}
+        name={NachFormKeyNames.NACH_DOCUMENT_NAME}
         label="To debit the rental charges from Merchant’s account automatically"
         accept=".pdf"
         uploadType="single"

@@ -11,6 +11,7 @@ import {
   useToast,
   Text,
 } from '@razorpay/blade/components';
+import { useParams } from 'react-router-dom';
 import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 import {
@@ -49,6 +50,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
 }) => {
   const { form } = methodForm;
   const toast = useToast();
+  const { id } = useParams();
   const [isMDREditEnabled, setIsMDREditEnabled] = useState(false);
   const [isVASEditEnabled, setIsVASEditEnabled] = useState(false);
 
@@ -141,7 +143,8 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             </Checkbox>
           </Box>
           <SalesFileUpload
-            name={PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD}
+            merchantId={id}
+            name={PaymentMethodsFieldKeyNames.CUSTOM_PRICING_PROOF}
             label="Upload custom rates proof"
             accept=".pdf"
             uploadType="multiple"

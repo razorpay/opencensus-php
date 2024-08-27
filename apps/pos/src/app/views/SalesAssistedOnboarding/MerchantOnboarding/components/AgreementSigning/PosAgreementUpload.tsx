@@ -4,6 +4,7 @@ import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
 
 interface PosAgreementUploadProps {
+  merchantId: string;
   name: string;
   accept: string;
   label: string;
@@ -19,6 +20,7 @@ interface PosAgreementUploadProps {
 }
 
 const PosAgreementUpload = ({
+  merchantId,
   name,
   label,
   accept,
@@ -34,6 +36,7 @@ const PosAgreementUpload = ({
   return (
     <Box marginBottom="spacing.5">
       <SalesFileUpload
+        merchantId={merchantId}
         name={name}
         label={label}
         accept={accept}

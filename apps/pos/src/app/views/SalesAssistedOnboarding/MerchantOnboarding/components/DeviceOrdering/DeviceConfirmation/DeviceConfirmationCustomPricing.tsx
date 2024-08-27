@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Box, useToast } from '@razorpay/blade/components';
 import { ArrayOfDocumentFieldsUpload, ModularPayload } from 'apps/pos/src/app/types/modular';
 import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
@@ -21,6 +22,7 @@ const DeviceConfirmationCustomPricing = ({
 }: DeviceConfirmationCustomPricingProps): JSX.Element => {
   const [isLoading, setIsLoading] = React.useState(false);
   const toast = useToast();
+  const { id } = useParams();
   const defaultUploadedDocs: FileItem[] = useMemo(
     () =>
       defaultValues?.map((doc) => ({
@@ -44,7 +46,8 @@ const DeviceConfirmationCustomPricing = ({
   return (
     <Box marginBottom="spacing.5">
       <SalesFileUpload
-        name="custom_pricing_proof"
+        merchantId={id}
+        name={MODULAR_DEVICE_FIELDS.DEVICE_CUSTOM_RATES_DOCUMENTS}
         label="Upload custom pricing proof"
         accept=".pdf, .png, .jpeg, .jpg"
         uploadType="single"

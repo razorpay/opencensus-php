@@ -21,6 +21,7 @@ jest.mock('shell/commonStore', () => ({
 }));
 
 const initProps = {
+  merchantId: 'test_merchant_id',
   name: 'test_file',
   label: 'Test File Upload',
   accept: '.pdf',

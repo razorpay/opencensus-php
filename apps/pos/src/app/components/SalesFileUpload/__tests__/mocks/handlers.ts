@@ -4,7 +4,9 @@ const UFH_SUCCESS_RESPONSE = {
   status_code: 200,
   success: true,
   data: {
-    file_id: 'file_store_id_123',
+    test_file: {
+      file_id: 'file_store_id_123',
+    },
   },
 };
 
@@ -16,11 +18,11 @@ const UFH_FAILURE_RESPONSE = {
 
 export const uploadFileToUFHHandler = {
   success: () =>
-    rest.post('*/ufh/files*', (_req, res, ctx) => {
+    rest.post('*/merchant/documents/upload', (_req, res, ctx) => {
       return res(ctx.status(200), ctx.json(UFH_SUCCESS_RESPONSE));
     }),
   failure: () =>
-    rest.post('*/ufh/files*', (_req, res, ctx) => {
+    rest.post('*/merchant/documents/upload', (_req, res, ctx) => {
       return res(ctx.status(200), ctx.json(UFH_FAILURE_RESPONSE));
     }),
 };
@@ -45,11 +47,11 @@ const SIGNED_URL_FAILURE_RESPONSE = {
 
 export const downloadFileHandler = {
   success: () =>
-    rest.get('*/ufh/file/*/get-signed-url', (_req, res, ctx) => {
+    rest.get('*/merchant/document/url*', (_req, res, ctx) => {
       return res(ctx.status(200), ctx.json(SIGNED_URL_SUCCESS_RESPONSE));
     }),
   failure: () =>
-    rest.get('*/ufh/file/*/get-signed-url', (_req, res, ctx) => {
+    rest.get('*/merchant/document/url*', (_req, res, ctx) => {
       return res(ctx.status(200), ctx.json(SIGNED_URL_FAILURE_RESPONSE));
     }),
 };

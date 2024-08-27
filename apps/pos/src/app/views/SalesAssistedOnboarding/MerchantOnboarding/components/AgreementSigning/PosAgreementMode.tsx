@@ -16,7 +16,7 @@ import {
   BottomSheetHeader,
   Spinner,
 } from '@razorpay/blade/components';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
 import {
   StyledCard,
@@ -69,6 +69,7 @@ export const PosAgreementMode = ({
   isModularLoading,
   merchantDetails,
 }: PosAgreementModeProps): JSX.Element | null => {
+  const { id } = useParams();
   const [agreementMode, setAgreementMode] = useState(getAgreementMode(modularConfig));
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isHandlingFile, setIsHandlingFile] = useState(false);
@@ -202,7 +203,8 @@ export const PosAgreementMode = ({
       return (
         <Box paddingTop="spacing.6">
           <PosAgreementUpload
-            name="pos_agreement_proof"
+            merchantId={id}
+            name={MODULAR_AGREEMENT_FIELDS.OFFLINE_AGGREMENT_DOC}
             label="Upload TnC & Pricing Agreement"
             accept=".pdf,.jpeg,.jpg,.png"
             uploadType="multiple"

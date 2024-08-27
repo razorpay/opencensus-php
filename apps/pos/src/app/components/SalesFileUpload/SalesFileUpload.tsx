@@ -27,12 +27,14 @@ interface SalesFileUploadProps {
   isDisabled?: boolean;
   defaultValue?: FileItem[];
   onChange: (files: FileItem[]) => void;
-  onError?: () => void;
+  onError?: (errorData: unknown) => void;
   maxSize: number;
   maxLimit: number;
+  merchantId: string;
 }
 
 const SalesFileUpload = ({
+  merchantId,
   name,
   label,
   accept,
@@ -43,6 +45,7 @@ const SalesFileUpload = ({
   maxLimit,
   maxSize,
   defaultValue,
+  onError,
   onChange,
 }: SalesFileUploadProps): JSX.Element | null => {
   const { user } = getUser() ?? {};
@@ -58,12 +61,15 @@ const SalesFileUpload = ({
       const fileUploadObject = files.map((file) => ({
         name: file.name,
         size: file.size,
-        promise: uploadFileToUFH({ file, name, userId }),
+        promise: uploadFileToUFH({ file, name, userId, merchantId }),
       }));
 
       const ufhResponseItems = await Promise.all(fileUploadObject.map((file) => file.promise));
       return fileUploadObject.map((item, index) => ({
-        fileStoreId: (ufhResponseItems?.[index]?.data?.file_id as string).replace(/file_/g, ''),
+        fileStoreId: (ufhResponseItems?.[index]?.data?.[name]?.file_id as string).replace(
+          /file_/g,
+          '',
+        ),
         name: item.name,
         size: item.size,
       }));
@@ -72,6 +78,9 @@ const SalesFileUpload = ({
       const newFiles = [...fileItemList, ...data];
       setFileItemList(newFiles);
       onChange?.(newFiles);
+    },
+    onError: (errorData) => {
+      onError?.(errorData);
     },
   });
 

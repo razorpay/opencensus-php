@@ -34,4 +34,5 @@ export enum MODULAR_AGREEMENT_FIELDS {
   SIGNING_CONFIRMATION = 'Signing Confirmation',
   GENERATE_LINK_FOR_MERCHANT = 'Generate Agreement Link for the Merchant',
   MODULAR_CALLBACK = 'modular_callback',
+  OFFLINE_AGGREMENT_DOC = 'merchant_agreement',
 }

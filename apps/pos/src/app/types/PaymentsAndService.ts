@@ -29,6 +29,7 @@ export const enum PaymentMethodsFieldKeyNames {
   PREVIOUS_CUSTOM_RATES_DOCUMENTS_FIELD = 'previous_custom_rates_documents_field',
   CUSTOM_RATES_ENABLED_FIELD = 'custom_rates_enabled_field',
   MDR_VAS_PRICING_FIELD = 'mdr_vas_pricing_field',
+  CUSTOM_PRICING_PROOF = 'custom_pricing_proof',
 }
 
 export enum PricingStepComponents {

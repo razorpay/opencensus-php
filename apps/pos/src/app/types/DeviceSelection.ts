@@ -36,6 +36,7 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_DELIVERY_ADDRESS_COMPONENT = 'device_delivery_address_component',
   DEVICE_PAYMENT_COMPONENT = 'device_payment',
   DEVICE_CUSTOM_RATES_APPLICABLE = 'device_custom_rates_applicable_field',
+  DEVICE_CUSTOM_RATES_DOCUMENTS = 'custom_device_charges_proof',
 }
 
 export enum QuantityActions {
