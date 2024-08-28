@@ -2433,12 +2433,16 @@ class Service extends Base\Service
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
+        $inputAction = $input['action'] ?? '';
+        $input = array_except($input, ['action']);
+
         $this->core->verifyOtp($input + ['action' => 'update_user'],
             $this->merchant,
             $this->user,
             $this->mode === Mode::TEST);
 
         $updateUserInput = array_except($input, ['otp', 'token']);
+        $updateUserInput += ['action' => $inputAction];
 
         return $this->updateMerchantManageTeam($userId, $updateUserInput);
     }
