@@ -1429,7 +1429,7 @@ trait Capture
             return;
         }
 
-        if($payment->isCollectXPayment() === true)
+        if($payment->identifierForCollectxPayment() === true)
         {
             return;
         }

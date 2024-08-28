@@ -268,9 +268,31 @@ class Processor extends VirtualAccount\Processor
         // Currently dispatches transaction.created only for bank transfer on banking balance.
         $this->sendEventForTransactionCreated($bankTransfer, $isCollectXBankTransferPayment);
 
+        $payment = $bankTransfer->payment;
+
+        if($payment !== null and $payment->identifierForCollectxPayment() === true)
+        {
+            $payment->bankTransfer = $bankTransfer;
+
+            $this->triggerActionsPostAutoCaptureForCollectXPayment($payment);
+        }
+
         $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
+    }
+
+    protected function triggerActionsPostAutoCaptureForCollectXPayment(Payment\Entity $payment): void
+    {
+        $this->trace->info(
+            TraceCode::POST_PAYMENT_AUTO_CAPTURE_ACTIONS_TRIGGERED,
+            [
+                'payment' => $payment,
+            ]);
+
+        $virtualAccountCore = new VirtualAccount\Core;
+
+        $virtualAccountCore->eventVirtualAccountCredited($payment);
     }
 
     protected function processLedgerForShadow(Entity $bankTransfer)
