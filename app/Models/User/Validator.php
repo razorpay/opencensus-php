@@ -820,9 +820,18 @@ class Validator extends Base\Validator
         $verificationFailedEventCode = null)
     {
 
-        $res =  $app['dcs_config_service'] -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $app['rzp.mode']);
-        if ($res != null && $res[DcsConstants::DisableCaptcha] === true) {
-            $app['trace']->info(TraceCode::CAPTCHA_DISABLE, ["captcha_disable"=> true]);
+        try {
+            $res =  $app['dcs_config_service'] -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $app['rzp.mode']);
+            if ($res != null && $res[DcsConstants::DisableCaptcha] === true) {
+                $app['trace']->info(TraceCode::CAPTCHA_DISABLE, ["captcha_disable"=> true]);
+                return;
+            }
+        } catch (\Throwable $ex) {
+            $app['trace']->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::USER_LOGIN_CAPTCHA_DCS_FAILURE);
+            $app['trace']->count(Metric::USER_LOGIN_CAPTCHA_DCS_FAILURE_TOTAL);
             return;
         }
 

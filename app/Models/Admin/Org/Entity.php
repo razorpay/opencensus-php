@@ -5,10 +5,12 @@ namespace RZP\Models\Admin\Org;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
+use RZP\Models\User\Metric;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Trace\TraceCode;
@@ -461,8 +463,18 @@ class Entity extends Base\Entity
 
     public function addCaptchaConfigurations(): array
     {
+        $trace = App::getFacadeRoot()['trace'];
+
         $dcsConfigService = app('dcs_config_service');
-        return $dcsConfigService -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $this->getMode());
+        try {
+            return $dcsConfigService -> fetchConfiguration(DcsConstants::DisableCaptcha, DcsConstants::DashboardCaptchaEntityId, [DcsConstants::DisableCaptcha], $this->getMode());
+        }catch (\Throwable $ex) {
+            $trace->traceException($ex,
+                Trace::CRITICAL,
+                TraceCode::ORG_CAPTCHA_DCS_FAILURE,
+            );
+            return [DcsConstants::DisableCaptcha => false];
+        }
     }
 
     public function getConfigurations(): array

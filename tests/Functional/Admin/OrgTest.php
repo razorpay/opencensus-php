@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Admin\Org as adminOrg;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
@@ -535,6 +537,7 @@ class OrgTest extends TestCase
     public function testConfigurationsForOrg()
     {
         // set disable_captcha as true
+        $this->app['rzp.mode'] = 'test';
         $this->mockDcsService(true);
         $configurations = (new adminOrg\Entity) -> getConfigurations();
         $this->assertEquals($configurations[DcsConstants::DisableCaptcha], true);
@@ -546,12 +549,38 @@ class OrgTest extends TestCase
         $this->assertEquals($configurations[DcsConstants::DisableCaptcha], false);
     }
 
-    public function mockDcsService($captchaConfigValue)
+    public function testConfigurationsForOrgDCSFailure()
+    {
+        // set disable_captcha as true
+        $this->app['rzp.mode'] = 'test';
+        $this->mockDcsService(true,true);
+        $configurations = (new adminOrg\Entity) -> getConfigurations();
+        $this->assertEquals($configurations[DcsConstants::DisableCaptcha], false);
+
+
+        // set disable_captcha as false
+        $this->mockDcsService(false,true);
+        $configurations = (new adminOrg\Entity) -> getConfigurations();
+        $this->assertEquals($configurations[DcsConstants::DisableCaptcha], false);
+    }
+
+    public function mockDcsService($captchaConfigValue,$exception=false)
     {
         $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
             ->setConstructorArgs([$this->app])
             ->getMock();
         $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        if ($exception) {
+            $this->app->dcs_config_service->method('fetchConfiguration')->willReturnCallback(function() {
+                throw new ServerErrorException(
+                    'error',
+                    ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE
+                );
+            });
+            return;
+        }
+
         $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([DcsConstants::DisableCaptcha => $captchaConfigValue]);
     }
 

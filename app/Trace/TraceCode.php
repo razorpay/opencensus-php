@@ -4022,6 +4022,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //Trace codes for 2fa features
     const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';
+    const USER_LOGIN_CAPTCHA_DCS_FAILURE                        = 'USER_LOGIN_CAPTCHA_DCS_FAILURE';
+    const ORG_CAPTCHA_DCS_FAILURE                               = 'ORG_CAPTCHA_DCS_FAILURE';
     const USER_LOGIN_2FA_ENABLED                                = 'USER_LOGIN_2FA_ENABLED';
     const USER_LOGIN_2FA_ENABLED_NO_SETUP                       = 'USER_LOGIN_2FA_ENABLED_NO_SETUP';
     const USER_2FA_NOT_SETUP                                    = 'USER_2FA_NOT_SETUP';

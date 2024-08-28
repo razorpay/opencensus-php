@@ -12,6 +12,7 @@ use Config;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Table;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\User\BankingRole;
 use RZP\Http\UserRolePermissionsMap;
@@ -30,6 +31,8 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\User\Entity;
 use RZP\Mail\User\OtpSignup;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\Mock\Raven;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -901,7 +904,6 @@ class UserTest extends TestCase
         $this->app->instance('dcs', $dcsMock);
 
         $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
-
     }
 
     protected function mockHubSpotClient($methodName, $times = 1)
@@ -1467,6 +1469,113 @@ class UserTest extends TestCase
             'email'                 => $user['email'],
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        Mail::assertQueued(Login::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('orgHostname', $viewData);
+            $this->assertArrayHasKey('browserDetails', $viewData);
+            $this->assertArrayHasKey('loginAt', $viewData);
+            $this->assertEquals('emails.user.login', $mail->view);
+
+            return true;
+        });
+
+        $this->assertFalse(isset($response['invitations']));
+        $this->assertFalse(isset($response['settings']));
+        $this->assertFalse(isset($response['merchants'][0]['methods']));
+    }
+
+    public function testLoginWithDCSCaptchaTrue()
+    {
+        $dcsConfigServiceMock = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $dcsConfigServiceMock
+            ->method('fetchConfiguration')
+            ->willReturn([DcsConstants::DisableCaptcha => false]);
+
+        $this->app->instance('dcs_config_service', $dcsConfigServiceMock);
+
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha'               => 'thisiscaptcha',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        Mail::assertQueued(Login::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('orgHostname', $viewData);
+            $this->assertArrayHasKey('browserDetails', $viewData);
+            $this->assertArrayHasKey('loginAt', $viewData);
+            $this->assertEquals('emails.user.login', $mail->view);
+
+            return true;
+        });
+
+        $this->assertFalse(isset($response['invitations']));
+        $this->assertFalse(isset($response['settings']));
+        $this->assertFalse(isset($response['merchants'][0]['methods']));
+    }
+
+
+    public function testLoginWithDCSFetchFailure()
+    {
+
+        $dcsConfigServiceMock = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $dcsConfigServiceMock
+            ->method('fetchConfiguration')
+            ->willReturnCallback(function() {
+                throw new ServerErrorException(
+                    'error',
+                    ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE
+                );
+            });
+
+        $this->app->instance('dcs_config_service', $dcsConfigServiceMock);
+
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha'               => 'thisiscaptcha',
             'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
         ];
 

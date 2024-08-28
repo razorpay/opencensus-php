@@ -45,5 +45,6 @@ final class Metric
     const USER_SIGNUP                         = 'user_signup';
     const VERIFY_SIGNUP_INCORRECT_OTP         = 'verify_signup_incorrect_otp';
 
-    const CAPTCHA_VALIDATION_DURATION         = 'captcha_validation_duration';
+    const CAPTCHA_VALIDATION_DURATION                 = 'captcha_validation_duration';
+    const USER_LOGIN_CAPTCHA_DCS_FAILURE_TOTAL        = 'user_login_captcha_dcs_failure_total';
 }
