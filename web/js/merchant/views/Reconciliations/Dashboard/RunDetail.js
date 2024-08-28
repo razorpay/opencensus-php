@@ -38,6 +38,7 @@ import {
   FILE_WORKFLOW_KEY,
   DashboardTabs,
   ProcessTabs,
+  RULE_ID,
 } from 'merchant/views/Reconciliations/Dashboard/constants';
 import {
   BladeDropdownWrapper,
@@ -61,12 +62,6 @@ export default function RunDetail() {
 
   const navigate = useNavigate();
   const { runId: fileWorkflowId, processId: activeProcessId } = useParams();
-
-  useEffect(() => {
-    if (fileWorkflowId) {
-      setSelectedRunId(fileWorkflowId);
-    }
-  }, [fileWorkflowId]);
 
   const fetchRuns = async (props = {}) => {
     const fetchRunsPayload = {
@@ -106,24 +101,26 @@ export default function RunDetail() {
       try {
         setError(false);
         setIsLoading(true);
-        const body = {
-          filters: [
-            {
-              key: FILE_WORKFLOW_KEY,
-              value: fileWorkflowId,
-            },
-          ],
-          page_size: 10,
-          from_date: dateRange.startDate.unix(),
-          to_date: dateRange.endDate.unix(),
-          ...props,
-        };
+        const fetchDetailsFilter = [
+          {
+            key: FILE_WORKFLOW_KEY,
+            value: fileWorkflowId,
+          },
+        ];
         if (filter) {
           const filters = filter.split(',');
           if (filters.length > 0) {
-            body.filters.push({ key: 'rule_id', value: filters });
+            fetchDetailsFilter.push({ key: RULE_ID, value: filters });
           }
         }
+        const body = {
+          filters: fetchDetailsFilter,
+          page_size: 10,
+          from_date: dateRange?.startDate?.unix(),
+          to_date: dateRange?.endDate?.unix(),
+          ...props,
+        };
+
         const res = await merchantFetch({
           url: `recon-saas/recon_output/list`,
           mode: 'live',
@@ -175,25 +172,6 @@ export default function RunDetail() {
       runId: fileWorkflowId,
     },
   });
-
-  useEffect(() => {
-    fetchRuns();
-  }, [fileWorkflowId]);
-
-  useEffect(() => {
-    fetchDetails();
-  }, [filter]);
-
-  useEffect(() => {
-    setPaginationData(null);
-    if (filter === null) {
-      fetchDetails();
-      fetchStats();
-    } else {
-      setFilter(null);
-      fetchStats();
-    }
-  }, [fileWorkflowId, dateRange, filter]);
 
   const handlePagination = (type) => {
     switch (type) {
@@ -252,6 +230,19 @@ export default function RunDetail() {
     handleRangeChange(dateObj);
   };
 
+  useEffect(() => {
+    if (fileWorkflowId) {
+      setSelectedRunId(fileWorkflowId);
+      fetchRuns();
+    }
+  }, [fileWorkflowId]);
+
+  useEffect(() => {
+    setPaginationData(null);
+    fetchDetails();
+    fetchStats();
+  }, [filter]);
+
   return (
     <>
       <Box display="flex" alignItems="center" padding="spacing.6" justifyContent="space-between">
@@ -297,10 +288,14 @@ export default function RunDetail() {
           <Box padding="spacing.4">
             <Box display="flex" marginBottom="spacing.4" alignItems="center">
               {stats ? (
-                <RadioGroup name="list-record-type" onChange={handleRadioChange} defaultValue="">
+                <RadioGroup
+                  name="list-record-type"
+                  onChange={handleRadioChange}
+                  defaultValue={filter}
+                >
                   <Box display="flex">
                     <RadioSelect
-                      value=""
+                      value={null}
                       title="All Records"
                       subTitle={`${stats?.total?.count || 0} records`}
                     />

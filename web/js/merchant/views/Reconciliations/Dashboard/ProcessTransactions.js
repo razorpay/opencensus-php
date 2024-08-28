@@ -88,8 +88,8 @@ export default function ProcessTransactions({ activeProcess }) {
           merchant_process_id: activeProcessesId,
           filters: [],
           page_size: 10,
-          from_date: dateRange.startDate,
-          to_date: dateRange.endDate,
+          from_date: dateRange?.startDate?.unix(),
+          to_date: dateRange?.endDate?.unix(),
           ...props,
         };
         if (filter) {
@@ -141,8 +141,8 @@ export default function ProcessTransactions({ activeProcess }) {
             },
           ],
           page_size: 10,
-          from_date: dateRange?.startDate,
-          to_date: dateRange?.endDate,
+          from_date: dateRange?.startDate?.unix(),
+          to_date: dateRange?.endDate?.unix(),
           ...props,
         };
         if (filter) {
@@ -250,8 +250,8 @@ export default function ProcessTransactions({ activeProcess }) {
       objectName: 'recon date range',
       actionName: 'selected',
       properties: {
-        startDate: dateObj.startDate.format('lll'),
-        endDate: dateObj.endDate.format('lll'),
+        startDate: dateObj?.startDate?.format('lll'),
+        endDate: dateObj?.endDate?.format('lll'),
       },
     });
     handleRangeChange(dateObj);
