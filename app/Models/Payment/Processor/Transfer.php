@@ -5,6 +5,8 @@ namespace RZP\Models\Payment\Processor;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -53,26 +55,52 @@ trait Transfer
             return $transferPayment;
         }
 
-        if ($transferPayment === null)
-        {
+        if ($transferPayment === null) {
             $paymentData = $this->getTransferPaymentData($input, $originPayment);
+            $transferPaymentId = $input['id'];
 
-            $transferPaymentId =  $input['id'];
+            try {
+                // Attempt to create the payment entity with the initial data
+                $transferPayment = $this->processPayment($paymentData, $transferPaymentId, $input, $originPayment);
 
-            $transferPayment = Tracer::inSpan(['name' => 'transfer.process.create_transfer_payment.create_payment'], function() use ($paymentData,$transferPaymentId)
-            {
-                return $this->createPaymentEntity($paymentData,null ,$transferPaymentId);
-            });
+            } catch (\RZP\Exception\BadRequestException $e) {
+                // This catch block manages errors in a sequential manner where contact validation is checked before email validation.
+                // If both contact and email are invalid, we first handle the contact validation issue by clearing the contact data.
+                // After retrying the payment creation without the contact data, if an email validation error occurs, it is handled in the next catch block.
 
-            $inputTrace = $input;
+                // Define error codes related to contact issues
+                $contactErrorCodes = [
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE,
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT,
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT
+                ];
 
-            unset($inputTrace['fta_data']['bank_account']['account_number'], $inputTrace['fta_data']['bank_account']['beneficiary_name']);
+                // Check if the exception is related to contact validation
+                $contactIssue = in_array($e->getCode(), $contactErrorCodes, true);
 
-            $this->trace->info(TraceCode::PAYMENT_CREATED, ['payment_id' => $transferPayment->getId(), 'input' => $inputTrace]);
+                if ($contactIssue) {
+                    // Record contact validation failure metric
+                    (new TransferMetric())->pushContactValidationFailureMetrics();
 
-            $this->setPaymentAttributes($transferPayment);
+                    // Clear the contact information and retry
+                    $paymentData[Payment\Entity::CONTACT] = null;
 
-            $this->processCurrencyConversionsForTransfer($originPayment, $transferPayment);
+                    try {
+                        // Retry creating the payment entity with contact data removed
+                        $transferPayment = $this->processPayment($paymentData, $transferPaymentId, $input, $originPayment);
+
+                    } catch (\RZP\Exception\BadRequestValidationFailureException $retryException) {
+                        // If the retry fails due to email, handle it
+                        $transferPayment = $this->handleEmailValidationException($retryException, $paymentData, $transferPaymentId, $input, $originPayment);
+                    }
+
+                }
+            }
+            catch (\RZP\Exception\BadRequestValidationFailureException $e) {
+                // If the retry fails due to email, handle it
+                $transferPayment = $this->handleEmailValidationException($e, $paymentData, $transferPaymentId, $input, $originPayment);
+            }
         }
 
         $processViaLedgerReverseShadow = false;
@@ -89,7 +117,7 @@ trait Transfer
 
         if ($originPayment !== null)
         {
-             $sourceChannel = $originPayment->getSourceChannel();
+            $sourceChannel = $originPayment->getSourceChannel();
         }
 
         if ($processViaLedgerReverseShadow === true)
@@ -122,6 +150,81 @@ trait Transfer
         {
             $transferPayment[Payment\Entity::SOURCE_CHANNEL] = $sourceChannel;
         }
+
+        return $transferPayment;
+    }
+
+    /**
+     * Handle the email validation issue, clearing the email data and retrying the payment process.
+     * @throws BadRequestValidationFailureException
+     */
+    private function handleEmailValidationException(\RZP\Exception\BadRequestValidationFailureException $e, array &$paymentData, $transferPaymentId, $input, $originPayment): Payment\Entity
+    {
+        if ($this->isEmailValidationFailureException($e)) {
+            // Record email validation failure metric
+            (new TransferMetric())->pushEmailValidationFailureMetrics();
+            // Only email is invalid, clear email and retry
+            $paymentData[Payment\Entity::EMAIL] = null;
+
+            // Retry creating the payment entity with email data removed
+            return $this->processPayment($paymentData, $transferPaymentId, $input, $originPayment);
+
+        } else {
+            // Rethrow the exception if it's not related to email issues
+            throw $e;
+        }
+    }
+
+    /**
+     * Function to check if the exception is related to invalid email address
+     */
+    private function isEmailValidationFailureException(\RZP\Exception\BadRequestValidationFailureException $e): bool {
+        return $e->getCode() === ErrorCode::BAD_REQUEST_VALIDATION_FAILURE &&
+            (strcmp($e->getMessage(), 'The email must be a valid email address.') == 0);
+    }
+
+    /**
+     * Helper func to create, log and process the payment by creating the payment entity and handling currency conversions.
+     */
+    private function processPayment(array &$paymentData, $transferPaymentId, $input, $originPayment): Payment\Entity
+    {
+        $transferPayment = $this->createAndLogPayment($paymentData, $transferPaymentId, $input);
+
+        // Set payment attributes and process currency conversions
+        $this->setPaymentAttributes($transferPayment);
+        $this->processCurrencyConversionsForTransfer($originPayment, $transferPayment);
+
+        return $transferPayment;
+    }
+
+
+    /**
+     * Helper function to create a payment entity and log the result.
+     *
+     * @param array $paymentData The data for creating the payment entity.
+     * @param string $transferPaymentId The ID of the transfer payment.
+     * @param array $input The original input data.
+     * @return mixed The created payment entity.
+     */
+    private function createAndLogPayment(array $paymentData, $transferPaymentId, array $input)
+    {
+        // Start a trace span to monitor the payment entity creation process
+        $transferPayment = Tracer::inSpan(
+            ['name' => 'transfer.process.create_transfer_payment.create_payment'],
+            function() use ($paymentData, $transferPaymentId) {
+                return $this->createPaymentEntity($paymentData, null, $transferPaymentId);
+            }
+        );
+
+        // Prepare input trace data for logging, removing sensitive information
+        $inputTrace = $input;
+        unset($inputTrace['fta_data']['bank_account']['account_number'], $inputTrace['fta_data']['bank_account']['beneficiary_name']);
+
+        // Log the successful creation of the payment entity
+        $this->trace->info(
+            TraceCode::PAYMENT_CREATED,
+            ['payment_id' => $transferPayment->getId(), 'input' => $inputTrace]
+        );
 
         return $transferPayment;
     }

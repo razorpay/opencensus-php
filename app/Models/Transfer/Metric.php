@@ -50,6 +50,8 @@ class Metric extends Base\Core
     const TRANSFER_PROCESS_REVERSE_SHADOW               = 'transfer_process_reverse_shadow';
     const LEDGER_OUTBOX_RETRY_CRON_FOR_TRANSFER_FAILED  = 'ledger_outbox_retry_cron_for_transfer_failed';
     const PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH   = 'pg_ledger_transfer_merchants_onboarding_mismatch';
+    const CONTACT_VALIDATION_FAILURE = 'contact_validation_failure';
+    const EMAIL_VALIDATION_FAILURE = 'email_validation_failure';
     const TRANSFER_PROCESSING_EXCEPTION_MESSAGE         = 'transfer_processing_exception_message';
 
 
@@ -197,6 +199,18 @@ class Metric extends Base\Core
     public function pushSemaphoreAcquireFailureMetrics()
     {
         $this->trace->count(self::SEMAPHORE_ACQUIRE_FAILURE);
+    }
+
+    // Records a metric for contact validation failure
+    public function pushContactValidationFailureMetrics()
+    {
+        $this->trace->count(self::CONTACT_VALIDATION_FAILURE);
+    }
+
+    // Records a metric for email validation failure
+    public function pushEmailValidationFailureMetrics()
+    {
+        $this->trace->count(self::EMAIL_VALIDATION_FAILURE);
     }
 
     public function pushPaymentTransfersCreateLatencyMetrics($startTime, $isSyncProcessingEnabled)

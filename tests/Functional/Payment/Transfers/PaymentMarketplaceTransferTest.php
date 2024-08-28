@@ -174,6 +174,54 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals('online', $transfer['source_channel']);
     }
 
+
+    /**
+     * Tests the transfer payment process with invalid contact details.
+     *
+     * This test verifies that when provided with a contact number exceeding 15 digits
+     * and Invalid EmailID, the system correctly handles these errors by
+     * setting the contact to null and retrying the payment entity creation.
+     * It ensures that a successful transfer is processed and logged appropriately.
+     */
+    public function testTransferPaymentWithInvalidContactAndEmail()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+        $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        (new Admin\Service)->setConfigKeys([
+            Admin\ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG  => [
+                'limit'          => 3,
+                'retry_interval' => 0.1,
+                'retries'        => 5
+            ]
+        ]);
+
+        $transfers[0] = [
+            'account_code'  => 'code-007',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+        ];
+
+        // Set payment input with invalid contact info and email
+        $this->payment['contact'] = '+221234567890123468077890'; // more than 15 digits
+        $this->payment['email'] = 'invalid-email-address[at][dot]com'; // invalid email format
+
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'on');
+
+        $response = $this->transferPayment($this->payment['id'], $transfers);
+        $transfer = $response['items'][0];
+
+        $this->assertEquals('transfer', $transfer['entity']);
+        $this->assertEquals($this->payment['id'], $transfer['source']);
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertNotNull($transfer['processed_at']);
+        $this->assertEquals('acc_10000000000001', $transfer['recipient']);
+        $this->assertEquals('code-007', $transfer['account_code']);
+        $this->assertEquals($this->payment['amount'], $transfer['amount']);
+        $this->assertEquals('online', $transfer['source_channel']);
+    }
+
     public function testTransferPaymentRazorxDisabledForSyncProcessing()
     {
         $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
