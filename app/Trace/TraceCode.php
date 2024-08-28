@@ -7841,6 +7841,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HDFC_VAS_RAZORX_RESULT    =   'HDFC_VAS_RAZORX_RESULT';
     const SKIP_CVV_CHECK_RESULT     =   'SKIP_CVV_CHECK_RESULT';
 
+    const RECURRING_NEW_CARD_CHANGE_TOKEN_RESULT =   'RECURRING_NEW_CARD_CHANGE_TOKEN_RESULT';
+
     const HDFC_CHECKOUT_2 = 'HDFC_CHECKOUT_2';
 
     // VA Migrate - Yesbank -> RBL

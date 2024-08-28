@@ -6595,6 +6595,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return true;
         }
 
+        // Need to create new token in case of card change as there are some cases where expiry date of card changed but
+        // existing token is picked as the comparison is just based on vault token value (Non IN Merchants specifically)
+        if (($this->isCardRecurring() === true) and
+            ($this->getRecurringType() === RecurringType::CARD_CHANGE) and
+            ($card->iinRelation !== null))
+        {
+            $app = \App::getFacadeRoot();
+
+            $variant = $app['razorx']->getTreatment($this->getMerchantId(),
+                RazorxTreatment::RECURRING_NEW_CARD_CHANGE_TOKEN,
+                $app['rzp.mode']);
+
+            $app['trace']->info(TraceCode::RECURRING_NEW_CARD_CHANGE_TOKEN_RESULT, [
+                'merchant_id'     => $this->merchant->getId(),
+                'payment_id'      => $this->getId(),
+                'subscription_id' => $this->getSubscriptionId(),
+                'variant'         => $variant,
+            ]);
+
+            if ($variant === 'on')
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 

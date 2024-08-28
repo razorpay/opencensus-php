@@ -672,6 +672,9 @@ final class RazorxTreatment
     // Experiment to toggle unhappy flow handling for tokenisation failure in recurring
     const RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING = 'recurring_tokenisation_unhappy_flow_handling';
 
+    // Experiment to enable new token creation for all card changes
+    const RECURRING_NEW_CARD_CHANGE_TOKEN = 'recurring_new_card_change_token';
+
     // Experiment to toggle tokenisation for recurring tokens
     const RECURRING_TOKENISATION = 'recurring_tokenisation';
 
