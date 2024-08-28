@@ -15,6 +15,7 @@ use RZP\Models\Base\PublicEntity;
 use Illuminate\Hashing\BcryptHasher;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\User;
 use RZP\Diag\EventCode;
 use RZP\Models\User\Entity;
@@ -718,6 +719,34 @@ class Service extends Base\Service
 
         unset($input[Entity::SKIP_SMS_REQUEST]);
 
+        // If signup campaign is Assisted onboarding avoid creating api merchant, if workflow creation get failed will throw error
+        if ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING){
+            // Generate unique identifiers for the user and merchant
+            $uniqueUserId = UniqueIdEntity::generateUniqueId();
+            $uniqueMerchantId = UniqueIdEntity::generateUniqueId();
+
+            $countryCode = $input['country_code'] ?? 'IN';
+
+            // Store the generated unique IDs in the configuration
+            Config::set(Constants::USER_ID, $uniqueUserId);
+            Config::set(Constants::MERCHANT_ID, $uniqueMerchantId);
+
+            try
+            {
+                $this->handlePGOSOnboardingForAssistedMerchant($uniqueMerchantId, $signupCampaign, $countryCode, $input, $uniqueUserId);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'message'       => "Error in handlePGOSOnboarding()",
+                    'merchant_id'   => $uniqueMerchantId,
+                    'error_message' => $exception->getMessage()
+                ]);
+
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::ASSISTED_WORKFLOW_CREATION_FAILED);
+            }
+        }
+
         list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId, $isOauthReferral) {
 
             if ($verifySuccess === true)
@@ -783,7 +812,7 @@ class Service extends Base\Service
                         DeviceDetail\Entity::USER_ID => $user['id'],
                         DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
                         DeviceDetail\Entity::METADATA => [
-                            DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_API
+                            DeviceDetailConstants::SERVICE => ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING?DeviceDetailConstants::SERVICE_PGOS:DeviceDetailConstants::SERVICE_API)
                         ]
                     ];
 
@@ -819,22 +848,19 @@ class Service extends Base\Service
             }
         });
 
-        try
-        {
-            if (empty($merchant) === false)
-            {
-                $this->handlePGOSOnboarding($merchant, $signupCampaign, $countryCode, $input, $user);
+        if ($signupCampaign != DeviceDetail\Constants::ASSISTED_ONBOARDING) {
+            try {
+                if (empty($merchant) === false) {
+                    $this->handlePGOSOnboarding($merchant, $signupCampaign, $countryCode, $input, $user);
+                }
+            } catch (\Throwable $exception) {
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'message' => "Error in handlePGOSOnboarding()",
+                    'merchant_id' => $merchant->getId(),
+                    'error_message' => $exception->getMessage()
+                ]);
             }
         }
-        catch (\Throwable $exception)
-        {
-            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                'message'       => "Error in handlePGOSOnboarding()",
-                'merchant_id'   => $merchant->getId(),
-                'error_message' => $exception->getMessage()
-            ]);
-        }
-
 
         return $response;
     }
@@ -1060,6 +1086,99 @@ class Service extends Base\Service
                 // this should not introduce error counts as it is running in shadow mode
                 $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                     'merchant_id'   => $merchant->getId(),
+                    'error_message' => $exception->getMessage()
+                ]);
+            }
+        }
+    }
+
+    private function handlePGOSOnboardingForAssistedMerchant($merchantId, $signupCampaign, $countryCode, $input, $userId)
+    {
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
+            'merchant_id'    => $merchantId,
+            'workflowType'   => $workflowType,
+            'signupCampaign' => $signupCampaign,
+            'input'          => $input
+        ]);
+
+        $product = $input[DeviceDetail\Constants::PRODUCT] ?? '';
+        $platform = $input[DeviceDetail\Constants::PLATFORM] ?? DeviceDetail\Constants::PLATFORM_PG;
+
+        // Create OBS Workflow For Merchant via PGOS.
+        // Workflow will only be created for merchants who will be onboarded via PGOS
+        try
+        {
+            $orgId = $this->auth->getOrgId();
+            Org\Entity::silentlyStripSign($orgId);
+            $createWorkflowRequestBody = [
+                'account_id'                            => $merchantId,
+                'account_type'                          => "merchant",
+                DeviceDetail\Entity::SIGNUP_SOURCE      => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
+                    $this->auth->getRequestOriginProduct(),
+                DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
+                Merchant\Entity::COUNTRY_CODE           => $countryCode,
+                'org_id'                                => $orgId,
+                'user_id'                               => $userId,
+                DeviceDetail\Constants::WORKFLOW_TYPE   => $workflowType,
+                DeviceDetail\Constants::PRODUCT         => $product,
+                DeviceDetail\Constants::PLATFORM        => $platform
+
+            ];
+
+            // sign up response is not driven by PGOS
+            $response = $this->pgosProxyController->handlePGOSProxyRequestsForAssistedMerchants(MerchantOnboardingProxyController::SALES_ASSISTED_MERCHANT_SIGN_UP,$createWorkflowRequestBody, $merchantId);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response'    => $response,
+            ]);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::ASSISTED_WORKFLOW_CREATION_FAILED);
+        }
+
+        if (empty($response['workflow_id']) === true or empty($response['modular_workflow_id']) === true )
+        {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::ASSISTED_WORKFLOW_CREATION_FAILED);
+        }
+
+        if ((isset($input[Entity::CONTACT_MOBILE]) === true) or (isset($input[Entity::EMAIL]) === true))
+        {
+            // update mobile number
+            try
+            {
+                // merge input with detail input
+                if (isset($input[Entity::CONTACT_MOBILE]) === true) {
+                    $pgosPayload = [
+                        'contact_mobile' => $input[Entity::CONTACT_MOBILE],
+                        'merchant_id' => $merchantId,
+                    ];
+                }
+                else{
+                    $pgosPayload = [
+                        'contact_email' => $input[Entity::EMAIL],
+                        'merchant_id' => $merchantId,
+                    ];
+                }
+                // this response is not used in this flow
+                $response = $this->pgosProxyController->handlePGOSProxyRequestsForAssistedMerchants('merchant_activation_save', $pgosPayload, $merchantId, true);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'response' => $response
+                ]);
+
+            }
+            catch (\Throwable $exception) {
+                // this should not introduce error counts as it is running in shadow mode
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id'   => $merchantId,
                     'error_message' => $exception->getMessage()
                 ]);
             }

@@ -7224,6 +7224,36 @@ return [
         ]
     ],
 
+    'testWorkFlowCreationFailedForAssistedMerchants' => [
+        'request' => [
+            'url'     => '/register/merchant/otp/verify',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'signup_campaign'       => 'assisted_onboarding'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ASSISTED_WORKFLOW_CREATION_FAILED',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 
     'testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff' => [
         'request' => [

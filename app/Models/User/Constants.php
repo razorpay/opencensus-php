@@ -48,6 +48,7 @@ class Constants
 
     const MERCHANT = 'merchant';
     const MERCHANT_ID = 'merchant_id';
+    const USER_ID = 'user_id';
 
 
     const METHOD                = 'method';

@@ -415,7 +415,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
               "success" => true,
             ],
             self::MERCHANT_SIGN_UP, self::SALES_ASSISTED_MERCHANT_SIGN_UP => [
-                "workflow_id" => "test_workflow"
+                "workflow_id" => "test_workflow",
+                "modular_workflow_id" => "test_workflow"
             ],
             self::FETCH_MERCHANT_DOCUMENT_DETAILS => [
                 "ffmc_license" => [
@@ -606,6 +607,45 @@ class MerchantOnboardingProxyController extends BaseProxyController
         }
 
         return null;
+    }
+    public function handlePGOSProxyRequestsForAssistedMerchants($routeKey, $payload, $merchantId, $ignoreRoutingConditions = false)
+    {
+        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+            'merchantId' => $merchantId,
+            'routeKey'   => $routeKey,
+            'payload'    => $payload
+        ]);
+
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['pgos.proxy.request.mock'];
+
+
+        if ($mock === true)
+        {
+            return $this->pgosMockResponses($routeKey);
+        }
+
+        // get path from defined route url map
+        $twirpPath = self::ROUTES_URL_MAP[$routeKey];
+
+        $route = $this->getRoute($twirpPath);
+
+        $headers = $this->getHeadersForDashboardRequest($payload, $merchantId);
+
+        if ($routeKey === self::GET_MERCHANT_ACTIVATION_DETAILS)
+        {
+            $headers['Asv-Exp-Enabled'] = "true";
+        }
+
+        $headers['X-Route-Name'] = $routeKey;
+
+        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+            'route'     => $route,
+            'twirpPath' => $twirpPath,
+        ]);
+
+        return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $payload, $headers);
     }
     public function handleMerchantSignup($payload, $merchant)
     {

@@ -13441,6 +13441,38 @@ class UserTest extends TestCase
 
     }
 
+    public function testWorkFlowCreationFailedForAssistedMerchants()
+    {
+        Config::set('applications.test_case.execution', false);
+
+
+        $merchantId = '1X4hRFHFx4Uikl';
+
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'],['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'partner_agent');
+
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        Queue::fake();
+
+
+        $this->startTest();
+    }
+
 
 
     public function testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff()

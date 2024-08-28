@@ -1772,6 +1772,7 @@ class ErrorCode
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                         = 'BAD_REQUEST_USER_ACCOUNT_DISABLED';
     const BAD_REQUEST_USER_NOT_AUTHENTICATED                                        = 'BAD_REQUEST_USER_NOT_AUTHENTICATED';
     const BAD_REQUEST_USER_NOT_FOUND                                                = 'BAD_REQUEST_USER_NOT_FOUND';
+    const ASSISTED_WORKFLOW_CREATION_FAILED                                         = 'ASSISTED_WORKFLOW_CREATION_FAILED';
     const BAD_REQUEST_USER_ID_NOT_EXPECTED_IN_INPUT                                 = 'BAD_REQUEST_USER_ID_NOT_EXPECTED_IN_INPUT';
     const BAD_REQUEST_USER_ROLE_INVALID                                             = 'BAD_REQUEST_USER_ROLE_INVALID';
     const BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID                                   = 'BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID';

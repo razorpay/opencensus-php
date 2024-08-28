@@ -230,6 +230,12 @@ class Core extends Base\Core
 
         unset($input[UConstants::ONLY_DS_UPLOAD_MIQ]);
 
+        $merchantId = Config::get(Constants::MERCHANT_ID) ?? null;
+
+        if (empty($merchantId)  == false){
+            $input['id']=$merchantId;
+        }
+
         $merchant = (new Merchant\Entity)->build($input);
 
         $this->trace->info(

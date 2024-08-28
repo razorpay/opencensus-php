@@ -786,6 +786,12 @@ class Core extends Base\Core
 
         unset($input[UConstants::ONLY_DS_UPLOAD_MIQ]);
 
+        $userId = Config::get(Constants::USER_ID) ?? null;
+
+        if (empty($userId)  == false){
+            $input['id']=$userId;
+        }
+
         $user = $this->getUserEntity()->build($input, $operation);
 
         //If contact mobile is present then set same contact mobile to user->contact_mobile and mark it as not verified
