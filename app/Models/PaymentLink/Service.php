@@ -1252,7 +1252,7 @@ class Service extends Base\Service
 
         $merchantCore->addDomainInWhitelistedDomain($this->merchant, $domain);
 
-        $this->merchant->saveOrFail();
+        $this->repo->saveOrFail($this->merchant);
 
         (new CustomDomain\Plans\Core)->createOrUpdatePlanForMerchant($input);
 
@@ -1300,7 +1300,7 @@ class Service extends Base\Service
 
         $merchantCore->removeDomainFromWhitelistedDomain($this->merchant, $domain);
 
-        $this->merchant->saveOrFail();
+        $this->repo->saveOrFail($this->merchant);
 
         (new CustomDomain\Plans\Service())->deletePlanForMerchant();
 
