@@ -585,9 +585,10 @@ class Core extends Base\Core
             ]);
         }
 
+        $invoiceNumber = (string)$notes['invoice_number'] ?? '';
         $paymentDetails = [
             'id'                => $paymentEntity->getId(),
-            'invoice_number'    => $notes['invoice_number'] ?? '',
+            'invoice_number'    => $invoiceNumber,
             'goods_description' => $notes['goods_description'] ?? '',
             'created_at'        => $paymentEntity->getCreatedAt(),
             'amount'            => $paymentEntity->getAmount(),
