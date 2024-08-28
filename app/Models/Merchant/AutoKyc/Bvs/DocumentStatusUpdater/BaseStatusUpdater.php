@@ -136,6 +136,28 @@ abstract class BaseStatusUpdater implements StatusUpdater
 
         $merchantId = $this->merchantDetails->getId();
 
+        if ($this->artefactType == Constant::COMMON) {
+            $isSkipMerchantContextUpdateForCommonArtefactEnabled = (new MerchantCore())->isSplitzExperimentEnable(
+                [
+                    'id'            => $merchantId,
+                    'experiment_id' => $this->app['config']->get('app.skip_merchant_context_update_for_common_artefact'),
+                ],
+                'enable'
+            );
+
+            $this->trace->info(TraceCode::SKIP_MERCHANT_CONTEXT_UPDATE, [
+                'artefact_type'     => $this->artefactType,
+                'experiment_status' => $isSkipMerchantContextUpdateForCommonArtefactEnabled,
+                'bvs_validation_id' => $this->consumedValidationId,
+                'merchant_id'       => $merchantId
+            ]);
+
+            if ($isSkipMerchantContextUpdateForCommonArtefactEnabled === true)
+            {
+                return;
+            }
+        }
+
         $isSystemBasedNeedsClarificationEnabled = (new MerchantCore())->isRazorxExperimentEnable(
             $merchantId,
             RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION);
