@@ -3,6 +3,7 @@
 namespace RZP\Http\Edge;
 
 use ApiResponse;
+use Razorpay\Edge\Passport\CredentialClaims;
 use RZP\Base\RepositoryManager;
 use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -128,9 +129,8 @@ class PassportUtil
                 $this->ensureNotEmpty($this->passport->consumer->type, 'consumer_type', $errors);
             }
 
-            $isKeylessAuth = $this->passport->authenticated === false && $this->passport->identified === true && empty($this->passport->credential) === true;
             // verify credential claims
-            if ((!$isKeylessAuth) && ($this->ensureNotEmpty($this->passport->credential, 'credential', $errors))) {
+            if ((!$this->isKeylessAuth()) && ($this->ensureNotEmpty($this->passport->credential, 'credential', $errors))) {
                 $this->ensureNotEmpty($this->passport->credential->username, 'credential_username', $errors);
                 $this->ensureNotEmpty($this->passport->credential->publicKey, 'credential_publicKey', $errors);
             }
@@ -478,5 +478,25 @@ class PassportUtil
                                                                       'actual' => $this->passport->consumer->id];
         }
         return ($application->getMerchantId() === $this->passport->consumer->id);
+    }
+
+    /**
+     * Determines if the current authentication is keyless.
+     *
+     * This method checks the following conditions in passport to determine if the authentication
+     * is keyless:
+     * - The `authenticated` field is `false`.
+     * - The `identified` field is `true`.
+     * - The `credential` field is not empty.
+     * - The `username` field in `credential` is `null`.
+     * - The `publicKey` field in `credential` is `null`.
+     *
+     * @return bool Returns `true` if the authentication is keyless; otherwise, `false`.
+     */
+    public function isKeylessAuth(): bool
+    {
+        return ($this->passport->authenticated === false && $this->passport->identified === true &&
+            empty($this->passport->credential) === false && $this->passport->credential->username === null &&
+            $this->passport->credential->publicKey === null);
     }
 }

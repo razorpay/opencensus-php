@@ -490,6 +490,16 @@ class Authenticate
     }
 
     /**
+     * set and init authCreds class; and sets mode from edge passport
+     */
+    private function setKeylessAuthContextFromPassport(): void
+    {
+        $authCredsClass = $this->isPartnerAuth ? ClientAuthCreds::class : KeyAuthCreds::class;
+        $this->ba->authCreds = new $authCredsClass($this->app);
+        $this->ba->authCreds->setModeAndDbConnection($this->passport->mode);
+    }
+
+    /**
      * sets account id from edge passport, set source of it to metrics and remove it from request params
      */
     private function setAccountIdFromPassport(): void
@@ -553,6 +563,33 @@ class Authenticate
     }
 
     /**
+     * set basic auth contexts from edge passport that are common to all auth types
+     *
+     * @return ApiResponse|null
+     * @throws BadRequestException
+     */
+    private function setCommonBasicAuthContextsFromKeylessPassport(string $authType)
+    {
+        $this->setAuthTypesBasicAuthContextsFromPassport($authType); // set auth type and auth flow type
+        $this->setKeylessAuthContextFromPassport();
+
+        $mid = $this->passport->consumer->id;
+
+        $this->ba->setMerchantById($mid);
+
+        // do not check merchant activated status of parent merchant for partner auth
+        // since partner's access to live mode doesn't matter while accessing sub merchant resources.
+        if (! $this->isPartnerAuth) {
+            $error = $this->passportUtil->doMissingChecksAtEdge();
+            if ($error !== null) {
+                throw $error;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * for public auth set basic auth contexts from edge passport that are required by business logic
      *
      * @return ApiResponse|null
@@ -560,10 +597,16 @@ class Authenticate
      */
     private function setPublicBasicAuthContextsFromPassport()
     {
-        // set basic auth contexts from passport, that are common to all auth types
-        $err = $this->setCommonBasicAuthContextsFromPassport(Type::PUBLIC_AUTH);
-        if ($err !== null)
-        {
+        if ($this->passport->credential === null) {
+            return null;
+        }
+
+        // Determine which method to call based on the presence of username and publicKey
+        $err = $this->passportUtil->isKeylessAuth()
+            ? $this->setCommonBasicAuthContextsFromKeylessPassport(Type::PUBLIC_AUTH)
+            : $this->setCommonBasicAuthContextsFromPassport(Type::PUBLIC_AUTH);
+
+        if ($err !== null) {
             return $err;
         }
 

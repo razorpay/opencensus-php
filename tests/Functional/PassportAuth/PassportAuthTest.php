@@ -1209,6 +1209,47 @@ class PassportAuthTest extends TestCase
     }
 
     /**
+     * testMerchantAuthWithKeylessAuthWithAccess
+     * allows the request if passport is passed in header and request has valid internal auth credentials
+     *
+     */
+    public function testMerchantAuthWithKeylessAuthWithAccess()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => null, 'public_key' => null];
+
+        $passportJWT = $this->sampleKeylessPassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['validPassportFlowData'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+        $testData['request']['server']['HTTP_X-PASSPORT-USABLE'] = 'false';
+
+        $pgRouterConfig = \Config::get('applications.pg_router');
+
+        $pwd = $pgRouterConfig['secret'];
+
+        /* @var route Route */
+        $route = $this->app['api.route'];
+
+
+        $currentAppConfig = $route::$internalApps['pg_router'];
+        $currentInternalAuthWithPassportRoutes = $route::$internalAuthWithPassportRoutes;
+
+        $route::$internalApps['pg_router'] = ['payment_fetch_multiple'];
+        $route::$internalAuthWithPassportRoutes[] = 'payment_fetch_multiple';
+
+        $this->ba->basicAuth('rzp_test', $pwd);
+
+        $this->runRequestResponseFlow($testData);
+
+        //Phpstorm might show `Static property cannot be unset` but it's possible in php
+        $route::$internalApps['pg_router'] = $currentAppConfig;
+        $route::$internalAuthWithPassportRoutes = $currentInternalAuthWithPassportRoutes;
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+        $this->assertKeylessValues('', '10000000000000', '', KeyAuthCreds::class);
+    }
+
+    /**
      * testMerchantAuthWithInternalAuthNoAccess
      * rejects the request if passport is passed in header and request has valid internal auth credentials but app is not listed
      * in $internalAuthWithPassportApps.

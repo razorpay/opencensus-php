@@ -322,6 +322,33 @@ class TestCase extends ParentTestCase
     }
 
     /**
+     * Asserts that keyless auth context has exactly same values set as expected
+     *
+     * @return void
+     */
+    protected function assertKeylessValues($keyId, $consumerId, $publicKey, $authCredsClass, $accountId = '', $mode = 'test', $isPartnerAuth = false,
+                                      $partnerMerchantId = null, $partnerApplicationId = null, $oauthApplicationId = null, $authType = 'public')
+    {
+        $ba = $this->app['basicauth'];
+        $this->assertEquals($authType, $ba->getAuthType());
+        $this->assertEquals($ba->isPartnerAuth(), $isPartnerAuth);
+        $this->assertEquals($ba->getMode(), $mode);
+
+        $this->assertTrue($ba->authCreds instanceof $authCredsClass);
+        if ($authCredsClass instanceof KeyAuthCreds) {
+            $this->assertEquals($ba->getKeyEntity()->getId(), $keyId);
+        }
+
+        $this->assertEquals($ba->getPublicKey(), $publicKey);
+        $this->assertEquals($ba->getMerchantId(), $consumerId);
+        $this->assertEquals($ba->getPartnerMerchantId(), $partnerMerchantId);
+        $this->assertEquals($ba->getOAuthApplicationId(), $oauthApplicationId);
+        if ($authCredsClass instanceof ClientAuthCreds) {
+            $this->assertEquals($ba->authCreds->getPartnerApplicationId(), $partnerApplicationId);
+        }
+    }
+
+    /**
      * Asserts that oauth in basicauth context has exactly same values set as expected
      *
      * @return void

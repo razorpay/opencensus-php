@@ -61,6 +61,40 @@ trait PassportTrait
         return $this->samplePassportJwt($builder);
     }
 
+    protected function sampleKeylessPassportJwtBuilder(
+        array $consumer = [],
+        array $credential = [],
+        string $mode = Mode::TEST,
+        array $roles = [],
+        bool $identified = true,
+        bool $authenticated = false
+    ): string {
+        $sysClock = new SystemClock(new DateTimeZone('UTC'));
+        $builder = new Builder(new JoseEncoder(), ChainedFormatter::withUnixTimestampDates());
+        $builder =  $builder
+            ->issuedBy('https://edge.razorpay.com')
+            ->permittedFor('https://api.razorpay.com')
+            ->identifiedBy('per-req-uuid', true)
+            ->issuedAt($sysClock->now())
+            ->canOnlyBeUsedAfter($sysClock->now())
+            ->expiresAt($sysClock->now()->add(new \DateInterval('P15M')))
+            ->withHeader('kid', 'edgev1')
+            // Custom claims follows.
+            ->withClaim('identified', $identified)
+            ->withClaim('authenticated', $authenticated)
+            ->withClaim('mode', $mode)
+            ->withClaim('domain', 'razorpay')
+            ->withClaim('consumer', $consumer)
+            ->withClaim('credential', $credential);
+
+
+        if (!empty($roles)) {
+            $builder = $builder->withClaim('roles', $roles);
+        }
+
+        return $this->samplePassportJwt($builder);
+    }
+
     /**
      * Return Passport JWT header to be attached to the request
      * @param $request

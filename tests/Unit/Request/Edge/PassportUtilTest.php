@@ -65,11 +65,9 @@ class PassportUtilTest extends TestCase
         $passport->consumer->type = $consumerType;
         $passport->impersonation->type = $impersonationType;
         $passport->oauth->env = $env;
-        $passport->credential = ($setCredential === true) ? new Passport\CredentialClaims : null;
-        if (! empty($passport->credential)) {
-            $passport->credential->username = 'rzp_live_10000000000000';
-            $passport->credential->publicKey = $publicKey;
-        }
+        $passport->credential = new Passport\CredentialClaims;
+        $passport->credential->username = ($setCredential === true) ? 'rzp_live_10000000000000' : null;
+        $passport->credential->publicKey = ($setCredential === true) ? $publicKey : null;
 
         $passportUtil = new PassportUtil($passport);
         $this->assertSame($passportUtil->validatePassport(), $expected);
@@ -495,4 +493,74 @@ class PassportUtilTest extends TestCase
             [$passport, false, 'merchant', null, null, null, 'keyless_auth'],
         ];
     }
+
+    /**
+     * @dataProvider getIsKeylessAuthCases
+     *
+     * @param Passport\Passport                $passport
+     * @param bool                             $expected
+     */
+    public function testIsKeylessAuth($passport, $expected)
+    {
+        $passportUtil = new PassportUtil($passport);
+        $this->assertSame($passportUtil->isKeylessAuth(), $expected);
+    }
+
+    public function getIsKeylessAuthCases(): array
+    {
+        $passport = new Passport\Passport;
+
+        $credentialNonNull = new Passport\CredentialClaims;
+        $credentialNonNull->username = 'rzp_live_10000000000000';
+        $credentialNonNull->publicKey = 'rzp_live_10000000000000';
+
+        $credentialNull = new Passport\CredentialClaims;
+        $credentialNull->username = null;
+        $credentialNull->publicKey = null;
+
+        // $passport, $expected
+
+        return [
+            // Case 1: Authenticated = false, Identified = true, Non-null credentials
+            [$this->createPassport(false, true, $credentialNonNull), false],
+
+            // Case 2: Authenticated = false, Identified = true, Null credentials
+            [$this->createPassport(false, true, $credentialNull), true],
+
+            // Case 3: Authenticated = false, Identified = false, Null credentials
+            [$this->createPassport(false, false, $credentialNull), false],
+
+            // Case 4: Authenticated = true, Identified = true, Null credentials
+            [$this->createPassport(true, true, $credentialNull), false],
+
+            // Case 5: Authenticated = true, Identified = false, Null credentials
+            [$this->createPassport(true, false, $credentialNull), false],
+
+            // Case 6: Authenticated = false, Identified = false, Non-null credentials
+            [$this->createPassport(false, false, $credentialNonNull), false],
+
+            // Case 7: Authenticated = true, Identified = true, Non-null credentials
+            [$this->createPassport(true, true, $credentialNonNull), false],
+
+            // Case 8: Authenticated = true, Identified = false, Non-null credentials
+            [$this->createPassport(true, false, $credentialNonNull), false],
+
+            // Case 9: Authenticated = false, Identified = true, Credential is null (no object)
+            [$this->createPassport(false, true, null), false],
+        ];
+    }
+
+    /**
+     * Helper function to create a Passport object with given parameters.
+     */
+    private function createPassport(bool $authenticated, bool $identified, ?Passport\CredentialClaims $credential): Passport\Passport
+    {
+        $passport = new Passport\Passport;
+        $passport->authenticated = $authenticated;
+        $passport->identified = $identified;
+        $passport->credential = $credential;
+
+        return $passport;
+    }
+
 }
