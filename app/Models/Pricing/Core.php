@@ -122,7 +122,7 @@ class Core extends Base\Core
              ->setEntityAndId($rule->getEntity(), $planId)
              ->handle($rule, $newRule);
 
-        $newRule = $this->repo->transactionOnLiveAndTest(function() use ($rule, $newRule, $orgId)
+        $newRule = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($rule, $newRule, $orgId)
         {
             $this->repo->pricing->deletePlanRuleForce($rule->getPlanId(), $rule->getId(), $orgId);
 
@@ -158,7 +158,7 @@ class Core extends Base\Core
 
         $validator->validatePlanCountZero($plan);
 
-        $plan = $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules, $ruleOrgId)
+        $plan = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($planName, $inputRules, $ruleOrgId)
         {
             $this->trace->info(TraceCode::PRICING_PLAN_CREATE_ATTEMPT,[
                 'Rule :' => $this->redactSensitiveInfoFromLogs($inputRules[0]),

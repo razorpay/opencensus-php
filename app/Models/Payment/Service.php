@@ -6929,7 +6929,7 @@ class Service extends Base\Service
 
         $paymentRecon->setPayment($payment);
 
-        $isSuccess = $this->repo->transactionOnLiveAndTest(function () use ($paymentRecon) {
+        $isSuccess = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($paymentRecon) {
              return $paymentRecon->handleVerifyAuthorized(); // this function  is creating transaction entity
                     });
 
@@ -7033,7 +7033,7 @@ class Service extends Base\Service
         {
 
 
-          $verifySuccess = $this->repo->transactionOnLiveAndTest(function () use ($paymentRecon) {
+          $verifySuccess = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($paymentRecon) {
              return $paymentRecon->handleVerifyPayment();
                     });
 

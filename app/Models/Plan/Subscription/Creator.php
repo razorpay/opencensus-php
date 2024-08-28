@@ -32,7 +32,7 @@ class Creator extends Base\Core
         // Transaction on live and test is required because
         // schedule is created in both live and test.
         //
-        $this->repo->transactionOnLiveAndTest(
+        $this->repo->transactionOnLiveAndTestAndAsv(
             function() use ($subscription, $plan, $customer, $input)
             {
                 // This is being done for the `schedule` and `task` associations.

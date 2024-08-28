@@ -306,7 +306,7 @@ class Core extends Base\Core
 
             $accessMapping->setHasKycAccess();
 
-            $this->repo->transactionOnLiveAndTest(function() use ($accessMapping, $subMerchantKycAccess) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($accessMapping, $subMerchantKycAccess) {
                 $this->repo->saveOrFail($subMerchantKycAccess);
                 $this->repo->saveOrFail($accessMapping);
             });
@@ -404,7 +404,7 @@ class Core extends Base\Core
 
         $accessMapping->setHasKycAccess();
 
-        $this->repo->transactionOnLiveAndTest(function() use ($accessMapping, $subMerchantKycAccess) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($accessMapping, $subMerchantKycAccess) {
             $this->repo->saveOrFail($subMerchantKycAccess);
             $this->repo->saveOrFail($accessMapping);
         });
@@ -427,7 +427,7 @@ class Core extends Base\Core
         $accessMap     = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($entityId, $partnerId);
         $accessMapping = (new AccessMap\Repository)->findMerchantAccessMapOnEntityId($entityId, $accessMap['application_id'], 'application');
 
-        $this->repo->transactionOnLiveAndTest(function() use ($accessMapping, $partnerId, $entityId) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($accessMapping, $partnerId, $entityId) {
             // check if any record exists
             $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($partnerId, $entityId)->first();
 

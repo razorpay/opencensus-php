@@ -29,7 +29,7 @@ class Service extends Base\Service
                 $input[Entity::WORKFLOW_PERMISSIONS]);
         }
 
-        $org = $this->repo->transactionOnLiveAndTest(function() use ($input)
+        $org = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input)
         {
             $org = $this->core()->create($input);
 
@@ -246,7 +246,7 @@ class Service extends Base\Service
                 $input[Entity::WORKFLOW_PERMISSIONS]);
         }
 
-        $org = $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
+        $org = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($id, $input)
         {
             $org = $this->core()->edit($id, $input);
 

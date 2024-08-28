@@ -51,7 +51,7 @@ class Core extends Base\Core
 
         $entity = (new Entity)->build($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($entity, $input, $accessPolicyIds)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($entity, $input, $accessPolicyIds)
         {
             $this->repo->saveOrFail($entity);
 
@@ -122,7 +122,7 @@ class Core extends Base\Core
 
         $role->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($role, $input, $accessPolicyIds, $previousRoleEntity)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($role, $input, $accessPolicyIds, $previousRoleEntity)
         {
             $this->repo->saveOrFail($role);
 
@@ -278,7 +278,7 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        $this->repo->transactionOnLiveAndTest(function () use ($input, $accessPolicyIds)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $accessPolicyIds)
         {
             $this->repo->roles->insertRecord($input);
 
@@ -374,7 +374,7 @@ class Core extends Base\Core
 
     public function delete(Entity $role) :array
     {
-        $this->repo->transactionOnLiveAndTest(function() use ($role)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($role)
         {
             $roleAccessMap = $this->repo->role_access_policy_map->findByRoleId($role->getId());
 

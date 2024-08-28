@@ -169,7 +169,7 @@ class Service extends Base\Service
 
             $inputRules = (new Entity())->formattedBuyPricingRules($inputRules);
 
-            $rules = $this->repo->transactionOnLiveAndTest(function () use ($inputRules, $plan, $ruleOrgId)
+            $rules = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($inputRules, $plan, $ruleOrgId)
             {
                 $rules = [];
 
@@ -515,7 +515,7 @@ class Service extends Base\Service
 
         return $mutex->acquireAndRelease($mutexKey, function () use ($item, $planName)
         {
-            return $this->repo->transactionOnLiveAndTest(function () use ($item, $planName)
+            return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($item, $planName)
             {
                 // Keeping this as rzp org. Field is not currently passed with batch.
                 $ruleOrgId = Org\Entity::RAZORPAY_ORG_ID;
@@ -531,7 +531,7 @@ class Service extends Base\Service
                 {
                     $inputRules = $item[Entity::RULES];
 
-                    $this->repo->transactionOnLiveAndTest(function () use ($inputRules, $existingPlan, $ruleOrgId)
+                    $this->repo->transactionOnLiveAndTestAndAsv(function () use ($inputRules, $existingPlan, $ruleOrgId)
                     {
                         $rules = [];
                         foreach ($inputRules as $inputRule)

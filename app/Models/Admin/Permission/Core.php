@@ -16,7 +16,7 @@ class Core extends Base\Core
 
         $permission->setAuditAction(Action::CREATE_PERMISSION);
 
-        $this->repo->transactionOnLiveAndTest(function() use($permission, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($permission, $input)
         {
             $this->repo->saveOrFail($permission);
 
@@ -53,7 +53,7 @@ class Core extends Base\Core
 
         $permission->setAuditAction(Action::EDIT_PERMISSION);
 
-        $this->repo->transactionOnLiveAndTest(function() use($permission, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($permission, $input)
         {
             $this->repo->saveOrFail($permission);
 

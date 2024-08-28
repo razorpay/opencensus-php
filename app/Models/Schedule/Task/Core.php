@@ -76,7 +76,7 @@ class Core extends Base\Core
 
         $this->app['workflow']->setEntityId($merchant->getId());
 
-        $this->repo->transactionOnLiveAndTest(function () use ($scheduleTask)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($scheduleTask)
         {
             // for settlements, we want to keep schedules in sync in test and live
             if ($scheduleTask->isTypeSettlement() === true)
