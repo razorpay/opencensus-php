@@ -215,6 +215,16 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
     ];
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $dispatchesEvents = [
+        // Event 'retrieved' fires on fetch from transactions  table.
+        'retrieved'   => EventRetrieved::class,
+        // Event 'saved' fires on insert or update from transactions table.
+        'saved'       => EventSaved::class,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

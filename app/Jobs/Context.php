@@ -34,6 +34,8 @@ class Context
 
     protected $jobUuid;
 
+    protected $ledgerDualWriteFlow;
+
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -104,5 +106,15 @@ class Context
     public function fetchJobUuid()
     {
         return $this->jobUuid;
+    }
+
+    public function setLedgerDualWriteFlow($ledgerDualWriteFlow)
+    {
+        $this->ledgerDualWriteFlow = $ledgerDualWriteFlow;
+    }
+
+    public function getLedgerDualWriteFlow()
+    {
+        return $this->ledgerDualWriteFlow;
     }
 }

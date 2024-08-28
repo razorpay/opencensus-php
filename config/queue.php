@@ -324,6 +324,10 @@ return [
         'live'       => env('AWS_TRANSFER_ASYNC_BALANCE_UPDATE_THREE_LIVE'),
     ],
 
+    'transaction_balance_read_write_logging' => [
+        'live'       => env('AWS_TRANSACTION_BALANCE_READ_WRITE_LOGGING'),
+    ],
+
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),

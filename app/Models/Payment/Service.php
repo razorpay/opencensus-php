@@ -4860,6 +4860,13 @@ class Service extends Base\Service
         try
         {
             $payment = $this->repo->payment->findOrFail($paymentId);
+
+            $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
+            {
+                app('worker.ctx')->setLedgerDualWriteFlow(true);
+            }
         }
         catch (\Throwable $exception){}
 

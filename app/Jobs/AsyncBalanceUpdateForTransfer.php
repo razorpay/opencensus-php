@@ -93,6 +93,13 @@ class AsyncBalanceUpdateForTransfer extends Job
         try
         {
             $transfer = $this->repo->transfer->findOrFail($this->transferId);
+
+            $merchant = $this->repo->merchant->findOrFailPublic($transfer->getMerchantId());
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW))
+            {
+                app('worker.ctx')->setLedgerDualWriteFlow(true);
+            }
         }
         catch (\Exception $ex)
         {

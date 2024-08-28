@@ -2333,6 +2333,8 @@ class Core extends Base\Core
 
         $paymentJournalId = $input['payment_journal_id'];
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $transfer = $this->repo->transfer->findOrFailPublic($transferId);
 
         $input = [

@@ -299,6 +299,8 @@ class Service extends Base\Service
             throw new BadRequestValidationFailureException('Both id and transaction_id are required.');
         }
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $txnId = $input[Entity::TRANSACTION_ID];
 
         $adjustmentId = $input[Entity::ID];

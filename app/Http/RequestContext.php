@@ -174,6 +174,8 @@ final class RequestContext
      */
     protected $paymentMethod;
 
+    protected $ledgerDualWriteFlow;
+
     /**
      * payment method, eg: upi, cards, nb
      * This is generated at start of request and for all payment routes
@@ -733,6 +735,16 @@ final class RequestContext
     public function setPaymentMethod($paymentMethod)
     {
         $this->paymentMethod = $paymentMethod;
+    }
+
+    public function setLedgerDualWriteFlow($ledgerDualWriteFlow)
+    {
+        $this->ledgerDualWriteFlow = $ledgerDualWriteFlow;
+    }
+
+    public function getLedgerDualWriteFlow()
+    {
+        return $this->ledgerDualWriteFlow;
     }
 
     /**

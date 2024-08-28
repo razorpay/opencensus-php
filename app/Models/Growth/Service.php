@@ -21,6 +21,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::GROWTH_TRANSACTION_CREATE_REQUEST, $input);
         (new Validator)->validateInput('create_internal_transaction', $input);
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $transactorIdArr = explode('_', $input[Constants::TRANSACTOR_ID]);
 
         if(count($transactorIdArr) != 2)

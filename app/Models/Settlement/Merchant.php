@@ -739,6 +739,8 @@ class Merchant
         if (!empty($params['journals_data']))
         {
             $settlementJournalID = $params['journal_id'];
+
+            app('request.ctx')->setLedgerDualWriteFlow(true);
         }
 
         if (empty($params['journals_data']) === false)
@@ -756,6 +758,8 @@ class Merchant
             if($journalsData['settlement_transfer_id'] !== ""){
                 $settlementTransferEntityID = $journalsData["settlement_transfer_id"];
             }
+
+            app('request.ctx')->setLedgerDualWriteFlow(true);
         }
 
 

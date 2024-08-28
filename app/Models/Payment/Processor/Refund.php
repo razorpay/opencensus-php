@@ -1192,6 +1192,11 @@ trait Refund
             $txnId = null;
         }
 
+        if ($txnId !== null)
+        {
+            app('request.ctx')->setLedgerDualWriteFlow(true);
+        }
+
         list($txn, $feesSplit) = $txnCore->createFromRefund($refund, $txnId);
 
         $this->repo->saveOrFail($txn);

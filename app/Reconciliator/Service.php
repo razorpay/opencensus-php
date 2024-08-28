@@ -835,6 +835,8 @@ class Service extends Base\Service
      */
     public function updateReconciliationData(array $input): array
     {
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $paymentId = $input['payment_id'];
 
         $payment = $this->repo->payment->findOrFail($paymentId);

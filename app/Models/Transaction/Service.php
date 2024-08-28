@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction;
 
 use RZP\Constants;
 use RZP\Exception;
+use RZP\Http\RequestContext;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Emi;
@@ -23,6 +24,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Base\RuntimeManager;
 use RZP\Models\RewardPoint;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
 use RZP\Jobs\Settlement\LedgerReconJob2;
@@ -84,7 +86,7 @@ class Service extends Base\Service
 
         $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST);
         $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATE_REQUEST, $input);
-        
+
         (new JitValidator)->rules(\RZP\Models\CreditRepayment\Validator::$createTransactionInput)
                             ->caller($this)
                             ->input($input)
@@ -460,6 +462,8 @@ class Service extends Base\Service
         if (isset($input['transaction_id']) === true)
         {
             $txnId = $input['transaction_id'];
+
+            app('request.ctx')->setLedgerDualWriteFlow(true);
         }
 
         if (isset($input['payment']['card']) === true)
@@ -1003,5 +1007,119 @@ class Service extends Base\Service
             ]);
 
         return $isExperimentEnabled;
+    }
+
+    public function logTransactionReads(Entity $entity, $isLedgerDualWriteFlow= null)
+    {
+        if (count($entity->getAttributes()) < count($entity->getFillable()))
+        {
+            $entity = $this->repo->transaction->findOrFail($entity->getId());
+        }
+
+
+        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
+        {
+            $paymentMethod = null;
+
+            if ($entity->getType() === Transaction\Type::PAYMENT)
+            {
+                $payment = $entity->source;
+
+                if ($payment !== null)
+                {
+                    $paymentMethod = $payment->getMethod();
+                }
+
+            }
+
+            app('trace')->info(TraceCode::TRANSACTIONS_RETRIEVAL_EVENT,
+                [
+                    'transaction' => $entity->toArray(),
+                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                ]);
+
+            app('trace')->count(Metric::TRANSACTION_READ_API_LEDGER_CLS_MERCHANT, [
+                'transaction_type' => $entity->getType(),
+                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                'payment_method'   => $paymentMethod
+            ]);
+        }
+    }
+
+    public function logTransactionWrites(Entity $entity, $isLedgerDualWriteFlow = null)
+    {
+        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
+        {
+            $paymentMethod = null;
+
+            if ($entity->getType() === Transaction\Type::PAYMENT)
+            {
+                $payment = $entity->source;
+
+                if ($payment !== null)
+                {
+                    $paymentMethod = $payment->getMethod();
+                }
+
+            }
+
+            app('trace')->info(TraceCode::TRANSACTIONS_SAVED_EVENT,
+                [
+                    'transaction' => $entity->toArray(),
+                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                ]);
+
+            app('trace')->count(Metric::TRANSACTION_WRITE_API_LEDGER_CLS_MERCHANT, [
+                'transaction_type' => $entity->getType(),
+                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                'payment_method'   => $paymentMethod
+            ]);
+        }
+    }
+
+    protected function evaluateLedgerReadsWriteFlow(Entity $entity, $isLedgerDualWriteFlow)
+    {
+        $isPGTransaction = false;
+
+        if((in_array($entity->getType(),[Transaction\Type::PAYMENT, Transaction\Type::ADJUSTMENT,
+                Transaction\Type::DISPUTE, Transaction\Type::REFUND, Transaction\Type::REVERSAL,
+                Transaction\Type::SETTLEMENT, Transaction\Type::TRANSFER, Transaction\Type::BUNDLE_FEE,
+                Transaction\Type::PRODUCT_CHARGE,Transaction\Type::SETTLEMENT_TRANSFER, Transaction\Type::SETTLEMENT_ONDEMAND]) === true))
+        {
+            $isPGTransaction = true;
+        }
+
+        if ((in_array($entity->getType(), [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL, Transaction\Type::SETTLEMENT]) === true) and
+            (isset($entity->source->balance)=== true) and
+            ($entity->source->balance->getType() !== Balance\Type::PRIMARY))
+        {
+            $isPGTransaction = false;
+        }
+
+        if ($isPGTransaction === false)
+        {
+            return false;
+        }
+
+        $merchantId = $entity->getMerchantId();
+
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+            'merchant',
+            $merchantId,
+            Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+        $pgLedgerReverseShadowEnabled = false;
+
+        if (!empty($feature))
+        {
+            $pgLedgerReverseShadowEnabled = true;
+        }
+
+        if (($pgLedgerReverseShadowEnabled === true) and ($isPGTransaction === true) and ($isLedgerDualWriteFlow === false or  $isLedgerDualWriteFlow === null))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

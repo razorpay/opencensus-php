@@ -146,6 +146,16 @@ class Entity extends Base\PublicEntity
         self::LAST_FETCHED_AT
     ];
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $dispatchesEvents = [
+        // Event 'retrieved' fires on fetch from balance table.
+        'retrieved'   => EventRetrieved::class,
+        // Event 'saved' fires on insert or update from balance table.
+        'saved'       => EventSaved::class,
+    ];
+
     public function toArrayPublic()
     {
         $publicArr = parent::toArrayPublic();

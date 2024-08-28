@@ -250,6 +250,8 @@ class Core extends Base\Core
             }
         }
 
+        app('worker.ctx')->setLedgerDualWriteFlow(true);
+
         $journal = $payload[Constants::RESPONSE];
 
         if(isset($journal[LedgerConstants::TRANSACTOR_EVENT]) &&
@@ -799,6 +801,8 @@ class Core extends Base\Core
 
     public function createTransactionFromJournal(array $journal, $source, $isBulkJournal = false)
     {
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $transactorPublicId = "";
         $transactionType = "";
         $merchantId = "";

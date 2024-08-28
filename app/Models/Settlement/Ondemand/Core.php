@@ -825,6 +825,8 @@ class Core extends Base\Core
             }
         });
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         return $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
             $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
             $resource = $this->getTransactionMutexresource($settlementOndemand);
@@ -842,6 +844,8 @@ class Core extends Base\Core
 
     private function handleOndemandSettlementReversedEventOnAcknowledgment($journal, string $transactorId, string $reversalId, string $merchantId): Transaction\Entity {
         $journalId = $journal['id'];
+
+        app('request.ctx')->setLedgerDualWriteFlow(true);
 
         return $this->repo->transaction(function () use ($reversalId, $merchantId, $journalId,$journal) {
 

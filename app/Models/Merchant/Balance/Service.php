@@ -538,4 +538,72 @@ class Service extends Base\Service
 
         return $updatePayoutsAttributes;
     }
+
+    public function logBalanceReads(Entity $entity, $isLedgerDualWriteFlow = null)
+    {
+        if (count($entity->getAttributes()) < count($entity->getFillable()))
+        {
+            $entity = $this->repo->balance->findOrFail($entity->getId());
+        }
+
+        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
+        {
+            app('trace')->info(TraceCode::BALANCE_RETRIEVAL_EVENT,
+                [
+                    'balance'     => $entity->toArray(),
+                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                ]);
+
+            app('trace')->count(Metric::BALANCE_READ_API_LEDGER_CLS_MERCHANT, [
+                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+            ]);
+        }
+    }
+
+    public function logBalanceWrites(Entity $entity, $isLedgerDualWriteFlow = null)
+    {
+        if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
+        {
+            app('trace')->info(TraceCode::BALANCE_SAVED_EVENT,
+                [
+                    'balance'     => $entity->toArray(),
+                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                ]);
+
+            app('trace')->count(Metric::BALANCE_WRITE_API_LEDGER_CLS_MERCHANT, [
+                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+            ]);
+        }
+    }
+
+    protected function evaluateLedgerReadsWriteFlow(Entity $entity, $isLedgerDualWriteFlow)
+    {
+        $merchantId = $entity->getMerchantId();
+
+        $isPGBalance = $entity->getType() === Type::PRIMARY;
+
+        if ($isPGBalance === false)
+        {
+            return false;
+        }
+
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+            'merchant',
+            $merchantId,
+            Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+        $pgLedgerReverseShadowEnabled = false;
+
+        if (!empty($feature))
+        {
+            $pgLedgerReverseShadowEnabled = true;
+        }
+
+        if (($pgLedgerReverseShadowEnabled === true) and ($isPGBalance === true) and ($isLedgerDualWriteFlow === false or  $isLedgerDualWriteFlow === null))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

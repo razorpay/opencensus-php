@@ -22,6 +22,9 @@ class Metric extends Base\Core
     const BALANCE_NEGATIVE_THRESHOLD      = 'balance_negative_crossed_threshold';
     const BALANCE_ALLOWED_NEGATIVE        = 'balance_allowed_negative';
 
+    const BALANCE_READ_API_LEDGER_CLS_MERCHANT                = 'balance_read_api_ledger_cls_merchant';
+    const BALANCE_WRITE_API_LEDGER_CLS_MERCHANT               = 'balance_write_api_ledger_cls_merchant';
+
     public function getBalanceNegativeDimensions(string $merchantId, string $balanceType, int $balanceAmount, string $txnType) : array
     {
         $dimensions = [

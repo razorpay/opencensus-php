@@ -21,6 +21,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Partner;
 use RZP\Models\Terminal;
 use RZP\Modules\Acs;
+use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -166,7 +168,19 @@ class EventServiceProvider extends ServiceProvider
         ],
         ConsoleEvents\CommandFinished::class => [
             Acs\TriggerSyncListener::class,
-        ]
+        ],
+        Balance\EventRetrieved::class => [
+            Listeners\BalanceEventListener::class . '@onRetrieved',
+        ],
+        Balance\EventSaved::class => [
+            Listeners\BalanceEventListener::class . '@onSaved',
+        ],
+        Transaction\EventRetrieved::class => [
+            Listeners\TransactionEventListener::class . '@onRetrieved',
+        ],
+        Transaction\EventSaved::class => [
+            Listeners\TransactionEventListener::class . '@onSaved',
+        ],
     ];
 
     public function boot()

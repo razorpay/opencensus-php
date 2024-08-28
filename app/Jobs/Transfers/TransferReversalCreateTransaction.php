@@ -42,6 +42,8 @@ class TransferReversalCreateTransaction extends Job
 
         try
         {
+            app('worker.ctx')->setLedgerDualWriteFlow(true);
+
             $response   =  (new Transfer\Core())->createTransferReversalTransactions($this->reversalAndRefundJournalIds);
 
             $this->trace->info(TraceCode::TRANSFER_REVERSAL_TRANSACTION_CREATE_SUCCESS, [

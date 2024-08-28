@@ -1257,6 +1257,11 @@ class Processor extends Base\Core
                     }
                 }
 
+                if ($settlementJournalID !== null)
+                {
+                    app('request.ctx')->setLedgerDualWriteFlow(true);
+                }
+
                 if(empty($data[0]->getTransactionId())){
                     try {
                         $this->trace->info(
