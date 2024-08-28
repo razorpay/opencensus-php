@@ -89,7 +89,7 @@ const SalesDashboard = (): JSX.Element => {
     SalesOnboardedMerchants | null,
     GraphQLErrorResponseType
   >({
-    queryKey: [QUERY_KEY, page],
+    queryKey: [QUERY_KEY],
     queryFn: async ({ pageParam = 0 }) => {
       const { salesOnboardedMerchants: response } = await graphqlRequest<
         'salesOnboardedMerchants',
