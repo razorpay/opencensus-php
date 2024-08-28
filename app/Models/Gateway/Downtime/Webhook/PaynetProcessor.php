@@ -12,6 +12,7 @@ use RZP\Models\Gateway\Downtime\Entity;
 use RZP\Models\Gateway\Downtime\Webhook\Validator\Validator;
 use RZP\Models\Gateway\Downtime as GatewayDowntime;
 use RZP\Models\Gateway\Downtime\ReasonCode;
+use RZP\Models\Payment\Downtime\DowntimeManagerService;
 use RZP\Models\Payment\Method;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -148,6 +149,13 @@ class PaynetProcessor implements ProcessorInterface
 
     public function createDowntime($createDowntimeIssuers)
     {
+        if ($this->$this->shouldUseDowntimeManagerService() === true)
+        {
+            (new DowntimeManagerService($this->app))->createDowntimesFPX($createDowntimeIssuers);
+
+            return;
+        }
+
         foreach ($createDowntimeIssuers as $issuers)
         {
             $downtime = $this->baseInput($issuers, 'begin');
@@ -197,7 +205,14 @@ class PaynetProcessor implements ProcessorInterface
     {
         $transactionModeBankList = $this->getTransactionModeBankList($transactionMode);
 
-        $activeDowntimes = $this->fetchActiveDowntimeForFpx();
+        if ($this->$this->shouldUseDowntimeManagerService() === true)
+        {
+            $activeDowntimes = (new DowntimeManagerService($this->app))->fetchFPXDowntimesForAdmin();
+        }
+        else
+        {
+            $activeDowntimes = $this->fetchActiveDowntimeForFpx();
+        }
 
         $issuerListForExistingDowntimes = $this->calculateUnavailabeBanks($activeDowntimes);
 
@@ -214,6 +229,13 @@ class PaynetProcessor implements ProcessorInterface
     protected function resolveDowntimes($resolveDowntimeIssuers, $activeDowntimes)
     {
         $resolveDowntimes = $activeDowntimes->whereIn(Entity::ISSUER, $resolveDowntimeIssuers);
+
+        if ($this->$this->shouldUseDowntimeManagerService() === true)
+        {
+            (new DowntimeManagerService($this->app))->resolveDowntimesFPX($resolveDowntimes);
+
+            return;
+        }
 
         foreach ($resolveDowntimes as $downTime)
         {
@@ -246,6 +268,15 @@ class PaynetProcessor implements ProcessorInterface
         }
 
         return $baseInput;
+    }
+
+    protected function shouldUseDowntimeManagerService(): bool
+    {
+        if (app()->isEnvironmentProduction() === true) {
+            return true;
+        }
+
+        return false;
     }
 
 }

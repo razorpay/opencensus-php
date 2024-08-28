@@ -25,6 +25,11 @@ class DowntimeManagerService
     const FETCH_DOWNTIMES_ADMIN = 'v2/admin/downtimes';
     const EDIT_DOWNTIMES_ADMIN = 'v2/admin/downtimes/'; // + id
 
+    // FPX
+    const FETCH_DOWNTIMES_FPX = 'v2/fpx/downtimes/fetch';
+    const CREATE_DOWNTIMES_FPX = 'v2/fpx/downtimes/create';
+    const RESOLVE_DOWNTIMES_FPX = 'v2/fpx/downtimes/resolve';
+
     private $srConfig;
     private $srBasePath;
     private $srHost;
@@ -41,6 +46,26 @@ class DowntimeManagerService
         $this->srHost = $this->srConfig['host'];
         $this->srBasePath = $this->srConfig['basePath'];
         $this->app = $app;
+    }
+
+    // FPX APIS
+
+    public function createDowntimesFPX(array $input) : array {
+        $response = $this->sendRequest(self::CREATE_DOWNTIMES_FPX, DowntimeManagerController::POST, $input, "fpx");
+        unset($response["status_code"]);
+        return $response;
+    }
+
+    public function resolveDowntimesFPX(array $input) : array {
+        $response = $this->sendRequest(self::RESOLVE_DOWNTIMES_FPX, DowntimeManagerController::POST, $input, "fpx");
+        unset($response["status_code"]);
+        return $response;
+    }
+
+    public function fetchFPXDowntimesForAdmin()  {
+        $response = $this->sendRequest(self::FETCH_DOWNTIMES_FPX, DowntimeManagerController::GET, null, "fpx");
+        unset($response["status_code"]);
+        return $response["downtimes"];
     }
 
     // Admin Dashboard APIs
@@ -63,7 +88,6 @@ class DowntimeManagerService
         unset($response["status_code"]);
         return $response;
     }
-
 
     // Merchant Dashboard APIs
 
