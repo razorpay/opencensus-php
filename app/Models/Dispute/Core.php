@@ -4,6 +4,7 @@ namespace RZP\Models\Dispute;
 
 use DB;
 use Mail;
+use RZP\Error\PublicErrorDescription;
 use View;
 use Carbon\Carbon;
 
@@ -343,46 +344,58 @@ class Core extends Base\Core
 
         $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($dispute->payment->isInternational());
 
-        $dispute->edit($input);
-
-        $dispute->setAuditAction(Action::EDIT_DISPUTE);
-
-        if ($parent !== null)
-        {
-            $dispute->parent()->associate($parent);
-        }
-
-        $returnParam = $this->repo->transaction(function() use ($dispute, $input, $isShadowModeDualWrite) {
-
-            $this->handleDisputeClosure($dispute, $input);
-
-            if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
+        $returnParam = $this->mutex->acquireAndRelease(
+            $dispute->getId(),
+            function() use ($dispute, $input, $isShadowModeDualWrite, $parent)
             {
-                $this->fireDisputeStatusChangeWebhookEvent($dispute);
-            }
+                if ($dispute->isClosed() === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        PublicErrorDescription::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE
+                    );
+                }
 
-            $this->repo->saveOrFail($dispute);
+                $dispute->edit($input);
 
-            $this->updateCustomerTicketIfApplicable($dispute);
+                $dispute->setAuditAction(Action::EDIT_DISPUTE);
 
-            if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
-            {
-                $this->generateDisputeEvent($dispute);
-            }
+                if ($parent !== null)
+                {
+                    $dispute->parent()->associate($parent);
+                }
 
-            $dispute->refresh();
+                return $this->repo->transaction(function() use ($dispute, $input, $isShadowModeDualWrite) {
 
-            if ($isShadowModeDualWrite === false)
-            {
-                $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::UPDATE);
-            }
+                    $this->handleDisputeClosure($dispute, $input);
 
-            $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
-                'status' => $dispute->getStatus(),
-            ]);
+                    if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
+                    {
+                        $this->fireDisputeStatusChangeWebhookEvent($dispute);
+                    }
 
-            return $dispute;
-        });
+                    $this->repo->saveOrFail($dispute);
+
+                    $this->updateCustomerTicketIfApplicable($dispute);
+
+                    if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
+                    {
+                        $this->generateDisputeEvent($dispute);
+                    }
+
+                    $dispute->refresh();
+
+                    if ($isShadowModeDualWrite === false)
+                    {
+                        $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::UPDATE);
+                    }
+
+                    $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
+                        'status' => $dispute->getStatus(),
+                    ]);
+
+                    return $dispute;
+                });
+            });
 
         if ($isShadowModeDualWrite === true)
         {
