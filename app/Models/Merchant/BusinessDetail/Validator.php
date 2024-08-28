@@ -259,9 +259,11 @@ class Validator extends Base\Validator
         {
             if($this->orgId !== null)
             {
-                $org = $this->repo->org->findByPublicId($this->orgId);
+                $this->orgId = Org\Entity::verifyIdAndSilentlyStripSign($this->orgId);
 
-                if($org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+                $org = $this->repo->org->findOrFailPublic($this->orgId);
+
+                if($org !== null and $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
                 {
                     // Check if the Website is Razorpay URL for banking merchants
                     if (preg_match(DetailUpload\Validator::RAZORPAY_URL, $value) === 1)
@@ -275,6 +277,15 @@ class Validator extends Base\Validator
                     ]);
                 }
             }
+        }
+        catch (BadRequestValidationFailureException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,$ex,$ex->getMessage()
+            );
         }
         catch (\Exception $ex)
         {

@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Detail\Upload;
 use App;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -657,9 +658,11 @@ class Validator extends Base\Validator
         {
             if($this->orgId !== null)
             {
-                $org = $this->repo->org->findByPublicId($this->orgId);
+                $this->orgId = Org\Entity::verifyIdAndSilentlyStripSign($this->orgId);
 
-                if($org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+                $org = $this->repo->org->findOrFailPublic($this->orgId);
+
+                if($org !== null and $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
                 {
                     // Check if the Website is Razorpay URL
                     if (preg_match(self::RAZORPAY_URL, $value) === 1)
@@ -677,11 +680,19 @@ class Validator extends Base\Validator
                 }
             }
         }
+        catch (BadRequestValidationFailureException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,$ex,$ex->getMessage()
+            );
+        }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
         }
-
     }
 
     protected function validateWebsiteDetails($attribute, $value): void

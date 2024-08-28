@@ -668,7 +668,15 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
-        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://www.fictionalwebsite.com/';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_ABOUT_US] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_TERMS_CONDITIONS] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CONTACT_US] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRIVACY_POLICY] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRODUCT_PRICING] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_REFUNDS] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CANCELLATION] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_SHIPPING_DELIVERY] = 'https://www.fictionalwebsite.com';
 
         $response = $this->startTest();
 
