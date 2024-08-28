@@ -28,7 +28,8 @@ class TransactionEventListener
                 'event_name'                => 'onRetrieved',
                 'event'                     => $event,
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
-                'entity'                    => 'transactions'
+                'entity'                    => 'transactions',
+                'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
 
             TransactionBalanceReadWriteLoggingJob::dispatch($input, $this->getMode());
@@ -62,7 +63,8 @@ class TransactionEventListener
                 'event_name'                => 'onSaved',
                 'event'                     => $event,
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
-                'entity'                    => 'transactions'
+                'entity'                    => 'transactions',
+                'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
 
             TransactionBalanceReadWriteLoggingJob::dispatch($input, $this->getMode());

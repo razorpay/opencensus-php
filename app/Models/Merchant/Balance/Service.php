@@ -539,7 +539,7 @@ class Service extends Base\Service
         return $updatePayoutsAttributes;
     }
 
-    public function logBalanceReads(Entity $entity, $isLedgerDualWriteFlow = null)
+    public function logBalanceReads(Entity $entity, $isLedgerDualWriteFlow = null, $route)
     {
         if (count($entity->getAttributes()) < count($entity->getFillable()))
         {
@@ -551,27 +551,27 @@ class Service extends Base\Service
             app('trace')->info(TraceCode::BALANCE_RETRIEVAL_EVENT,
                 [
                     'balance'     => $entity->toArray(),
-                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                    'route'       => $route,
                 ]);
 
             app('trace')->count(Metric::BALANCE_READ_API_LEDGER_CLS_MERCHANT, [
-                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                'route'            => $route,
             ]);
         }
     }
 
-    public function logBalanceWrites(Entity $entity, $isLedgerDualWriteFlow = null)
+    public function logBalanceWrites(Entity $entity, $isLedgerDualWriteFlow = null, $route)
     {
         if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
         {
             app('trace')->info(TraceCode::BALANCE_SAVED_EVENT,
                 [
                     'balance'     => $entity->toArray(),
-                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                    'route'       => $route,
                 ]);
 
             app('trace')->count(Metric::BALANCE_WRITE_API_LEDGER_CLS_MERCHANT, [
-                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                'route'            => $route,
             ]);
         }
     }

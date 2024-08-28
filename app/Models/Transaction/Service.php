@@ -1009,7 +1009,7 @@ class Service extends Base\Service
         return $isExperimentEnabled;
     }
 
-    public function logTransactionReads(Entity $entity, $isLedgerDualWriteFlow= null)
+    public function logTransactionReads(Entity $entity, $isLedgerDualWriteFlow= null, $route)
     {
         if (count($entity->getAttributes()) < count($entity->getFillable()))
         {
@@ -1035,18 +1035,18 @@ class Service extends Base\Service
             app('trace')->info(TraceCode::TRANSACTIONS_RETRIEVAL_EVENT,
                 [
                     'transaction' => $entity->toArray(),
-                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                    'route'       => $route,
                 ]);
 
             app('trace')->count(Metric::TRANSACTION_READ_API_LEDGER_CLS_MERCHANT, [
                 'transaction_type' => $entity->getType(),
-                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                'route'            => $route,
                 'payment_method'   => $paymentMethod
             ]);
         }
     }
 
-    public function logTransactionWrites(Entity $entity, $isLedgerDualWriteFlow = null)
+    public function logTransactionWrites(Entity $entity, $isLedgerDualWriteFlow = null, $route)
     {
         if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
         {
@@ -1066,12 +1066,12 @@ class Service extends Base\Service
             app('trace')->info(TraceCode::TRANSACTIONS_SAVED_EVENT,
                 [
                     'transaction' => $entity->toArray(),
-                    'route'       => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                    'route'       => $route,
                 ]);
 
             app('trace')->count(Metric::TRANSACTION_WRITE_API_LEDGER_CLS_MERCHANT, [
                 'transaction_type' => $entity->getType(),
-                'route'            => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
+                'route'            => $route,
                 'payment_method'   => $paymentMethod
             ]);
         }
