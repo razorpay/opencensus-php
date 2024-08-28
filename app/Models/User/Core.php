@@ -5481,7 +5481,19 @@ class Core extends Base\Core
                 }
 
                 break;
-
+            case Constants::REMOVE_TND_USER:
+            case Constants::CANCEL_TND_USER_INVITE:
+            case Constants::SOURCE_ACCOUNT_CREATE:
+            case Constants::FEATURE_FLAG_UPDATE:
+            case Constants::EDIT_TND_USER:
+            case Constants::CREATE_WEBHOOK:
+            case Constants::UPDATE_WEBHOOK:
+            case Constants::DELETE_WEBHOOK:
+            case Constants::CHANGE_PASSWORD:
+            case Constants::UPDATE_USER:
+            case Constants::DELETE_INVITATION:
+                $context = sprintf('%s:%s:%s',$user->getId(), $action, $token);
+                break;
             default:
                 // Fallback to default context
                 $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
