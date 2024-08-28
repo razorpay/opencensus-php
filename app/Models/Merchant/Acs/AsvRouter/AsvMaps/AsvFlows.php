@@ -5,6 +5,18 @@ final class AsvFlows
 {
 
     public const MAP = array(
+        'worker:update_merchant_context' => true,
+        'worker:pgos_cdc_events_job' => true,
+        'merchant_activation_status' => true,
+        'merchant_submit_internal' => true,
+        'merchant_activation_save' => true,
+        'merchant_activation_update' => true,
+        'internal_merchant_activation_status' => true,
+        'merchant_details_patch' => true,
+        'action_checker_create' => true,
+    );
+
+    public const CacheDisabledFlows = array(
         'account_create_india_v2' => true,
         'account_create_v2' => true,
         'account_edit_v2' => true,
@@ -97,21 +109,7 @@ final class AsvFlows
         'worker:website_policy_consumer' => true,
         'workflow_config_delete' => true,
         'workflow_config_delete_admin' => true,
-    );
-
-    public const CacheDisabledFlows = array(
-        'worker:update_merchant_context' => true,
-        'worker:pgos_cdc_events_job' => true,
-        'merchant_activation_status' => true,
-        'merchant_activation_save' => true,
-        'merchant_submit_internal' => true,
-        'merchant_activation_update' => true,
         'internal_merchant_activation_status' => true,
-        'internal_payment_pricing' => true,
-        'internal_pricing' => true,
-        'merchant_details_patch' => true,
-        'action_checker_create' => true,
-
     );
 
     public static function isExclusionFLow(string $flow): bool
