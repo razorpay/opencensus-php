@@ -3048,7 +3048,9 @@ class Service extends Base\Service
 
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
 
-                $dccInfo['show_markup'] = $this->showMarkupExperimentEnabled($merchant->getId(), $iinEntity->getNetwork());
+                $dccInfo['show_markup'] = $this->showMarkupExperimentEnabled($merchant->getId(), $iinEntity->getNetwork()) === "v4";
+
+                $dccInfo['dcc_version'] = $this->showMarkupExperimentEnabled($merchant->getId(), $iinEntity->getNetwork());
 
                 $data = array_merge($data, $dccInfo);
             }
@@ -8851,11 +8853,11 @@ class Service extends Base\Service
         return $isExperimentEnabled;
     }
 
-    /** showMarkupExperimentEnabled(string $merchantId) checks
+    /** showMarkupExperimentEnabled(string $merchantId string $network) checks
      * if show dcc markup experiment is enabled or not this experiment
      * replaces PAYMENT_SHOW_DCC_MARKUP feature flag
      **/
-    public function showMarkupExperimentEnabled(string $merchantId, string $network): bool
+    public function showMarkupExperimentEnabled(string $merchantId, string $network): string
     {
             try
             {
@@ -8882,7 +8884,7 @@ class Service extends Base\Service
                 foreach ($variables as $variable) {
                     $versionValue = $variable['value'];
                 }
-                return $versionValue === "v4";
+                return $versionValue;
             }
             catch (\Exception $e)
             {
