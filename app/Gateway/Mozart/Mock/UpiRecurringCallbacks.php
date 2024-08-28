@@ -706,7 +706,9 @@ trait UpiRecurringCallbacks
 
         $aesencrypted = $this->encryptAes($json);
 
-        return $aesencrypted;
+        return [
+            'data' => $aesencrypted
+        ];
     }
 
     protected function getAsyncCallbackResponseFirstDebitForAxis($payment)
@@ -741,7 +743,9 @@ trait UpiRecurringCallbacks
 
         $aesencrypted = $this->encryptAes($json);
 
-        return $aesencrypted;
+        return [
+            'data' => $aesencrypted
+        ];
     }
 
     protected function getAsyncCallbackResponsePauseForAxis($mandate)
@@ -771,7 +775,9 @@ trait UpiRecurringCallbacks
 
         $aesencrypted = $this->encryptAes($json);
 
-        return $aesencrypted;
+        return [
+            'data' => $aesencrypted
+        ];
     }
 
     protected function getAsyncCallbackResponseResumeForAxis($mandate)
@@ -801,7 +807,9 @@ trait UpiRecurringCallbacks
 
         $aesencrypted = $this->encryptAes($json);
 
-        return $aesencrypted;
+        return [
+            'data' => $aesencrypted
+        ];
     }
 
     protected function getAsyncCallbackResponseRevokeForAxis($mandate)
@@ -831,7 +839,9 @@ trait UpiRecurringCallbacks
 
         $aesencrypted = $this->encryptAes($json);
 
-        return $aesencrypted;
+        return [
+            'data' => $aesencrypted
+        ];
     }
 
     public function encryptAes(string $stringToEncrypt)
@@ -843,6 +853,8 @@ trait UpiRecurringCallbacks
 
     protected function createCryptoIfNotCreated()
     {
-        $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->getGatewayInstance()->getSecret());
+        $gateway = $this->app['gateway']->gateway('upi_axis');
+
+        $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $gateway->getSecret());
     }
 }

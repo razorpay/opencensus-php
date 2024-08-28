@@ -440,6 +440,13 @@ class Gateway extends Base\Gateway
                     'frequency' => 'HALFYEARLY'
                 ];
 
+            case 'one_time':
+                return [
+                    'recurring_rule' => null,
+                    'recurring_value' => null,
+                    'frequency' => 'ONETIME'
+                ];
+
             default:
                 return [
                     'recurring_rule' => strtoupper($input['upi_mandate']['recurring_type']),
@@ -460,20 +467,20 @@ class Gateway extends Base\Gateway
             IntentParams::PAYEE_NAME     => preg_replace('/\s+/', '',
                 $input['merchant']->getFilteredDba()),
             IntentParams::RECUR_TYPE     => $recurrence['recurring_rule'],
-            IntentParams::REV            => $input['upi']['gateway_data']['rev'],
+            IntentParams::REV            => $recurrence['frequency'] === 'ONETIME' ? 'N' : $input['upi']['gateway_data']['rev'],
             IntentParams::TRANSACTION_ID => $input['upi']['gateway_data']['id'],
             IntentParams::PAYEE_ADDRESS  => $input['terminal']['vpa'],
             IntentParams::TXN_CURRENCY   => $input['payment']['currency'],
             IntentParams::VALIDITY_END   => Carbon::createFromTimestamp($input['upi_mandate']['end_time'], Timezone::IST)->format('dmY'),
             IntentParams::MCC            => (string) ($input['terminal']['category'] ?? 5411),
             IntentParams::VALIDITY_START => Carbon::createFromTimestamp($input['upi_mandate']['start_time'], Timezone::IST)->format('dmY'),
-            IntentParams::BLOCK          => 'N',
+            IntentParams::BLOCK          => $recurrence['frequency'] === 'ONETIME' ? 'Y' : 'N',
             IntentParams::RECUR_VALUE    => $recurrence['recurring_value'],
             IntentParams::MODE           => '04',
             IntentParams::FAM            => number_format($input['payment']['amount'] / 100, 2, '.', ''),
             IntentParams::FREQUENCY      => $recurrence['frequency'],
             IntentParams::TXN_REF_ID     => $input['upi']['gateway_data']['id'],
-            IntentParams::PURPOSE        => '14',
+            IntentParams::PURPOSE        => $recurrence['frequency'] === 'ONETIME' ? '01' : '14',
             IntentParams::AMOUNT_RULE    => 'MAX',
             IntentParams::ORG_ID         => '400011',
         ];

@@ -1087,4 +1087,55 @@ class PayInitData extends Base\Mock\Server
             }
         }
     }
+
+    public function upi_axis($entities)
+    {
+        $response = [
+            'data' => [
+                '_raw' => '',
+                'status_code' => '00',
+                'errCode' => '00',
+                'status' => '00',
+                'version' => 'v2',
+                'terminal' => [
+                    'gateway' => 'upi_axis',
+                    'gateway_merchant_id' => 'RAZORPAYAPP10040616'
+                ],
+                'upi' => [
+                    'status_code' => '00',
+                    'gateway_data' => [
+                        'id' => 'NrSPyEOccuftKZ0create1'
+                    ],
+                    'gateway_payment_id' => '408724842701',
+                    'merchant_reference' => 'NrSPyEOccuftKZ0create1',
+                    'npci_reference_id' => '408724842701'
+                ],
+                'status_desc' => 'SUCCESS',
+                'mandate' => [
+                    'rrn' => '408724842701'
+                ],
+                'payment' => [
+                    'currency' => 'INR'
+                ]
+            ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+
+        switch ($entities['payment']['description'])
+        {
+            case 'mandateCreateFailed':
+                $response['success'] = false;
+                $response['error'] = [
+                    'gateway_error_code' => 'QN',
+                    'gateway_error_description' => 'DUPLICATE MANDATE REQUEST',
+                    'internal_error_code' => 'GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST'
+                ];
+                break;
+        }
+
+        return $response;
+    }
 }
