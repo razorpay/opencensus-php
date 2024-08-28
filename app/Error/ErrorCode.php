@@ -213,7 +213,10 @@ class ErrorCode
     const GATEWAY_ERROR_OTPELF_FAILURE                                              = 'GATEWAY_ERROR_OTPELF_FAILURE';
 
     const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
+
     const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
+
+    const GATEWAY_ERROR_TRANSACTION_DECLINED_DUE_TO_SDN_BY_THE_BANK                 = 'GATEWAY_ERROR_TRANSACTION_DECLINED_DUE_TO_SDN_BY_THE_BANK';
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
     const GATEWAY_ERROR_INVALID_PAYMENT_DATA                                        = 'GATEWAY_ERROR_INVALID_PAYMENT_DATA';
 
