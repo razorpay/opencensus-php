@@ -6784,10 +6784,7 @@ class Core extends Base\Core
                 return false;
             }
 
-            $israzorxExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($orgId,
-                RazorxTreatment::PERFORM_KYC_VALIDATIONS_VASMERCHANTS);
-
-            if($merchant->org->isFeatureEnabled(Feature\Constants::KYC_VERIFICATION_FOR_VAS) && $israzorxExperimentEnabled)
+            if($merchant->org->isFeatureEnabled(Feature\Constants::KYC_VERIFICATION_FOR_VAS))
             {
                 return true;
             }
