@@ -127,7 +127,7 @@ class Repository extends Base\Repository
      */
     public function fetchPendingTransfers(string $sourceType, array $includeMerchantIds, array $excludeMerchantIds, int $count, int $minutes)
     {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection());
 
         // If a list of merchantIds is given, we will fetch transfers only for those merchantIds. Else
         // fetch transfers for all merchants excluding key merchants.
