@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use RZP\Base\RuntimeManager;
 use Throwable;
 use Carbon\Carbon;
 use Monolog\Logger;
@@ -496,6 +497,8 @@ class Service extends Base\Service
 
     public function processPendingOrderTransfers(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
         $limit = (int) ($input['limit'] ?? 300);
@@ -528,6 +531,8 @@ class Service extends Base\Service
 
     public function processPendingOrderTransfersForKeyMerchants(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
         $limit = (int) ($input['limit'] ?? 300);
@@ -558,6 +563,8 @@ class Service extends Base\Service
 
     public function processCreatedOrderTransfers(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+
         if (isset($input['order_ids']) === false)
         {
             $limit = (int)($input['limit'] ?? 300);
@@ -812,6 +819,8 @@ class Service extends Base\Service
 
     public function processFailedOrderTransfers(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
         $limit = (int) ($input['limit'] ?? 300);
@@ -2276,5 +2285,14 @@ class Service extends Base\Service
 
             $this->app['slack']->queue($headline, $alertData, $settings);
         }
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(600);
+
+        RuntimeManager::setMaxExecTime(600);
     }
 }

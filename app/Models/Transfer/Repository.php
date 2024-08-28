@@ -256,7 +256,7 @@ class Repository extends Base\Repository
                     ->where($transferStatus, Status::CREATED)
                     ->where($orderStatus, Order\Status::PAID)
                     ->where($createdAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
-                    ->where($createdAt, '>', Carbon::now()->subMinutes($minutes + 1440)->getTimestamp())
+                    ->where($createdAt, '>', Carbon::now()->subMinutes(30 * 24 * 60)->getTimestamp())
                     ->limit($count)
                     ->distinct()
                     ->pluck(Entity::SOURCE_ID)

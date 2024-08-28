@@ -161,6 +161,17 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_ENTITIES_NOT_SET);
             }
+
+            $transferNotes = $transfers[Entity::NOTES] ?? [];
+
+            $laNotesKeys = $transfers[Entity::LINKED_ACCOUNT_NOTES] ?? [];
+
+            if ((empty($laNotesKeys) === false) and (is_array($laNotesKeys) === true))
+            {
+                $laNotes = array_only($transferNotes, $laNotesKeys);
+
+                $this->validateLinkedAccountNotes($laNotes, $laNotesKeys);
+            }
         }
 
         $this->validateTransferEntities($keys, $transferCount);
