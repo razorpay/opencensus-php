@@ -3,6 +3,8 @@
 namespace RZP\Base;
 
 use App;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
 use RZP\Models\User\Transformers as User;
@@ -17,6 +19,7 @@ use RZP\Models\Merchant\BvsValidation\Transformers as MerchantBvsValidation;
 use RZP\Models\Merchant\BusinessDetail\Transformers as MerchantBusinessDetail;
 use RZP\Models\Merchant\VerificationDetail\Transformers as MerchantVerificationDetail;
 
+const APPLY_MUTEX_ON_PGOS_DUAL_WRITE_EXPERIMENT_ID = 'app.apply_mutex_on_pgos_dual_write_experiment_id';
 
 class Transformer
 {
@@ -48,6 +51,18 @@ class Transformer
 
     protected $rules = [];
 
+
+    protected $mutex;
+
+
+    protected $splitz;
+
+
+    const MUTEX_LOCK_TTL = 60; // in seconds
+    const MUTEX_RETRY_COUNT = 10;
+    const MUTEX_MIN_RETRY_DELAY = 1000; // in miliseconds
+    const MUTEX_MAX_RETRY_DELAY = 2000; // in miliseconds
+
     /* $rules //used to do structure conversion
     format = [
         input column name  1   => [
@@ -76,6 +91,10 @@ class Transformer
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+
+        $this->mutex = $this->app['api.mutex'];
+
+        $this->splitz = $this->app['splitzService'];
     }
 
     protected function registerFilters(ArrayTransformer $transformer)
@@ -136,7 +155,35 @@ class Transformer
 
         if (count($transformedData) > 0)
         {
-            $this->core->savePGOSDataToAPI($transformedData);
+            $merchantId = $transformedData['merchant_id'] ?? $transformedData['id'];
+
+            if ($this->shouldApplyMutexOnPGOSDualWrite($merchantId) == true) {
+                $this->mutex->acquireAndRelease(
+                    $merchantId,
+                    function() use ($transformedData)
+                    {
+                        $this->trace->info(TraceCode::MUTEX_ON_PGOS_DUAL_WRITE, [
+                            'acquired' => true,
+                        ]);
+
+                        $this->core->savePGOSDataToAPI($transformedData);
+                    },
+                    self::MUTEX_LOCK_TTL,
+                    ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                    self::MUTEX_RETRY_COUNT,
+                    self::MUTEX_MIN_RETRY_DELAY,
+                    self::MUTEX_MAX_RETRY_DELAY
+                );
+            }
+            else {
+
+                $this->trace->info(TraceCode::MUTEX_ON_PGOS_DUAL_WRITE, [
+                    'acquired' => false,
+                ]);
+
+                $this->core->savePGOSDataToAPI($transformedData);
+            }
+
         }
     }
 
@@ -183,6 +230,38 @@ class Transformer
                     new ClarificationDetail\ClarificationDetailsTransformer(),
                 ];
                 break;
+        }
+    }
+
+    public function shouldApplyMutexOnPGOSDualWrite(string $merchantId)
+    {
+        $mode = 'enable';
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get(APPLY_MUTEX_ON_PGOS_DUAL_WRITE_EXPERIMENT_ID),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::APPLY_MUTEX_ON_PGOS_DUAL_WRITE_SPLITZ_CALL, [
+                'splitz_output' => $variant,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get(APPLY_MUTEX_ON_PGOS_DUAL_WRITE_EXPERIMENT_ID) ?? null
+            ]);
+
+            return false;
         }
     }
 }
