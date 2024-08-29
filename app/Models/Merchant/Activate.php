@@ -1061,7 +1061,7 @@ class Activate extends Base\Core
                 }
 
                 $this->addEnableIpWhitelistFeatureOnX($merchant, $mode);
-                $this->addEnableIdemKeyRequiredFeatureOnX($merchant);
+                $this->addEnableIdemKeyRequiredFeatureOnX($merchant, $this->app['request.ctx']->getRoute());
             }
 
             (new Counter\Core)->fetchOrCreate($balance);
@@ -1289,24 +1289,37 @@ class Activate extends Base\Core
         $this->addFeatureWhileHandlingStaleRead($featureParams);
     }
 
-    public function addEnableIdemKeyRequiredFeatureOnX(Entity $merchant)
+    public function addEnableIdemKeyRequiredFeatureOnX(Entity $merchant, string $routeName)
     {
+        $ikeyEnabledPayoutRoutes = ["payout_create", "payout_create_internal"]; // existing merchants
+        $newMerchantOnboardingRoutes = ["bas_banking_accounts_create","banking_account_activate"]; // new merchants
+
         try {
+            // Check if the feature is already enabled for the merchant
+            if (!$merchant->isFeatureEnabled(Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED)) {
+                $razorxResponse = null;
 
-            if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED) === false) {
+                // Determine the Razorx treatment based on the route name
+                if (in_array($routeName, $ikeyEnabledPayoutRoutes)) {
+                    $razorxResponse = $this->app['razorx']->getTreatment(
+                        $merchant->getId(),
+                        Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT,
+                        Mode::LIVE
+                    );
+                } elseif (in_array($routeName, $newMerchantOnboardingRoutes)) {
+                    $razorxResponse = $this->app['razorx']->getTreatment(
+                        $merchant->getId(),
+                        Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW,
+                        Mode::LIVE
+                    );
+                }
 
-                $razorxResponse = $this->app['razorx']->getTreatment($merchant->getId(),
-                    Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT,
-                    Mode::LIVE);
-
-                if($razorxResponse === 'on'){
-                    $featureParams = [
+                if ($razorxResponse === 'on') {
+                    $this->addFeatureWhileHandlingStaleRead([
                         Feature\Entity::ENTITY_ID   => $merchant->getId(),
                         Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
                         Feature\Entity::NAMES       => [Feature\Constants::PAYOUT_IDEM_KEY_REQUIRED],
-                    ];
-
-                    $this->addFeatureWhileHandlingStaleRead($featureParams);
+                    ]);
 
                     $this->trace->info(TraceCode::IDEM_KEY_REQUIRED_FEATURE_ADDED, [
                         Merchant\Constants::MERCHANT_ID => $merchant->getId()
@@ -1317,16 +1330,17 @@ class Activate extends Base\Core
             $this->trace->count(
                 Metric::IDEMPOTENCY_CHECK_ERRORS,
                 [
-                    'error_code' =>  TraceCode::FEATURE_ENABLE_PAYOUT_IKEY_REQUIRED_FAILED,
-                    'route_name' => $this->app['request.ctx']->getRoute(),
+                    'error_code' => TraceCode::FEATURE_ENABLE_PAYOUT_IKEY_REQUIRED_FAILED,
+                    'route_name' => $routeName,
                 ]
             );
             $this->trace->error(TraceCode::FEATURE_ENABLE_PAYOUT_IKEY_REQUIRED_FAILED, [
-                'error_message'    => $exception->getMessage(),
-                'route_name'       => $this->app['request.ctx']->getRoute(),
+                'error_message' => $exception->getMessage(),
+                'route_name'    => $routeName,
             ]);
         }
     }
+
 
     // Returns true if experiment and env variable to onboard merchant on ledger in reverse shadow is running.
     protected function onBoardMerchantOnLedgerInReverseShadow(Entity $merchant, string $mode): bool

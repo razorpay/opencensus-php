@@ -70,7 +70,7 @@ class Core extends Base\Core
                 (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
                 (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
             }
-            (new Merchant\Activate())->addEnableIdemKeyRequiredFeatureOnX($merchant);
+            (new Merchant\Activate())->addEnableIdemKeyRequiredFeatureOnX($merchant, $this->app['router']->currentRouteName());
         }
 
         return [

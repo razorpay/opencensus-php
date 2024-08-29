@@ -2492,7 +2492,7 @@ class BankingAccountTest extends TestCase
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
                 {
-                    if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT)
+                    if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW)
                     {
                         return 'on';
                     }else{

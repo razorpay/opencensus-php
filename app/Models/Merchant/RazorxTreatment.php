@@ -1232,4 +1232,5 @@ final class RazorxTreatment
     const BAJAJ_FINSERV_REDIRECT_FLOW = 'bajaj_finserv_redirect_flow';
 
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT  = 'mandate_idempotency_key_experiment';
+    const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW = "mandate_idempotency_key_experiment_new";
 }

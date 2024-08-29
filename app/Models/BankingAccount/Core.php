@@ -1437,7 +1437,7 @@ class Core extends Base\Core
             (new Activate())->addPayoutFeatureIfApplicable($bankingAccount->merchant, Mode::LIVE, true);
             (new Activate())->addEnableIpWhitelistFeatureOnX($merchant, Mode::LIVE);
 
-            (new Activate())->addEnableIdemKeyRequiredFeatureOnX($merchant);
+            (new Activate())->addEnableIdemKeyRequiredFeatureOnX($merchant, $this->app['router']->currentRouteName());
 
             $this->trace->info(TraceCode::PAYOUT_FEATURE_ADDED, [
                 Merchant\Constants::MERCHANT_ID => $merchant->getId()
