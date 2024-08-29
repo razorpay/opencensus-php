@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
+use Razorpay\Trace\Logger as Trace;
 
 class TransactionBalanceReadWriteLoggingJob extends Job
 {
@@ -76,11 +77,7 @@ class TransactionBalanceReadWriteLoggingJob extends Job
         }
         catch (\Throwable $e)
         {
-            app('trace')->info(TraceCode::TRANSACTIONS_BALANCE_EVENT_EXCEPTION,
-                [
-                    'exception' => $e,
-                ]
-            );
+            app('trace')->traceException($e, Trace::ERROR, TraceCode::TRANSACTIONS_BALANCE_EVENT_EXCEPTION, []);
         }
     }
 }
