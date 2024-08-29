@@ -452,7 +452,28 @@ class Entity extends QrCode\Entity
             }
             else if ($this->getProvider() === Provider::BHARAT_QR)
             {
-                return Provider::UPI_ICICI;
+                $qrString = $this->getQrString();
+                $vpa = BharatQrVpaExtracter::getVPA($qrString);
+
+                if($vpa === null)
+                {
+                    return null;
+                }
+                if(str_contains($qrString, '@hdfcbank'))
+                {
+                    $terminal = (new Generator())->fetchDedicatedTerminalFromQrStringForHdfcVpa($this,$vpa);
+                    if(empty($terminal) === false)
+                    {
+                        return $terminal->getGateway();
+                    }
+
+                    return null;
+                }
+                else
+                {
+                    return Provider::UPI_ICICI;
+                }
+
             }
         }
         catch (\Exception)
@@ -475,15 +496,21 @@ class Entity extends QrCode\Entity
 
         return $query;
     }
-
     public function getQrVpa()
     {
-        $qrMetaData = $this->fetchQrStringMetaData();
-        if (isset($qrMetaData['pa']) === false)
+        if ($this->getProvider() === Provider::BHARAT_QR)
         {
-            return null;
+            return BharatQrVpaExtracter::getVPA($this->getQrString());
         }
+        else
+        {
+            $qrMetaData = $this->fetchQrStringMetaData();
+            if (isset($qrMetaData['pa']) === false)
+            {
+                return null;
+            }
 
-        return $qrMetaData['pa'];
+            return $qrMetaData['pa'];
+        }
     }
 }

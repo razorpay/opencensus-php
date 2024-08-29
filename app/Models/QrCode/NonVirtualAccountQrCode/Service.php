@@ -19,6 +19,7 @@ use RZP\Models\QrCode\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -36,8 +37,14 @@ class Service extends QrCode\Service
         Gateway::UPI_ICICI,
         Gateway::UPI_YESBANK,
         Gateway::UPI_MINDGATE,
-        Gateway::UPI_AIRTEL
+        Gateway::UPI_AIRTEL,
     ];
+
+    public static $qrBharatQrStatusCheckGateways = [
+        Gateway::UPI_HDFCMINTOAK,
+        Gateway::UPI_MINDGATE
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -93,10 +100,13 @@ class Service extends QrCode\Service
 
         // Since this is inside NonVirtualAccountQrCode/Service, it is safe to assume that only qrV2 are checked here
 
-        if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
-            ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
-            (in_array($gateway, self::$qrStatusCheckGateways, true) === true) and
-            ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
+        if (
+            ($qrCode->getUsageType() === UsageType::SINGLE_USE) and
+            (($qrCode->getProvider() === Provider::UPI_QR) and
+                (in_array($gateway, self::$qrStatusCheckGateways, true) === true)) or
+            (($qrCode->getProvider() === Provider::BHARAT_QR) and
+                (in_array($gateway, self::$qrBharatQrStatusCheckGateways, true) === true))
+        )
         {
             $this->triggerQrStatusCheckPostCreate($qrCode);
         }
@@ -674,10 +684,6 @@ class Service extends QrCode\Service
             $this->trace->info(TraceCode::QR_CODE_STATUS_CHECK_INIT, ['id' => $qrCode->getId()]);
 
             // Find the env variable QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID to find experiment IDs for different envs
-            if ($this->evaluateQrCodeEligibilityViaSplitzForStatusCheck($qrCode) === false)
-            {
-                return;
-            }
 
             $request = [
                 'entity_id'     => $qrCode->getId(),
@@ -977,17 +983,14 @@ class Service extends QrCode\Service
             return;
         }
 
-        if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
-            ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
-            (in_array($qrCode->getGatewayFromQrString(), self::$qrStatusCheckGateways, true) === true) and
-            ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
+        if (
+                ($qrCode->getUsageType() === UsageType::SINGLE_USE) and
+                (($qrCode->getProvider() === Provider::UPI_QR) and
+                    (in_array($qrCode->getGatewayFromQrString(), self::$qrStatusCheckGateways, true) === true)) or
+                (($qrCode->getProvider() === Provider::BHARAT_QR) and
+                    (in_array($qrCode->getGatewayFromQrString(), self::$qrBharatQrStatusCheckGateways, true) === true))
+            )
         {
-            // Find the env variable QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID to find experiment IDs for different envs
-            if ($this->evaluateQrCodeEligibilityViaSplitzForStatusCheck($qrCode) === false)
-            {
-                return;
-            }
-
             // After dispatch, when the worker picks the message up, the worker performs other validations too
             // Since the dispatch step has a unique job check, we won't be dispatching multiple messages for the same
             // QR code at once.

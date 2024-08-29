@@ -90,7 +90,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCreateBharatQrCode()
     {
-        $response = $this->createQrCode();
+        $response = $this->createQrCode(['request_source' => 'ezetap']);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -101,7 +101,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testDownloadBharatQr()
     {
-        $response = $response = $this->createQrCode();
+        $response = $response = $this->createQrCode(['request_source' => 'ezetap']);
 
         $qrCodeId = $response['id'];
 
@@ -123,7 +123,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->expectExceptionMessage('The id provided does not exist');
 
-        $this->createQrCode(['customer_id' => 'cust_110000customer']);
+        $this->createQrCode(['customer_id' => 'cust_110000customer','request_source' => 'ezetap']);
     }
 
     public function testBadRequestBharatQrCodeWithTaxInvoice()
@@ -140,6 +140,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessBqrBankTransfer()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->enableRazorXTreatmentForQrBankTransfer();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -190,6 +192,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessBqrRblBankTransferAndRefund()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->getQrCodeForBankTransfer(Gateway::BT_RBL, '222333');
 
         $qrBankAccount = $this->getDbLastEntity('bank_account');
@@ -233,6 +237,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessBqrBankTransferDuplicate()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->enableRazorXTreatmentForQrBankTransfer();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -270,6 +276,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessBqrIciciBankTransferAndRefund()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->getQrCodeForBankTransfer(Gateway::BT_ICICI, '111222');
 
         $qrBankAccount = $this->getDbLastEntity('bank_account');
@@ -328,6 +336,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessBqrBankTransferRefund()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->enableRazorXTreatmentForQrBankTransfer();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -488,6 +498,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testBqrGenerationWithBankAccount()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->enableRazorXTreatmentForQrBankTransfer();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -511,6 +523,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testBqrGenerationWithRecoveryBankAccount()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->enableRazorXTreatmentForQrBankTransfer();
 
         $this->fixtures->merchant->addFeatures(['qr_image_content']);
@@ -567,7 +581,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['subm_qr_image_content'], $partnerId);
 
-        $qrCode = $this->createQrCode(['tax_invoice' => $this->testData['tax_invoice'], 'type' => 'upi_qr'], 'test', $submerchantId);
+        $qrCode = $this->createQrCode(['tax_invoice' => $this->testData['tax_invoice'], 'type' => 'upi_qr','request_source' => 'ezetap'], 'test', $submerchantId);
 
         $this->assertNotNull($qrCode['image_content']);
         $this->assertStringContainsString('gstIn=06AABCU9603R1ZR', $qrCode['image_content']);
@@ -600,7 +614,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCloseQrCode()
     {
-        $response = $this->createQrCode();
+        $response = $this->createQrCode(['request_source' => 'ezetap']);
 
         $this->assertEquals(Status::ACTIVE, $response['status']);
 
@@ -614,6 +628,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPayment()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
 
         $qrCodeId = $qrCode['id'];
@@ -1307,6 +1323,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentInternal()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -1334,6 +1352,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentInternalWithPayerAccountType()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -1362,6 +1382,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentInternalWithInvalidPayerAccountType()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -1390,6 +1412,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentInternalDuplicate()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -1528,6 +1552,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCreateBharatQrCodeWithUpiDisabled()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->expectException(LogicException::class);
 
         $this->expectExceptionMessage('No identifiers found for the merchant');
@@ -1539,6 +1565,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     protected function processIciciQrPaymentWithDifferentAmountUtil($amount)
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
 
         $qrCodeId = $qrCode['id'];
@@ -1574,6 +1602,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentOnClosedQrCode()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -1613,6 +1643,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessBankTransferOnClosedQrCode()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->enableRazorXTreatmentForQrBankTransfer();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -1649,6 +1681,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessQrPaymentAmountMismatch()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode(['fixed_amount' => true, 'payment_amount' => 5000]);
 
         $qrCodeId = $qrCode['id'];
@@ -1792,6 +1826,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testRZPPosQrCodePricing(): void
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         // add qr_code pricing plan
         $qrPricingPlan = [
             'plan_id'             => 'TestPlan1',
@@ -1917,6 +1953,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessDuplicateIciciQrPayment()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -2006,6 +2044,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testPaymentEntityInQrCodeWithEzetapRequestSource()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         // add pos qr_code pricing plan
         $posQRPricingPlan = [
             'plan_id'             => '1hDYlICobzOCYt',
@@ -2052,6 +2092,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCardQrPaymentProcess()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $this->ba->directAuth();
@@ -2098,6 +2140,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrCodeTestPayments()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $qrCode = $this->createQrCode();
@@ -2138,6 +2182,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testReminderCallback()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $input = $this -> getDefaultQrCodeRequestArray();
 
         $input['close_by'] = Carbon::now()->getTimestamp() + 1000;
@@ -2189,6 +2235,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testDynamicVpaAdditionToQrCode()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->createQrCode();
 
         $vpa    = $this->getLastEntity('vpa', true);
@@ -2200,6 +2248,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testVpaVerification()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->createQrCode();
 
         $vpa    = $this->getLastEntity('vpa', true);
@@ -2260,6 +2310,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrCodeWithPartnerNameFlagEnabled()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->fixtures->merchant->addFeatures(['qr_image_partner_name']);
 
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
@@ -2328,6 +2380,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrCodeCreditedEventWithTransactionIsolation()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->createPartnerAndSubmerchantMapping();
 
         $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
@@ -2381,6 +2437,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchQrCodePayments()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -2450,6 +2508,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchQrCodeByCustomerEmail()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->createQrCode(['customer_id' => 'cust_100000customer']);
 
         $response = $this->fetchQrCode(null, ['cust_email' => 'test@razorpay.com']);
@@ -2461,6 +2521,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentToFetchPayerName()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         Mail::fake();
 
         $this->fixtures->merchant->addFeatures(['send_name_in_email_for_qr']);
@@ -2494,6 +2556,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentToFetchNotPayerName()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         Mail::fake();
 
         $this->fixtures->merchant->addFeatures(['send_name_in_email_for_qr']);

@@ -180,14 +180,8 @@ class Generator extends Base\Core
         }
     }
 
-    protected function getBharatQrCode($qrCode)
+    protected function generateBharatQrCodeWithMethodTags($qrCode, $pointOfInitiation, $merchantIdentifiers)
     {
-        $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
-
-        $pointOfInitiation = $this->getPointOfInitiation($qrCode);
-
-        $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
-
         $merchantDetails = $this->getMerchantDetailsToPopulate($qrCode);
 
         $tagArray = [
@@ -219,6 +213,18 @@ class Generator extends Base\Core
         $qrString .= $crc;
 
         return $qrString;
+    }
+
+    protected function getBharatQrCode($qrCode)
+    {
+        $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
+
+        $pointOfInitiation = $this->getPointOfInitiation($qrCode);
+
+        $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
+
+        return $this->generateBharatQrCodeWithMethodTags($qrCode, $pointOfInitiation, $merchantIdentifiers);
+
     }
 
     protected function getMerchantDetailsToPopulate($qrCode): array

@@ -1117,7 +1117,6 @@ class QrCodeRefactorTest extends TestCase
         );
     }
 
-    // incomplete
     public function testQrStatusCheckViaRefactorFlow()
     {
         $count = 0;

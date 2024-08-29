@@ -2356,6 +2356,31 @@ class Terminal extends Base
         $this->createBankAccountTerminal(array_merge($defaultValues1, $attributes));
     }
 
+    public function createDedicatedUpiHdfcmintoakTerminal(array $attributes = [])
+    {
+        $termId = "100HdfcMtkTrmn";
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => Gateway::UPI_HDFCMINTOAK,
+            'gateway_merchant_id'       => '222333',
+            'gateway_merchant_id2'      => '001122',
+            'card'                      => 0,
+            'upi'                       => true,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::OFFLINE           => '1',
+                Type::COLLECT           => '1',
+            ],
+            'vpa'                       => 'test@hdfcbank'
+        ];
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBankAccountTerminal(array $attributes = [])
     {
         $defaultValues = [

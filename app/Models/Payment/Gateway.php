@@ -123,6 +123,7 @@ class Gateway
     const PAYTM                  = 'paytm';
     const SEZZLE                 = 'sezzle';
     const SHARP                  = 'sharp';
+    const UPI_HDFCMINTOAK        = 'upi_hdfcmintoak';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_AXIS               = 'upi_axis';

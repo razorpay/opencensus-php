@@ -21,11 +21,13 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Models\Order\Entity as Order;
 use RZP\Exception\BadRequestException;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
 
 class Core extends QrCode\Core
@@ -51,6 +53,12 @@ class Core extends QrCode\Core
     public function buildQrCode(array $input, $order = null)
     {
         $qrCode = (new Entity())->build($input);
+
+        if ($qrCode->getProvider() === Provider::BHARAT_QR and
+            $qrCode->getRequestSource() !== RequestSource::EZETAP)
+        {
+                throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
+        }
 
         $this->checkFeatureEnabled($input);
 

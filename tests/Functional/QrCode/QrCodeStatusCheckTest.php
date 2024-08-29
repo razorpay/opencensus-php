@@ -191,77 +191,14 @@ class QrCodeStatusCheckTest extends TestCase
     }
 
     /**
-     * Tests if splitz experiment is working or not.
-     *
-     * @return void
-     */
-    public function testQrStatusCheckReminderRequestWhenSplitzIsDisabled()
-    {
-        $terminal = $this->fixtures->create(
-            'terminal:dedicated_upi_icici_terminal',
-            ['gateway_merchant_id2' => 'rzp.razorpay1234@icici']
-        );
-
-        $remindersCallCount = 0;
-        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
-
-        $this->mockSplitzTreatmentForStatusCheck('off');
-
-        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
-        $qrCode        = $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'upi_qr',
-                'fixed_amount'   => true,
-                'payment_amount' => 10000,
-            ],
-            'live',
-            'LiveAccountMer'
-        );
-        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
-        $this->assertEquals($previousCount + 1, $newCount);
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
-
-        $this->assertEquals(0, $remindersCallCount);
-    }
-
-    public function testQrStatusCheckReminderRequestWhenCreatedOnSharedQr()
-    {
-        $terminal = $this->fixtures->create(
-            'terminal:dedicated_upi_icici_terminal',
-            ['gateway_merchant_id2' => 'rzp.razorpay1234@icici']
-        );
-
-        $remindersCallCount = 0;
-        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
-
-        $this->mockSplitzTreatmentForStatusCheck('on', 'off');
-
-        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
-        $qrCode        = $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'upi_qr',
-                'fixed_amount'   => true,
-                'payment_amount' => 10000,
-            ],
-            'live',
-            'LiveAccountMer'
-        );
-        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
-        $this->assertEquals($previousCount + 1, $newCount);
-
-        $this->assertEquals(0, $remindersCallCount);
-    }
-
-    /**
      * Tests that we are not trying status check for Bharat QRs.
      *
      * @return void
      */
     public function testQrStatusCheckReminderRequestForBharatQr()
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_icici_terminal',
             ['gateway_merchant_id2' => 'rzp.razorpay1234@icici']
@@ -1367,62 +1304,6 @@ class QrCodeStatusCheckTest extends TestCase
         $this->startTest();
 
         Queue::assertPushed(QrStatusCheck::class, 1);
-    }
-
-    public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndExperimentOff()
-    {
-        $terminal = $this->fixtures->create(
-            'terminal:dedicated_upi_icici_terminal',
-            [
-                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
-                'gateway_merchant_id'  => '403343',
-                'gateway_terminal_id'  => '5411',
-            ]
-        );
-
-        $remindersCallCount = 0;
-        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
-
-        $this->mockSplitzTreatmentForStatusCheck();
-
-        $currentTime = Carbon::now();
-
-        // Adding 4 minutes to make sure that sufficient time has passed for dispatch
-        Carbon::setTestNow($currentTime);
-
-        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
-        $qrCode        = $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'upi_qr',
-                'fixed_amount'   => true,
-                'payment_amount' => 10000,
-            ],
-            'live',
-            'LiveAccountMer'
-        );
-        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
-        $this->assertEquals($previousCount + 1, $newCount);
-
-        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
-
-        $this->assertEquals(1, $remindersCallCount);
-
-        Queue::fake();
-
-        $this->testData[__FUNCTION__]['request']['url'] =
-            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
-
-        $this->ba->privateAuth('rzp_live_LiveAccountMer');
-
-        // Adding 4 minutes to make sure that sufficient time has passed for dispatch
-        Carbon::setTestNow($currentTime->addMinutes(4));
-
-        $this->mockSplitzTreatmentForStatusCheck('off');
-
-        $this->startTest();
-
-        Queue::assertPushed(QrStatusCheck::class, 0);
     }
 
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreation()

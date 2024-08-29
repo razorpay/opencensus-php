@@ -672,6 +672,8 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateBharatQrCodeWithDedicatedTerminal(): void
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $response = $this->createQrCode();
 
         $expectedResponse = $this->testData['testCreateBharatQrCode'];
@@ -683,6 +685,8 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateBharatQrCodeWithNoDedicatedTerminal(): void
     {
+        $this->markTestSkipped("BQR Disable for Non Ezetap Merchants");
+
         $this->expectException(LogicException::class);
 
         $this->expectExceptionCode(ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);

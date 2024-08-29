@@ -21,4 +21,8 @@ class Constants
     const UPI_PREFIX             = 'RZP';
     const ACCOUNT_NUMBER         = '2223330048827001';
     const IFSC_CODE              = 'YESB0CMSNOC';
+
+    const DUMMY_ACCOUNT_NUMBER         = '0000000000000000';
+    const DUMMY_IFSC_CODE              = 'ABCD0000000';
+
 }

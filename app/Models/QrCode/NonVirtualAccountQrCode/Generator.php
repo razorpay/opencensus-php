@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+use Lib\CRC16;
 
 use RZP\Constants\Timezone;
 use RZP\Error;
@@ -64,7 +65,7 @@ class Generator extends QrCode\Generator
      * @return array
      * @throws \Exception
      */
-    protected function getUpiIdentifier(Entity $qrCode): array
+    protected function getUpiIdentifier(Entity $qrCode, $terminal = null): array
     {
         // If UPI isn't enabled at all, we skip addition of UPI identifiers
         if ((new Merchant\Methods\Service())->isMethodEnabledForMerchant(Payment\Method::UPI, $qrCode->merchant) === false)
@@ -77,7 +78,7 @@ class Generator extends QrCode\Generator
             return ['vpa' => QrCode\Constants::DUMMY_QR_CODE_VPA];
         }
 
-        $identifier[self::VPA] = $this->getVpaForQr($qrCode);
+        $identifier[self::VPA] = $this->getVpaForQr($qrCode, $terminal);
 
         $this->trace->info(TraceCode::BHARAT_QR_UPI_IDENTIFIERS,
                            [
@@ -280,7 +281,8 @@ class Generator extends QrCode\Generator
 
         if (($this->terminalId === null) or
             ($qrCode->getUsageType() === UsageType::MULTIPLE_USE) or
-            ($qrCode->getAmount() === null))
+            ($qrCode->getAmount() === null) or
+            ($qrCode->getProvider() === Provider::BHARAT_QR))
         {
             return $refId;
         }
@@ -348,9 +350,42 @@ class Generator extends QrCode\Generator
     }
 
     /**
+     * This function initially attempts to retrieve the terminal using the gateway identifier UPI_MINDGATE.
+     * If the terminal cannot be located under this gateway, the function will then attempt to fetch the terminal
+     * using the alternative gateway identifier UPI_MINTOAK.
+     * If the terminal still cannot be found using this secondary identifier, the function will raise an error.
      * @param $vpa    string
      * @param $qrCode \RZP\Models\QrCode\NonVirtualAccountQrCode\Entity
      */
+    public function fetchDedicatedTerminalFromQrStringForHdfcVpa($qrCode, $vpa)
+    {
+        $gateway = Gateway::UPI_MINDGATE;
+        $params = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $vpa);
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
+
+        if(($terminal instanceof Terminal\Entity) === true)
+        {
+            return $terminal;
+        }
+        else
+        {
+            $gateway = Gateway::UPI_HDFCMINTOAK;
+            $params  = array(Terminal\Entity::VPA => $vpa);
+            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
+
+            if (($terminal instanceof Terminal\Entity) === false)
+            {
+                throw new Exception\LogicException(
+                    TraceCode::QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT,
+                    Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                    ['merchant_id' => $qrCode->merchant->getId(),]
+                );
+            }
+
+            return $terminal;
+
+        }
+    }
     private function generateUpiQrIntentUrl($vpa, $qrCode)
     {
         $content = [
@@ -444,8 +479,7 @@ class Generator extends QrCode\Generator
         }
         elseif(str_contains($qrCode['qr_string'], '@hdfcbank') === true)
         {
-            $gateway = GATEWAY::UPI_MINDGATE;
-            $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $vpa);
+            return $this->fetchDedicatedTerminalFromQrStringForHdfcVpa($qrCode, $vpa);
         }
         elseif (str_contains($qrCode['qr_string'], '@mairtel') === true)
         {
@@ -1006,21 +1040,26 @@ class Generator extends QrCode\Generator
 
     public function getMerchantAccountIdentifier($qrCode)
     {
-        if ((new Merchant\Methods\Service())->isMethodEnabledForMerchant(Payment\Method::BANK_TRANSFER, $qrCode->merchant) === false)
-        {
-            return parent::getMerchantAccountIdentifier($qrCode);
-        }
+//        if ((new Merchant\Methods\Service())->isMethodEnabledForMerchant(Payment\Method::BANK_TRANSFER, $qrCode->merchant) === false)
+//        {
+//            return parent::getMerchantAccountIdentifier($qrCode);
+//        }
+//
+//        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), Merchant\RazorxTreatment::QR_CODE_BANK_TRANSFER, $this->mode);
+//
+//        if ($variant !== 'on')
+//        {
+//            return parent::getMerchantAccountIdentifier($qrCode);
+//        }
+//
+//        $bankAccount = (new BankAccount\Generator($qrCode->merchant, ['name' => $qrCode->merchant->getName()]))->generate($qrCode);
+//
+//        $value = $bankAccount->getIfscCode() . $bankAccount->getAccountNumber();
+        /*
+         * The above code is been commented because as new flow-
+            bharat Qr will not require actual details of merchant  */
 
-        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), Merchant\RazorxTreatment::QR_CODE_BANK_TRANSFER, $this->mode);
-
-        if ($variant !== 'on')
-        {
-            return parent::getMerchantAccountIdentifier($qrCode);
-        }
-
-        $bankAccount = (new BankAccount\Generator($qrCode->merchant, ['name' => $qrCode->merchant->getName()]))->generate($qrCode);
-
-        $value = $bankAccount->getIfscCode() . $bankAccount->getAccountNumber();
+        $value = BQRConstants::DUMMY_IFSC_CODE . BQRConstants::DUMMY_ACCOUNT_NUMBER;
 
         return Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue($value);
     }
@@ -1113,13 +1152,16 @@ class Generator extends QrCode\Generator
 
                     if
                     (
-                        strtolower(
-                            $this->app->razorx->getTreatment(
-                                $terminal->getGateway(),
-                                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                                $this->mode
-                            )
-                        ) === RazorxTreatment::RAZORX_VARIANT_ON
+                        (
+                            strtolower(
+                                $this->app->razorx->getTreatment(
+                                    $terminal->getGateway(),
+                                    RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
+                                    $this->mode
+                                )
+                            ) === RazorxTreatment::RAZORX_VARIANT_ON
+                        ) and
+                        ($qrCode->getProvider() === Provider::UPI_QR)
                     )
                     {
                         return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
@@ -1326,5 +1368,120 @@ class Generator extends QrCode\Generator
 
         // Returning the QR string as that is what is expected from this function
         return $response[EntityConstants::QR_CODE][Entity::QR_STRING];
+    }
+
+    protected function generateBharatQrMerchantIdentifierForNonMigratedGateways(Entity $qrCode, $terminal)
+    {
+        $cardIdentifiers = array_filter($this->getCardIdentifiers($qrCode));
+
+        $upiIdentifier = array_filter($this->getUpiIdentifier($qrCode,$terminal));
+
+        $allIdentifiers = array_merge($cardIdentifiers, $upiIdentifier);
+
+        //
+        // This is important to be here for the calling function.
+        //
+        if (count(array_filter($allIdentifiers)) === 0)
+        {
+            throw new Exception\LogicException(
+                'No identifiers found for the merchant',
+                null,
+                ['qr_code' => $qrCode->toArray()]
+            );
+        }
+
+        return $allIdentifiers;
+
+    }
+    protected function getBharatQrUpiTlv(Entity $qrCode, array $merchantIdentifiers)
+    {
+        $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA] ?? null;
+
+        // This happens when no terminal of upi
+        // bqr is assigned to the merchant.
+        if (empty($merchantVpa) === true)
+        {
+            return null;
+        }
+
+        $rupayRidTlv    = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(BQRConstants::RUPAY_RID);
+        $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue($merchantVpa);
+        $upiString = $rupayRidTlv . $merchantVpaTlv;
+
+        return Tags::UPI_VPA . strlen($upiString) . $upiString;
+
+    }
+    protected function getBharatQrDynamicUpiTlv(Entity $qrCode, array $merchantIdentifiers)
+    {
+        $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA] ?? null;
+
+        // This happens when no terminal of upi
+        // bqr is assigned to the merchant.
+        if (empty($merchantVpa) === true)
+        {
+            return null;
+        }
+
+        $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(BQRConstants::RUPAY_RID);
+
+        //
+        // In case of BQR Mindgate payment we use getRefIdForQrCode function in place of
+        // QrCode/Generator/getTransactionReferenceTlv()
+        $qrRefId = $this->getRefIdForQrCode($qrCode);
+
+        $upiString = $rupayRidTlv . $qrRefId;
+
+        return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
+    }
+
+    protected function getBharatQrCode($qrCode)
+    {
+        $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
+
+        $terminals = $this->getDedicatedTerminalForQrCreate($qrCode);
+        $errorMessage = '';
+        $errorCode    = '';
+
+        foreach($terminals as $terminal)
+        {
+            $this->gateway = $terminal->getGateway();
+            $this->terminalId = $terminal->getId();
+
+            try
+            {
+                if
+                (
+                    strtolower(
+                        $this->app->razorx->getTreatment(
+                            $terminal->getGateway(),
+                            RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
+                            $this->mode
+                        )
+                    ) === RazorxTreatment::RAZORX_VARIANT_ON
+                )
+                {
+                    return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
+                }
+
+                $pointOfInitiation = $this->getPointOfInitiation($qrCode);
+
+                $merchantIdentifiers = $this->generateBharatQrMerchantIdentifierForNonMigratedGateways($qrCode, $terminal);
+
+                return $this->generateBharatQrCodeWithMethodTags($qrCode, $pointOfInitiation, $merchantIdentifiers);
+
+            }
+            catch (\Exception $e)
+            {
+                $errorMessage = $e->getMessage();
+                $errorCode    = $e->getCode();
+                $this->trace->traceException($e);
+            }
+
+        }
+
+        if (($errorMessage) !== '')
+        {
+            throw new BadRequestException($errorCode, $errorMessage);
+        }
     }
 }
