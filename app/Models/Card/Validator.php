@@ -117,6 +117,6 @@ class Validator extends Base\Validator
 
         if($valid== false && $isDummyCard==false )
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR, 'number', null, "The number is invalid.");
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, 'number', null, "The number is invalid.");
     }
 }
