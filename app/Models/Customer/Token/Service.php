@@ -2300,8 +2300,8 @@ class Service extends Base\Service
             $tokenbin = $input['token_bin'];
             $lastfour = $input['card_last_four'];
             $token_expiry = $input['token_expiry'];
-            $expiryMonth = substr($token_expiry, 0, 2);
-            $expiryYear = substr($token_expiry, 2, 2);
+            $expiryYear = substr($token_expiry, 0, 2);
+            $expiryMonth = substr($token_expiry, 2, 2);
             $fullExpiryYear = '20' . $expiryYear;
             $iins = $this->repo->tokenised_iin->findbyTokenIin($tokenbin);
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
@@ -2339,7 +2339,8 @@ class Service extends Base\Service
                     Card\Entity::EXPIRY_MONTH     => $expiryMonth,
                     Card\Entity::EXPIRY_YEAR      => $fullExpiryYear,
                     Card\Entity::VAULT            => Card\Vault::RZP_VAULT,
-                    Card\Entity::CVV              => '123'
+                    Card\Entity::CVV              => '123',
+                    Card\Entity::DUMMY_CARD       => true,
                 ];
             $cardData = (new Card\Core)->createAndReturnWithSensitiveData($cardInput, $merchantPushProvisioning, false, false);
 

@@ -5,10 +5,12 @@ namespace RZP\Models\Card;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Base\Luhn;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        Entity::DUMMY_CARD         => 'sometimes',
         Entity::NUMBER             => 'required|numeric|digits_between:12,19',
         Entity::EXPIRY_MONTH       => 'sometimes|integer|digits_between:1,2|max:12|min:0',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
@@ -80,7 +82,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        'expiry_date'
+        'expiry_date',
+        'number',
     ];
 
     protected static $createVaultTokenRules = [
@@ -103,5 +106,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE);
         }
+    }
+
+    protected function validateNumber($input)
+    {
+        $cardNumber = $input[Entity::NUMBER];
+        $isDummyCard = $input[Entity::DUMMY_CARD];
+        $valid = luhn::isValid($cardNumber);
+
+
+        if($valid== false && $isDummyCard==false )
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, 'number', null, "The number is invalid.");
     }
 }

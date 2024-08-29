@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
     const IS_CVV_OPTIONAL   = 'is_cvv_optional';
     const IS_CVV_LESS       = 'is_cvv_less';
     const IS_TOKENIZED_CARD = 'is_tokenized_card';
+    const DUMMY_CARD        = 'dummy_card';
 
     const TOKENISED         = 'tokenised';
     const CRYPTOGRAM_VALUE  = 'cryptogram_value';
@@ -301,6 +302,10 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::IIN            => 'string',
         self::TOKEN_IIN      => 'string'
+    ];
+
+    public static $unsetCreate = [
+        'dummy_card',
     ];
 
     public static $networkTokenCardUnsetAttributes = [
