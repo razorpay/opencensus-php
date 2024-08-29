@@ -1440,7 +1440,10 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ACTIVATED, true);
         $this->liveEnable();
-        $this->setAttribute(self::ACTIVATED_AT, time());
+        // adding a null check on 'activated_at' to ensure it's immutable
+        if ($this->getActivatedAt() === null) {
+            $this->setAttribute(self::ACTIVATED_AT, time());
+        }
 
         if ($this->isLinkedAccount() === true)
         {
