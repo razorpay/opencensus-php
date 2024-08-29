@@ -843,6 +843,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USER_ID);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getMerchantGstin()
     {
         return $this->getAttribute(self::MERCHANT_GSTIN);
@@ -1615,6 +1620,59 @@ class Entity extends Base\PublicEntity
                 ]);
 
             return $payment->getPublicId();
+        }
+
+        // checking from pg router as well for any misses due to tidb lag
+        if ($this->isPaid() || $this->isPartiallyPaid()) {
+            $payment = $this->getCapturedPaymentForOrderId($orderId, $this->getMerchantId());
+
+            if ($payment !== null)
+            {
+                $trace->info(TraceCode::INVOICE_PAYMENT_GET_REARCH_PAYMENT_ID,
+                    [
+                        'orderId'   => $orderId,
+                        'invoiceId' => $this->getId(),
+                        'paymentId' => $payment->getPublicId(),
+                        'cpsRoute'  => $payment->getCpsRoute(),
+                    ]);
+
+                return $payment->getPublicId();
+            }
+        }
+
+        return null;
+    }
+
+    // This is used to fetch payments from pgrouter as well
+    // to avoid misses due to tidb lag for rearch payments
+    protected function getCapturedPaymentForOrderId($orderId, $merchantId)
+    {
+        $repo = App::getFacadeRoot()['repo'];
+        $trace = App::getFacadeRoot()['trace'];
+
+        try {
+            $apiPayments = $repo->payment->fetchPaymentsForOrderId($orderId, $merchantId);
+
+            $rearchPayments = app('pg_router')->fetchOrderPayments($orderId, $merchantId);
+
+            $payments = $apiPayments->merge($rearchPayments);
+
+            foreach ($payments as $payment)
+            {
+                if ($payment->getStatus() === Payment\Status::CAPTURED)
+                {
+                    return $payment;
+                }
+            }
+
+        } catch(\Exception $e) {
+            $trace->traceException(
+                $e,
+                null,
+                TraceCode::INVOICE_CAPTURED_PAYMENTS_FETCH_ERROR
+            );
+
+            return $repo->payment->getCapturedPaymentForOrder($orderId);
         }
 
         return null;
