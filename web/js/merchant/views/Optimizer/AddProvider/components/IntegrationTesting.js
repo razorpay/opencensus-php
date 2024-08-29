@@ -87,7 +87,7 @@ const IntegrationTesting = ({
   useEffect(() => {
     if (isPaymentDone && isPaymentSuccessfull && !isWebhookFailure) {
       setIsPaymentsTableLoading(true);
-      // 1 sec delay requierd to fetch payments to get correct status of payment recently done on payment testing screen
+      // 3 sec delay requierd to fetch payments to get correct status of payment recently done on payment testing screen
       setTimeout(() => {
         fetchPayments({ count: 20, notes: providerId })
           .then((res) => {
@@ -105,7 +105,7 @@ const IntegrationTesting = ({
           .finally(() => {
             setIsPaymentsTableLoading(false);
           });
-      }, 1000);
+      }, 3000);
     }
   }, [isPaymentDone, isPaymentSuccessfull, isWebhookFailure]);
 
