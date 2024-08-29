@@ -34,7 +34,7 @@ use RZP\Models\Batch\Processor\TerminalEdit;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Terminal\Constants as TerminalConstants;
 use RZP\Models\Admin\Permission\Name as Permission;
-
+use RZP\Models\Gateway\Terminal\Constants as GatewayTerminalConstants;
 
 
 class Service extends Base\Service
@@ -395,7 +395,10 @@ class Service extends Base\Service
         {
             try
             {
-                $terminal = $this->editTerminal($item[Entity::TERMINAL_ID], [Entity::PLAN_NAME => $item[Entity::PLAN_NAME]]);
+                $terminal = $this->editTerminal($item[Entity::TERMINAL_ID], [
+                    Entity::PLAN_NAME => $item[Entity::PLAN_NAME],
+                    GatewayTerminalConstants::SYNC_INSTRUMENTS => true
+                ]);
 
                 $returnData->push([
                     Entity::TERMINAL_ID => $terminal[Entity::ID],
