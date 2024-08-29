@@ -1,18 +1,32 @@
+import { FileItem } from 'apps/pos/src/app/types/fileUpload';
+
 export enum PaymentMethodFormType {
   'DIRECT' = 'direct',
   'AGGREGATOR' = 'aggregator',
 }
 
-export type PaymentMethodFormValue = {
+interface PaymentMethodFormValue {
   checked: boolean;
-  value: string | number | boolean | Array<any>;
   defaultValue: string;
   isRequired: boolean;
   isDisabled: boolean;
   isHidden: boolean;
   description: string;
   title: string;
-};
+}
+
+export interface PaymentMethodFormStringValue extends PaymentMethodFormValue {
+  value: string;
+}
+export interface PaymentMethodFormNumberValue extends PaymentMethodFormValue {
+  value: number;
+}
+export interface PaymentMethodFormBooleanValue extends PaymentMethodFormValue {
+  value: boolean;
+}
+export interface PaymentMethodFormDocumentValue extends PaymentMethodFormValue {
+  value: FileItem[];
+}
 
 export const enum PaymentMethodsFieldKeyNames {
   DEBIT_CARD_RUPAY_MDR_RATE_FIELD = 'debit_card_rupay_mdr_rate_field',
@@ -37,17 +51,16 @@ export enum PricingStepComponents {
   VAS_RATES_COMPONENT = 'vas_rates_component',
 }
 export type DirectModelForm = {
-  [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD]: PaymentMethodFormValue;
+  [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: PaymentMethodFormDocumentValue;
 };
 
 export type AggregatorModelForm = DirectModelForm & {
-  [PaymentMethodsFieldKeyNames.DEBIT_CARD_RUPAY_MDR_RATE_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.DEBIT_CARD_VISA_MASTERCARD_MAESTRO_GREATER_THAN_2K_MDR_RATE_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.DEBIT_CARD_VISA_MASTERCARD_MAESTRO_LESS_THAN_2K_MDR_RATE_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.CREDIT_CARD_MDR_RATE_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.PREPAID_B2B_CORPORATE_CHANNEL_INTERNATIONAL_CARD_MDR_RATE_FIELD]: PaymentMethodFormValue;
-  [PaymentMethodsFieldKeyNames.UPI_MDR_RATE_FIELD]: PaymentMethodFormValue;
+  [PaymentMethodsFieldKeyNames.DEBIT_CARD_RUPAY_MDR_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.DEBIT_CARD_VISA_MASTERCARD_MAESTRO_GREATER_THAN_2K_MDR_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.DEBIT_CARD_VISA_MASTERCARD_MAESTRO_LESS_THAN_2K_MDR_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.CREDIT_CARD_MDR_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.PREPAID_B2B_CORPORATE_CHANNEL_INTERNATIONAL_CARD_MDR_RATE_FIELD]: PaymentMethodFormStringValue;
+  [PaymentMethodsFieldKeyNames.UPI_MDR_RATE_FIELD]: PaymentMethodFormStringValue;
 };

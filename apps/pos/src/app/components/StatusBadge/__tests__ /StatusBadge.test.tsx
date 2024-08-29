@@ -35,6 +35,10 @@ describe('<StatusBadge />', () => {
     render(<StatusBadge type="kyc_completed" />);
     expect(screen.getByText('KYC Completed')).toBeInTheDocument();
   });
+  test('should render Status Badge with Needs clairifcation value', () => {
+    render(<StatusBadge type="needs_clarification" />);
+    expect(screen.getByText('Needs Clarification')).toBeInTheDocument();
+  });
   test('should not render Status Badge with unknown status value', () => {
     render(<StatusBadge type="some_random" />);
     expect(screen.getByTestId('component-wrapper').firstChild).toBeNull();

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@razorpay/blade/components';
 import { NachFormKeyNames, NachFormObject, NachFormProps } from '../NACHForm/NACHForm';
@@ -28,8 +28,8 @@ import PageError from 'apps/pos/src/app/components/PageError';
 import {
   AggregatorModelForm,
   DirectModelForm,
+  PaymentMethodFormStringValue,
   PaymentMethodFormType,
-  PaymentMethodFormValue,
   PaymentMethodsFieldKeyNames,
   PricingStepComponents,
 } from 'apps/pos/src/app/types/PaymentsAndService';
@@ -42,9 +42,9 @@ import {
 } from 'apps/pos/src/app/utils/paymentsAndServices';
 
 const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
-  const defaultFormValue: PaymentMethodFormValue = {
+  const defaultFormValue: PaymentMethodFormStringValue = {
     checked: true,
-    value: 0,
+    value: '0',
     defaultValue: '0',
     isRequired: true,
     isDisabled: false,
@@ -56,8 +56,16 @@ const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   let tempForm: DirectModelForm | AggregatorModelForm = {
     [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: { ...defaultFormValue },
     [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: { ...defaultFormValue },
-    [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: { ...defaultFormValue },
-    [PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD]: { ...defaultFormValue },
+    [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: {
+      checked: true,
+      value: [],
+      defaultValue: '0',
+      isRequired: true,
+      isDisabled: false,
+      isHidden: false,
+      description: '',
+      title: '',
+    },
   };
 
   if (type === PaymentMethodFormType.AGGREGATOR) {
@@ -224,7 +232,18 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   );
   const [nachForm, setNachForm] = useState<NachFormObject>(createDefaultNACHForm());
   const [modelIsOpen, setModelIsOpen] = useState<boolean>(!nach && !isFormDisabled);
-  const standardRatesRef = useRef<Record<string, string> | null>();
+  const standardRates = useMemo(() => {
+    if (modularConfig) {
+      const componentName =
+        paymentMethodType === PaymentMethodFormType.AGGREGATOR
+          ? PricingStepComponents.MDR_VAS_RATES_COMPONENT
+          : PricingStepComponents.VAS_RATES_COMPONENT;
+      return getStandardPosPricingRates({
+        modularConfig,
+        componentName,
+      });
+    }
+  }, [modularConfig]);
 
   const updateConfigHandler = (form) => {
     const payload: any = {};
@@ -252,8 +271,8 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       });
       return;
     }
-    const { isRateEdited } = hasEditedStandardRates({
-      stdRates: standardRatesRef.current,
+    const { isStdRateEdited } = hasEditedStandardRates({
+      stdRates: standardRates,
       currentRates: pricingRates,
     });
     const customRateProof = payload[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD];
@@ -262,7 +281,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       if (Array.isArray(customRateProof) && customRateProof?.length) return true;
       return false;
     };
-    if (isRateEdited && !isCustomProofPresent()) {
+    if (isStdRateEdited && !isCustomProofPresent()) {
       toast.show({
         color: 'negative',
         content: 'Please upload custom pricing proof',
@@ -270,7 +289,13 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       return;
     }
     const updatedPayload = processFormDataForModularSubmit(payload);
+    updatedPayload[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD] =
+      processFilesForModularSave(
+        updatedPayload[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD] as FileItem[],
+      );
     delete updatedPayload[PaymentMethodsFieldKeyNames.MDR_VAS_PRICING_FIELD];
+    delete updatedPayload[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD];
+
     if (isFormDisabled) {
       const newNACH = populateNACHFormWithModularConfigData(modularConfig);
       setNachForm(newNACH);
@@ -305,8 +330,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
 
   const onFileUploadChange = (files: FileItem[]) => {
     const newForm = JSON.parse(JSON.stringify(methodForm.form));
-    newForm[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value =
-      processFilesForModularSave(files);
+    newForm[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value = files;
     setMethodFormValue('form', newForm);
   };
 
@@ -316,6 +340,12 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       newForm[key].value = !newForm[key].value;
       newForm[key].checked = !newForm[key].checked;
     }
+    setMethodFormValue('form', newForm);
+  };
+
+  const removeExistingPricingDocs = () => {
+    const newForm = JSON.parse(JSON.stringify(methodForm.form));
+    newForm[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value = [];
     setMethodFormValue('form', newForm);
   };
 
@@ -354,7 +384,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   const updateFormValues = () => {
     const { form } = methodForm;
     const newForm = JSON.parse(JSON.stringify(form));
-    replaceEmptyValues(newForm, standardRatesRef.current);
+    replaceEmptyValues(newForm, standardRates);
     setMethodFormValue('form', newForm);
     return newForm;
   };
@@ -375,7 +405,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   const onNachFileUploadChange = (files: FileItem[]) => {
     setNachForm((prev) => {
       const newNACHForm: NachFormObject = JSON.parse(JSON.stringify(prev));
-      newNACHForm.nach_form_document_field = processFilesForModularSave(files);
+      newNACHForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD] = files;
       return newNACHForm;
     });
   };
@@ -384,8 +414,9 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     const payload: any = {
       ...nachForm,
     };
-    payload[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD] =
-      payload[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD][0];
+    payload[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD] = processFilesForModularSave(
+      nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD],
+    )[0];
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
     payload.modular_callback = handleProceedToNextComponent;
     updateModularConfig(payload);
@@ -409,6 +440,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     onFieldInputChange,
     onFormSubmitClick,
     isFormDisabled,
+    removeExistingPricingDocs,
 
     // props for NACH
     onNachTextAreaChange,
@@ -454,19 +486,6 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       setMethodFormValue('type', initialMethodType);
     }
   }, [isModularLoading, isUpdateModularLoading, isRefetching, modularConfig, nach]);
-
-  useEffect(() => {
-    if (modularConfig && !standardRatesRef.current) {
-      const componentName =
-        paymentMethodType === PaymentMethodFormType.AGGREGATOR
-          ? PricingStepComponents.MDR_VAS_RATES_COMPONENT
-          : PricingStepComponents.VAS_RATES_COMPONENT;
-      standardRatesRef.current = getStandardPosPricingRates({
-        modularConfig,
-        componentName,
-      });
-    }
-  }, [modularConfig]);
 
   useEffect(() => {
     handlers.refetchModularConfig();

@@ -1,7 +1,7 @@
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
 import { getComponentFromStep } from 'apps/pos/src/app/utils/modularConfig';
 import {
-  PaymentMethodFormValue,
+  PaymentMethodFormStringValue,
   PricingStepComponents,
 } from 'apps/pos/src/app/types/PaymentsAndService';
 import {
@@ -56,7 +56,7 @@ export const hasEditedStandardRates = ({ stdRates, currentRates }: HasEditedStan
       }
     }
   }
-  return { differences, isRateEdited };
+  return { differences, isStdRateEdited: isRateEdited };
 };
 
 export const extractPricingRates = (allFields: Record<string, unknown>) => {
@@ -81,9 +81,9 @@ export const validatePricingRates = (rates: Record<string, string>) => {
 };
 
 export const replaceEmptyValues = (
-  inputObj: Record<string, PaymentMethodFormValue>,
+  inputObj: Record<string, PaymentMethodFormStringValue>,
   defaultValues,
-): Record<string, PaymentMethodFormValue> => {
+): Record<string, PaymentMethodFormStringValue> => {
   for (const key in inputObj) {
     if (inputObj.hasOwnProperty(key)) {
       if (

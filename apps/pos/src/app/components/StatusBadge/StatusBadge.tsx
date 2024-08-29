@@ -73,7 +73,7 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
     case 'needs_clarification':
       return (
         <Badge icon={AlertCircleIcon} color="notice" size={size}>
-          KYC Completed
+          Needs Clarification
         </Badge>
       );
     default:

@@ -38,6 +38,7 @@ export interface PaymentMethodFormProps {
   onFormSubmitClick: () => void;
   isFormDisabled: boolean;
   isModularLoading?: boolean;
+  removeExistingPricingDocs: () => void;
 }
 
 const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
@@ -47,6 +48,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   onFieldInputChange,
   onFormSubmitClick,
   isFormDisabled,
+  removeExistingPricingDocs,
 }) => {
   const { form } = methodForm;
   const toast = useToast();
@@ -55,10 +57,12 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   const [isVASEditEnabled, setIsVASEditEnabled] = useState(false);
 
   const onEditVASClick = () => {
+    removeExistingPricingDocs();
     setIsVASEditEnabled((prev) => !prev);
   };
 
   const onEditMDRClick = () => {
+    removeExistingPricingDocs();
     setIsMDREditEnabled((prev) => !prev);
   };
 
@@ -66,12 +70,6 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
     Object.keys(form).filter((key) =>
       AggregatorModelFormKeys.includes(key as keyof AggregatorModelForm),
     ).length > 0;
-
-  const getDefaultFiles = (form) => {
-    if (!form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value) return [];
-    if (form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value === '0') return [];
-    return form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value;
-  };
 
   const getKeyName = (key: string) => {
     if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD)
@@ -116,33 +114,11 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
         ) : null}
       </Box>
       {Object.keys(form).filter((key) =>
-        [
-          PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD,
-          PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD,
-        ].includes(key as PaymentMethodsFieldKeyNames),
+        [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].includes(
+          key as PaymentMethodsFieldKeyNames,
+        ),
       ).length ? (
         <Box>
-          <Box
-            display="flex"
-            flexDirection="row"
-            justifyContent="flex-start"
-            marginBottom="spacing.5"
-          >
-            <Checkbox
-              isDisabled={isFormDisabled}
-              name={PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD}
-              size="medium"
-              isChecked={
-                form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD].value as boolean
-              }
-              helpText={form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD].description}
-              onChange={() =>
-                onFieldCheckboxChange(PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD)
-              }
-            >
-              {form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD].title}
-            </Checkbox>
-          </Box>
           <SalesFileUpload
             merchantId={id}
             name={PaymentMethodsFieldKeyNames.CUSTOM_PRICING_PROOF}
@@ -153,16 +129,15 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             maxSize={5 * 1024 * 1023}
             maxLimit={5}
             isLoading={false}
-            defaultValue={getDefaultFiles(form)}
+            defaultValue={form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value}
             onError={() =>
               toast.show({
                 content: `Some Error Occured while upload file. Please try again later`,
                 color: 'negative',
               })
             }
-            isDisabled={
-              isFormDisabled || !form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD].value
-            }
+            isDisabled={isFormDisabled}
+            value={form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value}
           />
         </Box>
       ) : null}

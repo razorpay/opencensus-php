@@ -144,6 +144,7 @@ describe('<PaymentMethodForm/>', () => {
         onFormSubmitClick={props.onFormSubmitClick}
         onFileUploadChange={props.onFileUploadChange}
         isFormDisabled={false}
+        removeExistingPricingDocs={jest.fn()}
       />,
     );
     expect(screen.getByRole('heading', { name: /^mdr rates$/i, exact: true })).toBeInTheDocument();
@@ -173,6 +174,7 @@ describe('<PaymentMethodForm/>', () => {
         onFormSubmitClick={props.onFormSubmitClick}
         onFileUploadChange={props.onFileUploadChange}
         isFormDisabled={false}
+        removeExistingPricingDocs={jest.fn()}
       />,
     );
     expect(screen.queryByText(/mdr rates/i)).not.toBeInTheDocument();
@@ -217,6 +219,7 @@ describe('<NachForm/>', () => {
       onNachSubmitClick: jest.fn(),
       onNachSkipClick: jest.fn(),
       isFormDisabled: false,
+      removeExistingPricingDocs: jest.fn(),
     };
     render(<NACHForm {...props} />);
     expect(screen.getByRole('heading', { name: /Upload NACH Form/i })).toBeInTheDocument();

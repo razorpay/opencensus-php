@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, ProgressBar, Text } from '@razorpay/blade/components';
 import { getUser } from 'shell/commonStore';
 import { useMutation } from '@tanstack/react-query';
@@ -30,6 +30,7 @@ interface SalesFileUploadProps {
   onError?: (errorData: unknown) => void;
   maxSize: number;
   maxLimit: number;
+  value?: FileItem[];
   merchantId: string;
 }
 
@@ -47,6 +48,7 @@ const SalesFileUpload = ({
   defaultValue,
   onError,
   onChange,
+  value,
 }: SalesFileUploadProps): JSX.Element | null => {
   const { user } = getUser() ?? {};
   const [internalError, setInternalError] = useState<string | null>(null);
@@ -120,6 +122,12 @@ const SalesFileUpload = ({
 
   const isShowFileUploadBtn =
     uploadType === 'multiple' || (uploadType === 'single' && fileItemList.length === 0);
+
+  useEffect(() => {
+    if (!value) return;
+    if (value.length > 0 && value.some((item) => !item.fileStoreId)) throw new Error();
+    setFileItemList(value);
+  }, [value]);
 
   return (
     <Box marginBottom="spacing.5">

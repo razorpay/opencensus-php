@@ -458,7 +458,7 @@ export const mockProps = {
     form: {
       [PaymentMethodsFieldKeyNames.DEBIT_CARD_RUPAY_MDR_RATE_FIELD]: {
         checked: false,
-        value: 1,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,
@@ -469,7 +469,7 @@ export const mockProps = {
       [PaymentMethodsFieldKeyNames.DEBIT_CARD_VISA_MASTERCARD_MAESTRO_GREATER_THAN_2K_MDR_RATE_FIELD]:
         {
           checked: false,
-          value: 1,
+          value: '1',
           defaultValue: '1',
           isRequired: false,
           isDisabled: false,
@@ -480,7 +480,7 @@ export const mockProps = {
       [PaymentMethodsFieldKeyNames.DEBIT_CARD_VISA_MASTERCARD_MAESTRO_LESS_THAN_2K_MDR_RATE_FIELD]:
         {
           checked: false,
-          value: 1,
+          value: '1',
           defaultValue: '1',
           isRequired: false,
           isDisabled: false,
@@ -490,7 +490,7 @@ export const mockProps = {
         },
       [PaymentMethodsFieldKeyNames.CREDIT_CARD_MDR_RATE_FIELD]: {
         checked: false,
-        value: 1,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,
@@ -501,7 +501,7 @@ export const mockProps = {
       [PaymentMethodsFieldKeyNames.PREPAID_B2B_CORPORATE_CHANNEL_INTERNATIONAL_CARD_MDR_RATE_FIELD]:
         {
           checked: false,
-          value: 1,
+          value: '1',
           defaultValue: '1',
           isRequired: false,
           isDisabled: false,
@@ -511,7 +511,7 @@ export const mockProps = {
         },
       [PaymentMethodsFieldKeyNames.UPI_MDR_RATE_FIELD]: {
         checked: false,
-        value: 1,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,
@@ -521,7 +521,7 @@ export const mockProps = {
       },
       [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: {
         checked: false,
-        value: 1,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,
@@ -531,7 +531,7 @@ export const mockProps = {
       },
       [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: {
         checked: false,
-        value: 1,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,
@@ -566,7 +566,7 @@ export const mockProps = {
     form: {
       [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: {
         checked: false,
-        value: 1,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,
@@ -576,7 +576,7 @@ export const mockProps = {
       },
       [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: {
         checked: false,
-        value: 1,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,
