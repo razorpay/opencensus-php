@@ -107,6 +107,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             icon={!isVASEditEnabled ? EditIcon : undefined}
             onClick={onEditVASClick}
             alignSelf="center"
+            testID="edit-save-btn"
             isDisabled={isFormDisabled}
             variant="button"
           >
@@ -180,6 +181,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
               icon={!isMDREditEnabled ? EditIcon : undefined}
               onClick={onEditMDRClick}
               alignSelf="center"
+              testID="mdr-edit-save"
               variant="button"
             >
               {isMDREditEnabled ? 'Save Changes' : 'Edit'}
@@ -220,9 +222,10 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                           value={field.value}
                           onChange={(e) => onFieldInputChange(key, e.value)}
                           suffix={'%'}
+                          testID={key}
                         />
                       ) : (
-                        <Text color="surface.text.gray.subtle" textAlign="right">
+                        <Text testID={key} color="surface.text.gray.subtle" textAlign="right">
                           {field.value || Number(field.defaultValue)} %
                         </Text>
                       )}
@@ -244,6 +247,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
               icon={!isVASEditEnabled ? EditIcon : undefined}
               onClick={onEditVASClick}
               alignSelf="center"
+              testID="vas-edit-save"
               variant="button"
             >
               {isVASEditEnabled ? 'Save Changes' : 'Edit'}
@@ -282,9 +286,10 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                     value={field.value}
                     onChange={(e) => onFieldInputChange(key, e.value)}
                     suffix="%"
+                    testID={key}
                   />
                 ) : (
-                  <Text color="surface.text.gray.subtle" textAlign="right">
+                  <Text testID={key} color="surface.text.gray.subtle" textAlign="right">
                     {field.value || Number(field.defaultValue)} %
                   </Text>
                 )}

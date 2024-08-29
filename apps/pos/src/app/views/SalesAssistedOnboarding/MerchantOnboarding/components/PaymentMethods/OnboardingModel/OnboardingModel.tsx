@@ -34,7 +34,7 @@ const OnboardingModel = ({ isOpen, setIsOpen, setFormType }): JSX.Element => {
   };
 
   return (
-    <BottomSheet data-testid="pricing-bottom-sheet" isOpen={isOpen} onDismiss={onDismissClick}>
+    <BottomSheet isOpen={isOpen} onDismiss={onDismissClick}>
       <BottomSheetHeader title="Select Onboarding Model" />
       <BottomSheetBody>
         <Box padding="spacing.4">
