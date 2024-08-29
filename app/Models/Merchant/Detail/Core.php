@@ -6399,20 +6399,9 @@ class Core extends Base\Core
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getMerchantId());
             if (empty($userDeviceDetail) === false)
             {
-                $product = $input[DeviceDetailConstants::PRODUCT] ?? '';
+                $response[DeviceDetailConstants::WORKFLOW_TYPE] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
 
-                if ((new User\Service)->shouldStoreProductSpecificWorkflowType($product) === true)
-                {
-                    $merchantWorkflowType = $this->pgosProxyController->getProductSpecificWorkflowType($userDeviceDetail, $product);
-
-                    $response[DeviceDetailConstants::WORKFLOW_TYPE] = $merchantWorkflowType;
-                }
-                else
-                {
-                    $merchantWorkflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
-
-                    $response[DeviceDetailConstants::WORKFLOW_TYPE] = $merchantWorkflowType;
-                }
+                $response[DeviceDetailConstants::WORKFLOW_DETAILS] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
             }
         }
         catch (\Throwable $e)

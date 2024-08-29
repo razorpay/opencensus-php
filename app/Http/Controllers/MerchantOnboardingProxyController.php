@@ -488,7 +488,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     public function isIndiaPgModularMerchant($merchant): bool
     {
-        if ($merchant->getCountry() !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
         {
             return false;
         }
@@ -505,7 +505,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     protected function isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
     {
-        if ($merchant->getCountry() !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
         {
             return false;
         }
@@ -520,7 +520,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         if (empty($workflowDetails) === true)
         {
-            return false;
+            return null;
         }
 
         $productPgOnboardingWorkflowTypeKey = sprintf(DeviceDetailConstants::PRODUCT_WORKFLOW_TYPE_TEMPLATE, $product);
