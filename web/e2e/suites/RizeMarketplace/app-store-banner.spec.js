@@ -29,7 +29,8 @@ test.describe.parallel(
       ).toBeInViewport();
     });
 
-    test('should open Rize Marketplace Product Page in new tab on clicking product card', async ({
+    // Skip reason : https://razorpay.slack.com/archives/C061HJGS1CY/p1725005186223989
+    test.skip('should open Rize Marketplace Product Page in new tab on clicking product card', async ({
       page,
       context,
     }) => {

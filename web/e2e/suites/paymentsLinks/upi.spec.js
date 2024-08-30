@@ -19,7 +19,7 @@ const SELECTORS = {
 };
 
 test.describe.parallel(
-  'Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-stable @project=no-code-roast',
+  'Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links',
   () => {
     test.use({
       storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,

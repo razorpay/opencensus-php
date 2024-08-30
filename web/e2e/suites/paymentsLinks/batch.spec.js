@@ -26,7 +26,7 @@ import { searchAndVerifyByPLId } from './utils';
   },
 ].forEach((context) => {
   test.describe.parallel(
-    `${context.testDescription} @project=no-code @project=no-code-roast @project=no-code-stable`,
+    `${context.testDescription} @project=no-code @project=no-code-roast @project=no-code-stable @project=payment-links`,
     () => {
       test.use({
         storageState: context.loginState,

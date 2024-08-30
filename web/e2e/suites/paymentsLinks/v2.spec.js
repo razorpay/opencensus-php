@@ -22,7 +22,7 @@ import {
 } from './utils';
 
 test.describe.parallel(
-  'Test Payments Links V2 @flow=payment-links-v2 @project=no-code @project=no-code-stable @project=no-code-roast',
+  'Test Payments Links V2 @flow=payment-links-v2 @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links',
   () => {
     test.use({
       storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,

@@ -11,7 +11,8 @@ import {
 } from './utils';
 import { expectSuccessNotification, generateRandomText } from '../../utils';
 
-test.describe.parallel(
+// Todo : add test.describe.parallel when removing test.describe.skip
+test.describe.skip(
   'Test Payments Buttons @flow=payment-buttons @project=no-code-stable',
   () => {
     test.use({

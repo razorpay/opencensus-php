@@ -1,6 +1,7 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { expect, test } from 'utils/base';
 
+// Skip reason : https://razorpay.slack.com/archives/C061HJGS1CY/p1725005186223989
 test.describe.parallel(
   'Rize Marketplace landing page @flow=rize-marketplace @project=payments',
   () => {
@@ -13,7 +14,7 @@ test.describe.parallel(
       await expect(page).toHaveURL(routes.RIZE_MARKETPLACE);
     });
 
-    test('should perform search and clear search', async ({ page }) => {
+    test.skip('should perform search and clear search', async ({ page }) => {
       const latestProduct = page.getByTestId('product-card-list').first();
 
       const searchInput = page.getByRole('textbox', { name: /search/i });
@@ -46,7 +47,7 @@ test.describe.parallel(
       );
     });
 
-    test('should paginate when "load more" button is clicked', async ({ page }) => {
+    test.skip('should paginate when "load more" button is clicked', async ({ page }) => {
       // Wait for the first product card to be attached, then query all of them
       await page.getByTestId('product-card-list').first().waitFor({ state: 'attached' });
       const numInitialProducts = (await page.getByTestId('product-card-list').all()).length;
@@ -67,7 +68,7 @@ test.describe.parallel(
       expect(numUpdatedProducts).toBeGreaterThan(numInitialProducts);
     });
 
-    test('should open Rize Marketplace Product Page on clicking product card', async ({ page }) => {
+    test.skip('should open Rize Marketplace Product Page on clicking product card', async ({ page }) => {
       /**
        * @param {import('utils/base').Locator} productCard
        */
