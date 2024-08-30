@@ -481,14 +481,15 @@ class SyncEventManager
             app('trace')->info(TraceCode::ACS_ENTITY_FETCH, $logData);
         }
 
-        $this->EnableQueryLogs();
+        $this->EnableQueryLogs($logData);
     }
 
-    public function EnableQueryLogs(): void
+    public function EnableQueryLogs(array $logData): void
     {
         try {
             $asvRouter             = new AsvRouter();
             $route                 = $asvRouter->getRouteOrJobName();
+            $connection = $logData['connection'] ?? 'none';
 
             $shouldEnableQueryLogs = ($asvRouter)->shouldEnableQueryLogs(uniqid(), $route);
             if ($shouldEnableQueryLogs === true) {
@@ -505,11 +506,15 @@ class SyncEventManager
                     }
                 }
 
-                app('trace')->info(TraceCode::ACS_ROUTE_QUERY_LOGS, [
+                $traceCode  = TraceCode::ASV_ENTITY_NON_ASV_CONNECTION_QUERY_LOGS;
+                if ($connection !== 'none' and in_array($connection, Connection::ASV_ROUTEING_CONNECTIONS)) {
+                    $traceCode = TraceCode::ASV_ENTITY_ASV_CONNECTION_QUERY_LOGS;
+                }
+
+                app('trace')->info($traceCode, [
                     "trace" => $traceInfo,
                     "route" => $route
                 ]);
-
             }
         } catch (\Exception $e) {
             app('trace')->traceException($e,

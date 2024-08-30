@@ -9728,7 +9728,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACS_TRIGGER_SYNC_ERROR                                = 'ACS_TRIGGER_SYNC_ERROR';
     const ACS_ENTITY_FETCH                                      = 'ACS_ENTITY_FETCH';
 
-    const ACS_ROUTE_QUERY_LOGS                                  = 'ACS_ROUTE_QUERY_LOGS';
+    const ASV_ENTITY_NON_ASV_CONNECTION_QUERY_LOGS              = 'ASV_ENTITY_NON_ASV_CONNECTION_QUERY_LOGS';
+    const ASV_ENTITY_ASV_CONNECTION_QUERY_LOGS                  = 'ASV_ENTITY_ASV_CONNECTION_QUERY_LOGS';
     const ACS_ROUTE_QUERY_LOGS_EXCEPTION                        = 'ACS_ROUTE_QUERY_LOGS_EXCEPTION';
     const ACS_ENABLE_QUERY_LOGS_SPLITZ_RESULT                   = 'ACS_ENABLE_QUERY_LOGS_SPLITZ_RESULT';
     const ACS_READ_AFTER_WRITE_FETCH                            = 'ACS_READ_AFTER_WRITE_FETCH';
