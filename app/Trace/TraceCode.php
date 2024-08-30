@@ -7188,6 +7188,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_RETRIEVAL_EVENT                          = 'TRANSACTIONS_RETRIEVAL_EVENT';
     const TRANSACTIONS_SAVED_EVENT                              = 'TRANSACTIONS_SAVED_EVENT';
 
+    const TRANSACTIONS_EVENT_INPUT                              = 'TRANSACTIONS_EVENT_INPUT';
+
     const TRANSACTIONS_BALANCE_EVENT_EXCEPTION                  = 'TRANSACTIONS_BALANCE_EVENT_EXCEPTION';
 
     const BALANCE_RETRIEVAL_EVENT                               = 'BALANCE_RETRIEVAL_EVENT';

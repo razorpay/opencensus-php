@@ -2,6 +2,7 @@
 
 namespace RZP\Listeners;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 use RZP\Jobs\TransactionBalanceReadWriteLoggingJob;
@@ -26,7 +27,7 @@ class TransactionEventListener
 
             $input = [
                 'event_name'                => 'onRetrieved',
-                'event'                     => $event,
+                'event_entity'              => $event->entity,
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
                 'entity'                    => 'transactions',
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
@@ -36,11 +37,7 @@ class TransactionEventListener
         }
         catch (\Throwable $e)
         {
-            app('trace')->info(TraceCode::TRANSACTIONS_BALANCE_DISPATCH_EXCEPTION,
-                [
-                    'exception' => $e,
-                ]
-            );
+            app('trace')->traceException($e, Trace::ERROR, TraceCode::TRANSACTIONS_BALANCE_DISPATCH_EXCEPTION, []);
         }
     }
 
@@ -61,7 +58,7 @@ class TransactionEventListener
 
             $input = [
                 'event_name'                => 'onSaved',
-                'event'                     => $event,
+                'event_entity'              => $event->entity,
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
                 'entity'                    => 'transactions',
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
@@ -71,11 +68,7 @@ class TransactionEventListener
         }
         catch (\Throwable $e)
         {
-            app('trace')->info(TraceCode::TRANSACTIONS_BALANCE_DISPATCH_EXCEPTION,
-                [
-                    'exception' => $e,
-                ]
-            );
+            app('trace')->traceException($e, Trace::ERROR, TraceCode::TRANSACTIONS_BALANCE_DISPATCH_EXCEPTION, []);
         }
     }
 

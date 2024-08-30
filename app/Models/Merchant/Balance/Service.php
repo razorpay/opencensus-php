@@ -539,11 +539,11 @@ class Service extends Base\Service
         return $updatePayoutsAttributes;
     }
 
-    public function logBalanceReads(Entity $entity, $isLedgerDualWriteFlow = null, $route)
+    public function logBalanceReads(Entity $entity, $isLedgerDualWriteFlow, $route)
     {
-        if (count($entity->getAttributes()) < count($entity->getFillable()))
+        if ($entity->getId() === null)
         {
-            $entity = $this->repo->balance->findOrFail($entity->getId());
+            return;
         }
 
         if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
@@ -560,7 +560,7 @@ class Service extends Base\Service
         }
     }
 
-    public function logBalanceWrites(Entity $entity, $isLedgerDualWriteFlow = null, $route)
+    public function logBalanceWrites(Entity $entity, $isLedgerDualWriteFlow, $route)
     {
         if ($this->evaluateLedgerReadsWriteFlow($entity, $isLedgerDualWriteFlow) === true)
         {
@@ -587,7 +587,7 @@ class Service extends Base\Service
             return false;
         }
 
-        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
             'merchant',
             $merchantId,
             Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
