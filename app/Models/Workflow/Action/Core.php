@@ -247,7 +247,7 @@ class Core extends Base\Core
 
         // $params has data for Action\Entity (Mysql) + Differ\Entity (ES)
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $maker)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($action, $params, $retry, $maker)
         {
             $differInput = $params[Entity::DIFFER] ?? null;
 
@@ -389,7 +389,7 @@ class Core extends Base\Core
         // Set the action as approved and create a state change that it has
         // been moved to approved.
         //
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $checkerEntity)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($action, $checkerEntity)
         {
             $data = [
                 Entity::APPROVED => true,
@@ -623,7 +623,7 @@ class Core extends Base\Core
     {
         $action->getValidator()->validateCloseAction($maker, $autoclose);
 
-        $this->repo->transactionOnLiveAndTest(function () use($action, $maker){
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use($action, $maker){
 
             $state = State\Name::CLOSED;
 

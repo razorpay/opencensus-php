@@ -52,7 +52,7 @@ class Core extends Base\Core
 
         $workflow->build($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
 
@@ -136,7 +136,7 @@ class Core extends Base\Core
             $workflow->org()->associate($org);
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
 

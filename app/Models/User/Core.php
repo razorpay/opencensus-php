@@ -807,7 +807,7 @@ class Core extends Base\Core
             $user->metadata = $metadata;
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
             $this->repo->saveOrFail($user);
@@ -926,7 +926,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
             $this->repo->saveOrFail($user);
@@ -5142,7 +5142,7 @@ class Core extends Base\Core
 
         if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($user, $input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input) {
                 $user->setEmail($input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($user);
             });
@@ -6829,7 +6829,7 @@ class Core extends Base\Core
     {
         $user = $this->fetchSubmerchantUser($submerchantId);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($user, $contact)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $contact)
         {
             $user->setContactMobile($contact);
 

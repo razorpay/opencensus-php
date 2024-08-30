@@ -1773,7 +1773,7 @@ class Service extends Base\Service
     {
         (new Validator())->validateInput(Validator::EDIT_USER_INTERNAL, $input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($id, $input)
         {
             $updatedName = $input[Entity::NAME];
 

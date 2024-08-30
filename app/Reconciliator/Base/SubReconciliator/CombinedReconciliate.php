@@ -91,7 +91,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
             $subReconciliatorObject = new $subReconciliatorClassName($this->gateway);
 
-            $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($subReconciliatorObject, $row, $extraDetails)
             {
                 $subReconciliatorObject->setExtraDetails($extraDetails);
                 $subReconciliatorObject->runReconciliate($row);
@@ -217,7 +217,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                     $subReconciliatorObject->messenger->batchId = $this->batchId;
 
-                    $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
+                    $this->repo->transactionOnLiveAndTestAndAsv(function() use ($subReconciliatorObject, $row, $extraDetails)
                     {
                         $subReconciliatorObject->setExtraDetails($extraDetails);
                         $subReconciliatorObject->runReconciliate($row);

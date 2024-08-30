@@ -411,7 +411,7 @@ class Service extends Base\Service
 
         (new Validator)->validateWorkflowActionForNeedMerchantClarification($workFlowAction);
 
-        $commentEntity = $this->repo->transactionOnLiveAndTest(function() use ($workFlowAction, $input) {
+        $commentEntity = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($workFlowAction, $input) {
 
             $workFlowAction->untag(WorkflowActionConstants::WORKFLOW_MERCHANT_RESPONDED_TAG);
 

@@ -198,7 +198,7 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input) {
 
                 $this->core()->createFeatureConfig($input);
 

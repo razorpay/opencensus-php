@@ -637,7 +637,7 @@ class Service extends Base\Service
         {
             $refundId = Payment\Refund\Entity::getSignedId($refundData[ScroogeReconciliate::REFUND_ID]);
 
-            $this->repo->transactionOnLiveAndTest(function () use ($refundId,
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use ($refundId,
                                                                    &$reconciled,
                                                                    &$failures,
                                                                    $source,

@@ -247,7 +247,7 @@ class SubReconciliate extends Base\Core
 
         foreach ($fileContents as $row)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($row)
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($row)
             {
                 $this->runReconciliate($row);
             });
@@ -288,7 +288,7 @@ class SubReconciliate extends Base\Core
             {
                 try
                 {
-                    $this->repo->transactionOnLiveAndTest(function () use ($row) {
+                    $this->repo->transactionOnLiveAndTestAndAsv(function () use ($row) {
                         $this->runReconciliate($row);
                     });
                 }
