@@ -176,6 +176,7 @@ app/Models/Merchant/Website/Repository.php                    @razorpay/identity
 #
 # Blocking PR merge on certain entities as they are being moved to PG Onboarding Service.
 # Any update on these entities will require explicit approval from aqp-be team.
+app/Models/User/Entity.php                         @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail                         @razorpay/pg-onboarding-service
 app/Models/Merchant/Document                       @razorpay/pg-onboarding-service
 app/Models/Merchant/Stakeholder                    @razorpay/pg-onboarding-service

@@ -307,6 +307,25 @@ class Entity extends Base\PublicEntity
             $emailB = $b->getEmail();
             $roleA = $a->getAttribute(self::PIVOT)->role;
             $roleB = $b->getAttribute(self::PIVOT)->role;
+
+            // Define role priorities
+            $rolePriority = [
+                'owner' => 1,
+                'partner_agent' => 2,
+                'razorpay_sales' => 3,
+            ];
+
+            // Assign priorities to roles, defaulting to a high number for unknown roles
+            $priorityA = $rolePriority[$roleA] ?? PHP_INT_MAX;
+            $priorityB = $rolePriority[$roleB] ?? PHP_INT_MAX;
+
+            // Compare based on role priority
+            if ($priorityA < $priorityB) {
+                return -1;
+            } elseif ($priorityA > $priorityB) {
+                return 1;
+            }
+
             $conditionA = ( !empty($emailA) && $emailA == $userEmail && $roleA == self::OWNER);
             $conditionB = ( !empty($emailB) && $emailB == $userEmail && $roleB == self::OWNER);
 
