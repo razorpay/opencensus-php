@@ -254,6 +254,8 @@ class RepositoryManager extends Illuminate\Support\Manager
 
     public $beginTransactionAndRollback = false;
 
+    public $migrateTxnOnLiveAndTestToLIveTestAndAsv = true;
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -577,6 +579,12 @@ class RepositoryManager extends Illuminate\Support\Manager
 
     public function transactionOnLiveAndTest(callable $callback)
     {
+        // If a transaction is opened on live, test, and ASV, ensure that transactions are opened on live, test, and ASV.
+        // This ensures that rollbacks occur correctly across all databases.
+        if ($this->migrateTxnOnLiveAndTestToLIveTestAndAsv === true) {
+            return $this->transactionOnLiveAndTestAndAsv($callback);
+        }
+
         //
         // We need to grab and assign the default connection here
         // because in the callback code, the functions try to change
