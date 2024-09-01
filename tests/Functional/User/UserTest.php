@@ -7705,7 +7705,30 @@ class UserTest extends TestCase
             return true;
         });
     }
-
+    
+    public function testPasswordResetMailForPgMobile()
+    {
+        Mail::fake();
+        
+        $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
+        
+        $this->ba->dashboardGuestAppAuth();
+        
+        $this->startTest();
+        
+        Mail::assertSent(PasswordReset::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+            
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertEquals('dashboard.razorpay.in', $viewData['org']['hostname']);
+            $this->assertEquals('org_100000razorpay', $viewData['org']['id']);
+            
+            $this->assertEquals('emails.user.password_reset', $mail->view);
+            return true;
+        });
+    }
+    
     public function testPasswordResetMailForBadEmail()
     {
         Mail::fake();

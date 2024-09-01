@@ -4399,6 +4399,27 @@ return [
             ],
         ],
     ],
+  
+  
+    'testPasswordResetMailForPgMobile'     => [
+        'request'   => [
+            'url'       => '/users/reset-password',
+            'method'    => 'post',
+            'content'   => [
+                'email' => 'resetpass@razorpay.com',
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000razorpay',
+                'X-Org-Hostname'    => 'dashboard.razorpay.in'
+            ],
+        ],
+  
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
 
     'testPasswordResetMailWithoutCustomOnboading' => [
         'request' => [

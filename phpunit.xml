@@ -674,6 +674,7 @@
             <directory>./tests/Functional/PassportAuth/</directory>
             <directory>./tests/Functional/Authz/</directory>
             <directory>./tests/Unit/Edge</directory>
+            <directory>./tests/Unit/Http/Middleware</directory>
             <directory>./tests/Functional/Edge/</directory>
             <exclude>./tests/Functional/OAuth/OAuthAppMerchantMapTest.php</exclude>
             <exclude>./tests/Functional/OAuth/OAuthMailTest.php</exclude>

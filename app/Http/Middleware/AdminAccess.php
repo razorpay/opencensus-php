@@ -163,6 +163,17 @@ class AdminAccess
     {
         return $request->headers->get(self::CROSS_ORG_HEADER_KEY);
     }
+    
+    protected function setOrgHostnameByOrgId($request, $orgId): void
+    {
+        $orgHostname = $request->headers->get(self::ORG_HOSTNAME_HEADER_KEY);
+
+        if ((empty($orgId) === false) &&
+            (empty($orgHostname) === false))
+        {
+            $this->ba->setOrgHostName($orgHostname);
+        }
+    }
 
     /**
      * Get the OrgId from different source and validate it.
@@ -188,6 +199,8 @@ class AdminAccess
         if ($orgId === null)
         {
             $orgId = $request->headers->get(self::ORG_HEADER_KEY);
+            
+            $this->setOrgHostnameByOrgId($request, $orgId);
         }
 
         $validateOrgId = $orgId;
