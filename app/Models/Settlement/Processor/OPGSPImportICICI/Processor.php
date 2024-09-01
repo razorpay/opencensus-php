@@ -721,7 +721,7 @@ class Processor extends Base\Core
 
             $mailInfo = [
                 'fileInfo'  => $fileInfo,
-                'channel'   => 'settlements',
+                'channel'   => Constants::SLACK_CHANNEL,
                 'filetype'  => $filetype,
                 'subject'   => 'File Send failure',
                 'recipient' => $recipient,

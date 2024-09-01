@@ -22,4 +22,6 @@ class Constants
     const DISPUTE = 'dispute';
 
     const FIELDSTODECRYPT = ['name', 'line1', 'line2', 'city', 'state', 'country', 'zipcode'];
+
+    const  SLACK_CHANNEL = 'tech-cross-border-alerts';
 }

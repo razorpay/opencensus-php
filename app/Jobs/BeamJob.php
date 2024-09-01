@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Illuminate\Support\Facades\Config;
 use Mail;
+use RZP\Models\Settlement\Processor\OPGSPImportICICI\Constants;
 use RZP\Services\Beam\Metric;
 use \WpOrg\Requests\Response;
 
@@ -269,7 +270,14 @@ class BeamJob extends Job
                 'channel'   => $this->mailInfo['channel']
             ];
 
-            (new SlackNotification)->send($operation, $fileInfo, null, $this->attempts());
+            if($this->mailInfo['channel'] === Constants::SLACK_CHANNEL)
+            {
+                (new SlackNotification)->send($operation, $fileInfo, null, $this->attempts(),Constants::SLACK_CHANNEL);
+            }
+            else
+            {
+                (new SlackNotification)->send($operation, $fileInfo, null, $this->attempts());
+            }
         }
         catch (\Throwable $e)
         {
