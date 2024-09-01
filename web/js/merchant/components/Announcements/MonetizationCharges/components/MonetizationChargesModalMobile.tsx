@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import content from '../constants/content';
 import CustomPricing from './CustomPricing';
 import ProductWiseBenefits from './ProductWiseBenefits';
@@ -35,6 +35,7 @@ const MonetizationChargesModalMobile: React.FC<MonetizationChargesModalMobilePro
 }) => {
   const { title } = content[bannerKey][screen];
   const pricingPlanForMerchant = getPricingPlan(user);
+  const initialFocusRef = useRef<HTMLElement | null>(null);
 
   const closeModal = () => {
     analyticsTrack({
@@ -61,6 +62,12 @@ const MonetizationChargesModalMobile: React.FC<MonetizationChargesModalMobilePro
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    initialFocusRef?.current?.scrollIntoView({
+      behavior: 'smooth',
+    });
+  }, [showProductWiseBenefits, showCustomPricing]);
+
   return (
     <Box>
       <BottomSheet
@@ -71,6 +78,7 @@ const MonetizationChargesModalMobile: React.FC<MonetizationChargesModalMobilePro
       >
         <BottomSheetHeader />
         <BottomSheetBody>
+          <Box ref={initialFocusRef}></Box>
           {showProductWiseBenefits && (
             <ProductWiseBenefits
               closeModal={closeModal}

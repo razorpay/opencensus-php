@@ -2,6 +2,8 @@ import React from 'react';
 import { render, screen } from 'test-utils';
 import MonetizationChargesModalMobile from '../../components/MonetizationChargesModalMobile';
 
+window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
 describe('MonetizationChargesModalMobile', () => {
   const defaultProps = {
     isOpen: true,

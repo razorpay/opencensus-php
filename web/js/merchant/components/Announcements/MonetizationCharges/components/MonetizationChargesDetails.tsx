@@ -1,5 +1,14 @@
 import React from 'react';
-import { Button, Box, Heading, Text, ArrowRightIcon } from '@razorpay/blade/components';
+import {
+  Button,
+  Box,
+  Heading,
+  Text,
+  ArrowRightIcon,
+  Tooltip,
+  TooltipInteractiveWrapper,
+  InfoIcon,
+} from '@razorpay/blade/components';
 import PaymentLinkIcon from 'icons/merchant/payment-link.svg';
 import CheckCircle2Icon from 'icons/merchant/check-circle-2.svg';
 import RazorpayMeLinkIcon from 'icons/merchant/payout-link.svg';
@@ -14,6 +23,21 @@ import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { MonetizationChargesDetailsWrapper, NoCodeAppButton, NoCodeAppButtonIcon } from './styled';
 import { User } from 'common/typings';
 import getPricingPlan from '../utils/getPricingPlan';
+
+const getBannerRates = (pricingPlan: string | null) => {
+  switch (pricingPlan) {
+    case '2%':
+      return ['3%', '3.5%'];
+    case '2.1%':
+      return ['3.1%', '3.6%'];
+    case '2.2%':
+      return ['3.2%', '3.7%'];
+    case '2.5%':
+      return ['3.5%', '4%'];
+    default:
+      return [null, null];
+  }
+};
 
 interface MonetizationChargesDetailsProps {
   setShowCustomPricing: (show: boolean) => void;
@@ -36,6 +60,8 @@ const MonetizationChargesDetails: React.FC<MonetizationChargesDetailsProps> = ({
   const { noCodeAppsBenefits } = content[bannerKey];
   const { title } = content[bannerKey]?.[screen];
   const pricingPlanForMerchant = getPricingPlan(user);
+  const [creditCardPlan, intlCreditCardPlan] = getBannerRates(pricingPlanForMerchant);
+  const tooltipContent = `*Instruments like Diners and Amex Cards, International Cards, EMI (Credit Card, Debit Card & Cardless) & Corporate (Business) Credit Cards will be charged at ${creditCardPlan}. International Amex Cards will be charged at ${intlCreditCardPlan}.`;
 
   const handleCloseModal = () => {
     analyticsTrack({
@@ -119,7 +145,6 @@ const MonetizationChargesDetails: React.FC<MonetizationChargesDetailsProps> = ({
       >
         <Box
           as="aside"
-          padding={['4px', '24px', '0px', '0px']}
           display="flex"
           flexDirection="column"
           justifyContent="space-between"
@@ -127,15 +152,29 @@ const MonetizationChargesDetails: React.FC<MonetizationChargesDetailsProps> = ({
           flex="1 0 0"
           alignSelf="stretch"
         >
-          <Text color="surface.text.gray.subtle" size="small" weight="regular" marginBottom="20px">
-            Transactions on Links, Pages, and Invoices incur a{' '}
-            <Text color="surface.text.gray.normal" size="medium" weight="semibold" as="span">
-              {pricingPlanForMerchant}
-            </Text>{' '}
-            fee, billed only upon successful payment.
-          </Text>
+          <Box display="inline">
+            <Text color="surface.text.gray.subtle" size="small" weight="regular" display="inline">
+              Transactions on Links, Pages, and Invoices incur a{' '}
+              <Text color="surface.text.gray.normal" size="medium" weight="semibold" as="span">
+                {pricingPlanForMerchant}
+              </Text>{' '}
+              fee, billed only upon successful payment
+            </Text>
+            <Box display="inline" marginLeft="spacing.2">
+              <Tooltip content={tooltipContent} placement="right" zIndex={10001}>
+                <TooltipInteractiveWrapper transform="translateY(2px)">
+                  <InfoIcon size="small" color="surface.icon.gray.muted" />
+                </TooltipInteractiveWrapper>
+              </Tooltip>
+            </Box>
+          </Box>
           <Box>
-            <Text color="surface.text.gray.muted" size="small" weight="medium" marginBottom="10px">
+            <Text
+              color="surface.text.gray.muted"
+              size="small"
+              weight="medium"
+              margin={['20px', '0px', '10px']}
+            >
               Products applicable
             </Text>
             <Box display="flex" gap="10px" flexWrap="wrap">

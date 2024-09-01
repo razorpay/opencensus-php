@@ -12,6 +12,7 @@ import MonetizationChargesModalDesktop from './components/MonetizationChargesMod
 import MonetizationChargesModalMobile from './components/MonetizationChargesModalMobile';
 import getPricingPlan from './utils/getPricingPlan';
 import { getNoCodeMonetizationExperiment } from './utils/getNoCodeMonetizationExperiment';
+import { getItem, setItem } from 'common/utils/localStorage';
 
 const MonetizationChargesBanner = ({
   bannerKey = 'monetizationCharges',
@@ -25,7 +26,12 @@ const MonetizationChargesBanner = ({
   const { isDesktop } = useBladeBreakpoints();
   const [showProductWiseBenefits, setShowProductWiseBenefits] = useState(false);
   const [showCustomPricing, setShowCustomPricing] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const [hidden, setHidden] = useState(() => {
+    return (
+      sessionStorage.getItem(`${bannerKey}-${screen}-hidden`) === 'true' ||
+      Number(getItem(`${bannerKey}-${screen}-closeCount`)) >= 4
+    );
+  });
   const pricingPlanForMerchant = getPricingPlan(user);
   const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
   const showBanner =
@@ -93,11 +99,15 @@ const MonetizationChargesBanner = ({
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    const closeCount = Number(getItem(`${bannerKey}-${screen}-closeCount`)) || 0;
+    const newCloseCount = closeCount + 1;
+    setItem(`${bannerKey}-${screen}-closeCount`, newCloseCount);
+    sessionStorage.setItem(`${bannerKey}-${screen}-hidden`, 'true');
     setHidden(true);
   };
 
   useEffect(() => {
-    if (showBanner) {
+    if (showBanner && !hidden) {
       analyticsTrack({
         objectName: 'Pricing Banner',
         actionName: 'Render Success',
