@@ -87,18 +87,31 @@ class Service extends Base\Service
 
     public function uploadActivationFileForMerchant(array $input, $merchant)
     {
-        if (isset($input["merchant_id"]) === true)
+        // In case of assisted onboarded merchants:
+        // 1. Merchant id from auth will be of Ezetap's account
+        // 2. So, set merchant id from input in basic auth for correct document-mid mapping
+        if (isset($input['merchant_id']) === true)
         {
-            $merchantId = $input["merchant_id"];
-            $this->app['basicauth']->setMerchantById($merchantId);
-            unset($input["merchant_id"]);
-            $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, [
-                'merchant_id' => $merchantId,
-            ]);
+            $inputMid = $input['merchant_id'];
 
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($inputMid);
+
+            if (!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant())
+            {
+                $this->app['basicauth']->setMerchantById($inputMid);
+
+                unset($input["merchant_id"]);
+
+                $this->trace->debug(TraceCode::SET_MID_FROM_INPUT_IN_BASIC_AUTH, [
+                    'auth_merchant_id' => $merchant->getId(),
+                    'input_merchant_id' => $inputMid,
+                ]);
+
+                $merchant = (new Merchant\Service())->getMerchantFromMid($inputMid);
+            }
         }
-        return $this->mutex->acquireAndRelease(
 
+        return $this->mutex->acquireAndRelease(
             $merchant->getId(),
 
             function() use ($merchant, $input) {
@@ -107,7 +120,8 @@ class Service extends Base\Service
 
             Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
-            Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
+            Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT
+        );
     }
 
     public function uploadFilesByAgent(array $input)

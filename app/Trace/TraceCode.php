@@ -4391,10 +4391,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_METRIC_PUSH_EXCEPTION                          = 'BANKING_ACCOUNT_METRIC_PUSH_EXCEPTION';
     const SUB_VIRTUAL_ACCOUNT_PAYOUT_TYPE_SET                            = 'SUB_VIRTUAL_ACCOUNT_PAYOUT_TYPE_SET';
 
-    //trace codes for merchant document CRUD
+    // Trace codes for merchant document APIs
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
     const DOCUMENT_DELETE_REQUEST                               = 'DOCUMENT_DELETE_REQUEST';
     const DOCUMENT_SAVE_FAILED                                  = 'DOCUMENT_SAVE_FAILED';
+    const SET_MID_FROM_INPUT_IN_BASIC_AUTH                      = 'SET_MID_FROM_INPUT_IN_BASIC_AUTH';
 
     const FUND_ACCOUNT_CREATED                                              = 'FUND_ACCOUNT_CREATED';
     const FUND_ACCOUNT_CREATE_REQUEST                                       = 'FUND_ACCOUNT_CREATE_REQUEST';

@@ -269,7 +269,8 @@ return [
             ]
         ]
     ],
-    'testPartnerAgentDocumentUpload' => [
+
+    'testAssistedOnboardingDocUploadFromPartnerAgent' => [
         'request'  => [
             'url'     => '/merchant/documents/upload',
             'method'  => 'POST',
@@ -285,6 +286,31 @@ return [
             ]
         ]
     ],
+
+    'testNonAssistedOnboardingDocUploadFromPartnerAgent' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'nach',
+                'upload_only' => true,
+                'merchant_id' => '1cXSLlUU8V9sXl'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+        ],
+    ],
+
     'testUploadFilesByAgent' => [
         'request' => [
             'url'     => '/merchant_document',

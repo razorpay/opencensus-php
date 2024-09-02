@@ -94,4 +94,14 @@ class Entity extends Base\PublicEntity
 
         return $value;
     }
+
+    public function isAssistedOnboardedMerchant(): bool
+    {
+        if ($this->getSignupCampaign() === Constants::ASSISTED_ONBOARDING)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
