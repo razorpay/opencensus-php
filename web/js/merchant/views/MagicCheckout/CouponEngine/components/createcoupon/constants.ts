@@ -19,3 +19,7 @@ export const DiscountCategories = [
     value: 'ratePerProduct',
   },
 ];
+
+export const RESTRICTED_STATUS = ['active', 'published', 'in_active'];
+
+export const DUPLICATE_FLOW = 'duplicate';

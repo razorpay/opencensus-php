@@ -7,15 +7,31 @@ import { Accordion } from 'merchant/views/MagicCheckout/CouponEngine/components/
 import CombinedCoupon from './CombinedCouponAccordion';
 
 //constants
-import { DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
+import {
+  DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG,
+  COUPON_KEYS,
+} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
 
 interface CombinedCouponProps {
   couponName: string;
   user: User;
+  isRcodEnabled: boolean;
 }
 
-const CombineCouponsWidget: React.FC<CombinedCouponProps> | null = ({ couponName, user }) => {
+const CombineCouponsWidget: React.FC<CombinedCouponProps> | null = ({
+  couponName,
+  user,
+  isRcodEnabled,
+}) => {
   const shouldShowMultiCoupons = user.isMultiCouponsEnabled;
+
+  /**
+   * We are not allowing free shipping coupon combinations for magicX merchants.
+   * For bulk_order and buyx_gety coupon types , free shipping is the only possible coupon combination af of now , so
+   * for these coupon types we do not render coupon combination sections for magicX merchants.
+   */
+  if (isRcodEnabled && [COUPON_KEYS.bulk_order, COUPON_KEYS.buyx_gety].includes(couponName))
+    return null;
 
   if (shouldShowMultiCoupons && DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG[couponName]) {
     return (
@@ -31,4 +47,7 @@ const CombineCouponsWidget: React.FC<CombinedCouponProps> | null = ({ couponName
   return null;
 };
 
-export default connect((state) => ({ user: state.session.user }))(CombineCouponsWidget);
+export default connect((state) => ({
+  user: state.session.user,
+  isRcodEnabled: state.magicCheckout.rcod,
+}))(CombineCouponsWidget);

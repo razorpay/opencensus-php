@@ -121,12 +121,18 @@ export interface ErrorStates {
     startDate: null | string;
     endDate: null | string;
     couponTime: null | string;
+    maximumBudget: null | string;
   };
   discountOffered: {
     discountValue: null | string;
   };
   bulkDiscountDetails: {
     discountValue: null | string;
+  };
+  usageRestriction: {
+    total: null | string;
+    maxUsage: null | string;
+    enforceUsageRestriction: null | string;
   };
 }
 

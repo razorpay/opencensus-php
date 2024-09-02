@@ -15,14 +15,17 @@ const QueryOptions = {
   retry: 3,
 };
 
-const getActiveTab = (dashboardView) => {
-  if (dashboardView === RCOD_APP_NAME || dashboardView === SOPC_APP_NAME) return TABS.CONVERSION;
+const getActiveTab = (dashboardView, user) => {
+  if (dashboardView === RCOD_APP_NAME || dashboardView === SOPC_APP_NAME) {
+    if (user.isMagicOrderAnalyticsCREnabled) return TABS.CONVERSION;
+    return TABS.REPORTS;
+  }
   return TABS.OVERVIEW;
 };
 
-function OrderAnalyticsProvider({ children, dashboardView }) {
+function OrderAnalyticsProvider({ children, dashboardView, user }) {
   const [analyticsData, setAnalyticsData] = useState({});
-  const [activeTab, setActiveTab] = useState(getActiveTab(dashboardView));
+  const [activeTab, setActiveTab] = useState(getActiveTab(dashboardView, user));
   const [timeRange, setTimeRange] = useState({ start: null, end: null });
   const { isFetching, refetch: refetchAnalyticsData } = useQuery({
     /**
@@ -67,5 +70,6 @@ const useOrderAnalyticsContext = () => {
 
 const ConnectedOrderAnalyticsProvider = connect((state) => ({
   dashboardView: state.magicCheckout.dashboard_view,
+  user: state.session.user,
 }))(OrderAnalyticsProvider);
 export { useOrderAnalyticsContext, ConnectedOrderAnalyticsProvider as OrderAnalyticsProvider };

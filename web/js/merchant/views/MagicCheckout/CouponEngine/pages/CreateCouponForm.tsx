@@ -95,7 +95,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
                 : '',
             },
             couponValidity: {
-              ...prefillData?.meta_data?.display_information.couponValidity,
+              ...prefillData?.couponValidity,
               startDate: moment().format('YYYY-MM-DD'),
               startTime: moment().add(2, 'hours').format('h:mm a'),
               endDate: moment().add(1, 'days').format('YYYY-MM-DD'),

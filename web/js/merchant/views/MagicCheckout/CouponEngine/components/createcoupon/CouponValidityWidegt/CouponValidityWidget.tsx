@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import moment from 'moment';
 
 // ui imports
@@ -18,18 +19,33 @@ import {
 // context imports
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
 
+// api imports
+import { getCoupon } from 'merchant/views/MagicCheckout/CouponEngine/api';
+
 //helpers
 import { onWheelPreventChange } from 'merchant/views/MagicCheckout/helper';
-import { validateCouponDateTime } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponFormValidators';
+import {
+  validateCouponDateTime,
+  validateMaximumBudgetRestriction,
+} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponFormValidators';
+
+// constant imports
+import {
+  DUPLICATE_FLOW,
+  RESTRICTED_STATUS,
+} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/constants';
 
 interface AccordionBodyProps {
   flow: string;
 }
 
 const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
-  const { widgetsData, setWidgetsData, errorStates, setErrorStates } = useContext(ModalContext);
+  const { widgetsData, setWidgetsData, errorStates, setErrorStates, allCouponsList } =
+    useContext(ModalContext);
   const [startTimeId, setStartTimeId] = useState(0);
   const [endTimeId, setEndTimeId] = useState(0);
+  const [isBudgetRestrictionEnabled, setBudgetRestriction] = useState(false);
+  const { code } = useParams();
 
   const handleFormValidations = ({ startDate, startTime, endDate, endTime }) => {
     validateCouponDateTime({
@@ -52,6 +68,34 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
     if (endTimeId === 2) return;
     setEndTimeId((prev) => prev + 1);
   }, [widgetsData.couponValidity.endDate]);
+
+  useEffect(() => {
+    if (code) {
+      const fetchCouponData = async () => {
+        let couponData;
+        couponData = allCouponsList.find((coupon) => coupon.code === code);
+        if (!couponData) {
+          const { data } = await getCoupon(code);
+          couponData = data?.coupons?.[0] ?? {};
+        }
+
+        const { maxBudget } = couponData?.meta_data?.display_information?.couponValidity ?? {};
+        const isCloneMode = flow?.trim() === DUPLICATE_FLOW.trim();
+        /**
+         * Should enforce restriction only if coupon is not being cloned , current status is RESTRICTED_STATUS and
+         * Coupon had non-zero budget restriction set before and moved to published/activated status
+         */
+        const shouldEnableBudgetRestriction =
+          !!parseInt(maxBudget, 10) &&
+          RESTRICTED_STATUS?.includes(widgetsData?.status) &&
+          !isCloneMode;
+
+        setBudgetRestriction(shouldEnableBudgetRestriction);
+      };
+
+      fetchCouponData();
+    }
+  }, [code, flow, widgetsData?.status, allCouponsList]);
 
   return (
     <div>
@@ -217,13 +261,13 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
 
       <FormGroup>
         <div className="form-label">
-          Total maximum budget <OptionalText> (optional) </OptionalText>
+          Total maximum budget
+          {!isBudgetRestrictionEnabled && <OptionalText> (optional) </OptionalText>}
         </div>
         <div className="form-input">
           <Label>Expire coupon on end date or when the total amount reached is</Label>
           <Input
             name="maxBudget"
-            type="number"
             addonBefore={<InputIcon className="i-rupee" />}
             defaultValue={widgetsData.couponValidity.maxBudget}
             value={widgetsData.couponValidity.maxBudget}
@@ -236,10 +280,15 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
                   maxBudget: e.target.value,
                 },
               }));
+              validateMaximumBudgetRestriction(
+                e.target.value,
+                isBudgetRestrictionEnabled,
+                setErrorStates,
+              );
             }}
             onWheel={onWheelPreventChange}
-            disabled={flow === 'edit' && widgetsData.status !== 'created'}
           />
+          <p className="error-message">{errorStates.couponValidity.maximumBudget}</p>
         </div>
       </FormGroup>
     </div>

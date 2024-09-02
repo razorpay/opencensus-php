@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 // ui imports
 import Input from 'common/new-ui/Input';
@@ -12,14 +13,85 @@ import {
 // context imports
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
 
+// api imports
+import { getCoupon } from 'merchant/views/MagicCheckout/CouponEngine/api';
+
 // helpers imports
 import { onWheelPreventChange } from 'merchant/views/MagicCheckout/helper';
+import {
+  validateUsageRestrictionOnCount,
+  validateUsageRestrictionOnCheckbox,
+} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponFormValidators';
+import { classList } from 'common/utils/rzp-utils';
 
-const AccordionBody: React.FC = () => {
-  const { widgetsData, setWidgetsData } = useContext(ModalContext);
+// constant imports
+import {
+  DUPLICATE_FLOW,
+  RESTRICTED_STATUS,
+} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/constants';
+
+interface AccordionBodyProps {
+  flow: string;
+}
+
+const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
+  const { widgetsData, setWidgetsData, allCouponsList, setErrorStates, errorStates } =
+    useContext(ModalContext);
+  const { code } = useParams();
+  const [isUsageRestrictionEnabled, setUsageRestriction] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (code) {
+      const fetchCouponData = async () => {
+        let couponData;
+        couponData = allCouponsList.find((coupon) => coupon.code === code);
+
+        if (!couponData) {
+          const { data } = await getCoupon(code);
+          couponData = data?.coupons?.[0] ?? {};
+        }
+
+        const { isLimitedUsage, isRestrictedTotalUsage } =
+          couponData?.meta_data?.display_information?.usageRestriction ?? {};
+        const isCloneMode = flow?.trim() === DUPLICATE_FLOW.trim();
+
+        /**
+         * Should enforce restriction only if coupon is not being cloned , current status is RESTRICTED_STATUS and
+         * Coupon had one of the usage restrictions set before and moved to published/activated status
+         */
+        const shouldEnableUsageRestriction =
+          (isLimitedUsage || isRestrictedTotalUsage) &&
+          RESTRICTED_STATUS?.includes(widgetsData?.status) &&
+          !isCloneMode;
+
+        setUsageRestriction(shouldEnableUsageRestriction);
+      };
+
+      fetchCouponData();
+    }
+  }, [code, flow, widgetsData?.status, allCouponsList]);
+
+  const handleValidationsOnUsageCount = (updatedWidgetData) => {
+    validateUsageRestrictionOnCount({
+      usageRestriction: updatedWidgetData?.usageRestriction,
+      setErrorStates,
+    });
+  };
+
+  const handleCheckboxValidations = (updatedWidgetData) => {
+    validateUsageRestrictionOnCheckbox({
+      isUsageRestrictionEnabled,
+      usageRestriction: updatedWidgetData?.usageRestriction,
+      setErrorStates,
+    });
+    handleValidationsOnUsageCount(updatedWidgetData);
+  };
 
   return (
     <div>
+      <FormGroup>
+        <p className="error-message">{errorStates.usageRestriction.enforceUsageRestriction}</p>
+      </FormGroup>
       <FormGroup>
         <div className="form-label">Maximum redemption</div>
         <div className="form-input max-width-100">
@@ -29,13 +101,17 @@ const AccordionBody: React.FC = () => {
               type="checkbox"
               name="isUnlimitedUsage"
               onChange={(e) => {
-                setWidgetsData((prev) => ({
-                  ...prev,
-                  usageRestriction: {
-                    ...prev.usageRestriction,
-                    isRestrictedTotalUsage: e.target.checked,
-                  },
-                }));
+                setWidgetsData((prev) => {
+                  const updatedWidgetData = {
+                    ...prev,
+                    usageRestriction: {
+                      ...prev.usageRestriction,
+                      isRestrictedTotalUsage: e.target.checked,
+                    },
+                  };
+                  handleCheckboxValidations(updatedWidgetData);
+                  return updatedWidgetData;
+                });
               }}
               autoRender
             />
@@ -49,18 +125,27 @@ const AccordionBody: React.FC = () => {
                   type="number"
                   required
                   value={widgetsData.usageRestriction.total}
-                  className="w-350"
+                  className={classList(
+                    'w-350',
+                    errorStates.usageRestriction.total ? 'error-fields' : '',
+                  )}
                   onChange={(e) => {
-                    setWidgetsData((prev) => ({
-                      ...prev,
-                      usageRestriction: {
-                        ...prev.usageRestriction,
-                        total: e.target.value,
-                      },
-                    }));
+                    setWidgetsData((prev) => {
+                      const updatedWidgetData = {
+                        ...prev,
+                        usageRestriction: {
+                          ...prev.usageRestriction,
+                          total: e.target.value,
+                        },
+                      };
+                      handleValidationsOnUsageCount(updatedWidgetData);
+                      return updatedWidgetData;
+                    });
                   }}
                   onWheel={onWheelPreventChange}
+                  min="1"
                 />
+                <p className="error-message">{errorStates.usageRestriction.total}</p>
               </MoreDetailsContainer>
             </div>
           ) : null}
@@ -70,13 +155,17 @@ const AccordionBody: React.FC = () => {
               type="checkbox"
               name="isUnlimitedUsage"
               onChange={(e) => {
-                setWidgetsData((prev) => ({
-                  ...prev,
-                  usageRestriction: {
-                    ...prev.usageRestriction,
-                    isLimitedUsage: e.target.checked,
-                  },
-                }));
+                setWidgetsData((prev) => {
+                  const updatedWidgetData = {
+                    ...prev,
+                    usageRestriction: {
+                      ...prev.usageRestriction,
+                      isLimitedUsage: e.target.checked,
+                    },
+                  };
+                  handleCheckboxValidations(updatedWidgetData);
+                  return updatedWidgetData;
+                });
               }}
               autoRender
             />
@@ -90,18 +179,24 @@ const AccordionBody: React.FC = () => {
                   type="number"
                   required
                   value={widgetsData.usageRestriction.maxUsage}
-                  className="w-350"
+                  className={classList('w-350', errorStates.usageRestriction.maxUsage)}
                   onChange={(e) => {
-                    setWidgetsData((prev) => ({
-                      ...prev,
-                      usageRestriction: {
-                        ...prev.usageRestriction,
-                        maxUsage: e.target.value,
-                      },
-                    }));
+                    setWidgetsData((prev) => {
+                      const updatedWidgetData = {
+                        ...prev,
+                        usageRestriction: {
+                          ...prev.usageRestriction,
+                          maxUsage: e.target.value,
+                        },
+                      };
+                      handleValidationsOnUsageCount(updatedWidgetData);
+                      return updatedWidgetData;
+                    });
                   }}
                   onWheel={onWheelPreventChange}
+                  min={1}
                 />
+                <p className="error-message">{errorStates.usageRestriction.maxUsage}</p>
               </MoreDetailsContainer>
 
               <div className="mt-16 display-flex">
@@ -139,10 +234,14 @@ const AccordionBody: React.FC = () => {
   );
 };
 
-const UsageRestrictionWidget: React.FC = () => {
+interface UsageRestrictionWidgetProps {
+  flow: string;
+}
+
+const UsageRestrictionWidget: React.FC<UsageRestrictionWidgetProps> = ({ flow }) => {
   return (
     <div>
-      <Accordion header={<div>Usage restriction</div>} body={<AccordionBody />} />
+      <Accordion header={<div>Usage restriction</div>} body={<AccordionBody flow={flow} />} />
     </div>
   );
 };

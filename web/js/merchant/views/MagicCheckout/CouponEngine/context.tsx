@@ -99,12 +99,18 @@ const initialErrorStates: ErrorStates = {
     startDate: null,
     endDate: null,
     couponTime: null,
+    maximumBudget: null,
   },
   discountOffered: {
     discountValue: null,
   },
   bulkDiscountDetails: {
     discountValue: null,
+  },
+  usageRestriction: {
+    total: null,
+    maxUsage: null,
+    enforceUsageRestriction: null,
   },
 };
 

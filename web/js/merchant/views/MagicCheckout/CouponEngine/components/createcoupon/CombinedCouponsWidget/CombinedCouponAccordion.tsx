@@ -1,4 +1,5 @@
 import React, { useCallback, useContext } from 'react';
+import { connect } from 'react-redux';
 
 // ui imports
 import Input from 'common/new-ui/Input';
@@ -16,9 +17,10 @@ import { DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG } from 'merchant/views/MagicChe
 
 interface CombinedCouponProps {
   couponName: string;
+  isRcodEnabled: boolean;
 }
 
-const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName }) => {
+const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName, isRcodEnabled }) => {
   const { widgetsData, setWidgetsData } = useContext(ModalContext);
 
   const isCombinedCouponsChecboxChecked = useCallback(() => {
@@ -59,6 +61,8 @@ const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName }) => {
       <div className="form-input max-width-100">
         <div className="display-flex flex--column gap--12">
           {DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG[couponName].map((item) => {
+            //   * We are not allowing free shipping coupon combinations for magicX merchants.
+            if (isRcodEnabled && item?.type === 'shouldCombineFreeShippingCoupon') return null;
             return (
               <div className="display-flex" key={item.type}>
                 <Input.Check
@@ -89,4 +93,8 @@ const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName }) => {
   );
 };
 
-export default CombinedCoupon;
+const mapStateToProps = (state) => ({
+  isRcodEnabled: state.magicCheckout.rcod,
+});
+
+export default connect(mapStateToProps, null)(CombinedCoupon);

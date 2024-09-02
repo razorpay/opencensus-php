@@ -162,6 +162,102 @@ export function validateDiscountItems({ subFieldName, fieldName, value, setError
   isFormValid = true;
 }
 
+export const isPositiveWholeNumber = (value) => {
+  const positiveWholeNumberRegex = /^[1-9]\d*$/;
+  return positiveWholeNumberRegex.test(value);
+};
+
+export const validateMaximumBudgetRestriction = (
+  value,
+  isBudgetRestrictionEnabled,
+  setErrorStates,
+) => {
+  let errorMsg = null;
+
+  if (isNaN(value)) errorMsg = 'Please enter a valid number';
+  //Value cannot be empty and also cannot to be < 1
+  else if (isBudgetRestrictionEnabled && !isPositiveWholeNumber(value))
+    errorMsg = 'Value is required and should be greater than 0 (Decimal Points not allowed)';
+  //Value can be empty but cannot be < 1
+  else if (value !== '' && !isPositiveWholeNumber(value))
+    errorMsg = 'Value is optional but should be greater than 0 (Decimal Points not allowed)';
+
+  setErrorStates((prevState) =>
+    setErrorState({
+      prevState,
+      fieldName: 'couponValidity',
+      subFieldName: 'maximumBudget',
+      errorMessage: errorMsg,
+    }),
+  );
+};
+
+export const validateUsageRestrictionOnCheckbox = ({
+  isUsageRestrictionEnabled,
+  usageRestriction,
+  setErrorStates,
+}) => {
+  let errorMessage = null;
+
+  if (
+    isUsageRestrictionEnabled &&
+    !(usageRestriction?.isRestrictedTotalUsage || usageRestriction?.isLimitedUsage)
+  ) {
+    errorMessage = 'Please set atleast 1 coupon usage restriction';
+  }
+
+  setErrorStates((prevState) =>
+    setErrorState({
+      prevState,
+      fieldName: 'usageRestriction',
+      subFieldName: 'enforceUsageRestriction',
+      errorMessage,
+    }),
+  );
+
+  if (errorMessage) {
+    isFormValid = false;
+  } else {
+    isFormValid = true;
+  }
+};
+
+export function validateUsageRestrictionOnCount({ usageRestriction, setErrorStates }) {
+  let errorMessageTotalUsage = null;
+  let errorMessageLimitedUsage = null;
+
+  if (usageRestriction?.isRestrictedTotalUsage && !isPositiveWholeNumber(usageRestriction?.total)) {
+    errorMessageTotalUsage = 'Value should be greater than 0 (Decimal Points not allowed)';
+  }
+  if (usageRestriction?.isLimitedUsage && !isPositiveWholeNumber(usageRestriction?.maxUsage)) {
+    errorMessageLimitedUsage = 'Value should be greater than 0 (Decimal Points not allowed)';
+  }
+
+  setErrorStates((prevState) =>
+    setErrorState({
+      prevState,
+      fieldName: 'usageRestriction',
+      subFieldName: 'total',
+      errorMessage: errorMessageTotalUsage,
+    }),
+  );
+
+  setErrorStates((prevState) =>
+    setErrorState({
+      prevState,
+      fieldName: 'usageRestriction',
+      subFieldName: 'maxUsage',
+      errorMessage: errorMessageLimitedUsage,
+    }),
+  );
+
+  if (errorMessageTotalUsage || errorMessageLimitedUsage) {
+    isFormValid = false;
+  } else {
+    isFormValid = true;
+  }
+}
+
 // this is a helper function which generates the fields to validate based on the coupon name. This function is called from the globalValidator function.
 const generateFieldsToValidate = (couponName) => {
   let specificValidators = {};
@@ -179,6 +275,9 @@ const generateFieldsToValidate = (couponName) => {
     },
     couponValidity: {
       validator: validateCouponDateTime,
+    },
+    usageRestriction: {
+      validator: validateUsageRestrictionOnCount,
     },
   };
 
@@ -324,6 +423,15 @@ export const globalValidator = async ({
           setErrorStates,
           flowName,
           couponStatus: widgetsData.status,
+        }),
+      );
+    }
+
+    if (fieldName === 'usageRestrictions') {
+      promises.push(
+        validator({
+          usageRestriction: widgetsData?.usageRestriction,
+          setErrorStates,
         }),
       );
     }
