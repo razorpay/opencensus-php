@@ -76,6 +76,7 @@ class RegionCookieHandlerTest extends BaseTestCase
         $this->assertCount(1, $cookies);
         $this->assertEquals('rzp_user_merchant_region', $response->headers->getCookies()[0]->getName());
         $this->assertEquals('SG', $response->headers->getCookies()[0]->getValue());
+        $this->assertEquals(false, $response->headers->getCookies()[0]->getHttpOnly());
 
         $response = $regionCookieHandler->handle($request, function ($request) {
             $userController = new UserController();
