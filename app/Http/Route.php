@@ -12265,6 +12265,7 @@ class Route
         'payments_cross_border_service' => [
             'payment_capture',
             'internal_payment_authorize_refund',
+            'internal_merchant_fetch'
         ],
 
         'xperience' => [

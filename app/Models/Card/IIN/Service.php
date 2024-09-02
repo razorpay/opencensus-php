@@ -95,6 +95,7 @@ class Service extends Base\Service
             $data['issuer']             = $iinEntity->getIssuer();
             $data['network']            = $iinEntity->getNetwork();
             $data['cobranding_partner'] = $iinEntity->getCobrandingPartner();
+            $data['dcc_blacklisted']      = $iinEntity->isDCCBlacklisted();
 
             $app = App::getFacadeRoot();
 
