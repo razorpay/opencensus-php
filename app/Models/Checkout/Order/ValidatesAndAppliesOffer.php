@@ -81,23 +81,36 @@ trait ValidatesAndAppliesOffer
     protected function modifyAmountForDiscountedUPIOfferIfApplicable(Entity $checkoutOrder, OfferEntity $offer): void
     {
         if (
-            $offer->getPaymentMethod() === Method::UPI &&
-            $offer->getOfferType() === OfferConstants::INSTANT_OFFER
+            $offer->getPaymentMethod() === Method::UPI
         ) {
-            $orderAmount = $checkoutOrder->getAmount();
+            switch ($offer->getOfferType())
+            {
+                case OfferConstants::INSTANT_OFFER:
+                    $orderAmount = $checkoutOrder->getAmount();
 
-            $discountedAmount = $offer->getDiscountedAmount($orderAmount);
+                    $discountedAmount = $offer->getDiscountedAmount($orderAmount);
 
-            $checkoutOrder->setDiscountedAmount($discountedAmount);
+                    $checkoutOrder->setDiscountedAmount($discountedAmount);
 
-            $checkoutOrder->setDiscount($orderAmount - $discountedAmount);
+                    $checkoutOrder->setDiscount($orderAmount - $discountedAmount);
 
-            // Update the offer_id with the applied offer's id.
-            // Necessary step as offer_id won't be present in input if the order
-            // has a forced UPI offer.
-            $checkoutOrder->setOfferId($offer->getId());
+                    // Update the offer_id with the applied offer's id.
+                    // Necessary step as offer_id won't be present in input if the order
+                    // has a forced UPI offer.
+                    $checkoutOrder->setOfferId($offer->getId());
 
-            return;
+                    $checkoutOrder->setOfferType(OfferConstants::INSTANT_OFFER);
+
+                    return;
+
+                case OfferConstants::CASHBACK_OFFER:
+
+                    $checkoutOrder->setOfferId($offer->getId());
+
+                    $checkoutOrder->setOfferType(OfferConstants::CASHBACK_OFFER);
+
+                    return;
+            }
         }
 
         // Unset offer_id to indicate that the offer wasn't applied.

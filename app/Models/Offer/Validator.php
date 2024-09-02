@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Gateway\Upi\Yesbank\PayerAccountType;
 use RZP\Models\Emi;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Payment;
@@ -15,6 +16,8 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Gateway\Upi\Base as upi;
+use RZP\Models\PaymentsUpi;
 
 class Validator extends Base\Validator
 {
@@ -60,6 +63,7 @@ class Validator extends Base\Validator
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
         Entity::PRODUCT_TYPE        => 'sometimes|filled|string|in:subscription',
         Entity::LOW_COST_EMI        => 'sometimes|array',
+        Entity::UPI                 => 'sometimes|array',
     ];
 
     protected static $createBulkRules = [
@@ -117,6 +121,7 @@ class Validator extends Base\Validator
         Entity::LINKED_OFFER_IDS,
         Entity::MAX_CASHBACK,
         Entity::ISSUER,
+        Entity::UPI,
     ];
 
     protected static $emiSubventionValidators = [
@@ -142,6 +147,25 @@ class Validator extends Base\Validator
         'offers'                        => 'required|array',
         'order_id'                      => 'required|string',
     ];
+
+    protected static $allowedPspApps = [
+        upi\ProviderPsp::GOOGLE_PAY,
+        upi\ProviderPsp::PHONEPE,
+        upi\ProviderPsp::PAYTM,
+        upi\ProviderPsp::CRED,
+        upi\ProviderPsp::AMAZON_PAY,
+        \RZP\Models\Offer\Constants::ALL,
+    ];
+
+    protected static $allowedPayerAccountType = [
+        PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_WALLET,
+        PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_CREDIT,
+        PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_WALLET,
+        PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
+        PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_PPIWALLET,
+        \RZP\Models\Offer\Constants::ALL,
+    ];
+
     // only to be used for LC EMI offer
     protected function validatePercentRate(array $input)
     {
@@ -290,6 +314,65 @@ class Validator extends Base\Validator
         }
     }
 
+    //optimise code for this function
+    protected function validateUpi(array $input)
+    {
+        $method = $input[Entity::PAYMENT_METHOD] ?? null;
+        $upiInstrument = $input[Entity::UPI] ?? null;
+
+        // If no UPI instrument details are provided, nothing to validate
+        if ($upiInstrument === null)
+        {
+            return;
+        }
+
+        // Check if the payment method is not UPI but UPI instrument details are provided
+        if ($method !== Payment\Method::UPI)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'UPI app details not allowed'
+            );
+        }
+
+        // Validate UPI apps
+        $this->validateArrayValues(
+            $upiInstrument[\RZP\Models\Offer\Constants::APPS] ?? null,
+            Validator::$allowedPspApps,
+            'UPI apps'
+        );
+
+        // Validate UPI payer account types
+        $this->validateArrayValues(
+            $upiInstrument[\RZP\Models\Upi\Turbo\Constants::PAYER_ACCOUNT_TYPE] ?? null,
+                Validator::$allowedPayerAccountType,
+            'UPI payerAccountTypes'
+        );
+
+        if ($input[Entity::TYPE] !== \RZP\Models\Offer\Constants::CASHBACK_OFFER){
+            throw new Exception\BadRequestValidationFailureException(
+                'UPI offers are only allowed for cashback');
+        }
+
+    }
+
+    private function validateArrayValues($values, array $allowedValues, string $type): void
+    {
+        if ($values !== null) {
+            if (!is_array($values)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    "$type should be an array"
+                );
+            }
+
+            foreach ($values as $value) {
+                if (!in_array($value, $allowedValues, true)) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Invalid $type: $value"
+                    );
+                }
+            }
+        }
+    }
     protected function validateIssuer(array $input)
     {
 

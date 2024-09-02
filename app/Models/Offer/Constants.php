@@ -113,6 +113,7 @@ final class Constants
     const STAGE_DISCOVER = 'STAGE_DISCOVER';
     const STAGE_AVAIL = 'STAGE_AVAIL';
 
+    const STAGE_REDEEM = 'STAGE_REDEEM';
     const DISCOUNT = 'discount';
     const CASHBACK = 'cashback';
     const NO_COST_EMI = 'no_cost_emi';
@@ -204,4 +205,14 @@ final class Constants
     const STATUS = 'status';
 
     const STATUS_ACTIVE = 'STATUS_ACTIVE';
+
+    const APPS = "apps";
+    const ALL = "ALL";
+
+    const UPI_APP = "UpiApp";
+
+    const UPI_PAYER_ACCOUNT = "UpiPayerAccount";
+
+    const PAYMENT_INSTRUMENT = "PaymentInstrument";
+
 }

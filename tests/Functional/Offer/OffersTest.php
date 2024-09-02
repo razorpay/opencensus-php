@@ -443,8 +443,8 @@ class OffersTest extends TestCase
                 'metadata' => [
                     'offer_id' => 'offer_10000000000000',
                     'name' => 'Test Offer',
-                    'display_name' => 'Test Offer',
-                    'description' => 'HDFC Debit Card EMI offers',
+                    'display_name' => 'HDFC Debit Card Emi Subvention offers',
+                    'description' => 'HDFC Debit Card Emi Subvention offers',
                     'terms' => [
                         'tnc' => 'Some more details',
                     ],

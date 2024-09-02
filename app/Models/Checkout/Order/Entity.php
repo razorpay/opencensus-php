@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Account\Entity as MerchantAccount;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Invoice\Entity as Invoice;
+use RZP\Models\Offer\Constants as OfferConstants;
 use RZP\Models\Offer\Entity as Offer;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\PaymentLink\Entity as PaymentLink;
@@ -76,6 +77,7 @@ class Entity extends PublicEntity
     public const NAME = 'name';
     public const NOTES = 'notes';
     public const OFFER_ID = 'offer_id';
+    public const OFFER_TYPE = 'offer_type';
     public const PAYABLE_AMOUNT = 'payable_amount';
     public const PAYMENT_LINK_ID = 'payment_link_id';
     public const RECEIVER_TYPE = 'receiver_type';
@@ -106,6 +108,7 @@ class Entity extends PublicEntity
         self::NAME,
         self::NOTES,
         self::OFFER_ID,
+        self::OFFER_TYPE,
         self::PAYMENT_LINK_ID,
         self::RECEIVER_TYPE,
         self::SIGNATURE,
@@ -298,15 +301,16 @@ class Entity extends PublicEntity
     }
 
     /**
-     * Checks and returns if an offer is applied on the CheckoutOrder.
+     * Checks and returns if an instant discount offer is applied on the CheckoutOrder.
      * Assumes that an offerId would be unset if it isn't applied.
      *
      * @return bool
      */
-    public function isOfferApplied(): bool
+    public function isInstantDiscountOfferApplied(): bool
     {
-        return $this->getOfferId() !== '';
+        return $this->getOfferType() === OfferConstants::INSTANT_OFFER;
     }
+
 
     public function isQrCodeOrder(): bool
     {
@@ -488,6 +492,11 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::META_DATA)[self::OFFER_ID] ?? '';
     }
 
+    public function getOfferType(): string
+    {
+        return $this->getAttribute(self::META_DATA)[self::OFFER_TYPE] ?? OfferConstants::INSTANT_OFFER;
+    }
+
     public function getReceiverType(): string
     {
         return $this->getAttribute(self::META_DATA)[self::RECEIVER_TYPE] ?? '';
@@ -522,6 +531,11 @@ class Entity extends PublicEntity
     public function setOfferId(string $offerId): void
     {
         $this->setAttribute(self::META_DATA . '->' . self::OFFER_ID, $offerId);
+    }
+
+    public function setOfferType(string $offerType): void
+    {
+        $this->setAttribute(self::META_DATA . '->' . self::OFFER_TYPE, $offerType);
     }
 
     public function setStatus(string $status): void

@@ -416,7 +416,7 @@ class Processor extends Base\Core
 
             $paymentArray = array_merge($paymentArray, $paymentArrayFromCheckoutOrder);
 
-            if ($this->checkoutOrder->isOfferApplied()) {
+            if ($this->checkoutOrder->isInstantDiscountOfferApplied()) {
                 // Reset the payment amount to order amount if an offer is applied
                 // as payment create process does offer related calculation &
                 // reduces the amount accordingly.

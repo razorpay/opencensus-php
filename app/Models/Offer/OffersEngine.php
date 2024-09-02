@@ -39,13 +39,13 @@ class OffersEngine extends Base\Core
     /**
      * @throws BadRequestException
      */
-    public function createOffer(Entity $offer, array $subscriptionInput)
+    public function createOffer(Entity &$offer, array $subscriptionInput, array $input)
     {
         try {
 
             $tenureDiscountMap = $this->getTenureDiscountMapForEMI($offer);
 
-            $oeRequest = $this->buildRequestForOffersEngine($offer, $subscriptionInput, $tenureDiscountMap);
+            $oeRequest = $this->buildRequestForOffersEngine($offer, $subscriptionInput, $tenureDiscountMap, $input);
 
             if ($this->auth->isAdminAuth() === false)
             {
@@ -78,6 +78,8 @@ class OffersEngine extends Base\Core
                 }
 
                 $convertedResponse = $this->convertOffersEngineResponseToEntityOffer($oeResponse);
+
+                $offer = $convertedResponse[Constants::OFFER];
             }
 
             $this->traceOffersDiff($offer, $convertedResponse, $tenureDiscountMap, $subscriptionInput);
@@ -214,12 +216,12 @@ class OffersEngine extends Base\Core
 
 
 // *Functions converting API Offer to Offers Engine Offer*
-    private function buildRequestForOffersEngine(Entity $offer, array $subscriptionInput, $tenureDiscountMap)
+    private function buildRequestForOffersEngine(Entity $offer, array $subscriptionInput, $tenureDiscountMap, $input)
     {
         $offersEngineRequest =
             [
                 Constants::METADATA => $this->getOffersEngineMetadata($offer),
-                Constants::SPEC     => $this->getOffersEngineSpec($offer, $subscriptionInput, $tenureDiscountMap),
+                Constants::SPEC     => $this->getOffersEngineSpec($offer, $subscriptionInput, $tenureDiscountMap, $input),
             ];
 
         return [
@@ -277,7 +279,7 @@ class OffersEngine extends Base\Core
         return $metadata;
     }
 
-    private function getOffersEngineSpec(Entity $offer, array $subscriptionInput, array $tenureDiscountMap): array
+    private function getOffersEngineSpec(Entity $offer, array $subscriptionInput, array $tenureDiscountMap, array $input): array
     {
         $spec = [];
 
@@ -304,7 +306,11 @@ class OffersEngine extends Base\Core
 
         $spec[Constants::USAGE_LIMITS] = $this->getUsageLimits($offer);
 
-        $spec[Constants::RULE_GROUPS] = $this->getRuleGroups($offer, $tenureDiscountMap, $subscriptionInput, $spec[Constants::BENEFITS_TYPES][0]);
+        $spec[Constants::RULE_GROUPS] = $this->getRuleGroups($offer,
+            $tenureDiscountMap,
+            $subscriptionInput,
+            $spec[Constants::BENEFITS_TYPES][0],
+            $input);
 
         return $spec;
     }
@@ -388,7 +394,12 @@ class OffersEngine extends Base\Core
         return $usageLimits;
     }
 
-    private function getRuleGroups(Entity $offer, array $tenureDiscountMap, array $subscriptionInput, string $benefitType){
+    private function getRuleGroups(Entity $offer,
+                                   array $tenureDiscountMap,
+                                   array $subscriptionInput,
+                                   string $benefitType,
+                                   array $input)
+    {
 
         $discoverConditionString = $this->getDiscoverWhenCondition($offer, $subscriptionInput);
 
@@ -404,11 +415,21 @@ class OffersEngine extends Base\Core
             $discountType,
             $discoverConditionString);
 
-        return [
+        $redeemRules = $this->getRedeemRules( $offer,
+            $discountType,
+            $input);
+
+        $rules = [
           Constants::CHANNEL_RZP_CHECKOUT . ".".Constants::STAGE_DISCOVER  => $discoverRules,
           Constants::CHANNEL_RZP_CHECKOUT . ".".Constants::STAGE_AVAIL => $availRules,
         ];
 
+        if (!empty($redeemRules))
+        {
+            $rules[Constants::CHANNEL_RZP_CHECKOUT . ".".Constants::STAGE_REDEEM] = $redeemRules;
+        }
+
+        return $rules;
     }
 
     private function getDiscoverWhenCondition(Entity $offer, array $subscriptionInput): string
@@ -607,6 +628,69 @@ class OffersEngine extends Base\Core
 
     }
 
+    private function getRedeemRules(Entity $offer,
+                                    string $benefitType,
+                                    array $input,
+    )
+    {
+        // Redeem is only applicable for UPI offers
+        if ($offer->getPaymentMethod() !== Payment\Method::UPI ||
+            !isset($input[Payment\Method::UPI]))
+        {
+            return null;
+        }
+
+        $redeemConditionWhenArray = array();
+
+        // Process UPI apps
+        $this->processUpiConditionCreate(
+            $input,
+            Constants::APPS,
+            Constants::ALL,
+            Constants::UPI_APP,
+            $redeemConditionWhenArray
+        );
+
+        $this->processUpiConditionCreate(
+            $input,
+            \RZP\Models\Upi\Turbo\Constants::PAYER_ACCOUNT_TYPE,
+            Constants::ALL,
+            Constants::UPI_PAYER_ACCOUNT,
+            $redeemConditionWhenArray
+        );
+
+        if (empty($redeemConditionWhenArray))
+        {
+            return;
+        }
+        // convert conditions array to string with && logic
+        $redeemConditionWhen = implode(' && ', $redeemConditionWhenArray);
+
+        $benefits = $this->getThenForNonEmi($offer, $benefitType);
+        $redeemConditions[Constants::RULES][] = [
+            Constants::WHEN => $redeemConditionWhen,
+            Constants::THEN => [$benefits],
+        ];
+        return $redeemConditions;
+
+    }
+
+    // processUpiConditionCreate creates the when condition for UPI apps and payer account type
+    function processUpiConditionCreate(array $input, string $key, string $constant, string $method, array &$redeemConditionWhenArray): void
+    {
+        if (!empty($input[Payment\Method::UPI][$key]))
+        {
+            $values = $input[Payment\Method::UPI][$key];
+
+            if (!in_array($constant, $values, true))
+            {
+                $valuesString = implode('","', $values);
+                $functionCallString = Constants::PAYMENT_INSTRUMENT. '.' . $method . '("' . $valuesString . '")';
+                $redeemConditionWhenArray[] = $functionCallString;
+            }
+        }
+    }
+
     private function getThenForNonEmi(Entity $offer,  string $benefitType)
     {
         if ($offer->getFlatCashback() !== null)
@@ -728,7 +812,7 @@ class OffersEngine extends Base\Core
 
     private function mapOfferSpecAndSetAttributes(array $offersEngineSpec, Entity $offer): array
     {
-        $availRuleGroup = $this->fetchAvailRuleGroup($offersEngineSpec);
+        $availRuleGroup = $this->fetchRuleGroupForStage($offersEngineSpec, Constants::STAGE_AVAIL );
 
         if ($availRuleGroup === null)
         {
@@ -763,15 +847,59 @@ class OffersEngine extends Base\Core
             $offer->setAttribute(Entity::EMI_DURATIONS, array_keys($tenureDiscountMap));
         }
 
+        $this->setFromRedeemRules($offersEngineSpec,  $offer);
+
         return [
             Constants::TENURE_DISCOUNT_MAP => $tenureDiscountMap,
             Constants::SUBSCRIPTION_FIELDS => $subscriptionFields,
         ];
     }
 
-    private function fetchAvailRuleGroup(array $offersEngineSpec)
+
+    private function setFromRedeemRules(array $offersEngineSpec, Entity $offer)
     {
-        return $offersEngineSpec[Constants::RULE_GROUPS][Constants::CHANNEL_RZP_CHECKOUT . '.' . Constants::STAGE_AVAIL];
+        $redeemRuleGroup = $this->fetchRuleGroupForStage($offersEngineSpec, Constants::STAGE_REDEEM );
+
+        if ($redeemRuleGroup === null)
+        {
+            return;
+        }
+
+        // Loop through each availRule in the response array.
+        foreach ($redeemRuleGroup[Constants::RULES] as $redeemRule)
+        {
+            $whenExpression = $redeemRule[Constants::WHEN];
+            $appsRegex = '/' . Constants::PAYMENT_INSTRUMENT . '\.'. Constants::UPI_APP .'\("([^"]+)"(?:,"([^"]+)")*\)/';
+            $PayerAccountTypeRegex = '/' . Constants::PAYMENT_INSTRUMENT .'\.'. Constants::UPI_PAYER_ACCOUNT .'\("([^"]+)"(?:,"([^"]+)")*\)/';
+            $offer->setUpiApps($this->extractValuesFromFunctionCalls($whenExpression, $appsRegex));
+            $offer->setPayerAccountType($this->extractValuesFromFunctionCalls($whenExpression, $PayerAccountTypeRegex));
+        }
+    }
+
+
+    private function extractValuesFromFunctionCalls(string $functionCallString, string $regex): array
+    {
+        $extractedValues = [];
+
+        // Perform the regex match
+        if (preg_match($regex, $functionCallString, $matches)) {
+            // The entire match is in $matches[0]
+            // Extract values from matches[1] and split them
+            $valuesString = $matches[0];
+
+            // Extracting individual values from the matched string
+            preg_match_all('/"([^"]+)"/', $valuesString, $innerMatches);
+
+            // Combine all matches into a single array
+            $extractedValues = $innerMatches[1];
+        }
+
+        return $extractedValues;
+    }
+
+    private function fetchRuleGroupForStage(array $offersEngineSpec, string $stage)
+    {
+        return $offersEngineSpec[Constants::RULE_GROUPS][Constants::CHANNEL_RZP_CHECKOUT . '.' . $stage];
     }
 
     private function setEmiSubventionAndOfferType(Entity $offer, array $offersEngineSpec)
@@ -868,6 +996,7 @@ class OffersEngine extends Base\Core
             // handle strings from conditions
             // remove \"
             $value = str_replace('"', '', $value);
+            $value = str_replace('\\', '', $value);
             // Check and set the corresponding field in the offer object.
             // NOTE - PaymentInstrument.EmiTenure is ignored as it is handled differently
             switch ($field) {

@@ -55,6 +55,22 @@ class Repository extends Base\Repository
         Entity::EMI_SUBVENTION,
         Entity::IINS,
     ];
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        // Unset all offers engine specific params here and set again after saving
+        if (empty($entity['upi']) === false)
+        {
+            $upi = $entity['upi'];
+            unset($entity['upi']);
+        }
+
+        parent::saveOrFail($entity, $options);
+
+        $entity['upi'] = $upi;
+
+    }
+
     /**
      * Fetches all active offers for a given merchant.
      *

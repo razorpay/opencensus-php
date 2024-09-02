@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Payment\Method;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
@@ -104,6 +105,8 @@ class Entity extends Base\PublicEntity
 
     const LOW_COST_EMI        = 'low_cost_emi';
 
+    const UPI = 'upi';
+
     /**
      * Attributes on the basis of which we determine an offer satisfies the same
      * payment criteria as another offer
@@ -191,6 +194,7 @@ class Entity extends Base\PublicEntity
         self::DEFAULT_OFFER,
         self::MAX_ORDER_AMOUNT,
         self::PRODUCT_TYPE,
+        self::UPI,
 
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
@@ -232,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::DEFAULT_OFFER,
         self::MAX_ORDER_AMOUNT,
         self::PRODUCT_TYPE,
+        self::UPI,
 
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
@@ -307,6 +312,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT          => 'int',
         self::DEFAULT_OFFER       => 'boolean',
         self::MAX_ORDER_AMOUNT    => 'int',
+        self::UPI =>'array'
     ];
 
     /**
@@ -534,6 +540,28 @@ class Entity extends Base\PublicEntity
         }
         return false;
     }
+
+    public function setUpiApps(array $upiApps)
+    {
+        $this->mergeCustomAttribute(self::UPI, [Constants::APPS => $upiApps]);
+
+    }
+    public function setPayerAccountType(array $PayerAccountType)
+    {
+        $this->mergeCustomAttribute(self::UPI, [\RZP\Models\Upi\Turbo\Constants::PAYER_ACCOUNT_TYPE => $PayerAccountType]);
+    }
+
+    // Method to merge custom attributes
+    protected function mergeCustomAttribute($key, array $values)
+    {
+        $existingAttributes = $this->getAttribute($key) ?? [];
+
+        // Merge existing attributes with new attributes
+        $mergedAttributes = array_merge($existingAttributes, $values);
+
+        $this->setAttribute($key, $mergedAttributes);
+    }
+
 // --------------------- Calculator --------------------------------------------
 
     public function getDiscountedAmountForPayment(int $amount, $payment): int

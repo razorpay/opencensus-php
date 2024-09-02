@@ -603,6 +603,12 @@ class Core extends Base\Core
             }
         }
         else {
+            // for upi we are not doing any conflicting offer checks
+            if ($offer->getPaymentMethod() === Payment\Method::UPI)
+            {
+                return;
+            }
+
             $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
 
             if ($existingOffers->count() > 0)
@@ -1035,7 +1041,7 @@ class Core extends Base\Core
         $this->checkConflictingOffers($offer);
 
         $this->repo->transaction(
-          function () use ($offer, $merchant, $subscriptionInput)
+          function () use (&$offer, $merchant, $subscriptionInput, $input)
           {
               $this->repo->saveOrFail($offer);
 
@@ -1049,7 +1055,7 @@ class Core extends Base\Core
 
                 if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true)
                 {
-                    $this->offersEngine->createOffer($offer, $subscriptionInput ?? []);
+                    $this->offersEngine->createOffer($offer, $subscriptionInput ?? [], $input);
                 }
           }
         );
