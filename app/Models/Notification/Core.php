@@ -212,6 +212,7 @@ class Core extends Base\Core
     // In case of customer fee bearer we need to handle this in notification flow
     public function processNotification($notification)
     {
+        $this->upiMandate = $this->repo->upi_mandate->findByTokenId($notification->getTokenId());
 
         $this->merchant = $this->repo->merchant->findOrFail($notification->getMerchantId());
 
