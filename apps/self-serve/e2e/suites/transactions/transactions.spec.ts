@@ -6,7 +6,7 @@ import { navigateToTransactions } from '../../utils';
 
 test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, "test").ACTIVATED_RZP_MERCHANT,
   });
 
   test('should show Batch Upload modal in Batch Payments', async ({ page }) => {

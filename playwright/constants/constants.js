@@ -84,6 +84,7 @@ const getEmailCredentials = () => {
       username: ENV.EMAIL_OPTIMIZER_V1_USERNAME,
       password: ENV.EMAIL_OPTIMIZER_V1_PASSWORD,
       storagePath: StorageStatePath.OPTIMIZER_V1_LOGIN_STATE,
+      hasTestMode: true,
     },
   ];
 };
@@ -97,6 +98,7 @@ const getActivatedNotIECredentials = () => {
       username: ENV.ACTIVATED_NOT_IE_USERNAME,
       password: ENV.ACTIVATED_NOT_IE_PASSWORD,
       storagePath: StorageStatePath.ACTIVATED_NOT_IE_STATE,
+      hasTestMode: true,
     },
   ];
 };
@@ -116,6 +118,7 @@ const getPosCredentials = () => {
       username: ENV.POS_ORDER_DETAILS_USERNAME,
       password: ENV.POS_ORDER_DETAILS_PASSWORD,
       storagePath: StorageStatePath.POS_ORDER_DETAILS_LOGIN_STATE,
+      hasTestMode: true,
     },
     {
       type: 'pos-sales-agent.json',

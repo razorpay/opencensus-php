@@ -1,4 +1,4 @@
-const { expect } = require('@playwright/test');
+const { expect } = require('./base');
 const { formatPhoneNumber } = require('@razorpay/i18nify-js');
 const moment = require('moment');
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'utils/base';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { expectSuccessNotification, getRandomCustomerData, clickSkipAndStartBtn } from 'utils';
 

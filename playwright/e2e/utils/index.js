@@ -1,3 +1,5 @@
+const { expect } = require('@playwright/test');
+
 export const loginByMobile = async ({ page, mobile }) => {
   await page.click('input[type="text"]');
   await page.fill('input[type="text"]', mobile);
@@ -83,4 +85,29 @@ export const saveTestEnvironment = async ({ page, cookieItems = [], localStorage
   }, combinedLocalStorageItems);
 
   await page.context().addCookies(combinedCookieItems);
+};
+
+const getTestModeStoragePage = (path) => path.replace('.json', '-test-mode.json');
+
+export const saveTestModeCredentials = async ({ page, cred }) => {
+  let retry = 3;
+
+  while (retry > 0) {
+    try {
+      const modeSwitchToggle = page.locator('a.switch-modes-toggle');
+      await expect(modeSwitchToggle).toBeVisible();
+      await modeSwitchToggle.click();
+      const testModeOption = await page.locator('li[data-test="Test Mode"] > a');
+      await expect(testModeOption).toBeVisible();
+      await testModeOption.dispatchEvent('click');
+      await page.waitForSelector("text=/YOU'RE IN TEST MODE/i");
+      await page.context().storageState({
+        path: getTestModeStoragePage(cred.storagePath),
+      });
+      return;
+    } catch (error) {
+      retry--;
+    }
+  }
+  throw new Error('Failed to switch to test mode');
 };

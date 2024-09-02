@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from 'utils/base';
 import { fillExpiry } from 'utils';
 
 export const fillCustomerDetails = async (page, customerData) => {

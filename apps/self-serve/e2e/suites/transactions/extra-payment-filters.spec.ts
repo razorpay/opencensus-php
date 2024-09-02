@@ -7,7 +7,7 @@ import { navigateToTransactions } from '../../utils';
 
 test.describe.parallel('Payment Filters(Test Mode)  @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).POS_ORDER_DETAILS_LOGIN_STATE,
+    storageState: getStorageStatePath(BASE_PATH, 'test').POS_ORDER_DETAILS_LOGIN_STATE,
   });
 
   test.describe.parallel('Transactions Filters', () => {

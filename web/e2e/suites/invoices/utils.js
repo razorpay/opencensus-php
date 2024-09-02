@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from 'utils/base';
 import { generateRandomText, getRandomCustomerData, getRandomItemData } from 'utils';
 
 export const createNewCustomer = async ({ page }) => {

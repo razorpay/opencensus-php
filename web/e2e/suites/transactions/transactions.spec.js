@@ -1,15 +1,16 @@
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
+import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
 import { expect, test } from 'utils/base';
-
-import { navigateToTransactions } from './utils';
 
 test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto(routes.PAYMENTS);
   });
 
   test('should show Batch Upload modal in Batch Payments', async ({ page }) => {
-    await navigateToTransactions(page);
     await page.getByRole('link', { name: 'Batch Payments' }).click();
     const batchUploadButton = page.getByRole('button', { name: 'Click here to upload' });
     await expect(batchUploadButton).toBeVisible();
@@ -18,7 +19,6 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
   });
 
   test('should show Batch Refunds modal in Batch Refunds', async ({ page }) => {
-    await navigateToTransactions(page);
     await page.getByLabel('view-Refunds-details').click();
     await page.getByRole('link', { name: 'Batch Refunds' }).click();
     const batchUploadButton = page.getByRole('button', { name: 'Click here to upload' });
@@ -28,7 +28,6 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
   });
 
   test('should show orders list and details in Orders', async ({ page }) => {
-    await navigateToTransactions(page);
     await page.getByRole('link', { name: 'Orders', exact: true }).click();
     const columns = ['Order Id', 'Amount', 'Attempts', 'Receipt', 'Created At', 'Status'];
     for await (const column of columns) {
@@ -38,7 +37,6 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
   });
 
   test('should show dispute list and details in Disputes', async ({ page }) => {
-    await navigateToTransactions(page);
     await page.getByLabel('view-Disputes-details').click();
     expect(page.getByText('Disputes')).toBeVisible();
     expect(page.getByRole('link', { name: 'Guide to Dispute' })).toBeVisible();
@@ -52,7 +50,6 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
   });
 
   test('should show invoice list and details in Invoices', async ({ page }) => {
-    await navigateToTransactions(page);
     await page.getByRole('link', { name: 'Invoices', exact: true }).click();
     const columns = [
       'Payment Id',

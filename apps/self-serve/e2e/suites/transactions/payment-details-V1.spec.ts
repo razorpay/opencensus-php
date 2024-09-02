@@ -1,6 +1,5 @@
 import { getStorageStatePath, routes } from '@dashboard/shared-utils/e2e/constants/paths';
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
-import { switchToTestMode } from '@dashboard/shared-utils/e2e/utils';
 import { BASE_PATH, payments } from '../../constants';
 import { expect, test } from '../../utils/base';
 
@@ -19,12 +18,11 @@ const openPaymentDetails = async (page, paymentId) => {
 test.describe
   .parallel('Payments transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, "test").ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
     await navigateTo(page, routes.PAYMENTS);
-    await switchToTestMode({ page });
     await page.goto(routes.PAYMENTS);
   });
   test.describe.parallel('Payment details', () => {
@@ -33,7 +31,6 @@ test.describe
     // In this case we don't want merchant to create transfer,
     // so we are hiding create transfer button for these payments
     test('should not show create transfer button', async ({ page }) => {
-      await expect(page).toHaveURL(routes.PAYMENTS);
       const id = payments.paymentId.authorized.netbanking;
       const paymentsFilter = page.getByTestId('payments-filter');
       await searchPaymentId(paymentsFilter, id);

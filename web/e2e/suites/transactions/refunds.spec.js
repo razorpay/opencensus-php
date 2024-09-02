@@ -15,7 +15,7 @@ import {
 test.describe
   .parallel('Refunds transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.describe.parallel('Refunds Landing screen Listing section', () => {

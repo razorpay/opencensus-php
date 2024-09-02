@@ -6,6 +6,7 @@ import {
   loginByMobile,
   showStreakRewardTileInAccountPage,
   saveTestEnvironment,
+  saveTestModeCredentials,
 } from '../utils';
 
 import { routes } from '../../constants/constants';
@@ -13,8 +14,6 @@ import { routes } from '../../constants/constants';
 const { test, expect } = require('@playwright/test');
 
 const { getCredentials } = require('../../utils/config');
-
-const getTestModeStoragePage = (path) => path.replace('.json', '-test-mode.json');
 
 test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => {
   const { emailCred, activatedNotIe, mobileCred, posCredentials } = getCredentials();
@@ -46,30 +45,13 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       // saving test environment in browser context
       await saveTestEnvironment({ page });
 
-      // storing login state in context to re-use at other logins
+      // storing login state in context to re-use at other logins.
       await page.context().storageState({
         path: cred.storagePath,
       });
 
       if (cred.hasTestMode) {
-        let retry = 3;
-
-        while (retry > 0) {
-          try {
-            const modeSwitchToggle = page.locator('a.switch-modes-toggle');
-            await expect(modeSwitchToggle).toBeVisible();
-            await modeSwitchToggle.click();
-            await page.locator('li[data-test="Test Mode"]').click();
-            await page.waitForSelector("text=/YOU'RE IN TEST MODE/i");
-            await page.context().storageState({
-              path: getTestModeStoragePage(cred.storagePath),
-            });
-            return;
-          } catch (error) {
-            retry--;
-          }
-        }
-        throw new Error('Failed to switch to test mode');
+        await saveTestModeCredentials({ page, cred });
       }
     });
   }
@@ -100,6 +82,10 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       await page.context().storageState({
         path: cred.storagePath,
       });
+
+      if (cred.hasTestMode) {
+        await saveTestModeCredentials({ page, cred });
+      }
     });
   }
 
@@ -134,6 +120,10 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       await page.context().storageState({
         path: cred.storagePath,
       });
+
+      if (cred.hasTestMode) {
+        await saveTestModeCredentials({ page, cred });
+      }
     });
   }
 
@@ -164,6 +154,10 @@ test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => 
       await page.context().storageState({
         path: cred.storagePath,
       });
+
+      if (cred.hasTestMode) {
+        await saveTestModeCredentials({ page, cred });
+      }
     });
   }
 });

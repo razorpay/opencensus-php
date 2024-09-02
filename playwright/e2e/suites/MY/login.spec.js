@@ -1,5 +1,5 @@
 import { routes } from '../../../constants/constants';
-import { loginByEmail, saveTestEnvironment } from '../../utils';
+import { loginByEmail, saveTestEnvironment, saveTestModeCredentials } from '../../utils';
 
 const { test } = require('@playwright/test');
 const { getCredentials } = require('../../../utils/config');
@@ -26,6 +26,10 @@ test.describe.parallel('Dashboard login flow @flow=MY-auth @country=MY', () => {
       await page.context().storageState({
         path: cred.storagePath,
       });
+
+      if (cred.hasTestMode) {
+        await saveTestModeCredentials({ page, cred });
+      }
     });
   }
 });

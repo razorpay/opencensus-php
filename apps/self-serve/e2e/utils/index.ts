@@ -1,15 +1,9 @@
 /* eslint-disable no-await-in-loop */
-import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { routes } from '@dashboard/shared-utils/e2e/constants/paths';
-import { switchToTestMode } from '@dashboard/shared-utils/e2e/utils';
 import { expect } from './base';
 // import { formatPhoneNumber } from '@razorpay/i18nify-js';
 
-export const navigateToTransactions = async (page, mode?: string) => {
-  await navigateTo(page, routes.DASHBOARD);
-  if (mode !== 'live') {
-    await switchToTestMode({ page });
-  }
+export const navigateToTransactions = async (page) => {
   await page.getByRole('link', { name: 'Transactions' }).click();
   await expect(page).toHaveURL(routes.PAYMENTS);
   await expect(page.getByRole('link', { name: 'Payments', exact: true })).toBeVisible();

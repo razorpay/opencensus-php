@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'utils/base';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { clickSkipAndStartBtn, switchToTestModeShortCircuit } from 'utils';
+import { clickSkipAndStartBtn } from 'utils';
 
 import {
   paymentButtonType,
@@ -16,12 +16,11 @@ test.describe.skip(
   'Test Payments Buttons @flow=payment-buttons @project=no-code-stable',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+      storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {
       await page.goto(routes.PAYMENT_BUTTONS);
-      await switchToTestModeShortCircuit({ page, mid: 'LLkjLdJz4gWVvk' });
       await clickSkipAndStartBtn({ page });
     });
 

@@ -3,16 +3,8 @@ import { routes } from 'testConstants';
 import { expect } from 'utils/base';
 import { navigateTo } from 'utils/common';
 
-const { switchToTestMode } = require('utils');
-
-export const navigateToTransactions = async (page, mode) => {
-  await navigateTo(page, routes.DASHBOARD);
-  if (mode !== 'live') {
-    await switchToTestMode({ page });
-  }
-  await page.getByRole('link', { name: 'Transactions' }).click();
-  await expect(page).toHaveURL(routes.PAYMENTS);
-  await expect(page.getByRole('link', { name: 'Payments', exact: true })).toBeVisible();
+export const navigateToTransactions = async (page) => {
+  await navigateTo(page, routes.PAYMENTS);
 };
 
 export const searchTransactionById = async ({ page, id }) => {

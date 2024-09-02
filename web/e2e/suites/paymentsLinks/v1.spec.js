@@ -1,7 +1,6 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import {
   expectSuccessNotification,
-  switchToTestModeShortCircuit,
   clickSkipAndStartBtn,
 } from 'utils';
 import { test, expect } from 'utils/base';
@@ -33,12 +32,11 @@ const SELECTORS = {
 test.describe
   .parallel('Test Payments Links V1 @flow=payment-links-v1 @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_NOT_IE_STATE,
   });
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.PAYMENT_LINKS);
-    await switchToTestModeShortCircuit({ page, mid: 'LhXWnWmSvyDJmm' });
     await clickSkipAndStartBtn({ page });
   });
 

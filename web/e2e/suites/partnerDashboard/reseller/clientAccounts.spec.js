@@ -23,6 +23,8 @@ test.describe.parallel(
     test('should load the Client Accounts lists for Reseller with correct CTAs @priority=critical', async ({
       page,
     }) => {
+      // Hide FTUX Banner
+      await page.getByRole('button', { name: /Got It/i }).click();
       // Check PG All Invites List
       const allInvitesCtaPG = await page.locator(CTA_SELECTORS.CLIENTS_LIST.ALL_INVITES);
       await allInvitesCtaPG.click();

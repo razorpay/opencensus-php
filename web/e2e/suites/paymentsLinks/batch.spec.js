@@ -1,6 +1,6 @@
 import { test, expect } from 'utils/base';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { switchToTestModeShortCircuit, clickSkipAndStartBtn } from 'utils';
+import { clickSkipAndStartBtn } from 'utils';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { searchAndVerifyByPLId } from './utils';
@@ -34,11 +34,6 @@ import { searchAndVerifyByPLId } from './utils';
 
       test.beforeEach(async ({ page }) => {
         await page.goto(routes.PAYMENT_LINKS);
-        if (context.isTestMode)
-        await switchToTestModeShortCircuit({
-          page,
-          mid: context.plType === 'v1' ? 'LhXWnWmSvyDJmm' : 'LLkjLdJz4gWVvk',
-        });
         await clickSkipAndStartBtn({ page });
         await page.getByRole('link', { name: 'Batch Uploads' }).click();
       });

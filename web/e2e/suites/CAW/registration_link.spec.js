@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from 'utils/base';
 import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
 
 import {

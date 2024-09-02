@@ -31,7 +31,6 @@ test.describe
     // In this case we don't want merchant to create transfer,
     // so we are hiding create transfer button for these payments
     test('should not show create transfer button', async ({ page }) => {
-      await expect(page).toHaveURL(routes.PAYMENTS);
       const id = payments.paymentId.authorized.netbanking;
       const paymentsFilter = page.getByTestId('payments-filter');
       await searchPaymentId(paymentsFilter, id);

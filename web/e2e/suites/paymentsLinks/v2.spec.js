@@ -1,5 +1,5 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { switchToTestModeShortCircuit, clickSkipAndStartBtn } from 'utils';
+import { clickSkipAndStartBtn } from 'utils';
 import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
@@ -25,12 +25,11 @@ test.describe.parallel(
   'Test Payments Links V2 @flow=payment-links-v2 @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links',
   () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+      storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
     });
 
     test.beforeEach(async ({ page }) => {
       await page.goto(routes.PAYMENT_LINKS);
-      await switchToTestModeShortCircuit({ page, mid: 'LLkjLdJz4gWVvk' });
       await clickSkipAndStartBtn({ page });
     });
 

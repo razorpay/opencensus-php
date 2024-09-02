@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from './base';
 
 import { COMMON_SELECTORS } from './selectors';
 

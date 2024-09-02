@@ -15,7 +15,7 @@ test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=p
   });
 
   test('should show payments list in Upload Invoices', async ({ page }) => {
-    await navigateToTransactions(page, 'live');
+    await navigateToTransactions(page);
     await page.getByRole('link', { name: 'Upload Invoices' }).click();
 
     const columns = [

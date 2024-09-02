@@ -1,17 +1,30 @@
-const getStorageStatePath = (BASE_PATH) => ({
+const getStorageStatePath = (BASE_PATH, mode = 'live') => {
   // NOTE: Please use ACTIVATED_RZP_MERCHANT for all the new tests unless you need to test a specific scenario which requires a different user.
-  ACTIVATED_RZP_MERCHANT: `${BASE_PATH}/activated-rzp-merchant.json`,
-  ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
-  CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/capital-reseller-partner-desktop-test-mode-login.json`,
-  RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
-  AGGREGATOR_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/aggregator-partner-desktop-test-mode-login.json`,
-  PLATFORM_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/platform-partner-desktop-test-mode-login.json`,
-  POS_LOGIN_STATE: `${BASE_PATH}/pos-login.json`,
-  POS_ORDER_DETAILS_LOGIN_STATE: `${BASE_PATH}/pos-login-order-details.json`,
-  // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
-  OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
-  POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
-});
+  const STORAGE_PATH_MAPPING = {
+    ACTIVATED_RZP_MERCHANT: `${BASE_PATH}/activated-rzp-merchant.json`,
+    ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
+    CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/capital-reseller-partner-desktop-test-mode-login.json`,
+    RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
+    AGGREGATOR_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/aggregator-partner-desktop-test-mode-login.json`,
+    PLATFORM_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/platform-partner-desktop-test-mode-login.json`,
+    POS_LOGIN_STATE: `${BASE_PATH}/pos-login.json`,
+    POS_ORDER_DETAILS_LOGIN_STATE: `${BASE_PATH}/pos-login-order-details.json`,
+    // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
+    OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
+    POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
+  }
+
+  const isTestMode = mode === 'test';
+
+  const updatedStoragePathMapping = Object.keys(STORAGE_PATH_MAPPING).reduce((acc, key) => {
+    acc[key] = isTestMode
+      ? STORAGE_PATH_MAPPING[key].replace('.json', '-test-mode.json')
+      : STORAGE_PATH_MAPPING[key];
+    return acc;
+  }, {});
+
+  return updatedStoragePathMapping;
+};
 
 const routes = {
   SIGN_IN_PATH: '/?screen=sign_in&isTestEnv=true',
@@ -37,7 +50,7 @@ const routes = {
   TRANSACTIONS_PAYMENTS: '/app/payments',
   ITEMS: '/app/items',
   INVOICES: '/app/invoices',
-  PAYMENTS: 'app/payments',
+  PAYMENTS: '/app/payments',
   DISPUTES: 'app/disputes',
   FAILED_PAYMENTS: 'app/failed-payments',
   ORDERS: 'app/orders',

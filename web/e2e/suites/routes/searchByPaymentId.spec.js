@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from 'utils/base';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { clickSkipAndStartBtn } from 'utils';
 
