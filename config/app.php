@@ -291,6 +291,7 @@ return array(
     'chat_support_jwt_encryption_key' => env('CHAT_SUPPORT_JWT_ENCRYPTION_KEY', 'private_key'),
     'curlec_accounts_url' => env('CURLEC_ACCOUNTS_URL'),
     'razorpay_accounts_url' => env('RAZORPAY_ACCOUNTS_URL'),
+    'hosted_service_url'          => env('HOSTED_SERVICE_URL'),
 
     'razorassist' => [
         'url'       => env('RAZORASSIST_HOST_URL'),

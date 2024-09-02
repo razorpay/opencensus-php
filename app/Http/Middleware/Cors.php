@@ -27,6 +27,13 @@ class Cors
             ]
         ],
 
+        'hosted_domain'       => [
+            'url_config'    => 'app.hosted_service_url',
+            'routes'        => [
+                '/user/session'
+            ]
+        ],
+
         'banking_domain'    => [
             'url_config'    => 'app.banking_service_url',
         ],
