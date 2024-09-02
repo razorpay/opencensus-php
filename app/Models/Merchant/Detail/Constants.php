@@ -110,6 +110,7 @@ class Constants
     const HOSTNAME             = 'hostname';
     const PARTNER_EMAIL             = 'partner_email';
     const CLARIFICATION_REASON = 'clarification_reason';
+    const PGOS_L2_SUBMIT       = 'pgos_l2_submit';
 
     // penny testing constants
     const MERCHANT_ID                                   = 'merchant_id';

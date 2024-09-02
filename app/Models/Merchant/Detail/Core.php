@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Country;
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -1658,20 +1659,7 @@ class Core extends Base\Core
                 $merchant, $merchantDetails, null, [Detail\Constants::ACTIVATION], false);
         }
 
-        if (isset($input[DEConstants::ACTIVATION_STATUS_FROM_PGOS]) === true)
-        {
-            $this->trace->info(TraceCode::ACTIVATION_STATUS_FETCHED_FROM_PGOS, [
-                'activation_status'      => $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS],
-            ]);
-
-            $statusToBeUpdated = $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS];
-        }
-        else
-        {
-            $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
-
-            $this->handlePGOSL2Submit($merchant, $statusToBeUpdated, $orgId);
-        }
+        $statusToBeUpdated = $this->getActivationStatus($input, $merchantDetails, $merchant, $orgId);
 
         if ($isRiskyMerchant === true)
         {
@@ -1896,17 +1884,86 @@ class Core extends Base\Core
         return [];
     }
 
-    public function handlePGOSL2Submit(Merchant\Entity $merchant, string $statusToBeUpdated, $orgId)
+    public function getActivationStatus($input, $merchantDetails, $merchant, $orgId): string
+    {
+        if (isset($input[DEConstants::ACTIVATION_STATUS_FROM_PGOS]) === true)
+        {
+            $this->trace->info(TraceCode::ACTIVATION_STATUS_FETCHED_FROM_PGOS, [
+                'activation_status'      => $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS],
+            ]);
+
+            return $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS];
+        }
+
+        if ($this->shouldFetchActivationStatusFromPgos($merchant, $orgId) === true)
+        {
+            $splitzVariant = $this->getSplitzResponse($merchant->getId(), DEConstants::PGOS_L2_SUBMIT);
+
+            if ($splitzVariant === SplitzConstant::LIVE_MODE)
+            {
+                if ($merchantDetails->canDetermineActivationFlow())
+                {
+                    $currentActivationFlow = $this->getActivationFlow(
+                        $merchantDetails->merchant, $merchantDetails, null, false);
+
+                    $merchantDetails->setActivationFlow($currentActivationFlow);
+
+                    $this->repo->saveOrFail($merchantDetails);
+                }
+
+                try {
+                    $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::GET_APPLICABLE_ACTIVATION_STATUS, [], $merchant, true);
+                    $this->pgosProxyController->errorHandler($pgosResponse);
+
+                    $this->trace->info(TraceCode::ACTIVATION_STATUS_FETCHED_FROM_PGOS, [
+                        'pgos_activation_status'      => $pgosResponse[Entity::ACTIVATION_STATUS],
+                    ]);
+
+                    return $pgosResponse[Entity::ACTIVATION_STATUS];
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                        'merchant_id'   => $merchant->getMerchantId(),
+                        'error_message' => $exception->getMessage()
+                    ]);
+
+                    return $this->getApplicableActivationStatus($merchantDetails);
+                }
+
+            }
+
+            if ($splitzVariant === SplitzConstant::SHADOW_MODE)
+            {
+                $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
+
+                $pgosPayload = [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                    Entity::ACTIVATION_STATUS => $statusToBeUpdated,
+                ];
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($pgosPayload, $merchant) {
+                    $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::L2_SUBMIT_SHADOW, $pgosPayload, $merchant, true);
+                }));
+
+                return $statusToBeUpdated;
+            }
+        }
+
+        return $this->getApplicableActivationStatus($merchantDetails);
+    }
+
+    public function shouldFetchActivationStatusFromPgos(Merchant\Entity $merchant, $orgId): bool
     {
         // This is to ensure that final NC form submit is not considered in PGOS L2 submit shadow
         if ($orgId != null)
         {
-            return;
+            return false;
         }
 
         if((new MerchantCore())->isRegularMerchant($merchant) === false)
         {
-            return;
+            return false;
         }
 
         // not utilising shouldMerchantOnboardViaPGOS function as it would return true for Pos subMerchants also.
@@ -1931,36 +1988,12 @@ class Core extends Base\Core
             "isServicePGOS" => $isServicePGOS
         ]);
 
-        if ($isServicePGOS === false)
+        if ($isServicePGOS === true)
         {
-            return ;
+            return true;
         }
 
-        $isPGOSL2SubmitExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
-            [
-                'id' => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.pgos_l2_submit'),
-            ],
-            'shadow'
-        );
-
-        $this->trace->info(TraceCode::MERCHANT_L2_SUBMIT_SHADOW_FLOW, [
-            "isPGOSL2SubmitExpEnabled" => $isPGOSL2SubmitExpEnabled
-        ]);
-
-        if ($isPGOSL2SubmitExpEnabled === false)
-        {
-            return;
-        }
-
-        $pgosPayload = [
-            Entity::MERCHANT_ID => $merchant->getId(),
-            Entity::ACTIVATION_STATUS => $statusToBeUpdated,
-        ];
-
-        \Event::dispatch(new TransactionalClosureEvent(function () use ($pgosPayload, $merchant) {
-            $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::L2_SUBMIT_SHADOW, $pgosPayload, $merchant, true);
-        }));
+        return false;
     }
 
 

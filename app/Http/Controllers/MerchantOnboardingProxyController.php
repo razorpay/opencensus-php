@@ -131,6 +131,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const ONBOARDING_GET_SALES                   = 'onboarding_get_sales';
     const ONBOARDING_SAVE_SALES                  = 'onboarding_save_sales';
     const L2_SUBMIT_SHADOW                       = 'l2_submit_shadow';
+    const GET_APPLICABLE_ACTIVATION_STATUS       = 'get_applicable_activation_status';
 
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
@@ -300,6 +301,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::POST_MERCHANT_CONFIG                          => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Onboard',
         self::FETCH_SALES_ASSISTED_MERCHANTS                => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchants',
         self::L2_SUBMIT_SHADOW                              => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/L2SubmitShadow',
+        self::GET_APPLICABLE_ACTIVATION_STATUS              => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetApplicableActivationStatus',
         self::MERCHANT_ACTIVATION_DETAILS_SALES             => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchantActivationDetails',
         self::ONBOARDING_GET_SALES                          => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingGet',
         self::ONBOARDING_SAVE_SALES                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingSave',
@@ -328,6 +330,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SEND_OTP                                  => 20,
         self::MERCHANT_WEBSITE_POLICY_VERIFY            => 40,
         self::L2_SUBMIT_SHADOW                          => 1,
+        self::GET_APPLICABLE_ACTIVATION_STATUS          => 3,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
