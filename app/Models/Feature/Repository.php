@@ -51,7 +51,26 @@ class Repository extends Base\Repository
         $dcs = $this->app['dcs'];
         $dcsResponse = $dcs->getDcsEnabledFeatures($entityType, $entityId, $mode);
 
-        return $apiResponse->concat($dcsResponse)->unique(Entity::NAME);
+        $merged = $apiResponse->concat($dcsResponse)->unique(Entity::NAME);
+        $unique = [];
+        // PublicCollection->unique removes indexes which sometimes results in an array
+        // converting to a map.
+        foreach ($merged as $value)
+        {
+            $unique[] = $value;
+        }
+        $unique = new PublicCollection($unique);
+        $parity = get_class($merged) === get_class($unique);
+        $this->trace->info(TraceCode::DCS_FEATURE_MERGE_PARITY, [
+            "entity_id" => $entityId,
+            "parity" => $parity,
+            "original" => get_class($merged),
+            "new" => get_class($unique),
+        ]);
+        $this->trace->count(FeatureMetric::DCS_FEATURE_MERGE_PARITY, ["parity" => $parity]);
+
+        // No change in return from original. Running in parity check
+        return $merged;
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
