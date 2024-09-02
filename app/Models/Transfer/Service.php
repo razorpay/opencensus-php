@@ -644,6 +644,8 @@ class Service extends Base\Service
 
     public function processPendingPaymentTransfers(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
         $limit = (int) ($input['limit'] ?? 300);

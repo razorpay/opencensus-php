@@ -69,11 +69,28 @@ class TransferProcess extends Job
 
         try
         {
+            $this->trace->info(
+                TraceCode::TRANSFER_PROCESS_QUEUE_BEGIN,
+                [
+                    'payment_id'   => $this->payment,
+                    'transfermode' => $this->transferMode
+                ]
+            );
+
             $this->payment = $this->getPaymentEntity($this->payment);
 
             // if the balance is not update we would further delay the transfer processing
             // this happens for merchants who are on async balance update flow
             $delay = $this->checkProcessingDelay($this->payment);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_PROCESS_QUEUE_DELAY,
+                [
+                    'payment_id'   => $this->payment->getId(),
+                    'transfermode' => $this->transferMode,
+                    'delay'        => $delay
+                ]
+            );
 
             if ($this->isReverseShadowTxnCreate ===  true)
             {
@@ -244,7 +261,7 @@ class TransferProcess extends Job
             return true;
         }
 
-        $transaction =  $payment->transaction;
+        $transaction = $payment->transaction;
 
         if ((empty($transaction) === true) or
             ($transaction->isBalanceUpdated() === false))

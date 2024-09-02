@@ -12449,7 +12449,7 @@ class Processor
     {
         $maxLimit = (int) (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_HOURLY_RATE_LIMIT_PER_MID]);
 
-        if (empty($limit) === true)
+        if (empty($maxLimit) === true)
         {
             $maxLimit = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_HOURLY_RATE_LIMIT;
         }

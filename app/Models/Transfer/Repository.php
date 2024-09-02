@@ -274,7 +274,7 @@ class Repository extends Base\Repository
      */
     public function fetchFailedTransfersToRetry(string $sourceType, int $count = 100)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select(Entity::SOURCE_ID)
                     ->where(Entity::SOURCE_TYPE, $sourceType)
                     ->where(Entity::STATUS, Status::FAILED)
