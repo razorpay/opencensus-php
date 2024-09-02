@@ -19,7 +19,7 @@ describe('Payment Link Index Track - UT', () => {
       objectName: 'onboarding introduction next success',
       actionName: 'click',
       screen: 'payment link',
-      properties: {},
+      properties: { section: 'Payment Links Tour' },
     });
   });
 
@@ -29,7 +29,7 @@ describe('Payment Link Index Track - UT', () => {
       objectName: 'payment links onboarding start',
       actionName: 'click',
       screen: 'payment link',
-      properties: {},
+      properties: { section: 'Payment Links Tour' },
     });
   });
 });

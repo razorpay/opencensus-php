@@ -1,6 +1,7 @@
 import _track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
 import { titleCase } from 'common/utils/rzp-utils';
 import * as analytics from 'common/utils/analytics';
+import { extraProperties } from 'merchant/views/PaymentPages/PaymentPages/Details/__test__/mock/storefrontData';
 
 const actionName = 'click';
 const screen = 'details payment page';
@@ -100,22 +101,51 @@ describe('_track', () => {
   });
 
   test('should call sendToLumberjack, sendToSegment, and selfServeTrackInitiate when duplicatePage is called', () => {
-    _track.duplicatePage();
+    const properties = {
+      merchantId: 'Unknown',
+      mode: null,
+      userId: 'Unknown',
+      userRole: 'Unknown',
+      section: 'Details Payment Page',
+    };
+
+    _track.duplicatePage(extraProperties);
 
     // expect(sendToLumberjackMock).toHaveBeenCalledWith('duplicate_page');
-    expect(analytics.analyticsTrack).toHaveBeenCalledWith(
-      expect.objectContaining({ objectName: 'duplicate page', actionName }),
-    );
+    expect(analytics.analyticsTrack).toHaveBeenCalledWith({
+      objectName: 'duplicate page',
+      actionName,
+      screen: 'Create storefront page',
+      toCleverTap: false,
+      properties: {
+        ...properties,
+        ...extraProperties,
+      },
+    });
     // expect(selfServeTrackInitiateMock).toHaveBeenCalled();
   });
 
   test('should call sendToLumberjack, sendToSegment, and selfServeTrackInitiate when editPage is called', () => {
-    _track.editPage();
+    const properties = {
+      section: 'Details Payment Page',
+      merchantId: 'Unknown',
+      mode: null,
+      userId: 'Unknown',
+      userRole: 'Unknown',
+    };
+    _track.editPage(extraProperties);
 
     // expect(sendToLumberjackMock).toHaveBeenCalledWith('edit_page');
-    expect(analytics.analyticsTrack).toHaveBeenCalledWith(
-      expect.objectContaining({ objectName: 'edit page', actionName }),
-    );
+    expect(analytics.analyticsTrack).toHaveBeenCalledWith({
+      objectName: 'edit page',
+      actionName,
+      screen: 'Edit storefront page',
+      toCleverTap: false,
+      properties: {
+        ...properties,
+        ...extraProperties,
+      },
+    });
     // expect(selfServeTrackInitiateMock).toHaveBeenCalled();
   });
 
@@ -188,12 +218,26 @@ describe('_track', () => {
   });
 
   test('should call sendToLumberjack and sendToSegment when updateStock is called', () => {
-    _track.updateStock();
+    const properties = {
+      section: 'Details Payment Page',
+      merchantId: 'Unknown',
+      mode: null,
+      userId: 'Unknown',
+      userRole: 'Unknown',
+    };
+    _track.updateStock(extraProperties);
 
-    // expect(sendToLumberjackMock).toHaveBeenCalledWith('update_stock_click');
-    expect(analytics.analyticsTrack).toHaveBeenCalledWith(
-      expect.objectContaining({ objectName: 'update stock', actionName: 'clicked' }),
-    );
+    // expect(sendToLumberjackMock).toHaveBeenCalledWith('edit_page');
+    expect(analytics.analyticsTrack).toHaveBeenCalledWith({
+      objectName: 'Update Stock',
+      actionName,
+      screen: 'Details Payment Page',
+      toCleverTap: false,
+      properties: {
+        ...properties,
+        ...extraProperties,
+      },
+    });
   });
 
   test('should call sendToLumberjack and sendToSegment with extension when downloadReport is called', () => {
@@ -211,12 +255,26 @@ describe('_track', () => {
   });
 
   test('should call sendToLumberjack and sendToSegment when settingsDropdown is called', () => {
-    _track.settingsDropdown();
+    const properties = {
+      section: 'Details Payment Page',
+      merchantId: 'Unknown',
+      mode: null,
+      userId: 'Unknown',
+      userRole: 'Unknown',
+    };
+    _track.settingsDropdown(extraProperties);
 
     // expect(sendToLumberjackMock).toHaveBeenCalledWith('settings_dropdown');
-    expect(analytics.analyticsTrack).toHaveBeenCalledWith(
-      expect.objectContaining({ objectName: 'settings dropdown', actionName: 'clicked' }),
-    );
+    expect(analytics.analyticsTrack).toHaveBeenCalledWith({
+      objectName: 'Settings Dropdown',
+      actionName,
+      screen: 'Details Payment Page',
+      toCleverTap: false,
+      properties: {
+        ...properties,
+        ...extraProperties,
+      },
+    });
   });
 
   test('should call sendToLumberjack, sendToSegment, and selfServeTrackInitiate when receiptSettings is called', () => {

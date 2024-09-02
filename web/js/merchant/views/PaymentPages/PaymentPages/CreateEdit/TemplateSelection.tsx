@@ -25,6 +25,7 @@ import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps'
 // import 'react-responsive-carousel/lib/styles/carousel.min.css'; // requires a loader
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 interface IProps extends RouteComponentProps {
   handlePageType: (val: string) => void;
@@ -54,6 +55,7 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
       'https://cdn.jsdelivr.net/npm/react-responsive-carousel@3.2.23/lib/styles/carousel.min.css',
       'react-responsive-carousel',
     );
+    track.selectTemplatePageLoaded();
   }, []);
 
   const handleClose = () => {
@@ -77,15 +79,7 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
 
   const onCreateStorefrontPageClick = () => {
     handlePageType(PAYMENT_PAGES_TYPES.storefront);
-    analyticsTrack({
-      objectName: 'Storefront page',
-      actionName: 'clicked',
-      screen: 'Select page of your choice',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-        product_template: 'storefront',
-      },
-    });
+    track.selectStorefrontPage({ product_template: 'storefront' });
   };
 
   return (

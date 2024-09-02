@@ -18,3 +18,36 @@ export function trackSegment({ event, screen, actionName, options = {} }) {
     },
   });
 }
+function _track() {
+  const default_screen = 'QR Code Page';
+
+  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
+    analyticsTrack({
+      objectName,
+      actionName,
+      screen: default_screen,
+      toCleverTap,
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...properties,
+        section: default_screen,
+      },
+    });
+  }
+
+  return {
+    tourPageRendered: () => {
+      sendToSegment('Tour page', 'rendered');
+    },
+
+    readMoreClickedOnTourPage: () => {
+      sendToSegment('read more', 'clicked');
+    },
+
+    skipClickOnTourPage: () => {
+      sendToSegment('skip section', 'clicked');
+    },
+  };
+}
+
+export default _track();

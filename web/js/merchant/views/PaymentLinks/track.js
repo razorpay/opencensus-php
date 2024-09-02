@@ -12,14 +12,18 @@ function _track() {
     );
   }
 
-  function sendToSegment(objectName, actionName, properties) {
+  const default_screen = 'payment link';
+  const screen_name = 'Payment Links Tour';
+
+  function sendToSegment(objectName, actionName, properties, screen = default_screen) {
     analyticsTrack({
       objectName,
       actionName,
-      screen: 'payment link',
+      screen,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
+        section: screen_name,
       },
     });
   }
@@ -36,6 +40,22 @@ function _track() {
 
     init(_lumberjackTrack) {
       lumberjackTrack = _lumberjackTrack;
+    },
+
+    tourPageRendered: () => {
+      sendToSegment('Tour page', 'rendered', {}, screen_name);
+    },
+
+    readMoreClickedOnTourPage: () => {
+      sendToSegment('read more', 'clicked', {}, screen_name);
+    },
+
+    getStartedClickedOnTourPage: () => {
+      sendToSegment('get started', 'clicked', {}, screen_name);
+    },
+
+    skipClickOnTourPage: () => {
+      sendToSegment('skip section', 'clicked', {}, screen_name);
     },
   };
 }

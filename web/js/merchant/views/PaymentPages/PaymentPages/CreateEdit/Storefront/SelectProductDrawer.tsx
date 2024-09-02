@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Button, Checkbox, Heading, PlusIcon, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import {
   addProducts,
   fetchProducts,
@@ -17,6 +14,7 @@ import CheckboxItem from './CheckboxItem';
 import { AddFooterWrapper, SelectCheckboxContainer, SelectProductDrawerWrapper } from './styled';
 import { ICheckbox, ISelectProductDrawer } from './types';
 import { generateCheckboxesFromAllProducts } from './utils';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 const SelectProductDrawer = ({
   handleClose,
@@ -25,10 +23,15 @@ const SelectProductDrawer = ({
   addProducts,
   openAddModal,
   showNotification,
+  isCreate,
 }: ISelectProductDrawer) => {
   const [checkboxes, setCheckboxes] = useState<Array<ICheckbox>>([]);
 
   useEffect(() => {
+    track.addProductsModalLoaded({
+      storefrontId: storefront?.id,
+      isNewStorefront: Boolean(isCreate),
+    });
     fetchAllProducts();
   }, []);
 
@@ -62,6 +65,10 @@ const SelectProductDrawer = ({
     });
     // update redux & close modal
     addProducts(newProducts);
+    track.addExistingProductsClicked({
+      storefrontId: storefront?.id,
+      isNewStorefront: Boolean(isCreate),
+    });
     showNotification({
       type: 'success',
       message: 'Products have been added',
@@ -78,6 +85,11 @@ const SelectProductDrawer = ({
         const newCheckboxes = prevCheckboxes.map((item) => {
           const isFound = item.id === id;
           if (isFound) {
+            track.checkboxClickExistingProducts({
+              checked_items: item,
+              storefrontId: storefront?.id,
+              isNewStorefront: Boolean(isCreate),
+            });
             return {
               ...item,
               checked: isChecked,
@@ -124,14 +136,10 @@ const SelectProductDrawer = ({
 
   const onClickHandler = () => {
     openAddModal();
-    analyticsTrack({
-      objectName: 'Add product',
-      actionName: 'Clicked',
-      screen: 'Products Screen',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-        screen_source: 'store_view',
-      },
+    track.addNewProductClicked({
+      screen_source: 'store_view',
+      storefrontId: storefront?.id,
+      isNewStorefront: Boolean(isCreate),
     });
   };
 

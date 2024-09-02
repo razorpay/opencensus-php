@@ -36,7 +36,9 @@ describe('MonetizationChargesDetails', () => {
   it('renders no code apps and benefits', () => {
     render(<MonetizationChargesDetails {...defaultProps} />);
     expect(screen.getByText('What you’ll get')).toBeInTheDocument();
-    expect(screen.getByText('Accept payments without any development or coding')).toBeInTheDocument();
+    expect(
+      screen.getByText('Accept payments without any development or coding'),
+    ).toBeInTheDocument();
   });
 
   it('calls setShowProductWiseBenefits when "View product-wise benefits" is clicked', async () => {

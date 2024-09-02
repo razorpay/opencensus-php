@@ -68,7 +68,7 @@ describe('Payment Button List Track - UT', () => {
       actionName: 'click',
       screen: 'list payment buttons',
       toCleverTap: true,
-      properties: {},
+      properties: { section: 'list payment buttons' },
     });
   });
 

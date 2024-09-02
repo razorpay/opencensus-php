@@ -25,6 +25,7 @@ import track from 'merchant/views/PaymentLinks/track';
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import PaymentLinkIcon from 'assets/product_onboarding/payment_link.svg';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { NOT_SKIP } from 'merchant/constants/payments';
 
 // i18
 export const LANDING_PAGE_DESC = {
@@ -59,21 +60,31 @@ export default class PaymentPagesOnBoarding extends React.Component {
         feature={RZPFeatures.PL}
         page={sliderProps.active}
         // eslint-disable-next-line react/no-this-in-sfc
-        onClick={this.closeOnboarding}
+        onClick={() => this.closeOnboarding(NOT_SKIP)}
       />
     );
   };
 
   componentDidMount() {
     track.onBoardingSuccess();
+    track.tourPageRendered();
   }
 
-  closeOnboarding = () => {
+  closeOnboarding = (val = '') => {
     if (this.props.user.isPaymentLinksEnabled && !this.props.paymentLinksProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, false);
     }
 
+    if (val === NOT_SKIP) {
+      track.getStartedClickedOnTourPage();
+    } else {
+      track.skipClickOnTourPage();
+    }
     this.props.closeOnboarding();
+  };
+
+  readMoreClicked = () => {
+    track.readMoreClickedOnTourPage();
   };
 
   render() {
@@ -99,6 +110,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               imageUrl={PaymentLinkIcon}
               businessName={org.business_name}
               desc={description}
+              readMoreClicked={this.readMoreClicked}
             />
           )}
 

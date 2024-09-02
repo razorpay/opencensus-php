@@ -56,6 +56,7 @@ import { PRODUCT_MESSAGES } from './constants';
 import { ICategories } from 'merchant/reducers/paymentPages/types';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 interface IProductDrawer {
   storeFrontId: string | undefined;
@@ -110,6 +111,24 @@ const ProductDrawer = ({
   // const [progress, setProgress] = useState(0);
 
   const handleProductChange = (e) => {
+    if (e.name === 'category') {
+      const extraproperties = {
+        product_id: product?.id,
+        value_entered: e?.value,
+        storefrontId: storeFrontId,
+        isNewStorefront: Boolean(isCreate),
+      };
+      track.handleAddNewProductEntered(extraproperties, 'category');
+    } else if (e.name === 'images') {
+      const extraproperties = {
+        product_id: product?.id,
+        no_of_images: e?.value?.length,
+        storefrontId: storeFrontId,
+        isNewStorefront: Boolean(isCreate),
+      };
+      track.handleAddNewProductEntered(extraproperties, 'product images');
+    }
+
     setProduct((prevState) => {
       if (decimalFields.indexOf(e.name) > -1) {
         // validate if text contains only numbers
@@ -370,6 +389,21 @@ const ProductDrawer = ({
       {isEdit ? 'Save product details' : 'Add product'}
     </Button>,
   ];
+  const handleEnteredAnalytics = (e) => {
+    const analyticsName = {
+      product_name: 'new product',
+      amount: 'price',
+      discounted_amount: 'discount price',
+      units: 'quantity of stock',
+    };
+    const extraproperties = {
+      product_id: product.id,
+      value_entered: e.value,
+      storefrontId: storeFrontId,
+      isNewStorefront: Boolean(isCreate),
+    };
+    track.handleAddNewProductEntered(extraproperties, analyticsName[e.name]);
+  };
 
   return (
     <ProductDrawerWrapper
@@ -411,6 +445,7 @@ const ProductDrawer = ({
           showClearButton={false}
           validationState={errors.product_name ? 'error' : 'none'}
           errorText={errors.product_name}
+          onBlur={handleEnteredAnalytics}
         />
         <PriceInputField>
           <TextInputContainer>
@@ -426,6 +461,7 @@ const ProductDrawer = ({
               placeholder="0.00"
               showClearButton={false}
               validationState={errors.amount || errors.discounted_amount ? 'error' : 'none'}
+              onBlur={handleEnteredAnalytics}
             />
           </TextInputContainer>
 
@@ -442,6 +478,7 @@ const ProductDrawer = ({
               placeholder="0.00"
               showClearButton={false}
               validationState={errors.discounted_amount ? 'error' : 'none'}
+              onBlur={handleEnteredAnalytics}
             />
           </TextInputContainer>
 
@@ -475,6 +512,7 @@ const ProductDrawer = ({
             showClearButton={false}
             validationState={errors.units ? 'error' : 'none'}
             errorText={errors.units}
+            onBlur={handleEnteredAnalytics}
           />
         </Box>
         {images.length === 0 ? (

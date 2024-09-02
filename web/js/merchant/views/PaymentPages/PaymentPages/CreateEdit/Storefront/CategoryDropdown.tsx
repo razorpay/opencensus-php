@@ -17,8 +17,7 @@ import {
   CategoryItem,
   AddCategory,
 } from './styled';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 interface ICategoryDropdown {
   storeFrontId: string | undefined;
@@ -72,16 +71,10 @@ const CategoryDropdown = ({
   }, [categories]);
 
   const openAddCategoryModal = () => {
-    analyticsTrack({
-      objectName: 'Add New Category',
-      actionName: 'Clicked',
-      screen: 'Add New Product',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-        storefrontId: storeFrontId,
-        isNewStorefront: Boolean(isCreate),
-        screenSource,
-      },
+    track.handleAddNewCategoryClicked({
+      storefrontId: storeFrontId ?? undefined,
+      isNewStorefront: Boolean(isCreate),
+      screenSource,
     });
     openModal({
       isNew: true,

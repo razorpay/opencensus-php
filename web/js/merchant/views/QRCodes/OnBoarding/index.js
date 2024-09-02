@@ -22,6 +22,7 @@ import OnBoarding, {
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
+import track from '../track';
 
 @connect(
   (state) => ({
@@ -51,6 +52,10 @@ export default class QRCodesOnBoarding extends React.Component {
     return <FeatureEnableSliderButton {...props} />;
   };
 
+  componentDidMount() {
+    track.tourPageRendered();
+  }
+
   renderSkipButton = (sliderProps) => {
     const props = {
       feature: RZPFeatures.QR_CODES,
@@ -72,7 +77,12 @@ export default class QRCodesOnBoarding extends React.Component {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.QR_CODES, false);
     }
 
+    track.skipClickOnTourPage();
     this.props.closeOnboarding();
+  };
+
+  readMoreClicked = () => {
+    track.readMoreClickedOnTourPage();
   };
 
   render() {
@@ -88,6 +98,7 @@ export default class QRCodesOnBoarding extends React.Component {
               title="QR Codes"
               imageUrl="/dist/css/assets/qr_code/onboarding.svg"
               desc="Create UPI QR codes in 3 simple steps with no integration efforts. Adopt contactless payments through customized QR codes and track payments easily."
+              readMoreClicked={this.readMoreClicked}
             />
           )}
 

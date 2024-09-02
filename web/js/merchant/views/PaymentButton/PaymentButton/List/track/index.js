@@ -9,15 +9,25 @@ function _track() {
     lumberjackTrack(window.rzpQ.paymentButtons().interaction(`button.${event}`, options));
   }
 
-  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
+  const default_screen = 'list payment buttons';
+
+  function sendToSegment(
+    objectName,
+    actionName,
+    properties,
+    screen = default_screen,
+    section,
+    toCleverTap = false,
+  ) {
     analyticsTrack({
       objectName,
       actionName,
-      screen: 'list payment buttons',
+      screen,
       toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
+        section,
       },
     });
   }
@@ -46,7 +56,7 @@ function _track() {
         screen: 'Button Create',
       });
       sendToLumberjack('create.enter');
-      sendToSegment('create payment button', 'click', {}, true);
+      sendToSegment('create payment button', 'click', {}, default_screen, default_screen, true);
     },
     paginate: (params, type) => {
       sendToLumberjack(`browse.${type}`, {
@@ -75,6 +85,22 @@ function _track() {
 
     init(_lumberjackTrack) {
       lumberjackTrack = _lumberjackTrack;
+    },
+
+    tourPageRendered: () => {
+      sendToSegment('Tour page', 'rendered', {}, 'Payment Button Tour', 'Payment Button Tour');
+    },
+
+    readMoreClickedOnTourPage: () => {
+      sendToSegment('read more', 'clicked', {}, 'Payment Button Tour', 'Payment Button Tour');
+    },
+
+    getStartedClickedOnTourPage: () => {
+      sendToSegment('get started', 'clicked', {}, 'Payment Button Tour', 'Payment Button Tour');
+    },
+
+    skipClickOnTourPage: () => {
+      sendToSegment('skip section', 'clicked', {}, 'Payment Button Tour', 'Payment Button Tour');
     },
   };
 }

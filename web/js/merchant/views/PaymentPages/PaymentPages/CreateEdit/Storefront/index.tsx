@@ -81,6 +81,7 @@ import { ProductsSkeleton } from 'merchant/views/PaymentPages/PaymentPages/Creat
 import SelectProductDrawer from './SelectProductDrawer';
 import MobileActionButtons from './MobileActionButtons';
 import { PRODUCT_MESSAGES } from 'merchant/views/PaymentPages/common/Products/constants';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 const allowedIframeDomain: string = getAllowedStorefrontDomain();
 
@@ -362,15 +363,9 @@ const StoreFront = ({
 
     // Tracking only when it's first product
     if (isInitialLoaded === 0) {
-      analyticsTrack({
-        objectName: 'Add your first product',
-        actionName: 'Clicked',
-        screen: 'Create Storefront Page',
-        properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
-          storefrontId: id ?? undefined,
-          isNewStoreFront: Boolean(isCreate),
-        },
+      track.addFirstProductToStorefront({
+        storefrontId: id ?? undefined,
+        isNewStoreFront: Boolean(isCreate),
       });
     }
   };
@@ -462,7 +457,12 @@ const StoreFront = ({
     editStorefrontDeepMerge(payload);
   };
 
-  const openBrandColorSettingsPage = () => {
+  const openBrandColorSettingsPage = (item: string) => {
+    track.customizeStorefrontClicked({
+      storefrontId: id ?? undefined,
+      isNewStoreFront: Boolean(isCreate),
+      customization_items: item,
+    });
     history.push('/checkout-settings/branding');
   };
 
@@ -498,15 +498,9 @@ const StoreFront = ({
 
   const onSubmit = (): any => {
     // adding before validity check, so as to create proper funnel for events
-    analyticsTrack({
-      objectName: 'Publish page',
-      actionName: 'Clicked',
-      screen: 'Create Storefront Page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-        storefrontId: id ?? undefined,
-        isNewStorefront: Boolean(isCreate),
-      },
+    track.publishPageClicked({
+      storefrontId: id ?? undefined,
+      isNewStorefront: Boolean(isCreate),
     });
 
     // validate
@@ -531,16 +525,11 @@ const StoreFront = ({
               message: 'Storefront created successfully',
               closeTimeout: 2500,
             });
-            analyticsTrack({
-              objectName: 'Page successfully',
-              actionName: 'Published',
-              screen: 'Page publised',
-              properties: {
-                ...getCommonAnalyticsProperties(window.rzp_user),
-                storefrontId: res.data.id,
-                isNewStorefront: true,
-              },
+            track.publishPageLoadedSucessfully({
+              storefrontId: res?.data?.id,
+              isNewStorefront: true,
             });
+
             // history.push(`/paymentpages/storefront/${res.data.id}/success`);
             navigate(`/paymentpages/storefront/${res.data.id}/success`, {
               state: {
@@ -565,15 +554,9 @@ const StoreFront = ({
             message: 'Storefront updated successfully',
             closeTimeout: 2500,
           });
-          analyticsTrack({
-            objectName: 'Page successfully',
-            actionName: 'Published',
-            screen: 'Page publised',
-            properties: {
-              ...getCommonAnalyticsProperties(window.rzp_user),
-              storefrontId: res.data.id,
-              isNewStorefront: false,
-            },
+          track.publishPageLoadedSucessfully({
+            storefrontId: res?.data?.id,
+            isNewStorefront: true,
           });
           // history.push(`/paymentpages/storefront/${res.data.id}/success`);
           navigate(`/paymentpages/storefront/${res.data.id}/success`, {
@@ -616,7 +599,13 @@ const StoreFront = ({
       <Button.Transparent
         type="button"
         style={{ color: '#fff' }}
-        onClick={() => setIsPageSettingsOpen(true)}
+        onClick={() => {
+          setIsPageSettingsOpen(true);
+          track.pageSettingsClicked({
+            storefrontId: id ?? undefined,
+            isNewStorefront: Boolean(isCreate),
+          });
+        }}
         className="Button--header"
         // disabled={!isEntityLoaded}
       >
@@ -662,6 +651,7 @@ const StoreFront = ({
           <SelectProductDrawer
             handleClose={setProductModal.bind(null, -1)}
             openAddModal={setProductModal.bind(null, 0)}
+            isCreate={isCreate}
           />
         )
       )}
@@ -770,18 +760,28 @@ const StoreFront = ({
                         color="surface.text.gray.subtle"
                       >
                         Customize your store with your{' '}
-                        <Link onClick={openBrandColorSettingsPage} variant="button">
+                        <Link
+                          onClick={() => openBrandColorSettingsPage('brand color')}
+                          variant="button"
+                        >
                           brand color
                         </Link>{' '}
                         and{' '}
-                        <Link onClick={openBrandColorSettingsPage} variant="button">
+                        <Link onClick={() => openBrandColorSettingsPage('logo')} variant="button">
                           logo
                         </Link>
                       </Text>
                     </DescriptionLeftWrapper>
                     <PreviewButtons
                       isDesktop={storefront.isDesktopPreview}
-                      onClick={previewDevice}
+                      onClick={(val) => {
+                        track.previewStorefrontClicked({
+                          storefrontId: id ?? undefined,
+                          isNewStoreFront: Boolean(isCreate),
+                          preview_type: val ? 'desktop preview' : 'mobile preview',
+                        });
+                        previewDevice(val);
+                      }}
                     />
                   </DescriptionWrapper>
                   <Iframe

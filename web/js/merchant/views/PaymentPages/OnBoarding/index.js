@@ -27,6 +27,8 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import CommonHeroMain from 'assets/payment_pages/hero_main.svg';
 import i18nHeroMain from 'assets/payment_pages/i18n_hero_main.svg';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
+import { NOT_SKIP } from 'merchant/constants/payments';
 
 export const LANDING_PAGE_DESC = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
@@ -60,7 +62,7 @@ class PaymentPagesOnBoarding extends React.Component {
         isLocalEnabler
         feature={RZPFeatures.PP}
         // eslint-disable-next-line react/no-this-in-sfc
-        onClick={this.closeOnboarding}
+        onClick={() => this.closeOnboarding(NOT_SKIP)}
         page={sliderProps.active}
         additionalTrackData={{
           is_creation_redirection_enabled:
@@ -71,13 +73,22 @@ class PaymentPagesOnBoarding extends React.Component {
     );
   };
 
-  closeOnboarding = () => {
+  componentDidMount() {
+    track.tourPageRendered();
+  }
+
+  closeOnboarding = (val = '') => {
     const { user, paymentPageProductOnBoarding, closeOnboarding, history } = this.props;
 
     if (user.isPaymentPagesEnabled && !paymentPageProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, false);
     }
 
+    if (val === NOT_SKIP) {
+      track.getStartedClickedOnTourPage();
+    } else {
+      track.skipClickOnTourPage();
+    }
     closeOnboarding();
 
     /*
@@ -87,6 +98,10 @@ class PaymentPagesOnBoarding extends React.Component {
     if (user.isPaymentPageOnboardingRedirectionEnabled) {
       history.push('/paymentpages/new');
     }
+  };
+
+  readMoreClicked = () => {
+    track.readMoreClickedOnTourPage();
   };
 
   render() {
@@ -115,6 +130,7 @@ class PaymentPagesOnBoarding extends React.Component {
               imageUrl={heroMainImag}
               businessName={org.business_name}
               desc={description}
+              readMoreClicked={this.readMoreClicked}
             />
           )}
 

@@ -13,8 +13,11 @@ export default class OnBoardingLanding extends React.PureComponent {
   }
 
   handleNexButton = () => {
+    const { includeKycProperties, feature, active, readMoreClicked } = this.props;
+    if (readMoreClicked) {
+      readMoreClicked();
+    }
     return this.props.next(() => {
-      const { includeKycProperties, feature, active } = this.props;
       track.introductionNextSuccess(feature, null, { includeKycProperties });
       window.rzpAnalytics?.({
         eventCategory: `Onboarding Card (${feature})`,

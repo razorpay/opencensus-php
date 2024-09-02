@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 const Wrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -83,7 +84,13 @@ const PaymentsAndStorefrontTab = ({
         Payment Pages
       </Tab>
 
-      <Tab active={isStorefrontPage} onClick={() => setIsStorefrontPage(true)}>
+      <Tab
+        active={isStorefrontPage}
+        onClick={() => {
+          track.storefrontCheckboxClicked();
+          setIsStorefrontPage(true);
+        }}
+      >
         <CustomRadio active={isStorefrontPage}>
           <i className="i i-done" />
         </CustomRadio>

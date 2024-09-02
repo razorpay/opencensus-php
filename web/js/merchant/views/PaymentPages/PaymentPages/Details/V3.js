@@ -53,12 +53,6 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the link',
 };
 
-const trackStock = (action, eventLabel) => {
-  trackDetailViewEdits(action, eventLabel);
-
-  action === 'Edit Stock' && track.updateStock();
-};
-
 const trackShare = (eventName, data) => {
   trackShareActions(eventName, data);
 
@@ -246,12 +240,32 @@ export default class PaymentPagesV3Entity extends React.Component {
     }
   };
 
+  trackStock = (action, eventLabel) => {
+    trackDetailViewEdits(action, eventLabel);
+
+    const { id, short_url } = this.props.paymentPageEntity;
+
+    action === 'Edit Stock' &&
+      track.updateStock({
+        storefrontId: id,
+        published_page_url: short_url,
+      });
+  };
+
   onClickDuplicatePage = () => {
-    track.duplicatePage();
+    const { id, short_url } = this.props.paymentPageEntity;
+    track.duplicatePage({
+      storefrontId: id,
+      published_page_url: short_url,
+    });
   };
 
   onClickEditPage = () => {
-    track.editPage();
+    const { id, short_url } = this.props.paymentPageEntity;
+    track.editPage({
+      storefrontId: id,
+      published_page_url: short_url,
+    });
   };
 
   trackEditNotes = (changeType, modified) => {
@@ -277,8 +291,8 @@ export default class PaymentPagesV3Entity extends React.Component {
       createdByUser,
       paymentPageEntity,
       editPaymentPage,
-      toggleManualActivation,
       reActivateLink,
+      toggleManualActivation,
       isStorefrontPage,
       isNoExpiryMandatory,
       isBatchPaymentPages,
@@ -288,7 +302,7 @@ export default class PaymentPagesV3Entity extends React.Component {
     } = this.props;
     const { isExportInProgress } = this.state;
 
-    const { id, title } = paymentPageEntity;
+    const { id, title, short_url } = paymentPageEntity;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
@@ -408,7 +422,17 @@ export default class PaymentPagesV3Entity extends React.Component {
                         <Button.Transparent
                           className="Button--Link"
                           style={{ marginLeft: 12 }}
-                          onClick={isActive ? toggleManualActivation : reActivateLink}
+                          onClick={
+                            isActive
+                              ? () => {
+                                  track.deactivatePageClicked({
+                                    storefrontId: id,
+                                    published_page_url: short_url,
+                                  });
+                                  toggleManualActivation();
+                                }
+                              : reActivateLink
+                          }
                         >
                           {isActive ? 'Deactivate' : 'Activate'}
                         </Button.Transparent>
@@ -530,7 +554,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                             quantitySold={pi.quantity_sold}
                             editFn={editPaymentPage}
                             paymentPageItemId={!isStorefrontPage ? pi.id : pi.catalog_id}
-                            trackerFn={trackStock}
+                            trackerFn={this.trackStock}
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             isStorefrontPage={isStorefrontPage}
                             storefrontCatalogStatus={pi.catalog_status}
@@ -547,8 +571,11 @@ export default class PaymentPagesV3Entity extends React.Component {
             type="button"
             className="btn-primary btn-sm panel-collapser"
             onClick={() => {
-              this.state.detailsCollapse && track.showMore();
-
+              this.state.detailsCollapse &&
+                track.showMore({
+                  storefrontId: id,
+                  published_page_url: short_url,
+                });
               this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }));
             }}
           >

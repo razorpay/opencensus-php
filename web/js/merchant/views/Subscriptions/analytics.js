@@ -2,6 +2,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function analytics() {
+  const default_screen = 'subscriptions';
+
   let lumberjackTrack = () => {};
 
   function sendToLumberjack(event, options) {
@@ -16,10 +18,11 @@ function analytics() {
     analyticsTrack({
       objectName,
       actionName,
-      screen: options.screen || 'subscriptions',
+      screen: options?.screen || default_screen,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...options,
+        section: default_screen,
       },
     });
   }
@@ -35,7 +38,15 @@ function analytics() {
       };
       const segmentLabel = eventLabel.split(/_|\./).join(' ');
       sendToLumberjack(eventLabel, newOptions);
-      sendToSegment(segmentLabel, eventAction, newOptions);
+      sendToSegment(segmentLabel, eventAction, { ...newOptions });
+    },
+
+    tourPageRendered: () => {
+      sendToSegment('Tour page', 'rendered');
+    },
+
+    readMoreClickedOnTourPage: () => {
+      sendToSegment('read more', 'clicked');
     },
   };
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { withRouter } from 'common/deprecated/withRouter';
 
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
@@ -7,10 +7,6 @@ import Tooltip from 'common/ui/Tooltip';
 
 import track from './track';
 import { getProductBaseLink } from 'merchant/views/PaymentPages/PaymentPages/utils';
-
-const onShow = () => {
-  track.settingsDropdown();
-};
 
 const DropdownSettings = ({
   history,
@@ -23,6 +19,13 @@ const DropdownSettings = ({
     paymentPageEntity.id,
     isBatchPaymentPages,
   );
+
+  const onShow = useCallback(() => {
+    track.settingsDropdown({
+      storefrontId: paymentPageEntity?.id,
+      published_page_url: paymentPageEntity?.short_url,
+    });
+  }, [paymentPageEntity]);
 
   return (
     <span className="d-inline-block">

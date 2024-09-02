@@ -26,6 +26,8 @@ import OnBoarding, {
 import { FEATURES_DATA_ORG, FEATURES_LINKS } from './data';
 import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import track from 'merchant/views/PaymentButton/PaymentButton/List/track';
+import { NOT_SKIP } from 'merchant/constants/payments';
 
 const ORG_ONBOARDING_IMG = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: imgPaymentButtonRzp,
@@ -56,12 +58,16 @@ export default class PaymentButtonOnBoarding extends React.Component {
         }
         page={sliderProps.active}
         // eslint-disable-next-line react/no-this-in-sfc
-        onClick={this.closeOnboarding}
+        onClick={() => this.closeOnboarding(NOT_SKIP)}
       />
     );
   };
 
-  closeOnboarding = () => {
+  componentDidMount() {
+    track.tourPageRendered();
+  }
+
+  closeOnboarding = (val = '') => {
     this.props.closeOnboarding();
 
     setIsPaymentButtonCodeUsed(
@@ -71,6 +77,16 @@ export default class PaymentButtonOnBoarding extends React.Component {
       },
       false,
     );
+
+    if (val === NOT_SKIP) {
+      track.getStartedClickedOnTourPage();
+    } else {
+      track.skipClickOnTourPage();
+    }
+  };
+
+  readMoreClicked = () => {
+    track.readMoreClickedOnTourPage();
   };
 
   render() {
@@ -99,6 +115,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
               imageUrl={onboardingIMGUrl}
               desc="Collect payments and donations on your websites and blogs, copy-paste a single line of code to collect payments online. Zero integrations required!"
               businessName={businessName}
+              readMoreClicked={this.readMoreClicked}
             />
           )}
 

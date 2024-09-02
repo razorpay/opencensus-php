@@ -14,15 +14,23 @@ function _track() {
     );
   }
 
-  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
+  function sendToSegment(
+    objectName,
+    actionName,
+    screen = 'list payment page',
+    properties,
+    section,
+    toCleverTap = false,
+  ) {
     analyticsTrack({
       objectName,
       actionName,
-      screen: 'list payment page',
+      screen,
       toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
+        section,
       },
     });
   }
@@ -30,31 +38,25 @@ function _track() {
   return {
     load: () => {
       sendToLumberjack('list.load');
-      sendToSegment('intial', 'load');
+      sendToSegment('intial', 'load', 'list payment page', {}, 'list payment page');
     },
+
     searchCount: (event) => {
       sendToLumberjack('list.count_enter', { value: event.target.value });
-      sendToSegment('search with count', 'input', { value: event.target.value });
+      sendToSegment('search with count', 'input', 'list payment page', {
+        value: event.target.value,
+      });
     },
-    searchStatus: (event) => {
-      sendToLumberjack('list.status_click', { value: event.target.value || 'all' });
-      sendToSegment('search with status', 'click', { value: event.target.value || 'all' });
-    },
-    searchTitle: (event) => {
-      sendToLumberjack('list.title_enter', { value: event.target.value });
-      sendToSegment('search with title', 'input', { value: event.target.value });
-    },
-    search: (params) => {
-      sendToLumberjack('search', params);
-      sendToSegment('search ', 'click', params);
-    },
-    searchClear: () => {
-      sendToLumberjack('search.clear');
-      sendToSegment('clear search filters', 'click');
-    },
+
     createPaymentPage: () => {
       sendToLumberjack('create.click_create');
-      sendToSegment('create page', 'clicked', {}, true);
+      sendToSegment(
+        'create page',
+        'clicked',
+        'Select page of your choice',
+        {},
+        'list payment page',
+      );
       selfServeTrackInitiate({
         selfServeAction: 'Create Payment Page',
         page: 'Paymentpage',
@@ -62,9 +64,31 @@ function _track() {
       });
       triggerHotjarRecording('PP_Creation');
     },
+
+    searchStatus: (event) => {
+      sendToLumberjack('list.status_click', { value: event.target.value || 'all' });
+      sendToSegment('search with status', 'click', 'list payment page', {
+        value: event.target.value || 'all',
+      });
+    },
+    searchTitle: (event) => {
+      sendToLumberjack('list.title_enter', { value: event.target.value });
+      sendToSegment('search with title', 'input', 'list payment page', {
+        value: event.target.value,
+      });
+    },
+    search: (params) => {
+      sendToLumberjack('search', params);
+      sendToSegment('search ', 'click', 'list payment page', params);
+    },
+    searchClear: () => {
+      sendToLumberjack('search.clear');
+      sendToSegment('clear search filters', 'click');
+    },
+
     paginate: (type, data) => {
       sendToLumberjack(`browse.${type}`, data);
-      sendToSegment(`browse ${type}`, 'click', data);
+      sendToSegment(`browse ${type}`, 'click', 'list payment page', data);
     },
     takeTour: () => {
       sendToLumberjack('list.take_tour');
@@ -81,6 +105,258 @@ function _track() {
 
     init(_lumberjackTrack) {
       lumberjackTrack = _lumberjackTrack;
+    },
+
+    storefrontCheckboxClicked: () => {
+      sendToSegment(
+        'storfront page checkbox',
+        'clicked',
+        'list payment page',
+        {},
+        'list Payment Pages',
+      );
+    },
+
+    selectTemplatePageLoaded: () => {
+      sendToSegment(
+        'Page',
+        'loaded',
+        'Select page of your choice',
+        {},
+        'Select page of your choice',
+      );
+    },
+
+    selectStorefrontPage: (extraProperties) => {
+      sendToSegment(
+        'Storefront page',
+        'clicked',
+        'Create storefront page',
+        {
+          ...extraProperties,
+        },
+        'Select page of your choice',
+      );
+    },
+
+    addFirstProductToStorefront: (extraProperties) => {
+      sendToSegment(
+        'add your first product',
+        'clicked',
+        'Add New Product Modal',
+        {
+          ...extraProperties,
+        },
+        'Create Storefront Page',
+      );
+    },
+
+    addProductsModalLoaded: (extraProperties) => {
+      sendToSegment(
+        'add products',
+        'loaded',
+        'Existing Product Modal',
+        {
+          ...extraProperties,
+        },
+        'Create Storefront Page',
+      );
+    },
+
+    checkboxClickExistingProducts: (extraProperties) => {
+      sendToSegment(
+        'checkbox',
+        'clicked',
+        'Existing Product Modal',
+        {
+          ...extraProperties,
+        },
+        'Existing Product Modal',
+      );
+    },
+
+    addNewProductClicked: (extraProperties) => {
+      sendToSegment(
+        'add new product',
+        'clicked',
+        'Add New Product Modal',
+        {
+          ...extraProperties,
+        },
+        'Existing Product Modal',
+      );
+    },
+
+    handleAddNewProductEntered: (extraProperties, objectName) => {
+      sendToSegment(
+        objectName,
+        'entered',
+        'Add New Product Modal',
+        {
+          ...extraProperties,
+        },
+        'Add New Product Modal',
+      );
+    },
+
+    handleAddNewCategoryClicked: (extraProperties) => {
+      sendToSegment(
+        'add new category',
+        'clicked',
+        'Add New Category Modal',
+        {
+          ...extraProperties,
+        },
+        'Add New Product Modal',
+      );
+    },
+
+    handleAddNewCategoryLoaded: (extraProperties) => {
+      sendToSegment(
+        'new catgeory modal',
+        'loaded',
+        'Add New Category Modal',
+        {
+          ...extraProperties,
+        },
+        'Add New Category Modal',
+      );
+    },
+
+    handleAddNewCategoryEntered: (extraProperties) => {
+      sendToSegment(
+        'new category',
+        'entered',
+        'Add New Category Modal',
+        {
+          ...extraProperties,
+        },
+        'Add New Category Modal',
+      );
+    },
+
+    addCategoryClicked: (extraProperties) => {
+      sendToSegment(
+        'add category',
+        'clicked',
+        'Add New Product Modal',
+        {
+          ...extraProperties,
+        },
+        'Add New Category Modal',
+      );
+    },
+
+    addExistingProductsClicked: (extraProperties) => {
+      sendToSegment(
+        'add existing products',
+        'clicked',
+        'Create Storefront Pages',
+        {
+          ...extraProperties,
+        },
+        'Existing Product Modal',
+      );
+    },
+
+    previewStorefrontClicked: (extraProperties) => {
+      sendToSegment(
+        'preview',
+        'clicked',
+        'Create Storefront Pages',
+        {
+          ...extraProperties,
+        },
+        'Create Storefront Pages',
+      );
+    },
+
+    customizeStorefrontClicked: (extraProperties) => {
+      sendToSegment(
+        'custom page',
+        'clicked',
+        'Create Storefront Pages',
+        {
+          ...extraProperties,
+        },
+        'Create Storefront Pages',
+      );
+    },
+
+    publishPageClicked: (extraProperties) => {
+      sendToSegment(
+        'publish page',
+        'clicked',
+        'Create Storefront Pages',
+        {
+          ...extraProperties,
+        },
+        'Create Storefront Pages',
+      );
+    },
+
+    pageSettingsClicked: (extraProperties) => {
+      sendToSegment(
+        'add page setting',
+        'clicked',
+        'Create Storefront Pages',
+        {
+          ...extraProperties,
+        },
+        'Create Storefront Pages',
+      );
+    },
+
+    publishPageLoadedSucessfully: (extraProperties) => {
+      sendToSegment(
+        'published page successfully',
+        'loaded',
+        'Published Page',
+        {
+          ...extraProperties,
+        },
+        'Published Page',
+      );
+    },
+
+    editStorefrontPage: (extraProperties) => {
+      sendToSegment(
+        'edit page',
+        'clicked',
+        'Edit storefront page',
+        {
+          ...extraProperties,
+        },
+        'Published Page',
+      );
+    },
+
+    pageSettingClickedOnPublishedPage: (extraProperties) => {
+      sendToSegment(
+        'Page setting',
+        'clicked',
+        'Published Page',
+        {
+          ...extraProperties,
+        },
+        'Published Page',
+      );
+    },
+
+    tourPageRendered: () => {
+      sendToSegment('Tour page', 'rendered', 'Payment Page Tour', {}, 'Payment Page Tour');
+    },
+
+    readMoreClickedOnTourPage: () => {
+      sendToSegment('read more', 'clicked', 'Payment Page Tour', {}, 'Payment Page Tour');
+    },
+
+    getStartedClickedOnTourPage: () => {
+      sendToSegment('get started', 'clicked', 'Payment Page Tour', {}, 'Payment Page Tour');
+    },
+
+    skipClickOnTourPage: () => {
+      sendToSegment('skip section', 'clicked', 'Payment Page Tour', {}, 'Payment Page Tour');
     },
   };
 }

@@ -20,12 +20,15 @@ describe('List Analytics', () => {
   test('should call sendToLumberjack and sendToSegment with correct arguments on load', () => {
     track.init(lumberjackTrackMock);
     track.load();
+    const properties = {
+      section: 'list payment page',
+    };
     expect(analytics.analyticsTrack).toHaveBeenCalledWith({
       objectName: 'intial',
       actionName: 'load',
       screen: 'list payment page',
       toCleverTap: false,
-      properties: {},
+      properties,
     });
   });
 
@@ -104,12 +107,15 @@ describe('List Analytics', () => {
 
   test('should call createPaymentPage', () => {
     track.createPaymentPage();
+    const properties = {
+      section: 'list payment page',
+    };
     expect(analytics.analyticsTrack).toHaveBeenCalledWith({
       objectName: 'create page',
       actionName: 'clicked',
-      screen: 'list payment page',
-      toCleverTap: true,
-      properties: {},
+      screen: 'Select page of your choice',
+      toCleverTap: false,
+      properties,
     });
   });
 

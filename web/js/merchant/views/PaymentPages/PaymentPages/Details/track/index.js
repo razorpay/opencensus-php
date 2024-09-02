@@ -5,6 +5,9 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 function _track() {
   let lumberjackTrack = () => {};
 
+  const default_screen = 'details payment page';
+  const section_name = 'Details Payment Page';
+
   function sendToLumberjack(event, data) {
     lumberjackTrack(
       window.rzpQ.paymentPages().interaction(`pp.details.${event}`, {
@@ -13,14 +16,22 @@ function _track() {
     );
   }
 
-  function sendToSegment(objectName, actionName, properties) {
+  function sendToSegment(
+    objectName,
+    actionName,
+    properties,
+    screen = default_screen,
+    toCleverTap = false,
+  ) {
     analyticsTrack({
       objectName,
       actionName,
-      screen: 'details payment page',
+      screen,
+      toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
+        section: section_name,
       },
     });
   }
@@ -62,18 +73,30 @@ function _track() {
       sendToLumberjack('expiry_date_save');
       sendToSegment('save expiry', 'click');
     },
-    duplicatePage: () => {
+    duplicatePage: (extraProperties = {}) => {
+      sendToSegment(
+        'duplicate page',
+        'click',
+        {
+          ...extraProperties,
+        },
+        'Create storefront page',
+      );
       sendToLumberjack('duplicate_page');
-      sendToSegment('duplicate page', 'click');
       trackSelfServeInitiate();
     },
-
-    editPage: () => {
+    editPage: (extraProperties = {}) => {
+      sendToSegment(
+        'edit page',
+        'click',
+        {
+          ...extraProperties,
+        },
+        'Edit storefront page',
+      );
       sendToLumberjack('edit_page');
-      sendToSegment('edit page', 'click');
       trackSelfServeInitiate();
     },
-
     addNewNote: () => {
       sendToLumberjack('add_new_note');
       sendToSegment('add new note', 'clicked');
@@ -98,21 +121,42 @@ function _track() {
       sendToLumberjack('share');
       sendToSegment('share', 'clicked');
     },
-    showMore: () => {
+    showMore: (extraProperties = {}) => {
       sendToLumberjack('show_more');
-      sendToSegment('show more', 'clicked');
+      sendToSegment(
+        'show more',
+        'clicked',
+        {
+          ...extraProperties,
+        },
+        'Details Payment Page',
+      );
     },
-    updateStock: () => {
+    updateStock: (extraProperties = {}) => {
       sendToLumberjack('update_stock_click');
-      sendToSegment('update stock', 'clicked');
+      sendToSegment(
+        'Update Stock',
+        'click',
+        {
+          ...extraProperties,
+        },
+        'Details Payment Page',
+      );
     },
     downloadReport: (extension) => {
       sendToLumberjack('download_report', { extension });
       sendToSegment('download report', 'clicked', { extension });
     },
-    settingsDropdown: () => {
+    settingsDropdown: (extraProperties = {}) => {
+      sendToSegment(
+        'Settings Dropdown',
+        'click',
+        {
+          ...extraProperties,
+        },
+        'Details Payment Page',
+      );
       sendToLumberjack('settings_dropdown');
-      sendToSegment('settings dropdown', 'clicked');
     },
     receiptSettings: () => {
       sendToLumberjack('receipt_settings');
@@ -126,11 +170,15 @@ function _track() {
     },
     searchPaymentId: (event) => {
       sendToLumberjack('payment_id_enter', { value: event.target.value });
-      sendToSegment('search with payment id', 'input', { value: event.target.value });
+      sendToSegment('search with payment id', 'input', {
+        value: event.target.value,
+      });
     },
     searchStatus: (event) => {
       sendToLumberjack('status_click', { value: event.target.value || 'all' });
-      sendToSegment('search with status', 'click', { value: event.target.value || 'all' });
+      sendToSegment('search with status', 'click', {
+        value: event.target.value || 'all',
+      });
     },
     searchEmail: (event) => {
       sendToLumberjack('email_id_enter', { value: event.target.value });
@@ -152,9 +200,18 @@ function _track() {
       sendToLumberjack(`share_${eventName}`, data);
       sendToSegment(`share ${titleCase(eventName)}`, 'click', data);
     },
-
     init(_lumberjackTrack) {
       lumberjackTrack = _lumberjackTrack;
+    },
+    deactivatePageClicked: (extraProperties = {}) => {
+      sendToSegment(
+        'Deactivate Page',
+        'clicked',
+        {
+          ...extraProperties,
+        },
+        'Open deactivate dialog',
+      );
     },
   };
 }

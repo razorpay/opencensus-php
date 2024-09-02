@@ -29,9 +29,7 @@ import {
   OpenModalType,
   ShowNotificationType,
 } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/types';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track/index';
 interface IStorefrontSuccessProps extends RouteComponentProps {
   storefrontData: any; // TODO: to be fixed after merging everyone's code together
   id: string;
@@ -66,15 +64,10 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
     setIsPageSettingsOpen(val);
 
     const locationState = location.state;
-    analyticsTrack({
-      objectName: 'Page Settings',
-      actionName: 'clicked',
-      screen: 'Page Published',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-        storefrontId: props.id,
-        isNewStorefront: Boolean(locationState?.isCreate),
-      },
+    track.pageSettingClickedOnPublishedPage({
+      storefrontId: props.id,
+      isNewStorefront: Boolean(locationState?.isCreate),
+      published_page_url: storeData.shortUrl,
     });
   };
 
@@ -172,7 +165,18 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
   } else {
     content = (
       <div className="content">
-        <Link className="btn edit-page-btn" to={`/paymentpages/storefront/${props.id}/edit`}>
+        <Link
+          onClick={() => {
+            const locationState = location.state;
+            track.editStorefrontPage({
+              storefrontId: props.id,
+              isNewStorefront: Boolean(locationState?.isCreate),
+              published_page_url: storeData.shortUrl,
+            });
+          }}
+          className="btn edit-page-btn"
+          to={`/paymentpages/storefront/${props.id}/edit`}
+        >
           <i className="i i-chevron-left" />
           <span>EDIT PAGE</span>
         </Link>

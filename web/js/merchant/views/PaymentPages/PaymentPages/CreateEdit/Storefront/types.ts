@@ -117,6 +117,7 @@ export interface ISelectProductDrawer {
   addProducts: (data: IPaymentPagesProduct[]) => void;
   openAddModal: () => void;
   showNotification: (data: any) => void;
+  isCreate?: Boolean;
 }
 
 export interface ICheckbox {

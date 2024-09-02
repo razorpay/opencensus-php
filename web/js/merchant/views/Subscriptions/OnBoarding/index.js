@@ -87,6 +87,14 @@ export default class SubscriptionOnBoarding extends React.Component {
     );
   };
 
+  componentDidMount() {
+    analytics.tourPageRendered();
+  }
+
+  readMoreClicked = () => {
+    analytics.readMoreClickedOnTourPage();
+  };
+
   renderSkipButton = (sliderProps) => {
     const btnProps = {
       feature: RZPFeatures.SUBSCRIPTIONS,
@@ -105,8 +113,8 @@ export default class SubscriptionOnBoarding extends React.Component {
       <SkipAndGetStartedButton
         {...btnProps}
         onClick={() => {
-          analytics.track('subscription.tutorial.skip');
           onClick();
+          analytics.track('subscription.tutorial.skip');
         }}
       />
     );
@@ -145,6 +153,7 @@ export default class SubscriptionOnBoarding extends React.Component {
 
                 return sliderProps.next(...args);
               }}
+              readMoreClicked={this.readMoreClicked}
             />
           )}
 

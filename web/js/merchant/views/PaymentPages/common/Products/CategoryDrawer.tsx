@@ -17,6 +17,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { CATEGORY_MESSAGES } from './constants';
 import { SubHeading } from './styled';
 import { validateCategory } from './utils';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 const ADD_DATA = {
   heading: 'Add new category',
@@ -72,6 +73,14 @@ const CategoryDrawer = ({
   const { heading, subHeading, primaryCTAText, successMessage } = isEdit ? EDIT_DATA : ADD_DATA;
 
   useEffect(() => {
+    track.handleAddNewCategoryLoaded({
+      storefrontId: storeFrontId,
+      isNewStorefront: Boolean(isCreate),
+      screenSource,
+    });
+  }, []);
+
+  useEffect(() => {
     if (!!categoryData) {
       setValue(categoryData.name);
     }
@@ -94,21 +103,14 @@ const CategoryDrawer = ({
 
     try {
       let response;
-
       if (isEdit) {
         response = await updateStorefrontCategory(categoryData.id, { name: value });
       } else {
         // tracking only add category events
-        analyticsTrack({
-          objectName: 'Add category',
-          actionName: 'Clicked',
-          screen: 'Add New Category',
-          properties: {
-            ...getCommonAnalyticsProperties(window.rzp_user),
-            storeFrontId,
-            isNewStorefront: Boolean(isCreate),
-            screenSource,
-          },
+        track.addCategoryClicked({
+          storeFrontId,
+          isNewStorefront: Boolean(isCreate),
+          screenSource,
         });
         response = await addStorefrontCategory(value);
       }
@@ -134,6 +136,16 @@ const CategoryDrawer = ({
         message: (err as any)?.errors?.[0] || 'Something went wrong',
       });
     }
+  };
+
+  const handleEnteredAnalytics = (e) => {
+    const extraproperties = {
+      value_entered: e.value,
+      storefrontId: storeFrontId,
+      isNewStorefront: Boolean(isCreate),
+      screenSource,
+    };
+    track.handleAddNewCategoryEntered(extraproperties);
   };
 
   const footerButtons = [
@@ -175,6 +187,7 @@ const CategoryDrawer = ({
         validationState={error ? 'error' : 'none'}
         isRequired
         errorText={error}
+        onBlur={handleEnteredAnalytics}
       />
       {isEdit && showSavedAcrossAlert && (
         <>
