@@ -1039,6 +1039,28 @@ class Repository extends Base\Repository
         return  $this->findOrFail($merchantId);
     }
 
+    public function findOrFailPublicWithRelations(
+        string $id,
+        array  $relations = [],
+        array  $columns = array('*'))
+    {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            try {
+                $entity = $this->findOrFailPublic($id, $columns);
+
+                $entity->load($relations);
+
+                return $entity;
+            } catch (\Throwable $e) {
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
+                    "identifier" => __FUNCTION__
+                ]);
+            }
+        }
+
+        return parent::findOrFailPublicWithRelations($id, $relations, $columns);
+    }
+
     public function getCreatedAtForTheMerchant($merchantId)
     {
         return $this->newQuery()

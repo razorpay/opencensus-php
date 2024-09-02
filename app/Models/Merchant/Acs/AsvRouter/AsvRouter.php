@@ -430,7 +430,6 @@ class AsvRouter
     public function shouldRouteFilterToAsv(string $callingIdentifier): bool
     {
         try {
-
             $isExclusionFlow =  $this->isExclusionFlowOrFailure();
 
             if ($isExclusionFlow === true) {

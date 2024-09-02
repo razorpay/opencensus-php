@@ -10,6 +10,8 @@ use Rzp\Accounts\Merchant\V1\MerchantSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
 use RZP\Exception\DbQueryException;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
@@ -357,6 +359,75 @@ class RepositoryTest extends RepositoryTestHelper
         ];
         $this->runTestsForImplicitJoin($entitiesData);
     }
+
+    public function verifyMerchantLoadOperation($id, $relations)
+    {
+        $apiMerchant       = $this->fixtures->create('merchant', ['id' => $id]);
+        $apiMerchantDetail = $this->fixtures->create('merchant_detail:associate_merchant', ['merchant_id' => $id]);
+
+        $merchantRepository    = new Repository();
+        $fetchedMerchant       = $merchantRepository->findOrFail($id);
+        $fetchedMerchantDetail = $fetchedMerchant->merchantDetail;
+
+        $this->fixtures->edit('merchant_detail', $id, [
+            'contact_mobile' => '+919991119991',
+        ]);
+        $fetchedMerchant->load($relations);
+        $this->assertNotEquals($fetchedMerchantDetail->getContactMobile(), $fetchedMerchant->merchantDetail->getContactMobile());
+        $this->assertEquals('+919991119991', $fetchedMerchant->merchantDetail->getContactMobile());
+    }
+
+    public function testMerchantLoadOperation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        $this->verifyMerchantLoadOperation($id, 'merchantDetail');
+
+        $id = PublicEntity::generateUniqueId();
+        $this->verifyMerchantLoadOperation($id, ['merchantDetail', 'pricing']);
+
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_reload_to_asv', $id);
+        $this->setSplitzWithOutput("true", 5);
+        $this->verifyMerchantLoadOperation($id, ['merchantDetail','pricing']);
+
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_reload_to_asv', $id);
+        $this->setSplitzWithOutput("true", 5);
+        $this->verifyMerchantLoadOperation($id, 'merchantDetail');
+    }
+
+
+    public function verifyFindOrFailPublicWithRelations($id, $relations): void
+    {
+        $apiMerchant       = $this->fixtures->create('merchant', ['id' => $id]);
+        $apiMerchantDetail = $this->fixtures->create('merchant_detail:associate_merchant', ['merchant_id' => $id]);
+
+        $merchantRepository    = new Repository();
+        $fetchedMerchant       = $merchantRepository->findOrFailPublicWithRelations($id, $relations);
+        $fetchedMerchantDetail = $fetchedMerchant->merchantDetail;
+        $this->fixtures->edit('merchant_detail', $id, [
+            'contact_mobile' => '+919991119991',
+        ]);
+        $this->flushCache();
+        $reFetchedMerchant = $merchantRepository->findOrFailPublicWithRelations($id, $relations);
+        $this->assertNotEquals($fetchedMerchantDetail->getContactMobile(), $reFetchedMerchant->merchantDetail->getContactMobile());
+        $this->assertEquals('+919991119991', $reFetchedMerchant->merchantDetail->getContactMobile());
+    }
+
+    public function testFindOrFailPublicWithRelations()
+    {
+        // verify that flow old flow is working fine
+        $id = PublicEntity::generateUniqueId();
+        $this->verifyFindOrFailPublicWithRelations($id, ['merchantDetail', 'pricing']);
+
+        // verify that new flow is working fine
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+        Config::set('applications.asv_v2.splitz_send_reload_to_asv', $id);
+        $this->setSplitzWithOutput("true", 8);
+        $this->verifyFindOrFailPublicWithRelations($id, ['merchantDetail','pricing']);
+    }
+
 
     public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName)
     {
