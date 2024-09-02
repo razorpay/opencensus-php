@@ -83,6 +83,35 @@ class Core extends QrCode\Core
 
     }
 
+    public function buildQrCodeForMerchant(array $input, array $additionalData = null)
+    {
+        $qrCode = (new Entity())->build($input);
+
+        $this->checkFeatureEnabled($input);
+
+        $customer = $this->getCustomerIfGiven($input);
+
+        $terminal = $this->validateAndFetchTerminalIfAvailable($input);
+
+        $qrCode->customer()->associate($customer);
+
+        $qrCode->merchant()->associate($this->merchant);
+
+
+        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($terminal, $qrCode) {
+            return $this->build($qrCode, $terminal);
+        });
+        // Creates entity origin when QR code is created
+        // QR code creation won't be failed even if origin is not set.
+        if(isset($additionalData['oauth_application_id']) === true)
+        {
+            (new EntityOrigin\Core)->createEntityOriginByOauthAppId($qrCode, $additionalData['oauth_application_id']);
+        }
+
+        return $qrCode;
+
+    }
+
     private function build(Entity $qrCode, $terminal = null)
     {
         Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function () use ($terminal, $qrCode)
@@ -366,9 +395,12 @@ class Core extends QrCode\Core
     {
 
         if ((isset($input['vpa']) === false) or
-            ($input['usage'] !== UsageType::MULTIPLE_USE) or
-            ($input[Entity::REQUEST_SOURCE] !== RequestSource::EZETAP))
+            ($input['usage'] !== UsageType::MULTIPLE_USE))
         {
+            $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE, [
+                'message' => 'Terminal not available for the input',
+                'usage' =>  $input['usage'],
+            ]);
             return null;
         }
 
@@ -380,6 +412,10 @@ class Core extends QrCode\Core
         {
             $gateway = 'upi_airtel';
         }
+        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'icici'))
+        {
+            $gateway = 'upi_icici';
+        }
 
         if ($gateway === null)
         {
@@ -390,10 +426,9 @@ class Core extends QrCode\Core
         $terminalDetails[TerminalEntity::MERCHANT_ID]          = $this->merchant->getId();
 
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
-        if (($terminal === null) or
-            ($terminal->isOffline() === false)) // also check static QR type
+        if (empty($terminal) === true || $terminal->isQrV2Terminal() === false)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         }
 
 

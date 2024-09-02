@@ -9,6 +9,8 @@ use Carbon\Carbon;
 
 use RZP\Exception\LogicException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
+use RZP\Models\Terminal\Shared;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order;
@@ -2153,4 +2155,86 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertNull($qrPayment);
     }
 
+
+    public function testSQRCreationViaMerchantQRCreateRouteWithValidOauthAppID()
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        [$application, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+        $this->fixtures->on('live')->merchant->enableMethod(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, 'upi');
+        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes'], Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal',['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $qrCode = $this->createMerchantQrCode(
+            [
+                'merchant_id'        => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'vpa'                => 'rzp.qrTest@icici',
+                'oauth_application_id'         => $application['id'],
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $this->assertEquals('api', $qrCodeEntity['request_source']);
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrTest@icici', $intentParam['pa']);
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+        $this->assertStringContainsString($qrCodeId,$qcc['config_value']);
+        $this->assertStringContainsString(Shared::UPI_ICICI_TERMINAL_DEDICATED,$qcc['config_value']);
+
+        $entityOrigin   = $this->getDbLastEntity('entity_origin','live');
+        $this->assertNotNull($entityOrigin);
+        $this->assertEquals($qrCodeId, $entityOrigin['entity_id']);
+        $this->assertEquals($application['id'], $entityOrigin['origin_id']);
+    }
+
+    public function testSQRCreationViaMerchantQRCreateRouteWithInvalidOauthAppID()
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->createMerchantQrCode(
+            [
+                'merchant_id'        => 'LiveAccountMer',
+                'vpa'                => 'rzp.qrTest@icici',
+                'oauth_application_id'         => 'random',
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $this->assertEquals('api', $qrCodeEntity['request_source']);
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrTest@icici', $intentParam['pa']);
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+        $this->assertStringContainsString($qrCodeId,$qcc['config_value']);
+        $this->assertStringContainsString(Shared::UPI_ICICI_TERMINAL_DEDICATED,$qcc['config_value']);
+
+        $entityOrigin   = $this->getDbLastEntity('entity_origin','live');
+        $this->assertNull($entityOrigin);
+    }
 }

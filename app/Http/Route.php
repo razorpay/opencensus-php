@@ -815,6 +815,7 @@ class Route
         'qr_code_fetch'                            => ['get',      'payments/qr_codes/{id}',                         'QrCodeController@get'                                              ],
         'qr_code_close'                            => ['post',     'payments/qr_codes/{id}/close',                   'QrCodeController@closeQrCode'                                      ],
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
+        'qr_code_merchant_create'                  => ['post',     'payments/merchant/qr_codes',                     'QrCodeController@createQrForMerchant'                              ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
@@ -6824,6 +6825,7 @@ class Route
         'fetch_fund_accounts_vendor_portal_v2',
 
         'expire_keys',
+        'qr_code_merchant_create',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17851,7 +17853,8 @@ class Route
         'upi_payment_service' => [
             'internal_payment_pricing',
             'internal_merchant_risk_notification',
-            'pricing_fetch_plan'
+            'pricing_fetch_plan',
+            'qr_code_merchant_create',
         ],
 
         'emandate_service' => [

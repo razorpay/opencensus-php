@@ -134,6 +134,34 @@ class Core extends Base\Core
         }
     }
 
+    public function createEntityOriginByOauthAppId(Base\PublicEntity $entity, string $oauthAppID)
+    {
+        try
+        {
+            $origin = (new OAuthApp\Repository)->findOrFail($oauthAppID);
+            $entityOrigin = empty($origin) === false  ? $this->build($entity, $origin) : null;
+            if (empty($entityOrigin) === false)
+            {
+                $entityOrigin[Entity::ORIGIN_TYPE] = Constants::APPLICATION;
+                $this->repo->saveOrFail($entityOrigin);
+            }
+
+            return $entityOrigin;
+        }
+        catch (\Throwable $e)
+        {
+            // The payment should not be blocked even if the origin cannot be created. Log an error and proceed.
+            $this->trace->critical(TraceCode::ORIGIN_SET_FAILED,
+                                   [
+                                       'message'           => $e->getMessage(),
+                                       'entity_origin'     => empty($entityOrigin) === false ? $entityOrigin->toArray() : null,
+                                       'stack_trace'       => $e->getTraceAsString(),
+                                   ]);
+            $dimensions = array(Entity::ENTITY_TYPE => $entity->getEntity());
+            $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FAILED_TOTAL, $dimensions);
+        }
+    }
+
     /**
      * @param Base\PublicEntity $entity
      * @param Entity $entityOrigin

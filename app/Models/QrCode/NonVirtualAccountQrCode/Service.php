@@ -8,6 +8,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\QrCode;
+use RZP\Constants\Mode;
 use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -24,6 +25,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\QrPayment\Service as QrPaymentService;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrCodeEntity;
 use RZP\Trace\Tracer;
 
 class Service extends QrCode\Service
@@ -116,6 +118,95 @@ class Service extends QrCode\Service
         $metric->pushCreateLatencyMetrics($input, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
 
         return $qrCode->toArrayPublic();
+    }
+
+    public function createQrForMerchant($input)
+    {
+        $startTimeMs = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::QR_CODE_CREATE_REQUEST, $input);
+
+        $errorMessage = null;
+
+        $metric = new Metric();
+
+        try
+        {
+            $qrCreateReq = [];
+
+            $this->setMerchantContextForQrCreate($input);
+
+            $qrCreateReq = $this->getInputForPartnerSqrCreate($input);
+
+            (new Validator)->validateQrOnDedicatedTerminal($qrCreateReq);
+
+            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($qrCreateReq, $input) {
+                return (new Core)->buildQrCodeForMerchant($qrCreateReq, $input);
+            });
+
+            $this->publishQrCodeEvent($qrCode, Event::CREATED);
+
+            $gateway = $qrCode->getGatewayFromQrString();
+
+            $qrCreateReq[Entity::GATEWAY] = $gateway;
+        }
+        catch (\Exception $ex)
+        {
+            $errorMessage = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, $qrCreateReq);
+
+            throw $ex;
+        }
+        finally
+        {
+            $metric->pushCreateMetrics($qrCreateReq, $errorMessage);
+        }
+
+        $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
+
+        $metric->pushCreateLatencyMetrics($qrCreateReq, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
+
+        return $qrCode->toArrayPublic();
+    }
+
+    protected function setMerchantContextForQrCreate($input)
+    {
+        $mid = $input['merchant_id'];
+        $this->merchant = $this->repo->merchant->find($mid);
+        if (empty($this->merchant))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_FOUND,
+                null,
+                [
+                    'merchant_id' => $mid,
+                ],
+            );
+        }
+        $this->auth->setMerchantById($input['merchant_id']);
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+        $this->mode            = Mode::LIVE;
+    }
+
+    protected function getInputForPartnerSqrCreate($input)
+    {
+
+        if (isset($input['vpa']) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST);
+        }
+
+        $qrCreateReq = [
+                        'usage'        => 'multiple_use',
+                        'type'         => 'upi_qr',
+                        'fixed_amount' => false,
+                        'vpa'          => $input['vpa']
+         ];
+
+        $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = RequestSource::API;
+
+        return $qrCreateReq;
     }
 
     public function createForCheckout($input)

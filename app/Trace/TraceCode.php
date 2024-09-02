@@ -3051,6 +3051,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ERROR_INVALID_ARGUMENT                                = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                                       = 'MISC_TRACE_CODE';
     const QR_CODE_REQUEST_VPA_TERMINAL                          = 'QR_CODE_REQUEST_VPA_TERMINAL';
+    const QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE            = 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE';
     const CAPTCHA_DISABLE                                       = 'CAPTCHA_DISABLE';
     const REFUND_TRANSACTION_FAILED                             = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                            = 'CREDITS_TRANSACTION_FAILED';
@@ -11977,6 +11978,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::RECOVERABLE_EXCEPTION                                 => 'Recoverable exception occurred',
         self::MISC_TRACE_CODE                                       => 'Miscellaneous trace code',
         self::QR_CODE_REQUEST_VPA_TERMINAL                          => 'QR code request vpa terminal fetched',
+        self::QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE            => 'QR code request vpa terminal not available',
         self::ES_BULK_UPDATE_FAILED                                 => 'Failed while bulk updating in ES',
         self::RECON_ALERT                                           => 'Alert raised for reconciliation',
         self::RECON_FILE_SKIP                                       => 'Skipping a reconciliation file',

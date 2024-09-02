@@ -921,13 +921,13 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCreateStaticAirtelQrWithVpaInput(): void
     {
-        // ignore vpa as the request source is not ezetap
+        // don't ignore vpa even if request source is not ezetap
         $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
                 'type'  => 'upi_qr',
-                'vpa'   => 'testvpaOffline@mairtel',
+                'vpa'   => 'testvpa@mairtel',
             ],
             'live',
             'LiveAccountMer');
@@ -1023,9 +1023,9 @@ class UpiAirtelQRCodeTest extends TestCase
 
     }
 
-    public function testCreateOfflineStaticAirtelQrWithOnlineTerminalVpaInput(): void
+    public function testCreateStaticAirtelQrWithOnlineTerminalVpaInput(): void
     {
-        $this->expectException(BadRequestException::class);
+
 
         $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
 
@@ -1041,7 +1041,9 @@ class UpiAirtelQRCodeTest extends TestCase
                          'X-Razorpay-Request-Source' => 'ezetap'
                      ]
         );
-
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('testvpa@mairtel', $intentParam['pa']);
     }
 
     public function testProcessAirtelQrReconInternalWithoutPayment(): void
