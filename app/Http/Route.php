@@ -18292,6 +18292,8 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
+            'merchant_activation_business_categories',
+            'merchant_activation_needs_clarification',
             'fd_create_ticket',
             'care_service_dashboard_proxy',
             'care_service_get_dashboard_proxy',
