@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use App;
+use GuzzleHttp\Client;
 use Request;
 use Throwable;
 use ApiResponse;
@@ -109,15 +110,20 @@ class SplitzService extends Base\Service
     {
         $requestParams = $this->getRequestParams($parameters, $path, $method);
 
+        $client = new Client();
+
         try
         {
             $reqStartAt = millitime();
-            $response = Requests::request(
-                $requestParams['url'],
-                $requestParams['headers'],
-                $requestParams['data'],
-                $requestParams['method'],
-                $requestParams['options']);
+
+            $options = [
+                'headers' => $requestParams['headers'],
+                'body'    => $requestParams['data'],
+                'timeout' => $requestParams['options']['timeout'],
+                'auth'    => $requestParams['options']['auth']
+            ];
+
+            $response = $client->request($requestParams['method'], $requestParams['url'], $options);
 
             $dimensions = [
                 "path"                       => $path,
@@ -174,9 +180,10 @@ class SplitzService extends Base\Service
 
     protected function parseAndReturnResponse($res)
     {
-        $code = $res->status_code;
+        $code = $res->getStatusCode();
 
-        $res = json_decode($res->body, true);
+        $body = $res->getBody()->getContents();
+        $decodedBody = json_decode($body, true);
 
         if (json_last_error() !== JSON_ERROR_NONE)
         {
@@ -187,11 +194,11 @@ class SplitzService extends Base\Service
         {
             $this->trace->error(TraceCode::SPLITZ_REQUEST_FAILED, [
                 'status_code' => $code,
-                'response' => $res
+                'response' => $decodedBody
             ]);
         }
 
-        $splitzResponse = ['status_code' => $code, 'response' => $res];
+        $splitzResponse = ['status_code' => $code, 'response' => $decodedBody];
 
         return $splitzResponse;
     }
