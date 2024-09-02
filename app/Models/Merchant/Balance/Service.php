@@ -550,7 +550,7 @@ class Service extends Base\Service
         {
             app('trace')->info(TraceCode::BALANCE_RETRIEVAL_EVENT,
                 [
-                    'balance'     => $entity->toArray(),
+                    'balance'     => $entity->getId(),
                     'route'       => $route,
                 ]);
 
@@ -566,7 +566,7 @@ class Service extends Base\Service
         {
             app('trace')->info(TraceCode::BALANCE_SAVED_EVENT,
                 [
-                    'balance'     => $entity->toArray(),
+                    'balance'     => $entity->getId(),
                     'route'       => $route,
                 ]);
 

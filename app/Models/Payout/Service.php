@@ -87,6 +87,7 @@ use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
+use RZP\Models\Payout\BulkIdempotencyKey\Core as BulkIdempotencyKeyCore;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use Throwable;
 
@@ -2790,6 +2791,128 @@ class Service extends Base\Service
         {
             $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
 
+            $batchPayoutIdempotencyKeyRolloutV2 = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT_V2,
+                $this->mode);
+
+            $this->trace->info(
+                TraceCode::BULK_PAYOUTS_IKEY_ROLLOUT_EXPERIMENT,
+                [
+                    'feature'        => RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT_V2,
+                    'output'         => $batchPayoutIdempotencyKeyRolloutV2
+                ]);
+
+            if (strtolower($batchPayoutIdempotencyKeyRolloutV2) === 'on')
+            {
+                $mutex->acquireAndRelease(
+                    "batch_payout_" . $this->merchant->getId() . "_" . $idempotencyKey,
+                    function() use ($item, $input, $idempotencyKey, $batchId, $validator, $payoutBatch, $createDuplicate)
+                    {
+                        try
+                        {
+                            $existingPayoutResult = (new BulkIdempotencyKeyCore())->getBulkIdempotencyKeyFromPayoutServiceLast24Hours($this->merchant->getId(), $idempotencyKey);
+
+                            if ($existingPayoutResult !== null)
+                            {
+                                $existingPayoutID = $existingPayoutResult['source_id'];
+
+                                $this->trace->info(
+                                    TraceCode::BULK_PAYOUTS_EXISTING_PAYOUT_RETRIEVED_V2,
+                                    [
+                                        Entity::PAYOUT_ID => $existingPayoutID,
+                                        'batch_id'        => $batchId,
+                                        'input'           => $item
+                                    ]);
+
+                                $this->existingBulkPayoutBehaviour($existingPayoutID, $idempotencyKey, $batchId, $payoutBatch, $item);
+
+                                $this->trace->count(Metric::BULK_PAYOUTS_DUPLICATE_IKEY);
+                            }
+                            else
+                            {
+                                (new BulkIdempotencyKeyCore())->setPayoutServiceBulkIdempotencyKey($this->merchant->getId(), $idempotencyKey, $batchId);
+
+                                $this->newBulkPayoutBehaviour($item, $idempotencyKey, $batchId, $payoutBatch, $createDuplicate);
+                            }
+                        }
+                        catch (Exception\BaseException $exception)
+                        {
+                            $this->trace->traceException($exception,
+                                                         Trace::INFO,
+                                                         TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                            );
+
+                            // get the PayoutID from the request context and upsert to Payout Service DB
+                            $payoutID = $this->app['request']->input($idempotencyKey . '_payout_id', null);
+
+                            if ($payoutID != null)
+                            {
+                                (new BulkIdempotencyKeyCore())->upsertBulkIdempotencyKeyIntoPayoutServiceDB($idempotencyKey, $this->merchant->getId(), $payoutID, Entity::PAYOUT);
+
+                            }
+
+                            $exceptionData = [
+                                Entity::BATCH_ID        => $batchId,
+                                Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                                'error'                 => [
+                                    Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                                    Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                                ],
+                                Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                            ];
+
+                            if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH))
+                            {
+                                (new PayoutsBatch\Core())
+                                    ->pushWebhookForPayoutCreationFailure($exceptionData, $item, $this->merchant);
+                            }
+
+                            $payoutBatch->push($exceptionData);
+
+                            $this->trace->count(Metric::BULK_PAYOUTS_PROCESSING_BAD_REQUEST_ERROR, [
+                                Constants\Metric::LABEL_ERROR_CODE => $exception->getCode(),
+                            ]);
+                        }
+                        catch (\Throwable $throwable)
+                        {
+                            $this->trace->traceException($throwable,
+                                                         Trace::CRITICAL,
+                                                         TraceCode::BATCH_SERVICE_BULK_EXCEPTION
+                            );
+
+                            $exceptionData = [
+                                Entity::BATCH_ID        => $batchId,
+                                Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                                'error'                 => [
+                                    Error::DESCRIPTION       => $throwable->getMessage(),
+                                    Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                                ],
+                                Error::HTTP_STATUS_CODE => 500,
+                            ];
+
+                            // get the PayoutID from the request context and upsert to Payout Service DB
+                            $payoutID = $this->app['request']->input($idempotencyKey . '_payout_id', null);
+
+                            if ($payoutID != null)
+                            {
+                                (new BulkIdempotencyKeyCore())->upsertBulkIdempotencyKeyIntoPayoutServiceDB($idempotencyKey, $this->merchant->getId(), $payoutID, Entity::PAYOUT);
+
+                            }
+
+                            $payoutBatch->push($exceptionData);
+
+                            $this->trace->count(Metric::BULK_PAYOUTS_INTERNAL_SERVER_ERROR, [
+                                Constants\Metric::LABEL_ERROR_CODE => $throwable->getCode(),
+                            ]);
+                        }
+                    },
+                    $mutexLockTimeout,
+                    ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+
+                continue;
+            }
+
             $batchPayoutIdempotencyKeyRollout = $this->app->razorx->getTreatment(
                 $this->merchant->getId(),
                 RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT,
@@ -2987,6 +3110,15 @@ class Service extends Base\Service
                                                                                  $batchId
                             );
 
+                            (new BulkIdempotencyKeyCore())->setPayoutServiceBulkIdempotencyKey(
+                                $this->merchant->getId(),
+                                $idempotencyKey,
+                                $batchId,
+                                [
+                                    Entity::SOURCE_ID       => $payout->getId(),
+                                    Entity::SOURCE_TYPE     => Entity::PAYOUT,
+                                ]);
+
                             $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
 
                             $payoutBatch->push($payoutArr);
@@ -2998,6 +3130,21 @@ class Service extends Base\Service
                                                      Trace::INFO,
                                                      TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
                         );
+
+                        // get the PayoutID from the request context and upsert to Payout Service DB
+                        $payoutID = $this->app['request']->input($idempotencyKey . '_payout_id', null);
+
+                        if ($payoutID != null)
+                        {
+                            (new BulkIdempotencyKeyCore())->setPayoutServiceBulkIdempotencyKey(
+                                $this->merchant->getId(),
+                                $idempotencyKey,
+                                $batchId,
+                                [
+                                    Entity::SOURCE_ID       => $payoutID,
+                                    Entity::SOURCE_TYPE     => Entity::PAYOUT,
+                                ]);
+                        }
 
                         $exceptionData = [
                             Entity::BATCH_ID        => $batchId,
@@ -3028,6 +3175,21 @@ class Service extends Base\Service
                                                      TraceCode::BATCH_SERVICE_BULK_EXCEPTION
                         );
 
+                        // get the PayoutID from the request context and upsert to Payout Service DB
+                        $payoutID = $this->app['request']->input($idempotencyKey . '_payout_id', null);
+
+                        if ($payoutID != null)
+                        {
+                            (new BulkIdempotencyKeyCore())->setPayoutServiceBulkIdempotencyKey(
+                                $this->merchant->getId(),
+                                $idempotencyKey,
+                                $batchId,
+                                [
+                                    Entity::SOURCE_ID       => $payoutID,
+                                    Entity::SOURCE_TYPE     => Entity::PAYOUT,
+                                ]);
+                        }
+
                         $exceptionData = [
                             Entity::BATCH_ID        => $batchId,
                             Entity::IDEMPOTENCY_KEY => $idempotencyKey,
@@ -3053,6 +3215,69 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_RESPONSE, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
+    }
+
+    public function existingBulkPayoutBehaviour($existingPayoutID, string $idempotencyKey, string $batchId, Base\PublicCollection $payoutBatch, array $item)
+    {
+            $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
+                               [
+                                   'payout_id'              => $existingPayoutID,
+                                   Entity::IDEMPOTENCY_KEY  => $item[Entity::IDEMPOTENCY_KEY],
+                               ]);
+
+                $exceptionData = [
+                    Entity::BATCH_ID        => $batchId,
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => 'Duplicate Payout with same idempotency key found: ' . $existingPayoutID,
+                        Error::PUBLIC_ERROR_CODE => ErrorCode::BAD_REQUEST_ERROR,
+                    ],
+                    Error::HTTP_STATUS_CODE => 400,
+                ];
+
+                if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH))
+                {
+                    (new PayoutsBatch\Core())
+                        ->pushWebhookForPayoutCreationFailure($exceptionData, $item, $this->merchant);
+                }
+
+                $payoutBatch->push($exceptionData);
+    }
+
+    public function newBulkPayoutBehaviour(array $item, string $idempotencyKey, string $batchId, Base\PublicCollection $payoutBatch, $createDuplicate)
+    {
+        $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+        $fundAccount = null;
+
+        //
+        // Check if fund_id is present in input and exists in DB
+        // If yes skip contact and fund_account creation step
+        //
+        if (empty($fundAccountId) === false)
+        {
+            $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
+        }
+        else
+        {
+            $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
+
+            $fundAccount = $this->fundAccountService->createFundAcccount($item,
+                                                                         $contact,
+                                                                         $batchId,
+                                                                         $createDuplicate);
+        }
+
+        $payout = $this->processEntryForPayoutForFundAccount($item,
+                                                             $fundAccount,
+                                                             $batchId
+        );
+
+        (new BulkIdempotencyKeyCore())->upsertBulkIdempotencyKeyIntoPayoutServiceDB($idempotencyKey, $this->merchant->getId(), $payout->getId(), Entity::PAYOUT);
+
+        $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+        $payoutBatch->push($payoutArr);
     }
 
     public function createAppFrameworkMerchantMapping()

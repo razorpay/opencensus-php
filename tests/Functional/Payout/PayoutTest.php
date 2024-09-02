@@ -42630,6 +42630,79 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreateBulkPayoutWithFundAccountVPAHappyFlowIdempotencyKey()
+    {
+        $fundAccountID = '100000000003fa';
+        $vpaAccountID = '100000000003va';
+        $payoutID      = 'OjvVvegOgYTest';
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $currentTestData = $this->testData[__FUNCTION__];
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $createdAt = Carbon::now(Timezone::IST)->subHours(11)->getTimestamp();
+
+        $vpaAddress = $currentTestData['request']['content'][0]['fund']['account_vpa'];
+
+        // create VPA entry
+        $this->fixtures->create(
+            'vpa',
+            [
+                'id'          => $vpaAccountID,
+                'merchant_id' => '10000000000000',
+                'username'    => explode('@', $vpaAddress)[0],
+                'handle'      => explode('@', $vpaAddress)[1],
+                'entity_type' => 'contact',
+            ]
+        );
+
+        $this->fixtures->create('fund_account', [
+            'id'           => $fundAccountID,
+            'source_type'  => 'contact',
+            'source_id'    => $contact->getId(),
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'vpa',
+            'account_id'   => $vpaAccountID,
+        ]);
+
+        $this->fixtures->create('payout', [
+            'id'              => $payoutID,
+            'merchant_id'     => '10000000000000',
+            'fund_account_id' => $fundAccountID,
+            'status'          => 'processed',
+            'transaction_id'  => null,
+            'utr'             => '211708954836',
+            'amount'          => 1000,
+            'channel'         => 'yesbank',
+            'mode'            => 'IMPS',
+            'pricing_rule_id' => 'Bbg7fgaDwax04u',
+            'idempotency_key' => 'batch_111',
+            'created_at'      => $createdAt,
+        ]);
+
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT_V2  => 'on'], 'control');
+
+        $this->startTest();
+
+        $ikeyData = \DB::connection('live')->select("select * from ps_bulk_idempotency_keys where idempotency_key = 'batch_abc123' and merchant_id = '10000000000000'")[0];
+
+        $payout = $this->getDbLastEntity('payout');
+
+        self::assertEquals($payout->id, $ikeyData->source_id);
+    }
+
     public function testCreateBulkPayoutWithFundAccountWalletHappyFlow()
     {
         $fundAccountID   = '100000000003fa';
@@ -42758,6 +42831,70 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['response']['content']['items'][0]['error']['description'] = $existingErrorDescription . $payoutID;
 
         $this->setMockRazorxTreatment([RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT  => 'on'], 'control');
+
+        $this->startTest();
+    }
+
+    public function testCreateBulkPayoutWithFundAccountWalletUnHappyFlowPSIKeyConflict()
+    {
+        $fundAccountID   = '100000000003fa';
+        $walletAccountID = '100000000003va';
+        $payoutID        = 'OjvVvegOgYTest';
+
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $currentTestData = $this->testData[__FUNCTION__];
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $createdAt = Carbon::now(Timezone::IST)->subHours(11)->getTimestamp();
+
+        $vpaAddress = $currentTestData['request']['content'][0]['fund']['account_vpa'];
+
+        $this->fixtures->create('wallet_account', [
+            'id' => $walletAccountID,
+            "entity_id"   => $contact->getId(),
+            "entity_type" => "contact",
+            'phone'       => '+919999999999',
+            'provider'    => 'amazonpay'
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => $fundAccountID,
+            'source_type'  => 'contact',
+            'source_id'    => $contact->getId(),
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'wallet_account',
+            'account_id'   => $walletAccountID,
+        ]);
+
+        $iKeyData = [
+            'id'              => "randomid111111",
+            'source_id'       => $payoutID,
+            'source_type'     => 'payout',
+            'merchant_id'     => '10000000000000',
+            'created_at'      => $createdAt,
+            'updated_at'      => $createdAt,
+            'batch_id'        => 'C0zv9I46W4wiOq',
+            'idempotency_key' => 'batch_abc123',
+        ];
+
+        $existingErrorDescription = $this->testData[__FUNCTION__]['response']['content']['items'][0]['error']['description'];
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['error']['description'] = $existingErrorDescription . $payoutID;
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT_V2  => 'on'], 'control');
+
+        \DB::connection('live')->table('ps_bulk_idempotency_keys')->insert($iKeyData);
 
         $this->startTest();
     }

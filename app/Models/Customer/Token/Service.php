@@ -2323,16 +2323,18 @@ class Service extends Base\Service
 
            $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($merchantId);
 
-            $existingCustomer = $this->repo->customer->findByContactAndMerchant(
-                $input[TokenEntity::CUSTOMER_PHONE_NUMBER], $merchantPushProvisioning);
+//            $existingCustomer = $this->repo->customer->findByContactAndMerchant(
+//                $input[TokenEntity::CUSTOMER_PHONE_NUMBER], $merchantPushProvisioning);
+//
+//            $customer = $existingCustomer;
+//            if ($existingCustomer === null) {
+//                $customer = (new Customer\Core)->createLocalCustomer([
+//                    Customer\Entity::CONTACT => $input[TokenEntity::CUSTOMER_PHONE_NUMBER],
+//                ], $merchantPushProvisioning, false);
+//
+//            }
 
-            $customer = $existingCustomer;
-            if ($existingCustomer === null) {
-                $customer = (new Customer\Core)->createLocalCustomer([
-                    Customer\Entity::CONTACT => $input[TokenEntity::CUSTOMER_PHONE_NUMBER],
-                ], $merchantPushProvisioning, false);
-
-            }
+            $customer = $this->getCustomerByMerchantTypeRupayPP($input);
 
             $cardInput = [
                     Card\Entity::NUMBER           => $input['card']['number'],
@@ -2361,7 +2363,7 @@ class Service extends Base\Service
             ]);
             $this->core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
             $token->setUsedAt(Carbon::now()->getTimestamp());
-
+            $token->setSource("issuer");
             [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens] = $this->core->migrateToTokenizedCard($token, $cardInput, null,false,null,$pushprovmetadata);
             $this->manualTriggerMerchantWebhook($token, $serviceProviderTokens);
 
@@ -2382,5 +2384,26 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function getCustomerByMerchantTypeRupayPP($input) {
+
+        $merchantForCustomerCreation = $this->merchant;
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING, $this->mode);
+
+        if(strtolower($variant) === 'on')
+            $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
+
+        $customer =  (new Customer\Core)->createLocalCustomer([
+            Customer\Entity::CONTACT       => $input[TokenEntity::CUSTOMER_PHONE_NUMBER],
+        ], $merchantForCustomerCreation, false);
+
+        $this->trace->info(
+            TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
+            'variant' => $variant,
+            'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
+            'customer' => $customer['id']]);
+        return $customer;
     }
 }

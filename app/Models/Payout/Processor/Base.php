@@ -2636,6 +2636,12 @@ class Base extends BaseCore
 
         $this->trace->info(TraceCode::PAYOUT_CREATE_REQUEST_PROCESSED, $payout->toArray());
 
+        // assign value as payout_id and idempotency_key or if ikey not present assign payout_id
+
+        $payoutIDContextKey = $payout->getIdempotencyKey() === null ? 'payout_id' : $payout->getIdempotencyKey() . '_payout_id';
+
+        $this->app['request']->merge([$payoutIDContextKey => $payout->getId()]);
+
         return $payout;
     }
 

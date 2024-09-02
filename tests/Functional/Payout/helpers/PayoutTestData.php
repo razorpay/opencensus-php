@@ -17390,6 +17390,83 @@ return [
         ],
     ],
 
+    'testCreateBulkPayoutWithFundAccountVPAHappyFlowIdempotencyKey' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount_in_rupees'      => '10.23',
+                        'currency'              => 'INR',
+                        'mode'                  => 'UPI',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'vpa',
+                        'account_name'          => '',
+                        'account_IFSC'          => '',
+                        'account_number'        => '',
+                        'account_vpa'           => 'hello@okaxisbank'
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+            ]
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 1,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'vpa',
+                            'vpa'                   => [
+                                'username'          => 'hello',
+                                'handle'            => 'okaxisbank',
+                                'address'           => 'hello@okaxisbank',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 1023,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 1613,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 1613,
+                            'balance'               => 9998387
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => 'MerchantUser01',
+                        'mode'                      => 'UPI',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testCreateBulkPayoutWithFundAccountWalletHappyFlow' => [
         'request'   => [
             'url'     => '/payouts/bulk',
@@ -17467,6 +17544,59 @@ return [
         ],
     ],
       'testCreateBulkPayoutWithFundAccountWalletUnHappyFlow' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount_in_rupees'      => '10.23',
+                        'currency'              => 'INR',
+                        'mode'                  => 'amazonpay',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'wallet',
+                        'account_name'          => '',
+                        'account_IFSC'          => '',
+                        'account_number'        => '',
+                        'account_vpa'           => '',
+                        'account_phone_number'  => '9999999999' ,
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+            ]
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 1,
+                'items'                             => [
+                    [
+                        'batch_id'                  => 'C0zv9I46W4wiOq',
+                        'idempotency_key'           => 'batch_abc123',
+                        'error'                     => [
+                            'description'           => 'Duplicate Payout with same idempotency key found: ',
+                            'code'                  => 'BAD_REQUEST_ERROR',
+                        ],
+                        'http_status_code'          => 400,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateBulkPayoutWithFundAccountWalletUnHappyFlowPSIKeyConflict' => [
         'request'   => [
             'url'     => '/payouts/bulk',
             'method'  => 'POST',

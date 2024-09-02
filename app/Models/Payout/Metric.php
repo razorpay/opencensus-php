@@ -50,6 +50,7 @@ final class Metric
     const PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED    = 'payout_to_cards_vault_token_deletion_retries_exhausted';
     const SUB_ACCOUNT_PAYOUT_TYPE_SET_TOTAL                         = 'sub_account_payout_type_set_total';
     const BULK_PAYOUTS_INTERNAL_SERVER_ERROR                        = 'bulk_payouts_internal_server_error';
+    const BULK_PAYOUTS_DUPLICATE_IKEY                               = 'bulk_payouts_duplicate_ikey';
     const BULK_PAYOUTS_PROCESSING_BAD_REQUEST_ERROR                 = 'bulk_payouts_processing_bad_request_error';
     const RBL_VIRTUAL_ACCOUNT_BANKING_JOB_FAILURES_COUNT            = 'rbl_virtual_account_banking_job_failures_count';
     const RBL_VIRTUAL_ACCOUNT_BANKING_DISPATCH_FAILURE_COUNT        = 'rbl_virtual_account_banking_dispatch_failure_count';

@@ -29,6 +29,7 @@ class Table
     const BATCH                        = 'batches';
     const DEVICE                       = 'devices';
     const PAYOUT                       = 'payouts';
+    const BULK_IDEMPOTENCY_KEYS        = 'bulk_idempotency_keys';
     const PAYOUT_OUTBOX                = 'payout_outbox';
     const LEDGER_OUTBOX                = 'ledger_outbox';
     const REFUND                       = 'refunds';

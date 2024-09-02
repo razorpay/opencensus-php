@@ -148,6 +148,8 @@ class Entity extends Base\PublicEntity
 
     const ERROR                  = 'error';
 
+    const SOURCE_ID   = 'source_id';
+
     // to send reason and description for queued state
     const QUEUEING_DETAILS       = 'queueing_details';
 

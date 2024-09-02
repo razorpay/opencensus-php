@@ -1033,7 +1033,7 @@ class Service extends Base\Service
 
             app('trace')->info(TraceCode::TRANSACTIONS_RETRIEVAL_EVENT,
                 [
-                    'transaction' => $entity->toArray(),
+                    'transaction' => $entity->getId(),
                     'route'       => $route,
                 ]);
 
@@ -1064,7 +1064,7 @@ class Service extends Base\Service
 
             app('trace')->info(TraceCode::TRANSACTIONS_SAVED_EVENT,
                 [
-                    'transaction' => $entity->toArray(),
+                    'transaction' => $entity->getId(),
                     'route'       => $route,
                 ]);
 

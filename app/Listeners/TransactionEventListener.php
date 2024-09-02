@@ -12,18 +12,25 @@ class TransactionEventListener
 {
     public function onRetrieved(Transaction\EventRetrieved $event)
     {
-        if (app()->runningUnitTests() === true)
+        if ((app()->runningUnitTests() === true) or (app()->runningInQueue() === true))
         {
             return;
         }
 
         try
         {
-            $requestCtx = app('request.ctx');
+            if (app()->runningInQueue() === true)
+            {
+                $workerCtx = app('worker.ctx');
 
-            $workerCtx = app('worker.ctx');
+                $isDualWriteFlow = $workerCtx->getLedgerDualWriteFlow();
+            }
+            else
+            {
+                $requestCtx = app('request.ctx');
 
-            $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow() OR $workerCtx->getLedgerDualWriteFlow();
+                $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow();
+            }
 
             $input = [
                 'event_name'                => 'onRetrieved',
@@ -33,7 +40,9 @@ class TransactionEventListener
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
 
-            TransactionBalanceReadWriteLoggingJob::dispatch($input, $this->getMode());
+            $mode = $this->getMode();
+
+            TransactionBalanceReadWriteLoggingJob::dispatch($input, $mode);
         }
         catch (\Throwable $e)
         {
@@ -43,18 +52,25 @@ class TransactionEventListener
 
     public function onSaved(Transaction\EventSaved $event)
     {
-        if (app()->runningUnitTests() === true)
+        if ((app()->runningUnitTests() === true) or (app()->runningInQueue() === true))
         {
             return;
         }
 
         try
         {
-            $requestCtx = app('request.ctx');
+            if (app()->runningInQueue() === true)
+            {
+                $workerCtx = app('worker.ctx');
 
-            $workerCtx = app('worker.ctx');
+                $isDualWriteFlow = $workerCtx->getLedgerDualWriteFlow();
+            }
+            else
+            {
+                $requestCtx = app('request.ctx');
 
-            $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow() OR $workerCtx->getLedgerDualWriteFlow();
+                $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow();
+            }
 
             $input = [
                 'event_name'                => 'onSaved',
@@ -64,7 +80,9 @@ class TransactionEventListener
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
 
-            TransactionBalanceReadWriteLoggingJob::dispatch($input, $this->getMode());
+            $mode = $this->getMode();
+
+            TransactionBalanceReadWriteLoggingJob::dispatch($input, $mode);
         }
         catch (\Throwable $e)
         {

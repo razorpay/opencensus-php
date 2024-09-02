@@ -33,7 +33,7 @@ class Repository extends Base\Repository
 
     public function fetchOldOutboxEntriesForRetry($limit, $startTimestamp, $endTimestamp)
     {
-        return  $this->newQueryWithConnection($this->getSlaveConnection())
+        return  $this->newQuery()
             ->from(\DB::raw('`ledger_outbox`'))
             ->where(Entity::IS_DELETED, '=', false)
             ->where(Entity::CREATED_AT, '>=', $startTimestamp)
@@ -53,7 +53,7 @@ class Repository extends Base\Repository
 
     public function fetchOldOutboxEntriesForRetryByEntityType($limit, $startTimestamp, $endTimestamp, $entityType, $maxRetryCount)
     {
-        return  $this->newQueryWithConnection($this->getSlaveConnection())
+        return  $this->newQuery()
             ->from(\DB::raw('`ledger_outbox`'))
             ->where(Entity::ENTITY_TYPE, '=', $entityType)
             ->where(Entity::IS_DELETED, '=', false)
