@@ -697,15 +697,17 @@ const ProviderView = (props) => {
                     View detailed provider settings
                   </Button>
                 )}
-                <Button
-                  variant="secondary"
-                  onClick={restartIntegrationTesting}
-                  marginTop="spacing.5"
-                  display="block"
-                  isFullWidth={true}
-                >
-                  Restart integration testing
-                </Button>
+                {provider?.integration_audit && (
+                  <Button
+                    variant="secondary"
+                    onClick={restartIntegrationTesting}
+                    marginTop="spacing.5"
+                    display="block"
+                    isFullWidth={true}
+                  >
+                    Restart integration testing
+                  </Button>
+                )}
               </CardBody>
             </Card>
           </Box>
