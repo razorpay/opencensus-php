@@ -67,6 +67,9 @@ importers:
       '@playwright/test':
         specifier: 1.45.3
         version: 1.45.3
+      '@reportportal/agent-js-playwright':
+        specifier: 5.1.4
+        version: 5.1.4
       '@rollup/plugin-url':
         specifier: ^7.0.0
         version: 7.0.0(rollup@1.31.0)
@@ -312,6 +315,9 @@ importers:
       '@babel/plugin-proposal-function-bind':
         specifier: 7.8.3
         version: 7.8.3(@babel/core@7.17.8)
+      '@playwright/test':
+        specifier: 1.45.3
+        version: 1.45.3
       '@tanstack/query-core':
         specifier: 4.33.0
         version: 4.33.0
@@ -442,6 +448,9 @@ importers:
       '@babel/plugin-proposal-function-bind':
         specifier: 7.8.3
         version: 7.8.3(@babel/core@7.17.8)
+      '@playwright/test':
+        specifier: 1.45.3
+        version: 1.45.3
       '@tanstack/query-core':
         specifier: 4.33.0
         version: 4.33.0
@@ -674,7 +683,7 @@ importers:
         version: 4.0.9(@razorpay/i18nify-js@1.12.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 18.5.1
-        version: 18.5.1(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+        version: 18.5.1(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.47.0))(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
       '@razorpay/universe-utils':
         specifier: 11.1.3
         version: 11.1.3(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
@@ -955,6 +964,9 @@ importers:
       '@babel/register':
         specifier: 7.10.4
         version: 7.10.4(@babel/core@7.17.8)
+      '@playwright/test':
+        specifier: 1.45.3
+        version: 1.45.3
       '@pmmmwh/react-refresh-webpack-plugin':
         specifier: 0.5.10
         version: 0.5.10(@types/webpack@4.41.38)(react-refresh@0.14.0)(sockjs-client@1.6.1)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1)(webpack@5.76.0)
@@ -972,7 +984,7 @@ importers:
         version: 6.3.1(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@storybook/addon-storyshots':
         specifier: 6.2.9
-        version: 6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)
+        version: 6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)
       '@storybook/addon-viewport':
         specifier: 6.3.1
         version: 6.3.1(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -1155,7 +1167,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -3738,6 +3750,7 @@ packages:
 
   '@razorpay/blade-old@2.0.0':
     resolution: {integrity: sha512-03W5axR2eCcbhICd88mAeVAkPZhkVW0ggGv2CKHITv+87h3TwOOd0r4RfYO5vCAv8sPV/ITLafvMEkSxq1TfyQ==, tarball: https://npm.pkg.github.com/download/@razorpay/blade-old/2.0.0/68b14897411fda34b00a9151401c7140d92ce99c}
+    engines: {node: '>=12.19.0'}
     hasBin: true
     peerDependencies:
       prop-types: ^15.7.2
@@ -3869,6 +3882,7 @@ packages:
 
   '@razorpay/universe-pack@4.0.5':
     resolution: {integrity: sha512-RjvHkUCwGHCOZ2U3+RuR7Ef7mwYIQthLyn6vF6FNvko/ZWugpURUENLjZFl10yMyauecTPFJlSfvDxlqJEg7Cg==, tarball: https://npm.pkg.github.com/download/@razorpay/universe-pack/4.0.5/0e0725991c35c6c373ec82b9b7a75880dc8a1513}
+    engines: {node: '>=14.0.0'}
     hasBin: true
 
   '@razorpay/universe-pack@9.0.1':
@@ -3904,6 +3918,7 @@ packages:
 
   '@razorpay/universe-utils@4.3.0':
     resolution: {integrity: sha512-ZFlvniymZrlOiNOJXJ6b6s0EjQF7lUt9IGnscxF/oThJCAuuWVLpsCwQxn9WsuhhsnXn74yh/eDfbj+1VUbDQA==, tarball: https://npm.pkg.github.com/download/@razorpay/universe-utils/4.3.0/c0cf9c10868866957673514ba3b4dcff48814bc5}
+    engines: {node: '>=14.0.0'}
     peerDependencies:
       react: ^17.0.1
       react-native: ^0.66.1
@@ -7160,9 +7175,6 @@ packages:
   babel-code-frame@6.26.0:
     resolution: {integrity: sha512-XqYMR2dfdGMW+hd0IUZ2PwK+fGeFkOxZJ0wY+JaQAHzt1Zx8LcvpiZD2NiGkEG8qx0CfkAOr5xt76d1e8vG90g==}
 
-  babel-core@6.26.3:
-    resolution: {integrity: sha512-6jyFLuDmeidKmUEb3NM+/yawG0M2bDZ9Z1qbZP59cyHLz8kYGKYwpJP0UwUKKUiTRNvxfLesJnTedqczP7cTDA==}
-
   babel-core@7.0.0-bridge.0:
     resolution: {integrity: sha512-poPX9mZH/5CSanm50Q+1toVci6pv5KSRv/5TWCwtzQS5XEwn40BcCrgIeMFWP9CKKIniKXNxoIOnOq4VVlGXhg==}
     peerDependencies:
@@ -7174,12 +7186,6 @@ packages:
     deprecated: babel-eslint is now @babel/eslint-parser. This package will no longer receive updates.
     peerDependencies:
       eslint: '>= 4.12.1'
-
-  babel-generator@6.26.1:
-    resolution: {integrity: sha512-HyfwY6ApZj7BYTcJURpM5tznulaBvyio7/0d4zFOeMPUmfxkCjHocCuoLa2SAGzBI8AREcH3eP3758F672DppA==}
-
-  babel-helpers@6.24.1:
-    resolution: {integrity: sha512-n7pFrqQm44TCYvrCDb0MqabAF+JUBq+ijBvNMUxpkLjJaAu32faIexewMumrH5KLLJ1HDyT0PTEqRyAe/GwwuQ==}
 
   babel-jest@26.2.2:
     resolution: {integrity: sha512-JmLuePHgA+DSOdOL8lPxCgD2LhPPm+rdw1vnxR73PpIrnmKCS2/aBhtkAcxQWuUcW2hBrH8MJ3LKXE7aWpNZyA==}
@@ -7404,9 +7410,6 @@ packages:
 
   babel-preset-next@1.4.0:
     resolution: {integrity: sha512-+86BkjiV3eGyXg61QLE33KCtXna/ZGoYxGDFhtr9Nqd2tdt+gLIqQrz0NXtZW2vU5RMVISqZEKhrxPK/tFOWEg==}
-
-  babel-register@6.26.0:
-    resolution: {integrity: sha512-veliHlHX06wjaeY8xNITbveXSiI+ASFnOqvne/LaIJIqOWi2Ogmj91KOugEz/hoh/fwMhXNBJPCv8Xaz5CyM4A==}
 
   babel-runtime@6.26.0:
     resolution: {integrity: sha512-ITKNuq2wKlW1fJg9sSW52eepoYgZBggvOAHC0u/CYu/qxQ9EVzThCgR69BnSXLHjy2f7SY5zaQ4yt7H9ZVxY2g==}
@@ -9209,10 +9212,6 @@ packages:
 
   detect-file@1.0.0:
     resolution: {integrity: sha512-DtCOLG98P007x7wiiOmfI0fi3eIKyWiLTGJ2MDnVi/E04lWGbf+JzrRHMm0rgIIZJGtHpKpbVgLWHrv8xXpc3Q==}
-    engines: {node: '>=0.10.0'}
-
-  detect-indent@4.0.0:
-    resolution: {integrity: sha512-BDKtmHlOzwI7iRuEkhzsnPoi5ypEhWAJB5RvHWe1kMr06js3uK5B3734i3ui5Yd+wOJV1cpE4JnivPD283GU/A==}
     engines: {node: '>=0.10.0'}
 
   detect-indent@6.1.0:
@@ -11334,10 +11333,6 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  home-or-tmp@2.0.0:
-    resolution: {integrity: sha512-ycURW7oUxE2sNiPVw1HVEFsW+ecOpJ5zaj7eC0RlwhibhRBod20muUN8qu/gzx956YrLolVvs1MTXwKgC2rVEg==}
-    engines: {node: '>=0.10.0'}
-
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
@@ -12887,10 +12882,6 @@ packages:
 
   jsesc@0.5.0:
     resolution: {integrity: sha512-uZz5UnB7u4T9LvwmFqXii7pZSouaRPorGs5who1Ip7VO0wxanFvBL7GkM6dTHlgX+jhBApRetaWpnDabOeTcnA==}
-    hasBin: true
-
-  jsesc@1.3.0:
-    resolution: {integrity: sha512-Mke0DA0QjUWuJlhsE0ZPPhYiJkRap642SmI/4ztCFaUs6V2AiH1sfecc+57NgaryfAA2VR3v6O+CSjC1jZJKOA==}
     hasBin: true
 
   jsesc@2.5.2:
@@ -15473,10 +15464,6 @@ packages:
     resolution: {integrity: sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==}
     engines: {node: '>=6'}
 
-  private@0.1.8:
-    resolution: {integrity: sha512-VvivMrbvd2nKkiG38qjULzlc+4Vx4wm/whI9pQD35YrARNnhxeiRktSOhSukRLFNlzg6Br/cJPet5J/u19r/mg==}
-    engines: {node: '>= 0.6'}
-
   proc-log@3.0.0:
     resolution: {integrity: sha512-++Vn7NS4Xf9NacaU9Xq3URUuqZETPsf8L4j5/ckhaRYsfPeRyzGw+iDjFhV/Jr3uNmTvvddEJFWh5R1gRgUH8A==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
@@ -17276,10 +17263,6 @@ packages:
     engines: {node: ^14.0.0 || ^16.0.0 || >=18.0.0}
     hasBin: true
 
-  slash@1.0.0:
-    resolution: {integrity: sha512-3TYDR7xWt4dIqV2JauJr+EJeW356RXijHeUlO+8djJ+uBXPn8/2dpzBc8yQhh583sVvc9CvFAeQVgijsH+PNNg==}
-    engines: {node: '>=0.10.0'}
-
   slash@2.0.0:
     resolution: {integrity: sha512-ZYKh3Wh2z1PpEXWr0MpSBZ0V6mZHAQfYevttO11c51CaWjGTaadiKZ+wVt1PbMlDV5qhMFslpZCemhwOK7C89A==}
     engines: {node: '>=6'}
@@ -17389,9 +17372,6 @@ packages:
   source-map-resolve@0.6.0:
     resolution: {integrity: sha512-KXBr9d/fO/bWo97NXsPIAW1bFSBOuCnjbNTBMO7N59hsv5i9yzRDfcYwwt0l04+VqnKC+EwzvJZIP/qkuMgR/w==}
     deprecated: See https://github.com/lydell/source-map-resolve#deprecated
-
-  source-map-support@0.4.18:
-    resolution: {integrity: sha512-try0/JqxPLF9nOjvSta7tVondkP5dwgyLDjVoyMDlmjugT2lRZ1OfsrYTkCd2hkDnJTKRbO/Rl3orm8vlsUzbA==}
 
   source-map-support@0.5.13:
     resolution: {integrity: sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==}
@@ -18351,10 +18331,6 @@ packages:
 
   trim-repeated@1.0.0:
     resolution: {integrity: sha512-pkonvlKk8/ZuR0D5tLW8ljt5I8kmxp2XKymhepUeOdCEfKpZaktSArkLHZt76OB1ZvO9bssUsDty4SWhLvZpLg==}
-    engines: {node: '>=0.10.0'}
-
-  trim-right@1.0.1:
-    resolution: {integrity: sha512-WZGXGstmCWgeevgTL54hrCuw1dyMQIzWy7ZfqRJfSmJZBwklI15egmQytFP6bPidmw3M8d5yEowl1niq4vmqZw==}
     engines: {node: '>=0.10.0'}
 
   trim-trailing-lines@1.1.4:
@@ -25161,12 +25137,12 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  ? '@razorpay/universe-cli@18.5.1(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)'
+  ? '@razorpay/universe-cli@18.5.1(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.27.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)'
   : dependencies:
-      '@razorpay/universe-doctor': 6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
-      '@razorpay/universe-pack': 10.2.30(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)
-      '@razorpay/universe-test': 4.3.31(@babel/core@7.17.8)(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
-      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@razorpay/universe-doctor': 6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@razorpay/universe-pack': 10.2.30(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)
+      '@razorpay/universe-test': 4.3.31(@babel/core@7.17.8)(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
       chalk: 3.0.0
       commander: 6.1.0
       del-cli: 4.0.1
@@ -25215,12 +25191,12 @@ snapshots:
       - zen-observable
       - zenObservable
 
-  ? '@razorpay/universe-cli@18.5.1(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.27.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)'
+  ? '@razorpay/universe-cli@18.5.1(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.47.0))(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)'
   : dependencies:
-      '@razorpay/universe-doctor': 6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
-      '@razorpay/universe-pack': 10.2.30(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)
-      '@razorpay/universe-test': 4.3.31(@babel/core@7.17.8)(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
-      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@razorpay/universe-doctor': 6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.47.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@razorpay/universe-pack': 10.2.30(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)
+      '@razorpay/universe-test': 4.3.31(@babel/core@7.17.8)(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(node-notifier@8.0.2)(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.27.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
       chalk: 3.0.0
       commander: 6.1.0
       del-cli: 4.0.1
@@ -25471,12 +25447,12 @@ snapshots:
       - webpack-cli
       - webpack-sources
 
-  '@razorpay/universe-doctor@6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)':
+  '@razorpay/universe-doctor@6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)':
     dependencies:
       '@commitlint/config-conventional': 16.2.1
       '@commitlint/lint': 16.2.1
-      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.47.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
-      '@react-native-community/eslint-config': 3.2.0(eslint@8.47.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(prettier@2.8.4)(typescript@4.9.3)
+      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.47.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@react-native-community/eslint-config': 3.2.0(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(prettier@2.8.4)(typescript@4.9.3)
       '@rushstack/eslint-patch': 1.1.0
       '@secretlint/secretlint-rule-preset-recommend': 4.1.3
       '@types/react': 17.0.1
@@ -25490,7 +25466,7 @@ snapshots:
       commander: 6.1.0
       danger: 11.2.2(encoding@0.1.13)
       eslint: 8.47.0
-      eslint-config-kentcdodds: 20.4.0(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.47.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(typescript@4.9.3)
+      eslint-config-kentcdodds: 20.4.0(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(typescript@4.9.3)
       eslint-config-next: 13.4.4(eslint@8.47.0)(typescript@4.9.3)
       eslint-config-prettier: 8.5.0(eslint@8.47.0)
       eslint-plugin-ft-flow: 2.0.3(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(eslint@8.47.0)
@@ -25550,12 +25526,12 @@ snapshots:
       - webpack-cli
       - webpack-sources
 
-  '@razorpay/universe-doctor@6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)':
+  '@razorpay/universe-doctor@6.5.27(@babel/core@7.17.8)(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.47.0))(bufferutil@4.0.8)(encoding@0.1.13)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)':
     dependencies:
       '@commitlint/config-conventional': 16.2.1
       '@commitlint/lint': 16.2.1
-      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.47.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
-      '@react-native-community/eslint-config': 3.2.0(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(prettier@2.8.4)(typescript@4.9.3)
+      '@razorpay/universe-utils': 11.8.0(@babel/core@7.17.8)(bufferutil@4.0.8)(encoding@0.1.13)(eslint@8.47.0)(next@14.2.2(@babel/core@7.17.8)(@playwright/test@1.45.3)(babel-plugin-macros@3.1.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)(styled-components@5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))(typescript@4.9.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)(webpack-sources@3.2.3)(webpack@5.76.0)
+      '@react-native-community/eslint-config': 3.2.0(eslint@8.47.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(prettier@2.8.4)(typescript@4.9.3)
       '@rushstack/eslint-patch': 1.1.0
       '@secretlint/secretlint-rule-preset-recommend': 4.1.3
       '@types/react': 17.0.1
@@ -25569,10 +25545,10 @@ snapshots:
       commander: 6.1.0
       danger: 11.2.2(encoding@0.1.13)
       eslint: 8.47.0
-      eslint-config-kentcdodds: 20.4.0(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3)))(typescript@4.9.3)
+      eslint-config-kentcdodds: 20.4.0(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.27.0)(typescript@4.9.3))(eslint-plugin-import@2.29.1)(eslint@8.27.0))(eslint@8.47.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(typescript@4.9.3)
       eslint-config-next: 13.4.4(eslint@8.47.0)(typescript@4.9.3)
       eslint-config-prettier: 8.5.0(eslint@8.47.0)
-      eslint-plugin-ft-flow: 2.0.3(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.27.0))(eslint@8.47.0)
+      eslint-plugin-ft-flow: 2.0.3(@babel/eslint-parser@7.24.1(@babel/core@7.17.8)(eslint@8.47.0))(eslint@8.47.0)
       eslint-plugin-json: 3.1.0
       eslint-plugin-jsx-a11y: 6.6.1(eslint@8.47.0)
       eslint-plugin-prettier: 4.2.1(eslint-config-prettier@8.5.0(eslint@8.47.0))(eslint@8.47.0)(prettier@2.8.4)
@@ -27482,7 +27458,7 @@ snapshots:
   '@react-native-community/eslint-config@3.2.0(eslint@8.47.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(prettier@2.8.4)(typescript@4.9.3)':
     dependencies:
       '@babel/core': 7.17.8
-      '@babel/eslint-parser': 7.24.1(@babel/core@7.17.8)(eslint@8.47.0)
+      '@babel/eslint-parser': 7.24.1(@babel/core@7.17.8)(eslint@8.27.0)
       '@react-native-community/eslint-plugin': 1.3.0
       '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@4.9.3)
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
@@ -28886,7 +28862,7 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@storybook/addon-storyshots@6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)':
+  '@storybook/addon-storyshots@6.2.9(@storybook/react@6.2.9(@babel/core@7.17.8)(@types/react@17.0.39)(@types/webpack@4.41.38)(encoding@0.1.13)(eslint@8.27.0)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(sockjs-client@1.6.1)(typescript@4.9.3)(vue-template-compiler@2.7.16)(webpack-dev-server@4.9.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)(webpack@5.76.0))(webpack-hot-middleware@2.26.1))(@types/react@17.0.39)(encoding@0.1.13)(eslint@8.27.0)(jest@26.6.3(bufferutil@4.0.8)(ts-node@10.9.1(@types/node@17.0.41)(typescript@4.9.3))(utf-8-validate@5.0.10))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(rxjs@7.8.1)(svelte@3.59.2)(typescript@4.9.3)(vue-jest@3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16))(vue-template-compiler@2.7.16)(vue@2.7.16)(webpack@5.76.0)':
     dependencies:
       '@jest/transform': 26.6.2
       '@storybook/addons': 6.2.9(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -28908,7 +28884,7 @@ snapshots:
       regenerator-runtime: 0.13.7
       svelte: 3.59.2
       ts-dedent: 2.2.0
-      vue-jest: 3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16)
+      vue-jest: 3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16)
     optionalDependencies:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
@@ -33524,30 +33500,6 @@ snapshots:
       esutils: 2.0.3
       js-tokens: 3.0.2
 
-  babel-core@6.26.3:
-    dependencies:
-      babel-code-frame: 6.26.0
-      babel-generator: 6.26.1
-      babel-helpers: 6.24.1
-      babel-messages: 6.23.0
-      babel-register: 6.26.0
-      babel-runtime: 6.26.0
-      babel-template: 6.26.0
-      babel-traverse: 6.26.0
-      babel-types: 6.26.0
-      babylon: 6.18.0
-      convert-source-map: 1.9.0
-      debug: 2.6.9(supports-color@6.1.0)
-      json5: 0.5.1
-      lodash: 4.17.21
-      minimatch: 3.1.2
-      path-is-absolute: 1.0.1
-      private: 0.1.8
-      slash: 1.0.0
-      source-map: 0.5.7
-    transitivePeerDependencies:
-      - supports-color
-
   babel-core@7.0.0-bridge.0(@babel/core@7.17.8):
     dependencies:
       '@babel/core': 7.17.8
@@ -33561,24 +33513,6 @@ snapshots:
       eslint: 8.27.0
       eslint-visitor-keys: 1.3.0
       resolve: 1.22.8
-    transitivePeerDependencies:
-      - supports-color
-
-  babel-generator@6.26.1:
-    dependencies:
-      babel-messages: 6.23.0
-      babel-runtime: 6.26.0
-      babel-types: 6.26.0
-      detect-indent: 4.0.0
-      jsesc: 1.3.0
-      lodash: 4.17.21
-      source-map: 0.5.7
-      trim-right: 1.0.1
-
-  babel-helpers@6.24.1:
-    dependencies:
-      babel-runtime: 6.26.0
-      babel-template: 6.26.0
     transitivePeerDependencies:
       - supports-color
 
@@ -34048,18 +33982,6 @@ snapshots:
       babel-plugin-react-require: 3.1.3
     transitivePeerDependencies:
       - '@babel/core'
-      - supports-color
-
-  babel-register@6.26.0:
-    dependencies:
-      babel-core: 6.26.3
-      babel-runtime: 6.26.0
-      core-js: 2.6.12
-      home-or-tmp: 2.0.0
-      lodash: 4.17.21
-      mkdirp: 0.5.6
-      source-map-support: 0.4.18
-    transitivePeerDependencies:
       - supports-color
 
   babel-runtime@6.26.0:
@@ -36390,10 +36312,6 @@ snapshots:
   detect-browser@5.3.0: {}
 
   detect-file@1.0.0: {}
-
-  detect-indent@4.0.0:
-    dependencies:
-      repeating: 2.0.1
 
   detect-indent@6.1.0: {}
 
@@ -39841,11 +39759,6 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  home-or-tmp@2.0.0:
-    dependencies:
-      os-homedir: 1.0.2
-      os-tmpdir: 1.0.2
-
   homedir-polyfill@1.0.3:
     dependencies:
       parse-passwd: 1.0.0
@@ -42037,8 +41950,6 @@ snapshots:
       - utf-8-validate
 
   jsesc@0.5.0: {}
-
-  jsesc@1.3.0: {}
 
   jsesc@2.5.2: {}
 
@@ -45341,8 +45252,6 @@ snapshots:
 
   prismjs@1.29.0: {}
 
-  private@0.1.8: {}
-
   proc-log@3.0.0: {}
 
   process-nextick-args@2.0.1: {}
@@ -47940,8 +47849,6 @@ snapshots:
       nanospinner: 1.1.0
       picocolors: 1.0.0
 
-  slash@1.0.0: {}
-
   slash@2.0.0: {}
 
   slash@3.0.0: {}
@@ -48089,10 +47996,6 @@ snapshots:
     dependencies:
       atob: 2.1.2
       decode-uri-component: 0.2.2
-
-  source-map-support@0.4.18:
-    dependencies:
-      source-map: 0.5.7
 
   source-map-support@0.5.13:
     dependencies:
@@ -48654,7 +48557,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  stylelint-stylus@0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0):
+  stylelint-stylus@0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0):
     dependencies:
       html-tags: 3.3.1
       lodash: 4.17.21
@@ -49313,8 +49216,6 @@ snapshots:
   trim-repeated@1.0.0:
     dependencies:
       escape-string-regexp: 1.0.5
-
-  trim-right@1.0.1: {}
 
   trim-trailing-lines@1.1.4: {}
 
@@ -50088,9 +49989,9 @@ snapshots:
 
   vscode-uri@3.0.8: {}
 
-  vue-jest@3.0.7(babel-core@6.26.3)(vue-template-compiler@2.7.16)(vue@2.7.16):
+  vue-jest@3.0.7(babel-core@7.0.0-bridge.0(@babel/core@7.17.8))(vue-template-compiler@2.7.16)(vue@2.7.16):
     dependencies:
-      babel-core: 6.26.3
+      babel-core: 7.0.0-bridge.0(@babel/core@7.17.8)
       babel-plugin-transform-es2015-modules-commonjs: 6.26.2
       chalk: 2.4.2
       deasync: 0.1.29

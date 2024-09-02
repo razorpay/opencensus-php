@@ -18,7 +18,7 @@ const openPaymentDetails = async (page, paymentId) => {
 test.describe
   .parallel('Payments transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, "test").ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

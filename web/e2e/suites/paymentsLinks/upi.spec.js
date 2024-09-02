@@ -18,84 +18,78 @@ const SELECTORS = {
     '//div[contains(., "Reference Id")]/div[@class="pair-value"]//button[contains(text(), "Change")]',
 };
 
-test.describe.parallel(
-  'Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links',
-  () => {
-    test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
-    });
+test.describe
+  .parallel('Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links', () => {
+  test.use({
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+  });
 
-    test.beforeEach(async ({ page }) => {
-      await page.goto(routes.PAYMENT_LINKS);
-      await clickSkipAndStartBtn({ page });
-    });
+  test.beforeEach(async ({ page }) => {
+    await page.goto(routes.PAYMENT_LINKS);
+    await clickSkipAndStartBtn({ page });
+  });
 
-    // roast test createPaymentLinkv2
-    test('should create UPI PL @priority=critical @suite=nocode-P0-automation', async ({
+  // roast test createPaymentLinkv2
+  test('should create UPI PL @priority=critical @suite=nocode-P0-automation', async ({ page }) => {
+    const productData = upiLinksData.paymentLinkWithAllParams;
+    const referenceId = await createPaymentLink({
       page,
-    }) => {
-      const productData = upiLinksData.paymentLinkWithAllParams;
-      const referenceId = await createPaymentLink({
-        page,
-        productData,
-        type: 'UPI',
-      });
-      console.log('referenceId', referenceId);
-      await searchPLAndOpenDetails({ page, referenceId });
-      await verifyPLCreated({ page, productData, referenceId });
+      productData,
+      type: 'UPI',
     });
+    console.log('referenceId', referenceId);
+    await searchPLAndOpenDetails({ page, referenceId });
+    await verifyPLCreated({ page, productData, referenceId });
+  });
 
-    // roast test cloneUPIPaymentLink
-    test('should clone UPI PL @priority=critical @suite=nocode-P1-automation', async ({ page }) => {
-      const productData = upiLinksData.paymentLinkWithAllParams;
-      const referenceId = await createPaymentLink({
-        page,
-        productData,
-        type: 'UPI',
-      });
-      await searchPLAndOpenDetails({ page, referenceId });
-      await clonePLCreated({ page, productData, referenceId });
-    });
-
-    // roast test cancelUPIPaymentLink
-    test('should cancel UPI PL @priority=critical @suite=nocode-P1-automation', async ({
+  // roast test cloneUPIPaymentLink
+  test('should clone UPI PL @priority=critical @suite=nocode-P1-automation', async ({ page }) => {
+    const productData = upiLinksData.paymentLinkWithAllParams;
+    const referenceId = await createPaymentLink({
       page,
-    }) => {
-      const productData = upiLinksData.paymentLinkWithAllParams;
-      const referenceId = await createPaymentLink({
-        page,
-        productData,
-        type: 'UPI',
-      });
-      await searchPLAndOpenDetails({ page, referenceId });
-      await cancelPLCreated({ page, productData, referenceId });
+      productData,
+      type: 'UPI',
     });
+    await searchPLAndOpenDetails({ page, referenceId });
+    await clonePLCreated({ page, productData, referenceId });
+  });
 
-    // roast test verifyPostCancelUPIPLStatus
-    test('should verify Field Modification Disabled in UPI PL @priority=critical @suite=nocode-P1-automation', async ({
+  // roast test cancelUPIPaymentLink
+  test('should cancel UPI PL @priority=critical @suite=nocode-P1-automation', async ({ page }) => {
+    const productData = upiLinksData.paymentLinkWithAllParams;
+    const referenceId = await createPaymentLink({
       page,
-    }) => {
-      const productData = upiLinksData.paymentLinkWithAllParams;
-      const referenceId = await createPaymentLink({
-        page,
-        productData,
-        type: 'UPI',
-      });
-      await searchPLAndOpenDetails({ page, referenceId });
-      const changeButtonBeforeCancel = await page.locator(SELECTORS.REFERENCE_ID_CHANGE_BTN);
-      await expect(changeButtonBeforeCancel).toBeVisible();
-      await cancelPLCreated({ page, productData, referenceId });
-      const changeButtonAfterCancel = await page.locator(SELECTORS.REFERENCE_ID_CHANGE_BTN);
-      await expect(changeButtonAfterCancel).not.toBeVisible();
+      productData,
+      type: 'UPI',
     });
+    await searchPLAndOpenDetails({ page, referenceId });
+    await cancelPLCreated({ page, productData, referenceId });
+  });
 
-    // roast test searchByPaymentLinkId
-    test('should search UPI PL with payment link id @priority=critical @suite=nocode-P1-automation', async ({
+  // roast test verifyPostCancelUPIPLStatus
+  test('should verify Field Modification Disabled in UPI PL @priority=critical @suite=nocode-P1-automation', async ({
+    page,
+  }) => {
+    const productData = upiLinksData.paymentLinkWithAllParams;
+    const referenceId = await createPaymentLink({
       page,
-    }) => {
-      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
-      await container.waitFor();
-      await searchAndVerifyByPLId({ container });
+      productData,
+      type: 'UPI',
     });
-  },
-);
+    await searchPLAndOpenDetails({ page, referenceId });
+    const changeButtonBeforeCancel = await page.locator(SELECTORS.REFERENCE_ID_CHANGE_BTN);
+    await expect(changeButtonBeforeCancel).toBeVisible();
+    await cancelPLCreated({ page, productData, referenceId });
+    const changeButtonAfterCancel = await page.locator(SELECTORS.REFERENCE_ID_CHANGE_BTN);
+    await expect(changeButtonAfterCancel).not.toBeVisible();
+  });
+
+  // roast test searchByPaymentLinkId
+  test('should search UPI PL with payment link id @priority=critical @suite=nocode-P1-automation', async ({
+    page,
+  }) => {
+    const container = page.locator(COMMON_SELECTORS.tabbedContainer);
+    await container.waitFor();
+    await searchAndVerifyByPLId({ container });
+  });
+});

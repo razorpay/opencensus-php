@@ -1,16 +1,36 @@
 const fs = require('fs');
 const path = require('path');
+// const yaml = require('js-yaml');
+
 const rootPath = process.cwd();
 
-const packageJsonPathsToUpdate = ['', 'web', 'apps/self-serve'];
+const packageJsonPathsToUpdate = [
+  '',
+  'web',
+  'apps/self-serve',
+  'apps/pos',
+  'apps/digital-bills',
+  'libs/shared-ui',
+  'libs/shared-utils',
+];
+// add root package json by default
+// const packageJsonPathsToUpdate = [''];
+// try {
+//   const workspaces = yaml.load(fs.readFileSync(path.join(rootPath, 'pnpm-workspace.yaml'), 'utf8'));
+//   packageJsonPathsToUpdate.push(...workspaces.packages);
+//   console.log('packageJsonPathsToUpdate', packageJsonPathsToUpdate);
+// } catch (e) {
+//   console.log('Error parsing pnpm-workspace.yaml', e);
+//   process.exit(1);
+// }
 
 const WhiteListedPackages = [
-  '@razorpay/universe-utils',
-  '@razorpay/universe-cli',
-  '@razorpay/universe-test',
-  '@razorpay/i18nify-js',
   'moment',
   'nx',
+  '@playwright/test',
+  'husky',
+  '@reportportal/agent-js-playwright',
+  '@razorpay/i18nify-js',
 ];
 
 const getPackageDependecies = (packageJson, type) =>

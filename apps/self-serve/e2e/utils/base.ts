@@ -32,7 +32,7 @@ const testExtended = test.extend({
      */
     const originalGoto = page.goto.bind(page);
 
-    page.goto = async (url, options:{useOriginal?: boolean} = {}) => {
+    page.goto = async (url, options: { useOriginal?: boolean } = {}) => {
       if (options?.useOriginal) {
         return originalGoto(url, options);
       }

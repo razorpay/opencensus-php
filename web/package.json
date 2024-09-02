@@ -122,7 +122,7 @@
     "fix:css": "stylelint --config .stylelintrc-stylus.js --fix",
     "test:build:merchant": "NODE_OPTIONS=--max-old-space-size=8192 DANGER_ENV=true STAGE=production PROJECT=merchant universe build --disable-differential-builds",
     "test:setup": "pnpm exec universe web-e2e install",
-    "test:e2e": "pnpm exec universe web-e2e test",
+    "test:e2e": "pnpm exec playwright test",
     "test:e2e:payments-automation": "INCLUDE_GROUPS=@suite=payments-automation pnpm test:e2e",
     "test:e2e:payments-canary": "INCLUDE_GROUPS=@suite=payments-canary pnpm test:e2e",
     "test:e2e:show-report": "pnpm exec universe web-e2e show-report",
@@ -229,6 +229,7 @@
     "jest-circus": "26.6.3",
     "jest-silent-reporter": "0.5.0",
     "jest-sonar": "0.2.12",
-    "@tanstack/query-core": "4.33.0"
+    "@tanstack/query-core": "4.33.0",
+    "@playwright/test": "1.45.3"
   }
 }

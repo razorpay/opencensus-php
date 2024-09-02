@@ -3,10 +3,12 @@ FROM mcr.microsoft.com/playwright:v1.45.3-focal
 ARG INCLUDE_GROUPS
 ARG EXCLUDE_GROUPS
 ARG AFFFECTED_PROJECTS
+ARG CI
 
 ENV INCLUDE_GROUPS=$INCLUDE_GROUPS
 ENV EXCLUDE_GROUPS=$EXCLUDE_GROUPS
 ENV AFFFECTED_PROJECTS=$AFFFECTED_PROJECTS
+ENV CI=$CI
 
 WORKDIR /app
 
@@ -21,7 +23,8 @@ RUN pnpm run updateE2EDependencies
 
 RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
   pnpm config set unsafe-perm true && \
-  pnpm install --ignore-scripts
+  # ignore lockfile as we've updated it in updateE2EDependencies
+  pnpm install --ignore-scripts --no-frozen-lockfile
 
 RUN rm -f ~/.GITHUB_ACCESS_TOKEN
 
@@ -38,4 +41,3 @@ CMD pnpm test:e2e:auth && \
   INCLUDE_GROUPS=$INCLUDE_GROUPS \
   EXCLUDE_GROUPS=$EXCLUDE_GROUPS \
   npx nx run-many --target=test:e2e --projects=$AFFFECTED_PROJECTS --parallel=1
-

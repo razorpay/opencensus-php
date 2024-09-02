@@ -30,7 +30,7 @@ const constants = {
 
 test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payments', () => {
   test('should redirect the user to easy dashboard on clicking signup', async ({ page }) => {
-    await page.goto(routes.SIGN_IN_PATH, { useOriginal:true });
+    await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
     const signUpButton = page.getByRole('button', { name: 'Sign Up' });
     await signUpButton.waitFor({ state: 'visible' });
     await signUpButton.click();
@@ -55,7 +55,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
   test.skip('should redirect the user to easy dashboard if user has initiated signup on easy', async ({
     page,
   }) => {
-    await page.goto(routes.SIGN_IN_PATH, { useOriginal:true });
+    await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
     const redirectionRequest = page.waitForResponse('/app/dashboard');
     await loginByEmail({ page, cred: constants.EASY_ONBOARDING });
     const signInResponse = await redirectionRequest;
@@ -72,7 +72,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
   test.skip("should redirect the FTUX user to easy dashboard's FTUX experience on logging in", async ({
     page,
   }) => {
-    await page.goto(routes.SIGN_IN_PATH, { useOriginal:true });
+    await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
 
     await loginByEmail({ page, cred: constants.EASY_ONBOARDING_FTUX });
     await expect(page).toHaveURL(constants.FTUX_REDIRECTION_URL);
@@ -82,7 +82,7 @@ test.describe.parallel('Dashboard Redirection flow @flow=critical @project=payme
   test("should redirect the P2PM onboarding user to easy dashboard's P2PM experience on logging in", async ({
     page,
   }) => {
-    await page.goto(routes.SIGN_IN_PATH, { useOriginal:true });
+    await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
 
     await loginByEmail({ page, cred: constants.EASY_ONBOARDING_P2PM });
     await expect(page).toHaveURL(constants.P2PM_REDIRECTION_URL);

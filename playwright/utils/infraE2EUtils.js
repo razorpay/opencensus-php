@@ -114,8 +114,28 @@ function getDependencies(depCommits) {
     }
 
     if (depName === 'payment-links') {
+      // es_replicas, expire_replicas, webhook_replicas are required (and set to 1 by default)
       dependency.chart_values = {
         run_es_in_sync: '1',
+        email_replicas: 0,
+        merchantrisk_replicas: 0,
+        reminder_replicas: 0,
+        sms_replicas: 0,
+        reminderscallback_replicas: 0,
+        paymentfailedretry_replicas: 0,
+        whatsapp_replicas: 0,
+        capturedpaymentslive_replicas: 0,
+      };
+    }
+    if (depName === 'pg-router') {
+      dependency.chart_values = {
+        pgrouter_worker_create_transaction_replicas: 0,
+        pgrouter_worker_register_payment_replicas: 0,
+        pgrouter_worker_register_payment_rearch_replicas: 0,
+        pgrouter_worker_order_update_replicas: 0,
+        pgrouter_worker_notification_replicas: 0,
+        pgrouter_worker_outbox_relay_replicas: 0,
+        pgrouter_worker_ledger_replicas: 0,
       };
     }
 

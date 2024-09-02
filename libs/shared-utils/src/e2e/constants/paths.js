@@ -12,7 +12,7 @@ const getStorageStatePath = (BASE_PATH, mode = 'live') => {
     // POS_KYC_STATUS_NC: `${BASE_PATH}/pos-kyc-status-nc.json`,
     OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
     POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
-  }
+  };
 
   const isTestMode = mode === 'test';
 

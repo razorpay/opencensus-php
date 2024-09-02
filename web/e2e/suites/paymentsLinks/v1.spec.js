@@ -1,8 +1,5 @@
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import {
-  expectSuccessNotification,
-  clickSkipAndStartBtn,
-} from 'utils';
+import { expectSuccessNotification, clickSkipAndStartBtn } from 'utils';
 import { test, expect } from 'utils/base';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
