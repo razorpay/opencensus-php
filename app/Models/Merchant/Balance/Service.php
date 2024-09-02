@@ -578,6 +578,11 @@ class Service extends Base\Service
 
     protected function evaluateLedgerReadsWriteFlow(Entity $entity, $isLedgerDualWriteFlow)
     {
+        if ($isLedgerDualWriteFlow === true)
+        {
+            return false;
+        }
+
         $merchantId = $entity->getMerchantId();
 
         $isPGBalance = $entity->getType() === Type::PRIMARY;
@@ -592,14 +597,7 @@ class Service extends Base\Service
             $merchantId,
             Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
 
-        $pgLedgerReverseShadowEnabled = false;
-
         if (!empty($feature))
-        {
-            $pgLedgerReverseShadowEnabled = true;
-        }
-
-        if (($pgLedgerReverseShadowEnabled === true) and ($isPGBalance === true) and ($isLedgerDualWriteFlow === false or  $isLedgerDualWriteFlow === null))
         {
             return true;
         }

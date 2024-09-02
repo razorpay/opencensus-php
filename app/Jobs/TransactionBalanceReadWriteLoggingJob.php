@@ -33,41 +33,57 @@ class TransactionBalanceReadWriteLoggingJob extends Job
 
             if ((isset($this->input['event_entity']) === true) and ($this->input['event_name'] === 'onRetrieved') and ($this->input['entity'] === 'transactions'))
             {
-                $entity = $this->input['event_entity'];
+                $entityArray = $this->input['event_entity'];
 
                 $route = $this->input['route'];
 
                 $isLedgerDualWriteFlow = $this->input['is_ledger_dual_write_flow'];
+
+                $transaction = new Transaction\Entity();
+
+                $entity = $transaction->forceFill($entityArray);
 
                 (new Transaction\Service())->logTransactionReads($entity, $isLedgerDualWriteFlow, $route);
             }
             else if ((isset($this->input['event_entity']) === true) and ($this->input['event_name'] === 'onSaved') and ($this->input['entity'] === 'transactions'))
             {
-                $entity = $this->input['event_entity'];
+                $entityArray = $this->input['event_entity'];
 
                 $route = $this->input['route'];
 
                 $isLedgerDualWriteFlow = $this->input['is_ledger_dual_write_flow'];
+
+                $transaction = new Transaction\Entity();
+
+                $entity = $transaction->forceFill($entityArray);
 
                 (new Transaction\Service())->logTransactionWrites($entity, $isLedgerDualWriteFlow, $route);
             }
             else if ((isset($this->input['event_entity']) === true) and ($this->input['event_name'] === 'onRetrieved') and ($this->input['entity'] === 'balance'))
             {
-                $entity = $this->input['event_entity'];
+                $entityArray = $this->input['event_entity'];
 
                 $route = $this->input['route'];
 
                 $isLedgerDualWriteFlow = $this->input['is_ledger_dual_write_flow'];
+
+                $balance = new Balance\Entity();
+
+                $entity = $balance->forceFill($entityArray);
 
                 (new Balance\Service())->logBalanceReads($entity, $isLedgerDualWriteFlow, $route);
             }
             else if ((isset($this->input['event_entity']) === true) and ($this->input['event_name'] === 'onSaved') and ($this->input['entity'] === 'balance'))
             {
-                $entity = $this->input['event_entity'];
+                $entityArray = $this->input['event_entity'];
 
                 $route = $this->input['route'];
 
                 $isLedgerDualWriteFlow = $this->input['is_ledger_dual_write_flow'];
+
+                $balance = new Balance\Entity();
+
+                $entity = $balance->forceFill($entityArray);
 
                 (new Balance\Service())->logBalanceWrites($entity, $isLedgerDualWriteFlow, $route);
             }

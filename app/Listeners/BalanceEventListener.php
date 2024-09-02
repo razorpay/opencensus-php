@@ -17,8 +17,22 @@ class BalanceEventListener
             return;
         }
 
+        $mode = $this->getMode();
+
+        if ($mode === Mode::TEST)
+        {
+            return;
+        }
+
         try
         {
+            $rand = rand(1,500000);
+
+            if ($rand > 100000)
+            {
+                return;
+            }
+
             if (app()->runningInQueue() === true)
             {
                 $workerCtx = app('worker.ctx');
@@ -34,13 +48,11 @@ class BalanceEventListener
 
             $input = [
                 'event_name'                => 'onRetrieved',
-                'event_entity'              => $event->entity,
+                'event_entity'              => $event->entity->attributesToArray(),
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
                 'entity'                    => 'balance',
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
-
-            $mode = $this->getMode();
 
             TransactionBalanceReadWriteLoggingJob::dispatch($input, $mode);
         }
@@ -53,6 +65,13 @@ class BalanceEventListener
     public function onSaved(Balance\EventSaved $event)
     {
         if ((app()->runningUnitTests() === true) or (app()->runningInQueue() === true))
+        {
+            return;
+        }
+
+        $mode = $this->getMode();
+
+        if ($mode === Mode::TEST)
         {
             return;
         }
@@ -74,13 +93,11 @@ class BalanceEventListener
 
             $input = [
                 'event_name'                => 'onSaved',
-                'event_entity'              => $event->entity,
+                'event_entity'              => $event->entity->attributesToArray(),
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
                 'entity'                    => 'balance',
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
-
-            $mode = $this->getMode();
 
             TransactionBalanceReadWriteLoggingJob::dispatch($input, $mode);
         }

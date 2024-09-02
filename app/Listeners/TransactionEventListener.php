@@ -8,6 +8,7 @@ use RZP\Models\Transaction;
 use RZP\Jobs\TransactionBalanceReadWriteLoggingJob;
 use RZP\Trace\TraceCode;
 
+
 class TransactionEventListener
 {
     public function onRetrieved(Transaction\EventRetrieved $event)
@@ -17,8 +18,22 @@ class TransactionEventListener
             return;
         }
 
+        $mode = $this->getMode();
+
+        if ($mode === Mode::TEST)
+        {
+            return;
+        }
+
         try
         {
+            $rand = rand(1,500000);
+
+            if ($rand > 100000)
+            {
+                return;
+            }
+
             if (app()->runningInQueue() === true)
             {
                 $workerCtx = app('worker.ctx');
@@ -34,13 +49,12 @@ class TransactionEventListener
 
             $input = [
                 'event_name'                => 'onRetrieved',
-                'event_entity'              => $event->entity,
+                'event_entity'              => $event->entity->attributesToArray(),
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
                 'entity'                    => 'transactions',
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
 
-            $mode = $this->getMode();
 
             TransactionBalanceReadWriteLoggingJob::dispatch($input, $mode);
         }
@@ -53,6 +67,13 @@ class TransactionEventListener
     public function onSaved(Transaction\EventSaved $event)
     {
         if ((app()->runningUnitTests() === true) or (app()->runningInQueue() === true))
+        {
+            return;
+        }
+
+        $mode = $this->getMode();
+
+        if ($mode === Mode::TEST)
         {
             return;
         }
@@ -74,13 +95,11 @@ class TransactionEventListener
 
             $input = [
                 'event_name'                => 'onSaved',
-                'event_entity'              => $event->entity,
+                'event_entity'              => $event->entity->attributesToArray(),
                 'is_ledger_dual_write_flow' => $isDualWriteFlow,
                 'entity'                    => 'transactions',
                 'route'                     => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
             ];
-
-            $mode = $this->getMode();
 
             TransactionBalanceReadWriteLoggingJob::dispatch($input, $mode);
         }
