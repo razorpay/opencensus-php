@@ -14,7 +14,7 @@ import {
 import { formatNumber } from '@razorpay/i18nify-js/currency';
 import noop from 'lodash/noop';
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { CardShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
@@ -41,18 +41,13 @@ const BottomOverviewCard = ({
 }: BottomOverviewCardProps): JSX.Element | null => {
   const [isHover, setIsHover] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { name, loading: isLoading, value, isAmount, failed: isFailed } = data;
   const goToEntityPage = () => {
     track({
       objectName: `${name} Tab`,
       properties: { overviewDate: durationOption.title, section: 'Overview' },
     });
-    navigate(cardLink[name], {
-      state: {
-        prevPath: location.pathname,
-      },
-    });
+    navigate(cardLink[name]);
     sessionStorage.setItem('overviewDuration', JSON.stringify(durationOption));
   };
   if (isLoading) {

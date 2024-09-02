@@ -122,13 +122,7 @@ const actions = {
   ),
   value: (item: Item): JSX.Element => {
     return (
-      <Details
-        itemId={item.id}
-        baseUrl={REFUNDS}
-        prevPath={REFUNDS}
-        prevSearch={window.location.search}
-        initiatePage={TransactionsPagesMap[REFUNDS]}
-      />
+      <Details itemId={item.id} baseUrl={REFUNDS} initiatePage={TransactionsPagesMap[REFUNDS]} />
     );
   },
 };

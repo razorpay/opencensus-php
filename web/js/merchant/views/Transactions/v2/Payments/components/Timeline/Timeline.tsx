@@ -70,7 +70,6 @@ const EntityStatusTimeline = ({
   skipTransactionTimeline,
   shouldShowRetryTimeline,
   didRetryTimelineDataError,
-  location: { pathname },
 }: EntityStatusTimelineProps): JSX.Element => {
   const [timelineData, setTimelineData] = useState<TimelineJourneyPoint[]>([]);
   const [isTimelineCollapsed, setisTimelineCollapsed] = useState<boolean>(true);
@@ -258,9 +257,7 @@ const EntityStatusTimeline = ({
             icon={ChevronRightIcon}
             variant="button"
             onClick={() => {
-              history.push(`/settlements/${journeyPoint.metadata.settlementId}`, {
-                prevPath: pathname,
-              });
+              history.push(`/settlements/${journeyPoint.metadata.settlementId}`);
               trackDetailsClick({
                 objectName: 'View Settlement Details',
                 properties: {

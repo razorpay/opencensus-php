@@ -19,7 +19,6 @@ export const handleDetailsClick = ({
   itemId,
   baseUrl,
   initiatePage,
-  prevPath,
   isButton,
   rowData,
 }: HandleDetailsClickParams & Pick<RouterParams, 'navigate'>): void => {
@@ -43,16 +42,10 @@ export const handleDetailsClick = ({
       section: initiatePage,
     },
   });
-  navigate(url, { state: { prevPath } });
+  navigate(url);
 };
 
-const Details = ({
-  isDisabled,
-  itemId,
-  baseUrl,
-  initiatePage,
-  prevPath,
-}: DetailsProps): JSX.Element => {
+const Details = ({ isDisabled, itemId, baseUrl, initiatePage }: DetailsProps): JSX.Element => {
   const navigate = useNavigate();
   const isMobile = useMobile([...mobileBreakoints, 'l']);
   const linkText = isMobile ? '' : 'Details';
@@ -64,7 +57,6 @@ const Details = ({
       itemId,
       baseUrl,
       initiatePage,
-      prevPath,
       isButton: true,
     });
   };

@@ -53,15 +53,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
               usr.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
             }
           >
-            <StyledTabItem
-              to={REFUNDS}
-              onClick={trackTransactionsTabClick(REFUNDS)}
-              replace
-              end
-              state={{
-                prevPath: pathname,
-              }}
-            >
+            <StyledTabItem to={REFUNDS} onClick={trackTransactionsTabClick(REFUNDS)} replace end>
               Refunds
             </StyledTabItem>
           </ShowWhen>
@@ -72,9 +64,6 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
           >
             <StyledTabItem
               to={BATCH_REFUNDS}
-              state={{
-                prevPath: pathname,
-              }}
               onClick={trackTransactionsTabClick(BATCH_REFUNDS)}
               replace
               className={[BATCH_REFUNDS_UPLOAD, BATCH_REFUNDS].includes(pathname) ? 'active' : ''}

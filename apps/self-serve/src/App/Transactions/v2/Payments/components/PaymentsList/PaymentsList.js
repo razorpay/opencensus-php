@@ -154,7 +154,6 @@ class PaymentsList extends ListContainer {
               itemId: id,
               baseUrl: TransactionsEntityRoute.PAYMENTS,
               initiatePage: TransactionsPagesMap[pathname],
-              prevPath: pathname,
               paymentMethod,
               sourceChannel,
             })

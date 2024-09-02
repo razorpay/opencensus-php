@@ -47,7 +47,6 @@ class RefundsList {
               itemId: id,
               baseUrl: TransactionsEntityRoute.REFUNDS,
               initiatePage: TransactionsPagesMap[pathname],
-              prevPath: pathname,
             })
           }
           {...this.props}

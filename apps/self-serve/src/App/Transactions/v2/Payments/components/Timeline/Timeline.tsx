@@ -59,7 +59,6 @@ const EntityStatusTimeline = ({
   user,
   fetchPaymentsTimelineData,
   reFetchPageDetails,
-  location: { pathname },
 }: EntityStatusTimelineProps): JSX.Element => {
   const showNotification = useStore((state) => state.showNotification);
   const [timelineData, setTimelineData] = useState<TimelineJourneyPoint[]>([]);
@@ -247,9 +246,7 @@ const EntityStatusTimeline = ({
             icon={ChevronRightIcon}
             variant="button"
             onClick={() => {
-              history.push(`/settlements/${journeyPoint.metadata.settlementId}`, {
-                prevPath: pathname,
-              });
+              history.push(`/settlements/${journeyPoint.metadata.settlementId}`);
               trackDetailsClick({
                 objectName: 'View Settlement Details',
                 properties: {

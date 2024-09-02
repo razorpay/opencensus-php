@@ -187,7 +187,6 @@ export const actions = {
         isDisabled={!paymentStatusVariantMap[status]}
         itemId={id}
         baseUrl={PAYMENTS}
-        prevPath={currentPath}
         initiatePage={initiatePage}
       />
     );

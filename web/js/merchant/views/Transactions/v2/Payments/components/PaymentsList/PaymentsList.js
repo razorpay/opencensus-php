@@ -91,7 +91,7 @@ class PaymentsList extends ListContainer {
     const {
       loading,
       history,
-      location: { pathname, search },
+      location: { pathname },
       navigate,
       user: {
         isOmniChannelMerchant,
@@ -143,8 +143,6 @@ class PaymentsList extends ListContainer {
               itemId: id,
               baseUrl: TransactionsEntityRoute.PAYMENTS,
               initiatePage: TransactionsPagesMap[pathname],
-              prevPath: pathname,
-              prevSearch: search,
               rowData,
             })
           }

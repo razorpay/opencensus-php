@@ -4,18 +4,12 @@ import qs from 'query-string';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { GoBackProps } from 'merchant/views/Transactions/v2/common/components/GoBack/types';
-import {
-  TransactionsEntityRoute,
-  TransactionsPagesMap,
-} from 'merchant/views/Transactions/v2/common/constants';
+import { TransactionsPagesMap } from 'merchant/views/Transactions/v2/common/constants';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
-
-const { PAYMENTS } = TransactionsEntityRoute;
 
 const GoBack = ({ onClickCb }: GoBackProps) => {
   const navigate = useNavigate();
-  const { pathname, state, hash = '' } = useLocation();
-  const { prevPath, prevSearch } = state ?? {};
+  const { pathname } = useLocation();
 
   const goBack = (): void => {
     const { init_page } = qs.parse(window.location.search);
@@ -31,24 +25,8 @@ const GoBack = ({ onClickCb }: GoBackProps) => {
     // otherwise the component does it's default routing
     if (onClickCb) {
       onClickCb();
-    } else if (prevPath) {
-      navigate(
-        prevSearch
-          ? {
-              pathname: prevPath,
-              search: prevSearch,
-              hash,
-            }
-          : {
-              pathname: prevPath,
-              hash,
-            },
-      );
     } else {
-      navigate({
-        pathname: PAYMENTS,
-        hash,
-      });
+      navigate(-1);
     }
   };
 

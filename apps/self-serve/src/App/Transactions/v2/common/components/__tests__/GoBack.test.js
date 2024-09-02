@@ -3,6 +3,12 @@ import React from 'react';
 import App from 'apps/self-serve/src/App/Transactions/v2/common/components/GoBack';
 import { render, screen, userEvent } from 'apps/self-serve/src/services/test/test-utils';
 
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
+
 jest.setTimeout(35000);
 
 describe('GoBack', () => {
@@ -24,43 +30,10 @@ describe('GoBack', () => {
     expect(onClickCb).toHaveBeenCalled();
   });
 
-  test('should go to payments route when it is clicked without prevPath', async () => {
-    const { history } = renderApp();
-    history.push = jest.fn();
+  test('should go to previous route by default', async () => {
+    renderApp();
     const GoBackCTA = screen.getByText('Go Back');
     await userEvent.click(GoBackCTA);
-    expect(history.push).toHaveBeenCalledWith(
-      {
-        hash: '',
-        pathname: '/payments',
-        search: '',
-      },
-      undefined,
-      {},
-    );
-  });
-
-  test('should go to back to previous route when it is clicked with prevPath', async () => {
-    const prevPath = '/previous';
-    const { history } = renderApp({
-      initialEntries: [
-        {
-          pathname: '/',
-          state: { prevPath },
-        },
-      ],
-    });
-    history.push = jest.fn();
-    const GoBackCTA = screen.getByText('Go Back');
-    await userEvent.click(GoBackCTA);
-    expect(history.push).toHaveBeenCalledWith(
-      {
-        hash: '',
-        pathname: '/previous',
-        search: '',
-      },
-      undefined,
-      {},
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 });

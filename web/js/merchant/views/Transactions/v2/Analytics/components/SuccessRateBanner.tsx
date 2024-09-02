@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, ChevronRightIcon, Link, Text } from '@razorpay/blade/components';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import SuccessRateEmoji from 'assets/transactions/success-rate-emoji.svg';
 import { SuccessRateBannerProps } from 'merchant/views/Transactions/v2/Analytics/types';
@@ -12,7 +12,6 @@ const SuccessRateBanner = ({
   section,
 }: SuccessRateBannerProps): JSX.Element | null => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   return (
     <Box display="flex" gap="spacing.2" alignItems="center">
@@ -32,9 +31,7 @@ const SuccessRateBanner = ({
               section,
             },
           });
-          navigate(TransactionsEntityRoute.SUCCESS_RATE, {
-            state: { prevPath: location.pathname },
-          });
+          navigate(TransactionsEntityRoute.SUCCESS_RATE);
         }}
         variant="button"
       >

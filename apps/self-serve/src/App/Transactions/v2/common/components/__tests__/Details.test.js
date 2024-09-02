@@ -25,9 +25,6 @@ describe('Details', () => {
     expect(history.location.pathname).toBe('/base/123');
     expect(history.location.search).toBe('?init_page=page');
     expect(history.location.hash).toBe('#test');
-    expect(history.location.state).toEqual({
-      prevPath: '/prev',
-    });
     expect(analyticsTrack).toHaveBeenCalledWith({
       actionName: 'Clicked',
       objectName: 'Transaction Details Button',

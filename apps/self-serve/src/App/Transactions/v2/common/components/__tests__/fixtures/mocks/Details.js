@@ -22,6 +22,5 @@ export const renderApp = () =>
       selfServeAction="action"
       initiatePoint="point"
       initiatePage="page"
-      prevPath="/prev"
     />,
   );

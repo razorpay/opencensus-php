@@ -26,7 +26,7 @@ class RefundsList extends ListContainer {
       loading,
       history,
       navigate,
-      location: { pathname, search },
+      location: { pathname },
       user: { isOmniChannelMerchant, pos_activation_status, isOmniEnabledMerchant },
     } = this.props;
     const { count, skip } = this.state;
@@ -46,8 +46,6 @@ class RefundsList extends ListContainer {
               itemId: id,
               baseUrl: TransactionsEntityRoute.REFUNDS,
               initiatePage: TransactionsPagesMap[pathname],
-              prevPath: pathname,
-              prevSearch: search,
             })
           }
           {...this.props}

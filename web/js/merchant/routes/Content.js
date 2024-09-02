@@ -2472,6 +2472,18 @@ class Content extends Component {
     return '';
   };
 
+  /**
+   * Fixes : https://razorpay.slack.com/archives/C7WEGELHJ/p1722844794024829?thread_ts=1722842921.016489&cid=C7WEGELHJ
+   * The slider component at web/js/common/ui/Slider/index.js, pushes to history on unmount. The URL to push is passed as a prop in closeUrl.
+   * In certain cases, we don't want to pass the closeUrl prop. The following function helps us to skip passing closeUrl prop, conditionally.
+   */
+  checkIfBaseLocationSkipped = () => {
+    const paymentDetailsRegex = new RegExp(/\/payments\/pay_.*/i);
+    const result =
+      paymentDetailsRegex.test(this.baseLocation?.pathname) && this.checkIsTransactionsV2Enabled();
+    return result;
+  };
+
   render() {
     const { mode, user, fullPageView, isWebView, isMobile } = this.props;
 
@@ -2486,7 +2498,10 @@ class Content extends Component {
 
     if (DetailView) {
       DetailView = BaseView ? (
-        <Slider overlayCustomClass={overlayCustomClass} closeUrl={this.baseLocation}>
+        <Slider
+          overlayCustomClass={overlayCustomClass}
+          closeUrl={this.checkIfBaseLocationSkipped() ? '' : this.baseLocation}
+        >
           {' '}
           <ErrorBoundary resetOnProps>
             <Suspense fallback={<Loader />}>
