@@ -267,6 +267,7 @@ const SettlementsHeaderV2 = ({
           <UpcomingSettlementCard
             current_balance={current_balance}
             next_settlement={settlement_amount?.data}
+            isLoading={settlement_amount?.loading}
             settlementConfig={settlementConfig}
             currency={settlementCurrency}
           />

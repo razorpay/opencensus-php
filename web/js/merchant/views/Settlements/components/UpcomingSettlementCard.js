@@ -5,6 +5,7 @@ import moment from 'moment/moment';
 
 import { ANALYTICS } from 'common/constant';
 import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 
@@ -12,7 +13,7 @@ import SettlementCard from './SettlementCard';
 import { FlexBetween, CardWrapper, CardFooterIcon, TextFooter } from './styledUtils';
 import { BADGE_INFO, HEADING_INFO } from './utils';
 
-const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency }) => {
+const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency, isLoading }) => {
   const no_settlement = next_settlement?.no_settlement;
 
   const isBlock = settlementConfig?.data?.config?.features?.block?.status;
@@ -90,7 +91,9 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency })
     padding-bottom: 0;
   `;
 
-  const content = (
+  const content = isLoading ? (
+    <Spinner />
+  ) : (
     <FlexBetween>
       {next_settlement?.next_settlement_time ? (
         <Amount

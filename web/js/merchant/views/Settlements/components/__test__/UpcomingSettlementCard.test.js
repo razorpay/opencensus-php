@@ -13,7 +13,7 @@ describe('UpcomingSettlementCard', () => {
       settlement_amount: 9999,
       next_settlement_time: moment().add(3, 'hours').format('X'),
     };
-    render(<App next_settlement={next_settlement} currency="INR" />);
+    render(<App next_settlement={next_settlement} currency="INR" isLoading={false} />);
     expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('99')).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe('UpcomingSettlementCard', () => {
         },
       },
     };
-    render(<App settlementConfig={settlementConfig} currency="INR" />);
+    render(<App settlementConfig={settlementConfig} currency="INR" isLoading={false} />);
     expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('NA')).toBeInTheDocument();
@@ -52,11 +52,29 @@ describe('UpcomingSettlementCard', () => {
       next_settlement_time: moment().add(3, 'hours').format('X'),
     };
     render(
-      <App current_balance={current_balance} next_settlement={next_settlement} currency="INR" />,
+      <App
+        current_balance={current_balance}
+        isLoading={false}
+        next_settlement={next_settlement}
+        currency="INR"
+      />,
     );
     expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('.99')).toBeInTheDocument();
     expect(screen.getByText('Amount more than ₹1 is settled')).toBeInTheDocument();
+  });
+
+  test('should show loader for upcoming settlements when API call is in process', () => {
+    const current_balance = {
+      data: {
+        balance: 10099,
+      },
+    };
+
+    render(<App current_balance={current_balance} isLoading={true} currency="INR" />);
+    expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
+    expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
+    expect(screen.getByTestId('spinner')).toBeInTheDocument();
   });
 });

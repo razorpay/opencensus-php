@@ -410,6 +410,9 @@ export default function homeReducer(state = initialState, action) {
         data: initialState.current_balance.data,
       });
 
+    case `${SETTLEMENT_AMOUNT_FETCH}::PENDING`:
+      return set(state, 'settlement_amount', initialState.settlement_amount);
+
     case `${SETTLEMENT_AMOUNT_FETCH}::SUCCESS`:
       return merge(state, {
         settlement_amount: {
