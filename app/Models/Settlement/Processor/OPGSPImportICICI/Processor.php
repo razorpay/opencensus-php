@@ -302,12 +302,14 @@ class Processor extends Base\Core
             $row->Date = Carbon::createFromTimestamp($transaction->getCreatedAt())->isoFormat('DD-MM-YYYY');
 
             $netAmountValue = 0;
+            $paymentAmountValue = 0;
             $shouldSkipRow = false;
 
             switch ($transaction->getType())
             {
                 case Type::PAYMENT:
                     $netAmountValue = $this->getCreditAmount($transaction);
+                    $paymentAmountValue = $paymentIdMap[$transaction->getEntityId()]['amount'] / 100;
                     $row->RequestedAction = Constants::REQUEST_ACTION_PAYMENT;
                     $row->OPGSPTransactionRefNo = $transaction->getEntityId();
                     $row->Mode = $paymentIdMap[$transaction->getEntityId()]['method'];
@@ -325,6 +327,7 @@ class Processor extends Base\Core
 
                 case Type::REFUND:
                     $netAmountValue = (-1) * $this->getDebitAmount($transaction);
+                    $paymentAmountValue = $netAmountValue;
                     $row->RequestedAction = Constants::REQUEST_ACTION_REFUND;
                     $paymentForRefund = $paymentIdMap[$refundIdPaymentIdMap[$transaction->getEntityId()]];
                     $row->Mode = $paymentForRefund['method'];
@@ -343,6 +346,7 @@ class Processor extends Base\Core
 
                 case Type::ADJUSTMENT:
                     [$netAmountValue, $creditTypeValue] = $this->getAdjustmentDetails($transaction);
+                    $paymentAmountValue = $netAmountValue;
                     $netAmountValue = $creditTypeValue * $netAmountValue;
                     if($creditTypeValue === 1){
                         $row->RequestedAction = Constants::REQUEST_ACTION_CHARGEBACK_REVERSAL;
@@ -394,7 +398,7 @@ class Processor extends Base\Core
             $row->HSCode = $miiNotes['hs_code'];
             $row->HSCodeDescription = $hsCodeDescription;
             $row->PurposeOfRemittance= $isGoodsMerchant? 'Goods':'Digital';
-            $row->TransactionAmount = $netAmountValue;
+            $row->TransactionAmount = $paymentAmountValue;
             $row->RequestID = $transaction->getId();
             $row->MID = $merchantId;
             $tax = $transaction->getTax() ?? 0;
@@ -659,9 +663,12 @@ class Processor extends Base\Core
     {
 
         $name = $address['name'];
-        $consolidatedAddress = $address['line1'] . ', ' . $address['line2']
-            . ', ' . $address['city']  . ', ' . $address['state']
-            . ', ' . $address['country']  . ', ' . $address['zipcode'] ;
+        $consolidatedAddress = $address['zipcode'] . ', ' . $address['country']
+            . ', ' . $address['state']  . ', ' . $address['city']
+            . ', ' . $address['line1']  . ', ' . $address['line2'] ;
+
+        // If the length exceeds 200 characters then we will trim it to 200 characters
+        $consolidatedAddress = substr($consolidatedAddress, 0, 200);
 
         return [$name,$consolidatedAddress];
     }

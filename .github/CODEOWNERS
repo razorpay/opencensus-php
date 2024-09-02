@@ -334,6 +334,7 @@ app/Models/Merchant/Detail/InternationalCore.php           @razorpay/TechCrossBo
 app/Models/Merchant/InternationalIntegration               @razorpay/TechCrossBorder
 app/Models/Merchant/InternationalEnablement                @razorpay/TechCrossBorder
 app/Models/Payment/PaymentMeta                             @razorpay/TechCrossBorder
+app/Models/Settlement/Processor/OPGSPImportICICI           @razorpay/TechCrossBorder
 
 
 #
