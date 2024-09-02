@@ -316,6 +316,9 @@ class TraceCode
     const UCS_CALL_FAILED = 'UCS_CALL_FAILED';
     const UCS_CALL_SUCCESSFUL = 'UCS_CALL_SUCCESSFUL';
 
+    const MES_CALL_FAILED       = 'MES_CALL_FAILED';
+    const MES_CALL_SUCCESSFUL   = 'MES_CALL_SUCCESSFUL';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
