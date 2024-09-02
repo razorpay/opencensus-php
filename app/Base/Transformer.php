@@ -155,9 +155,9 @@ class Transformer
 
         if (count($transformedData) > 0)
         {
-            $merchantId = $transformedData['merchant_id'] ?? $transformedData['id'];
+            $merchantId = $inputData['merchant_id'] ?? $inputData['id'];
 
-            if ($this->shouldApplyMutexOnPGOSDualWrite($merchantId) == true) {
+            if ($merchantId != null and $this->shouldApplyMutexOnPGOSDualWrite($merchantId) == true) {
                 $this->mutex->acquireAndRelease(
                     $merchantId,
                     function() use ($transformedData)
