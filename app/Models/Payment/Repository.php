@@ -5531,7 +5531,7 @@ EOT;
 
 
         $nowMinus6Months = Carbon::now()->subMonths(6)->getTimestamp();
-        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN))
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->select($paymentRepo->dbColumn('*'))
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::STATUS) . ' as insurance_status')
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_STATUS) . ' as insurance_claim_status')
