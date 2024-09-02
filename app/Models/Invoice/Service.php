@@ -56,6 +56,7 @@ class Service extends Base\Service
         "crypto",
         "binance",
         " btc ",
+        " btc.",
         "paypal",
         "norton",
         "mcafee"
@@ -965,8 +966,17 @@ class Service extends Base\Service
                 return false;
             }
 
+            $keywordCheckInput = [
+                'line_items' => $input['line_items'] ?? [],
+                'terms' => $input['terms'] ?? '',
+                'description' => $input['description'] ?? '',
+                'comment' => $input['comment'] ?? '',
+                'notes' => $input['notes'] ?? [],
+                'reference_id' => $input['reference_id'] ?? '',
+            ];
+
             foreach (self::BLACKLISTED_KEYWORDS as $blacklistKey) {
-                $blockedKeywordMatch = Base\Utility::findMatchingKeyInArray($input, $blacklistKey);
+                $blockedKeywordMatch = Base\Utility::findMatchingKeyInArray($keywordCheckInput, $blacklistKey);
 
                 if ($blockedKeywordMatch !== null) {
                     $this->trace->info(TraceCode::NOCODEAPP_CREATION_BLOCKED_DUE_TO_KEYWORD, [
