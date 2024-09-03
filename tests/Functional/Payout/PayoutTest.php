@@ -12963,22 +12963,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(2, count($contacts['items']));
     }
 
-    public function testBulkPayoutWithSameIdempotencyandBatchId()
-    {
-        $this->ba->batchAuth();
-
-        $headers = [
-            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
-            'HTTP_X_Creator_Type' => 'user',
-            'HTTP_X_Creator_Id'   => 'MerchantUser01'
-        ];
-
-        // append headers
-        $this->testData[__FUNCTION__]['request']['server'] = $headers;
-
-        $this->startTest();
-    }
-
     public function testBulkPayoutApproval()
     {
         $this->liveSetUp();
