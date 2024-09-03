@@ -879,34 +879,83 @@ class Core extends Base\Core
         }
     }
 
+    public function getSetMethodsMutexKey(string $merchantId, bool $variantFlag) : string
+    {
+        $mutexKey=$merchantId;
+        if($variantFlag)
+        {
+            $mutexKey = $mutexKey."_". Merchant\Constants::SET_METHOD_MUTEX_SUFFIX;
+        }
+        return $mutexKey;
+    }
+    public function fetchSetMethodsMutexKeyOnExperiment(string $merchantId) : string
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => App::getFacadeRoot()['config']->get('app.mutex_set_methods_flow_exp_id'),
+        ];
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable', TraceCode::SET_METHODS_MUTEX_FLOW_SPLITZ_ERROR);
+        return $this->getSetMethodsMutexKey($merchantId,$isExpEnabled);
+    }
+
     public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null, string $source=null)
     {
-
         $this->trace->info(TraceCode::SET_PAYMENT_METHODS_UNDER_MUTEX_LOCK,
             [
                 'merchant_id' => $merchant->getId(),
                 'source' => $source
             ]
         );
-
         $mutex = App::getFacadeRoot()['api.mutex'];
-
-        $mutexKey = $merchant->getId();
+        $mutexKey= $this->fetchSetMethodsMutexKeyOnExperiment($merchant->getId());
+        //Todo: remove this trace once mutex issue is resolved
+        $this->trace->info(TraceCode::SET_METHODS_ON_EXPERIMENT,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mutexKey'=> $mutexKey
+            ]
+        );
 
         $mutex->acquireAndRelease(
             $mutexKey,
             function() use ($merchant, $aggregatorMerchant)
             {
+                $startTime = millitime();
                 (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
+                $this->trace->histogram(Metric::SET_DEFAULT_METHODS_LATERNCY_METRIC, millitime()-$startTime);
             },
             self::SET_DEFAULT_METHODS_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS,
-            2, 110,210);
+            2, 300,600);
     }
 
     public function setDefaultMethods($merchant, Merchant\Entity $aggregatorMerchant = null)
     {
-        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => App::getFacadeRoot()['config']->get('app.cache_get_merchant_methods_exp_id'),
+        ];
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CACHE_SET_METHODS_MUTEX_SPLITZ_ERROR);
+
+        $methods = null;
+        if ($isExpEnabled)
+        {
+            $methods=$this->repo->methods->getMethodsForMerchantV2($merchant);
+        }
+        else
+        {
+            $methods=$this->repo->methods->getMethodsForMerchant($merchant);
+        }
+
+        //Todo: remove this trace once mutex issue is resolved
+        $this->trace->info(TraceCode::SET_PAYMENT_METHODS_FOR_FETCHING_MERCHANT_METHODS,
+            [
+                'merchant_id' => $merchant->getId(),
+                'methods' => $methods,
+                'enabled'=> $isExpEnabled
+            ]
+        );
 
         if($methods !== null)
         {
@@ -914,6 +963,7 @@ class Core extends Base\Core
 
             return $methods;
         }
+
 
         $methods = (new Methods\Entity)->build();
 

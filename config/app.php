@@ -916,6 +916,10 @@ return array(
 
     'phantom_prefill_contact_number_exp_id' => env('PHANTOM_PREFILL_CONTACT_NUMBER_EXP_ID'),
 
+    'mutex_set_methods_flow_exp_id' => env('MUTEX_SET_METHODS_FLOW_EXP_ID'),
+
+    'cache_get_merchant_methods_exp_id' => env('CACHE_GET_MERCHANT_METHODS_EXP_ID'),
+
     'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
 
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),

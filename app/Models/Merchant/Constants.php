@@ -2026,4 +2026,6 @@ final class Constants
 
     const SET_METHODS_SOURCE_ACCOUNT="ACCOUNT";
 
+    const SET_METHOD_MUTEX_SUFFIX="SET_METHODS";
+
 }

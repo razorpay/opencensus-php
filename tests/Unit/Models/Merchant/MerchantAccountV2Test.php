@@ -3,8 +3,15 @@
 namespace Unit\Models\Merchant;
 
 use Mockery;
+use ReflectionClass;
+use RZP\Models\Merchant\Methods\Entity;
 use Tests\Unit\TestCase;
 use RZP\Models\Merchant\AccountV2\Response;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Methods\Entity as EntityMethods;
+use RZP\Trace\TraceCode;
+use Illuminate\Support\Facades\Cache;
+use RZP\Models\Merchant\Methods\Metric;
 
 class MerchantAccountV2Test extends TestCase
 {
@@ -18,6 +25,9 @@ class MerchantAccountV2Test extends TestCase
     protected $partnerEntityMock;
 
     protected $splitzService;
+
+    const DEFAULT_MERCHANT_ID    = '10000000000000';
+
 
     protected function setUp(): void
     {
@@ -247,4 +257,181 @@ class MerchantAccountV2Test extends TestCase
             ->shouldReceive('evaluateRequest')
             ->andReturn($output);
     }
+
+
+    public function testMutexSuffixSetMethodsWhenExperimentEnabled()
+    {
+        $this->merchantCore = Mockery::mock('RZP\Models\Merchant\Methods\Core');
+        $expectedMutexKey = self::DEFAULT_MERCHANT_ID ."_". MerchantConstants::SET_METHOD_MUTEX_SUFFIX;
+        $this->merchantCore->shouldReceive('getSetMethodsMutexKey')
+            ->with(self::DEFAULT_MERCHANT_ID, true)
+            ->andReturn($expectedMutexKey); // Return the expected value when the variant flag is 'on'
+
+        $mutexValue = $this->merchantCore->getSetMethodsMutexKey(self::DEFAULT_MERCHANT_ID, true);
+        $this->assertEquals($expectedMutexKey, $mutexValue, "The mutex key is not set correctly when variant flag is 'on'");
+    }
+
+    public function testMutexSuffixSetMethodsWhenExperimentDisabled()
+    {
+        $this->merchantCore = Mockery::mock('RZP\Models\Merchant\Methods\Core');
+
+        $this->merchantCore->shouldReceive('getSetMethodsMutexKey')
+            ->with(self::DEFAULT_MERCHANT_ID, false)
+            ->andReturn(self::DEFAULT_MERCHANT_ID);
+
+        $mutexValue = $this->merchantCore->getSetMethodsMutexKey(self::DEFAULT_MERCHANT_ID, false);
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $mutexValue, "The mutex key is not set correctly when variant flag is 'off'");
+
+    }
+
+    protected function mockTrace()
+    {
+        $mock = Mockery::mock('Razorpay\Trace\Logger');
+        $this->app->instance('trace', $mock);
+        return $mock;
+    }
+
+    protected function setProtectedProperty($object, $propertyName, $value)
+    {
+        $reflection = new ReflectionClass($object);
+        $property = $reflection->getProperty($propertyName);
+        $property->setAccessible(true);
+        $property->setValue($object, $value);
+    }
+
+    public function testGetMethodsWithMerchantV2DataIsCachedWhenNull()
+    {
+        // Mock the merchant entity
+        $merchantMock = Mockery::mock('RZP\Models\Merchant\Entity')->makePartial()->shouldAllowMockingProtectedMethods();
+        $merchantMock->shouldReceive('getId')->andReturn(self::DEFAULT_MERCHANT_ID);
+
+        // Mock the MethodsEntity returned by the query
+        $methodsMock = Mockery::mock('RZP\Models\Merchant\Methods\Entity');
+        $methodsMock->shouldReceive('toJson')->andReturn('{"id": 1, "method": "credit_card"}');
+        $methodsMock->shouldReceive('merchant')->andReturnSelf();
+        $methodsMock->shouldReceive('associate')->once();
+
+        // Mock the query builder
+        $queryMock = Mockery::mock('QueryBuilderClass'); // Replace with actual QueryBuilder class
+        $queryMock->shouldReceive('where')
+            ->with(EntityMethods::MERCHANT_ID, '=', self::DEFAULT_MERCHANT_ID)
+            ->andReturnSelf();
+        $queryMock->shouldReceive('orderBy')
+            ->with('created_at', 'desc')
+            ->andReturnSelf();
+        $queryMock->shouldReceive('first')
+            ->andReturn($methodsMock);
+
+        // Mock the MethodsRepository and its methods
+        $methodsRepoMock=Mockery::mock('RZP\Models\Merchant\Methods\Repository')->makePartial();
+        $methodsRepoMock->shouldAllowMockingProtectedMethods();
+        $methodsRepoMock->shouldReceive('newQuery')->andReturn($queryMock);
+
+        // Mock the trace logger
+        $traceMock = $this->mockTrace();
+        $this->setProtectedProperty($methodsRepoMock, 'trace', $traceMock);
+
+        // Expect the trace methods to be called
+        $traceMock->shouldReceive('info')
+            ->once()
+            ->with(TraceCode::SET_METHODS_ON_EXPERIMENT, [
+                'merchant' => 'merchantV2'
+            ]);
+        $traceMock->shouldReceive('count')
+            ->once()
+            ->with(
+                Metric::PAYMENT_METHODS_READ_METRIC,
+                [
+                    'route' => $methodsRepoMock->fetchRouteName(),
+                    'function' => 'getMethodsForMerchantV2'
+                ]
+            );
+
+        // Mock the Cache facade
+        Cache::shouldReceive('get')
+            ->with('methods_' . self::DEFAULT_MERCHANT_ID)
+            ->andReturn(null);
+        Cache::shouldReceive('put')
+            ->once()
+            ->with('methods_' . self::DEFAULT_MERCHANT_ID, '{"id": 1, "method": "credit_card"}', Mockery::any());
+
+        // Call the method under test
+        $result = $methodsRepoMock->getMethodsForMerchantV2($merchantMock);
+
+        // Assert the result is not null
+        $this->assertNotNull($result);
+
+        // Check that data is cached
+        Cache::shouldHaveReceived('put')
+            ->once()
+            ->with('methods_' . self::DEFAULT_MERCHANT_ID, '{"id": 1, "method": "credit_card"}', Mockery::any());
+    }
+
+    public function testGetMethodsWithMerchantV2DataIsCachedWhenNonNull()
+    {
+        // Mock the merchant entity
+        $merchantMock = Mockery::mock('RZP\Models\Merchant\Entity')->makePartial()->shouldAllowMockingProtectedMethods();
+        $merchantMock->shouldReceive('getId')->andReturn(self::DEFAULT_MERCHANT_ID);
+
+        // Mock the MethodsEntity returned by the query
+        $methodsMock = Mockery::mock('RZP\Models\Merchant\Methods\Entity');
+        $methodsMock->shouldReceive('toJson')->andReturn('{"id": 1, "method": "credit_card"}');
+        $methodsMock->shouldReceive('merchant')->andReturnSelf();
+
+        // Mock the query builder
+        $queryMock = Mockery::mock('QueryBuilderClass'); // Replace with actual QueryBuilder class
+        $queryMock->shouldReceive('where')
+            ->with(EntityMethods::MERCHANT_ID, '=', self::DEFAULT_MERCHANT_ID)
+            ->andReturnSelf();
+        $queryMock->shouldReceive('orderBy')
+            ->with('created_at', 'desc')
+            ->andReturnSelf();
+        $queryMock->shouldReceive('first')
+            ->andReturn($methodsMock);
+
+        // Mock the MethodsRepository and its methods
+        $methodsRepoMock=Mockery::mock('RZP\Models\Merchant\Methods\Repository')->makePartial();
+        $methodsRepoMock->shouldAllowMockingProtectedMethods();
+        $methodsRepoMock->shouldReceive('newQuery')->andReturn($queryMock);
+
+        // Mock the trace logger
+        $traceMock = $this->mockTrace();
+        $this->setProtectedProperty($methodsRepoMock, 'trace', $traceMock);
+
+        // Expect the trace methods to be called
+        $traceMock->shouldReceive('info')
+            ->once()
+            ->with(TraceCode::SET_METHODS_ON_EXPERIMENT, [
+                'merchant' => 'merchantV2'
+            ]);
+        $traceMock->shouldReceive('count')
+            ->once()
+            ->with(
+                Metric::PAYMENT_METHODS_READ_METRIC,
+                [
+                    'route' => $methodsRepoMock->fetchRouteName(),
+                    'function' => 'getMethodsForMerchantV2'
+                ]
+            );
+
+        // Mock the Cache facade
+        Cache::shouldReceive('get')
+            ->with('methods_' . self::DEFAULT_MERCHANT_ID)
+            ->andReturn('{"id": 1, "method": "credit_card"}');
+
+        // Call the method under test
+        $result = $methodsRepoMock->getMethodsForMerchantV2($merchantMock);
+
+        // Assert the result is not null
+        $this->assertNotNull($result);
+
+        // Check that data is cached
+        Cache::shouldNotHaveReceived('put', [
+            'methods_' . self::DEFAULT_MERCHANT_ID,
+            '{"id": 1, "method": "credit_card"}',
+            Mockery::any()
+        ]);
+    }
+
+
 }

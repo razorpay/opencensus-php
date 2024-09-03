@@ -6,8 +6,10 @@ use App;
 use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use Illuminate\Support\Facades\Cache;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -62,7 +64,6 @@ class Repository extends Base\Repository
             'route' => $this->fetchRouteName(),
             'function' => __FUNCTION__
         ];
-
 
         $methods = $this->find($merchant->getId());
 
@@ -315,6 +316,43 @@ class Repository extends Base\Repository
         $addonMethods = $this->dbColumn(Entity::ADDON_METHODS);
         $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         $query->where($addonMethods . '->' . $method,'=', $value);
+    }
+
+    public function getMethodsForMerchantV2(Merchant\Entity $merchant)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->info(TraceCode::SET_METHODS_ON_EXPERIMENT,
+            [
+                'merchant' =>  'merchantV2'
+            ]
+        );
+
+        $cacheKey = $this->entity . '_' . $merchant->getId();
+        $methods = Cache::get($cacheKey);
+        if ($methods === null)
+        {
+            $methods = $this->newQuery()
+                ->where(Entity::MERCHANT_ID , '=', $merchant->getId())
+                ->orderBy(COMMON::CREATED_AT,'desc')
+                ->first();
+
+            if ($methods!==null)
+            {
+                Cache::put($cacheKey, $methods->toJson(), $this->getCacheTtl());
+            }
+        }
+        else{
+            $methods=(new Merchant\Methods\Entity)->newFromBuilder($methods);
+        }
+        if ($methods !== null) {
+            $methods->merchant()->associate($merchant);
+            $merchant->setRelation('methods', $methods);
+        }
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        return $methods;
     }
 
 }
