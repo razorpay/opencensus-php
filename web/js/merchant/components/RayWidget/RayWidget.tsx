@@ -1,6 +1,7 @@
 import React from 'react';
 import { importRemote } from 'merchant/utils/dynamic-remotes';
 import lazyLoader from 'merchant/routes/LazyLoader';
+import { analyticsTrack } from 'common/utils/analytics';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { connect } from 'react-redux';
@@ -38,7 +39,7 @@ const RayWidget = ({
   return (
     <ErrorBoundary rank={Ranks.P1} team={Teams.CARE} FallbackComponent={() => <></>}>
       <SuspenseWithLoader>
-        <RayChat user={user} org={org} mode={mode} isDrawerVisible />
+        <RayChat user={user} org={org} mode={mode} track={analyticsTrack} />
       </SuspenseWithLoader>
     </ErrorBoundary>
   );
