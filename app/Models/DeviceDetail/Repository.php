@@ -39,7 +39,21 @@ class Repository extends Base\Repository
             ->where(Entity::APPSFLYER_ID, '=', $appsflyerId)
             ->first();
     }
+    public function fetchById(string $id)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $id)
+                    ->first();
+    }
+    public function fetchNotNullSignupCampaignByMerchantId(string $merchantId)
+    {
+        $signupCampaignColumn = $this->repo->user_device_detail->dbColumn(Entity::SIGNUP_CAMPAIGN);
 
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereNotNull($signupCampaignColumn)
+                    ->first();
+    }
     public function fetchByMerchantIdAndUserRole(string $merchantId, $role = Role::OWNER)
     {
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);

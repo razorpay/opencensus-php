@@ -206,12 +206,13 @@ class MerchantTest extends TestCase
 
     protected $careServiceMock;
 
+    private  $repo;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
 
         parent::setUp();
-
         $this->fixtures->create('org:hdfc_org');
 
         $this->esDao = new EsDao();
@@ -224,6 +225,9 @@ class MerchantTest extends TestCase
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
+        $this->repo = $this->app['repo'];
+
+
     }
 
     protected function setUpCareServiceMock()
@@ -7221,7 +7225,15 @@ Team Razorpay',
             'password_reset_token'    => $token,
             'password_reset_expiry'   => Carbon::now()->timestamp + 86400,
         ]);
-
+        $userDeviceDetail=[
+            'merchant_id'     => $merchant['id'],
+            'user_id'         => $oldOwnerUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ];
+        $this->fixtures->create('user_device_detail',$userDeviceDetail );
         // create owner role on pg
         $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
 
@@ -7301,6 +7313,7 @@ Team Razorpay',
         }
 
         $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], $setContactEmail);
+        $this->assertUserDeviceDetailUpdateForEmailUpdate($merchant['id'],$userDeviceDetail);
     }
 
     protected function merchantEmailUpdateCreateNewOwnerForMerchantAndSubmerchants($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
@@ -7613,6 +7626,13 @@ Team Razorpay',
 
             $this->assertEquals('oldcontact@gmail.com', $merchantDetail->getContactEmail());
         }
+    }
+    protected function assertUserDeviceDetailUpdateForEmailUpdate($merchantId,$UserDeviceDetails)
+    {
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole( $merchantId);
+        $this->assertEquals($UserDeviceDetails["signup_campaign"] ,$deviceDetail->getSignupCampaign());
+        $this->assertEquals($UserDeviceDetails["metadata"] ,$deviceDetail->getMetadata());
+
     }
 
     protected function getDBMerchantUserMapping($merchantId, $userId, $product = 'primary')

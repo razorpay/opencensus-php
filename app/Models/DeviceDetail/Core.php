@@ -2,6 +2,7 @@
 
 namespace RZP\Models\DeviceDetail;
 
+use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\Cookie;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -110,5 +111,24 @@ class Core extends Base\Core
             }
         }
         return $existingDetails;
+    }
+
+    /**
+     * @throws LogicException
+     * @throws \Exception
+     */
+    public function editDeviceDetail(string $id, array $input)
+    {
+        $deviceDetail = $this->repo->user_device_detail->fetchById($id);
+
+        if (empty($deviceDetail)) {
+            throw new \Exception("Device detail not found for ID: $id");
+        }
+
+        $deviceDetail->edit($input, 'edit');
+
+        $this->repo->user_device_detail->saveOrFail($deviceDetail);
+
+        return $deviceDetail;
     }
 }

@@ -19,8 +19,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::MERCHANT_ID            => 'required|string|size:14',
-        Entity::USER_ID                => 'required|string|size:14',
+        Entity::MERCHANT_ID            => 'sometimes|string|size:14',
+        Entity::USER_ID                => 'sometimes|string|size:14',
         Entity::APPSFLYER_ID           => 'string|required_if:signup_source,ios,android',
         Entity::SIGNUP_SOURCE          => 'sometimes|string|nullable',
         Entity::SIGNUP_CAMPAIGN        => 'sometimes|string|nullable',

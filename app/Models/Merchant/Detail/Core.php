@@ -179,6 +179,7 @@ use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient as MccCategor
 use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\AccountDetail as AccountDetailsSDKWrapper;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 
 class Core extends Base\Core
 {
@@ -13536,9 +13537,12 @@ class Core extends Base\Core
 
     }
 
+    /**
+     * @throws LogicException
+     */
     private function changeSignupCampaign($signupCampaign, $merchant)
     {
-        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole( $merchant->getId());
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant->getId());
 
         $this->app['trace']->info(TraceCode::CHANGE_SIGNUP_CAMPAIGN, [
             'merchant_id'             => $merchant->getId(),
@@ -13546,17 +13550,17 @@ class Core extends Base\Core
             'next_signup_campaign'    => $signupCampaign
         ]);
 
-        $deviceDetail->edit(['signup_campaign'=> $signupCampaign,
-                             "user_id"=>$deviceDetail->getUserId(),
-                             "merchant_id"=>$deviceDetail->getMerchantId()]);
+        (new DeviceDetailCore())->editDeviceDetail($deviceDetail->getAttribute(Base\UniqueIdEntity::ID),
+                                                   ["signup_campaign" => $signupCampaign]);
 
-        $this->repo->user_device_detail->saveOrFail($deviceDetail);
     }
 
     public function pushKafkaEventOnPOSActivationFormSubmit($merchant, $eventType): array
     {
         try
         {
+            // Update the signup campaign based on the case creation.
+            // The signup campaign will later be used to determine the case type when pushing case events to CMMA.
             if ($eventType == DetailConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA)
             {
                 $this->changeSignupCampaign(DeviceDetailConstants::EASY_ONBOARDING, $merchant);
@@ -13614,7 +13618,7 @@ class Core extends Base\Core
 
     }
 
-    public function constructEventDataForCMMACase($merchant, $eventType)
+    public function constructEventDataForCMMACase($merchant, $eventType): array
     {
         $processTimestamp = Carbon::now()->getTimestamp();
         if ($this->shouldAddDelayInProcessing($merchant->getId()) === true)

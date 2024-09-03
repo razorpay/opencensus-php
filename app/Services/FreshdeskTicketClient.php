@@ -301,9 +301,12 @@ class FreshdeskTicketClient
     protected function getUrl($route, $urlKey = 'urlind'): string
     {
         if ($this->isSandbox === true) {
-            $sandboxUrl = ($urlKey === Constants::URLMY)
-                ? trim($this->config['sandbox_url_my']) . '/' . $route
-                : trim($this->config['sandbox_url']) . '/' . $route;
+            $sandboxUrl = match ($urlKey)
+            {
+                Constants::URL_EZETAP => trim($this->config['sandbox_url_ezetap']) . '/' . $route,
+                Constants::URLMY => trim($this->config['sandbox_url_my']) . '/' . $route,
+                default => trim($this->config['sandbox_url']) . '/' . $route,
+            };
 
             $this->trace->info(
                 TraceCode::FRESHDESK_SUPPORT_TICKETS_INSTANCE,
@@ -343,6 +346,10 @@ class FreshdeskTicketClient
     {
         if($this->isSandbox === true)
         {
+            if(preg_match('#' .$this->config['sandbox_url_ezetap'].'#i', $url) === 1)
+            {
+                return Constants::EZETAPIND;
+            }
             return 'rzpsandbox';
         }
 
@@ -643,18 +650,27 @@ class FreshdeskTicketClient
         {
             return '';
         }
-        else if ($this->isSandbox === true)
+        else
         {
-            return $urlKey === Constants::URLMY
-                ? $this->config['sandbox_token_my']
-                : $this->config['sandbox_token'];
-        }
-        else if ($authKey === 'token_ezetap')
-        {
-            return 'Basic ' . $this->config[$authKey];
+            if ($this->isSandbox === true)
+            {
+                return match ($urlKey)
+                {
+                    Constants::URLMY => $this->config['sandbox_token_my'],
+                    Constants::URL_EZETAP => 'Basic ' . $this->config['sandbox_token_ezetap'],
+                    default => $this->config['sandbox_token'],
+                };
+            }
+            else
+            {
+                if ($authKey === 'token_ezetap')
+                {
+                    return 'Basic ' . $this->config[$authKey];
+                }
+            }
         }
 
-        return  $this->config[$authKey];
+        return $this->config[$authKey];
     }
 
     protected function getDimension($route, $responseCode){

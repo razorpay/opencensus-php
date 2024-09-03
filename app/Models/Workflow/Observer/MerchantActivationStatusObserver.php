@@ -19,7 +19,8 @@ use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\FreshdeskTicket\Priority as FDPriority;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
-
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 
 class MerchantActivationStatusObserver implements WorkflowObserverInterface
 {
@@ -34,10 +35,12 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
     protected $app;
 
     protected $merchant;
+
     /**
      * @var mixed
      */
     protected $actionId;
+
     /**
      * @var mixed
      */
@@ -49,22 +52,22 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         $this->repo = $this->app['repo'];
 
-        $this->fdService  = new FDService();
+        $this->fdService = new FDService();
 
-        $this->entityId         = $input[DifferEntity::ENTITY_ID];
+        $this->entityId = $input[DifferEntity::ENTITY_ID];
 
-        $this->activationStatus   = $input[DifferEntity::PAYLOAD][MerchantDetailEntity::ACTIVATION_STATUS] ?? "";
+        $this->activationStatus = $input[DifferEntity::PAYLOAD][MerchantDetailEntity::ACTIVATION_STATUS] ?? "";
 
-        if (is_null($input[DifferEntity::DIFF])===false)
+        if (is_null($input[DifferEntity::DIFF]) === false)
         {
-            $this->oldActivationStatus  =  $input[DifferEntity::DIFF][DifferEntity::OLD][MerchantDetailEntity::ACTIVATION_STATUS] ?? null;
+            $this->oldActivationStatus = $input[DifferEntity::DIFF][DifferEntity::OLD][MerchantDetailEntity::ACTIVATION_STATUS] ?? null;
 
-            $this->newActivationStatus  =  $input[DifferEntity::DIFF][DifferEntity::NEW][MerchantDetailEntity::ACTIVATION_STATUS] ?? null;
+            $this->newActivationStatus = $input[DifferEntity::DIFF][DifferEntity::NEW][MerchantDetailEntity::ACTIVATION_STATUS] ?? null;
         }
 
         if (key_exists(DifferEntity::PERMISSION, $input) === true) // permission at times might not be present
         {
-            $this->permissionName   = $input[DifferEntity::PERMISSION];
+            $this->permissionName = $input[DifferEntity::PERMISSION];
         }
 
     }
@@ -100,22 +103,22 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
     public function onReject(array $observerData)
     {
-        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER,[
-            'on_reject'                => 'on_reject observer invoked.'
+        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER, [
+            'on_reject' => 'on_reject observer invoked.'
         ]);
 
         $data = Constants::MERCHANT_ACTION_METRO_BODY;
 
-        if( $this->permissionName === PermissionName::EDIT_ACTIVATE_MERCHANT)
+        if ($this->permissionName === PermissionName::EDIT_ACTIVATE_MERCHANT)
         {
             if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
             {
                 $cmmaCaseEventData = [
-                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
                     Constants::PERMISSION_NAME    => $this->permissionName,
                     Constants::STATUS             => Status::REJECTED,
-                    Constants::AGENT_Id           =>  optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
-                    Constants::AGENT_NAME         =>  optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
                     DifferEntity::ENTITY_ID       => $this->entityId,
                     DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
                     Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
@@ -125,10 +128,10 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
                 $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
                 $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
-                        'data'        => $cmmaCaseEventData,
-                        'topic'       => $cmmaCaseEventTopic,
-                        'merchant_id' => $this->entityId,
-                    ]
+                                                                                      'data'        => $cmmaCaseEventData,
+                                                                                      'topic'       => $cmmaCaseEventTopic,
+                                                                                      'merchant_id' => $this->entityId,
+                                                                                  ]
                 );
 
                 (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
@@ -141,9 +144,9 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
                 $data[Constants::PERMISSION_NAME] = $this->permissionName;
 
-                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus ;
+                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus) === true) ? Status::UNDER_REVIEW : $this->oldActivationStatus;
 
-                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::REJECTED : $this->newActivationStatus ;
+                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus) === true) ? Status::REJECTED : $this->newActivationStatus;
 
                 $data[Constants::STATUS] = Status::REJECTED;
 
@@ -157,6 +160,11 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
         {
+            $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
+            $caseType     = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+                ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
+                : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
+
             $cmmaCaseEventData = [
                 Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
                 Constants::PERMISSION_NAME    => $this->permissionName,
@@ -166,14 +174,14 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
                 DifferEntity::ENTITY_ID       => $this->entityId,
                 DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
                 Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
-                Constants::CMMA_CASE_TYPE     => Constants::CMMA_POS_ACTIVATION_CASE_TYPE,
+                Constants::CMMA_CASE_TYPE     => $caseType,
             ];
 
             $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
             $this->app['trace']->info(TraceCode::POS_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
-                                                                                      'data'  => $cmmaCaseEventData,
-                                                                                      'topic' => $cmmaCaseEventTopic,
+                                                                                      'data'        => $cmmaCaseEventData,
+                                                                                      'topic'       => $cmmaCaseEventTopic,
                                                                                       'merchant_id' => $this->entityId,
                                                                                   ]
             );
@@ -185,38 +193,43 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
     public function onCreate(array $observerData)
     {
-        try {
+        try
+        {
 
             $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER, [
-                'on_create' => 'on_create observer invoked.',
+                'on_create'       => 'on_create observer invoked.',
                 'permission_name' => $this->permissionName
             ]);
 
             $data = Constants::MERCHANT_ACTION_METRO_BODY;
 
-            if ($this->permissionName === PermissionName::NEEDS_CLARIFICATION_RESPONDED) {
-                if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true) {
+            if ($this->permissionName === PermissionName::NEEDS_CLARIFICATION_RESPONDED)
+            {
+                if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
+                {
                     $cmmaCaseEventData = [
                         Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
-                        Constants::PERMISSION_NAME => PermissionName::NEEDS_CLARIFICATION_RESPONDED,
-                        Constants::STATUS => Constants::OPEN,
-                        DifferEntity::ENTITY_ID => $this->entityId,
-                        DifferEntity::ENTITY_NAME => Constants::MERCHANT,
-                        Constants::EVENT_TYPE => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
-                        Constants::CMMA_CASE_TYPE => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                        Constants::PERMISSION_NAME    => PermissionName::NEEDS_CLARIFICATION_RESPONDED,
+                        Constants::STATUS             => Constants::OPEN,
+                        DifferEntity::ENTITY_ID       => $this->entityId,
+                        DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+                        Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                        Constants::CMMA_CASE_TYPE     => Constants::CMMA_ACTIVATION_CASE_TYPE,
                     ];
 
                     $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
                     $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
-                            'data' => $cmmaCaseEventData,
-                            'topic' => $cmmaCaseEventTopic,
-                            'merchant_id' => $this->entityId,
-                        ]
+                                                                                          'data'        => $cmmaCaseEventData,
+                                                                                          'topic'       => $cmmaCaseEventTopic,
+                                                                                          'merchant_id' => $this->entityId,
+                                                                                      ]
                     );
 
                     (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
-                } else {
+                }
+                else
+                {
                     $data[DifferEntity::ENTITY_ID] = $this->entityId;
 
                     $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
@@ -234,40 +247,48 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
             }
 
-            if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT) {
+            if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
+            {
+
+                $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
+                $caseType     = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+                    ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
+                    : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
+
                 $cmmaCaseEventData = [
                     Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
-                    Constants::PERMISSION_NAME => PermissionName::POS_EDIT_ACTIVATE_MERCHANT,
-                    Constants::STATUS => Constants::OPEN,
-                    Constants::AGENT_Id => 'admin_'.$observerData[DifferEntity::AGENT_ID] ?? Constants::UNDEFINED_AGENT,
-                    Constants::AGENT_NAME =>$observerData[DifferEntity::AGENT_NAME] ?? Constants::UNDEFINED_AGENT,
-                    DifferEntity::ENTITY_ID => $this->entityId,
-                    DifferEntity::ENTITY_NAME => Constants::MERCHANT,
-                    Constants::EVENT_TYPE => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
-                    Constants::CMMA_CASE_TYPE => Constants::CMMA_POS_ACTIVATION_CASE_TYPE,
+                    Constants::PERMISSION_NAME    => PermissionName::POS_EDIT_ACTIVATE_MERCHANT,
+                    Constants::STATUS             => Constants::OPEN,
+                    Constants::AGENT_Id           => 'admin_' . $observerData[DifferEntity::AGENT_ID] ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         => $observerData[DifferEntity::AGENT_NAME] ?? Constants::UNDEFINED_AGENT,
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+                    Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE     => $caseType,
                 ];
 
                 $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
                 $this->app['trace']->info(TraceCode::POS_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
-                        'data' => $cmmaCaseEventData,
-                        'topic' => $cmmaCaseEventTopic,
-                        'merchant_id' => $this->entityId,
-                    ]
+                                                                                          'data'        => $cmmaCaseEventData,
+                                                                                          'topic'       => $cmmaCaseEventTopic,
+                                                                                          'merchant_id' => $this->entityId,
+                                                                                      ]
                 );
 
                 app('kafkaProducerClient')->produce($cmmaCaseEventTopic, stringify($cmmaCaseEventData));
             }
         }
-        catch(\Throwable $exception) {
+        catch (\Throwable $exception)
+        {
             $this->app['trace']->traceException($exception);
         }
     }
 
     public function onExecute(array $observerData)
     {
-        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER,[
-            'on_execute'                => 'on_execute observer invoked.'
+        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER, [
+            'on_execute' => 'on_execute observer invoked.'
         ]);
 
         $data = Constants::MERCHANT_ACTION_METRO_BODY;
@@ -277,11 +298,11 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
             if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
             {
                 $cmmaCaseEventData = [
-                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
                     Constants::PERMISSION_NAME    => $this->permissionName,
                     Constants::STATUS             => Constants::EXECUTED,
-                    Constants::AGENT_Id           =>  optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
-                    Constants::AGENT_NAME         =>  optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
                     DifferEntity::ENTITY_ID       => $this->entityId,
                     DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
                     Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
@@ -291,10 +312,10 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
                 $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
                 $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
-                        'data'  => $cmmaCaseEventData,
-                        'topic' => $cmmaCaseEventTopic,
-                        'merchant_id' => $this->entityId,
-                    ]
+                                                                                      'data'        => $cmmaCaseEventData,
+                                                                                      'topic'       => $cmmaCaseEventTopic,
+                                                                                      'merchant_id' => $this->entityId,
+                                                                                  ]
                 );
 
                 (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
@@ -307,9 +328,9 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
                 $data[Constants::PERMISSION_NAME] = $this->permissionName;
 
-                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus;
+                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus) === true) ? Status::UNDER_REVIEW : $this->oldActivationStatus;
 
-                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::ACTIVATED : $this->newActivationStatus;
+                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus) === true) ? Status::ACTIVATED : $this->newActivationStatus;
 
                 $data[Constants::STATUS] = Constants::EXECUTED;
 
@@ -323,6 +344,11 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
         {
+            $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
+            $caseType     = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+                ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
+                : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
+
             $cmmaCaseEventData = [
                 Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
                 Constants::PERMISSION_NAME    => $this->permissionName,
@@ -332,14 +358,14 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
                 DifferEntity::ENTITY_ID       => $this->entityId,
                 DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
                 Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
-                Constants::CMMA_CASE_TYPE     => Constants::CMMA_POS_ACTIVATION_CASE_TYPE,
+                Constants::CMMA_CASE_TYPE     => $caseType,
             ];
 
             $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
             $this->app['trace']->info(TraceCode::POS_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
-                                                                                      'data'  => $cmmaCaseEventData,
-                                                                                      'topic' => $cmmaCaseEventTopic,
+                                                                                      'data'        => $cmmaCaseEventData,
+                                                                                      'topic'       => $cmmaCaseEventTopic,
                                                                                       'merchant_id' => $this->entityId,
                                                                                   ]
             );
@@ -377,7 +403,7 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
         return $this->merchant;
     }
 
-    public function getTicketReplyContent(string $approve_reject, $merchantId) : array
+    public function getTicketReplyContent(string $approve_reject, $merchantId): array
     {
         $merchantName = $this->getMerchant($merchantId)->getName() ?? "";
 
@@ -416,13 +442,14 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
         return array();
     }
 
-    public function publishToMetroTopic($data, $topic) {
+    public function publishToMetroTopic($data, $topic)
+    {
         // publish message on the metro topic business-banking-enabled
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_ACTIVATION_OBSERVER_METRO_PUBLISH,
             [
-            'data' => $data
+                'data' => $data
             ]
         );
 
@@ -437,11 +464,12 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
             $this->app['trace']->info(
                 TraceCode::MERCHANT_ACTIVATION_OBSERVER_METRO_PUBLISH,
                 [
-                'response' => $response
+                    'response' => $response
                 ]
             );
 
-        } catch (\Throwable $exception)
+        }
+        catch (\Throwable $exception)
         {
 
             $this->app['trace']->traceException(

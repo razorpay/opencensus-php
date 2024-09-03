@@ -3812,6 +3812,55 @@ class Core extends Base\Core
 
             $this->attachUserForMerchant($merchant->getId(), $currentOwner, $currentOwnerNewRole, $product);
         }
+
+        $this->changeUserDeviceDetailForOwner($merchant);
+
+    }
+
+    // Updates the signup campaign and metadata for the current owner user
+    // when merchant ownership is transferred from one user to another.
+    protected function changeUserDeviceDetailForOwner($merchant): void
+    {
+        try
+        {
+            $originalDeviceDetail = $this->repo->user_device_detail->fetchNotNullSignupCampaignByMerchantId($merchant->getId());
+
+            if (!empty($originalDeviceDetail))
+            {
+                $originalDeviceDetailId = $originalDeviceDetail->getAttribute(Base\UniqueIdEntity::ID);
+
+                $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL, [
+                    'original_user_device_detail_id' => $originalDeviceDetailId,
+                ]);
+
+                $currentDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant->getId());
+
+                if (!empty($currentDeviceDetail))
+                {
+                    $currentDeviceDetailId = $currentDeviceDetail->getAttribute(Base\UniqueIdEntity::ID);
+
+                    $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL, [
+                        'current_user_device_detail_id' => $currentDeviceDetailId,
+                    ]);
+
+                    if ($currentDeviceDetailId !== $originalDeviceDetailId)
+                    {
+                        $updatedData = [
+                            'signup_campaign' => $originalDeviceDetail->getSignupCampaign(),
+                            'metadata'        => $originalDeviceDetail->getMetaData(),
+                        ];
+
+                        (new \RZP\Models\DeviceDetail\Core)->editDeviceDetail($currentDeviceDetailId, $updatedData);
+                    }
+                }
+            }
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::USER_DEVICE_DETAIL_SAVE_FAILED, [
+                'merchant_id' => $merchant->getId(),
+            ]);
+        }
     }
 
     protected function attachUserForMerchant($merchantId, $user, $role, $product)
