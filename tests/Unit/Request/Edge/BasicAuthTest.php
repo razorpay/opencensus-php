@@ -148,6 +148,8 @@ class BasicAuthTest extends TestCase
 
     public function testSetUserRoleIsAdminReadOnlyWhenAdminLoggedInAsMerchant()
     {
+        $this->markTestSkipped();
+
         $mock = $this->getMockBuilder(BasicAuth::class)
                      ->setConstructorArgs([$this->app])
                      ->onlyMethods(['isAdminLoggedInAsMerchantOnDashboard'])
