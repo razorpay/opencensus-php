@@ -280,6 +280,11 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, Status::FAILED)
                     ->where(
                         Entity::PROCESSED_AT,
+                        '>=',
+                        Carbon::now(Timezone::IST)->subDays(7)->getTimestamp()
+                    )
+                    ->where(
+                        Entity::PROCESSED_AT,
                         '<=',
                         Carbon::now(Timezone::IST)->subHours(3)->getTimestamp()
                     )
