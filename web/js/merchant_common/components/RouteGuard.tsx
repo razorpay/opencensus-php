@@ -6,10 +6,10 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import Loader from 'common/ui/Loader';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import type { Store } from 'common/typings';
-import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 interface RouteGuardProps extends WithRouterProps {
   defaultPath?: string;

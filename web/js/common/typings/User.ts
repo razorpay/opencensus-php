@@ -1,3 +1,5 @@
+import { CountryCodeType } from '@razorpay/i18nify-js';
+
 // Todo: delete this file, it's available in @dashboard/shared-utils
 export enum BUSINESS_SUBCATEGORIES {
   Aviation = 'aviation',
@@ -95,6 +97,7 @@ type Merchant = {
   currency: string;
   pricing_plan_id?: string;
   name: string;
+  country_code: CountryCodeType;
 };
 
 type UserProperties = {

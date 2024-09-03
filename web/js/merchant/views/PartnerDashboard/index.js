@@ -33,8 +33,14 @@ const PartnerManageTeam = lazy(() =>
   ),
 );
 
+const ManageTeamPosEkyc = lazy(() =>
+  import(
+    /* webpackChunkName: "PartnerManageTeam" */ 'merchant/views/PartnerDashboard/ManageTeamPosEkyc'
+  ),
+);
+
 export default function PartnerDashboard() {
-  const { isPartnerPlaybookEnabled, isAccountsListRevampEnabled } =
+  const { isPartnerPlaybookEnabled, isAccountsListRevampEnabled, isPosEkycEnabled } =
     usePartnerDashboardExperiments();
 
   const user = store.getState().session.user;
@@ -191,6 +197,15 @@ export default function PartnerDashboard() {
           element={
             <RouteGuard>
               {isAccountsListRevampEnabled ? <ClientAccounts /> : <SubMerchantList />}
+            </RouteGuard>
+          }
+        />
+
+        <Route
+          path="pos-ekyc-team"
+          element={
+            <RouteGuard additionalCondition={() => isPosEkycEnabled}>
+              <ManageTeamPosEkyc />
             </RouteGuard>
           }
         />

@@ -2,8 +2,12 @@ import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hook
 import MainNavLink from 'merchant_common/components/MainNavLink';
 
 export default function PartnerNavLinks() {
-  const { isPartnerPlaybookEnabled, isPartnershipsForPosEnabled, isPosPartnerOwnerAccount } =
-    usePartnerDashboardExperiments();
+  const {
+    isPartnerPlaybookEnabled,
+    isPartnershipsForPosEnabled,
+    isPosPartnerOwnerAccount,
+    isPosEkycEnabled,
+  } = usePartnerDashboardExperiments();
 
   return (
     <>
@@ -32,6 +36,15 @@ export default function PartnerNavLinks() {
         additionalCondition={(user) =>
           (isPartnershipsForPosEnabled || isPosPartnerOwnerAccount) && user.isAllowedTeamManagement
         }
+        end
+      />
+
+      <MainNavLink
+        label="Manage Team eKYC"
+        icon="i i-settings text-warning"
+        to="/partners/pos-ekyc-team"
+        isNew
+        additionalCondition={() => isPosEkycEnabled}
         end
       />
 

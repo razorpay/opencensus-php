@@ -121,6 +121,7 @@ export const RoutesConfig = {
   '/partners/subventions': Teams.PARTNERSHIP,
   '/partners/subventions/daily': Teams.PARTNERSHIP,
   '/partners/subventions/transactional': Teams.PARTNERSHIP,
+  '/partners/pos-ekyc-team': Teams.PARTNERSHIP,
   // Merchant pages under partnerships team
   '/partner-pricing-plans': Teams.PARTNERSHIP,
 
