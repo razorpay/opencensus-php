@@ -7,6 +7,12 @@ import React from 'react';
 import { render, screen, userEvent, waitFor } from 'test-utils';
 import { getState } from './mocks/fixtures/Profile';
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
+
 describe('Merchant Profile Section Version 2', () => {
   const modalsSpy = jest.spyOn(modals, 'openModal');
 

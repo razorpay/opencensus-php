@@ -9,6 +9,12 @@ import { Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types'
 
 let showNotificationSpy, openModalSpy, closeModalSpy;
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
+
 jest.mock('common/ui/TwoFactorVerification/TwoFactorVerificationContext', () => ({
   useTwoFactorVerificationContext: () => ({
     criticalFlow: ({ onUserTwoFaVerified }) => {

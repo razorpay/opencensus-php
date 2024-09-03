@@ -3,8 +3,15 @@ import { rest } from 'msw';
 import { stateWithKeys, stateWithNoKeys, renderApp } from './fixtures/GenerateKey';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { useSplitzService } from 'common/splitz';
 
 let showNotificationSpy, openModalSpy;
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {},
+  })),
+}));
 
 jest.mock('common/ui/TwoFactorVerification/TwoFactorVerificationContext', () => ({
   useTwoFactorVerificationContext: () => ({
@@ -23,7 +30,25 @@ describe('API Keys & Plugins - GenerateKey', () => {
     jest.clearAllMocks();
   });
 
+  beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    useSplitzService.mockReturnValue({
+      abExperiments: {},
+    });
+  });
+
   test('should not show Roll key modal is 2FA is terminated', async () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    useSplitzService.mockReturnValue({
+      abExperiments: {
+        enable_2fa_password_api_keys: {
+          experimentId: 'enable_2fa_password_api_keys',
+          variables: { result: 'on' },
+        },
+      },
+    });
     const { getByText } = renderApp({ initialState: stateWithKeys });
 
     const regenerateButton = getByText(/generate new key/i);

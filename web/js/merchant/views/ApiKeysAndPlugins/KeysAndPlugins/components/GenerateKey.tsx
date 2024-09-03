@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useReducer } from 'react';
 import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { useTrigger2Fa } from 'common/ui/TwoFactorVerification/hooks';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -74,6 +75,7 @@ const GenerateKey = ({
   const [isKeyGenerating, setIsKeyGenerating] = useState(false);
   const [copied, dispatch] = useReducer(copyReducer, copyState);
 
+  const shouldTrigger2Fa = useTrigger2Fa();
   const context = useTwoFactorVerificationContext();
   const { keys } = keysState;
   const platformURL = user[selectedPlatform];
@@ -195,15 +197,20 @@ const GenerateKey = ({
   const regenerateKey = () => {
     setIsKeyGenerating(true);
     trackCTAClick('Generate New Key', trackProps);
-    return context.criticalFlow({
-      modes: ['live'],
-      onUserTwoFaVerified: () => {
-        showRollKeyModal({ id: latestKey?.id });
-      },
-      onFlowTermination: () => {
-        setIsKeyGenerating(false);
-      },
-    });
+
+    if (shouldTrigger2Fa) {
+      return context.criticalFlow({
+        modes: ['live', 'test'],
+        onUserTwoFaVerified: () => {
+          showRollKeyModal({ id: latestKey?.id });
+        },
+        onFlowTermination: () => {
+          setIsKeyGenerating(false);
+        },
+      });
+    } else {
+      return showRollKeyModal({ id: latestKey?.id });
+    }
   };
 
   return (
@@ -313,7 +320,21 @@ const GenerateKey = ({
           // no key is generated yet
           <button
             className="btn btn-primary btn-block"
-            onClick={onGenerateKey}
+            onClick={(e) => {
+              if (shouldTrigger2Fa) {
+                context.criticalFlow({
+                  enforceVerifyOtp: true,
+                  modes: ['live', 'test'],
+                  onUserTwoFaVerified: () => {
+                    // close the 2FA modal and generate the api key
+                    closeModal();
+                    onGenerateKey(e);
+                  },
+                });
+              } else {
+                onGenerateKey(e);
+              }
+            }}
             disabled={isKeyGenerating}
           >
             {isKeyGenerating ? 'Generating...' : 'Generate key'}

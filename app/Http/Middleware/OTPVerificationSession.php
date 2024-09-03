@@ -16,8 +16,14 @@ use Auth;
 class OTPVerificationSession
 {
     const OTPVerificationSessionKey = "OTP_VERIFICATION_SESSION";
+    
+    const MaxRetryForOtpVerificationSkip = "MAX_RETRY_OTP_VERIFICATION_SKIP";
 
     const twoFADisabled="SESSION_DISABLED_2FA";
+    
+    const MAX_RETRY_VALUE = 10;
+    
+    const enablePasswordAndApiKey2fa = "PASSWORD_API_KEY_2FA";
     /**
      * @var array $setUrls will hold the http method prefixed urls for which a session key needs to be set.
      *                     This is a map of http method prefixed url and a map of key value.
@@ -43,13 +49,25 @@ class OTPVerificationSession
      *                       The keys in this map can be url patterns as well
      */
     public static array $checkUrls = [
-        "merchant/api/*/users/2fa" => ["http_method" => "PATCH"]
+        "merchant/api/*/users/2fa" => ["http_method" => "PATCH"],
+        "password"                 => ["http_method" => "POST"],
+        "merchant/api/*/keys/*"    => ["http_method" => "PUT"],
+        "merchant/api/*/keys"      => ["http_method" => "POST"],
     ];
 
     public static array $checkRouteName = [
         // do not add generic route name here
     ];
 
+
+    // NOTE:: Remove this and exp, once all SBB tickets are done and ramped up.
+    // This url is subset of checkUrls arrays.
+    private static array $newPatternUrlBehindExp = [
+        "password",
+        "merchant/api/*/keys/*",
+        "merchant/api/*/keys"
+    ];
+    
     /**
      * Handle an incoming request.
      *
@@ -67,28 +85,26 @@ class OTPVerificationSession
         return $res;
     }
 
-    /**
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return void
-     * @throws \Razorpay\Api\Errors\BadRequestError
-     */
-    private function verifyOtpSessionIfApplicable(Request $request): void
+    private function shouldCheckUrlForOtpValidation(Request $request): array
     {
         $method = $request->method();
         $routename = optional($request->route())->getName();
         $shouldCheck = false;
-
+        $patternUriToBeChecked = "";
+        $routeNameToBeCheck = "";
+    
         // check for route name for which we need to verify the session
         if($routename !== null)
         {
             foreach (self::$checkRouteName as $name) {
                 if ($routename === $name) {
+                    $routeNameToBeCheck = $routename;
                     $shouldCheck = true;
                     break;
                 }
             }
         }
+    
         if (!$shouldCheck) {
             // check for url patterns for which we need to verify the session
             foreach (self::$checkUrls as $patternUri => $data) {
@@ -97,24 +113,80 @@ class OTPVerificationSession
                 if ($httpMethod !== $method) {
                     continue;
                 }
-
+            
                 // check for uri pattern
                 if ($request->is($patternUri)) {
+                    $patternUriToBeChecked = $patternUri;
                     $shouldCheck = true;
                     break;
                 }
             }
         }
+        
+        return [
+           $shouldCheck,
+           $patternUriToBeChecked,
+           $routeNameToBeCheck
+        ];
+    }
+    
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return void
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    private function verifyOtpSessionIfApplicable(Request $request): void
+    {
+        [$shouldCheck, $patternUriToBeChecked, $routeNameToBeCheck] = $this->shouldCheckUrlForOtpValidation($request);
+        
+        // NOTE: remove this and exp, once all SBB tickets are done and ramped up.
+        if ((in_array($patternUriToBeChecked, self::$newPatternUrlBehindExp) === true) &&
+            ($this->isExptEnabled(config('splitz.experiments')[self::enablePasswordAndApiKey2fa])=== false))
+        {
+            return;
+        }
+        
         // if we need to check and the session key exists, only then we will do the validation
         if ($shouldCheck
                 && Session::get(self::OTPVerificationSessionKey) != '1' ) {
             throw new BadRequestError('OTP verification required', ErrorCode::BAD_REQUEST_ERROR, 400);
         }
-        if($shouldCheck && Session::get(self::OTPVerificationSessionKey) == '1' &&  $this->isExptEnabled()){
+        
+        if($shouldCheck && Session::get(self::OTPVerificationSessionKey) == '1' &&  $this->isExptEnabled(config('splitz.experiments')[self::twoFADisabled])){
            Session::forget(self::OTPVerificationSessionKey);
         }
     }
 
+    private function resetSessionOtpIfApplicable(Request $request, $content): void
+    {
+       [$shouldCheck, $patternUriToBeChecked, $routeNameToBeCheck] = $this->shouldCheckUrlForOtpValidation($request);
+        
+        if (($shouldCheck === false) ||
+            ($content === null)){
+            return;
+        }
+    
+        // Reset otp in session only if non 2xx comes in response.
+        $httpStatusCode = array_get($content, "http_status_code");
+        $successValue = array_get($content, "success");
+        
+        $retryForOtpVerificationSkip = Session::get(self::MaxRetryForOtpVerificationSkip, 0);
+        
+        if (($httpStatusCode !== 200) &&
+            ($successValue === false) &&
+            ($retryForOtpVerificationSkip > 0)) {
+            $this->setOtpSession('1');
+            $this->setRetryValueForOtpSkipInSession($retryForOtpVerificationSkip-1);
+            return;
+        }
+        
+        if ($retryForOtpVerificationSkip <= 0) {
+            $this->setOtpSession('0');
+            Session::forget(self::MaxRetryForOtpVerificationSkip);
+        }
+    }
+    
     /**
      * @param \Illuminate\Http\Request $request
      * @param $response
@@ -133,13 +205,16 @@ class OTPVerificationSession
         {
             return;
         }
-
+        
+       $this->resetSessionOtpIfApplicable($request, $content);
+        
         // check for route name for which we need to set the session
         if ($routename !== null)
         {
             foreach (self::$setRouteNames as $name => $data) {
                 if ($routename === $name) {
                     $this->setOtpSession($this->getOtpSessionValue($content, $data));
+                    $this->setRetryValueForOtpSkipInSession(self::MAX_RETRY_VALUE);
                     return;
                 }
             }
@@ -155,6 +230,7 @@ class OTPVerificationSession
             // check for uri pattern
             if ($request->is($patternUri)) {
                 $this->setOtpSession($this->getOtpSessionValue($content, $data));
+                $this->setRetryValueForOtpSkipInSession(self::MAX_RETRY_VALUE);
                 return;
             }
         }
@@ -169,10 +245,14 @@ class OTPVerificationSession
     {
         Session::put(self::OTPVerificationSessionKey, $value);
     }
-
-    private function isExptEnabled():bool{
+    
+    private function setRetryValueForOtpSkipInSession(int $value): void
+    {
+        Session::put(self::MaxRetryForOtpVerificationSkip, $value);
+    }
+    
+    private function isExptEnabled(string $experimentId):bool{
        try{
-           $experimentId = config('splitz.experiments')[self::twoFADisabled];
            if (empty($experimentId)) {
                return true;
            }
@@ -190,8 +270,8 @@ class OTPVerificationSession
            if($currentMerchantId == null){
                return false;
            }
-           $concurrentApiCallExperimentId = config('splitz.experiments')[self::twoFADisabled];
-           $experimentIds = [$concurrentApiCallExperimentId];
+           
+           $experimentIds = [$experimentId];
            $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds,isSplitzCachingEnabled: true);
            if (!array_key_exists($experimentId, $data))
            {

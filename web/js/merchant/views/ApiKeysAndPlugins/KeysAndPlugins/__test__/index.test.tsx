@@ -17,6 +17,12 @@ import * as analytics from 'common/utils/analytics';
 // let showNotificationSpy;
 let analyticsTrackSpy;
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {},
+  })),
+}));
+
 const globalState = store.getState();
 
 const getInitialState = ({ userDetails = {}, keyDetails = {}, pluginDetails = {} }) => {

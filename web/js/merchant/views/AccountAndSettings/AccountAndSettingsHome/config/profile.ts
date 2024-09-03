@@ -111,6 +111,7 @@ export const PasswordConfig: StoredInfoDataInterface = {
   isVisible: ({ user: { user }, profile }: User): boolean =>
     user?.signup_via_email || profile?.check_password?.data?.set_password,
   shouldEdit: (): boolean => true,
+  isCriticalFlowEnabled: true,
   selfServeActionName: 'Password Updated',
   analyticsEventInfo: {
     objectName: 'change password',

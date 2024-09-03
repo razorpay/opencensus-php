@@ -240,6 +240,9 @@ return [
 
         // disables capital Instant Settlements Settle Now button
         'CAPITAL_ES_BLOCKED_SPLITZ' => env('CAPITAL_ES_BLOCKED_SPLITZ', ''),
+    
+        // 2fa  for password and api key
+        'PASSWORD_API_KEY_2FA' => env('PASSWORD_API_KEY_2FA', ''),
 
         // enable rrn search in Payments
         'VAS_RRN_SEARCH' => env('VAS_RRN_SEARCH', ''),

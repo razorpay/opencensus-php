@@ -23,6 +23,7 @@ import { bindActionCreators, compose } from 'redux';
 import { FORM_MAP } from './handlers';
 import { getEmailStatus } from 'merchant/reducers/team';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useTrigger2Fa } from 'common/ui/TwoFactorVerification/hooks';
 
 const ProfileViewV1 = lazy(() => import(/* webpackChunkName: "ProfileViewV1" */ './views/v1'));
 const ProfileViewV2 = lazy(() => import(/* webpackChunkName: "ProfileViewV2" */ './views/v2'));
@@ -66,6 +67,8 @@ const makeAnalyticsCall = ({
 const Profile = (props: ProfilePropsInterface): JSX.Element => {
   const { isMobile, openModal, user, profile } = props;
   const context = useTwoFactorVerificationContext();
+
+  const shouldTrigger2Fa = useTrigger2Fa();
 
   const handleEditClick = (data: InfoDataInterface): void => {
     const {
@@ -117,7 +120,7 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
       screen,
     });
 
-    if (isCriticalFlowEnabled) {
+    if (id !== PersonalProfileFields.PASSWORD && isCriticalFlowEnabled) {
       context.criticalFlow({
         modes: ['test', 'live'],
         onUserTwoFaVerified: () => {
@@ -125,6 +128,14 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
         },
         onFlowTermination: () => {},
         isNewAccountAndSettingsPage: true,
+      });
+    } else if (id === PersonalProfileFields.PASSWORD && shouldTrigger2Fa) {
+      context.criticalFlow({
+        enforceVerifyOtp: true,
+        isNewAccountAndSettingsPage: true,
+        modes: ['test', 'live'],
+        onFlowTermination: () => {},
+        onUserTwoFaVerified: () => openModal(modalConfig),
       });
     } else {
       openModal(modalConfig);

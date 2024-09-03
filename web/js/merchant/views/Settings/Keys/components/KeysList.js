@@ -10,6 +10,7 @@ import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification
 
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { useTrigger2Fa } from 'common/ui/TwoFactorVerification/hooks';
 
 const KeysListItem = (props) => {
   const mode = props.mode;
@@ -35,12 +36,17 @@ const KeysListItem = (props) => {
       },
     });
 
-    return context.criticalFlow({
-      modes: ['live'],
-      onUserTwoFaVerified: () => {
-        props.showRollKeyModal({ id });
-      },
-    });
+    if (props.shouldTrigger2Fa) {
+      return context.criticalFlow({
+        enforceVerifyOtp: true,
+        modes: ['test', 'live'],
+        onUserTwoFaVerified: () => {
+          props.showRollKeyModal({ id });
+        },
+      });
+    } else {
+      return props.showRollKeyModal({ id });
+    }
   };
 
   return (
@@ -80,10 +86,27 @@ export default connect(null, { openModal, closeModal })((props) => {
     isWebsiteInWorkflow,
     onWebsiteAdd,
   } = props;
+  const shouldTrigger2Fa = useTrigger2Fa();
+  const { criticalFlow } = useTwoFactorVerificationContext();
 
   const params = {
     merchantId,
   };
+
+  function handleKeyGeneration() {
+    if (shouldTrigger2Fa) {
+      criticalFlow({
+        enforceVerifyOtp: true,
+        onUserTwoFaVerified: () => {
+          // close the 2FA modal and generate the api key
+          closeModal();
+          generateKey(params, false);
+        },
+      });
+    } else {
+      generateKey(params, false);
+    }
+  }
 
   return (
     <div>
@@ -116,9 +139,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                       )}
                       <button
                         class="btn btn-primary"
-                        onClick={() => {
-                          generateKey(params, false);
-                        }}
+                        onClick={handleKeyGeneration}
                         data-test="generate-api-key"
                       >
                         Generate {mode} Key
@@ -161,6 +182,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                 apiKey={key}
                 mode={mode}
                 showRollKeyModal={showRollKeyModal}
+                shouldTrigger2Fa={shouldTrigger2Fa}
               />
             ))}
           </TableBody>

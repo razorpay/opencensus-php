@@ -72,7 +72,6 @@ class OTPVerificationSessionTest extends BaseTestCase
 
     public function testVerifyOtpSessionIfApplicable()
     {
-
         $req = Request::create("merchant/api/live/users/2fa", "PATCH");
 
         Session::shouldReceive('exists')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn(true);
@@ -92,6 +91,21 @@ class OTPVerificationSessionTest extends BaseTestCase
         $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
 
         $req = Request::create("merchant/api/live/users", "PATCH");
+        $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
+    
+        $req = Request::create("password", "POST");
+        Session::shouldReceive('exists')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn(true);
+        Session::shouldReceive('get')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn('1');
+        $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
+    
+        $req = Request::create("merchant/api/live/keys/key_123346227", "PUT");
+        Session::shouldReceive('exists')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn(true);
+        Session::shouldReceive('get')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn('1');
+        $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
+    
+        $req = Request::create("merchant/api/live/keys", "POST");
+        Session::shouldReceive('exists')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn(true);
+        Session::shouldReceive('get')->with(OTPVerificationSession::OTPVerificationSessionKey)->andReturn('1');
         $this->callMethod('verifyOtpSessionIfApplicable', [$req]);
     }
 

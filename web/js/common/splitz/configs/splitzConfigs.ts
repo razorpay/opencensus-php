@@ -1458,5 +1458,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/account-settings', '/website-app-settings/api-keys', '/api-keys', '/keys'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'enable_2fa_password_api_keys',
+          experimentId: {
+            beta: 'OpWCQSp0amLTc1',
+            production: 'OpWL54cgvub5RU',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };
