@@ -37,8 +37,8 @@ class UserRolesScope
             'merchant_activation_details_sales'                    => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
             'onboarding_get_sales'                                 => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
             'onboarding_save_sales'                                => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],
-            'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY],
-            'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],
+            'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::RAZORPAY_SALES],
 
             'fetch_device_config'                                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY],
             'pos_create_order'                                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
