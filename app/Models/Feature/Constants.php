@@ -4553,6 +4553,11 @@ class Constants
             'display_name'  => 'display new onboarding flow to merchant',
             'documentation' => ''
         ],
+        self::PG_V3_ONBOARDING_COMPLETED => [
+            'feature'       => self::PG_V3_ONBOARDING_COMPLETED,
+            'display_name'  => 'merchant completes new onboarding flow',
+            'documentation' => ''
+        ],
         self::PAYOUT_IDEM_KEY_REQUIRED => [
             'feature'       => self::PAYOUT_IDEM_KEY_REQUIRED,
             'display_name'  => 'Payout Idempotency Key Required',
