@@ -82,6 +82,14 @@ class Service extends Merchant\Service
         return $this->getResponseObject()->getAccountResponse($this->merchant, $account);
     }
 
+    public function migrateVpa(string $accountId, array $input): void
+    {
+        Tracer::inspan(['name' => HyperTrace::MIGRATE_VPA_CORE], function () use ($accountId, $input)
+        {
+            $this->core()->migrateVpa($this->merchant, $accountId, $input);
+        });
+    }
+
     protected function getResponseObject()
     {
         if ($this->response === null)

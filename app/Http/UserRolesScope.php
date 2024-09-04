@@ -638,6 +638,7 @@ class UserRolesScope
             'account_create_india_v2'                              => [Role::OWNER, Role::ADMIN],
             'update_submerchant_user_contact'                      => [Role::OWNER, Role::ADMIN],
             'account_delete_v2'                                    => [Role::OWNER, Role::ADMIN],
+            'account_migrate_vpa'                                  => [Role::OWNER, Role::ADMIN],
             'account_edit'                                         => [Role::OWNER, Role::ADMIN],
             'account_edit_v2'                                      => [Role::OWNER, Role::ADMIN],
             'account_features_add'                                 => [Role::OWNER, Role::ADMIN],

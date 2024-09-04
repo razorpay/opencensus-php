@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
 
@@ -3376,7 +3377,6 @@ return [
             ],
         ],
     ],
-
     'testCreateAccountV2RequestForInvalidWebsiteInput' => [
         'request'  => [
             'url'     => '/v2/accounts',
@@ -3439,5 +3439,135 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+    'testMigrateVpaPartnerAuth' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/migrate_vpa',
+            'method'  => 'POST',
+            'content' => [
+                "vpa" => "abc@icici",
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
+        ]
+    ],
+    'testMigrateVpaFeatureNotEnabled' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/migrate_vpa',
+            'method'  => 'POST',
+            'content' => [
+                "vpa" => "abc@icici",
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER,
+        ]
+    ],
+    'testMigrateVpaSubMerchantInactive' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/migrate_vpa',
+            'method'  => 'POST',
+            'content' => [
+                "vpa" => "abc@icici",
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+        ]
+    ],
+    'testMigrateVpaInvalidPayload' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/migrate_vpa',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The vpa field is required.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testMigrateVpaInvalidVpaFormat' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/migrate_vpa',
+            'method'  => 'POST',
+            'content' => [
+                "vpa" => "abc",
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_VPA,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_VPA,
+        ]
+    ],
+    'testMigrateVpaInvalidIssuer' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/migrate_vpa',
+            'method'  => 'POST',
+            'content' => [
+                "vpa" => "abc@qwerty",
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_VPA,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_VPA,
+        ]
     ],
 ];

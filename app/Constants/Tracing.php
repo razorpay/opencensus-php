@@ -378,6 +378,7 @@ class Tracing
             'account_fetch_v2',
             'account_edit_v2',
             'account_delete_v2',
+            'account_migrate_vpa',
 
             'stakeholder_create_v2',
             'stakeholder_update_v2',

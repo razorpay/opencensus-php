@@ -122,6 +122,8 @@ class HyperTrace
     const GET_PRODUCT_CONFIG                                    = 'get_product_config.service';
     const GET_PRODUCT_CONFIG_CORE                               = 'get_product_config.core';
     const UPDATE_PRODUCT_CONFIG                                 = 'update_product_config.service';
+    const MIGRATE_VPA                                           = 'migrate_vpa.service';
+    const MIGRATE_VPA_CORE                                      = 'migrate_vpa.core';
     const UPDATE_PRODUCT_CONFIG_CORE                            = 'update_product_config.core';
     const TRANSFORM_PRODUCT_CONFIG_REQUEST                      = 'transform_product_config_request';
     const ACCEPT_PRODUCT_TNC                                    = 'accept_product_tnc';

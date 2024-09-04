@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use App;
+
 use Illuminate\Support\Str;
 use RZP\Constants\IndianStates;
 use RZP\Exception;
@@ -20,6 +22,8 @@ use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\AccountV2\BMCQuestionnaire\Helper as BMCHelper;
+use RZP\Error\PublicErrorDescription;
+use RZP\Gateway\Upi\Base\ProviderCode;
 
 class Validator extends Merchant\Validator
 {
@@ -234,6 +238,10 @@ class Validator extends Merchant\Validator
 
     protected static $editAddressTypeValidators = [
         'edit_address_check'
+    ];
+
+    protected static array $terminalProcurementRules = [
+        'vpa' => 'required|string'
     ];
 
     public function validateCreateAccount(array $input, string $product)
@@ -587,5 +595,91 @@ class Validator extends Merchant\Validator
         {
             $this->validateInput('edit_account', $input);
         }
+    }
+
+    /**
+     * @throws BadRequestException
+     * @throws \Exception
+     */
+    public function validateMigrateVpaPayload(string $accountId, array $input): void
+    {
+        $this->isSubmerchantActive($accountId);
+        $this->validateVpa($input);
+    }
+
+    public function validateIsOAuthRequest()
+    {
+        $app = App::getFacadeRoot();
+        if (!$app['basicauth']->isOAuth())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED,
+                null,
+                null,
+                PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+            );
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function isSubmerchantActive(string $submerchantId): void
+    {
+        $submerchant = app('repo')->merchant->findOrFailPublic($submerchantId);
+        if (!$submerchant->isActivated())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                null,
+                [
+                    'merchant_id' => $submerchantId,
+                ]
+            );
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function validateVpa(array $input): void
+    {
+        (new Validator())->validateInput("terminalProcurement", $input);
+        $vpaDetails = explode('@', $input['vpa']);
+        if (count($vpaDetails) !== 2)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_VPA,
+                null,
+                null,
+                PublicErrorDescription::BAD_REQUEST_INVALID_VPA,
+            );
+        }
+        $issuer = $vpaDetails[1];
+        if (!$this->validIssuer($issuer))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_VPA,
+                null,
+                null,
+                PublicErrorDescription::BAD_REQUEST_INVALID_VPA,
+            );
+        }
+    }
+
+    /**
+     * validIssuer checks if the provided vpa issuer
+     * is valid based on known vpa issuer list
+     * @param string $issuer the bank issuing vpa
+     * @return bool
+     */
+    private function validIssuer(string $issuer): bool
+    {
+        if (is_null(ProviderCode::getBankCode($issuer)))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

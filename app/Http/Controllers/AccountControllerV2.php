@@ -56,4 +56,16 @@ class AccountControllerV2 extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function migrateVpa(string $accountId)
+    {
+        $input = Request::all();
+
+        Tracer::inSpan(['name' => HyperTrace::MIGRATE_VPA], function () use ($accountId, $input)
+        {
+            $this->service()->migrateVpa($accountId, $input);
+        });
+
+        return response()->noContent(status: 202);
+    }
 }

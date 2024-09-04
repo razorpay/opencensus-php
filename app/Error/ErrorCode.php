@@ -3149,6 +3149,11 @@ class ErrorCode
     const BAD_REQUEST_ADMIN_EXPIRED                                    = 'BAD_REQUEST_ADMIN_EXPIRED';
 
     const SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE                  = 'SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE';
+
+    // custom terminal procurement
+    const BAD_REQUEST_INVALID_VPA                                                   = 'BAD_REQUEST_INVALID_VPA';
+    const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

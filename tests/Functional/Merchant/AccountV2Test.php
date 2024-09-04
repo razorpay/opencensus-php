@@ -6,10 +6,11 @@ use Mail;
 
 use RZP\Constants\Mode;
 use Illuminate\Support\Facades\Http;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Feature\Constants as FName;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
-use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
-use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantPartner as CreateSubMerchantPartnerForLOC;
+use RZP\Services\KafkaProducerClient;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
@@ -23,7 +24,6 @@ use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\AccountV2\Metric;
 use RZP\Models\Merchant\Detail\POIStatus;
-use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -32,7 +32,6 @@ use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
@@ -2154,5 +2153,114 @@ class AccountV2Test extends TestCase
         $this->startTest();
 
         Mail::assertNotQueued(CreateSubMerchantAffiliateForPG::class);
+    }
+
+    public function testMigrateVpaPartnerAuth()
+    {
+        [$subMerchantId, $clientId] = $this->setUpPartnerAuthAndGetSubMerchantIdWithClient();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = "/v2/accounts/acc_$subMerchantId/migrate_vpa";
+
+        $this->startTest($testData);
+    }
+
+    public function testMigrateVpaFeatureNotEnabled()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $this->fixtures->merchant->addFeatures([FeatureConstants::COBRANDED_ONBOARDING], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $testData['request']['url'] = "/v2/accounts/acc_$subMerchantId/migrate_vpa";
+
+        $this->startTest($testData);
+    }
+
+    public function testMigrateVpaSubMerchantInactive()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $this->fixtures->merchant->addFeatures([FeatureConstants::COBRANDED_ONBOARDING, FeatureConstants::CUSTOM_TERMINAL_PROC], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->allowOnboardingApisAccess(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 1);
+        $this->fixtures->merchant->deactivate(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $testData['request']['url'] = "/v2/accounts/acc_$subMerchantId/migrate_vpa";
+
+        $this->startTest($testData);
+    }
+
+    public function testMigrateVpaInvalidPayload()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $this->fixtures->merchant->addFeatures([FeatureConstants::COBRANDED_ONBOARDING, FeatureConstants::CUSTOM_TERMINAL_PROC], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->allowOnboardingApisAccess(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 1);
+
+        $testData = $this->testData[__FUNCTION__];
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $testData['request']['url'] = "/v2/accounts/acc_$subMerchantId/migrate_vpa";
+
+        $this->startTest($testData);
+    }
+
+    public function testMigrateVpaInvalidVpaFormat()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $this->fixtures->merchant->addFeatures([FeatureConstants::COBRANDED_ONBOARDING, FeatureConstants::CUSTOM_TERMINAL_PROC], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->allowOnboardingApisAccess(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 1);
+
+        $testData = $this->testData[__FUNCTION__];
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $testData['request']['url'] = "/v2/accounts/acc_$subMerchantId/migrate_vpa";
+
+        $this->startTest($testData);
+    }
+
+    public function testMigrateVpaInvalidIssuer()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $this->fixtures->merchant->addFeatures([FeatureConstants::COBRANDED_ONBOARDING, FeatureConstants::CUSTOM_TERMINAL_PROC], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->allowOnboardingApisAccess(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 1);
+
+        $testData = $this->testData[__FUNCTION__];
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $testData['request']['url'] = "/v2/accounts/acc_$subMerchantId/migrate_vpa";
+
+        $this->startTest($testData);
+    }
+
+    public function testMigrateVpaSuccess()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $this->fixtures->merchant->addFeatures([FeatureConstants::COBRANDED_ONBOARDING, FeatureConstants::CUSTOM_TERMINAL_PROC], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->allowOnboardingApisAccess(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 1);
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $kafkaProducerMock = $this->getMockBuilder(KafkaProducerClient::class)
+            ->onlyMethods(['produce'])
+            ->getMock();
+        $expectedMessage = [
+            'merchant_id' => $subMerchantId,
+            'payment_method' => 'upi',
+            'instrument' => 'pg.qr.onboarding.offline.qr',
+            'vpa' => [
+                "upi_icici" => 'abc@icici',
+            ],
+            'oauth_application_id' => '1000000platApp',
+        ];
+        $kafkaProducerMock->expects($this->once())
+            ->method('produce')
+            ->with('stage_submerchant_custom_terminal_procurement', stringify($expectedMessage));
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $response = $this->sendRequest([
+            'url'     => "/v2/accounts/acc_$subMerchantId/migrate_vpa",
+            'method'  => 'POST',
+            'content' => [
+                'vpa' => 'abc@icici',
+            ],
+        ]);
+        $response->assertNoContent(202);
     }
 }

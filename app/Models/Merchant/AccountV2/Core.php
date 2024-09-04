@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use App;
+use RZP\Error\PublicErrorDescription;
 use RZP\Http\Controllers\MerchantOnboardingApiV2ProxyController;
 use Razorpay\Trace\Logger as Trace;
 use Request;
@@ -1142,5 +1144,85 @@ class Core extends Merchant\Core
             $input[Constants::PROFILE][Constants::ADDRESSES] = $addresses;
         }
         return $input;
+    }
+
+    /**
+     * @param Merchant\Entity $partner -- partner entity
+     * @param string $accountId -- submerchant id
+     * @param array $input -- request payload
+     * @throws BadRequestException
+     * @throws \Exception
+     */
+    public function migrateVpa(Merchant\Entity $partner, string $accountId, array $input): void
+    {
+        (new Validator)->validateIsOAuthRequest();
+
+        $app = App::getFacadeRoot();
+        $oauthAppId = $app['basicauth']->getOAuthApplicationId();
+
+        $partnerId = $partner->getId();
+        Entity::verifyIdAndStripSign($accountId);
+        // check if feature flag is enabled for the partner
+        if (!$partner->isFeatureEnabled(\RZP\Models\Feature\Constants::CUSTOM_TERMINAL_PROC))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER,
+                null,
+                [
+                    'partner_id' => $partnerId,
+                    'account_id' => $accountId,
+                ]
+            );
+        }
+
+        $accountCoreV1 = new Merchant\Account\Core();
+        $accountCoreV1->validatePartnerAccess($partner, $accountId);
+
+        (new Validator)->validateMigrateVpaPayload($accountId, $input);
+
+        // produce kafka message
+        $this->produceVpaMigrateKafkaMsg($input, $partnerId, $accountId, $oauthAppId);
+    }
+
+    private function produceVpaMigrateKafkaMsg(array $input, string $partnerId, string $accountId, string $oauthAppId): void
+    {
+        $vpa = $input['vpa'];
+        $vpaDetails = explode('@', $vpa);
+        $issuer = $vpaDetails[1];
+        // produce kafka event
+        $topic = env('SUBMERCHANT_CUSTOM_TERMINAL_PROCUREMENT', 'stage_submerchant_custom_terminal_procurement');
+        $message = [
+            'merchant_id' => $accountId,
+            'payment_method' => 'upi',
+            'instrument' => 'pg.qr.onboarding.offline.qr',
+            'vpa' => [
+                "upi_$issuer" => $vpa,
+            ],
+            'oauth_application_id' => $oauthAppId,
+        ];
+
+        try
+        {
+            app('kafkaProducerClient')->produce($topic, stringify($message));
+            $this->trace->info(TraceCode::KAFKA_SUBMERCHANT_CUSTOM_TERMINAL_PROCUREMENT_PUSH_SUCCESS, [
+                "partner_id" => $partnerId,
+                "account_id" => $accountId,
+                "topic" => $topic,
+            ]);
+            $this->trace->count(Metric::SUBMERCHANT_CUSTOM_TERMINAL_PROCUREMENT_SUCCESS);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::KAFKA_SUBMERCHANT_CUSTOM_TERMINAL_PROCUREMENT_PUSH_FAILED,
+                [
+                    "partner_id" => $partnerId,
+                    "topic" => $topic,
+                    "message" => $message
+                ]);
+            $this->trace->count(Metric::SUBMERCHANT_CUSTOM_TERMINAL_PROCUREMENT_FAILURE);
+        }
     }
 }

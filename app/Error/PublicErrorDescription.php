@@ -1843,4 +1843,8 @@ class PublicErrorDescription
     const BAD_REQUEST_BUSINESS_GSTIN_MISMATCH = 'The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_SUSPICIOUS_TRANSACTION  = 'Transaction blocked. Please reach out to support.';
     const SERVER_ERROR_PRODUCT_CONFIG_SET_METHODS_FAILURE = 'Your Razorpay merchant account creation is in progress. Please retry the action after sometime.';
+
+    // custom terminal procurement
+    const BAD_REQUEST_INVALID_VPA                                                   = 'VPA provided is not valid';
+    const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'Partner does not have access to this feature';
 }
