@@ -54,6 +54,8 @@ class Metric extends Base\Core
     const IS_VERIFY_NEW_FLOW                    = 'is_verify_new_flow';
     const IS_TIMEOUT_NEW_FLOW                   = 'is_timeout_new_flow';
     const LABEL_OPTIMIZER                       = 'optimizer';
+    const LABEL_RECURRING                       = 'recurring';
+    const LABEL_RECURRING_TYPE                  = 'recurring_type';
     const LABEL_IS_REARCH                       = 'is_rearch';
 
 
@@ -215,12 +217,21 @@ class Metric extends Base\Core
     // If needed for other payments, the check can be removed and the optimizer dimension needs to be updated
     public function pushCallbackExceptionMetrics(Entity $payment, \Throwable $ex)
     {
-        if (empty($payment) === false && isset($payment->terminal) && $payment->terminal->isOptimizer()) {
+        if (empty($payment) === false &&
+            (isset($payment->terminal) && $payment->terminal->isOptimizer()) or
+            ($payment->isUpiRecurring() === true)) {
 
             $dimensions[Metric::PAYMENT_CALLBACK_ROUTE] = $this->app['api.route']->getCurrentRouteName();
             $dimensions[Metric::LABEL_PAYMENT_GATEWAY] = $payment->getGateway();
             $dimensions[Metric::LABEL_PAYMENT_METHOD] = $payment->getMethod();
             $dimensions[Metric::LABEL_OPTIMIZER] = true;
+
+            if($payment->isUpiRecurring() === true)
+            {
+                $dimensions[Metric::LABEL_OPTIMIZER] = false;
+                $dimensions[Metric::LABEL_RECURRING] = $payment->isRecurring();
+                $dimensions[Metric::LABEL_RECURRING_TYPE] = $payment->getRecurringType();
+            }
 
             $this->pushExceptionMetrics($ex, Metric::PAYMENT_CALLBACK_PROCESS_FAILED, $dimensions, $payment);
         }
