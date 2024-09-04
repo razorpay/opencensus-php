@@ -68,8 +68,8 @@ importers:
         specifier: 1.45.3
         version: 1.45.3
       '@reportportal/agent-js-playwright':
-        specifier: 5.1.4
-        version: 5.1.4
+        specifier: 5.1.9
+        version: 5.1.9
       '@rollup/plugin-url':
         specifier: ^7.0.0
         version: 7.0.0(rollup@1.31.0)
@@ -4036,9 +4036,17 @@ packages:
     resolution: {integrity: sha512-Y1TeCUtFOMW14Pt+dBvKxk+/G73E5dUc6A/CEuIS/OTb4VKUPoLj1hrgby4E5hLFjrfyWw7r855lQVyzdvzUgw==}
     engines: {node: '>=14.x'}
 
+  '@reportportal/agent-js-playwright@5.1.9':
+    resolution: {integrity: sha512-QTe9mv56WQDNxJJkNcWss04/Q1wHAAJF//4V2U9BMu0pt1fFjZPmgOnC24U1VBB5wsf2DRWZO6ZIN6EeZCTvHg==}
+    engines: {node: '>=14.x'}
+
   '@reportportal/client-javascript@5.0.15':
     resolution: {integrity: sha512-ry6euqCOoJLXCUuBhlRMjCYKhbgU+9EYdZ8jpTuagoBVxS8V8nJed9ODnS4bXX61g+pJm+NP/0DrN2Ptq+DgQQ==}
     engines: {node: '>=10.x'}
+
+  '@reportportal/client-javascript@5.1.4':
+    resolution: {integrity: sha512-Pk00dSYX8TANmEkg2CN06PxoSW1f83d1mew1M0kw5pDZOif+1cYrjy1E4HNrdLBoYhAH6oQIISvJSKc7K6A8fg==}
+    engines: {node: '>=12.x'}
 
   '@rollup/plugin-babel@5.3.1':
     resolution: {integrity: sha512-WFfdLWU/xVWKeRQnKmIAQULUI7Il0gZnBIH/ZFO069wYIfPu+8zrfp/KMW0atmELoRDq8FbiP3VCss9MhCut7Q==}
@@ -7150,6 +7158,11 @@ packages:
 
   axios-retry@3.9.1:
     resolution: {integrity: sha512-8PJDLJv7qTTMMwdnbMvrLYuvB47M81wRtxQmEdV5w4rgbTXTt+vtPkXwajOfOdSyv/wZICJOC+/UhXH4aQ/R+w==}
+
+  axios-retry@4.5.0:
+    resolution: {integrity: sha512-aR99oXhpEDGo0UuAlYcn2iGRds30k366Zfa05XWScR9QaQD4JYiP3/1Qt1u7YlefUOK+cn0CcwoL1oefavQUlQ==}
+    peerDependencies:
+      axios: 0.x || 1.x
 
   axios@0.21.1:
     resolution: {integrity: sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==}
@@ -11774,6 +11787,7 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.3:
     resolution: {integrity: sha512-x00IRNXNy63jwGkJmzPigoySHbaqpNuzKbBOmzK+g2OdZpQ9w+sxCN+VSB3ja7IAge2OP2qpfxTjeNcyjmW1uw==}
@@ -27557,11 +27571,29 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  '@reportportal/agent-js-playwright@5.1.9':
+    dependencies:
+      '@reportportal/client-javascript': 5.1.4
+      strip-ansi: 6.0.1
+    transitivePeerDependencies:
+      - debug
+
   '@reportportal/client-javascript@5.0.15':
     dependencies:
       axios: 0.27.2
       axios-retry: 3.9.1
       glob: 7.2.3
+      ini: 2.0.0
+      uniqid: 5.4.0
+      uuid: 9.0.1
+    transitivePeerDependencies:
+      - debug
+
+  '@reportportal/client-javascript@5.1.4':
+    dependencies:
+      axios: 1.6.8
+      axios-retry: 4.5.0(axios@1.6.8)
+      glob: 8.1.0
       ini: 2.0.0
       uniqid: 5.4.0
       uuid: 9.0.1
@@ -33457,6 +33489,11 @@ snapshots:
   axios-retry@3.9.1:
     dependencies:
       '@babel/runtime': 7.24.4
+      is-retry-allowed: 2.2.0
+
+  axios-retry@4.5.0(axios@1.6.8):
+    dependencies:
+      axios: 1.6.8
       is-retry-allowed: 2.2.0
 
   axios@0.21.1:

@@ -104,7 +104,7 @@
     "size-limit": "^8.1.0",
     "typescript": "4.9.3",
     "verdaccio": "^5.0.4",
-    "@reportportal/agent-js-playwright": "5.1.4"
+    "@reportportal/agent-js-playwright": "5.1.9"
   },
   "resolutions": {
     "@typescript-eslint/eslint-plugin": "5.59.0",

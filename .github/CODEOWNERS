@@ -34,15 +34,18 @@ web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp
 web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48
 web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe @razorpay/merchant-dashboard
 web/js/merchant/views/Transactions/v1/SuccessRate @amitabh-blade @akash-sachan @NarasimhaSwamy
-web/js/merchant/views/Navigator                   @parth-p-ui @prem-io
-web/js/merchant/views/Optimizer                   @parth-p-ui @prem-io
-config/splitz.php                                 @razorpay/ssab-fe @abhayp
+web/js/merchant/views/Navigator                   @parth-p-ui
+web/js/merchant/views/Optimizer                   @parth-p-ui
+config/splitz.php                                  @razorpay/ssab-fe
 web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
-web/js/merchant/views/POS                         @amitabh-blade @DanishOnGit @AakashRaina @amanpatel6991
+web/js/merchant/views/POS                         @razorpay/omni-acquisition-fe
 plugins/i18n-rules                                @razorpay/i18n-fe
 smart-linter.js                                   @razorpay/i18n-fe
 apps/digital-bills                                @mihir-karbelkar-rp
-apps/pos                                          @amitabh-blade @DanishOnGit @AakashRaina @amanpatel6991 @loombarishav
-pnpm-lock.yaml                                    @aniketonweb @razorpay/ssab-fe
-web/js/common/utils/posAgent.ts                   @amitabh-blade @DanishOnGit @AakashRaina @amanpatel6991
+apps/pos                                          @razorpay/omni-acquisition-fe
+pnpm-lock.yaml                                    @razorpay/ssab-fe
+web/js/common/utils/posAgent.ts                   @razorpay/omni-acquisition-fe
 environment/.env.vault.j2                         @razorpay-sanjib @shubham25kr07 @loombarishav @dhruvdutt @rahul-rzp
+.github/workflows/e2e.yml                          @razorpay/deploy-leads-dashboard
+playwright/config/devstack.json                    @razorpay/deploy-leads-dashboard
+playwright/utils/infraE2EUtils.js                 @razorpay/deploy-leads-dashboard
