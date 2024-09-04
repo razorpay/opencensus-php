@@ -81,22 +81,15 @@ class Service extends Base\Service
     public function fetchOngoingDowntimes(): array
     {
         $this->trace->info(TraceCode::FETCH_ONGOING_PLATFORM_LEVEL_DOWNTIMES, ["merchantId" => $this->merchant->getId()]);
-        $properties = [
-            'id'            => UniqueIdEntity::generateUniqueId(),
-            'experiment_id' => $this->app['config']->get('app.' . Merchant\RazorxTreatment::DOWNTIME_MANAGER_ROUTING_EXPERIMENT),
-            'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
-        ];
-        $isExperimentEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'variables');
 
-        if ($isExperimentEnabled) {
-            $isEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentVariableEnabled($properties, 'variant');
-            if ($isEnabled) {
-                return (new DowntimeManagerService($this->app))->fetchOngoingDowntimesForMerchantDashboard();
-            }else{
-                return $this->core()->fetchOngoingDowntimes() ?? [] ;
-            }
+        if ($this->shouldCallDowntimeManagerService() === true)
+        {
+            return (new DowntimeManagerService($this->app))->fetchOngoingDowntimesForMerchantDashboard();
         }
-        return $this->core()->fetchOngoingDowntimes() ?? [];
+        else
+        {
+            return $this->core()->fetchOngoingDowntimes() ?? [] ;
+        }
     }
 
     public function fetchResolvedDowntimes($params): array
@@ -105,22 +98,14 @@ class Service extends Base\Service
             ["merchantId" => $this->merchant->getId(), "filters" => $params]);
         $this->validateRequestParams($params);
 
-        $properties = [
-            'id'            => UniqueIdEntity::generateUniqueId(),
-            'experiment_id' => $this->app['config']->get('app.' . Merchant\RazorxTreatment::DOWNTIME_MANAGER_ROUTING_EXPERIMENT),
-            'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
-        ];
-        $isExperimentEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties, 'variables');
-
-        if ($isExperimentEnabled) {
-            $isEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentVariableEnabled($properties, 'variant');
-            if ($isEnabled) {
-                return (new DowntimeManagerService($this->app))->fetchResolvedDowntimesForMerchantDashboard($params);
-            }else{
-                return $this->core()->fetchResolvedDowntimes($params);
-            }
+        if ($this->shouldCallDowntimeManagerService() === true)
+        {
+            return (new DowntimeManagerService($this->app))->fetchResolvedDowntimesForMerchantDashboard($params);
         }
-        return $this->core()->fetchResolvedDowntimes($params);
+        else
+        {
+            return $this->core()->fetchResolvedDowntimes($params);
+        }
     }
 
     public function fetchScheduledDowntimes()
@@ -643,6 +628,11 @@ class Service extends Base\Service
         {
             $this->trace->info(TraceCode::DOWNTIME_FETCH_CC_FROM_REDIS_FAILURE, ['Key' => $key,]);
         }
+    }
+
+    protected function shouldCallDowntimeManagerService(): bool
+    {
+        return true;
     }
 
 }
