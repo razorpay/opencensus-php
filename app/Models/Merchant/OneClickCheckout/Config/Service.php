@@ -396,6 +396,18 @@ class Service extends Base\Service
 
         $this->updateShippingInfoConfig($shippingProvider);
 
+        if (isset($input[Constants::WALLET_PAYMENT]))
+        {
+            $capillaryWalletPassword = $input[Constants::WALLET_PAYMENT][Constants::WALLETS][Constants::CAPILLARY_WALLET][Constants::CREDENTIALS][Constants::PASSWORD];
+            $input[Constants::WALLET_PAYMENT][Constants::CAPILLARY_WALLET][Constants::WALLETS][Constants::CREDENTIALS][Constants::PASSWORD] = $this->app['encrypter']->encrypt($capillaryWalletPassword);
+            (new Core)->upsertMerchant1ccConfig(
+                Constants::WALLET_PAYMENT,
+                $input[Constants::WALLET_PAYMENT]["enabled"],
+                $input[Constants::WALLET_PAYMENT]["wallets"],
+
+            );
+        }
+
         if ( $input['platform'] === Constants::SHOPIFY && (isset($input[Type::ONE_CLICK_CHECKOUT]))) {
 
             $configOneClickCheckout = $this->merchant->get1ccConfig(Type::ONE_CLICK_CHECKOUT);
@@ -765,6 +777,12 @@ class Service extends Base\Service
                 Constants::COD_ENGINE_TYPE => $codEngineType
             ];
 
+            if (isset($configFlagsResponse[Constants::WALLET_PAYMENT])) {
+                $response = array_merge($response, [
+                    Constants::WALLET_PAYMENT => $configFlagsResponse[Constants::WALLET_PAYMENT]
+                ]);
+            }
+
             if (sizeof($shopifyAppsInstalled) > 0)
             {
                 $response = array_merge($response, [
@@ -874,6 +892,12 @@ class Service extends Base\Service
             "coupon_config"   => $couponConfig,
             "shipping_source" => $shippingSource
         ];
+
+        if (isset($configFlagsResponse[Constants::WALLET_PAYMENT])) {
+            $result = array_merge($result, [
+                Constants::WALLET_PAYMENT => $configFlagsResponse[Constants::WALLET_PAYMENT]
+            ]);
+        }
 
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::WOOCOMMERCE)
         {
@@ -1242,6 +1266,15 @@ class Service extends Base\Service
             }
             if (in_array($configName, Constants::CONFIG_FLAGS) === true) {
                 $response[$configName] =  $configValue;
+            }
+            if ($configName === Constants::WALLET_PAYMENT) {
+                $walletsConfig = $config->getValueJson();
+                $encryptedCapillaryWalletPassword = $walletsConfig[Constants::CAPILLARY_WALLET][Constants::CREDENTIALS][Constants::PASSWORD];
+                $walletsConfig[Constants::CAPILLARY_WALLET][Constants::CREDENTIALS][Constants::PASSWORD] = $this->app['encrypter']->decrypt($encryptedCapillaryWalletPassword);
+                $response[$configName] = [
+                    Constants::ENABLED => $configValue,
+                    Constants::WALLETS => $walletsConfig,
+                ];
             }
         }
 

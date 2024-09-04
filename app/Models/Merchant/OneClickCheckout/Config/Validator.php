@@ -41,6 +41,7 @@ class Validator extends Base\Validator
         "shipping_engine"                => 'sometimes|boolean',
         "shipping_source"                => 'sometimes|string|in:shiprocket,merchant,null',
         "terra_wallet"                   => 'sometimes|boolean',
+        "wallet_payment"                 => 'sometimes|array|custom:wallet_payment_config'
     ];
 
     protected static $shopifyRules = [
@@ -75,7 +76,8 @@ class Validator extends Base\Validator
         "dashboard_view"                 => 'sometimes|string|in:magic_checkout,rcod',
         // -- code end
         "apps_installed"                 => 'sometimes|array|min:1|max:2',
-        "apps_installed.*"               => 'string|distinct:ignore_case|in:magic_checkout,sopc'
+        "apps_installed.*"               => 'string|distinct:ignore_case|in:magic_checkout,sopc',
+        "wallet_payment"                 => 'sometimes|array|custom:wallet_payment_config'
     ];
 
     protected static $shippingProviderRules = [
@@ -291,6 +293,40 @@ class Validator extends Base\Validator
                 Constants::COD_ENGINE_TYPE => '',
             ]
         ));
+
+        if (count($invalidKeys) > 0)
+        {
+            $this->throwExtraFieldsException($invalidKeys);
+        }
+    }
+
+    public function validateWalletPaymentConfig($attribute, array $input)
+    {
+        $this->throwErrorIfKeyMisMatchOccurs($input, [
+            Constants::ENABLED      => '',
+            Constants::WALLETS => '',
+        ]);
+
+        $this->throwErrorIfKeyMisMatchOccurs($input[Constants::WALLETS], [
+            Constants::CAPILLARY_WALLET      => '',
+        ]);
+
+        $this->throwErrorIfKeyMisMatchOccurs($input[Constants::WALLETS][Constants::CAPILLARY_WALLET], [
+            Constants::NAME      => '',
+            Constants::ALLOW_CUSTOMER_INPUT => '',
+            Constants::ENABLED => '',
+            Constants::CREDENTIALS => '',
+        ]);
+
+        $this->throwErrorIfKeyMisMatchOccurs($input[Constants::WALLETS][Constants::CAPILLARY_WALLET][Constants::CREDENTIALS], [
+            Constants::USERNAME => '',
+            Constants::PASSWORD => '',
+        ]);
+    }
+
+    private function throwErrorIfKeyMisMatchOccurs(array $input, array $keys)
+    {
+        $invalidKeys = array_keys(array_diff_key($input, $keys));
 
         if (count($invalidKeys) > 0)
         {

@@ -154,6 +154,13 @@ class Constants
 
     const ONE_CC_HIDE_COD_WHEN_DISABLED = "one_cc_hide_cod_when_disabled";
 
+    const WALLET_PAYMENT        = "wallet_payment";
+    const WALLETS               = "wallets";
+    const CAPILLARY_WALLET      = "capillary_wallet";
+    const NAME                  = "name";
+    const ALLOW_CUSTOMER_INPUT  = "allow_customer_input";
+    const CREDENTIALS           = "credentials";
+
     const TERRA_WALLET = "terra_wallet";
     const TERRA_WALLET_VALUE = "terra_wallet_value";
 

@@ -12170,6 +12170,13 @@ class Service extends Base\Service
             }
         }
 
+        if (($input['config'] === Merchant\OneClickCheckout\Constants::WALLET_PAYMENT) && (isset($input['value_json']) === true))
+        {
+            $capillaryWalletPassword = $input['value_json'][Merchant\OneClickCheckout\Constants::CAPILLARY_WALLET][Merchant\OneClickCheckout\Constants::CREDENTIALS][Merchant\OneClickCheckout\Constants::PASSWORD];
+            $input['value_json'][Merchant\OneClickCheckout\Constants::CAPILLARY_WALLET][Merchant\OneClickCheckout\Constants::CREDENTIALS][Merchant\OneClickCheckout\Constants::PASSWORD] = $this->app['encrypter']->encrypt($capillaryWalletPassword);
+        }
+
+
         (new Merchant\Core)->associateMerchant1ccConfig(
             $input['config'],
             $input['value']??'',
