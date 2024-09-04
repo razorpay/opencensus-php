@@ -735,6 +735,7 @@ class Gateway
         self::ISG,
         self::UPI_YESBANK,
         self::UPI_RZPAPB,
+        self::AMEX,
     ];
 
     const FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS = [
