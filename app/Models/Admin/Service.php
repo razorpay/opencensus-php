@@ -556,6 +556,14 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function validParamsForFeeBreakupFetch($input){
+        if (isset($input['pricing_rule_id']))
+        {
+            return false;
+        }
+        return true;
+    }
+
     public function fetchMultipleEntities($entity, $input, $isExternalAdmin = false)
     {
         $data = ["function" => "fetchMultipleEntities", "entity" => $entity, "input" => $this->redactInput($input, self::SENSITIVE_KEYS_TO_BE_REDACTED)];
@@ -602,6 +610,10 @@ class Service extends Base\Service
             $entities = $this->repo->$entity->fetch($input, null, $this->repo->payment->getPaymentFetchReplicaConnection());
         }
         else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
+        {
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
+        else if ( $entity === Entity::FEE_BREAKUP && $this->validParamsForFeeBreakupFetch($input) )
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
