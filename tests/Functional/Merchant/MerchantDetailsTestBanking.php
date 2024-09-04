@@ -117,4 +117,148 @@ class MerchantDetailsTestBanking extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testUpdateCompanyCinForPublicLimitedNegative()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '5',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateCompanyCinForPublicLimitedPositive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '5',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateCompanyCinForProprietorshipPositive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '1',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateCompanyCinForPrivateLimitedNegative()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '4',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateCompanyCinForPrivateLimitedPositive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '4',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateCompanyCinForLLPPositive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '6',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateGSTINForPrivateLimitedPositive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '4',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateGSTINForNotYetRegisteredPositive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '11',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateGSTINForProprietorshipNegative()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',[
+            'business_type' => '1',
+            'business_name' => 'ABC LTD',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
 }

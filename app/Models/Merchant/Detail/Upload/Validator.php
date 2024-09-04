@@ -13,6 +13,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Batch\Header;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Detail\Entity as MDEntity;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
 use Lib\Gstin;
 use RZP\Models\Admin\Org;
@@ -49,8 +51,17 @@ class Validator extends Base\Validator
     const HTTPS_RULE = '/^https(.)+$/';
     const RAZORPAY_URL = '/^https?:\/\/(www\.)?razorpay\.[a-z]{2,}(\/.*)?$/i';
     const COMPANY_CIN_REGEX = '/^[ulUL]{1}[0-9]{5}[A-Z|a-z]{2}[0-9]{4}[A-Z|a-z]{3}[0-9]{6}$/';
+    const COMPANY_CIN_PRIVATE_LIMITED_REGEX = '/^[ulUL]{1}[0-9]{5}[A-Za-z]{2}[0-9]{4}(?i:FTC|GAT|OPC|PTC|ULT)[0-9]{6}$/';
+    const COMPANY_CIN_PUBLIC_LIMITED_REGEX = '/^[ulUL]{1}[0-9]{5}[A-Za-z]{2}[0-9]{4}(?i:FLC|GAP|GOI|NPL|PLC|SGC|ULL)[0-9]{6}$/';
     const COMPANY_LLPIN_REGEX = '/^[A-Z|a-z]{3}-[0-9]{4}$/';
+    //Added the New LLPIN regex as per RBI Compliance
+    const NEW_COMPANY_LLPIN_REGEX = '/^([A-Za-z]{3}-\d{4}|[Ff]\w{3}-\d{4})$/';
     const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
+    const COMPANY_PAN_NUMBER_LETTER_F_REGEX = '/^[A-Za-z]{3}[FfGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/' ;
+    const COMPANY_PAN_NUMBER_LETTERS_ABTG_REGEX = '/^[A-Za-z]{3}[ABTGabtg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
+    const COMPANY_PAN_NUMBER_LETTERS_ABTGL_REGEX = '/^[A-Za-z]{3}[ABTGLabtgl][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
+    const COMPANY_PAN_NUMBER_LETTER_C_REGEX = '/^[A-Za-z]{3}[CcGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/' ;
+    const COMPANY_PAN_NUMBER_LETTER_H_REGEX = '/^[A-Za-z]{3}[HhGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/' ;
     const COMPANY_PAN_NUMBER_REGEX  = '/^[A-Za-z]{3}[CcHhFfAaTtBbLlJjGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
 
     public function __construct($entity = null)
@@ -284,6 +295,21 @@ class Validator extends Base\Validator
     {
         (new Validator)->validateInput('uploadMiqBatch', $entry);
 
+        try
+        {
+            if($this->orgId !== null)
+            {
+                $this->orgId = Org\Entity::verifyIdAndSilentlyStripSign($this->orgId);
+
+                $this->org = $this->repo->org->findOrFailPublic($this->orgId);
+
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+
         if(empty($entry[Header::MIQ_ADDRESS]) === true || strtolower($entry[Header::MIQ_ADDRESS]) === "na")
         {
             throw new BadRequestValidationFailureException("The ".Header::MIQ_ADDRESS. " is required");
@@ -298,12 +324,26 @@ class Validator extends Base\Validator
             }else if((preg_match(self::COMPANY_CIN_REGEX, $entry[Header::MIQ_CIN]) === 0)){
                  throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is invalid");
             }
-        }else if($businessType === Merchant\Detail\BusinessType::LLP){
-             if(empty($entry[Header::MIQ_CIN]) === true){
+        }else if($businessType === Merchant\Detail\BusinessType::LLP)
+        {
+            if(empty($entry[Header::MIQ_CIN]) === true)
+            {
                 throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is required");
-            }else if((preg_match(self::COMPANY_LLPIN_REGEX, $entry[Header::MIQ_CIN]) === 0)){
-                 throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is invalid");
             }
+            else
+            {
+                if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+                {
+                    if(preg_match(self::NEW_COMPANY_LLPIN_REGEX, $entry[Header::MIQ_CIN]) === 0)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is invalid for ". $businessType);
+                    }
+                }
+                else if((preg_match(self::COMPANY_LLPIN_REGEX, $entry[Header::MIQ_CIN]) === 0))
+                {
+                    throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is invalid");
+                }
+             }
         }
 
          $businessTypesRequiringBusinessPan = [
@@ -325,13 +365,20 @@ class Validator extends Base\Validator
                 Merchant\Detail\BusinessType::NOT_YET_REGISTERED, Merchant\Detail\BusinessType::PROPRIETORSHIP,
             ];
 
-         if(in_array($businessType, $businessTypesRequiringPersonalPan) === true){
-            if(empty($entry[Header::MIQ_BUSINESS_PAN]) === false){
-                if(preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0){
-                 throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid");
+        if($this->org === null or $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === false)
+        {
+            if(in_array($businessType, $businessTypesRequiringPersonalPan) === true)
+            {
+                if(empty($entry[Header::MIQ_BUSINESS_PAN]) === false)
+                {
+                    if(preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0){
+
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid for ".$businessType);
+                    }
+                }
             }
-            }
-         }
+        }
+
 
         if($businessType !== Merchant\Detail\BusinessType::PROPRIETORSHIP and empty($entry[Header::MIQ_BUSINESS_NAME]))
         {
@@ -488,6 +535,8 @@ class Validator extends Base\Validator
 
             }
         }
+
+        (new Detail\Validator)->validateMerchantFieldsForBankingCompliance($entry);
     }
 
 

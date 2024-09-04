@@ -13,7 +13,6 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as PName;
 use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\Merchant;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Admin\Org;
 
@@ -608,7 +607,134 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_ABOUT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_TERMS_CONDITIONS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CONTACT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRIVACY_POLICY] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRODUCT_PRICING] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_REFUNDS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CANCELLATION] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_SHIPPING_DELIVERY] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_GSTIN] = '27AARCA5484G2ZP';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_PAN] = 'AARCA5484G';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'U74999MH2013pLc247916';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+
+        $this->assertEmpty($response[Header::ERROR_CODE]);
+
+        $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
+    }
+
+
+    public function testCreateMerchantUploadMIQFailureAuthorisedSignatoryPAN()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_ABOUT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_TERMS_CONDITIONS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CONTACT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRIVACY_POLICY] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRODUCT_PRICING] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_REFUNDS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CANCELLATION] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_SHIPPING_DELIVERY] = 'https://amazon.com';
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_AUTHORISED_SIGNATORY_PAN] ='BOVKD4792K';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+
+        $this->assertEquals('Invalid Authorised Signatory PAN : BOVKD4792K', $response[Header::ERROR_DESCRIPTION]);
+
+    }
+
+    public function testCreateMerchantUploadMIQFailureBusinessPan($entry = null)
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
+
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_ABOUT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_TERMS_CONDITIONS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CONTACT_US] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRIVACY_POLICY] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_PRODUCT_PRICING] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_REFUNDS] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CANCELLATION] = 'https://amazon.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_SHIPPING_DELIVERY] = 'https://amazon.com';
+
+        if($entry !== null)
+        {
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = $entry[Header::MIQ_BUSINESS_TYPE];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_PAN] = $entry[Header::MIQ_BUSINESS_PAN];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_GSTIN] = $entry[Header::MIQ_GSTIN];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = $entry[Header::MIQ_CIN];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_AUTHORISED_SIGNATORY_PAN] = $entry[Header::MIQ_AUTHORISED_SIGNATORY_PAN];
+
+            if($entry[Header::MIQ_BUSINESS_TYPE] === Detail\BusinessType::LLP)
+            {
+                $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'ABC-1234';
+            }
+        }
+        else
+        {
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_PAN]= 'AARAA5484G';
+        }
+
+        $BusinessType = $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
+
+        $this->assertEquals('The '.Header::MIQ_BUSINESS_PAN. ' is invalid for '.$BusinessType, $response[Header::ERROR_DESCRIPTION]);
+
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPan($entry = null)
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
@@ -622,6 +748,28 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CANCELLATION] = 'https://amazon.com';
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_SHIPPING_DELIVERY] = 'https://amazon.com';
 
+        if($entry !== null)
+        {
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = $entry[Header::MIQ_BUSINESS_TYPE];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_PAN] = $entry[Header::MIQ_BUSINESS_PAN];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_GSTIN] = $entry[Header::MIQ_GSTIN];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = $entry[Header::MIQ_CIN];
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_AUTHORISED_SIGNATORY_PAN] = $entry[Header::MIQ_AUTHORISED_SIGNATORY_PAN];
+
+            if($entry[Header::MIQ_BUSINESS_TYPE] === Detail\BusinessType::LLP)
+            {
+                $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'ABC-1234';
+            }
+        }
+        else
+        {
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = Detail\BusinessType::PUBLIC_LIMITED;
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_PAN] = 'AAICM8084F';
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_GSTIN] = '27AAICM8084F2ZP';
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'U74999MH2013pLc247916';
+            $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_AUTHORISED_SIGNATORY_PAN] = 'AAAPD0367L';
+        }
+
         $response = $this->startTest();
 
         $this->assertEquals('success', $response[Header::STATUS]);
@@ -631,6 +779,174 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEmpty($response[Header::ERROR_DESCRIPTION]);
     }
 
+    public function testCreateMerchantUploadMIQFailureBusinessPanForPartnership()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::PARTNERSHIP,
+            Header::MIQ_BUSINESS_PAN => 'AAICM8084F',
+            Header::MIQ_GSTIN => '27AAICM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQFailureBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPanForPartnership()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::PARTNERSHIP,
+            Header::MIQ_BUSINESS_PAN => 'AAAFD0367L',
+            Header::MIQ_GSTIN => '27AAAFD0367L2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQSuccessBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQFailureBusinessPanForLLP()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::LLP,
+            Header::MIQ_BUSINESS_PAN => 'AAYCA3144L',
+            Header::MIQ_GSTIN => '27AAYCA3144L2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQFailureBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPanForLLP()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::LLP,
+            Header::MIQ_BUSINESS_PAN => 'AAYFA3144L',
+            Header::MIQ_GSTIN => '27AAYFA3144L2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQSuccessBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQFailureBusinessPanForPrivateLimited()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::PRIVATE_LIMITED,
+            Header::MIQ_BUSINESS_PAN => 'AAIAM8084F',
+            Header::MIQ_GSTIN => '27AAIAM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQFailureBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPanForPrivateLimited()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::PRIVATE_LIMITED,
+            Header::MIQ_BUSINESS_PAN => 'AAICM8084F',
+            Header::MIQ_GSTIN => '27AAICM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQSuccessBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQFailureBusinessPanForNGO()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::NGO,
+            Header::MIQ_BUSINESS_PAN => 'AAILM8084F',
+            Header::MIQ_GSTIN => '27AAILM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQFailureBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPanForNGO()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::NGO,
+            Header::MIQ_BUSINESS_PAN => 'AAIBM8084F',
+            Header::MIQ_GSTIN => '27AAIBM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQSuccessBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQFailureBusinessPanForSociety()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::SOCIETY,
+            Header::MIQ_BUSINESS_PAN => 'AAIJM8084F',
+            Header::MIQ_GSTIN => '27AAIJM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQFailureBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPanForSociety()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::SOCIETY,
+            Header::MIQ_BUSINESS_PAN => 'AAILM8084F',
+            Header::MIQ_GSTIN => '27AAILM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQSuccessBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQFailureBusinessPanForPublicLimited()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::PUBLIC_LIMITED,
+            Header::MIQ_BUSINESS_PAN => 'AAIHM8084F',
+            Header::MIQ_GSTIN => '27AAIHM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQFailureBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPanForPublicLimited()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::PUBLIC_LIMITED,
+            Header::MIQ_BUSINESS_PAN => 'AAICM8084F',
+            Header::MIQ_GSTIN => '27AAICM8084F2ZP',
+            Header::MIQ_CIN => 'U74999MH2013pLc247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQSuccessBusinessPan($dataInput);
+    }
+
+    public function testCreateMerchantUploadMIQSuccessBusinessPanForProprietorship()
+    {
+        $dataInput = [
+            Header::MIQ_BUSINESS_TYPE => Detail\BusinessType::PROPRIETORSHIP,
+            Header::MIQ_BUSINESS_PAN => '',
+            Header::MIQ_GSTIN => '27AAAPD0367L2ZP',
+            Header::MIQ_CIN => 'U74999MH2013PTC247916',
+            Header::MIQ_AUTHORISED_SIGNATORY_PAN => 'AAAPD0367L'
+        ];
+
+        $this->testCreateMerchantUploadMIQSuccessBusinessPan($dataInput);
+    }
     public function testCreateMerchantUploadMIQFailureWithRZPWebsiteUrl()
     {
         $this->ba->appAuth();
@@ -641,7 +957,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
@@ -664,7 +980,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
-        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
@@ -677,6 +993,11 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_REFUNDS] = 'https://www.fictionalwebsite.com';
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_CANCELLATION] = 'https://www.fictionalwebsite.com';
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE_SHIPPING_DELIVERY] = 'https://www.fictionalwebsite.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = Detail\BusinessType::PRIVATE_LIMITED;
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_PAN] = 'AAICM8084F';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_GSTIN] = '27AAICM8084F2ZP';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'U74999MH2013PTC247916';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_AUTHORISED_SIGNATORY_PAN] = 'AAAPD0367L';
 
         $response = $this->startTest();
 

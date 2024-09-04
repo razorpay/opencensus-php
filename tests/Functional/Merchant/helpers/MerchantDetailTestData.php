@@ -232,6 +232,7 @@ return [
             'content' => [
                 'business_type' => '2',
                 'business_category' => 'education',
+                'promoter_pan'  => 'AISPP8843J',
                 'business_subcategory' => 'college',
             ],
             'url'     => '/merchant/activation',
@@ -250,6 +251,7 @@ return [
         'request'  => [
             'content' => [
                 'business_category' => 'education',
+                'promoter_pan'  => 'AISPP8843J',
                 'business_subcategory' => 'college',
             ],
             'url'     => '/merchant/activation',
@@ -276,6 +278,7 @@ return [
         'request'  => [
             'content' => [
                 'business_type' => '11',
+                'promoter_pan'  => 'AISPP8843J',
                 'business_category' => 'education',
                 'business_subcategory' => 'college',
                 'business_website' => 'https://razorpay.com',
@@ -304,6 +307,7 @@ return [
         'request'  => [
             'content' => [
                 'business_type' => '11',
+                'promoter_pan'  => 'AISPP8843J',
                 'business_category' => 'education',
                 'business_subcategory' => 'college',
                 'business_website' => 'https://www.fictionalwebsite.com',
@@ -328,12 +332,312 @@ return [
         ],
     ],
 
+    'testUpdateCompanyCinForPublicLimitedPositive' => [
+        'request'  => [
+            'content' => [
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'company_cin'                   => 'U74999MH2013PLC247916',
+                'company_pan'                   => 'AAICM8084F',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'business_type'         => '5',
+                'company_cin'           => 'U74999MH2013PLC247916',
+                'company_pan'           => 'AAICM8084F',
+                'business_category'     => 'education',
+                'business_subcategory'  => 'college'
+            ],
+        ],
+    ],
+
+    'testUpdateCompanyCinForPublicLimitedNegative' => [
+        'request'  => [
+            'content' => [
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'company_cin'                   => 'U74999MH2017PTC301426',
+                'company_pan'                   => 'AAICM8084F',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The CIN is invalid for public_limited',
+                    'source'        =>  'business',
+                    'reason'        =>  'input_validation_failed'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUpdateCompanyCinForPrivateLimitedNegative' => [
+        'request'  => [
+            'content' => [
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'company_cin'                   => 'U74999MH2013PLC247916',
+                'company_pan'                   => 'AAICM8084F',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The CIN is invalid for private_limited',
+                    'source'        =>  'business',
+                    'reason'        =>  'input_validation_failed'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUpdateCompanyCinForProprietorshipPositive' => [
+        'request'  => [
+            'content' => [
+                'company_cin'                   => 'U74999MH2013PLC247916',
+                'company_pan'                   => '',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'business_type'         => '1',
+                'company_cin'           => 'U74999MH2013PLC247916',
+                'company_pan'           => '',
+                'promoter_pan'          => 'AISPP8843J',
+            ],
+        ],
+    ],
+
+    'testUpdateCompanyCinForPrivateLimitedPositive' => [
+        'request'  => [
+            'content' => [
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'company_cin'                   => 'U74999MH2013PTC247916',
+                'company_pan'                   => 'AAICM8084F',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'business_type'         => '4',
+                'company_cin'           => 'U74999MH2013PTC247916',
+                'company_pan'           => 'AAICM8084F',
+                'business_category'     => 'education',
+                'business_subcategory'  => 'college'
+            ],
+        ],
+    ],
+
+    'testUpdateCompanyCinForLLPPositive' => [
+        'request'  => [
+            'content' => [
+                'business_category'             => 'education',
+                'business_subcategory'          => 'college',
+                'company_cin'                   => 'ABC-1234',
+                'company_pan'                   => 'AAIFM8084F',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'business_type'         => '6',
+                'company_cin'           => 'ABC-1234',
+                'company_pan'           => 'AAIFM8084F',
+                'business_category'     => 'education',
+                'business_subcategory'  => 'college'
+            ],
+        ],
+    ],
+
+    'testUpdateGSTINForPrivateLimitedPositive' => [
+        'request'  => [
+            'content' => [
+                'company_cin'                   => 'U74999MH2013PTC247916',
+                'company_pan'                   => 'AAICM8084F',
+                'gstin'                         => '03AAICM8084F1ZX',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'business_type'         => '4',
+                'gstin'                 => '03AAICM8084F1ZX',
+                'company_cin'           => 'U74999MH2013PTC247916',
+                'company_pan'           => 'AAICM8084F',
+                'promoter_pan'          => 'AISPP8843J',
+            ],
+        ],
+    ],
+
+    'testUpdateGSTINForNotYetRegisteredPositive' => [
+        'request'  => [
+            'content' => [
+                'company_cin'                   => 'U74999MH2013PTC247916',
+                'company_pan'                   => '',
+                'gstin'                         => '03AISPP8843J1ZX',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'business_type'         => '11',
+                'gstin'                 => '03AISPP8843J1ZX',
+                'company_cin'           => 'U74999MH2013PTC247916',
+                'company_pan'           => '',
+                'promoter_pan'          => 'AISPP8843J',
+            ],
+        ],
+    ],
+
+    'testUpdateGSTINForProprietorshipNegative' => [
+        'request'  => [
+            'content' => [
+                'company_cin'                   => 'U74999MH2013PTC247916',
+                'company_pan'                   => '',
+                'gstin'                         => '03AISKP8843J1ZX',
+                'promoter_pan'                  => 'AISPP8843J',
+                'promoter_pan_name'             => 'JAY KUMAR',
+                'business_registered_address'   => 'Swaminarayan Nagar',
+                'business_registered_pin'       => '380009',
+                'business_registered_city'      => 'Rajkot',
+                'business_registered_state'     => 'GJ',
+                'business_operation_address'    => 'Swaminarayan Nagar',
+                'business_operation_pin'        => '380009',
+                'business_operation_city'       => 'Rajkot',
+                'business_operation_state'      => 'GJ',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The pan in GSTIN is not as same as Authorised Signatory PAN for proprietorship',
+                    'source'        =>  'business',
+                    'reason'        =>  'input_validation_failed'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testSubmit' => [
         'request'  => [
             'content' => [
-                'submit'        =>  '1',
-                'company_cin'   =>  'U67190TN2014PTC096971',
-                "gstin"         =>  '03AADCB1234M1ZX',
+                'submit'            =>  '1',
+                'company_cin'       =>  'U67190TN2014PTC096971',
+                'gstin'             =>  '03AADCB1234M1ZX',
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST'

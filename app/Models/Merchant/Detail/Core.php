@@ -288,6 +288,10 @@ class Core extends Base\Core
         return $maskedInput;
     }
 
+    /**
+     * @throws \Throwable
+     * @throws BadRequestValidationFailureException
+     */
     public function saveMerchantDetails(array $input,
                                         Merchant\Entity $merchant,
                                         string $originProduct = Product::PRIMARY)
@@ -322,6 +326,8 @@ class Core extends Base\Core
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
         $merchantDetails->getValidator()->validateBusinessTypeForBankingMerchants($input, $merchant);
+
+        $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
 
         if ($merchant->isLinkedAccount() === true)
         {
@@ -5134,7 +5140,7 @@ class Core extends Base\Core
                         ]);
 
                         unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
-                        
+
                         // Unlocking the activation form when the  assisted merchants pos activation status moved to needs_clarification review state
                         $merchantDetails->setLocked(false);
 

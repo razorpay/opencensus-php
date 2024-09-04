@@ -2,11 +2,18 @@
 
 namespace RZP\Models\Base;
 
+use App;
+
+use RZP\Base;
 use Lib\Gstin;
 use Lib\PhoneBook;
+use RZP\Models\Feature;
+use RZP\Models\Admin\Org;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Base\RepositoryManager;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
 use Egulias\EmailValidator\EmailValidator;
@@ -544,30 +551,102 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     protected function validateCompanyPan($attribute, $value)
     {
-        $app = \App::getFacadeRoot();
-        if ($app['api.route']->getCurrentRouteName() === 'merchant_upload_miq_admin')
+        $this->app = App::getFacadeRoot();
+
+        $this->orgId = $this->app['basicauth']->getOrgId();
+
+        $this->repo = $this->app['repo'];
+
+        $this->trace = $this->app['trace'];
+
+        $this->org = null;
+
+        try
         {
-            // accept personal PAN if business type is 'not_yet_registered/proprietorship'
-            if(empty($value) === false)
-            {
-                return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1 or preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $value) === 1);
+            if($this->orgId !== null) {
+
+                $this->orgId = Org\Entity::verifyIdAndSilentlyStripSign($this->orgId);
+
+                $this->org = $this->repo->org->findOrFailPublic($this->orgId);
             }
-            return true;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+
+        if($this->org === null or $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === false)
+        {
+            if ($this->app['api.route']->getCurrentRouteName() === 'merchant_upload_miq_admin')
+            {
+                // accept personal PAN if business type is 'not_yet_registered/proprietorship'
+                if(empty($value) === false)
+                {
+                    return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1 or preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $value) === 1);
+                }
+                return true;
+            }
+            else
+            {
+                if((empty($value) === false) and (is_null($value) === false))
+                {
+                    return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1);
+                }else
+                {
+                    throw new BadRequestValidationFailureException("The company pan field is required.");
+                }
+            }
         }
         else
         {
-            if((empty($value) === false) and (is_null($value) === false))
-            {
-                return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1);
-            }else
-            {
-                throw new BadRequestValidationFailureException("The company pan field is required.");
-            }
+            return true;
         }
     }
 
-    protected function validatePersonalPan($attribute, $value)
+    protected function validatePersonalPan($attribute, $value): bool
     {
+
+        $this->app = App::getFacadeRoot();
+
+        $this->orgId = $this->app['basicauth']->getOrgId();
+
+        $this->repo = $this->app['repo'];
+
+        $this->trace = $this->app['trace'];
+
+        $this->org = null;
+
+        try
+        {
+            if($this->orgId !== null) {
+
+                $this->orgId = Org\Entity::verifyIdAndSilentlyStripSign($this->orgId);
+
+                $this->org = $this->repo->org->findOrFailPublic($this->orgId);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+
+        if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        {
+            $validPersonalPan = preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $value);
+
+            if ($validPersonalPan === 0)
+            {
+                throw new BadRequestValidationFailureException('Invalid ' . $attribute . " : ". $value);
+            }
+
+            $this->trace->info(TraceCode::MERCHANT_VALIDATE, [
+                'attribute_name'   => $attribute,
+                'attribute_value' => $value,
+            ]);
+
+            return $validPersonalPan;
+        }
+
         return (preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $value) === 1);
     }
 

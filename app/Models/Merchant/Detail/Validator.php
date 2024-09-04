@@ -13,6 +13,8 @@ use RZP\Exception;
 use Lib\PhoneBook;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
+use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
@@ -44,6 +46,10 @@ class Validator extends Base\Validator
 
     protected $trace;
 
+    protected $repo;
+
+    protected $orgId;
+
 
     public function __construct($entity = null)
     {
@@ -54,6 +60,10 @@ class Validator extends Base\Validator
         $this->env = $this->app['env'];
 
         $this->trace = $this->app['trace'];
+
+        $this->orgId = $this->app['basicauth']->getOrgId();
+
+        $this->repo = $this->app['repo'];
 
     }
 
@@ -1056,6 +1066,7 @@ class Validator extends Base\Validator
     protected static $companySearchRules = [
         Constants::SEARCH_STRING  => 'required|string|min:3|max:80'
     ];
+
 
     protected function validateRegisteredBusinessRules(array $input)
     {
@@ -2221,7 +2232,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(self::ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS);
         }
     }
-    public function validateBusinessTypeForBankingMerchants(array &$input, MerchantEntity $merchant)
+    public function validateBusinessTypeForBankingMerchants(array &$input, MerchantEntity $merchant): void
     {
 
         $merchantDetail = $merchant->merchantDetail;
@@ -2246,4 +2257,219 @@ class Validator extends Base\Validator
             ]);
         }
     }
+
+    public function validateMerchantFieldsForBankingCompliance(array $entry, Merchant\Entity $merchant = null): void
+    {
+
+        $this->org  = null;
+
+        if($merchant !== null and  ($merchant->merchantDetail !== null))
+        {
+            try
+            {
+                $merchantDetail = $merchant->merchantDetail;
+
+                $entry[Header::MIQ_BUSINESS_TYPE] = empty($entry[MerchantDetail::BUSINESS_TYPE]) ? $merchantDetail->getBusinessType() : BusinessType::getKeyFromIndex($entry[MerchantDetail::BUSINESS_TYPE]) ;
+
+                $entry[Header::MIQ_BUSINESS_PAN] = $entry[MerchantDetail::COMPANY_PAN] ?? $merchantDetail->getPan();
+
+                $entry[Header::MIQ_AUTHORISED_SIGNATORY_PAN] = $entry[MerchantDetail::PROMOTER_PAN] ?? $merchantDetail->getPromoterPan();
+
+                $entry[Header::MIQ_GSTIN] = $entry[MerchantDetail::GSTIN] ?? $merchantDetail->getGstin();
+
+                $entry[Header::MIQ_CIN] = $entry[MerchantDetail::COMPANY_CIN] ?? $merchantDetail->getCompanyCin();
+
+                $this->org = $merchant->org;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+            }
+        }
+        else if($this->app['api.route']->getCurrentRouteName() === 'merchant_upload_miq_admin')
+        {
+            try
+            {
+                if($this->orgId !== null) {
+
+                    $this->orgId = Org\Entity::verifyIdAndSilentlyStripSign($this->orgId);
+
+                    $this->org = $this->repo->org->findOrFailPublic($this->orgId);
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+            }
+        }
+
+        $businessType = strtolower($entry[Header::MIQ_BUSINESS_TYPE]);
+
+        if($this->org !== null and $this->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
+        {
+
+            $businessTypesRequiringBusinessPan = [
+                Merchant\Detail\BusinessType::LLP, Merchant\Detail\BusinessType::NGO,
+                Merchant\Detail\BusinessType::SOCIETY,Merchant\Detail\BusinessType::HUF,
+                Merchant\Detail\BusinessType::PARTNERSHIP, Merchant\Detail\BusinessType::TRUST,
+                Merchant\Detail\BusinessType::PUBLIC_LIMITED, Merchant\Detail\BusinessType::PRIVATE_LIMITED,
+            ];
+
+            $businessTypesRequiringPersonalPan = [
+                Merchant\Detail\BusinessType::NOT_YET_REGISTERED, Merchant\Detail\BusinessType::PROPRIETORSHIP,
+            ];
+
+            //Validation for Promoter Pan
+
+            if(in_array($businessType, $businessTypesRequiringPersonalPan) or in_array($businessType, $businessTypesRequiringBusinessPan) )
+            {
+                if(empty($entry[Header::MIQ_AUTHORISED_SIGNATORY_PAN]) === true)
+                {
+                    throw new BadRequestValidationFailureException("The " . Header::MIQ_AUTHORISED_SIGNATORY_PAN . " is required for ".$businessType);
+                }
+                else if(preg_match(DetailUpload\Validator::PERSONAL_PAN_NUMBER_REGEX, $entry[Header::MIQ_AUTHORISED_SIGNATORY_PAN]) === 0)
+                {
+                    throw new BadRequestValidationFailureException("The ".Header::MIQ_AUTHORISED_SIGNATORY_PAN. " is invalid for ".$businessType);
+                }
+            }
+
+            // Validation for Business Pan
+
+            if(in_array($businessType, $businessTypesRequiringBusinessPan) === true)
+            {
+                if (empty($entry[Header::MIQ_BUSINESS_PAN]) === true)
+                {
+                    throw new BadRequestValidationFailureException("The " . Header::MIQ_BUSINESS_PAN . " is required for ".$businessType);
+                }
+            }
+
+            $businessTypesRequiringBusinessPanWithLetterF = [
+                Merchant\Detail\BusinessType::PARTNERSHIP, Merchant\Detail\BusinessType::LLP,
+            ];
+
+            if(in_array($businessType, $businessTypesRequiringBusinessPanWithLetterF) === true)
+            {
+                if(empty($entry[Header::MIQ_BUSINESS_PAN]) === false)
+                {
+                    if(preg_match(DetailUpload\Validator::COMPANY_PAN_NUMBER_LETTER_F_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid for ".$businessType);
+                    }
+                }
+            }
+
+            $businessTypesRequiringBusinessPanWithLetterC = [
+                Merchant\Detail\BusinessType::PUBLIC_LIMITED, Merchant\Detail\BusinessType::PRIVATE_LIMITED,
+            ];
+
+            if(in_array($businessType, $businessTypesRequiringBusinessPanWithLetterC) === true)
+            {
+                if(empty($entry[Header::MIQ_BUSINESS_PAN]) === false)
+                {
+                    if(preg_match(DetailUpload\Validator::COMPANY_PAN_NUMBER_LETTER_C_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid for ".$businessType);
+                    }
+                }
+            }
+
+            $businessTypesRequiringBusinessPanWithLettersABTG = [
+                Merchant\Detail\BusinessType::NGO, Merchant\Detail\BusinessType::TRUST, Merchant\Detail\BusinessType::SOCIETY,
+            ];
+
+            if(in_array($businessType, $businessTypesRequiringBusinessPanWithLettersABTG) === true)
+            {
+                if(empty($entry[Header::MIQ_BUSINESS_PAN]) === false)
+                {
+                    if($businessType === Merchant\Detail\BusinessType::SOCIETY)
+                    {
+                        if(preg_match(DetailUpload\Validator::COMPANY_PAN_NUMBER_LETTERS_ABTGL_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0)
+                        {
+                            throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid for ".$businessType);
+                        }
+                    }
+                    else if(preg_match(DetailUpload\Validator::COMPANY_PAN_NUMBER_LETTERS_ABTG_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid for ".$businessType);
+                    }
+                }
+            }
+
+            if($businessType === Merchant\Detail\BusinessType::HUF)
+            {
+                if(empty($entry[Header::MIQ_BUSINESS_PAN]) === false)
+                {
+                    if(preg_match(DetailUpload\Validator::COMPANY_PAN_NUMBER_LETTER_H_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid for ".$businessType);
+                    }
+                }
+            }
+
+            // Validation for GSTIN
+
+            if(in_array($businessType, $businessTypesRequiringPersonalPan) === true)
+            {
+                if(empty($entry[Header::MIQ_GSTIN]) === false)
+                {
+                    $panInGstin = substr($entry[Header::MIQ_GSTIN], 2, 10);
+
+                    if($panInGstin !== $entry[Header::MIQ_AUTHORISED_SIGNATORY_PAN])
+                    {
+                        throw new BadRequestValidationFailureException("The pan in ".Header::MIQ_GSTIN. " is not as same as ".Header::MIQ_AUTHORISED_SIGNATORY_PAN. " for ".$businessType);
+                    }
+                }
+            }
+
+            if(in_array($businessType, $businessTypesRequiringBusinessPan) === true)
+            {
+                if(empty($entry[Header::MIQ_GSTIN]) === false)
+                {
+                    $panInGstin = substr($entry[Header::MIQ_GSTIN], 2, 10);
+
+                    if($panInGstin !== $entry[Header::MIQ_BUSINESS_PAN])
+                    {
+                        throw new BadRequestValidationFailureException("The pan in ".Header::MIQ_GSTIN. " is not as same as ".Header::MIQ_BUSINESS_PAN. " for ".$businessType);
+                    }
+                }
+            }
+
+            // Validation for Company Cin
+
+            if(in_array($businessType, $businessTypesRequiringBusinessPanWithLetterC) === true)
+            {
+                if(empty($entry[Header::MIQ_CIN]) === true)
+                {
+                    throw new BadRequestValidationFailureException("The " . Header::MIQ_CIN . " is required for " . $businessType);
+                }
+                else if($businessType === Merchant\Detail\BusinessType::PRIVATE_LIMITED)
+                {
+                    if((preg_match(DetailUpload\Validator::COMPANY_CIN_PRIVATE_LIMITED_REGEX, $entry[Header::MIQ_CIN]) === 0))
+                    {
+                        throw new BadRequestValidationFailureException("The " . Header::MIQ_CIN . " is invalid for " . $businessType);
+                    }
+                }
+                else if($businessType === Merchant\Detail\BusinessType::PUBLIC_LIMITED)
+                {
+                    if((preg_match(DetailUpload\Validator::COMPANY_CIN_PUBLIC_LIMITED_REGEX, $entry[Header::MIQ_CIN]) === 0))
+                    {
+                        throw new BadRequestValidationFailureException("The " . Header::MIQ_CIN . " is invalid for " . $businessType);
+                    }
+                }
+            }
+
+            if($businessType === Merchant\Detail\BusinessType::LLP)
+            {
+                if(empty($entry[Header::MIQ_CIN]) === true)
+                {
+                    throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is required for ". $businessType);
+                }
+                else if((preg_match(DetailUpload\Validator::NEW_COMPANY_LLPIN_REGEX, $entry[Header::MIQ_CIN]) === 0))
+                {
+                    throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is invalid for ". $businessType);
+                }
+            }
+        }
+    }
+
 }
