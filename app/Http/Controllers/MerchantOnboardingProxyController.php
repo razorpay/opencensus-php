@@ -131,6 +131,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const ONBOARDING_GET_SALES                   = 'onboarding_get_sales';
     const ONBOARDING_SAVE_SALES                  = 'onboarding_save_sales';
     const L2_SUBMIT_SHADOW                       = 'l2_submit_shadow';
+    const FETCH_PGOS_MERCHANT_CONSENTS           = 'fetch_pgos_merchant_consents';
     const GET_APPLICABLE_ACTIVATION_STATUS       = 'get_applicable_activation_status';
 
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
@@ -305,6 +306,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_ACTIVATION_DETAILS_SALES             => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchantActivationDetails',
         self::ONBOARDING_GET_SALES                          => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingGet',
         self::ONBOARDING_SAVE_SALES                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingSave',
+        self::FETCH_PGOS_MERCHANT_CONSENTS                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantConsents'
     ];
 
     // timeout in seconds

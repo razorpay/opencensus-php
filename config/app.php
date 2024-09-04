@@ -645,6 +645,8 @@ return array(
 
     'charge_collections_invoicing_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_EXPERIMENT_ID'),
 
+    'fetch_merchant_consent_from_pgos_experimant_id' => env('FETCH_MERCHANT_CONSENTS_FROM_PGOS_EXPERIMENT_ID'),
+
     'charge_collections_invoicing_x_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_X_EXPERIMENT_ID'),
 
     'ppi_wallet_on_upi_pricing_splitz_experiment_id' => env('PPI_WALLET_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),

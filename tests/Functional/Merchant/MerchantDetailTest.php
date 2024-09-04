@@ -5185,6 +5185,16 @@ We look forward to transacting with you!
             ]
         ];
 
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+            ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'fetch_pgos_merchant_consents';
+            })->andReturn(["consents"=>[]]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
         $this->mockSplitzTreatment($input, $output);
 
         $this->testPutPreSignupDetails();
@@ -5201,6 +5211,57 @@ We look forward to transacting with you!
         $response = $this->startTest($dataToReplace);
 
         $this->assertCount(2, $response);
+    }
+
+
+    public function testFetchMerchantConsentsWithData()
+    {
+        $input = [
+            "experiment_id" => "M2AzEhkuVykf18",
+            "id" => self::DEFAULT_MERCHANT_ID
+        ];
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+            ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'fetch_pgos_merchant_consents';
+            })->andReturn(["consents"=>[
+                "id" => self::DEFAULT_MERCHANT_ID,
+                "created_at" => 1677232588,
+                "metadata" => [
+                    "ip_address"=> "13.32.123.32",
+                    "ufh_file_id" => "file_LyEbXZLGJIYruE"
+                ],
+                "created_for" => "Aadhaar eKYC Terms and Conditions"
+            ]]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->testPutPreSignupDetails();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/merchant/consents/'. self::DEFAULT_MERCHANT_ID,
+            ]
+        ];
+        $this->mockCreateLegalDocument();
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertCount(3, $response);
     }
 
     public function testFetchMerchantConsentsForPg()

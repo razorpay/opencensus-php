@@ -304,6 +304,21 @@ class Core extends Base\Core
 
     }
 
+    function mergeConsentData($table1Data, $table2Data) {
+        $mergedData = [];
+
+        foreach ($table1Data as $row1) {
+            $mergedData[] = $row1;
+        }
+
+        foreach ($table2Data as $row2) {
+            $mergedData[] = $row2;
+        }
+
+        return $mergedData;
+    }
+
+
     /**
      * @param string $merchantId
      *
@@ -312,7 +327,45 @@ class Core extends Base\Core
      */
     public function getMerchantConsents(string $merchantId)
     {
-        $consents = $this->repo->merchant_consents->fetchAllConsentForMerchantIdAndConsentType($merchantId, array_keys(ConsentConstant::VALID_LEGAL_DOC));
+        $merchant = $this->repo->merchant->find($merchantId);
+        $payload = ['merchant_id' => $merchantId];
+        $apiConsents = $this->repo->merchant_consents->fetchAllConsentForMerchantIdAndConsentType($merchantId, array_keys(ConsentConstant::VALID_LEGAL_DOC));
+
+        if ($this->isFetchMerchantConsentFromPGOSExperimentEnabled($merchantId)) {
+            try{
+                $response = $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('fetch_pgos_merchant_consents', $payload, $merchant);
+
+                $this->trace->info(TraceCode::FETCH_MERCHANT_CONSENTS_RESPONSE, [
+                    "experiment_enabled" => true,
+                    "pgosResponse" => $response,
+                    "apiResponse" => $apiConsents,
+                ]);
+//        merge response with consents
+
+                $consents = $this->mergeConsentData($apiConsents, $response["consents"]);
+            }
+            catch (\Exception $e){
+                $consents = $apiConsents;
+                $this->trace->error(
+                    TraceCode::FETCH_MERCHANT_CONSENTS_ERROR,
+                    [
+                        'message' => $e->getMessage(),
+                        'merchant_id' => $merchantId,
+                    ]
+                );
+                throw new ServerErrorException("Error Processing Consents from PGOS", ErrorCode::SERVER_ERROR);
+            }
+            $this->trace->info(TraceCode::FETCH_MERCHANT_CONSENTS_RESPONSE_MERGED, [
+                "merged_result" => $consents,
+            ]);
+        }
+        else{
+            $consents = $apiConsents;
+            $this->trace->info(TraceCode::FETCH_MERCHANT_CONSENTS_RESPONSE, [
+                "experiment_enabled" => false,
+                "apiResponse" => $apiConsents,
+            ]);
+        }
 
         if ($consents !== null)
         {
@@ -476,6 +529,17 @@ class Core extends Base\Core
                 'milestone' => $mileStone,
                 'org_id'    => $orgId,
             ]),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    public function isFetchMerchantConsentFromPGOSExperimentEnabled($merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.fetch_merchant_consent_from_pgos_experimant_id'),
+            'request_data'  => json_encode(['mid' => $merchantId]),
         ];
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
