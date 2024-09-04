@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Address\Repository as AddressRepository;
+use RZP\Models\Merchant\Account\Repository as AccountRepository;
 use RZP\Models\Merchant\Stakeholder\Repository as StakeholderRepository;
 use RZP\Models\Merchant\Website\Repository as MerchantWebsiteRepository;
 use RZP\Models\Merchant\Email\Repository as MerchantEmailRepository;
@@ -50,6 +51,13 @@ final class RepoAndFunctionToSplitzMap
             FunctionConstant::DELETE_OR_FAIL=>SplitzConstant::SPLITZ_MERCHANT_DOCUMENT_DELETE_OR_FAIL
         ),
         MerchantRepository::class => array(
+            FunctionConstant::FIND_OR_FAIL =>  SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,
+            FunctionConstant::FIND         =>  SplitzConstant::SPLITZ_MERCHANT_FIND,
+            FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,
+            FunctionConstant::FIND_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_MERCHANT_FIND_FOR_IMPLICIT_JOIN,
+            FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_SAVE_OR_FAIL,
+        ),
+        AccountRepository::class => array(
             FunctionConstant::FIND_OR_FAIL =>  SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,
             FunctionConstant::FIND         =>  SplitzConstant::SPLITZ_MERCHANT_FIND,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,

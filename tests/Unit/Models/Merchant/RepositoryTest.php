@@ -428,6 +428,40 @@ class RepositoryTest extends RepositoryTestHelper
         $this->verifyFindOrFailPublicWithRelations($id, ['merchantDetail','pricing']);
     }
 
+    public function verifyMerchantRefreshOperation($id)
+    {
+        $apiMerchant       = $this->fixtures->create('merchant', ['id' => $id]);
+        $apiMerchantDetail = $this->fixtures->create('merchant_detail:associate_merchant', ['merchant_id' => $id]);
+
+        $merchantRepository    = new Repository();
+        $fetchedMerchant       = $merchantRepository->findOrFail($id);
+        $fetchedMerchantDetail = $fetchedMerchant->merchantDetail;
+
+        $this->fixtures->edit('merchant_detail', $id, [
+            'contact_mobile' => '+919991119991',
+        ]);
+
+        $this->fixtures->edit('merchant', $id, [
+            'live' => true,
+        ]);
+        $this->assertEquals(false, $fetchedMerchant->isLive());
+        $fetchedMerchant->refresh();
+        $this->assertEquals(true, $fetchedMerchant->isLive());
+        $this->assertNotEquals($fetchedMerchantDetail->getContactMobile(), $fetchedMerchant->merchantDetail->getContactMobile());
+        $this->assertEquals('+919991119991', $fetchedMerchant->merchantDetail->getContactMobile());
+    }
+
+    public function testMerchantRefreshOperation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        $this->verifyMerchantRefreshOperation($id);
+
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_reload_to_asv', $id);
+        $this->setSplitzWithOutput("true", 6);
+        $this->verifyMerchantRefreshOperation($id);
+    }
+
 
     public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName)
     {

@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 use RZP\Models\User;
 use RZP\Models\Item;
 use RZP\Models\Order;
@@ -36,8 +37,12 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, AsvGetAttribute;
+    use NotesTrait, AsvGetAttribute, AsvLoad;
     use SoftDeletes;
+
+    const ASV_RELATIONS = [
+        'merchant'
+    ];
 
     /**
      * Prefix for pdf file name

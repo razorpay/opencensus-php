@@ -1,6 +1,8 @@
 <?php
 
 namespace RZP\Models\Merchant\Acs\Traits;
+use Illuminate\Database\Eloquent\Relations\Concerns\AsPivot;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -39,7 +41,10 @@ trait AsvReload
         {
             try {
                 $instance = $this->getEntityDetailsForReload();
-                $this->relations = $instance->relations;
+                $this->load(collect($this->relations)->reject(function ($relation) {
+                    return $relation instanceof Pivot
+                        || (is_object($relation) && in_array(AsPivot::class, class_uses_recursive($relation), true));
+                })->keys()->all());
                 return $this;
             } catch (\Exception $e) {
                 app('trace')->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_REFRESH_EXCEPTION, [

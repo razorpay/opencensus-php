@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute;
 use App;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Currency;
@@ -16,10 +17,14 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, AsvLoad;
     use Base\Traits\RevisionableTrait {
         preSave as traitPreSave;
     }
+
+    const ASV_RELATIONS = [
+        'merchant'
+    ];
 
     const MERCHANT_ID             = 'merchant_id';
     const PARENT_ID               = 'parent_id';
