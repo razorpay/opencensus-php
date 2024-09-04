@@ -1090,6 +1090,19 @@ class Content extends Component {
                 </RouteGuard>
               }
             />
+            {/* This is used by marketing team for triggering same day settlement modal -> broken after react-router v6 migraion. TODO: explore other solutions */}
+            <Route
+              path="enable_automatic"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('settlements') && user.hideForNIASupportRole
+                  }
+                >
+                  <Settlements />
+                </RouteGuard>
+              }
+            />
             <Route
               path=":id/*"
               element={
