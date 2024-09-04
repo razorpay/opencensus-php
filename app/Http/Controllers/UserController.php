@@ -957,7 +957,9 @@ class UserController extends Controller
 
         $submitted = $details['submitted'] ?? null;
 
-        if (($signupCampaign === 'easy_onboarding') and ($details['activation_status'] === 'edd_pending'))
+        $activationStatus = $details['activation_status'] ?? null;
+
+        if (($signupCampaign === 'easy_onboarding') and ($activationStatus === 'edd_pending'))
         {
             return true;
         }
