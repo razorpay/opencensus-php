@@ -866,8 +866,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantOnConnection($merchantId, $mode)
     {
-        return $this->newQueryWithConnection($mode)
-                    ->findOrFail($merchantId);
+        return $this->findOrFail($merchantId, array('*'), $mode);
     }
 
     public function fetchAllLiveMerchants()
