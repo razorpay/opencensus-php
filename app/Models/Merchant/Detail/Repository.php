@@ -797,7 +797,13 @@ class Repository extends Base\Repository
         $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
         $merchantCreatedAtColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::CREATED_AT);
 
-        return $this->newQuery()
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query
             ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->whereBetween($merchantCreatedAtColumn, [$from, $to])
@@ -811,8 +817,13 @@ class Repository extends Base\Repository
 
     public function filterNullAndInitiatedFieldStatusMerchants(string $entityName,array $merchantIds): array
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->select(Entity::MERCHANT_ID)
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query->select(Entity::MERCHANT_ID)
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->where(function($query) use ($entityName) {
                         $query->whereNull($entityName)

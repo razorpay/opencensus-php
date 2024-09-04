@@ -879,8 +879,12 @@ class Repository extends Base\Repository
 
     public function filterLiveMerchants(array $merchantIdList)
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
-                    ->where(Entity::LIVE, '=', 1)
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+        }
+        return $query->where(Entity::LIVE, '=', 1)
                     ->whereIn(Entity::ID, $merchantIdList)
                     ->whereNull(Entity::SUSPENDED_AT)
                     ->get()
@@ -3593,8 +3597,13 @@ class Repository extends Base\Repository
 
     public function filterNonBusinessBankingMerchants(array $merchantIds)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->whereIn(Entity::ID, $merchantIds)
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query->whereIn(Entity::ID, $merchantIds)
                     ->where(Entity::BUSINESS_BANKING, '=', false)
                     ->get()
                     ->pluck(Entity::ID)
