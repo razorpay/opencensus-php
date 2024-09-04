@@ -6,13 +6,14 @@ use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Customer\Entity as CustomerEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property-read CustomerEntity $customer
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';

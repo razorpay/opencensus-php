@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as EntityConstants;
 
@@ -16,6 +17,8 @@ class Entity extends Base\PublicEntity
     protected $entity = EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS;
 
     protected $table = Table::BANKING_ACCOUNT_STATEMENT_DETAILS;
+
+    use AsvGetAttribute;
 
     const ID                                  = 'id';
     const MERCHANT_ID                         = 'merchant_id';

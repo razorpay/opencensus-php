@@ -11,6 +11,7 @@ use RZP\Models\FundAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * Class Entity
@@ -22,7 +23,7 @@ use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     // Attributes
     const NAME          = 'name';

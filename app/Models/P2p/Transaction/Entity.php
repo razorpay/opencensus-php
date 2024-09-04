@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Transaction;
 
 use Carbon\Carbon;
 use RZP\Base\BuilderEx;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\Customer;
 use RZP\Models\P2p\Base;
@@ -21,6 +22,7 @@ use RZP\Models\P2p\BankAccount;
  */
 class Entity extends Base\Entity
 {
+    use AsvGetAttribute;
     use Base\Traits\HasMerchant;
     use Base\Traits\HasDevice;
     use Base\Traits\HasHandle;

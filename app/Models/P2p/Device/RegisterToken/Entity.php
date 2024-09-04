@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Device\RegisterToken;
 
 use Database\Factories\P2pRegisterTokenFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Base\Traits;
 
@@ -12,6 +13,7 @@ class Entity extends Base\Entity
     use HasFactory;
     use Traits\HasMerchant;
     use Traits\HasHandle;
+    use AsvGetAttribute;
 
     const TOKEN        = 'token';
     const MERCHANT_ID  = 'merchant_id';

@@ -6,10 +6,13 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Workflow\Action;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ADMIN_ID       = 'admin_id';
     const COMMENT        = 'comment';
     const ENTITY_TYPE    = 'entity_type';

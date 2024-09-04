@@ -12,6 +12,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer\Entity as Customer;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Account\Entity as MerchantAccount;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Invoice\Entity as Invoice;
 use RZP\Models\Offer\Constants as OfferConstants;
@@ -44,7 +45,7 @@ use RZP\Models\PaymentLink\Entity as PaymentLink;
  */
 class Entity extends PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
 
     /**
      * Properties of this Entity

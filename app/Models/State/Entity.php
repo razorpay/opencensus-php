@@ -3,6 +3,7 @@
 namespace RZP\Models\State;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
@@ -12,6 +13,7 @@ use RZP\Models\State\Reason;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
     const ADMIN_ID             = 'admin_id';
     const USER_ID              = 'user_id';
     const ACTION_ID            = 'action_id';

@@ -6,13 +6,14 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
 
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';

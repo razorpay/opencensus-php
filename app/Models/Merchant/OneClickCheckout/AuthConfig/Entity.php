@@ -5,13 +5,14 @@ namespace RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use App;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const ID          = 'id';
     const MERCHANT_ID = 'merchant_id';

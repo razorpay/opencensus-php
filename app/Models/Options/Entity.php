@@ -6,12 +6,13 @@ use App;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Entity extends Base\PublicEntity
 {
 
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     // ------------------ Entity Keys --------------------------------
 

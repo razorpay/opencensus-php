@@ -5,6 +5,7 @@ namespace RZP\Models\Roles;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\User\BankingRole;
 use RZP\Models\RoleAccessPolicyMap;
 use RZP\Models\Base\Traits\HardDeletes;
@@ -13,6 +14,7 @@ use RZP\Models\Base\Traits\HardDeletes;
 class Entity extends Base\PublicEntity
 {
     use HardDeletes;
+    use AsvGetAttribute;
 
     protected $entity = 'roles';
 

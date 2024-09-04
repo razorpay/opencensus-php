@@ -5,10 +5,11 @@ namespace RZP\Models\Merchant\Slab;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const ID          = 'id';
     const SLAB        = 'slab';

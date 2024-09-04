@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Device;
 
 use Database\Factories\P2PDeviceFactory;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -15,6 +16,7 @@ class Entity extends Base\Entity
 {
     use Traits\HasMerchant;
     use HasFactory;
+    use AsvGetAttribute;
 
     const CUSTOMER_ID  = 'customer_id';
     const MERCHANT_ID  = 'merchant_id';

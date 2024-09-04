@@ -6,10 +6,11 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
@@ -27,7 +28,7 @@ class Entity extends Base\PublicEntity
 
     // Added this to prevent errors on absence of updated_at field
     const UPDATED_AT = null;
-    
+
     protected $fillable = [
         self::MERCHANT_ID,
         self::FLOW,

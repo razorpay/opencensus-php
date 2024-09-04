@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Transaction;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -13,6 +14,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
+    use AsvGetAttribute;
 
     const ID                = 'id';
 

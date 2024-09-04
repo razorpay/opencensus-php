@@ -4,6 +4,7 @@ namespace RZP\Models\Adjustment;
 
 use RZP\Models\Base;
 use RZP\Models\Dispute;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Settlement;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
@@ -11,7 +12,7 @@ use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
 
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
