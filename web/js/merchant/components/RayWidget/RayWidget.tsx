@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { importRemote } from 'merchant/utils/dynamic-remotes';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -6,6 +6,9 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { connect } from 'react-redux';
 import { User } from 'common/typings';
+import { TicketSystemEmitter } from 'merchant/care/init';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import { fireCustomEvent } from 'merchant/components/Support/utils';
 
 declare global {
   interface Window {
@@ -36,6 +39,43 @@ const RayWidget = ({
   org: Record<string, unknown>;
   mode: 'test' | 'live';
 }) => {
+  useEffect(() => {
+    // Using Existing Emitter setup desing for RayChat to maintain consistency
+    // Will revamp this in future after rampup
+
+    CreateTicketEmitter.on('toggle-help-section', () => {
+      fireCustomEvent({
+        event: 'toggle-help-section',
+      });
+    });
+    CreateTicketEmitter.on('create-ticket', (id, pcb, lcb, prompt) => {
+      fireCustomEvent({
+        event: 'create-ticket',
+        data: {
+          id,
+          pcb,
+          lcb,
+          prompt,
+        },
+      });
+    });
+    TicketSystemEmitter.on('openModal', (module, initialData, prompt) => {
+      fireCustomEvent({
+        event: 'open-ticket-modal',
+        data: {
+          module,
+          initialData,
+          prompt,
+        },
+      });
+    });
+    TicketSystemEmitter.on('closeModal', () => {
+      fireCustomEvent({
+        event: 'close-ticket-modal',
+      });
+    });
+  }, []);
+
   return (
     <ErrorBoundary rank={Ranks.P1} team={Teams.CARE} FallbackComponent={() => <></>}>
       <SuspenseWithLoader>

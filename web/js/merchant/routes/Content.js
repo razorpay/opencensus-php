@@ -655,9 +655,31 @@ class Content extends Component {
 
   isRAYEnabled = () => {
     const { user, splitz: { abExperiments: { ray_ai } = {} } = {} } = this.props;
-    const { isINCountry, live } = user;
+    const {
+      isINCountry,
+      live,
+      isOrgRZP,
+      isSourceRX,
+      isPartnerAgentRole,
+      isPartnerRole,
+      isPosSalesAgent,
+    } = user;
 
-    return isINCountry && live && user.isAllowedView('ray') && isExperimentEnabled(ray_ai);
+    const isValidMerchant =
+      isOrgRZP &&
+      !user.isPartner() &&
+      !isSourceRX &&
+      !isPartnerAgentRole &&
+      !isPartnerRole &&
+      !isPosSalesAgent;
+
+    return (
+      isINCountry &&
+      isValidMerchant &&
+      live &&
+      user.isAllowedView('ray') &&
+      isExperimentEnabled(ray_ai)
+    );
   };
 
   setBaseLocation = (location) => {
