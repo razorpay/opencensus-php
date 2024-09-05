@@ -12,14 +12,18 @@
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
     <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
 
+    <script>
+        var Razorpay = {
+            config: {
+                keyless_header: "{{$keyless_header}}"
+            }
+        }
+    </script> 
+
     @if (isset($data['environment']))
         @if ($data['environment'] !== 'production')
             <script>
-                var Razorpay = {
-                    config: {
-                        api: "{{ config('app.url') }}/"
-                    }
-                }
+                Razorpay.config.api = "{{ config('app.url') }}/"
             </script>
         @endif
     @endif

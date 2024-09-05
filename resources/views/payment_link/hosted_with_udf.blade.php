@@ -43,14 +43,18 @@
             }
         </style>
 
+        <script>
+            var Razorpay = {
+                config: {
+                    keyless_header: "{{$data['keyless_header']}}"
+                }
+            }
+        </script>
+
         @if (isset($data['environment']))
             @if ($data['environment'] !== 'production')
                 <script>
-                    var Razorpay = {
-                        config: {
-                            api: "{{ config('app.url') }}/"
-                        }
-                    }
+                    Razorpay.config.api = "{{ config('app.url') }}/"
                 </script>
             @endif
         @endif
