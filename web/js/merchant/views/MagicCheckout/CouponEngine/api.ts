@@ -1,4 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
+import { getAppType } from 'merchant/views/MagicCheckout/utils/getAppType';
 
 // Coupon Actions
 export const activateCoupon = (data: any): any => {
@@ -86,16 +87,30 @@ export const createCoupon = (data: any): any => {
 };
 
 // Products and Collections
-export const getCollections = (limit = 15, cursor = '', searchTerm = ''): any => {
+export const getCollections = (
+  limit = 15,
+  cursor = '',
+  searchTerm = '',
+  dashboardView: string,
+): any => {
   return merchantFetch({
-    url: `1cc/magic/platform/products/collections/search?skip=0&count=${limit}&cursor=${cursor}&query=${searchTerm}`,
+    url: `1cc/magic/platform/products/collections/search?skip=0&count=${limit}&cursor=${cursor}&query=${searchTerm}&app_type=${getAppType(
+      dashboardView,
+    )}`,
     method: 'get',
   });
 };
 
-export const getProducts = (limit: number, offset: number, search_term: string): any => {
+export const getProducts = (
+  limit: number,
+  offset: number,
+  search_term: string,
+  dashboardView: string,
+): any => {
   return merchantFetch({
-    url: `1cc/magic/platform/products/search?skip=${offset}&count=${limit}&search_term=${search_term}`,
+    url: `1cc/magic/platform/products/search?skip=${offset}&count=${limit}&search_term=${search_term}&app_type=${getAppType(
+      dashboardView,
+    )}`,
     method: 'get',
   });
 };

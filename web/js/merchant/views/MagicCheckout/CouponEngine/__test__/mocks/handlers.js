@@ -1,5 +1,9 @@
 // This file be used - once the api integration is done and i will modify the testcases
 import { rest } from 'msw';
+import {
+  CHECKOUT_COLLECTIONS_LIST,
+  RCOD_COLLECTIONS_LIST,
+} from 'merchant/views/MagicCheckout/CouponEngine/__test__/mocks/contants';
 
 export const magicCouponEngineHandler = [
   rest.get('*/1cc/dashboard/ce/coupons/sync', (req, res, ctx) =>
@@ -25,20 +29,14 @@ export const magicCouponEngineHandler = [
       ),
   ),
   rest.get('*/1cc/magic/platform/products/collections/search', (req, res, ctx) => {
+    const isRcodEnabled = req.url.searchParams.get('app_type') === 'sopc';
+    const COLLECTIONS = isRcodEnabled ? RCOD_COLLECTIONS_LIST : CHECKOUT_COLLECTIONS_LIST;
+
     return res(
       ctx.status(200),
       ctx.json({
         data: {
-          collections: [
-            {
-              id: '1',
-              title: 'test1',
-            },
-            {
-              id: '2',
-              title: 'test2',
-            },
-          ],
+          collections: COLLECTIONS,
         },
       }),
     );

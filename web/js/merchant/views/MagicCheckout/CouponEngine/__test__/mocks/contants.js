@@ -33,3 +33,25 @@ export const INIITIAL_ALL_COUPON_FILTERS = {
   source: 'all',
   testMode: true,
 };
+
+export const CHECKOUT_COLLECTIONS_LIST = [
+  {
+    id: '1',
+    title: 'test1',
+  },
+  {
+    id: '2',
+    title: 'test2',
+  },
+];
+
+export const RCOD_COLLECTIONS_LIST = [
+  {
+    id: '1',
+    title: 'test1-rcod',
+  },
+  {
+    id: '2',
+    title: 'test2-rcod',
+  },
+];

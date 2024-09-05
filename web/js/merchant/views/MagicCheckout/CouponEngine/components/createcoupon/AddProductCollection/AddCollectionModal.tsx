@@ -29,12 +29,14 @@ interface AddCollectionModalProps {
   closeModal: () => void;
   handleDiscountedItems: (selectedCollection: any) => void;
   showNotification: (notification: any) => void;
+  dashboardView: string;
 }
 
 const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
   closeModal,
   handleDiscountedItems,
   showNotification,
+  dashboardView,
 }) => {
   const [apiData, setApiData] = useState<any[]>([]);
   const [formattedDataForRadioButton, setFormattedDataForRadioButton] = useState<any[]>([]);
@@ -59,7 +61,12 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
 
     try {
       setIsLoading(true);
-      const { data: collectionList } = await getCollections(15, updatedNextPageCursor, searchTerm);
+      const { data: collectionList } = await getCollections(
+        15,
+        updatedNextPageCursor,
+        searchTerm,
+        dashboardView,
+      );
       const options = collectionList.collections.map(({ title, id }: any) => ({
         label: title,
         value: id,
@@ -178,6 +185,10 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
   );
 };
 
+const mapStateToProps = (state) => ({
+  dashboardView: state.magicCheckout.dashboard_view,
+});
+
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
@@ -187,4 +198,4 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(AddCollectionModal);
+export default connect(mapStateToProps, mapDispatchToProps)(AddCollectionModal);

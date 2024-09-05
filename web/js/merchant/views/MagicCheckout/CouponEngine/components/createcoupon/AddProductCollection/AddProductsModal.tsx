@@ -23,9 +23,14 @@ import { closeModal } from 'merchant_common/reducers/modals';
 interface AddProductsProps {
   closeModal: () => void;
   handleDiscountedItems: (selectedProducts: any) => void;
+  dashboardView: string;
 }
 
-const AddProducts: React.FC<AddProductsProps> = ({ closeModal, handleDiscountedItems }) => {
+const AddProducts: React.FC<AddProductsProps> = ({
+  closeModal,
+  handleDiscountedItems,
+  dashboardView,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -38,7 +43,7 @@ const AddProducts: React.FC<AddProductsProps> = ({ closeModal, handleDiscountedI
       setIsLoading(true);
       const limit = 5;
       const offset = (page - 1) * limit;
-      const response = await getProducts(limit, offset, searchTerm);
+      const response = await getProducts(limit, offset, searchTerm, dashboardView);
       const products = response.data.products;
       setData((prev) => [...prev, ...products]);
       setHasMore(response.data.products.length > 0 && response.data.products.length === limit);
@@ -136,6 +141,10 @@ const AddProducts: React.FC<AddProductsProps> = ({ closeModal, handleDiscountedI
   );
 };
 
+const mapStateToProps = (state) => ({
+  dashboardView: state.magicCheckout.dashboard_view,
+});
+
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
@@ -144,4 +153,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(AddProducts);
+export default connect(mapStateToProps, mapDispatchToProps)(AddProducts);
