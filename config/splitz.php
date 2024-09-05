@@ -83,6 +83,8 @@ return [
         // unified login signup
         'UNIFIED_PG_REDIRECTION_ENABLED' => env('UNIFIED_PG_REDIRECTION_ENABLED'),
 
+        'PG3_V1_ENABLED'                 => env('PG3_V1_ENABLED'),
+
         // Onboarding all as resellers
         'PARTNERSHIP_ONBOARD_RESELLERS' => env('PARTNERSHIP_ONBOARD_RESELLERS', ''),
         'EASY_ONBOARDING_REDIRECT'      => env('EASY_ONBOARDING_REDIRECT', ''),
@@ -160,10 +162,10 @@ return [
 
         // FTUX for Onboarding
         'ONBOARDING_FTUX' => env('ONBOARDING_FTUX', ''),
-        
+
         // FTUX After L2 submit for Onboarding
         'ONBOARDING_FTUX_AFTER_L2' => env('ONBOARDING_FTUX_AFTER_L2', ''),
-        
+
         // eligible for pos
         'ELIGIBLE_FOR_POS' => env('ELIGIBLE_FOR_POS', ''),
 
@@ -234,7 +236,7 @@ return [
 
         // enable testing for vas
         'ENABLE_TESTING_FOR_VAS' => env('ENABLE_TESTING_FOR_VAS', ''),
-        
+
         // chunked based streaming disabled
         'CHUNKED_BASED_STREAMING_DISABLED' => env('CHUNKED_BASED_STREAMING_DISABLED', ''),
 

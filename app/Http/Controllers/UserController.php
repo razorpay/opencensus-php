@@ -68,6 +68,18 @@ class UserController extends Controller
     const SALES_ASSISTED_ONBOARDING_SOURCE = 'sales_assisted_onboarding';
 
     
+    const SPLITZ_EXPERIMENTS = 'splitz.experiments';
+
+    const PG_V3_REDIRECT_URL = '/pg3/onboarding';
+
+    const PG3_V1_ENABLED = 'PG3_V1_ENABLED';
+
+    const SHOW_PG_V3 = 'show_pg_v3';
+
+    const PG_V3_ONBOARDING_COMPLETE = 'pg_v3_onboarding_complete';
+
+    const EASY_DASHBOARD_URL = 'EASY_DASHBOARD_URL';
+
     /**
      * @var \App\Admin\Service|null
      */
@@ -208,6 +220,13 @@ class UserController extends Controller
                 'api_host'              => ApiUrl::getCheckoutApi(),
                 'session_id'            => Session::getId(),
             ];
+
+            if ($this->isPg3V1RedirectionApplicable($details) === true)
+            {
+                $redirectUrl = env(self::EASY_DASHBOARD_URL) . self::PG_V3_REDIRECT_URL;
+
+                return redirect($redirectUrl);
+            }
 
             if ($this->isRedirectionApplicable($details) === true)
             {
@@ -861,6 +880,26 @@ class UserController extends Controller
         ]);
 
         return ($data[$unifiedExperimentID]['variables']['result'] ?? null) === 'on';
+    }
+
+    public function isPg3V1RedirectionApplicable($details)
+    {
+        $merchantId = $details['current'];
+
+        $experimentID = config(self::SPLITZ_EXPERIMENTS)[self::PG3_V1_ENABLED];
+
+        $data = (new SplitzService())->getVariantBulk($merchantId, [$experimentID], [], self::SPLITZ_BULK_EVALUATE_PATH);
+
+        if ((isset($data[$experimentID]['name']) === true) and
+            ($data[$experimentID]['name'] === 'enabled'))
+        {
+            if ((in_array(self::SHOW_PG_V3, $details['features']) === true) and
+                (in_array(self::PG_V3_ONBOARDING_COMPLETE, $details['features']) === false))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getDashboardDomains($devServe): array
