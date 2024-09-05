@@ -77,6 +77,14 @@ class Processor extends Base\Core
             $settlements = $this->repo->settlement
                 ->getProcessedSettlementsForTimePeriodForMid($merchantId, $from, $to, null);
 
+            if(empty($settlements)) {
+                $this->trace->info(TraceCode::OPGSP_IMPORT_EMPTY_SETTLEMENTS, [
+                    'merchantId' => $merchantId,
+                    'settlements' => $settlements,
+                ]);
+                return;
+            }
+
             $merchantAccount = (new Merchant\Service())->getBankAccount($merchantId,[\RZP\Models\BankAccount\Type::ORG_SETTLEMENT]);
 
             $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
