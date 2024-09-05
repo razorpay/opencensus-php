@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@razorpay/blade/components';
 import { NachFormKeyNames, NachFormObject, NachFormProps } from '../NACHForm/NACHForm';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
-import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
+import {
+  MerchantModularOnboardingDetailsSuccessResponse,
+  ModularOnboardingField,
+} from 'apps/pos/src/app/types/modular';
 import KYCRedirectionLoader from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/MerchantRegistration/KYCRedirectionLoader';
 import {
   PaymentMethodForm,
@@ -14,6 +17,7 @@ import {
   isBooleanValue,
   isDocumentUpload,
   isStringArrayValue,
+  isNullValue,
   isStringValue,
 } from 'apps/pos/src/app/utils/modularTypeResolvers';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
@@ -90,7 +94,12 @@ const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   return methodForm;
 };
 
-const getFieldValue = (field, defaultValues: Record<string, number> | undefined) => {
+interface GetFieldValueProps {
+  field: ModularOnboardingField;
+  fields: ModularOnboardingField[];
+  defaultValues: Record<string, number> | undefined;
+}
+const getFieldValue = ({ field, defaultValues, fields }: GetFieldValueProps) => {
   const handleArrayValue = (f) => {
     if (Array.isArray(f.stringArrayValue) && !f.stringArrayValue.length) return [];
     if (Array.isArray(f.arrayOfDocumentsUploadValue) && !f.arrayOfDocumentsUploadValue.length)
@@ -98,7 +107,22 @@ const getFieldValue = (field, defaultValues: Record<string, number> | undefined)
     if (isStringArrayValue(f)) return f.stringArrayValue;
     if (isArrayOfDocumentsUpload(f)) return f.arrayOfDocumentsUploadValue;
   };
-
+  if (field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD) {
+    const vas_cc_emi = fields.find(
+      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD,
+    );
+    if (isNullValue(vas_cc_emi)) {
+      return true;
+    }
+  }
+  if (field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD) {
+    const vas_dc_emi = fields.find(
+      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD,
+    );
+    if (isNullValue(vas_dc_emi)) {
+      return true;
+    }
+  }
   const value = isBooleanValue(field)
     ? field.booleanValue
     : (isStringValue(field) && field.stringValue.toString()) ||
@@ -108,7 +132,7 @@ const getFieldValue = (field, defaultValues: Record<string, number> | undefined)
   return value;
 };
 
-const getFieldCheckedStatus = (field, defaultValues: Record<string, number> | undefined) => {
+const getFieldCheckedStatus = ({ field, defaultValues, fields }: GetFieldValueProps) => {
   const handleArrayValue = (f) => {
     if (Array.isArray(f.stringArrayValue) && !f.stringArrayValue.length) return false;
     if (Array.isArray(f.arrayOfDocumentsUploadValue) && !f.arrayOfDocumentsUploadValue.length)
@@ -116,7 +140,23 @@ const getFieldCheckedStatus = (field, defaultValues: Record<string, number> | un
     if (isStringArrayValue(f)) return true;
     if (isArrayOfDocumentsUpload(f)) return true;
   };
-
+  if (field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD) {
+    const vas_cc_emi = fields.find(
+      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD,
+    );
+    // when null value is received from api, then cc/dc emi checkboxes are marked as checked
+    if (isNullValue(vas_cc_emi)) {
+      return true;
+    }
+  }
+  if (field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD) {
+    const vas_dc_emi = fields.find(
+      (field) => field.name === PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD,
+    );
+    if (isNullValue(vas_dc_emi)) {
+      return true;
+    }
+  }
   const value = isBooleanValue(field)
     ? field.booleanValue
     : (isStringValue(field) && field.stringValue.toString() && true) ||
@@ -148,8 +188,8 @@ const populateFormWithModularConfigData = (
     fields?.forEach((f) => {
       if (f && f.name && f.meta) {
         newForm.form[f.name] = {
-          checked: getFieldCheckedStatus(f, defaultValues),
-          value: getFieldValue(f, defaultValues),
+          checked: getFieldCheckedStatus({ field: f, defaultValues, fields }),
+          value: getFieldValue({ field: f, defaultValues, fields }),
           defaultValue: defaultValues?.[f.name] || null,
           isRequired: f.isRequired,
           isDisabled: f.isDisabled,
@@ -243,7 +283,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
         componentName,
       });
     }
-  }, [modularConfig]);
+  }, [modularConfig, paymentMethodType]);
 
   const updateConfigHandler = (form) => {
     const payload: any = {};
@@ -476,10 +516,13 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
         }
       }
       const newForm = populateFormWithModularConfigData(contextValue.methodForm, modularConfig);
+
       const initialMethodType = deriveMethodTypeFromModularConfig(
         modularConfig,
       ) as PaymentMethodFormType;
-      setPaymentMethodType(initialMethodType);
+      if (initialMethodType) {
+        setPaymentMethodType(initialMethodType);
+      }
       const newNach = populateNACHFormWithModularConfigData(modularConfig);
       setNachForm(newNach);
       setMethodFormValue('form', newForm.form);
@@ -507,6 +550,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
         isOpen={modelIsOpen}
         setIsOpen={setModelIsOpen}
         setFormType={setPaymentMethodTypeHandler}
+        acquisitionModelField={paymentMethodType}
       />
       {shouldRenderComponent() ? <RenderComponent {...contextValue} /> : null}
     </>

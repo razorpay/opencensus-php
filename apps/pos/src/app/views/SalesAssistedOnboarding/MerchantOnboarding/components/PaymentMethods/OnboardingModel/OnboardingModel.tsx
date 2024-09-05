@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -11,9 +11,14 @@ import {
 } from '@razorpay/blade/components';
 import { PaymentMethodFormType } from 'apps/pos/src/app/types/PaymentsAndService';
 
-const OnboardingModel = ({ isOpen, setIsOpen, setFormType }): JSX.Element => {
+const OnboardingModel = ({
+  isOpen,
+  setIsOpen,
+  setFormType,
+  acquisitionModelField,
+}): JSX.Element => {
   const [paymentMethodFormType, setPaymentMethodFormType] = useState<PaymentMethodFormType>(
-    PaymentMethodFormType.AGGREGATOR,
+    acquisitionModelField || PaymentMethodFormType.AGGREGATOR,
   );
 
   const onDismissClick = () => {
@@ -32,6 +37,10 @@ const OnboardingModel = ({ isOpen, setIsOpen, setFormType }): JSX.Element => {
     setFormType(paymentMethodFormType);
     setIsOpen(false);
   };
+
+  useEffect(() => {
+    setPaymentMethodFormType(acquisitionModelField);
+  }, [acquisitionModelField]);
 
   return (
     <BottomSheet isOpen={isOpen} onDismiss={onDismissClick}>

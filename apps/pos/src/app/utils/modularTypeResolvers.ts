@@ -17,6 +17,12 @@ export function isStringValue(
   return typeof (field as ModularOnboardingFieldWithStringValue)?.stringValue === 'string';
 }
 
+export function isNullValue(
+  field: ModularOnboardingField | null | undefined,
+): field is ModularOnboardingFieldWithStringValue {
+  return (field as ModularOnboardingFieldWithStringValue)?.stringValue === null;
+}
+
 export function isBooleanValue(
   field: ModularOnboardingField | null,
 ): field is ModularOnboardingFieldWithBooleanValue {

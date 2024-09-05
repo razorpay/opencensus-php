@@ -57,12 +57,16 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   const [isVASEditEnabled, setIsVASEditEnabled] = useState(false);
 
   const onEditVASClick = () => {
-    removeExistingPricingDocs();
+    if (isVASEditEnabled) {
+      removeExistingPricingDocs();
+    }
     setIsVASEditEnabled((prev) => !prev);
   };
 
   const onEditMDRClick = () => {
-    removeExistingPricingDocs();
+    if (isMDREditEnabled) {
+      removeExistingPricingDocs();
+    }
     setIsMDREditEnabled((prev) => !prev);
   };
 
@@ -123,7 +127,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
             merchantId={id}
             name={PaymentMethodsFieldKeyNames.CUSTOM_PRICING_PROOF}
             label="Upload custom rates proof"
-            accept=".pdf"
+            accept=".pdf,.jpeg,.jpg,.png"
             uploadType="multiple"
             onChange={onFileUploadChange}
             maxSize={5 * 1024 * 1023}
@@ -136,7 +140,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                 color: 'negative',
               })
             }
-            isDisabled={isFormDisabled}
+            isDisabled={isFormDisabled || isMDREditEnabled || isVASEditEnabled}
             value={form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value}
           />
         </Box>

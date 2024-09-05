@@ -53,7 +53,7 @@ const NACHForm: React.FC<NachFormProps> = ({
         merchantId={id}
         name={NachFormKeyNames.NACH_DOCUMENT_NAME}
         label="To debit the rental charges from Merchant’s account automatically"
-        accept=".pdf"
+        accept=".pdf,.jpeg,.jpg,.png"
         uploadType="single"
         onChange={onNachFileUploadChange}
         maxSize={5 * 1024 * 1023}
@@ -117,7 +117,7 @@ const NACHForm: React.FC<NachFormProps> = ({
           variant="secondary"
           isFullWidth
           marginTop="spacing.5"
-          isDisabled={isFormDisabled}
+          isDisabled={true}
         >
           Skip & add later
         </Button>
