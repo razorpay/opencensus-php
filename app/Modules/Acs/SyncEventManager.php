@@ -491,6 +491,10 @@ class SyncEventManager
             $route                 = $asvRouter->getRouteOrJobName();
             $connection = $logData['connection'] ?? 'none';
 
+            // disable logging for asv traffic , we want to avoid splitz call
+            if ($connection !== 'none' and in_array($connection, Connection::ASV_ROUTEING_CONNECTIONS)) {
+                return;
+            }
             $shouldEnableQueryLogs = ($asvRouter)->shouldEnableQueryLogs(uniqid(), $route);
             if ($shouldEnableQueryLogs === true) {
                 $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
