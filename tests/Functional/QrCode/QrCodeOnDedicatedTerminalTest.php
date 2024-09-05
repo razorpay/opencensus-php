@@ -2237,4 +2237,84 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $entityOrigin   = $this->getDbLastEntity('entity_origin','live');
         $this->assertNull($entityOrigin);
     }
+
+    public function testCreateDynamicQrWithDedicatedTerminalAndTaxInvoice()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $qrCode = $this->createQrCode([
+                                          'usage'          => 'single_use',
+                                          'type'           => 'upi_qr',
+                                          'fixed_amount'   => true,
+                                          'payment_amount' => 10000,
+                                          'tax_invoice'    => [
+                                              'number'         => 'INV0001',
+                                              'date'           => 1725428530,
+                                              'customer_name'  => 'Gaurav Kumar',
+                                              'business_gstin' => '06AABCU9605R1ZR',
+                                              'gst_amount'     => 4000,
+                                              'cess_amount'    => 0,
+                                              'supply_type'    => 'interstate',
+                                       ],
+                                      ],
+                                      'live',
+                                      'LiveAccountMer');
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->assertArraySelectiveEquals([
+                                              'number'         => 'INV0001',
+                                              'date'           => 1725428530,
+                                              'customer_name'  => 'Gaurav Kumar',
+                                              'business_gstin' => '06AABCU9605R1ZR',
+                                              'gst_amount'     => 4000,
+                                              'cess_amount'    => 0,
+                                              'supply_type'    => 'interstate',
+                                          ], $qrCodeEntity['tax_invoice']);
+    }
+
+    public function testCreateStaticQrWithDedicatedTerminalAndTaxInvoice()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $qrCode = $this->createQrCode([
+                                          'usage'          => 'multiple_use',
+                                          'type'           => 'upi_qr',
+                                          'tax_invoice'    => [
+                                              'number'         => 'INV0001',
+                                              'date'           => 1725428530,
+                                              'customer_name'  => 'Gaurav Kumar',
+                                              'business_gstin' => '06AABCU9605R1ZR',
+                                              'gst_amount'     => 4000,
+                                              'cess_amount'    => 0,
+                                              'supply_type'    => 'interstate',
+                                          ],
+                                      ],
+                                      'live',
+                                      'LiveAccountMer');
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->assertArraySelectiveEquals([
+                                              'number'         => 'INV0001',
+                                              'date'           => 1725428530,
+                                              'customer_name'  => 'Gaurav Kumar',
+                                              'business_gstin' => '06AABCU9605R1ZR',
+                                              'gst_amount'     => 4000,
+                                              'cess_amount'    => 0,
+                                              'supply_type'    => 'interstate',
+                                          ], $qrCodeEntity['tax_invoice']);
+    }
 }

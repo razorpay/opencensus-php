@@ -386,6 +386,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const OFFER_BENEFITS                          = 'offer_benefits';
 
+    /**
+     * This constant is only used during creation of dummy payment array for routing
+     */
+    const GST_QR                                  = 'gst_qr';
+
     const FEE_MODEL_OVERRIDE_MERCHANT_IDS = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID2, Pricing\BuyPricing::BPCL_MERCHANT_ID3 ];
 
     protected static $sign      = 'pay';
@@ -448,6 +453,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD,
         self::DeviceId,
         self::SOURCE_CHANNEL,
+        self::GST_QR, // Added here to support entry in dummy payment array for routing
     ];
 
     protected $visible = [
@@ -549,7 +555,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CAPTURE_REFUNDED_PAYMENT,
         self::FUNDS_SPLIT,
         self::REWARD,
-        self::REWARD_ID
+        self::REWARD_ID,
+        self::GST_QR, // Added here to support entry in dummy payment array for routing
     ];
 
     protected $public = [
@@ -6264,6 +6271,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                                 }
                             }
                         }
+
+                    if(($receiver !== null) and
+                        ($receiver instanceof QrV2\Entity) and
+                        (empty($receiver->getTaxInvoice()) === false))
+                    {
+                        $paymentArray[self::GST_QR] = 'true';
+                    }
                 }
                 break;
 

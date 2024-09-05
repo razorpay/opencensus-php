@@ -82,6 +82,34 @@ class Service extends Base\Service
         return null;
     }
 
+    public function createForQrPaymentTriggeredViaNewGatewayAdapterDuringRecon($input, $callbackData, $isFailure = false)
+    {
+        $qrCode = $this->repo->qr_code->findByMerchantReference($input['merchant_reference']);
+        $qrpInput = [
+            Entity::QR_CODE_ID            => $qrCode->getId() ?? $input['merchant_reference'],
+            Entity::TRANSACTION_REFERENCE => $input['provider_reference_id']
+        ];
+
+        try
+        {
+            return $this->core->create($qrpInput, $callbackData, $isFailure);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::QR_PAYMENT_SAVE_REQUEST_FAILED,
+                [
+                    Entity::QR_CODE_ID            => $input[Entity::QR_CODE_ID],
+                    Entity::TRANSACTION_REFERENCE => $input[Entity::TRANSACTION_REFERENCE]
+                ]
+            );
+        }
+
+        return null;
+    }
+
     public function initGatewayCallForQrStatusCheck(string $id): void
     {
         /**
@@ -99,7 +127,8 @@ class Service extends Base\Service
         {
             try
             {
-                if ($qrVariant === true)
+                if (($qrVariant === true) or
+                    ($gatewayData['terminal']['gateway'] === 'upi_rzpapb'))
                 {
                     (new \RZP\Models\QrPayment\Service())->processQrPaymentForNewGatewayFlow(
                         $qrCode, $gatewayData, $gatewayData['terminal']['gateway'], true);

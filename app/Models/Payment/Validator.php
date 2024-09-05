@@ -182,6 +182,7 @@ class Validator extends Base\Validator
         'device_fingerprint'                                          => 'sometimes|array',
         'split_amount'                                               => 'sometimes|integer',
         'device_id'                                                  => 'sometimes',
+        'gst_qr'                                                     => 'sometimes',
     ];
 
     protected static $editAcquirerRules = [

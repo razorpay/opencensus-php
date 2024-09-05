@@ -40,6 +40,7 @@ class Service extends QrCode\Service
         Gateway::UPI_YESBANK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AIRTEL,
+        Gateway::UPI_RZPAPB,
     ];
 
     public static $qrBharatQrStatusCheckGateways = [

@@ -11,6 +11,7 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\QrGatewayModule\QrGatewayModule;
 use RZP\Models\QrPayment\Entity;
 use RZP\Services\SmartCollect;
 use RZP\Trace\TraceCode;
@@ -259,9 +260,25 @@ class Service extends Base\Service
 
         $qrPaymentRequest = null;
 
+        $qrRearchRequest = false;
+
         try
         {
-            [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse(json_encode($input), $gatewayClass, $gateway, $terminal);
+            if ((QrGatewayModule::checkIfNewQrPaymentGateway($gateway) === true) or
+                (QrGatewayModule::checkIfOldGatewayProcessedThroughNewQrPaymentProcessingFlow($gateway) === true))
+            {
+                $qrRearchRequest = true;
+
+                $terminal        = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $input['terminal']);
+                $gatewayResponse = [
+                    'qr_data'       => (new QrPayment\Service())->getQrPaymentDataFromInput(null, $input, $gateway, $terminal),
+                    'callback_data' => ['data' => $input],
+                ];
+            }
+            else
+            {
+                [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse(json_encode($input), $gatewayClass, $gateway, $terminal);
+            }
 
             //todo: from gateway function (getQrData), gatewayResponse['callbackdata'] does not have 'data' entity inside due
             // to which getTrFieldForGateway() function returns null, need to fix this asap
@@ -281,7 +298,16 @@ class Service extends Base\Service
                 return null;
             }
 
-            $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
+            if ($qrRearchRequest === true)
+            {
+                $qrPaymentRequest = (new QrPaymentRequest\Service())
+                    ->createForQrPaymentTriggeredViaNewGatewayAdapterDuringRecon(
+                        $gatewayResponse['qr_data'], $gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
+            }
+            else
+            {
+                $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
+            }
 
             $path = "/v1/payment/callback/bharatqr/" . $gateway . "/internal";
 

@@ -126,6 +126,34 @@ class QrGatewayModule
         return $response['data'];
     }
 
+    public function checkQrPaymentStatusForUpiRzpapb(QrCodeEntity $qrCode, TerminalEntity $terminal): array
+    {
+        $merchant = $qrCode->merchant;
+
+        $input = [
+            EntityConstants::PAYMENT  => [
+                'id'       => $qrCode->getId() . 'qrv2',
+                'amount'   => $qrCode->getAmount(),
+                'currency' => 'INR',
+            ],
+            EntityConstants::TERMINAL => $terminal->toArray(),
+            EntityConstants::MERCHANT => $merchant->toArray(),
+            EntityConstants::UPI      => [
+                'merchant_reference' => $qrCode->getId() . 'qrv2',
+            ],
+        ];
+
+        $response = $this->app['mozart']->sendMozartRequest(
+            namespace  : Namespaces::UPI_PAYMENTS,
+            gateway    : $terminal->getGateway(),
+            action     : Action::VERIFY,
+            input      : $input,
+            addEntities: false
+        );
+
+        return $response['data'];
+    }
+
     public function preProcessQrCallback($callbackData, string $gateway): array
     {
         $payload = json_encode($callbackData, JSON_THROW_ON_ERROR);
