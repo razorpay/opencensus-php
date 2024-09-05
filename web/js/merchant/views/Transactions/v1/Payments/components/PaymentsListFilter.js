@@ -9,6 +9,7 @@ import ListFilter from 'merchant/components/ListFilter';
 import ProviderSelector from 'merchant/components/ProviderSelector';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { handleChangeTrack } from 'merchant/views/Transactions/v1/AnalyticsTrack';
+import './Payments.styl';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -163,6 +164,13 @@ export default ({ showBatchIdFilter, ...props }) => {
         </div>
       </ShowWhen>
 
+      <ShowWhen additionalCondition={() => props?.user?.isRRNSearchEnabled}>
+        <div className="form-group list-filter-item">
+          <label className="payment-reference-label">Payment Reference Number</label>
+          <Field name="rrn" component="input" class="form-control input-sm" />
+        </div>
+      </ShowWhen>
+
       <ShowWhen
         additionalCondition={() => !isConfigTagEnabled('payment_list_filter.bank_reference_id')}
       >
@@ -183,13 +191,6 @@ export default ({ showBatchIdFilter, ...props }) => {
           class="form-control input-sm"
         />
       </div>
-
-      <ShowWhen additionalCondition={() => props?.user?.isRRNSearchEnabled}>
-        <div className="form-group list-filter-item">
-          <label style={{ width: '200px' }}>Payment Reference Number</label>
-          <Field name="rrn" component="input" class="form-control input-sm" />
-        </div>
-      </ShowWhen>
 
       {props.addonAfter}
     </ListFilter>

@@ -50,7 +50,7 @@ describe('PaymentsListFilter', () => {
       'Processed by',
       'Notes',
       'Receiver Type',
-      'Bank Reference Number',
+      'Payment Reference Number',
     ].forEach((filter) => expect(screen.getByText(filter)).toBeInTheDocument());
   });
 
@@ -107,6 +107,8 @@ describe('PaymentsListFilter', () => {
 
   test('should allow to search by bank reference number', async () => {
     render(<App />);
+    const showAllFiltersButton = screen.getByText(/Show All Filters/);
+    await userEvent.click(showAllFiltersButton);
     const bankReferenceNumberFilter = screen.getAllByRole('textbox')[5];
     const bankReferenceNumber = '123456';
     await userEvent.type(bankReferenceNumberFilter, bankReferenceNumber);
@@ -115,8 +117,6 @@ describe('PaymentsListFilter', () => {
 
   test('should allow to search by payment reference number', async () => {
     render(<App />);
-    const showAllFiltersButton = screen.getByText(/Show All Filters/);
-    await userEvent.click(showAllFiltersButton);
     const paymentReferenceNumberFilter = screen.getAllByRole('textbox')[5];
     const paymentReferenceNumber = '123456';
     await userEvent.type(paymentReferenceNumberFilter, paymentReferenceNumber);
