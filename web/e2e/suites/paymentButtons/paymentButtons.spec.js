@@ -7,14 +7,15 @@ import {
   createPaymentButton,
   updatePaymentButtonPostPaymentSettings,
   updatePaymentButtonReceiptSettings,
-  openBtnDetailsView,
+  editAndCloneTest,
+  searchButtonTest,
 } from './utils';
 import { expectSuccessNotification, generateRandomText } from '../../utils';
 
-// Todo : add test.describe.parallel when removing test.describe.skip
-test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code-stable', () => {
+test.describe
+  .parallel('Test Payments Buttons @flow=payment-buttons @project=no-code-stable', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
@@ -80,17 +81,12 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
   });
 
   test.describe.serial('Edit and clone Payment button', () => {
-    let testButtonTitle = '';
+    let testButtonTitle = editAndCloneTest.buttontitle;
+    let testButtonId = editAndCloneTest.buttonId;
 
     test('should edit payment button @priority=critical', async ({ page }) => {
-      const { buttonTitle } = await createPaymentButton({
-        page,
-        type: paymentButtonType.quickPay,
-        openDetailsView: true,
-      });
-
-      testButtonTitle = buttonTitle;
-
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForLoadState();
       const editButton = await page.locator('i.i-edit-outline');
       await expect(editButton).toBeVisible();
       await editButton.click();
@@ -117,13 +113,15 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
     });
 
     test('should update and verify stock @priority=critical', async ({ page }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
-      await page.waitForLoadState();
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForTimeout(10 * 1000);
       await page.getByRole('button', { name: 'Update Stock' }).click();
-      await page.locator('label').filter({ hasText: 'No Limit' }).locator('div').first().click();
+      const isDisabled = await page.getByPlaceholder('Total Stock').isDisabled();
+
+      if (isDisabled) {
+        await page.locator('label').filter({ hasText: 'No Limit' }).locator('div').first().click();
+      }
+
       await page.getByPlaceholder('Total Stock').click();
 
       const newStockValue = '25';
@@ -142,10 +140,8 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
     });
 
     test('should edit payments receipt @priority=critical', async ({ page }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForLoadState();
       const editButton = await page.locator('i.i-edit-outline');
       await expect(editButton).toBeVisible();
       await editButton.click();
@@ -167,10 +163,8 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
     });
 
     test('should edit post payments settings @priority=critical', async ({ page }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForLoadState();
       const settingsButton = await page.locator('i.i-settings-outline');
       await expect(settingsButton).toBeVisible();
       await settingsButton.click();
@@ -187,16 +181,16 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
     });
 
     test('should clone payment button @priority=critical', async ({ page }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForLoadState();
 
       const cloneButton = await page.locator('i.i-copy');
       await expect(cloneButton).toBeVisible();
       await cloneButton.click();
+
       const duplicateButtonTitle = await page.locator('input[name="title"]').inputValue();
       expect(duplicateButtonTitle).toBe(testButtonTitle);
+
       await page.getByRole('button', { name: 'Next', exact: false }).click();
       await page.getByRole('button', { name: 'Next', exact: false }).click();
       await page.getByRole('button', { name: 'Create Button' }).click();
@@ -204,23 +198,40 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
 
       await page.getByRole('link', { name: 'Back To Dashboard' }).click();
     });
+
+    test('should active and deactivate payment button @priority=critical', async ({ page }) => {
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForTimeout(10 * 1000);
+      const isActiveVisible = await page.getByText('Active', { exact: true }).isVisible();
+
+      if (isActiveVisible) {
+        await page.getByRole('button', { name: 'Deactivate', exact: true }).click();
+        await page.getByRole('button', { name: 'Yes, deactivate' }).click();
+        await expectSuccessNotification({
+          page,
+          notificationText: `${testButtonId} is now Inactive`,
+        });
+      } else {
+        await page.getByRole('button', { name: 'Activate', exact: true }).click();
+        await page.getByRole('button', { name: 'Yes, activate' }).click();
+        await expectSuccessNotification({
+          page,
+          notificationText: `${testButtonId} is now Active`,
+        });
+      }
+    });
   });
 
   test.describe.serial('Search Payment button', () => {
-    let testButtonTitle = '';
+    let testButtonTitle = searchButtonTest.activeButtontitle;
+
     test('should search by title @priority=critical', async ({ page }) => {
-      const { buttonTitle } = await createPaymentButton({
-        page,
-        type: paymentButtonType.quickPay,
-      });
-      testButtonTitle = buttonTitle;
-      console.log('testButtonTitle', buttonTitle);
       await page.locator('input[name="title"]').click();
-      await page.locator('input[name="title"]').fill(buttonTitle);
+      await page.locator('input[name="title"]').fill(testButtonTitle);
 
       await page.getByRole('button', { name: 'Search' }).click();
 
-      await expect(page.getByRole('link', { name: buttonTitle })).toBeVisible();
+      await expect(page.getByRole('link', { name: testButtonTitle, exact: true })).toBeVisible();
     });
 
     test('should search by count @priority=critical', async ({ page }) => {
@@ -232,53 +243,45 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
 
       await page.getByRole('button', { name: 'Search' }).click();
 
-      await expect(page.getByRole('link', { name: testButtonTitle })).toBeVisible();
+      await expect(page.getByRole('link', { name: testButtonTitle, exact: true })).toBeVisible();
     });
 
     test('should search by active status @priority=critical', async ({ page }) => {
-      await page.getByRole('combobox').selectOption('Active');
+      const activeButtonTitle = searchButtonTest.activeButtontitle;
 
       await page.locator('input[name="title"]').click();
-      await page.locator('input[name="title"]').fill(testButtonTitle);
+      await page.locator('input[name="title"]').fill(activeButtonTitle);
+      await page.getByRole('combobox').selectOption('Active');
 
       await page.getByRole('button', { name: 'Search' }).click();
 
-      await expect(page.getByRole('link', { name: testButtonTitle })).toBeVisible();
+      await expect(page.getByRole('link', { name: activeButtonTitle, exact: true })).toBeVisible();
     });
 
     test('should search by inactive status @priority=critical', async ({ page }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
-      await page.getByRole('button', { name: 'Deactivate' }).click();
-      await page.getByRole('button', { name: 'Yes, deactivate' }).click();
+      const inactiveButtonTitle = searchButtonTest.inactiveButtonTitle;
 
-      await page.getByRole('button', { name: 'Get Code' }).click();
-      await page.getByRole('link', { name: 'Back To Dashboard' }).click();
-
-      await page.locator('input[name="title"]').fill(testButtonTitle);
+      await page.locator('input[name="title"]').fill(inactiveButtonTitle);
       await page.getByRole('combobox').selectOption('Inactive');
+
       await page.getByRole('button', { name: 'Search' }).click();
 
-      await expect(page.getByRole('link', { name: testButtonTitle })).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: inactiveButtonTitle, exact: true }),
+      ).toBeVisible();
     });
   });
 
   test.describe.serial('Correct data and actions', () => {
-    let testButtonTitle = '';
-    let testButtonId = '';
+    let testButtonTitle = searchButtonTest.activeButtontitle;
+    let testButtonId = searchButtonTest.activeButtonId;
 
     test('should show and copy payment button code in list view @priority=critical', async ({
       page,
     }) => {
-      const { buttonTitle, buttonId } = await createPaymentButton({
-        page,
-        type: paymentButtonType.quickPay,
-      });
-
-      testButtonTitle = buttonTitle;
-      testButtonId = buttonId;
+      await page.locator('input[name="title"]').click();
+      await page.locator('input[name="title"]').fill(testButtonTitle);
+      await page.getByRole('button', { name: 'Search' }).click();
 
       await page
         .getByTestId(`entity-item-row-${testButtonId}`)
@@ -291,20 +294,16 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
     test('should show and copy payment button code in details view @priority=critical', async ({
       page,
     }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForLoadState();
       await page.getByRole('button', { name: 'Get Code' }).click();
       await page.getByRole('button', { name: 'COPY CODE' }).click();
       await page.getByRole('link', { name: 'Back To Dashboard' }).click();
     });
 
     test('should show correct info in details view @priority=critical', async ({ page }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForLoadState();
 
       await expect(
         page.getByText(testButtonId, {
@@ -324,10 +323,9 @@ test.describe.skip('Test Payments Buttons @flow=payment-buttons @project=no-code
     });
 
     test('should download report @priority=critical', async ({ page }) => {
-      await openBtnDetailsView({
-        page,
-        buttonTitle: testButtonTitle,
-      });
+      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      await page.waitForLoadState();
+
       await page.getByText('Download Report').click();
 
       await expect(page.getByText('CSV')).toBeVisible();

@@ -19,7 +19,16 @@ export const paymentButtonTitle = {
   buyNow: 'Buy Now',
   donations: 'Donations',
 };
-
+export const editAndCloneTest = {
+  buttontitle: 'TZFi6AGdPz',
+  buttonId: 'pl_Or2cQzXQKRBjxa',
+};
+export const searchButtonTest = {
+  activeButtonId: 'pl_Or58EGuQAvjRQQ',
+  activeButtontitle: 'ActiveButtonTitle-DontDeleteThis',
+  inactiveButtonTitle: 'InactiveButtonTitle-DontDeleteThis',
+  inactiveButtonId: 'pl_Or5urZY5RBB2KR',
+};
 export const updatePaymentButtonReceiptSettings = async ({ page, receiptSettings }) => {
   await page.getByRole('button', { name: 'Payment Receipts', exact: false }).click();
 
@@ -53,15 +62,20 @@ export const updatePaymentButtonReceiptSettings = async ({ page, receiptSettings
     await page.getByText('Show Customer’s Information on Receipt').click();
   }
 };
-
 export const updatePaymentButtonPostPaymentSettings = async ({ page, postPaymentSettings }) => {
   if (postPaymentSettings.addCustomMsg) {
-    await page.getByText('Show a custom message').click();
+    const isDisabled = await page.getByPlaceholder('Add your message here.').isDisabled();
+    if (isDisabled) {
+      await page.getByText('Show a custom message').click();
+    }
     await page.getByPlaceholder('Add your message here.').click();
     await page.getByPlaceholder('Add your message here.').fill(generateRandomText(40));
   }
   if (postPaymentSettings.addRedirectUrl) {
-    await page.getByText('Redirect URL').click();
+    const isDisabled = await page.getByPlaceholder('Add redirect URL here').isDisabled();
+    if (isDisabled) {
+      await page.getByText('Redirect URL').click();
+    }
     await page.getByPlaceholder('Add redirect URL here').click();
     await page.getByPlaceholder('Add redirect URL here').fill(generateRandomWebsiteUrl());
   }
