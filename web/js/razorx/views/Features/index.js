@@ -26,14 +26,6 @@ class Features extends React.Component {
       <div class="parent-container features-container">
         <div class="header">
           <span class="title">Features</span>
-          <div class="btn-group">
-            <button class="btn btn--primary" onClick={this.showFeatureModal}>
-              + Add New
-            </button>
-          </div>
-          <button class="btn btn--transparent raw-btn" onClick={this.showJSONModal}>
-            RAW
-          </button>
         </div>
         <div class="container-group">
           <List />
