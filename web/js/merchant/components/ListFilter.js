@@ -28,6 +28,7 @@ export const isTransactionsV2Enabled = (splitz, user) => {
   return (
     Boolean(user.isINCountry) &&
     (user.isOrgRZP || user.isVasTestingMerchant) &&
+    !user.isFeatureEnabled('raas') &&
     isExperimentEnabled(abExperiments.Transactions_Revamp)
   );
 };

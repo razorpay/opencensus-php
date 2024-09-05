@@ -336,9 +336,28 @@ describe('utils', () => {
       const splitz = {
         abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
       };
-      const user = { isOrgCurlec: false, isOrgRZP: true, isINCountry: true };
+      const user = {
+        isOrgCurlec: false,
+        isOrgRZP: true,
+        isINCountry: true,
+        isFeatureEnabled: jest.fn(() => false),
+      };
       const result = isTransactionsV2Enabled(splitz, user);
       expect(result).toBe(true);
+    });
+
+    test('should return false for Optimizer raas feature check', () => {
+      const splitz = {
+        abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
+      };
+      const user = {
+        isOrgCurlec: false,
+        isOrgRZP: true,
+        isINCountry: true,
+        isFeatureEnabled: jest.fn(() => true),
+      };
+      const result = isTransactionsV2Enabled(splitz, user);
+      expect(result).toBe(false);
     });
   });
 
