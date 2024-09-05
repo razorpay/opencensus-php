@@ -258,10 +258,19 @@ class UserController extends Controller
             }
 
             $orgCode = $org[MerchantConstants::CUSTOM_CODE] ?? '';
+            $orgID = $org[MerchantConstants::ORG_ID] ?? '';
+
             $isOrgRZP = $orgCode === MerchantConstants::RZP;
+            $isRZPOrgID = $orgID === MerchantConstants::RZP_ORG_ID;
+
+            $countryCode = $details[MerchantConstants::COUNTRY_CODE] ?? null;
+
+            // FTUX redirection for India merchants only
+            $isFTUXApplicableForIndia = $isRZPOrgID and $countryCode === MerchantConstants::INDIA_COUNTRY_CODE;
+
             $isApplicableForFtuxRedirection = $this->isRedirectionApplicableForFtux($details) === true and $isOrgRZP === true;
 
-            if ($isApplicableForFtuxRedirection)
+            if ($isApplicableForFtuxRedirection and $isFTUXApplicableForIndia)
             {
                 $this->trace->info(TraceCode::EASY_DASHBOARD_URL_REDIRECTION, [
                     'redirection_url' => env('EASY_DASHBOARD_URL') . '/onboarding/overview',
@@ -2126,6 +2135,7 @@ class UserController extends Controller
 
             $isSubMerchant = $details[MerchantConstants::IS_SUB_MERCHANT] ?? false;
             $partnerType = $details[MerchantConstants::PARTNER_TYPE] ?? null;
+            $countryCode = $details[MerchantConstants::COUNTRY_CODE] ?? null;
 
             if($isAdminAsMerchant === true || $isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true)
             {
@@ -2134,7 +2144,13 @@ class UserController extends Controller
 
             $signupCampaign = $details['user']['signup_campaign'] ?? null;
 
-            if ($signupCampaign !== 'easy_onboarding')
+            if ($signupCampaign !== MerchantConstants::EASY_ONBOARDING)
+            {
+                return false;
+            }
+
+            // Do not show ftux id country is not India
+            if($signupCampaign === MerchantConstants::EASY_ONBOARDING and $countryCode !== MerchantConstants::INDIA_COUNTRY_CODE)
             {
                 return false;
             }

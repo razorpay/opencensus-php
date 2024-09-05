@@ -315,5 +315,10 @@ class Constants
     const IS_SUB_MERCHANT = 'isSubMerchant';
     const PARTNER_TYPE = 'partner_type';
     const ACTIVATION_STATUS = 'activation_status';
+    const RZP_ORG_ID = 'org_100000razorpay';
+    const INDIA_COUNTRY_CODE = 'IN';
+    const COUNTRY_CODE = 'country_code';
+    const EASY_ONBOARDING = 'easy_onboarding';
+    const ORG_ID = 'id';
 
 }
