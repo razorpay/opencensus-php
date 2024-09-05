@@ -129,4 +129,20 @@ describe('Update Website Details', () => {
       expect(screen.queryByText(/Minimum 50 words required/i)).not.toBeInTheDocument(),
     );
   });
+
+  test('should show error while entering invalid URLs', async () => {
+    renderApp();
+    const websiteField = screen.getByRole('textbox', { name: /website url required \*/i });
+    const submitCta = screen.getByRole('button', {
+      name: /Submit website for review/i,
+    });
+
+    expect(websiteField).toBeInTheDocument();
+    expect(submitCta).toBeInTheDocument();
+
+    await userEvent.type(websiteField, 'test');
+    await userEvent.click(submitCta);
+
+    expect(screen.getByText('Please enter valid url')).toBeInTheDocument();
+  });
 });

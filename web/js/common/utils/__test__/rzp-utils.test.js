@@ -19,6 +19,7 @@ import {
   isConfigTagAPISupported,
   getDialCodeFromCountryCode,
   getCountryCodes,
+  autoPrefixUrls,
 } from 'common/utils/rzp-utils';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
@@ -819,5 +820,35 @@ describe('common/utils/rzp-utils : getDialCodeFromCountryCode', () => {
       const countryCodes = await getCountryCodes();
       expect(countryCodes).toEqual(COUNTRY_CODES);
     });
+  });
+});
+
+describe('testing autoPrefixUrls util', () => {
+  test("should add http if url doesn't contain http/https", () => {
+    //adding http as it is not in the url
+    let url = autoPrefixUrls('test.com');
+    expect(url).toBe('http://test.com');
+
+    //will not add any prefix as the protocol is already mentioned
+    url = autoPrefixUrls('https://test.com');
+    expect(url).toBe('https://test.com');
+  });
+
+  test("should add https if url doesn't contain http/https and shouldUseHttpsProtocol arg. is true", () => {
+    //adding https as it is not in the url and want to create a url with https protocol
+    let url = autoPrefixUrls('test.com', true);
+    expect(url).toBe('https://test.com');
+
+    //will be adding http protocol as shouldUseHttpsProtocol is false
+    url = autoPrefixUrls('test.com', false);
+    expect(url).toBe('http://test.com');
+  });
+
+  test('should not add any prefix if the url does contain http/https', () => {
+    let url = autoPrefixUrls('https://test.com');
+    expect(url).toBe('https://test.com');
+
+    url = autoPrefixUrls('http://test.com', true);
+    expect(url).toBe('http://test.com');
   });
 });

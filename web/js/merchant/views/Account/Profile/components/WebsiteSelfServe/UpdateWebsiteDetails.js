@@ -35,6 +35,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { FLOWS, FORM_FIELDS } from './Constants';
+import { isValidWebsite } from 'common/utils/validators';
 
 const WebsiteInputField = ({ name, validator, errorMessage, setErrorMessages, ...rest }) => (
   <Box display="flex" flexDirection="column" gap="spacing.2">
@@ -299,7 +300,7 @@ function UpdateWebsiteDetails(props) {
       Object.keys(formFieldValues).forEach((key) => {
         const isKeyCred = ['username', 'password'].includes(key);
         const value = formFieldValues[key];
-        payload[`business_website_${key}`] = isKeyCred ? value : autoPrefixUrls(value);
+        payload[`business_website_${key}`] = isKeyCred ? value : autoPrefixUrls(value, true);
       });
 
       if (isBusinessWebsiteRevamp) {
@@ -317,7 +318,7 @@ function UpdateWebsiteDetails(props) {
       delete urlDetails.business_website_username;
       delete urlDetails.business_website_password;
     } else {
-      payload.business_app_url = autoPrefixUrls(formFieldValues.app_url);
+      payload.business_app_url = autoPrefixUrls(formFieldValues.app_url, true);
       urlDetails = { ...payload };
 
       if (doesNeedCreds) {
@@ -409,7 +410,7 @@ function UpdateWebsiteDetails(props) {
         else
           formData.append(
             `additional_website_${key}`,
-            key === 'reason' ? formFieldValues[key] : autoPrefixUrls(formFieldValues[key]),
+            key === 'reason' ? formFieldValues[key] : autoPrefixUrls(formFieldValues[key], true),
           );
       });
 
@@ -425,7 +426,7 @@ function UpdateWebsiteDetails(props) {
 
       if (file instanceof File) formData.append('additional_website_proof_url', file);
     } else {
-      formData.append('additional_app_url', autoPrefixUrls(formFieldValues.app_url));
+      formData.append('additional_app_url', autoPrefixUrls(formFieldValues.app_url, true));
       formData.append('additional_app_reason', formFieldValues.reason);
 
       if (doesNeedCreds) {
@@ -549,18 +550,8 @@ function UpdateWebsiteDetails(props) {
     else setisReasonValid(false);
   };
 
-  const isUrlValid = (url) => {
-    url = url || '';
-
-    // references: web/js/common/utils/validators.js => isUrlLenient()
-    // disabled on purpose because I don't want to break the regex & I have no clue why it's complicated
-    // eslint-disable-next-line no-useless-escape
-    const urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
-    return urlRegExp.test(url);
-  };
-
   const validateWebsiteNAppLink = (input) => {
-    const value = isUrlValid(input);
+    const value = isValidWebsite(input);
     if (!value) {
       const errorMessage = 'Please enter valid url';
       setisLinkValid(false);
@@ -594,7 +585,7 @@ function UpdateWebsiteDetails(props) {
   };
 
   const validateMetaUrls = (fieldName, input) => {
-    const value = isUrlValid(input);
+    const value = isValidWebsite(input, true);
     if (!value) {
       const errorMessage = 'Please enter valid url';
       const _obj = { ...areMetaUrlsValid };

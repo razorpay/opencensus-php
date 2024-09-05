@@ -814,9 +814,9 @@ export const checkIfHTTPS = (url) => {
 /**
  *
  * @param {*} url
- * Add 'http' to the URL if http/https not there
+ * Add 'http' or 'https' to the URL if http/https not there
  */
-export const autoPrefixUrls = (url) => {
+export const autoPrefixUrls = (url, shouldUseHttpsProtocol = false) => {
   const regex = /^https?:\/\//i;
   let tempUrl;
   if (!url || url.length === 0) {
@@ -826,7 +826,8 @@ export const autoPrefixUrls = (url) => {
   tempUrl = url.toLowerCase();
 
   if (!regex.test(tempUrl)) {
-    url = 'http://' + url;
+    const protocol = !shouldUseHttpsProtocol ? 'http://' : 'https://';
+    url = protocol + url;
   }
   return url;
 };

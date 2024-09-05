@@ -1,5 +1,5 @@
 import { getSplitzExperiments } from 'common/utils/__test__/mocks/fixtures';
-import { isMobile, flexibleDevUrl, validateAmount } from 'common/utils/validators';
+import { isMobile, flexibleDevUrl, validateAmount, isValidWebsite } from 'common/utils/validators';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
 const IN_MOBILE_NUMBER = [
@@ -248,5 +248,67 @@ describe('Tests for validateAmount', () => {
 
   test('function should not return error when empty string is passed', () => {
     expect(validateAmount('', 100, 'INR')).toBe(undefined);
+  });
+});
+
+describe('Tests for website url validations', () => {
+  test('matches valid URL', () => {
+    window.rzp_user = {
+      email: 'test@razorpay.com',
+    };
+
+    //Basic URLs
+    expect(isValidWebsite('https://test.com')).toBe(true);
+    expect(isValidWebsite('https://www.test.com')).toBe(true);
+
+    //URLs with Paths and query param
+    expect(isValidWebsite('https://example.com/path/to/resource?query=string')).toBe(true);
+
+    //URLs without https
+    expect(isValidWebsite('subdomain.example.org')).toBe(true);
+
+    //URLs with special character in path
+    expect(isValidWebsite('https://example.com/path/to/resource#anchor')).toBe(true);
+
+    //for user having email ending with razorpay.com should allow URLs with razorpay domain
+    expect(isValidWebsite('https://test.razorpay.com')).toBe(true);
+
+    //should allow urls with www domain
+    expect(isValidWebsite('https://www.test.razorpay.com')).toBe(true);
+    expect(isValidWebsite('www.test.com')).toBe(true);
+  });
+
+  test('does not match invalid URLs', () => {
+    window.rzp_user = {
+      email: 'test@gmail.com',
+    };
+
+    //VPA urls and having port no.s
+    expect(isValidWebsite('http://0.1.2.1302')).toBe(false);
+    expect(isValidWebsite('https://9999999999@ybl')).toBe(false);
+
+    //URLs with non-https protocol
+    expect(isValidWebsite('http://test.com')).toBe(false);
+
+    //Invalid domain format
+    expect(isValidWebsite('https://example-.com')).toBe(false);
+    expect(isValidWebsite('https://example..com')).toBe(false);
+
+    //Missing top level domain
+    expect(isValidWebsite('https://example')).toBe(false);
+    expect(isValidWebsite('example')).toBe(false);
+
+    //Invalid Characters in the Domain
+    expect(isValidWebsite('https://example_underscore.com')).toBe(false);
+
+    //for user having non-razorpay email should not match URLs with razorpay domain
+    expect(isValidWebsite('https://test.razorpay.com')).toBe(false);
+  });
+
+  test('should match razorpay domain URL incase razorpay domain is allowed eg: Policy pages', () => {
+    window.rzp_user = {
+      email: 'test@gmail.com',
+    };
+    expect(isValidWebsite('https://test.razorpay.com', true)).toBe(true);
   });
 });

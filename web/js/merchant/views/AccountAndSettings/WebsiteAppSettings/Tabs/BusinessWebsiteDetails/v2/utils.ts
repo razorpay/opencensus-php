@@ -1,6 +1,6 @@
 import { User } from 'common/typings';
 import { autoPrefixUrls } from 'common/utils/rzp-utils';
-import { isEmail, isPhone, isUrlLenient } from 'common/utils/validators';
+import { isEmail, isPhone, isValidWebsite } from 'common/utils/validators';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 
@@ -163,7 +163,7 @@ export const defaultValue = {
 
 export const validators = {
   platform: (value): boolean => [Platform.WEBSITE, Platform.APP].includes(value),
-  url: (value): boolean => isUrlLenient(value),
+  url: (value): boolean => isValidWebsite(value),
   requireCreds: (value): boolean => [RequireCredsValues.YES, RequireCredsValues.NO].includes(value),
   credsUsername: (value, formState): boolean =>
     formState.requireCreds.value === RequireCredsValues.YES ? !!value : true,
@@ -240,7 +240,7 @@ export const isMainPageSubmitPayloadValid = (formState, userBusinessWebsite): [b
     return [false, 'Please enter valid inputs.'];
   }
 
-  if (autoPrefixUrls(formState.url.value) === userBusinessWebsite) {
+  if (autoPrefixUrls(formState.url.value, true) === userBusinessWebsite) {
     return [
       false,
       'Provided URL is same as the existing business website Url. Please provide a different URL.',
@@ -252,7 +252,7 @@ export const isMainPageSubmitPayloadValid = (formState, userBusinessWebsite): [b
 
 export function handleAppSubmitForActivated(formState): Promise<any> {
   const payload = {
-    business_app_url: autoPrefixUrls(formState.url.value),
+    business_app_url: autoPrefixUrls(formState.url.value, true),
     ...(formState.requireCreds.value === RequireCredsValues.YES
       ? {
           business_app_username: formState.credsUsername.value,
@@ -290,7 +290,7 @@ export function handleAppAndWebsiteSubmitForNonActivated(formState): Promise<any
       url: 'merchant/activation/update_website_details',
       method: 'put',
       mode: 'live',
-      data: { business_website: autoPrefixUrls(formState.url.value) },
+      data: { business_website: autoPrefixUrls(formState.url.value, true) },
     })
       .then((response) => {
         if (response.success) {
@@ -308,7 +308,7 @@ export function handleAppAndWebsiteSubmitForNonActivated(formState): Promise<any
 export const getWebsiteMainPageSubmitPayload = ({ formState, mode }): WebsiteUpdateApiPayload => ({
   mode,
   main_page: {
-    url: autoPrefixUrls(formState.url.value),
+    url: autoPrefixUrls(formState.url.value, true),
     ...(formState.requireCreds.value === 'yes'
       ? {
           main_page_credential: {
@@ -327,7 +327,7 @@ export const getWebsitePolicyPagesSubmitPayload = ({
   const policy_pages = Object.keys(formState).reduce((acc, key) => {
     if (formState[key].radioValue === PolicyPagesSelection.YES) {
       acc[key] = {
-        url: autoPrefixUrls(formState[key].value),
+        url: autoPrefixUrls(formState[key].value, true),
       };
     }
     return acc;

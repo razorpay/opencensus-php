@@ -19,6 +19,27 @@ export const isUrlLenient = (url) => {
   return urlRegExp.test(url);
 };
 
+export const isValidWebsite = (url = '', isRazorpayDomainAllowed = false) => {
+  const urlRegExp =
+    /^(https:\/\/)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/;
+
+  /**
+   * Rzp email users (e.g., test@razorpay.com) can add URLs containing "razorpay" for internal use and specific prod account within rzp.
+   * Non-Rzp email users (e.g., test@gmail.com) cannot add URLs with "razorpay."
+   * test@razorpay.com with https://test-razorpay.com: true
+   * test@gmail.com with https://test-razorpay.com: false
+   */
+  if (
+    !isRazorpayDomainAllowed &&
+    url.includes('razorpay') &&
+    !window.rzp_user.email.endsWith('razorpay.com')
+  ) {
+    return false;
+  }
+
+  return urlRegExp.test(url);
+};
+
 /*
  * Regex to allow development urls like localhost:8000, localhost, anything that user can put in url.
  * It doesn't allow strange urls like ...., etc. which are not allowed in url in general
