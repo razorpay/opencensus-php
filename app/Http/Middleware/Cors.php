@@ -144,6 +144,7 @@ class Cors
                 'x-dashboard-merchant-id',
                 'x-dashboard-user-id',
                 'x-razorpay-account',
+                'x-razorpay-user-merchant-region',
                 // x-partner-* headers contain meta data used during phantom signup
                 Headers::X_PARTNER_APPLICATION_ID,
                 Headers::X_PARTNER_OAUTH_REFERRAL,
