@@ -302,7 +302,7 @@ export default class User {
   }
 
   get isActivated() {
-    return !!this.activated;
+    return !!this.activated || this.pos_activation_status === 'activated';
   }
 
   get instantActivation() {
@@ -2074,6 +2074,10 @@ export default class User {
       this.isOrgFeatureEnabled('vas_merchant') &&
       getSplitzExperimentVariant('vas_rrn_search')?.variables?.result === 'on'
     );
+  }
+
+  get isAssistedOnboardingMerchant() {
+    return this.user.signup_campaign === 'assisted_onboarding';
   }
 }
 

@@ -60,6 +60,7 @@ const ActivationProgress = ({
         additionalCondition={(user) =>
           user.isAllowedEdit('activation') &&
           !user.isPartner() &&
+          !user.isAssistedOnboardingMerchant &&
           (!user.isSubmitted || !config.hasPersonalised)
         }
       >
