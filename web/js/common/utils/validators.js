@@ -2,6 +2,11 @@
 import { isPresent, isValidGSTIN, getCurrencyConfig } from './rzp-utils';
 
 const rzp_gst = '29AAGCR4375J1ZU';
+/* eslint-disable-next-line */
+const PLAY_STORE_URL_REGEX =
+  /^(https?:\/\/)?play.google.com\/store\/apps\/(details|developer)\?id=.*/;
+/* eslint-disable-next-line */
+const APP_STORE_URL_REGEX = /^(https?:\/\/)?apps.apple.com\/.*/;
 
 export const isEmail = (email) => {
   email = email || '';
@@ -19,6 +24,25 @@ export const isUrlLenient = (url) => {
   return urlRegExp.test(url);
 };
 
+export const isWebsiteUrlValid = (url, userEmail = '') => {
+  if (!isUrlLenient(url)) {
+    return false;
+  }
+  if (url?.includes('razorpay')) {
+    if ((userEmail ?? '').endsWith('razorpay.com')) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  return true;
+};
+
+export const isAppLinkValid = (appLink) => {
+  return PLAY_STORE_URL_REGEX.test(appLink) || APP_STORE_URL_REGEX.test(appLink);
+};
+
+// one function need to be removed later
 export const isValidWebsite = (url = '', isRazorpayDomainAllowed = false) => {
   const urlRegExp =
     /^(https:\/\/)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/;

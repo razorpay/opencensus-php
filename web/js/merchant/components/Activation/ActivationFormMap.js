@@ -17,6 +17,7 @@ import {
   validateCompanyAB,
   isUrlLenient,
   isValidName,
+  isAppLinkValid,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -539,6 +540,15 @@ const businessModel = [
         if (!isUrlLenient(value)) {
           return 'Please enter a valid url';
         }
+        if (value?.includes('razorpay')) {
+          const user = window.rzp_user;
+          const merchantEmail = user?.merchants?.[user?.current]?.email;
+          if ((merchantEmail ?? '').endsWith('razorpay.com')) {
+            return false;
+          } else {
+            return 'Invalid website URL';
+          }
+        }
       },
       info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: (activation) =>
@@ -582,6 +592,11 @@ const businessModel = [
         });
         this.sendErrorMessageToSegment(e, error);
       },
+      validator: (value) => {
+        if (!isAppLinkValid(value)) {
+          return 'Please enter valid Playstore link ';
+        }
+      },
       info: 'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
       _when: (activation) =>
         activation.state.app_url === '1' &&
@@ -604,6 +619,11 @@ const businessModel = [
           Mandatory: 'No',
         });
         this.sendErrorMessageToSegment(e, error);
+      },
+      validator: (value) => {
+        if (!isAppLinkValid(value)) {
+          return 'Please enter valid Appstore link ';
+        }
       },
       info: 'Your app url would look something like this “https://apps.apple.com/in/app/<app_name>/<app_id>” Provide just the app store url in case you operate in multiple stores or any one url in case you don’t have a app store url',
       _when: (activation) =>

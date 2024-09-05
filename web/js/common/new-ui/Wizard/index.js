@@ -27,6 +27,7 @@ export const ModalAsideNav = (_) => {
     isActivationFormFullView = false,
     activationFormMilestone,
     saveAndExitForm = () => {},
+    isTabChangeDisabled,
   } = _;
 
   const onLogoClick = () => {
@@ -69,8 +70,9 @@ export const ModalAsideNav = (_) => {
                 ? i !== 3
                 : true;
 
-            const isDisabled =
+            const isDisabledCondition =
               typeof disableTabCondition === 'function' ? disableTabCondition(i) : false;
+            const isDisabled = isDisabledCondition || isTabChangeDisabled;
 
             const hasError =
               (isFieldVerificationFailed && i === 2) || (isBankVerificationFailed && i === 3);

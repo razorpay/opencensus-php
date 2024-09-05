@@ -8,10 +8,14 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import Input from 'common/new-ui/Input';
 
-const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
+const Save = ({ saveCurrentTab, isCtaDisabled }) => (
+  <Button onClick={saveCurrentTab} disabled={isCtaDisabled}>
+    Save
+  </Button>
+);
 
-const SaveAndNext = ({ isActivationFormFullView, next }) => (
-  <Button.Primary iconAfter="chevron-right" onClick={next}>
+const SaveAndNext = ({ isActivationFormFullView, next, isCtaDisabled }) => (
+  <Button.Primary iconAfter="chevron-right" onClick={next} disabled={isCtaDisabled}>
     <span className="device--desktop">
       {isActivationFormFullView ? 'Save & Continue' : 'Save & Next'}
     </span>
@@ -173,6 +177,7 @@ const Footer = ({
   tracking,
   submitClarifications,
   canSubmitL1Form,
+  canSubmitBusinessOverViewForm,
   canSubmitNeedsClarification,
   footerButtons,
   activeTab,
@@ -200,11 +205,19 @@ const Footer = ({
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SAVE) && !isActivationFormFullView) {
-    buttons.push(<Save saveCurrentTab={saveCurrentTab} />);
+    buttons.push(
+      <Save saveCurrentTab={saveCurrentTab} isCtaDisabled={!canSubmitBusinessOverViewForm} />,
+    );
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SAVE_AND_NEXT)) {
-    buttons.push(<SaveAndNext isActivationFormFullView={isActivationFormFullView} next={next} />);
+    buttons.push(
+      <SaveAndNext
+        isActivationFormFullView={isActivationFormFullView}
+        next={next}
+        isCtaDisabled={!canSubmitBusinessOverViewForm}
+      />,
+    );
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_L1_FORM)) {

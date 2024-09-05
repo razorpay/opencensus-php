@@ -69,6 +69,8 @@ import {
   validateCompanyAB,
   validateCompanyPAN,
   validateCIN,
+  isWebsiteUrlValid,
+  isAppLinkValid,
 } from 'common/utils/validators';
 
 import L1FormFieldNames from './L1FormFieldNames';
@@ -846,6 +848,10 @@ class ActivationWizard extends React.Component {
   };
 
   changeTab = ({ target }) => {
+    // Don't allow tab change if activeTab is 'Business Overview' and there is website url/app url validation error in business overview tab. As changing tab also call the api to save the data
+    if (!this.canSubmitBusinessOverViewForm) {
+      return;
+    }
     const tabId = parseInt(target.getAttribute('data-index'));
     const currentActiveTab = this.state.activeTab;
     this.setState({ tempContactEmail: '' }); // remove temp email on changing tab
@@ -1277,6 +1283,18 @@ class ActivationWizard extends React.Component {
       isSyncExpEnable &&
       isEmailVerified
     );
+  }
+
+  get canSubmitBusinessOverViewForm() {
+    const websiteUrl = this.state.dirty.business_website || '';
+    const appLink = this.state.dirty.playstore_url || this.state.dirty.appstore_url || '';
+    const user = this.props?.user;
+    const merchantEmail = user?.merchants?.[user?.current]?.email;
+
+    const isValidWebsiteUrl = websiteUrl ? isWebsiteUrlValid(websiteUrl, merchantEmail) : true;
+    const isValidAppLink = appLink ? isAppLinkValid(appLink) : true;
+
+    return isValidWebsiteUrl && isValidAppLink;
   }
 
   /*
@@ -2601,6 +2619,7 @@ class ActivationWizard extends React.Component {
             isActivationFormFullView={this.props.location.pathname === '/kyc'}
             activationFormMilestone={this.props.user.activation_form_milestone}
             saveAndExitForm={this.saveAndExitForm}
+            isTabChangeDisabled={!this.canSubmitBusinessOverViewForm}
           />
 
           {/* Header for Full Page Activation View */}
@@ -2804,6 +2823,7 @@ class ActivationWizard extends React.Component {
             canSubmitL1Form={
               this.canSubmitL1Form && this.state.isEmailNonMandatory && !this.state.callingAPI
             }
+            canSubmitBusinessOverViewForm={this.canSubmitBusinessOverViewForm}
             canSubmitNeedsClarification={
               this.hasFilledClarificationDetails && !this.state.callingAPI
             }
