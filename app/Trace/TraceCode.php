@@ -7123,6 +7123,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DETAIL_SAVED_EVENT                              = 'MERCHANT_DETAIL_SAVED_EVENT';
     const TERMINALS_RETRIEVAL_EVENT                                = 'TERMINALS_RETRIEVAL_EVENT';
     const TERMINALS_SAVED_EVENT                                    = 'TERMINALS_SAVED_EVENT';
+    const KEYS_RETRIEVAL_EVENT                                     = 'KEYS_RETRIEVAL_EVENT';
+    const KEYS_SAVED_EVENT                                         = 'KEYS_SAVED_EVENT';
     const INSTRUMENT_EVENT_RULES_TRIGGER                           = 'INSTRUMENT_EVENT_RULES_TRIGGER';
     const INSTRUMENT_EVENT_RULES_TRIGGER_SKIPPED                   = 'INSTRUMENT_EVENT_RULES_TRIGGER_SKIPPED';
     const INSTRUMENT_EVENT_RULES_METRICS                           = 'INSTRUMENT_EVENT_RULES_METRICS';
@@ -7204,6 +7206,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BALANCE_RETRIEVAL_EVENT                               = 'BALANCE_RETRIEVAL_EVENT';
     const BALANCE_SAVED_EVENT                                   = 'BALANCE_SAVED_EVENT';
     const TRANSACTIONS_BALANCE_DISPATCH_EXCEPTION               = 'TRANSACTIONS_BALANCE_DISPATCH_EXCEPTION';
+
+    const KEY_RETRIEVAL_EXCEPTION                               = 'KEY_RETRIEVAL_EXCEPTION';
+    const KEY_SAVED_EXCEPTION                                   = 'KEY_SAVED_EXCEPTION';
+
 
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const BANKING_ACCOUNT_STATEMENT_ROW_SAVED                   = 'BANKING_ACCOUNT_STATEMENT_ROW_SAVED';

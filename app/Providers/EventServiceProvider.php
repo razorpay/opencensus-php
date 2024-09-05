@@ -23,6 +23,8 @@ use RZP\Models\Terminal;
 use RZP\Modules\Acs;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Key;
+
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -180,6 +182,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         Transaction\EventSaved::class => [
             Listeners\TransactionEventListener::class . '@onSaved',
+        ],
+        Key\EventRetrieved::class => [
+            Listeners\KeyEventListener::class . '@onRetrieved',
+        ],
+        Key\EventSaved::class => [
+            Listeners\KeyEventListener::class . '@onSaved',
         ],
     ];
 

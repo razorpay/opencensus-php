@@ -66,6 +66,16 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT => null
     ];
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $dispatchesEvents = [
+        // Event 'retrieved' fires on fetch from keys table.
+        'retrieved'   => EventRetrieved::class,
+        // Event 'saved' fires on insert or update from keys table.
+        'saved'       => EventSaved::class,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo(

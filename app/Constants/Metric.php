@@ -49,6 +49,11 @@ class Metric
 
     const ASV_WRITE_REQUEST_ROUTER_RESULT       = 'asv_write_request_router_result';
 
+    const KEY_WRITE_REQUEST       = 'key_write_request_result';
+    const KEY_READ_REQUEST       = 'key_read_request_result';
+
+
+
     const ASV_WRITE_MERCHANT_AND_MERCHANT_DETAIL_ROUTER_RESULT    = 'asv_write_merchant_and_merchant_detail_request_router_result';
 
     const ASV_FILTER_ROUTING_RESULT    = 'asv_filter_routing_result';

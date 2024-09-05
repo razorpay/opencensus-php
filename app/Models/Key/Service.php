@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Key;
 
+use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -318,6 +319,22 @@ class Service extends Base\Service
             Constants::FAILED => $failed
         ];
 
+    }
+
+    public function logRouteName(string $keyId, string $action, string $tracecode, string $metric)
+    {
+        $app = App::getFacadeRoot();
+        $routeName = $app['request.ctx']->getRoute();
+
+        $this->trace->info($tracecode, [
+            'key_id' => $keyId,
+            'route_name' => $routeName,
+            'action' => $action,
+        ]);
+
+        $this->trace->count($metric, [
+            'route_name' => $routeName,
+        ]);
     }
 
 }
