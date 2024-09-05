@@ -115,7 +115,9 @@ class ApiRequestAny
         'vendor_experience',
         'charge-collections',
         'accounting-integrations',
-        'checkout_config'
+        'checkout_config',
+        'xperience-edge',
+        'abacus',
     ];
 
     /**
