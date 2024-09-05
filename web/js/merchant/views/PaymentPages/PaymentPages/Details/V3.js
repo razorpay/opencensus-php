@@ -531,7 +531,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                 ) : null}
                 {!isBatchPaymentPages ? (
                   <div className="table-container">
-                    {paymentPageEntity.payment_page_items.map((pi, ix) => (
+                    {paymentPageEntity?.payment_page_items?.map((pi, ix) => (
                       <div className="table" key={ix}>
                         <div>
                           <b>{pi.item.name}</b>

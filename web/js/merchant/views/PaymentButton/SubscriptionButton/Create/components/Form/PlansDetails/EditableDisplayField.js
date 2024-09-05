@@ -45,7 +45,7 @@ export default class EditableDisplayField extends React.Component {
     const newPlanField = fieldData;
 
     // Update currency so it could be used everywhere, in preview, in descriptions, for filtering plans as per currency etc.
-    const currency = newPlanField.item.currency;
+    const currency = newPlanField?.item?.currency;
     this.props.updatePaymentButtonData({
       currency,
     });
