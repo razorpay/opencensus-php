@@ -5,10 +5,9 @@ import {
   ConversionRateAnalytics,
   Reports,
 } from 'merchant/views/MagicCheckout/ReportsAndAnalyticsV2/OrderAnalytics';
+import { formatRoutesByPlatform } from 'merchant/views/MagicCheckout/utils/formatGenericRoutes';
 
-import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
-
-import { User, RouteItem, RoutesConfig } from 'merchant/views/MagicCheckout/types';
+import { User, RouteItem } from 'merchant/views/MagicCheckout/types';
 
 const RTOAnalytics = lazy(
   () =>
@@ -23,11 +22,10 @@ export const GENERIC_ROUTES: RouteItem[] = [
     label: 'Order Analytics',
     Component: OrderAnalytics,
     condition: (_user: User) => _user.isMagicOrderAnalyticsEnabled,
-    onRCOD: true,
   },
   {
     path: '/magic/reports-analytics/conversion-rate-analytics',
-    label: 'Conversion rate Analytics',
+    label: 'Conversion rate',
     Component: ConversionRateAnalytics,
     condition: (_user: User) =>
       _user.isMagicOrderAnalyticsEnabled && _user.isMagicOrderAnalyticsCREnabled,
@@ -48,10 +46,4 @@ export const GENERIC_ROUTES: RouteItem[] = [
 ];
 
 //DRY - Above routes are common for all platforms
-export const DEFAULT_ROUTES = Object.values(PLATFORMS).reduce<RoutesConfig>(
-  (RTORoutes, Platform: string) => {
-    RTORoutes[Platform as string] = GENERIC_ROUTES;
-    return RTORoutes;
-  },
-  {} as RoutesConfig,
-);
+export const DEFAULT_ROUTES = formatRoutesByPlatform(GENERIC_ROUTES);

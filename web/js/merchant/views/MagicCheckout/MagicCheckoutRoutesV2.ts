@@ -1,29 +1,52 @@
 import lazy from 'merchant/routes/LazyLoader';
 
-import SetupAndSettings from 'merchant/views/MagicCheckout/Settings/containers/SetupAndSettings';
-import ReportsAndAnalytics from 'merchant/views/MagicCheckout/ReportsAndAnalyticsV2';
-import ShopifyOrderEditing from 'merchant/views/MagicCheckout/ShopifyOrderEditing';
-import CODToPrepaidLinks from 'merchant/views/MagicCheckout/CODToPrepaid/CODToPrepaidLinks';
-
-import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import MagicDashboard from 'merchant/views/MagicCheckout/MagicDashboard';
 
 const CouponEngine = lazy(
   () =>
     /* webpackChunkName: 'MagicCouponEngine' */ import('merchant/views/MagicCheckout/CouponEngine'),
 );
 
-const CODOrdersTab = lazy(
-  () =>
-    import(/* webpackChunkName: "MagicCODOrdersTab" */ 'merchant/views/MagicCheckout/CODOrdersTab'),
+const Orders = lazy(
+  () => import(/* webpackChunkName: "Orders" */ 'merchant/views/MagicCheckout/OrdersV2'),
 );
 
+const ReportsAndAnalytics = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "ReportsAndAnalytics" */ 'merchant/views/MagicCheckout/ReportsAndAnalyticsV2'
+    ),
+);
+
+const SetupAndSettings = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "SetupAndSettings" */ 'merchant/views/MagicCheckout/Settings/containers/SetupAndSettings'
+    ),
+);
+
+/**
+ * Checks for Magic Dashboard, Orders, Reports & Analytics are performed at Tabs Container(L1 Routes Renderer) - test
+ */
 const routesV2 = [
   {
-    tabName: 'Setup & Settings',
-    path: '/magic/setup-settings',
-    condition: (_user) => _user.isMagicSettingsEnabled,
-    Component: SetupAndSettings,
+    tabName: 'Magic Dashboard',
+    path: '/magic/dashboard',
+    Component: MagicDashboard,
+  },
+  {
+    tabName: 'Orders',
+    path: '/magic/orders',
+    Component: Orders,
     onRCOD: true,
+  },
+  {
+    tabName: 'Coupons',
+    path: '/magic/coupons',
+    Component: CouponEngine,
+    onRCOD: true,
+    condition: (_user, abExperiments) =>
+      abExperiments?.magic_coupon_engine?.variables?.result === 'on',
   },
   {
     tabName: 'Reports & Analytics',
@@ -35,31 +58,11 @@ const routesV2 = [
      */
   },
   {
-    tabName: 'COD Orders',
-    path: '/magic/cod-orders',
-    Component: CODOrdersTab,
+    tabName: 'Setup & Settings',
+    path: '/magic/setup-settings',
+    condition: (_user) => _user.isMagicSettingsEnabled,
+    Component: SetupAndSettings,
     onRCOD: true,
-  },
-  {
-    tabName: 'COD Order Conversion',
-    path: '/magic/order-conversion',
-    Component: CODToPrepaidLinks,
-    condition: (_user) => _user.isMagicPrepayCODEnabled,
-  },
-  {
-    tabName: 'Edit Orders',
-    path: '/magic/order-editing',
-    Component: ShopifyOrderEditing,
-    condition: (_user) => _user.isMagicShopifyOrderEditEnabled,
-  },
-  {
-    tabName: 'Coupons',
-    path: '/magic/coupons',
-    Component: CouponEngine,
-    onRCOD: true,
-    condition: (_user, abExperiments, platform) =>
-      abExperiments?.magic_coupon_engine?.variables?.result === 'on' &&
-      platform === PLATFORMS.VALUES.SHOPIFY,
   },
 ];
 

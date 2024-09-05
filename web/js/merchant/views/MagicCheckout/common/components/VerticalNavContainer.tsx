@@ -24,7 +24,7 @@ import {
 interface NestedVerticalTabProps {
   PATH_PREFIX: string;
   NAV_ITEMS: RoutesConfig;
-  customRouteCheck: (item: RouteItem, user: User) => boolean;
+  customRouteCheck?: (item: RouteItem, user: User) => boolean;
   settings: GenericRecord;
   magicCheckout: GenericRecord;
   user: User;
@@ -37,7 +37,7 @@ interface NestedVerticalTabProps {
 const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
   settings,
   magicCheckout,
-  customRouteCheck,
+  customRouteCheck = () => true,
   user,
   PATH_PREFIX,
   NAV_ITEMS,
@@ -52,9 +52,9 @@ const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
   return (
     <SuspenseWithLoader type="center">
       <StyledTabsWrapper>
-        <div className="magic-settings-tabs display-flex">
+        <div className="magic-settings-tabs display-flex" style={{ margin: 0 }}>
           <div className="tabs-container display-flex flex--column">
-            {NAV_ITEMS[platform as Platform].map((item, index) => {
+            {NAV_ITEMS?.[platform as Platform]?.map((item, index) => {
               if (!customRouteCheck(item, user)) return null;
 
               if (!isRouteAuthorised(item, user, abExperiments, isRCOD as boolean)) return null;
@@ -74,7 +74,7 @@ const NestedVerticalTab: React.FC<NestedVerticalTabProps> = ({
             })}
           </div>
           <Routes>
-            {NAV_ITEMS[platform as Platform].map((item) => {
+            {NAV_ITEMS?.[platform as Platform]?.map((item) => {
               if (!isRouteAuthorised(item, user, abExperiments, isRCOD as boolean)) return null;
               if (!customRouteCheck(item, user)) return null;
               return (

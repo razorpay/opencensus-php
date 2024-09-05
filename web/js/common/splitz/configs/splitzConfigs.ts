@@ -804,7 +804,7 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: [/^(\/magic\/.*|\/configuration\/magic\/.*)$/],
+      routesToMatch: [/^(\/magic(\/.*)?|\/configuration\/magic\/.*)$/],
       abExperiments: [
         {
           uniqueHashKey: 'magic_dashboard_revamp',

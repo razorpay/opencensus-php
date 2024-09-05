@@ -1,12 +1,13 @@
-import { RouteItem, GenericRecord, User } from 'merchant/views/MagicCheckout/types';
+import { RouteItem, GenericRecord, User, Platform } from 'merchant/views/MagicCheckout/types';
 
 export const isRouteAuthorised = (
   item: RouteItem,
   user: User,
   abExperiments: GenericRecord,
   isRCOD: boolean,
+  platform?: Platform,
 ): boolean => {
-  if (item.condition && !item.condition(user, abExperiments)) return false;
+  if (item.condition && !item.condition(user, abExperiments, platform)) return false;
 
   /**
    * rcod -> config from api response(merchant level)

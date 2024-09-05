@@ -40,12 +40,13 @@ const GoogleAnalytics = lazy(
     ),
 );
 
-const GoogleAds = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "MagicAnalyticsSettings" */ 'merchant/views/MagicCheckout/AnalyticsSettings/components/GoogleAds'
-    ),
-);
+// GoogleAds will be dis-continued. Commented the code for future reference/rollback
+// const GoogleAds = lazy(
+//   () =>
+//     import(
+//       /* webpackChunkName: "MagicAnalyticsSettings" */ 'merchant/views/MagicCheckout/AnalyticsSettings/components/GoogleAds'
+//     ),
+// );
 
 const FacebookAds = lazy(
   () =>
@@ -73,25 +74,30 @@ export const ANALYTICS_PLATFORM = {
   },
 };
 
+// Please do not remove platform check from below conditions.
+const PLATFORM_VALUES = Object.values(PLATFORMS?.VALUES);
 export const ANALYTICS_SETTINGS_ROUTES = [
   {
     id: 'google-analytics',
     title: ANALYTICS_PLATFORM.googleAnalytics.label,
     className: 'content-container',
     Component: GoogleAnalytics,
+    condition: (platform: string) => PLATFORM_VALUES?.includes(platform),
   },
-  {
-    id: 'google-ads',
-    title: ANALYTICS_PLATFORM.googleAds.label,
-    className: 'content-container',
-    Component: GoogleAds,
-    condition: (platform: string) => platform !== PLATFORMS.VALUES.WOOCOMMERCE,
-  },
+  // GoogleAds will be dis-continued. Commented the code for future reference/rollback
+  // {
+  //   id: 'google-ads',
+  //   title: ANALYTICS_PLATFORM.googleAds.label,
+  //   className: 'content-container',
+  //   Component: GoogleAds,
+  //   condition: (platform: string) => platform !== PLATFORMS.VALUES.WOOCOMMERCE,
+  // },
   {
     id: 'facebook-ads',
     title: ANALYTICS_PLATFORM.facebookAds.label,
     className: 'content-container',
     Component: FacebookAds,
+    condition: (platform: string) => PLATFORM_VALUES?.includes(platform),
   },
 ];
 

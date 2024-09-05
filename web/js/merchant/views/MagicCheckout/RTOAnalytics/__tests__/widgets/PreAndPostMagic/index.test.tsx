@@ -38,7 +38,8 @@ describe('testing pre and post magic RTO rate widget', () => {
 
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(NO_GRAPH_DATA.postMagicSubtitle)).toBeInTheDocument();
+      const OverlayContainer = document.getElementsByClassName('overlay-content')[0];
+      expect(OverlayContainer).toHaveTextContent(NO_GRAPH_DATA.postMagicSubtitle);
     });
   });
 

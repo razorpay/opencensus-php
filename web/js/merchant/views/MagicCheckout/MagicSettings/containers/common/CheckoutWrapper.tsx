@@ -16,6 +16,7 @@ import {
   CHECKOUT_SETTINGS_CONFIG,
   ADDITIONAL_WOOC_SETTINGS_CONFIG,
   CHECKOUT_SETTINGS_CAPTURE_BILLING,
+  PLATFORMS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
@@ -55,13 +56,14 @@ const CheckoutWrapper = ({
     setCheckoutSettings((prevSettings) => {
       let checkoutSettings = CHECKOUT_SETTINGS_CONFIG;
 
-      if (settings.platform === 'woocommerce' && isMagicWoocEnabled) {
+      if (settings.platform === PLATFORMS.VALUES.WOOCOMMERCE && isMagicWoocEnabled) {
         checkoutSettings = [...CHECKOUT_SETTINGS_CONFIG, ...ADDITIONAL_WOOC_SETTINGS_CONFIG];
       }
+
       /**
        * We will be moving capture billing address to checkout setup from wooc shipping settings
        */
-      if (isMagicDashboardV2Enabled) {
+      if (isMagicDashboardV2Enabled && settings.platform === PLATFORMS.VALUES.WOOCOMMERCE) {
         checkoutSettings = [...checkoutSettings, ...CHECKOUT_SETTINGS_CAPTURE_BILLING];
       }
 
@@ -69,7 +71,7 @@ const CheckoutWrapper = ({
         const index = checkoutSettings.findIndex(
           (setting) => setting.key === 'one_cc_hide_cod_when_disabled',
         );
-        checkoutSettings.splice(index, 1);
+        if (index >= 0) checkoutSettings.splice(index, 1);
       }
 
       const tempCheckoutSettings = getInitialSettings(checkoutSettings, prevSettings);

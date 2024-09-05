@@ -17,6 +17,7 @@ export const StyledPluginUpdateWrapper = styled.div`
   border-radius: 4px;
   background: #fff;
   color: #435775;
+  margin: 8px 0;
 `;
 
 export const DropdownLabel = styled.div`

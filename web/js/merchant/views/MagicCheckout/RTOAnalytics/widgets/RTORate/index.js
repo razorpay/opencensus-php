@@ -20,7 +20,9 @@ import {
   getWidgetData,
   onRequestCountChange,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 
+import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import {
   BREAKDOWN_MAP,
   RTO_RATE_CHARTS,
@@ -28,6 +30,10 @@ import {
   RTO_RATE_FILTER,
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+import {
+  RTO_REDUCTION_SETUP_ROUTE_V2,
+  RTO_REDUCTION_SETUP_ROUTE,
+} from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/constants';
 
 const RTORateChartOptions = {
   tooltips: {
@@ -127,6 +133,7 @@ const RTORate = ({
   const [selectedDropDown, setSelectedDropDown] = useState('COD_RTO_RATE');
   const [requestCount, setRequestCount] = useState(0);
   const [chartData, setChartData] = useState(null);
+  const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
 
   const { data, loading, updatedAt } = widgetData;
 
@@ -227,7 +234,14 @@ const RTORate = ({
           <div className="rto-rate-nudging-message">
             <p>
               Enable{' '}
-              <NavLink to="/magic/settings/rto-settings" className="magic-link">
+              <NavLink
+                to={
+                  isMagicDashboardV2Enabled
+                    ? RTO_REDUCTION_SETUP_ROUTE_V2
+                    : RTO_REDUCTION_SETUP_ROUTE
+                }
+                className="magic-link"
+              >
                 COD Intelligence
               </NavLink>{' '}
               and reduce RTOs by an additional 10% without any manual actions.
