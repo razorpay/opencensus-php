@@ -63,16 +63,12 @@ class Service extends Base\Service
     const SETTLEMENT_OFFSET_MID_CACHE_KEY                              = 'settlement_migration_offset_mid';
     const SETTLEMENT_BLOCKED_TXN_OFFSET_MID_CACHE_KEY                  = 'settlement_blocked_txn_offset_mid';
 
-    const DS_SETTLEMENT_DETAILS                                         = 'ds_settlement_details';
-
 
     public function includeDsSettlementTransactions()
     {
-        $razorxResult = $this->app->razorx->getTreatment($this->merchant->getId(), self::DS_SETTLEMENT_DETAILS, $this->mode);
-
         $featureResult = $this->merchant->org->isFeatureEnabled(Features::DISPLAY_DS_SETT_AMT);
 
-        return ($razorxResult === 'on') and ($featureResult === true);
+        return $featureResult === true;
     }
 
     public function createSettlementEntry($input)
