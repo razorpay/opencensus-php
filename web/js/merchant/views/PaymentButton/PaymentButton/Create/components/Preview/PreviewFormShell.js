@@ -116,7 +116,13 @@ export default class PreviewFormShell extends React.Component {
     return (
       <div class="PaymentButton-PreviewFormShell">
         <div class="PreviewFormShell-header">
-          <div class="Preview-topbar">
+          <div
+            class="Preview-topbar"
+            style={{
+              color: this.state.textColor,
+              backgroundColor: brandColor,
+            }}
+          >
             <div class="Preview-topbar-title">
               <span>{this.title}</span>
             </div>
@@ -128,21 +134,36 @@ export default class PreviewFormShell extends React.Component {
                     key={index}
                     style={{
                       borderColor: brandColor,
-                      backgroundColor: index <= this.activeDotIndex ? brandColor : whiteColor,
+                      background: brandColor,
                     }}
+                    class={`${index === this.activeDotIndex ? 'active' : ''} ${
+                      index <= this.activeDotIndex ? 'marked' : ''
+                    }`}
                   />
                 ))}
               </div>
-
-              <span class="Preview-cross">
-                <span>×</span>
-              </span>
             </div>
           </div>
-
-          <div class="PreviewFormShell-header-details">
-            {brandLogoUrl && <img src={brandLogoUrl} width="30px" height="30px" />}
-
+          <div
+            class="Preview-topbar-border"
+            style={{
+              backgroundColor: brandColor,
+            }}
+          >
+            <div></div>
+          </div>
+          <div
+            class="PreviewFormShell-header-details"
+            style={{
+              color: this.state.textColor,
+              backgroundColor: brandColor,
+            }}
+          >
+            <i
+              className="i i-arrow-back"
+              style={{ color: this.state.textColor, marginTop: '4px' }}
+            />
+            {brandLogoUrl && <img src={brandLogoUrl} width="35px" height="35px" />}
             <div>
               <div class="header-details-merchant">{merchantBillingLabel}</div>
             </div>
@@ -156,15 +177,7 @@ export default class PreviewFormShell extends React.Component {
               <div class="Footer--Amount">
                 {this.currencySymbol} {this.displayAmountToPayByCustomer}
               </div>
-              <div
-                class="Field-dummy-btn"
-                style={{
-                  color: this.state.textColor,
-                  backgroundColor: brandColor,
-                }}
-              >
-                {buttonTitle}
-              </div>
+              <div class="Field-dummy-btn">{buttonTitle}</div>
             </div>
           )}
         </div>
