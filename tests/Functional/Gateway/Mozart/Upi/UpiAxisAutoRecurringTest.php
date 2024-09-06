@@ -273,7 +273,7 @@ class UpiAxisAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency' => 'as_presented',
             'start_time' => Carbon::now()->getTimestamp(),
-            'end_time' => null,
+            'end_time' => Carbon::now()->addDays(60)->getTimestamp(),
             'recurring_value' => null,
         ]);
 
@@ -376,7 +376,7 @@ class UpiAxisAutoRecurringTest extends TestCase
 
         $this->assertUpiDbLastEntity('upi', [
             'action' => 'authorize',
-            'status_code' => '0',
+            'status_code' => '00',
             'gateway_data' => [
                 'act' => 'execte',
                 'ano' => 1,

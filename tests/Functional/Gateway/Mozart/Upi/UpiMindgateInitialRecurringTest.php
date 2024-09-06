@@ -115,7 +115,7 @@ class UpiMindgateInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -260,7 +260,7 @@ class UpiMindgateInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -314,7 +314,7 @@ class UpiMindgateInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -499,7 +499,7 @@ class UpiMindgateInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -894,7 +894,7 @@ class UpiMindgateInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -1191,28 +1191,28 @@ class UpiMindgateInitialRecurringTest extends TestCase
     {
         $content = $this->mockMozartServer()->getAsyncCallbackResponsePause($mandate);
 
-        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, 'upi_hdfc', true);
+        $this->makeS2sCallbackAndGetContent($content, 'upi_hdfc', true);
     }
 
     protected function mandateResumeCallback($mandate)
     {
         $content = $this->mockMozartServer()->getAsyncCallbackResponseResume($mandate);
 
-        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, 'upi_hdfc', true);
+        $this->makeS2sCallbackAndGetContent($content, 'upi_hdfc', true);
     }
 
     protected function mandateRevokeCallback($mandate)
     {
         $content = $this->mockMozartServer()->getAsyncCallbackResponseRevoke($mandate);
 
-        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, 'upi_hdfc', true);
+        $this->makeS2sCallbackAndGetContent($content, 'upi_hdfc', true);
     }
 
     protected function firstDebitCallback($payment)
     {
         $content = $this->mockServer()->getAsyncCallbackResponseFirstDebitForMindgate($payment);
 
-        $this->makeS2sCallbackAndGetContent($content, 'upi_mindgate');
+        $this->makeS2sCallbackAndGetContent($content, 'upi_hdfc', true);
     }
 
     /**

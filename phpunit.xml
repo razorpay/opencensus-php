@@ -553,6 +553,9 @@
             <directory>./tests/Functional/Gateway/Upi/</directory>
             <directory>./tests/Functional/Gateway/Mozart/</directory>
         </testsuite>
+        <testsuite name="UPI Autopay Test Suite">
+            <directory>./tests/Functional/Gateway/Mozart/Upi/</directory>
+        </testsuite>
         <testsuite name="UT_NBplus_suite-1">
             <directory>./tests/Functional/Gateway/Mobikwik/</directory>
             <directory>./tests/Functional/Gateway/Ebs/</directory>

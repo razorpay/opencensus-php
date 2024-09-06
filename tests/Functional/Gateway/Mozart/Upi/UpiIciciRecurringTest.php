@@ -80,6 +80,8 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
 
         $upiMandate->reload();
 
+        $this->upiMandate = $upiMandate;
+
         $token = $this->getDbLastEntity('token');
 
         $this->assertArraySubset([

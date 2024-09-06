@@ -1029,7 +1029,7 @@ class PayVerifyData extends Base\Mock\Server
                 'mandate' => [
                     'rrn' => '32131429',
                     'gateway_data' => [
-                        'id' => 'HtWaAkbl2DoVZt'
+                        'id' => $entities['gateway']['redirect']['transactionId']
                     ],
                     'umn' => $entities['payment']['id'].'axis'
                 ],
@@ -1039,7 +1039,7 @@ class PayVerifyData extends Base\Mock\Server
                     'gateway_data' => [
                         'id' => $entities['gateway']['redirect']['transactionId']
                     ],
-                    'merchant_reference' => 'HtWaAkbl2DoVZt',
+                    'merchant_reference' => $entities['payment']['id'],
                     'gateway_payment_id' => '32131429',
                     'npci_txn_id' => '32131429'
                 ]

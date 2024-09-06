@@ -1155,7 +1155,6 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'mindgate_terminal',
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => '293823',
-            'gateway_secure_secret'     => 'secret',
         ];
 
         $attributes['type'] = [

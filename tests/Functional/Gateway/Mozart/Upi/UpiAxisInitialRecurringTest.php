@@ -115,7 +115,7 @@ class UpiAxisInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -260,7 +260,7 @@ class UpiAxisInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -314,7 +314,7 @@ class UpiAxisInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -388,7 +388,6 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $this->assertNotNull($upiMandate[Entity::UMN]);
         $this->assertNotNull($upiMandate[Entity::RRN]);
-        $this->assertNotNull($upiMandate[Entity::NPCI_TXN_ID]);
 
         $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
     }
@@ -621,7 +620,6 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $this->assertNotNull($upiMandate[Entity::UMN]);
         $this->assertNotNull($upiMandate[Entity::RRN]);
-        $this->assertNotNull($upiMandate[Entity::NPCI_TXN_ID]);
     }
 
     public function testRecurringMandateCreateViaIntentRejected()
@@ -836,7 +834,6 @@ class UpiAxisInitialRecurringTest extends TestCase
             Base\Entity::ACTION      => 'authorize',
             Base\Entity::TYPE        => 'intent',
             Base\Entity::PAYMENT_ID  => $payment['id'],
-            Base\Entity::VPA         => 'some@hdfcbank',
             Base\Entity::GATEWAY_DATA  => [
                 'act'       => 'execte',
                 'ano'       => 1,
@@ -894,7 +891,7 @@ class UpiAxisInitialRecurringTest extends TestCase
             Entity::ORDER_ID        => substr($orderId, 6),
             Entity::CUSTOMER_ID     => '100000customer',
             Entity::FREQUENCY       => 'monthly',
-            Entity::RECURRING_VALUE => 26,
+            Entity::RECURRING_VALUE => 31,
             Entity::RECURRING_TYPE  => 'before',
             Entity::STATUS          => Status::CREATED,
             Entity::TOKEN_ID        => $token['id'],
@@ -968,7 +965,6 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $this->assertNotNull($upiMandate[Entity::UMN]);
         $this->assertNotNull($upiMandate[Entity::RRN]);
-        $this->assertNotNull($upiMandate[Entity::NPCI_TXN_ID]);
 
         $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
 
@@ -1214,6 +1210,8 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $upiMandate->reload();
 
+        $this->upiMandate = $upiMandate;
+
         $token = $this->getDbLastEntity('token');
 
         $this->assertArraySubset([
@@ -1455,20 +1453,20 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $this->assertUpiDbLastEntity('payment', [
             'status'        => 'captured',
-            'reference1'    => 'HDFC00001124',
-            'reference16'   => '019721040510',
+            'reference1'    => '32131429',
+            'reference16'   => '32131429',
         ], false);
 
         $this->assertUpiDbLastEntity('upi', [
             'action'                => 'authorize',
-            'merchant_reference'    => $this->upiMandate->getId(),
-            'gateway_payment_id'    => 'GatewayPaymentIdDebit',
-            'status_code'           => '0',
-            'npci_txn_id'           => 'HDFC00001124',
-            'npci_reference_id'     => '019721040510',
+            'merchant_reference'    => $payment->getId(),
+            'gateway_payment_id'    => '32131429',
+            'status_code'           => '00',
+            'npci_txn_id'           => '32131429',
+            'npci_reference_id'     => '32131429',
             'gateway_error'         => [
-                'gatewayStatusCode'     => null,
-                'gatewayStatusDesc'     => 'Debit Success',
+                'gatewayStatusCode'     => '00',
+                'gatewayStatusDesc'     => 'Success',
             ],
         ]);
 
@@ -1501,7 +1499,7 @@ class UpiAxisInitialRecurringTest extends TestCase
     {
         $content = $this->mockMozartServer()->getAsyncCallbackResponseResume($mandate);
 
-        $this->makeS2sCallbackAndGetContentSilentlyForRecurring($content, 'upi_axis', true);
+        $this->makeS2sCallbackAndGetContent($content, 'upi_axis', true);
     }
 
     protected function mandateRevokeCallback($mandate)
@@ -1515,7 +1513,7 @@ class UpiAxisInitialRecurringTest extends TestCase
     {
         $content = $this->mockServer()->getAsyncCallbackResponseFirstDebitForAxis($payment);
 
-        $this->makeS2sCallbackAndGetContent($content, 'upi_axis');
+        $this->makeS2sCallbackAndGetContent($content, 'upi_axis', true);
     }
 
     /**

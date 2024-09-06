@@ -1104,10 +1104,10 @@ class PayInitData extends Base\Mock\Server
                 'upi' => [
                     'status_code' => '00',
                     'gateway_data' => [
-                        'id' => 'NrSPyEOccuftKZ0create1'
+                        'id' => $entities['payment']['id'].'0execte0'
                     ],
                     'gateway_payment_id' => '408724842701',
-                    'merchant_reference' => 'NrSPyEOccuftKZ0create1',
+                    'merchant_reference' => $entities['payment']['id'].'0execte0',
                     'npci_reference_id' => '408724842701'
                 ],
                 'status_desc' => 'SUCCESS',

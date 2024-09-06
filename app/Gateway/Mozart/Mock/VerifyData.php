@@ -957,4 +957,31 @@ class VerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_axis($entities)
+    {
+        $response = [
+            'next'                  => [],
+            'error'                 => null,
+            'success'               => true,
+            'external_trace_id'     => 'DUMMY_REQUEST_ID',
+            'mozart_id'             => 'DUMMY_MOZART_ID',
+            'data'                  => [
+                '_raw'              => 'dummy_raw_value',
+                'paymentId'         => $entities['payment']['id'],
+                'bank_payment_id'   => '999999',
+                'mandate_amount'    => $entities['upi_mandate']['max_amount'],
+                'status'            => 'verification_successful',
+                'umn'               => '989892819',
+                'rrn'               => '012345678912',
+                'npci_reference_id' => '012345678912',
+                'npci_txn_id'       => 'HDFC00001124',
+                'gateway_data'      => [
+                    'id'            => $entities['upi']['gateway_data']['id'],
+                ]
+            ],
+        ];
+
+        return $response;
+    }
 }

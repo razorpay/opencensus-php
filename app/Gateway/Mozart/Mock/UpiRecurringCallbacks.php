@@ -169,7 +169,7 @@ trait UpiRecurringCallbacks
         $response = [
             'call_back_id'  => '1234',
             'requestInfo'   => [
-                'pgMerchantid'  => 'HDFC000006002278',
+                'pgMerchantid'  => $payment->terminal['gateway_merchant_id'],
                 'pspRefNo'      => $this->getReferenceNumberForCallback($payment, 'create'),
             ],
             'mandateDtls' => [
@@ -218,13 +218,13 @@ trait UpiRecurringCallbacks
         $content = $this->encryptForMandate($jsonResponse, $iv);
 
         $response = [
-            'pgMerchantId' => 'HDFC000006002278',
+            'pgMerchantId' => $payment->terminal['gateway_merchant_id'],
             'payload'      => $content,
             'ivToken'      => $iv,
             'keyId'        => 1
         ];
 
-        return $response;
+        return json_encode($response);
     }
 
     protected function getAsyncCallbackResponseFirstDebitForIcici($payment)
@@ -253,7 +253,7 @@ trait UpiRecurringCallbacks
         $response = [
             'call_back_id'  => '1234',
             'requestInfo'   => [
-                'pgMerchantid'  => 'HDFC000006002278',
+                'pgMerchantid'  => $payment->terminal['gateway_merchant_id'],
                 'pspRefNo'      => $this->getReferenceNumberForCallback($payment, 'execte'),
             ],
             'mandateDtls' => [
@@ -300,13 +300,13 @@ trait UpiRecurringCallbacks
         $content = $this->encryptForMandate($jsonResponse, $iv);
 
         $response = [
-            'pgMerchantId' => 'HDFC000006002278',
+            'pgMerchantId' => $payment->terminal['gateway_merchant_id'],
             'payload'      => $content,
             'ivToken'      => $iv,
             'keyId'        => 1
         ];
 
-        return $response;
+        return json_encode($response);
     }
 
     protected function getAsyncCallbackResponseAutoDebitForIcici($payment)
@@ -400,7 +400,7 @@ trait UpiRecurringCallbacks
         $response = [
             'call_back_id'  => '1234',
             'requestInfo'   => [
-                'pgMerchantid'  => 'HDFC000006002278',
+                'pgMerchantid'  => 'abcd',
                 'pspRefNo'      =>  '1211121212',
             ],
             'mandateDtls' => [
@@ -420,7 +420,7 @@ trait UpiRecurringCallbacks
                     'payerName'            => '',
                     'payeeVpa'             => '',
                     'payeeName'            => '',
-                    'status'               => 'REVOKE',
+                    'status'               => 'REVOKED',
                     'debitIfsc'            => 'HSBC0001850',
                     'debitAccount'         => '777777777777777',
                     'creditIfsc'           => 'SBIN0000001',
@@ -447,21 +447,23 @@ trait UpiRecurringCallbacks
         $content = $this->encryptForMandate($jsonResponse, $iv);
 
         $response = [
-            'pgMerchantId' => 'HDFC000006002278',
+            'pgMerchantId' => 'abcd',
             'payload'      => $content,
             'ivToken'      => $iv,
             'keyId'        => 1
         ];
 
-        return $response;
+        return json_encode($response);
     }
 
     protected function getAsyncCallbackResponsePauseForMindgate($mandate)
     {
+        print_r($mandate->token->terminal['gateway_merchant_id']);
+
         $response = [
             'call_back_id'  => '1234',
             'requestInfo'   => [
-                'pgMerchantid'  => 'HDFC000006002278',
+                'pgMerchantid'  => 'abcd',
                 'pspRefNo'      =>  '12112121',
             ],
             'mandateDtls' => [
@@ -472,7 +474,7 @@ trait UpiRecurringCallbacks
                     'txnId'                => '',
                     'remarks'              => '',
                     'name'                 => '',
-                    'mandateType'          => 'UPDATE',
+                    'mandateType'          => 'PAUSE',
                     'amount'               => '20.00',
                     'startDate'            => '25 July 2019',
                     'endDate'              => '26 July 2019',
@@ -508,13 +510,13 @@ trait UpiRecurringCallbacks
         $content = $this->encryptForMandate($jsonResponse, $iv);
 
         $response = [
-            'pgMerchantId' => 'HDFC000006002278',
+            'pgMerchantId' => 'abcd',
             'payload'      => $content,
             'ivToken'      => $iv,
             'keyId'        => 1
         ];
 
-        return $response;
+        return json_encode($response);
     }
 
     protected function getAsyncCallbackResponseResumeForMindgate($mandate)
@@ -522,7 +524,7 @@ trait UpiRecurringCallbacks
         $response = [
             'call_back_id'  => '1234',
             'requestInfo'   => [
-                'pgMerchantid'  => 'HDFC000006002278',
+                'pgMerchantid'  => 'abcd',
                 'pspRefNo'      =>  '12112121',
             ],
             'mandateDtls' => [
@@ -533,7 +535,7 @@ trait UpiRecurringCallbacks
                     'txnId'                => '',
                     'remarks'              => '',
                     'name'                 => '',
-                    'mandateType'          => 'UPDATE',
+                    'mandateType'          => 'UNPAUSE',
                     'amount'               => '20.00',
                     'startDate'            => '25 July 2019',
                     'endDate'              => '26 July 2019',
@@ -569,13 +571,13 @@ trait UpiRecurringCallbacks
         $content = $this->encryptForMandate($jsonResponse, $iv);
 
         $response = [
-            'pgMerchantId' => 'HDFC000006002278',
+            'pgMerchantId' => 'abcd',
             'payload'      => $content,
             'ivToken'      => $iv,
             'keyId'        => 1
         ];
 
-        return $response;
+        return json_encode($response);
     }
 
     protected function getAsyncCallbackResponseMandateUpdate($payment)
@@ -786,7 +788,7 @@ trait UpiRecurringCallbacks
             'transactionId' => 'creta12345673221323',
             'status' => 'SUCCESS',
             'responsecode' => '00',
-            'requestType' => 'RESUME',
+            'requestType' => 'UNPAUSE',
             'amountrulevalue' => '31.00',
             'umn' => $mandate['umn'],
             'payerAddr' => '9826083167@upi',
