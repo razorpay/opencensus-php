@@ -41,6 +41,7 @@ describe('Add Provider > PaymentMethodCoverage', () => {
     businessName: 'Razorpay',
     isGatewayCoverageMissing: true,
     isRazorpayCoverageMissing: false,
+    gatewayErrorMessage: null,
   };
 
   const App = (props) => {
@@ -114,5 +115,14 @@ describe('Add Provider > PaymentMethodCoverage', () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Test integration' })).toBeDisabled();
+  });
+
+  it('should render the gateway error message', () => {
+    const props = {
+      ...mockProps,
+      gatewayErrorMessage: 'Gateway error message',
+    };
+    render(<App {...props} />);
+    expect(screen.getByText('Gateway error message')).toBeInTheDocument();
   });
 });

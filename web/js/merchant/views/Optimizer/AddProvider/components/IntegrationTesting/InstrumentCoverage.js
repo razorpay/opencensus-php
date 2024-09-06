@@ -33,7 +33,7 @@ export const InstrumentCoverage = ({ tabs, razorpayCoverage, gateway, gatewayCov
     let columns = [];
     let gridTemplateColumns = 'repeat(3, minmax(100px, 1fr))';
     if (method === 'card') {
-      data = getCardCoverageData(gatewayCoverage, razorpayCoverage);
+      data = getCardCoverageData(gateway, gatewayCoverage, razorpayCoverage);
       columns = getCardCoverageColumns(gateway);
       gridTemplateColumns = '20% 30% 25% 25%';
     } else if (method === 'upi') {

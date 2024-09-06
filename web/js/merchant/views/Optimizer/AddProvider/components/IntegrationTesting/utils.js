@@ -111,7 +111,7 @@ const CoverageBadge = ({ status }) => {
   );
 };
 
-export const getCardCoverageData = (gatewayCoverage, razorpayCoverage) => {
+export const getCardCoverageData = (gateway, gatewayCoverage, razorpayCoverage) => {
   const cardGatewayCoverageData = gatewayCoverage.filter((item) => item.method === 'card');
   const cardGatewayCoverage = cardGatewayCoverageData[0]?.card;
 
@@ -122,7 +122,11 @@ export const getCardCoverageData = (gatewayCoverage, razorpayCoverage) => {
   Object.keys(cardRazorpayCoverage).forEach((key) => {
     cardRazorpayCoverage[key]?.network?.forEach((networkItem) => {
       let unkownData = false;
-      if (!cardGatewayCoverage?.[key]?.network && cardGatewayCoverageData[0]?.enabled) {
+      if (
+        gateway === 'paytm' &&
+        !cardGatewayCoverage?.[key]?.network &&
+        cardGatewayCoverageData[0]?.enabled
+      ) {
         unkownData = true;
       }
       data.push({

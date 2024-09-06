@@ -29,6 +29,7 @@ export const PaymentMethodCoverage = ({
   businessName,
   isGatewayCoverageMissing,
   isRazorpayCoverageMissing,
+  gatewayErrorMessage,
 }) => {
   return (
     <Box
@@ -55,6 +56,14 @@ export const PaymentMethodCoverage = ({
         {isGatewayCoverageMissing ? (
           <Alert
             description={`One or more payment methods are not supported. Please reach out to your ${selectedProvider} account manager or ${selectedProvider} support team for help.`}
+            isFullWidth={true}
+            isDismissible={false}
+            color="negative"
+          />
+        ) : null}
+        {gatewayErrorMessage ? (
+          <Alert
+            description={gatewayErrorMessage}
             isFullWidth={true}
             isDismissible={false}
             color="negative"

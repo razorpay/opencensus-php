@@ -98,6 +98,7 @@ class AddProvider extends React.Component {
     razorpayCoverage: [],
     isGatewayCoverageMissing: false,
     isRazorpayCoverageMissing: false,
+    gatewayErrorMessage: null,
     isTestingConfirmationModalOpen: false,
     isStartIntegrationTesting: false,
     providerId: null,
@@ -737,7 +738,9 @@ class AddProvider extends React.Component {
       mandatoryMethods,
       razorpayCoverage,
     );
-    const showMethodCoverage = isGatewayCoverageMissing || isRazorpayCoverageMissing;
+    const gatewayErrorMessage = result[0].data?.gateway_methods?.gatewayErrorMessage;
+    const showMethodCoverage =
+      isGatewayCoverageMissing || isRazorpayCoverageMissing || Boolean(gatewayErrorMessage);
 
     let isTestingConfirmationModalOpen = false;
     if (showMethodCoverage) {
@@ -763,6 +766,7 @@ class AddProvider extends React.Component {
       isTestingConfirmationModalOpen,
       isGatewayCoverageMissing,
       isRazorpayCoverageMissing,
+      gatewayErrorMessage,
     });
   };
 
@@ -1062,6 +1066,7 @@ class AddProvider extends React.Component {
       razorpayCoverage,
       isGatewayCoverageMissing,
       isRazorpayCoverageMissing,
+      gatewayErrorMessage,
       isTestingConfirmationModalOpen,
       isStartIntegrationTesting,
       providerId,
@@ -1231,6 +1236,7 @@ class AddProvider extends React.Component {
                   businessName={org.business_name}
                   isGatewayCoverageMissing={isGatewayCoverageMissing}
                   isRazorpayCoverageMissing={isRazorpayCoverageMissing}
+                  gatewayErrorMessage={gatewayErrorMessage}
                 />
               </Box>
             )}

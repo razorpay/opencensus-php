@@ -64,7 +64,7 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary Utils', () => {
   });
 
   test('getCardCoverageData', () => {
-    const result = getCardCoverageData(PAYTM_GATEWAY_COVERAGE, RAZORPAY_COVERAGE);
+    const result = getCardCoverageData('paytm', PAYTM_GATEWAY_COVERAGE, RAZORPAY_COVERAGE);
     expect(result).toEqual([
       {
         cardNetwork: 'MC',
