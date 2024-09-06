@@ -35,6 +35,38 @@ describe('Instant Refund', () => {
     await userEvent.click(instantRefundInput);
     expect(instantRefundInput).not.toBeChecked();
   });
+  test('calculate refund fee and total deductions correctly', async () => {
+    renderRefundModal(
+      {
+        payment: { ...payment, instant_refund_support: true, amount: 4000 },
+        fetchRefundFee: jest.fn(() =>
+          Promise.resolve({
+            data: {
+              fee: 590,
+              tax: 90,
+            },
+          }),
+        ),
+      },
+      {
+        ...initialState,
+        payment: {
+          ...initialState.payment,
+          current_balance: {
+            data: {
+              refund_credits: 5000,
+            },
+          },
+        },
+      },
+    );
+    const instantRefundInput = screen.getByRole('checkbox', { name: /Refund instantly/i });
+    await userEvent.click(instantRefundInput);
+    const instantRefundFee = screen.getByTestId('instant-refund-fee');
+    expect(instantRefundFee).toHaveTextContent('₹5.90');
+    const totalAmountDeducted = screen.getByTestId('total-amount-deducted');
+    expect(totalAmountDeducted).toHaveTextContent('₹45.90');
+  });
   test("should show add credits link when instant refund is enabled but couldn't be supported instantly", () => {
     renderRefundModal(
       {

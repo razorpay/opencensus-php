@@ -16,7 +16,8 @@ export const RefundInfo = ({ payment, instantFee, payableAmount, user, org }) =>
       A total amount of &nbsp;
     </Text>
     <Amount
-      value={Number(payableAmount) + instantFee.fee}
+      testID="total-amount-deducted"
+      value={instantFee.fee + Number(payableAmount)}
       currency={payment.currency}
       size="small"
       weight="semibold"
@@ -129,7 +130,7 @@ export const renderInstantFeeDetails = ({
     return (
       <Box display="flex" alignItems="center" flexDirection="row">
         <Text marginRight="spacing.3">Fee</Text>
-        <Amount value={instantFee.fee} currency={payment.currency} />
+        <Amount testID="instant-refund-fee" value={instantFee.fee} currency={payment.currency} />
       </Box>
     );
   }

@@ -99,7 +99,11 @@ const RefundModal = (props) => {
       const response = await fetchRefundFee(payment, refundAmount);
 
       if (response?.data && response.data.fee !== null && response.data.tax !== null) {
-        setInstantFee(response.data);
+        const { fee, tax } = response.data;
+        setInstantFee({
+          fee: convertToMajorUnit(fee, { currency: payment.currency }),
+          tax: convertToMajorUnit(tax, { currency: payment.currency }),
+        });
       }
     } catch (error) {
       console.error('Error fetching refund fee:', error);
