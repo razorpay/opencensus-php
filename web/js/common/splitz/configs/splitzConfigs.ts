@@ -1500,5 +1500,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/checkout-settings/branding'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'checkout_editor_v2_preview',
+          experimentId: {
+            beta: 'OXHA0BO5xgo9Xu',
+            production: 'OpUCnfumosxEOC',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

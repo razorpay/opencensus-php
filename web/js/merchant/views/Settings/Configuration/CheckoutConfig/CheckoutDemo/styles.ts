@@ -14,18 +14,58 @@ export const Wrapper = styled.div`
   padding: ${({ theme }: StyledProps) => theme.spacing[11]}px;
   box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.05) inset;
   max-width: 615px;
+  height: 100%;
+  gap: 20px;
 `;
 
-export const FrameContainer = styled.div`
-  position: relative;
-  width: 1160px;
-  height: 680px;
+export const FrameContainer = styled.div<{ isDesktopPreview: boolean }>`
+  display: flex;
+  height: 500px;
+  justify-content: center;
+  align-items: center;
+  width: ${(props) => (props.isDesktopPreview ? '1000px' : '500px')};
 `;
 
-export const CheckoutFrame = styled.iframe<{ bgColor?: string }>`
-  width: 1000px;
-  height: 580px;
+export const CheckoutFrame = styled.iframe<{
+  bgColor?: string;
+  isDesktopPreview: boolean;
+  shouldScaleToFit: boolean;
+}>`
+  width: ${(props) => (props.isDesktopPreview ? '1000px' : '300px')};
+  height: 100%;
   pointer-events: none;
   border: 0;
-  background: none;
+  transform: ${(props) =>
+    props.isDesktopPreview && props.shouldScaleToFit ? 'translate(-25%, -25%) scale(0.5)' : ''};
+  background: ${(props) => props.bgColor || 'none'};
 `;
+
+export const PreviewSizeWrapper = styled.div(
+  ({ theme }: { theme: Theme }) => `
+  background-color: ${theme.colors.popup.background.subtle};
+  border-radius: ${theme.border.radius.max}px;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 112px;
+  gap: 8px;
+`,
+);
+
+export const PreviewButton = styled.div(
+  ({ theme, isActive }: { theme: Theme; isActive: boolean }) => `
+  background: ${isActive ? theme.colors.surface.background.primary.intense : ''};
+  color: ${
+    isActive ? theme.colors.surface.background.gray.intense : theme.colors.surface.icon.gray.normal
+  };
+  border: 1px solid transparent;
+  border-radius: 32px;
+  width: 48px;
+  height: 32px;
+  padding: 8px; 16px;
+  display: flex;
+  justify-content: center;
+  cursor: ${isActive ? 'not-allowed' : 'pointer'};
+  `,
+);

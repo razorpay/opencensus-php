@@ -24,6 +24,7 @@ export const CHECKOUT_CONFIG_FIELDS = {
   SHOW_EMAIL_ON_CHECKOUT: 'showEmailOnCheckout',
   CUSTOM_MESSAGE: 'customMessage',
   BRAND_NAME: 'brandName',
+  IS_DESKTOP_PREVIEW: 'isDesktopPreview',
 } as const;
 
 export const CUSTOM_MESSAGE_BANNER_SCREENS = {
@@ -65,6 +66,7 @@ export const CHECKOUT_CONFIG_INITIAL_VALUES: {
   [CHECKOUT_CONFIG_FIELDS.SHOW_EMAIL_ON_CHECKOUT]: string;
   [CHECKOUT_CONFIG_FIELDS.EMAIL]: string;
   [CHECKOUT_CONFIG_FIELDS.BRAND_NAME]: string;
+  [CHECKOUT_CONFIG_FIELDS.IS_DESKTOP_PREVIEW]: boolean;
   [CHECKOUT_CONFIG_FIELDS.CUSTOM_MESSAGE]: {
     isEnabled: boolean;
     configs: {
@@ -94,6 +96,7 @@ export const CHECKOUT_CONFIG_INITIAL_VALUES: {
     isEnabled: false,
     configs: CUSTOM_MESSAGE_INITIAL_CONFIG,
   },
+  [CHECKOUT_CONFIG_FIELDS.IS_DESKTOP_PREVIEW]: true,
 };
 
 const CONFIG_INITIAL_STATE: { accountConfig: AccountConfig; locale: AccountLocale } = {

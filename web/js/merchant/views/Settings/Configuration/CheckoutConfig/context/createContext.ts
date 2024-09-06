@@ -23,6 +23,7 @@ export const checkoutConfigContext = createContext<
   handleCloseEmailRequiredModal: noop,
   handleCustomMessageTextColorChange: noop,
   handleCustomMessageBackgroundColorChange: noop,
+  handlePreviewChange: noop,
 });
 
 export const useCheckoutConfig = () => {

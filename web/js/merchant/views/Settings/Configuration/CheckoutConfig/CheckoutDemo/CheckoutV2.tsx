@@ -3,13 +3,17 @@ import debounce from 'lodash/debounce';
 
 import { toBase64 } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils';
 import { CheckoutFrame } from 'merchant/views/Settings/Configuration/CheckoutConfig/CheckoutDemo/styles';
-import { useCheckoutConfig } from 'merchant/views/Settings/Configuration/CheckoutConfig/context';
+import {
+  CHECKOUT_CONFIG_FIELDS,
+  useCheckoutConfig,
+} from 'merchant/views/Settings/Configuration/CheckoutConfig/context';
 
 import { CHECKOUT_IFRAME_URL } from './constants';
 import { initCheckout } from './liveCheckout';
 
-const CheckoutV2 = () => {
+const CheckoutV2 = ({ shouldScaleToFit }: { shouldScaleToFit: boolean }) => {
   const { values } = useCheckoutConfig();
+  const isDesktopPreview = values[CHECKOUT_CONFIG_FIELDS.IS_DESKTOP_PREVIEW];
 
   const updateCheckout = useRef<Promise<{
     update: (value: Record<string, unknown>) => void;
@@ -46,7 +50,15 @@ const CheckoutV2 = () => {
     }
   }, [updateValues, values]);
 
-  return <CheckoutFrame tabIndex="-1" src={CHECKOUT_IFRAME_URL} ref={init} />;
+  return (
+    <CheckoutFrame
+      tabIndex="-1"
+      src={CHECKOUT_IFRAME_URL}
+      ref={init}
+      isDesktopPreview={isDesktopPreview}
+      shouldScaleToFit={shouldScaleToFit}
+    />
+  );
 };
 
 export default CheckoutV2;

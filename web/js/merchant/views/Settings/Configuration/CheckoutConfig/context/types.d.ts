@@ -18,6 +18,7 @@ export type CheckoutConfigContext<Values> = {
   handleCloseEmailRequiredModal: () => void;
   handleCustomMessageTextColorChange: (index: number, value: string) => void;
   handleCustomMessageBackgroundColorChange: (index: number, value: string) => void;
+  handlePreviewChange: (value: boolean) => void;
 };
 
 export type FetchCheckoutConfigResponse = {

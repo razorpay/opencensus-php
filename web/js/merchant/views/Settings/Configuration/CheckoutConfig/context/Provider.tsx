@@ -52,7 +52,7 @@ const CheckoutConfigProvider = ({
 
   const setValue = (
     key: string,
-    value: string | Record<string, string | boolean> | File | null,
+    value: string | Record<string, string | boolean> | File | null | boolean,
   ) => {
     dispatch({ type: ACTIONS.SET_VALUES, payload: { [key]: value } });
   };
@@ -306,6 +306,10 @@ const CheckoutConfigProvider = ({
     }
   };
 
+  const handlePreviewChange = (value: boolean) => {
+    setValue(CHECKOUT_CONFIG_FIELDS.IS_DESKTOP_PREVIEW, value);
+  };
+
   useEffect(() => {
     setAccountConfigToState();
   }, [accountConfig, setAccountConfigToState]);
@@ -340,6 +344,7 @@ const CheckoutConfigProvider = ({
         handleCustomMessageTextChange,
         handleCustomMessageTextColorChange,
         handleCustomMessageBackgroundColorChange,
+        handlePreviewChange,
       }}
     >
       {children}
