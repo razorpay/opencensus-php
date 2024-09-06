@@ -2,7 +2,7 @@ import moment from 'moment';
 import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
 import { expect, test } from 'utils/base';
 
-import { navigateToTransactions } from './utils';
+import { navigateToTransactions, waitForListingLoader } from './utils';
 
 test.describe.parallel('Payment Filters(Test Mode)  @flow=transactions @project=payments', () => {
   test.use({
@@ -15,6 +15,7 @@ test.describe.parallel('Payment Filters(Test Mode)  @flow=transactions @project=
       const endDate = moment().endOf('day').unix();
 
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       await page.getByRole('button', { name: 'All Filters' }).click();
       await page.getByPlaceholder('Select Payment Method').click();
       await page.getByRole('option', { name: 'UPI' }).click();

@@ -3,7 +3,7 @@ import { routes, getStorageStatePath } from '@dashboard/shared-utils/e2e/constan
 import { expect, test } from '../../utils/base';
 import { BASE_PATH } from '../../constants';
 
-import { navigateToTransactions } from '../../utils';
+import { navigateToTransactions, waitForListingLoader } from '../../utils';
 
 test.describe.parallel('Payment Filters(Test Mode)  @flow=transactions @project=payments', () => {
   test.use({
@@ -16,6 +16,7 @@ test.describe.parallel('Payment Filters(Test Mode)  @flow=transactions @project=
       const endDate = moment().endOf('day').unix();
 
       await navigateToTransactions(page);
+      await waitForListingLoader({ page });
       await page.getByRole('button', { name: 'All Filters' }).click();
       await page.getByPlaceholder('Select Payment Method').click();
       await page.getByRole('option', { name: 'UPI' }).click();

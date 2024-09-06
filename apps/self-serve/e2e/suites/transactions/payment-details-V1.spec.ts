@@ -2,18 +2,7 @@ import { getStorageStatePath, routes } from '@dashboard/shared-utils/e2e/constan
 import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
 import { BASE_PATH, payments } from '../../constants';
 import { expect, test } from '../../utils/base';
-
-const searchPaymentId = async (page, paymentId) => {
-  await page.getByPlaceholder('Search').fill(paymentId);
-  await page.getByRole('button', { name: 'Search' }).click();
-};
-
-const openPaymentDetails = async (page, paymentId) => {
-  await page
-    .getByTestId(`entity-item-row-${paymentId}`)
-    .getByRole('button', { name: 'Details' })
-    .click();
-};
+import { gotoTransactionDetailsPageById } from '../..//utils';
 
 test.describe
   .parallel('Payments transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
@@ -32,9 +21,7 @@ test.describe
     // so we are hiding create transfer button for these payments
     test('should not show create transfer button', async ({ page }) => {
       const id = payments.paymentId.authorized.netbanking;
-      const paymentsFilter = page.getByTestId('payments-filter');
-      await searchPaymentId(paymentsFilter, id);
-      await openPaymentDetails(page, id);
+      await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       await expect(page.getByText('Transfer', { exact: true })).toBeVisible();
       expect(page.getByRole('button', { name: 'Create transfer' })).not.toBeVisible();
     });

@@ -89,13 +89,7 @@ test.describe
         expect(page.getByRole('cell', { name: new RegExp(column) })).toBeVisible();
       }
       const id = payments.paymentId.authorized.netbanking;
-      const paymentsFilter = page.getByTestId('payments-filter');
-      await paymentsFilter.getByPlaceholder('Search').fill(id);
-      await paymentsFilter.getByRole('button', { name: 'Search' }).click();
-      await page
-        .getByTestId(`entity-item-row-${id}`)
-        .getByRole('button', { name: 'Details' })
-        .click();
+      await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
       await expect(page).toHaveURL(`${routes.PAYMENTS}/${id}?init_page=Payments`);
       await expect(page.getByText('Details', { exact: true })).toBeVisible();
       await expect(page.getByTestId('refund-heading')).toBeVisible();
