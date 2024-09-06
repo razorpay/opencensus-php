@@ -72,7 +72,7 @@ class RazorassistClient
         // Construct the query parameters array
         $query_params = [
             'merchant_id' => $merchant->id,
-            'use_case' => 'ray_dashboard',
+            'use_case' => 'ray_dashboard_sop',
             'user_name' => $user->name,
             'user_id' => $user->id,
             'user_role' => $merchant->role,
