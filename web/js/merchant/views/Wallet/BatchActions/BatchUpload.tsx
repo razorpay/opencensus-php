@@ -201,10 +201,10 @@ export const GCExpiryBatchUpload = connect(null, {
     <BatchUploadWrapper
       batchType={BATCH_TYPES.UPDATE_GIFT_CARD_EXPIRY}
       docUrl={sampleUrl}
-      title="Create Batch GC Expiry"
+      title="Extend Gift Card Expiry"
       points={[
-        'Gift Card ID and Expire At (YYYY-MM-DD) are mandatory fields.',
-        'This feature will work only if you are not using two factor authentication for wallet debit',
+        'Either the gift card ID or the gift card number must be present for a successful update.',
+        'Contact (email/phone) of the customer making the extension request, link to the support ticket with customer request details, timestamp of the request and source of the request (email, social media, chat etc.) are mandatory parameters.',
       ]}
       createBatch={createBatch}
       validateBatch={validateBatch}

@@ -36,11 +36,8 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
           'create_wallet_container_reversals',
           'create_bulk_gift_cards',
           'update_gift_cards_expiry',
-        ].includes(batch.type) && [
-            'created',
-            'processing',
-            'partially_processed',
-          ].includes(batch.status),
+        ].includes(batch.type) &&
+        ['created', 'processing', 'partially_processed'].includes(batch.status),
     );
 
     if (unprocessedWalletBatches.length >= 3) {
@@ -142,9 +139,9 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
         <div className="panel-body">
           <div className="description">
             <div className="text-primary">
-              <strong>GC Expiry</strong>
+              <strong>Expiries</strong>
             </div>
-            <div>Extend the expiry date for multiple gift cards.</div>
+            <div>Extend the expiry date for multiple gift cards at once.</div>
           </div>
           <i className="i-chevron-right pull-right text-primary" />
         </div>
