@@ -4,6 +4,7 @@
 namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\UpiMandate\Metrics;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Notification\Core as notificationCore;
 
@@ -59,7 +60,7 @@ class UpiAutopayNotificationProcess extends Job
             );
 
             // do we need to upate status of notification to failed and send webhook
-            $core->processNotificationGatewayFailure($notification);
+            $core->processNotificationGatewayFailure($notification, $e);
         }
     }
 }

@@ -2105,7 +2105,7 @@ class Service extends Base\Service
 
         $this->merchant = $this->repo->merchant->findOrFail($upiMandate['merchant_id']);
 
-        return $this->getNewProcessor($this->merchant)->mandatePause($input, $upiMandate);
+        return $this->getNewProcessor($this->merchant)->mandatePause($input, $upiMandate, $gateway);
     }
 
     public function mandateResumeCallback($id, $input, $gateway)
@@ -2127,7 +2127,7 @@ class Service extends Base\Service
 
         $this->merchant = $this->repo->merchant->findOrFail($upiMandate['merchant_id']);
 
-        return $this->getNewProcessor($this->merchant)->mandateCancelViaCallback($input, $upiMandate);
+        return $this->getNewProcessor($this->merchant)->mandateCancelViaCallback($input, $upiMandate, $gateway);
     }
 
     public function unexpectedCallback(array $input, string $referenceId, string $gateway, $isCallback = false)

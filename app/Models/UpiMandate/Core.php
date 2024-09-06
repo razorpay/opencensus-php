@@ -55,6 +55,10 @@ class Core extends Base\Core
             ]
         );
 
+        $this->trace->count(Metrics::UPI_AUTOPAY_MANDATE_CREATED, [
+            'is_tpv' => $this->merchant->isTPVRequired()
+        ]);
+
         return $upiMandate;
     }
 

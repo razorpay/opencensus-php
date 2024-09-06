@@ -25,6 +25,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\UpiMandate\Metrics;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Jobs\SavedCardTokenisationJob;
@@ -1871,6 +1872,14 @@ class Core extends Base\Core
         $token->setRecurringStatus(RecurringStatus::CANCELLED);
 
         $token->saveOrFail();
+
+        if(($token->getMethod() === Method::UPI) and ($token->isRecurring() === true))
+        {
+            $this->trace->count(Metrics::UPI_AUTOPAY_TOKEN_CANCELLED, [
+                'method' => $token->getMethod(),
+                'is_tpv' => $token->merchant->isTPVRequired()
+            ]);
+        }
 
         $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
 

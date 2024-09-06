@@ -8293,6 +8293,15 @@ trait Authorize
 
                 $token->setVpaId($vpa[PaymentsUpi\Vpa\Entity::ID]);
             }
+
+            $metadata = $payment->getUpiMetadata();
+
+            $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_TOKEN_CONFIRMED, [
+                'gateway' => $payment->getGateway(),
+                'method'  => $payment->getMethod(),
+                'flow'    => $metadata->getFlow(),
+                'is_tpv'  => $payment->merchant->isTPVRequired()
+            ]);
         }
 
         // Not required as we only use terminals through

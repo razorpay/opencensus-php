@@ -12,14 +12,17 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Action;
+use RZP\Models\UpiMandate\Metrics;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\UpiMandate\Frequency;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Upi\Base\RecurringTrait;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\UpiMandate\SequenceNumber;
 use RZP\Jobs\UpiAutopayNotificationProcess;
 use RZP\Models\Payment\Processor\TerminalProcessor;
+use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 
 class Core extends Base\Core
 {
@@ -72,6 +75,13 @@ class Core extends Base\Core
 
             ]
         );
+
+        $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_NOTIFICATION_CREATED,
+            [
+                'flow'   => 'decoupled',
+                'is_tpv' => $this->merchant->isTPVRequired()
+            ]);
+
         return $notification;
     }
 
@@ -94,6 +104,11 @@ class Core extends Base\Core
             UpiAutopayNotificationProcess::dispatch($this->mode, $notification->getId())->delay(60);
 
         } catch (\Throwable $e) {
+
+            $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_NOTIFICATION_PUSH_FAILED, [
+                'is_tpv'     => $this->merchant->isTPVRequired(),
+                'error_code' => $e->getCode()
+            ]);
 
             $this->trace->traceException(
                 $e,
@@ -260,7 +275,7 @@ class Core extends Base\Core
                             'notification_id'   => $notification->getId(),
                         ]);
 
-                    $this->processNotificationGatewayFailure($notification);
+                    $this->processNotificationGatewayFailure($notification, $exception);
 
                     return;
                 }
@@ -440,7 +455,15 @@ class Core extends Base\Core
 
         if($gatewayResponse['success'] !==  true)
         {
-            $this->processNotificationGatewayFailure($notification);
+            $exception = new GatewayErrorException(
+                $gatewayResponse['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $gatewayResponse['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $gatewayResponse['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                null,
+                null,
+                'pre_debit');
+
+            $this->processNotificationGatewayFailure($notification, $exception);
 
             return;
         }
@@ -520,14 +543,27 @@ class Core extends Base\Core
         $this->repo->saveOrFail($notification);
         // send webhook
 
+        $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_NOTIFICATION_DELIVERED, [
+            'flow'    => 'decoupled',
+            'gateway' => $notification->getGateway(),
+            'is_tpv'  => $notification->merchant->isTPVRequired()
+        ]);
+
         $this->eventOrderNotificationDelivered($notification);
     }
 
-    public function processNotificationGatewayFailure($notification)
+    public function processNotificationGatewayFailure($notification, $exception = null)
     {
         $notification->setStatus(Status::FAILED);
 
         $this->repo->saveOrFail($notification);
+
+        $this->trace->count(Metrics::UPI_AUTOPAY_NOTIFICATION_FAILED, [
+            'error_code' => $exception->getCode(),
+            'flow'       => 'decoupled',
+            'gateway'    => $notification->getGateway(),
+            'is_tpv'     => $notification->merchant->isTPVRequired()
+        ]);
 
         // send webhook
         $this->eventOrderNotificationFailed($notification);

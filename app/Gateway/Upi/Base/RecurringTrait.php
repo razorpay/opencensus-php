@@ -20,6 +20,7 @@ use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 
 trait RecurringTrait
 {
@@ -108,6 +109,13 @@ trait RecurringTrait
         // PreDebit action for gateway requires a notification
         // First we need check if there is already notify attempted.
         $preDebit = $this->firstOrCreateEntityForRecurring($input, Action::PRE_DEBIT, true);
+
+        $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_NOTIFICATION_CREATED,
+            [
+                'flow'    => 'coupled',
+                'gateway' => $this->gateway,
+                'is_tpv'  => $input['terminal']['tpv']
+            ]);
 
         // Even if we have to skip the pre debit on gateway, we need to
         // create an entity for that, it will help with consistency and recon

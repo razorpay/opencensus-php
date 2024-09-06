@@ -237,6 +237,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VPA);
     }
 
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getOrderAttribute()
     {
         $order = null;

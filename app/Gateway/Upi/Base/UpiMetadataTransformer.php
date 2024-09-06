@@ -18,6 +18,7 @@ use RZP\Models\UpiMandate\RecurringType;
 use RZP\Models\Payment\Processor\UpiRecurring;
 use RZP\Models\Payment\UpiMetadata\Mode as Mode;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
+use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 use RZP\Models\Payment\UpiMetadata\InternalStatus as InternalStatus;
 
 class UpiMetadataTransformer extends UpiTransformer
@@ -203,6 +204,8 @@ class UpiMetadataTransformer extends UpiTransformer
 
     protected function processResponseForPreDebit()
     {
+        $app = \App::getFacadeRoot();
+
         if ($this->context->getAction() === Action::PRE_DEBIT)
         {
             $this->setVpa();
@@ -214,6 +217,22 @@ class UpiMetadataTransformer extends UpiTransformer
             if ($this->isSuccess() === true)
             {
                 $this->item->setInternalStatus(InternalStatus::PRE_DEBIT_INITIATED);
+
+                $app['trace']->count(UpiMandateMetrics::UPI_AUTOPAY_NOTIFICATION_DELIVERED, [
+                    'flow'    => 'coupled',
+                    'gateway' => $this->upi->getGateway(),
+                    'is_tpv'  => $this->input['terminal']['tpv']
+                ]);
+            }
+
+            if($this->exception !== null)
+            {
+                $app['trace']->count(UpiMandateMetrics::UPI_AUTOPAY_NOTIFICATION_FAILED, [
+                    'flow'       => 'coupled',
+                    'gateway'    => $this->upi->getGateway(),
+                    'error_code' => $this->exception->getCode(),
+                    'is_tpv'     => $this->input['terminal']['tpv']
+                ]);
             }
         }
         else
@@ -337,7 +356,7 @@ class UpiMetadataTransformer extends UpiTransformer
                     $remindAfter = $interval;
                 }
             }
-            
+
             if((empty($remindAfter) === false) and
                 ($upiMandate !== null) and
                 ($upiMandate['frequency'] !== Frequency::AS_PRESENTED) and

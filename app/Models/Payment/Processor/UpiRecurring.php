@@ -22,6 +22,7 @@ use RZP\Models\Order\Status;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\UpiMandate\Metrics;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -419,6 +420,11 @@ trait UpiRecurring
 
                     (new UpiMandate\Core)->update($upiMandate);
 
+                    $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_MANDATE_REVOKED, [
+                        'gateway' => $gateway,
+                        'is_tpv'  => $this->merchant->isTPVRequired()
+                    ]);
+
                     (new Token\Core)->cancelTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
 
                     return
@@ -438,13 +444,18 @@ trait UpiRecurring
             2000);
     }
 
-    public function mandatePause($input, $upiMandate)
+    public function mandatePause($input, $upiMandate, $gateway)
     {
         $upiMandate->setStatus(UpiMandate\Status::PAUSED);
 
         (new UpiMandate\Core)->update($upiMandate);
 
         (new Token\Core)->pauseTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
+
+        $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_MANDATE_PAUSED, [
+            'is_tpv'  => $upiMandate->merchant->isTPVRequired(),
+            'gateway' => $gateway
+        ]);
 
         return ['success' => true];
     }
@@ -460,13 +471,18 @@ trait UpiRecurring
         return ['success' => true];
     }
 
-    public function mandateCancelViaCallback($input, $upiMandate)
+    public function mandateCancelViaCallback($input, $upiMandate, $gateway)
     {
         $upiMandate->setStatus(UpiMandate\Status::REVOKED);
 
         $this->repo->saveOrFail($upiMandate);
 
         (new Token\Core)->cancelTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
+
+        $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_MANDATE_REVOKED, [
+            'is_tpv'  => $this->merchant->isTPVRequired(),
+            'gateway' => $gateway
+        ]);
 
         return ['success' => true];
     }
@@ -1166,6 +1182,12 @@ trait UpiRecurring
 
             if (empty($reminderId) === false)
             {
+                $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_REMINDER_REQUEST_PDN, [
+                    'gateway' => $payment->getGateway(),
+                    'method'  => $payment->getMethod(),
+                    'is_tpv'  => $payment->merchant->isTPVRequired()
+                ]);
+
                 $metadata->setReminderId($reminderId);
                 $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
 
@@ -1256,6 +1278,12 @@ trait UpiRecurring
 
         if (empty($reminderId) === false)
         {
+            $this->trace->count(Metrics::UPI_AUTOPAY_REMINDER_REQUEST_DEBIT, [
+                'method'  => $payment->getMethod(),
+                'gateway' => $payment->getGateway(),
+                'is_tpv'  => $payment->merchant->isTPVRequired()
+            ]);
+
             $metadata->setReminderId($reminderId);
             $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE);
         }
@@ -1777,6 +1805,13 @@ trait UpiRecurring
                 Token\Entity::VPA_ID            => $vpaId,
                 Token\Entity::RECURRING_STATUS  => Token\RecurringStatus::INITIATED,
             ]);
+
+            $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_TOKEN_INITIATED, [
+                'gateway' => $payment->getGateway(),
+                'method'  => $payment->getMethod(),
+                'flow'    => $metadata->getFlow(),
+                'is_tpv'  => $payment->merchant->isTPVRequired()
+            ]);
         }
         // This is the case when mandate create callback is rejected by user
         else if ($tokenRejected === true)
@@ -1805,6 +1840,13 @@ trait UpiRecurring
 
             (new Token\Core())->updateTokenForUpi($token, [
                 Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
+            ]);
+
+            $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_TOKEN_CONFIRMED, [
+                'gateway' => $payment->getGateway(),
+                'method'  => $payment->getMethod(),
+                'flow'    => $metadata->getFlow(),
+                'is_tpv'  => $payment->merchant->isTPVRequired()
             ]);
         }
 
@@ -1983,12 +2025,17 @@ trait UpiRecurring
 
         $this->repo->saveOrFail($token);
 
-        $this->updateUpiMandateExpired($token->upiMandate);
+        $this->trace->count(Metrics::UPI_AUTOPAY_TOKEN_CANCELLED, [
+            'method' => $payment->getMethod(),
+            'is_tpv' => $payment->merchant->isTPVRequired()
+        ]);
+
+        $this->updateUpiMandateExpired($token->upiMandate, $payment->getGateway());
 
         $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
-    public function updateUpiMandateExpired(UpiMandate\Entity $upiMandate)
+    public function updateUpiMandateExpired(UpiMandate\Entity $upiMandate, string $gateway)
     {
         $upiMandate->setStatus(UpiMandate\Status::EXPIRED);
 
@@ -2000,6 +2047,11 @@ trait UpiRecurring
                 'mandate_id' => $upiMandate->getId(),
                 'status' => $upiMandate->getStatus()
             ]);
+
+        $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_MANDATE_EXPIRED, [
+            'is_tpv'  => $upiMandate->merchant->isTPVRequired(),
+            'gateway' => $gateway
+        ]);
     }
 
     /**

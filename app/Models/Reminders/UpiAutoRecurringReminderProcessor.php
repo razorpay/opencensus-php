@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\UpiMandate\Metrics;
 use RZP\Models\Payment\UpiMetadata;
 
 class UpiAutoRecurringReminderProcessor extends ReminderProcessor
@@ -37,6 +38,12 @@ class UpiAutoRecurringReminderProcessor extends ReminderProcessor
 
         if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT))
         {
+            $this->trace->count(Metrics::UPI_AUTOPAY_REMINDER_RESPONSE_PDN, [
+                'method'  => $payment->getMethod(),
+                'gateway' => $payment->getGateway(),
+                'is_tpv'  => $payment->merchant->isTPVRequired()
+            ]);
+
             $processor = (new Payment\Processor\Processor($payment->merchant));
             $processor->setPayment($payment);
 
@@ -56,6 +63,12 @@ class UpiAutoRecurringReminderProcessor extends ReminderProcessor
         if (($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE)) and
             ($waitForAuthReminder === false))
         {
+            $this->trace->count(Metrics::UPI_AUTOPAY_REMINDER_RESPONSE_DEBIT, [
+                'method'  => $payment->getMethod(),
+                'gateway' => $payment->getGateway(),
+                'is_tpv'  => $payment->merchant->isTPVRequired()
+            ]);
+
             $processor = (new Payment\Processor\Processor($payment->merchant));
             $processor->setPayment($payment);
 

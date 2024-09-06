@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Base;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Exception\LogicException;
+use RZP\Models\UpiMandate\Metrics;
 use RZP\Models\UpiMandate\Status as Status;
 use RZP\Models\UpiMandate\Entity as Mandate;
 
@@ -68,6 +69,8 @@ class UpiMandateTransformer extends UpiTransformer
 
     protected function processResponseForAuthenticate()
     {
+        $app = \App::getFacadeRoot();
+
         if ($this->context->getAction() === Action::AUTHENTICATE)
         {
             $this->item->setStatus(Status::CREATED);
@@ -86,6 +89,12 @@ class UpiMandateTransformer extends UpiTransformer
             if ($this->isSuccess() === true)
             {
                 $this->item->setStatus(Status::CONFIRMED);
+
+                $app['trace']->count(Metrics::UPI_AUTOPAY_MANDATE_CONFIRMED, [
+                    'gateway' => $this->input['payment']['gateway'],
+                    'is_tpv'  => $this->input['terminal']['tpv'],
+                    'flow'    => $this->input['upi']['flow']
+                ]);
             }
             else
             {
@@ -96,6 +105,12 @@ class UpiMandateTransformer extends UpiTransformer
                     ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER))
                 {
                     $this->item->setStatus(Status::REJECTED);
+
+                    $app['trace']->count(Metrics::UPI_AUTOPAY_MANDATE_REJECTED, [
+                        'gateway' => $this->input['payment']['gateway'],
+                        'is_tpv'  => $this->input['terminal']['tpv'],
+                        'flow'    => $this->input['upi']['flow']
+                    ]);
                 }
             }
 
