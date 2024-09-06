@@ -4,11 +4,13 @@ import { getCurrency } from 'common/ui/Amount';
 import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
 import Wizard from 'merchant/views/Offers/New/components/Wizard';
 import { prepareDataForSubmit } from 'merchant/views/Offers/New/helpers';
+import { OFFER_TYPES, PAYER_ACCOUNT_TYPES_OPTIONS, UPI_APP_PROVIDERS } from '../../constants';
+import { isGranularOfferExperimentEnabled } from '../../utils';
 
 const SCREEN_MAP = {
   0: 'description',
-  1: 'discountType',
-  2: 'applicableOn',
+  1: 'applicableOn',
+  2: 'discountType',
   3: 'offerValidity',
 };
 
@@ -24,7 +26,6 @@ export default class BaseForm extends React.Component {
     const currentFormScreen = SCREEN_MAP[currentTab];
     const { values } = this.props;
     const newValidTabs = [...validTabs];
-
     let invalidateTabs = false;
 
     let { value: fieldValue } = event.target;
@@ -137,7 +138,6 @@ export default class BaseForm extends React.Component {
       newState.values.low_cost_emi = [];
       newState.values.emi_durations = [];
     }
-
     this.setState(newState);
 
     if (invalidateTabs) {
@@ -148,18 +148,23 @@ export default class BaseForm extends React.Component {
   };
 
   onSubmit = () => {
-    const { values } = this.props;
+    const { values, splitz } = this.props;
 
     let isLowCostExperimentEnabled = false;
-    if (this.props.splitz) {
+    if (splitz) {
       const {
         abExperiments: { Low_cost_offer },
-      } = this.props.splitz;
+      } = splitz;
 
       isLowCostExperimentEnabled = isLowCostEnabled(Low_cost_offer);
     }
+    const isGranularOfferExpEnabled = isGranularOfferExperimentEnabled(splitz);
 
-    const preparedFormData = prepareDataForSubmit(values, isLowCostExperimentEnabled);
+    const preparedFormData = prepareDataForSubmit(
+      values,
+      isLowCostExperimentEnabled,
+      isGranularOfferExpEnabled,
+    );
 
     return this.props.onSubmit(preparedFormData);
   };

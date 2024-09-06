@@ -19,13 +19,16 @@ import {
   OFFER_TYPE_LABELS,
   ISSUERS,
   OFFER_DISABLE_CTA_NETWORKS,
+  PAYER_ACCOUNT_TYPES_DISPLAY,
 } from 'merchant/views/Offers/constants';
+import { withSplitzService } from 'common/splitz';
 import { isOfferIdClickable } from 'merchant/views/Offers/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { withI18Service } from 'common/i18';
 
 import SubscriptionUsageDetails from './SubscriptionUsageDetails';
+import { UPI_APPS_SELECT_OPTIONS } from 'merchant/views/Offers/New/components/UPISelector';
 
 @connect((state) => ({ ...state.offer, user: state.session.user }), {
   ...OffersActions,
@@ -33,7 +36,7 @@ import SubscriptionUsageDetails from './SubscriptionUsageDetails';
   ...NotificationsActions,
 })
 @RTracking(() => window.rzpQ.component('OffersDetails'))
-class OffersDetails extends React.Component {
+export class OffersDetails extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -205,8 +208,18 @@ class OffersDetails extends React.Component {
     });
   };
 
+  mapKeysToText(keys, values, defaultValue = 'ALL') {
+    if (!keys.length) return defaultValue;
+    const setValues = new Set(keys);
+
+    return values
+      .filter(({ name }) => setValues.has(name))
+      .map(({ label }) => label)
+      .join(', ');
+  }
+
   render() {
-    const { loading, offer } = this.props;
+    const { loading, offer, splitz } = this.props;
     const {
       id,
       name,
@@ -235,6 +248,7 @@ class OffersDetails extends React.Component {
       terms,
       no_of_cycles,
       max_order_amount,
+      upi,
     } = offer;
 
     const discountType = percent_rate !== null ? 'Percentage' : 'Flat';
@@ -391,6 +405,28 @@ class OffersDetails extends React.Component {
                       <EntityDetailRow label="Number of Cycles" value={no_of_cycles} />
                     </>
                   )}
+                  {upi ? (
+                    <>
+                      <EntityDetailRow
+                        data-testid="upi-apps"
+                        label="UPI Apps"
+                        value={this.mapKeysToText(
+                          upi.apps,
+                          UPI_APPS_SELECT_OPTIONS,
+                          'ALL UPI Apps',
+                        )}
+                      />
+                      <EntityDetailRow
+                        data-testid="payer-account-types"
+                        label="Payer Account Type"
+                        value={this.mapKeysToText(
+                          upi.payer_account_type,
+                          PAYER_ACCOUNT_TYPES_DISPLAY,
+                          'All Payer Account Types',
+                        )}
+                      />
+                    </>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -401,4 +437,4 @@ class OffersDetails extends React.Component {
   }
 }
 
-export default withI18Service(OffersDetails);
+export default withI18Service(withSplitzService(OffersDetails));

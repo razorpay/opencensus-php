@@ -18,6 +18,7 @@ import {
   APPLICABLE_ON_OPTIONS,
   REDEMPTION_TYPE_OPTIONS,
 } from 'merchant/views/Offers/constants';
+
 const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, issuer) => {
   switch (paymentMethod) {
     case PAYMENT_METHODS.Card:
@@ -130,6 +131,17 @@ export default function OverView(props) {
             <DualColumnTable heading="Offer Terms">{terms}</DualColumnTable>
           </WorkSection>
 
+          <WorkSection heading="Applicable On">
+            {applicableOn && <DualColumnTable heading="Applies to">{applicableOn}</DualColumnTable>}
+            <DualColumnTable heading="Payment Method">
+              {summarizePaymentMethodsData(
+                payment_method,
+                payment_method_type,
+                payment_network,
+                issuer,
+              )}
+            </DualColumnTable>
+          </WorkSection>
           <WorkSection heading="Discount Type">
             {discountReview ? (
               <DualColumnTable heading={DiscountTypeHeading}>{discountReview}</DualColumnTable>
@@ -143,18 +155,6 @@ export default function OverView(props) {
             ) : (
               ''
             )}
-          </WorkSection>
-
-          <WorkSection heading="Applicable On">
-            {applicableOn && <DualColumnTable heading="Applies to">{applicableOn}</DualColumnTable>}
-            <DualColumnTable heading="Payment Method">
-              {summarizePaymentMethodsData(
-                payment_method,
-                payment_method_type,
-                payment_network,
-                issuer,
-              )}
-            </DualColumnTable>
           </WorkSection>
 
           <WorkSection heading="Offer Validation">

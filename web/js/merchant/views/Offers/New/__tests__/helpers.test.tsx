@@ -1,10 +1,11 @@
-import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
+import { MAX_DISCOUNT, OFFER_TYPES, PAYMENT_METHODS } from 'merchant/views/Offers/constants';
 
 import {
   prepareDataForSubmit,
   validatePaymentMethod,
   validateMaxPaymentCount,
   emiDurationString,
+  validateDiscountType,
 } from '../helpers';
 
 jest.mock('common/utils/rzp-utils', () => ({
@@ -171,5 +172,18 @@ describe('emiDurationString', () => {
   it('should handle array with duplicate items', () => {
     const result = emiDurationString([6, 6, 6]);
     expect(result).toBe('6, 6 and 6 months');
+  });
+});
+
+describe('validateDiscountType', () => {
+  it('should return error message if discount type is empty', () => {
+    const hasError = validateDiscountType('');
+    expect(typeof hasError).toBe('string');
+    expect(hasError.length).not.toBe(0);
+  });
+
+  it('should return false if discount type is valid', () => {
+    const hasError = validateDiscountType('instant');
+    expect(hasError).toBe(false);
   });
 });

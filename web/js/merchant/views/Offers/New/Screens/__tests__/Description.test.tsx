@@ -3,12 +3,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test-utils';
 
-import Description, {
-  validateDiscountType,
-  validateDisplayText,
-  validateName,
-  validateTerms,
-} from '../Description';
+import Description, { validateDisplayText, validateName, validateTerms } from '../Description';
 
 const mockAbExperiments = { razorpay_offers: { variables: { result: 'on' } } };
 
@@ -21,19 +16,12 @@ describe('Description on form', () => {
     name: 'New Year Sale',
     display_text: '10% off on all HDFC Debit Cards',
     terms: 'Terms and conditions for offer',
-    type: 'Cashback',
   };
   it('should render input fields with correct labels and placeholders', () => {
-    render(
-      <Description
-        values={values}
-        isFormLocked={false}
-        hideType={false}
-        errors={{}}
-        touched={{}}
-      />,
-    );
+    render(<Description values={values} isFormLocked={false} errors={{}} touched={{}} />);
 
+    // NOTE: Static text testing, not sure how much robustness
+    // it provides to the application apart from code coverage
     expect(screen.getByText('Offer Name')).toBeInTheDocument();
     const inputElements = screen.getAllByRole('textbox');
     inputElements.forEach((inputElement, index) => {
@@ -98,16 +86,6 @@ describe('Validation Functions', () => {
 
     it('should return error message if terms are empty', () => {
       expect(validateTerms('')).toBe('Please fill out this field');
-    });
-  });
-
-  describe('validateDiscountType', () => {
-    it('should return error message if discount type is empty', () => {
-      expect(validateDiscountType('')).toBe('Please select a discount type');
-    });
-
-    it('should return false if discount type is valid', () => {
-      expect(validateDiscountType('instant')).toBe(false);
     });
   });
 });

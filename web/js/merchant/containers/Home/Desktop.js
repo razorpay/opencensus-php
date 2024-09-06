@@ -599,6 +599,7 @@ class AnalyticsDesktop extends Component {
                 shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
               />
             )}
+
             <WebsiteComplianceBanner screen="Home page" />
             {checkHTML5APIvalidity() && (
               <AnnouncementBanner title="Outdated Browser" theme="warning">

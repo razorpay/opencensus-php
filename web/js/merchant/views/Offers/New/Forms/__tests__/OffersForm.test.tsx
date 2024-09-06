@@ -6,7 +6,24 @@ import { render } from 'test-utils';
 import OffersForm from '../Offers';
 const mockAbExperiments = { razorpay_offers: { variables: { result: 'on' } } };
 jest.mock('common/splitz', () => ({
-  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            upi_granular_offer_dashboard: {
+              variables: {
+                result: 'on',
+              },
+            },
+          },
+        }}
+      />
+    ),
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
 }));
 
 const renderApp = () => {

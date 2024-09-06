@@ -1,43 +1,16 @@
 /* eslint-disable consistent-return */
 import React from 'react';
-import {
-  TextInput,
-  TextArea,
-  Dropdown,
-  DropdownOverlay,
-  SelectInput,
-  ActionList,
-  ActionListItem,
-} from '@razorpay/blade/components';
+import { TextInput, TextArea } from '@razorpay/blade/components';
 
-import { OFFER_TYPES_OPTIONS, OFFER_TYPES } from 'merchant/views/Offers/constants';
-export default ({
-  isFormLocked,
-  hideType,
-  values,
-  setFieldTouched,
-  setFieldValue,
-  errors,
-  touched,
-}) => {
-  let offerTypeDescription;
-
-  if (values.type === OFFER_TYPES.Cashback) {
-    offerTypeDescription =
-      'Cashbacks need to be processed by the provider (Wallet providers, Banks etc). Please create Cashback Offers only if you have an agreement in place with them';
-  }
-
-  const handleFormChange = (name, value) => {
+export default ({ isFormLocked, values, setFieldTouched, setFieldValue, errors, touched }) => {
+  function handleFormChange(name, value) {
     setFieldTouched(name);
     setFieldValue(name, value);
-  };
+  }
 
   errors.name = validateName(values.name);
   errors.display_text = validateDisplayText(values.display_text);
   errors.terms = validateTerms(values.terms);
-  !hideType
-    ? (errors.type = validateDiscountType(values.type))
-    : Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'type'));
 
   return (
     <React.Fragment>
@@ -58,6 +31,7 @@ export default ({
         value={values.name}
         validationState={touched.name && errors.name ? 'error' : 'none'}
         errorText={errors?.name}
+        testID="offer-name"
       />
 
       <TextInput
@@ -96,38 +70,6 @@ export default ({
         }}
         value={values.terms}
       />
-
-      {!hideType && (
-        <Dropdown isDisabled={isFormLocked}>
-          <SelectInput
-            label="Offer Type"
-            placeholder="--Please select--"
-            name="type"
-            labelPosition="left"
-            necessityIndicator="required"
-            isRequired
-            helpText={offerTypeDescription}
-            value={values.type}
-            onChange={({ name, values }) => {
-              handleFormChange(name, values[0]);
-            }}
-            validationState={touched?.type && errors?.type ? 'error' : 'none'}
-            errorText={errors?.type}
-          />
-          <DropdownOverlay>
-            <ActionList>
-              {Object.values(OFFER_TYPES_OPTIONS).map((type) => (
-                <ActionListItem
-                  key={type.name}
-                  title={type.label}
-                  value={type.name}
-                  testID={`option-${type.name}`}
-                />
-              ))}
-            </ActionList>
-          </DropdownOverlay>
-        </Dropdown>
-      )}
     </React.Fragment>
   );
 };
@@ -151,13 +93,6 @@ export function validateTerms(val) {
   if (!val) return 'Please fill out this field';
   if (val.length < 4) {
     return 'Offer terms should contain at least of 4 characters';
-  }
-  return false;
-}
-
-export function validateDiscountType(val) {
-  if (!val) {
-    return 'Please select a discount type';
   }
   return false;
 }

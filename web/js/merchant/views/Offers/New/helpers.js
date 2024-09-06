@@ -1,8 +1,21 @@
 import { rupeesToPaise, deepClone } from 'common/utils/rzp-utils';
 import { filterNoCostTenures } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
-import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
+import {
+  MAX_DISCOUNT,
+  OFFER_TYPES,
+  PAYMENT_METHODS,
+  UPI_APP_PROVIDERS,
+} from 'merchant/views/Offers/constants';
 
-export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
+export const isGranularPSPOfferEnabled = (payment_method, type) => {
+  return payment_method === PAYMENT_METHODS.UPI && type === OFFER_TYPES.Cashback;
+};
+
+export function prepareDataForSubmit(
+  formData,
+  isLowCostExperimentEnabled,
+  isGranularOfferExpEnabled = false,
+) {
   const transformedFormData = {
     ...formData,
   };
@@ -31,7 +44,15 @@ export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
     'ends_at',
   ];
 
-  const fieldsToBeDeleted = ['discount_type', 'redemption_type', 'applicable_on', 'no_of_cycles'];
+  const fieldsToBeDeleted = [
+    'discount_type',
+    'redemption_type',
+    'applicable_on',
+    'no_of_cycles',
+    'payerAccountTypes',
+    'upiApps',
+    'upiAppsList',
+  ];
 
   const checkboxFields = ['default_offer', 'block', 'creation_terms_accepted'];
 
@@ -115,6 +136,21 @@ export function prepareDataForSubmit(formData, isLowCostExperimentEnabled) {
     }
   }
 
+  // Transform UPI data
+  if (
+    isGranularOfferExpEnabled &&
+    isGranularPSPOfferEnabled(formData.payment_method, formData.type)
+  ) {
+    const { payerAccountTypes, upiApps, upiAppsList } = transformedFormData;
+
+    transformedFormData.upi = {
+      payer_account_type: Array.isArray(payerAccountTypes)
+        ? payerAccountTypes
+        : [payerAccountTypes],
+      apps: upiApps === UPI_APP_PROVIDERS.ALL ? [UPI_APP_PROVIDERS.ALL] : upiAppsList,
+    };
+  }
+
   fieldsToBeDeletedIfDataNull.forEach((field) => {
     const isDataAvl = !!formData[field];
     if (!isDataAvl) {
@@ -154,6 +190,13 @@ export const validatePaymentMethod = (val) => {
   return false;
 };
 
+export function validateDiscountType(val) {
+  if (!val) {
+    return 'Please select a discount type';
+  }
+  return false;
+}
+
 export const validateMaxPaymentCount = (val) => {
   if (!val) return false;
 
@@ -168,6 +211,15 @@ export const validateMaxPaymentCount = (val) => {
     return `Maximum value allowed is ${MAX_DISCOUNT}`;
   }
 
+  return false;
+};
+
+export const validateUPIAppsList = (upiApps, val) => {
+  if (upiApps === UPI_APP_PROVIDERS.ALL || val.length) return false;
+  return 'UPI apps cannot be empty';
+};
+export const validatePayerAccountTypes = (val) => {
+  if (!val.length) return 'Payer account types apps cannot be empty';
   return false;
 };
 

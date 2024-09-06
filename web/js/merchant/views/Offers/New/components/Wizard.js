@@ -39,9 +39,10 @@ export default class CreateOfferWizard extends React.Component {
       const { errors } = this.props;
       const invalidFields = Object.entries(errors)
         // eslint-disable-next-line no-unused-vars
-        .filter(([key, value]) => value !== false)
+        .filter(([_key, value]) => value !== false)
         // eslint-disable-next-line no-unused-vars
-        .map(([key, value]) => key);
+        .map(([key, _value]) => key);
+
       const currentTabStatus = invalidFields.length === 0;
 
       let isValidTabsUpdate = false;
@@ -105,6 +106,7 @@ export default class CreateOfferWizard extends React.Component {
     const isApplicableOnStepValid = () => {
       const { currentTab } = this.state;
       return (
+        // TODO: Change hardcoded
         currentTab === 2 &&
         isLowCostExperimentEnabled &&
         offersData &&

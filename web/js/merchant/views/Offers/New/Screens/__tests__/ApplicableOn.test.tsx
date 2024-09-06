@@ -3,9 +3,30 @@ import { screen } from '@testing-library/react';
 
 import { render } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
-import { PAYMENT_METHODS } from 'merchant/views/Offers/constants';
+import { OFFER_TYPES, PAYMENT_METHODS, UPI_APP_PROVIDERS } from 'merchant/views/Offers/constants';
 
 import ApplicableOn from '../ApplicableOn';
+
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            upi_granular_offer_dashboard: {
+              variables: {
+                result: 'on',
+              },
+            },
+          },
+        }}
+      />
+    ),
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
 
 const defaultProps = {
   values: {
@@ -84,5 +105,21 @@ describe('ApplicableOn Component', () => {
     };
     renderApp(props);
     expect(screen.getByText('Issuer')).toBeInTheDocument();
+  });
+  it('should render Granular Offer inputs when payment_method is UPI and offer type is Cashback', () => {
+    const props = {
+      values: {
+        ...defaultProps.values,
+        payment_method: PAYMENT_METHODS.UPI,
+        type: OFFER_TYPES.Cashback,
+        upiApps: UPI_APP_PROVIDERS.ALL,
+        upiAppsList: [],
+        payerAccountTypes: [],
+      },
+    };
+    renderApp(props);
+
+    expect(screen.getByTestId('upi-apps')).not.toBe(null);
+    expect(screen.getByTestId('payer-account-types')).not.toBe(null);
   });
 });

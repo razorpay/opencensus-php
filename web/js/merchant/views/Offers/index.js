@@ -86,7 +86,7 @@ class OfferIndex extends Component {
     this.props.handleProductQuickGuide(offersProductOnBoarding);
   };
   render() {
-    const { offersProductOnBoarding, i18, navigate } = this.props;
+    const { offersProductOnBoarding, i18, navigate, splitz } = this.props;
     const { showOnboarding } = offersProductOnBoarding;
     const { isConfigTagEnabled } = i18;
     if (showOnboarding) {
@@ -100,10 +100,10 @@ class OfferIndex extends Component {
         : '/offers/new?offer_creation_modal_type=basic';
 
     let isLowCostExperimentEnabled = false;
-    if (this.props.splitz) {
+    if (splitz) {
       const {
         abExperiments: { Low_cost_offer },
-      } = this.props.splitz;
+      } = splitz;
 
       isLowCostExperimentEnabled = isLowCostEnabled(Low_cost_offer);
     }

@@ -6,9 +6,21 @@ import {
   SelectInput,
   ActionList,
   ActionListItem,
+  Checkbox,
+  CheckboxGroup,
+  RadioGroup,
+  Radio,
+  Divider,
 } from '@razorpay/blade/components';
-
-import { validatePaymentMethod, validateMaxPaymentCount } from 'merchant/views/Offers/New/helpers';
+import {
+  validatePaymentMethod,
+  validateMaxPaymentCount,
+  validateUPIAppsList,
+  isGranularPSPOfferEnabled,
+  validatePayerAccountTypes,
+  validateDiscountType,
+} from 'merchant/views/Offers/New/helpers';
+import { isGranularOfferExperimentEnabled } from 'merchant/views/Offers/utils';
 import {
   PAYMENT_METHODS,
   PaymentMethodsOptions,
@@ -19,8 +31,17 @@ import {
   CREDIT_DEBIT_CARDS_OPTIONS,
   EMI_CARDS_OPTIONS,
   EMI_DEBIT_CARD_BANK_OPTIONS,
+  OFFER_TYPES_OPTIONS,
+  OFFER_TYPES,
+  PAYER_ACCOUNT_TYPES_OPTIONS,
+  UPI_APP_PROVIDERS,
+  DISPLAY_TEXT,
+  PAYER_ACCOUNT_TYPES_DISPLAY,
 } from 'merchant/views/Offers/constants';
-export default class ApplicableOn extends React.Component {
+import UPISelector, { UPI_APPS_SELECT_OPTIONS } from '../components/UPISelector';
+import { withSplitzService } from 'common/splitz';
+
+class ApplicableOn extends React.Component {
   state = { selectedPaymentMethodType: '' };
 
   get currentSelectedPaymentMethod() {
@@ -40,6 +61,20 @@ export default class ApplicableOn extends React.Component {
     this.props.setFieldTouched(name);
     this.props.setFieldValue(name, value);
   };
+
+  onPATChange = (e) => {
+    const { name, values } = e;
+    const { payerAccountTypes } = this.props.values;
+    const isAllPayerAccountTypesChecked = values.includes(PAYER_ACCOUNT_TYPES_OPTIONS.ALL);
+    let patValues = values;
+    if (isAllPayerAccountTypesChecked) {
+      patValues = PAYER_ACCOUNT_TYPES_OPTIONS.ALL;
+    } else if (payerAccountTypes === PAYER_ACCOUNT_TYPES_OPTIONS.ALL) {
+      patValues = [];
+    }
+    this.handleFormChange(name, patValues);
+  };
+
   onMethodTypeChange = (event) => {
     const { name, values } = event;
     this.setState({
@@ -48,12 +83,52 @@ export default class ApplicableOn extends React.Component {
     this.handleFormChange(name, values[0]);
   };
 
-  render() {
-    const { selectedPaymentMethodType } = this.state;
-    const { isFormLocked, values, errors, touched } = this.props;
+  resetGranularOffers = () => {
+    this.props.setFieldValue('upiApps', UPI_APP_PROVIDERS.ALL);
+    this.props.setFieldValue('upiAppsList', []);
+    this.props.setFieldValue('payerAccountTypes', []);
+    this.props.setFieldTouched('upiAppsList', false);
+    this.props.setFieldTouched('payerAccountTypes', false);
+  };
 
-    const { issuer, payment_network } = values;
-    const { isEMI, isWallet, isCard, isNetBanking, isCardLessEmi } =
+  onOfferTypeChange = ({ name, values }) => {
+    const { type: previousType } = this.props.values;
+    const newOfferType = values[0];
+    if (previousType == newOfferType) return;
+
+    if (newOfferType === OFFER_TYPES.Cashback) {
+      this.resetGranularOffers();
+    }
+    this.handleFormChange(name, newOfferType);
+  };
+
+  onPaymentMethodChange = ({ name, values }) => {
+    const { payment_method: previous_payment_method } = this.props.values;
+
+    const newPaymentMethod = values[0];
+    if (newPaymentMethod === previous_payment_method) return;
+
+    if (newPaymentMethod === PAYMENT_METHODS.UPI) {
+      this.resetGranularOffers();
+    }
+    this.handleFormChange(name, newPaymentMethod);
+  };
+
+  render() {
+    const { splitz } = this.props;
+    const { selectedPaymentMethodType } = this.state;
+    const { isFormLocked, values, errors, touched, hideType } = this.props;
+
+    const {
+      issuer,
+      payment_network,
+      payment_method,
+      type,
+      payerAccountTypes,
+      upiApps,
+      upiAppsList,
+    } = values;
+    const { isEMI, isWallet, isCard, isNetBanking, isCardLessEmi, isUPI } =
       this.currentSelectedPaymentMethod;
 
     const PaymentMethodTypeOptions = isEMI ? EMI_CARDS_OPTIONS : CREDIT_DEBIT_CARDS_OPTIONS;
@@ -63,12 +138,63 @@ export default class ApplicableOn extends React.Component {
     }
 
     const isAmex = payment_network === 'AMEX';
+    const ALL_PAT_SELECTED = payerAccountTypes === PAYER_ACCOUNT_TYPES_OPTIONS.ALL;
+    let valuesPAT = payerAccountTypes;
+    if (isUPI && ALL_PAT_SELECTED) {
+      valuesPAT = PAYER_ACCOUNT_TYPES_DISPLAY.map(({ name }) => name);
+    }
+    const isGranularOffer = isGranularPSPOfferEnabled(payment_method, type);
 
-    errors.payment_method = validatePaymentMethod(values.payment_method);
+    errors.payment_method = validatePaymentMethod(payment_method);
     errors.max_payment_count = validateMaxPaymentCount(values.max_payment_count);
+    errors.upiAppsList =
+      isGranularOfferExperimentEnabled(splitz) &&
+      isGranularOffer &&
+      validateUPIAppsList(upiApps, upiAppsList);
+    errors.payerAccountTypes =
+      isGranularOfferExperimentEnabled(splitz) &&
+      isGranularOffer &&
+      validatePayerAccountTypes(values.payerAccountTypes);
 
+    let offerTypeDescription;
+    if (type === OFFER_TYPES.Cashback) {
+      offerTypeDescription = DISPLAY_TEXT.APPLICABLE_ON.TYPE.HELP_TEXT;
+    }
+
+    hideType
+      ? Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'type'))
+      : (errors.type = validateDiscountType(values.type));
     return (
       <React.Fragment>
+        {!hideType && (
+          <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7">
+            <SelectInput
+              label="Offer Type"
+              placeholder="--Please select--"
+              name="type"
+              labelPosition="left"
+              necessityIndicator="required"
+              isRequired
+              helpText={offerTypeDescription}
+              value={type}
+              onChange={this.onOfferTypeChange}
+              validationState={touched?.type && errors?.type ? 'error' : 'none'}
+              errorText={errors?.type}
+            />
+            <DropdownOverlay>
+              <ActionList>
+                {Object.values(OFFER_TYPES_OPTIONS).map((type) => (
+                  <ActionListItem
+                    key={type.name}
+                    title={type.label}
+                    value={type.name}
+                    testID={`option-${type.name}`}
+                  />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
+        )}
         <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7">
           <SelectInput
             isRequired
@@ -78,9 +204,7 @@ export default class ApplicableOn extends React.Component {
             name="payment_method"
             labelPosition="left"
             value={values.payment_method}
-            onChange={({ name, values }) => {
-              this.handleFormChange(name, values[0]);
-            }}
+            onChange={this.onPaymentMethodChange}
             validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
             errorText={errors?.payment_method}
           />
@@ -299,7 +423,70 @@ export default class ApplicableOn extends React.Component {
             </DropdownOverlay>
           </Dropdown>
         )}
+
+        {isGranularOfferExperimentEnabled(splitz) && isGranularOffer ? (
+          <React.Fragment>
+            <Divider margin="spacing.6" />
+            <RadioGroup
+              name="upiApps"
+              value={upiApps}
+              label="Applicable On"
+              isRequired={true}
+              marginTop="spacing.4"
+              labelPosition="left"
+              necessityIndicator="required"
+              onChange={({ name, value }) => this.handleFormChange(name, value)}
+              testID="upi-apps"
+            >
+              <Radio key="ALL" value={UPI_APPS_SELECT_OPTIONS[0].name}>
+                {UPI_APPS_SELECT_OPTIONS[0].label}
+              </Radio>
+              <Radio key="selected" value="selected">
+                Selected UPI Apps
+              </Radio>
+            </RadioGroup>
+
+            {upiApps !== UPI_APP_PROVIDERS.ALL && (
+              <>
+                <UPISelector
+                  onChangeHandler={this.handleFormChange}
+                  selectedValues={upiAppsList}
+                  errorText={errors?.upiAppsList && touched?.upiAppsList ? errors.upiAppsList : ''}
+                />
+              </>
+            )}
+            <Divider margin="spacing.6" />
+
+            <CheckboxGroup
+              name="payerAccountTypes"
+              onChange={this.onPATChange}
+              value={valuesPAT}
+              label="Payer Account Types"
+              labelPosition="left"
+              necessityIndicator="required"
+              isRequired
+              marginTop="margin.4"
+              validationState={
+                touched?.payerAccountTypes && errors?.payerAccountTypes ? 'error' : 'none'
+              }
+              errorText={errors?.payerAccountTypes}
+              testID="payer-account-types"
+            >
+              {PAYER_ACCOUNT_TYPES_DISPLAY.map((app) => (
+                <Checkbox
+                  key={app.name}
+                  value={app.name}
+                  isDisabled={ALL_PAT_SELECTED && app.name !== PAYER_ACCOUNT_TYPES_OPTIONS.ALL}
+                >
+                  {app.label}
+                </Checkbox>
+              ))}
+            </CheckboxGroup>
+          </React.Fragment>
+        ) : null}
       </React.Fragment>
     );
   }
 }
+
+export default withSplitzService(ApplicableOn);

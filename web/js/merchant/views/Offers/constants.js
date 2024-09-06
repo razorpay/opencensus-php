@@ -266,5 +266,39 @@ export const EMI_DEBIT_CARD_BANK_OPTIONS = [
   { label: 'ICICI Bank', name: 'ICIC' },
 ];
 
+export const UPI_APP_PROVIDERS = {
+  ALL: 'ALL',
+  GPAY: 'google_pay',
+  PHONEPE: 'phonepe',
+  PAYTM: 'paytm',
+  AMAZONPAY: 'amazon_pay',
+  CRED: 'cred',
+};
+
+export const PAYER_ACCOUNT_TYPES_OPTIONS = {
+  ALL: 'ALL',
+  BANK_ACCCOUNT: 'bank_account',
+  CREDIT_CARD: 'credit_card',
+  PPIWALLET: 'ppiwallet',
+  WALLET: 'wallet',
+};
+
 // card network on which offer disable CTA shall be deactivated
 export const OFFER_DISABLE_CTA_NETWORKS = ['BAJAJ'];
+
+export const DISPLAY_TEXT = {
+  APPLICABLE_ON: {
+    TYPE: {
+      HELP_TEXT:
+        'Cashbacks need to be processed by the provider (Wallet providers, Banks etc). Please create Cashback Offers only if you have an agreement in place with them',
+    },
+  },
+};
+
+export const PAYER_ACCOUNT_TYPES_DISPLAY = [
+  { label: 'All UPI Payments', name: PAYER_ACCOUNT_TYPES_OPTIONS.ALL },
+  { label: 'Bank Account on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.BANK_ACCCOUNT },
+  { label: 'Credit Card on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.CREDIT_CARD },
+  { label: 'Wallet on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.WALLET },
+  { label: 'PPI Wallet on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.PPIWALLET },
+];

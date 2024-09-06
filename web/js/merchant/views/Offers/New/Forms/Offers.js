@@ -6,10 +6,11 @@ import Overview from 'merchant/views/Offers/New/Screens/Overview';
 import Wizard from 'merchant/views/Offers/New/components/Wizard';
 
 import BaseForm from './BaseForm';
+import { withSplitzService } from 'common/splitz';
 
 const VALID_TABS = [false, false, false, false, false];
 
-export default class OffersForm extends BaseForm {
+class OffersForm extends BaseForm {
   // eslint-disable-next-line no-useless-constructor
   constructor(props) {
     super(props);
@@ -33,24 +34,7 @@ export default class OffersForm extends BaseForm {
           />
         ),
       },
-      {
-        name: 'Discount type',
-        render: () => (
-          <DiscountType
-            isFormLocked={this.props.isFormLocked}
-            currencySymbol={this.currencySymbol}
-            offerType={this.props.values.type}
-            values={this.props.values}
-            handleChange={this.props.handleChange}
-            handleBlur={this.props.handleBlur}
-            setFieldTouched={this.props.setFieldTouched}
-            setFieldValue={this.props.setFieldValue}
-            errors={this.props.errors}
-            setErrors={this.props.setErrors}
-            touched={this.props.touched}
-          />
-        ),
-      },
+
       {
         name: 'Applicable On',
         render: () => {
@@ -68,6 +52,24 @@ export default class OffersForm extends BaseForm {
             />
           );
         },
+      },
+      {
+        name: 'Discount type',
+        render: () => (
+          <DiscountType
+            isFormLocked={this.props.isFormLocked}
+            currencySymbol={this.currencySymbol}
+            offerType={this.props.values.type}
+            values={this.props.values}
+            handleChange={this.props.handleChange}
+            handleBlur={this.props.handleBlur}
+            setFieldTouched={this.props.setFieldTouched}
+            setFieldValue={this.props.setFieldValue}
+            errors={this.props.errors}
+            setErrors={this.props.setErrors}
+            touched={this.props.touched}
+          />
+        ),
       },
       {
         name: 'Offer Validity',
@@ -127,3 +129,5 @@ export default class OffersForm extends BaseForm {
     );
   }
 }
+
+export default withSplitzService(OffersForm);

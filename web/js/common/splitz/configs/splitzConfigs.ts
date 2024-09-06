@@ -804,6 +804,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: [/offers.*/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'upi_granular_offer_dashboard',
+          experimentId: {
+            beta: 'OkdDfUAR38LyMG',
+            production: 'OqcWBRjd5vS2H5',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: [/^(\/magic(\/.*)?|\/configuration\/magic\/.*)$/],
       abExperiments: [
         {

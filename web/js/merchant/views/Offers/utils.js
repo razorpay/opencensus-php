@@ -1,5 +1,6 @@
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { PAYMENT_NETWORK_MAP, ISSUERS, CARD_TYPES } from 'merchant/views/Offers/constants';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const NetworksAndIssuers = { ...PAYMENT_NETWORK_MAP, ...ISSUERS };
 
@@ -50,4 +51,10 @@ export const updateOfferDataFormat = (offerData) => {
   }
 
   return modifiedOfferData;
+};
+
+export const isGranularOfferExperimentEnabled = (splitz) => {
+  const upi_granular_offer_dashboard =
+    splitz?.abExperiments?.upi_granular_offer_dashboard || undefined;
+  return isExperimentEnabled(upi_granular_offer_dashboard);
 };
