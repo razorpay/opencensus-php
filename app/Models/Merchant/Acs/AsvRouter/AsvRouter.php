@@ -253,15 +253,11 @@ class AsvRouter
             }
 
             if ($this->isTransactionActive($repoClass) === true) {
-                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForTransactionFlow();
-                $result = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $id);
-                if ($result === false) {
-                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                        'routeOrWorkerName' => $this->getRouteOrJobName(),
-                        'reason' => self::FLOW_WITH_TRANSACTION,
-                    ]);
+                // in case of unit test fallback to api db as many test cases are dependent on api db
+                if ($this->app->runningUnitTests() === true) {
+                    return false;
                 }
-                return $result;
+                return true;
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
@@ -319,15 +315,11 @@ class AsvRouter
             }
 
             if ($this->isTransactionActive($repoClass) === true) {
-                $transactionFlowExperimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForTransactionFlow();
-                $result = $this->splitzHelper->isSplitzOnByExperimentName($transactionFlowExperimentName, $id);
-                if ($result === false) {
-                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                        'routeOrWorkerName' => $this->getRouteOrJobName(),
-                        'reason' => self::FLOW_WITH_TRANSACTION,
-                    ]);
+                // in case of unit test fallback to api db as many test cases are dependent on api db
+                if ($this->app->runningUnitTests() === true) {
+                    return false;
                 }
-                return $result;
+                return true;
             }
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);

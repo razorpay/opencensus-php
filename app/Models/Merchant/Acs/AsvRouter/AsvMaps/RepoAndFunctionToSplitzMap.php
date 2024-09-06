@@ -131,12 +131,4 @@ final class RepoAndFunctionToSplitzMap
     public static function getExperimentNameForReloadMigration(): string {
         return self::ROUTE_RELOAD_REQUEST_TO_ASV;
     }
-
-    public static function getExperimentNameForTransactionFlow(): string {
-        return self::ROUTE_TRANSACTION_FLOW_TO_ASV;
-    }
-
-    public static function getExperimentNameForEnableExclusionFlow(): string {
-        return self::ENABLE_EXCLUSION_FLOW;
-    }
 }
