@@ -929,13 +929,13 @@ export const initialState = {
               slug: 'flexipay',
               icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
             },
-            {
-              name: 'ICICI',
-              description: '',
-              status: 'greyed',
-              slug: 'icic',
-              icon: 'icici',
-            },
+            // {
+            //   name: 'ICICI',
+            //   description: '',
+            //   status: 'greyed',
+            //   slug: 'icic',
+            //   icon: 'icici',
+            // },
             {
               name: 'Simpl',
               description: '',
