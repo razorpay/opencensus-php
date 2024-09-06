@@ -3145,7 +3145,7 @@ class PricingTest extends TestCase
     {
         // Payment method should not be null for any feature except refund, optimizer, affordability_widget and sms
 
-        $method_not_req_features = ['refund', 'optimizer', 'nocodeapps', 'affordability_widget', 'sms'];
+        $method_not_req_features = ['refund', 'optimizer', 'nocodeapps', 'affordability_widget', 'sms', 'buyer_protection'];
 
         $this->ba->adminAuth();
 
@@ -3165,7 +3165,7 @@ class PricingTest extends TestCase
                 }
                 else
                 {
-                    $message =  "The payment method field is required unless feature is in refund, optimizer, nocodeapps, payment, affordability_widget, sms.";
+                    $message =  "The payment method field is required unless feature is in refund, optimizer, nocodeapps, payment, affordability_widget, sms, buyer_protection.";
 
                 }
                 $testData['response']['content']['error']['description'] = $message;

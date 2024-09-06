@@ -6016,7 +6016,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $orderId = $order->getId();
         }
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+        $app = \App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'] ?? Mode::LIVE;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::BUYER_PROTECT_SIGNED_UP) &&
             $this->isBuyerProtectionEnabled($this->getId(), $this->merchant->getId(), $mode, $orderId) === true)
@@ -6049,6 +6051,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     private function isBuyerProtectionEnabled(string $paymentId, string $merchantId, string $mode, ?string $orderId): bool
     {
+        $app = \App::getFacadeRoot();
+
         $requestData = [
             'payment' => [
                 'id' => $paymentId,
@@ -6069,13 +6073,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         /** @var HttpResponse */
         try
         {
-            $buyerProtectionEligibilityResponse = $this->app['checkout_service']
-                ->getBuyerProtectionEligibilityFromCheckoutService($requestData)
-                ->getOriginalContent();
+            $buyerProtectionEligibilityResponse = $app['checkout_service']->getBuyerProtectionEligibilityFromCheckoutService($requestData)->getOriginalContent();
 
             return $buyerProtectionEligibilityResponse['eligible'];
-        } catch (Exception $e) {
-            $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::BUYER_PROTECTION_ELIGIBILITY_CHECK_FAILED, $requestData);
+        } catch (\Exception $e) {
+            $app['trace']->traceException($e, Trace::ERROR, TraceCode::BUYER_PROTECTION_ELIGIBILITY_CHECK_FAILED, $requestData);
         }
 
         return false;
