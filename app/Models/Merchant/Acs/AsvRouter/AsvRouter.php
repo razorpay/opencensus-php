@@ -314,35 +314,12 @@ class AsvRouter
                 return false;
             }
 
-            if ($this->isTransactionActive($repoClass) === true) {
-                // in case of unit test fallback to api db as many test cases are dependent on api db
-                if ($this->app->runningUnitTests() === true) {
-                    return false;
-                }
-                return true;
+            // in case of unit test fallback to api db as many test cases are dependent on api db
+            if ($this->app->runningUnitTests() === true) {
+                return false;
             }
 
-            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
-
-            $resp =  $this->splitzHelper->isSplitzOnForFindForImplicitJoinByExperimentName(
-                $experimentName,
-                $id,
-                $entityName
-            );
-
-            $this->trace->info(TraceCode::ASV_IMPLICIT_JOIN_ROUTER_RESULT, [
-                'isImplicitJoinRoutedToASV' => $resp,
-                'function_identifier' => $repoClass . '::' . $functionName,
-            ]);
-
-            if ($resp === false) {
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                    'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::SPLITZ_REJECTED,
-                ]);
-            }
-
-            return $resp;
+            return true;
         } catch (\Throwable $e) {
             $this->trace->traceException
             (

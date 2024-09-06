@@ -61,8 +61,8 @@ class AsvRouterTest extends TestCase
     public function testShouldRouteImplicitJoinToAccountService() {
         $tests = [
             [
-                "expected_result" => false,
-                "is_transaction_active" => true,
+                "expected_result" => true,
+                "is_transaction_active" => false,
             ],
         ];
 
