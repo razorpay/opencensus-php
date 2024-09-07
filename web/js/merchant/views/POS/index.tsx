@@ -47,6 +47,7 @@ try {
     locale: 'IN',
     mode: isProductionEnv() ? 'live' : 'debug',
   });
+  analytics.identify_EXPERIMENTAL(window?.rzp_user?.current);
 } catch (error: unknown) {
   // capture error on analytics initialization failure
   errorService.captureError(error, {
