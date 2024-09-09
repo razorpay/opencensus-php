@@ -788,7 +788,7 @@ class Core extends Base\Core
     {
         if ($amount === 0)
         {
-            $amount = $dispute->getAmount() ?: $dispute->getBaseAmount();
+            $amount = $dispute->getBaseAmount() ?: $dispute->getAmount();
         }
 
         $input = [
@@ -889,7 +889,7 @@ class Core extends Base\Core
 
         $dispute->setAmountDeducted($amount);
 
-        $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getAmount(), $newBalance, $dispute);
+        $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getBaseAmount(), $newBalance, $dispute);
     }
 
     protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $shouldResetDeductionSourceAttributes = true)
@@ -1008,7 +1008,7 @@ class Core extends Base\Core
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
     {
-        $disputeBaseAmount = $dispute->getAmount() ?: $dispute->getBaseAmount();
+        $disputeBaseAmount = $dispute->getBaseAmount() ?: $dispute->getAmount();
 
         if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
         {
