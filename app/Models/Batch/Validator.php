@@ -1657,10 +1657,11 @@ class Validator extends Base\Validator
         // Limit validations
         Limit::validate($rules['limit_rule'], count($entries));
         $app = App::getFacadeRoot();
-        $orgId = $app['basicauth']->getOrgId();
-        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+        $admin = $app['basicauth']->getAdmin();
+        $adminOrgId = $admin != null ? $admin->getOrgId() : null;
+
         // Header validations
-        Header::validate($rules['header_rule'], array_keys(current($entries)), $orgId);
+        Header::validate($rules['header_rule'], array_keys(current($entries)), $adminOrgId);
 
         //adding validation for type payment_page
         if ($rules['header_rule'] === TYPE::PAYMENT_PAGE)
