@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Feature\Constants;
@@ -146,6 +147,33 @@ class OrgTest extends TestCase
         $this->assertEquals($org['type'], 'restricted');
     }
 
+    public function testCreateOrgLiveAndTest()
+    {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $permIds = $this->getPermissionsByIds('assignable');
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
+        $this->startTest();
+
+        $orgInTest = $this->getLastEntity('org', true, 'test');
+
+        $orgInLive = $this->getLastEntity('org', true, 'live');
+
+        $this->assertEquals($orgInTest['type'], 'restricted');
+
+        $this->assertEquals($orgInLive['type'], 'restricted');
+
+        $orgHostNameInTest = $this->getLastEntity('org_hostname', true, 'test');
+
+        $orgHostNameInLive = $this->getLastEntity('org_hostname', true, 'live');
+
+        $this->assertEquals("test2.com", $orgHostNameInTest['hostname']);
+
+        $this->assertEquals("test2.com", $orgHostNameInLive['hostname']);
+    }
+
     public function testEditOrg()
     {
         $org = $this->fixtures->create('org');
@@ -178,6 +206,34 @@ class OrgTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 
         $this->startTest();
+    }
+
+    public function testEditOrgHostNameInLiveAndTest()
+    {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $org = \DB::connection('test')->select("select * from orgs where id = '100000razorpay'")[0];
+
+        $orgId = $org->id;
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' .'org_'. $orgId;
+
+        $result = $this->startTest();
+
+        $orgInTest = $this->getLastEntity('org', true, 'test');
+
+        $orgInLive = $this->getLastEntity('org', true, 'live');
+
+        $orgHostNameInTest = $this->getLastEntity('org_hostname', true, 'test');
+
+        $orgHostNameInLive = $this->getLastEntity('org_hostname', true, 'live');
+
+        $this->assertEquals("test2.com", $orgHostNameInTest['hostname']);
+
+        $this->assertEquals("test2.com", $orgHostNameInLive['hostname']);
+
     }
 
     public function testEditOrgAdmin2FaAuth()

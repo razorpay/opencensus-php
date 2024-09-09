@@ -282,8 +282,95 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testCreateOrgLiveAndTest' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'post',
+            'content' => [
+                'hostname'      => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
+                'email'         => 'test@hdfc.com',
+                'type'          => 'restricted',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'admin'         => [
+                    'name'                  => 'superadmin',
+                    'branch_code'           => 'a',
+                    'employee_code'         => 'a',
+                    'location_code'         => 'a',
+                    'department_code'       => 'a',
+                    'supervisor_code'       => 'a',
+                    'username'              => 'xyz93',
+                    'password'              => 'xYZ123!@#',
+                    'password_confirmation' => 'xYZ123!@#',
+                ],
+                'merchant_styles' => [
+                    'color_code1' => '123',
+                    'color_code2' => '345'
+                ],
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'email_domains' => [
+                    'hdfc.com',
+                    'fbapi.com'
+                ],
+                'allow_sign_up' => false,
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text'
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testEditOrg' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'email_domains' => [
+                    'fbapi.com'
+                ],
+                'allow_sign_up' => true,
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testEditOrgHostNameInLiveAndTest' => [
         'request'  => [
             'url'     => '/orgs',
             'method'  => 'put',

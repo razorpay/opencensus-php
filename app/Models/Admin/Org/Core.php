@@ -252,4 +252,20 @@ class Core extends Base\Core
         $this->repo->permission->toggleWorkflowOnOrgForPermissions(
             $org->getId(), $permissions, false);
     }
+
+    public function checkSyncOrgHostNameSplitzExperiment(): bool
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $requestData = '{"org_id":"' . $orgId . '"}';
+
+        $properties = [
+            'id'            => $orgId,
+            'experiment_id' => $this->app['config']->get('app.sync_orghostname_experiment'),
+            'request_data'  => $requestData,
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+    }
 }

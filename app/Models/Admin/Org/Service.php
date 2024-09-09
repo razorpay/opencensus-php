@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Org;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Admin;
@@ -31,6 +32,8 @@ class Service extends Base\Service
 
         $org = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input)
         {
+            $syncOrgDetails = $this->core()->checkSyncOrgHostNameSplitzExperiment();
+
             $org = $this->core()->create($input);
 
             if (isset($input['hostname']) === true)
@@ -39,7 +42,16 @@ class Service extends Base\Service
 
                 foreach ($hostnames as $hostname)
                 {
-                    (new Hostname\Core)->create($org, $hostname);
+                    if ($syncOrgDetails === true)
+                    {
+                        (new Hostname\Core)->create($org, $hostname, Mode::TEST);
+
+                        (new Hostname\Core)->create($org, $hostname, Mode::LIVE);
+                    }
+                    else
+                    {
+                        (new Hostname\Core)->create($org, $hostname);
+                    }
                 }
             }
 
@@ -261,14 +273,34 @@ class Service extends Base\Service
 
                 $hostnamesToDelete = array_diff($existingHostnames, $newHostnames);
 
+                $syncOrgDetails = $this->core()->checkSyncOrgHostNameSplitzExperiment();
+
                 foreach ($hostnamesToDelete as $hostname)
                 {
-                    (new Hostname\Core)->delete($org, $hostname);
+                    if ($syncOrgDetails === true)
+                    {
+                        (new Hostname\Core)->delete($org, $hostname, Mode::TEST);
+
+                        (new Hostname\Core)->delete($org, $hostname, Mode::LIVE);
+                    }
+                    else
+                    {
+                        (new Hostname\Core)->delete($org, $hostname);
+                    }
                 }
 
                 foreach ($hostnamesToCreate as $hostname)
                 {
-                    (new Hostname\Core)->create($org, $hostname);
+                    if ($syncOrgDetails === true)
+                    {
+                        (new Hostname\Core)->create($org, $hostname, Mode::TEST);
+
+                        (new Hostname\Core)->create($org, $hostname, Mode::LIVE);
+                    }
+                    else
+                    {
+                        (new Hostname\Core)->create($org, $hostname);
+                    }
                 }
             }
 

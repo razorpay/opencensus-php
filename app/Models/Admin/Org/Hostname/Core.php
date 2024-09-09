@@ -8,8 +8,13 @@ use RZP\Models\Admin\Org;
 
 class Core extends Base\Core
 {
-    public function create(Org\Entity $org, string $hostname)
+    public function create(Org\Entity $org, string $hostname, string $mode = null)
     {
+        if ($mode !== null)
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+        }
+
         $orgHost = new Entity;
 
         $orgHost->generateId();
@@ -25,8 +30,13 @@ class Core extends Base\Core
         return $orgHost;
     }
 
-    public function delete(Org\Entity $org, string $hostname)
+    public function delete(Org\Entity $org, string $hostname, string $mode = null)
     {
+        if ($mode !== null)
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+        }
+
         $orgHost = $this->repo->org_hostname->findByOrgIdAndHostname($org->getId(), $hostname);
 
         $orgHost->setAuditAction(Action::DELETE_ORG_HOSTNAME);
