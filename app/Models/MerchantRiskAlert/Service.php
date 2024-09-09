@@ -208,10 +208,13 @@ class Service extends Base\Service
 
             $actionId = $action->getId();
 
-            (new Comment\Service())->createForWorkflowAction([
-                'comment'   => sprintf('NEW_TRIGGER: %s', json_encode($workflowTags)),
-            ], Action\Entity::getSignedId($actionId), $this->getMaker());
-
+            if (isset($input[Constants::WORKFLOW_COMMENT_KEY]) === true && $input[Constants::WORKFLOW_COMMENT_KEY] != "")
+            {
+                (new Comment\Service())->createForWorkflowAction([
+                    Comment\Entity::COMMENT  =>
+                        sprintf('NEW_TRIGGER: %s', $input[Constants::WORKFLOW_COMMENT_KEY]),
+                ], Action\Entity::getSignedId($actionId), $this->getMaker());
+            }
 
             $this->repo->workflow_action->saveOrFail($action);
 

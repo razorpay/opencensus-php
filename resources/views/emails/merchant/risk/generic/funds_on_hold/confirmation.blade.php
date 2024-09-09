@@ -3,25 +3,25 @@
 @section('content')
 	Dear {{$merchant_name}},
 	<br/><br/>
-	Greetings from Razorpay!
+    We hope this email finds you well.
 	<br/><br/>
-    We have temporarily put your settlements under review. It was necessary to do so because of a risk alert raised by our banking partners.
+    To maintain the integrity of our platform and ensure compliance with regulatory standards, Razorpay conducts periodic reviews of merchant accounts. As part of this process, we have identified potential risk indicators associated with your account.
     <br/><br/>
-    To resume the settlements as soon as possible, we request you to provide one of the following documents confirming recent successful transactions on Razorpay:
+    To resolve this quickly and resume your settlements, we kindly request the following documents:
     <br/>
-    1. Detailed invoices
+    1. <b>Detailed invoices: </b>Please provide invoices for recent successful transactions.
     <br/>
-    2. Proof of delivery
+    2. <b>Proof of delivery: </b>Provide evidence of delivery for at least three customers, such as email confirmations from customers or shipping tracking information.
     <br/>
-    3. Any other proof confirming the above
-	<br/><br/>
-    The check is needed to validate the services provided to your customers.
+    3. <b>Additional Documentation: </b>Any other supporting documents that validate your business activities.
     <br/><br/>
-    We expect a response within 48-72 hours which will be thoroughly reviewed by our team. If found satisfactory, we will close the loop within 72 hours.
+    Please note that this is a standard procedure implemented across all merchant accounts to ensure platform security. Once we receive the requested documents, we’ll prioritize your account review and aim to conclude the case within 48-72 hours from the time of your last submission. If additional information is needed, we will promptly reach out to you.
     <br/><br/>
-    Incase of any questions  please  reach out to us at risk-fundsonhold@razorpay.com . We request your cooperation to resolve this as soon as possible.
+    A Razorpay representative will contact you tomorrow on your registered mobile number to discuss this further and answer any questions you may have.
     <br/><br/>
-	Thanks,
-	<br/>
-	Team Razorpay
+    Thank you for your prompt attention to this matter.
+	  <br/><br/>
+    Sincerely,
+    <br/>
+	The Razorpay Team
 @endsection
