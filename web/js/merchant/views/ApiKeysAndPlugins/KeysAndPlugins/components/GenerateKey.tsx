@@ -209,7 +209,15 @@ const GenerateKey = ({
         },
       });
     } else {
-      return showRollKeyModal({ id: latestKey?.id });
+      return context.criticalFlow({
+        modes: ['live'],
+        onUserTwoFaVerified: () => {
+          showRollKeyModal({ id: latestKey?.id });
+        },
+        onFlowTermination: () => {
+          setIsKeyGenerating(false);
+        },
+      });
     }
   };
 

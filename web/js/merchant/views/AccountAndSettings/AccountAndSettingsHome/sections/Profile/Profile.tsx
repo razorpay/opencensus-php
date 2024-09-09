@@ -120,23 +120,25 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
       screen,
     });
 
-    if (id !== PersonalProfileFields.PASSWORD && isCriticalFlowEnabled) {
-      context.criticalFlow({
-        modes: ['test', 'live'],
-        onUserTwoFaVerified: () => {
-          openModal(modalConfig);
-        },
-        onFlowTermination: () => {},
-        isNewAccountAndSettingsPage: true,
-      });
-    } else if (id === PersonalProfileFields.PASSWORD && shouldTrigger2Fa) {
-      context.criticalFlow({
-        enforceVerifyOtp: true,
-        isNewAccountAndSettingsPage: true,
-        modes: ['test', 'live'],
-        onFlowTermination: () => {},
-        onUserTwoFaVerified: () => openModal(modalConfig),
-      });
+    if (isCriticalFlowEnabled) {
+      if (id === PersonalProfileFields.PASSWORD && shouldTrigger2Fa) {
+        context.criticalFlow({
+          enforceVerifyOtp: true,
+          isNewAccountAndSettingsPage: true,
+          modes: ['test', 'live'],
+          onFlowTermination: () => {},
+          onUserTwoFaVerified: () => openModal(modalConfig),
+        });
+      } else {
+        context.criticalFlow({
+          modes: ['test', 'live'],
+          onUserTwoFaVerified: () => {
+            openModal(modalConfig);
+          },
+          onFlowTermination: () => {},
+          isNewAccountAndSettingsPage: true,
+        });
+      }
     } else {
       openModal(modalConfig);
     }

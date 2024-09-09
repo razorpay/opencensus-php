@@ -45,7 +45,12 @@ const KeysListItem = (props) => {
         },
       });
     } else {
-      return props.showRollKeyModal({ id });
+      return context.criticalFlow({
+        modes: ['live'],
+        onUserTwoFaVerified: () => {
+          props.showRollKeyModal({ id });
+        },
+      });
     }
   };
 
