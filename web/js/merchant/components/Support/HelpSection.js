@@ -177,6 +177,7 @@ const HelpSection = ({
             features: user?.features || [],
             pos_activation_status: getPosActivationStatus(user, splitz),
             activationStatusChangeLogs: user.activationStatusChangeLogs,
+            country_code: user?.merchant?.country_code,
           }}
           onError={handleError}
           track={analyticsTrack}
