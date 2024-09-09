@@ -420,14 +420,6 @@ class Repository extends Base\Repository
                         });
             },
             'workflow.steps.role',
-            'maker' => function ($query) use ($actionEntity)
-            {
-                // Since only Admin uses soft deletes
-                if ($actionEntity->getMakerType() === MakerType::ADMIN)
-                {
-                    $query->withTrashed();
-                }
-            },
             'stateChanger' => function ($query) use ($actionEntity)
             {
                 // Since only Admin uses soft deletes
@@ -448,8 +440,26 @@ class Repository extends Base\Repository
             'tagged'
         ];
 
-        return $action->with($relations)
-                      ->get();
+        if($actionEntity->getMakerType() !== MakerType::MERCHANT) {
+            $relations['maker'] = function ($query) use ($actionEntity)
+            {
+                // Since only Admin uses soft deletes
+                if ($actionEntity->getMakerType() === MakerType::ADMIN)
+                {
+                    $query->withTrashed();
+                }
+            };
+        }
+
+        $actionsWithRelations = $action->with($relations)->get();
+
+        if($actionEntity->getMakerType() === MakerType::MERCHANT) {
+            foreach ($actionsWithRelations as $actionWithRelations) {
+                $actionWithRelations->maker;
+            }
+        }
+
+        return $actionsWithRelations;
     }
 
     public function getActionDetailsPublic(string $id, string $orgId)

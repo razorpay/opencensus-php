@@ -8,7 +8,9 @@ use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use Conner\Tagging\Taggable;
 use RZP\Models\Workflow\Base;
+use RZP\Constants\Entity as E;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 
 /**
  * Class Entity
@@ -307,5 +309,14 @@ class Entity extends Base\Entity
         $state = $this->getState();
 
         return (in_array($state, State\Name::CLOSED_ACTION_STATES, true) === true);
+    }
+
+    public function getMakerAttribute() {
+        if ($this->getMakerType() === E::MERCHANT)
+        {
+            return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'maker', 'getMakerId');
+        }
+
+        return $this->maker()->first();
     }
 }
