@@ -544,19 +544,19 @@ class Fee extends Base\Core
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
-        $variantFlag = $this->app['razorx']->getTreatment(
-            $merchant->getId(),
-            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING,
-            Mode::LIVE);
-
-        //
-        // Add default pricing rules with payouts_filter = rzp_charge_collections, only when no such rules are already defined.
-        if (($variantFlag === 'on') and
-            ($pricingPlan->hasBankingAccountChargeCollectionsRule() === false))
-        {
-            $rules       = $this->repo->getBankingAccountChargeCollectionDefaultPricingRules(Feature::PAYOUT, $merchant);
-            $pricingPlan = $pricingPlan->merge($rules);
-        }
+//        $variantFlag = $this->app['razorx']->getTreatment(
+//            $merchant->getId(),
+//            RazorxTreatment::ZERO_PRICING_ENABLE_FOR_CENTRAL_BILLING,
+//            Mode::LIVE);
+//
+//        //
+//        // Add default pricing rules with payouts_filter = rzp_charge_collections, only when no such rules are already defined.
+//        if (($variantFlag === 'on') and
+//            ($pricingPlan->hasBankingAccountChargeCollectionsRule() === false))
+//        {
+//            $rules       = $this->repo->getBankingAccountChargeCollectionDefaultPricingRules(Feature::PAYOUT, $merchant);
+//            $pricingPlan = $pricingPlan->merge($rules);
+//        }
 
         return $pricingPlan;
     }

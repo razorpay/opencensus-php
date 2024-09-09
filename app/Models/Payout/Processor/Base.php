@@ -4764,22 +4764,6 @@ class Base extends BaseCore
     protected function shieldEvaluatePayoutsRequest(Entity $payout): bool
     {
         try{
-
-            $razorxResponse = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                Merchant\RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT,
-                RZPConstants\Mode::LIVE);
-
-            if ($razorxResponse !== 'on')
-            {
-                return false;
-            }
-
-            $this->trace->info(
-                TraceCode::EVALUATE_PAYOUT_SHEILD_REQUEST_INIT,
-                [
-                    'payout_id' => $payout->getId(),
-                ]);
-
             $requestBody = $this->prepareShieldPayoutEvaluateRequest($payout);
 
             //make call to PS for shield Response

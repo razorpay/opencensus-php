@@ -1533,16 +1533,6 @@ class Core extends Base\Core
     public function fetchFundAccountForPayoutServiceProcessing(string $merchantId, array $input): array
     {
         try {
-            // Check if razorx enabled
-            $razorxResponse = $this->app['razorx']->getTreatment($merchantId,
-                                                                 Merchant\RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD,
-                                                                 RZPConstants\Mode::LIVE);
-
-            if ($razorxResponse !== 'on')
-            {
-                return [false, null, null];
-            }
-
             if (isset($input[Payout\Entity::FUND_ACCOUNT_ID]) === false)
             {
                 return [false, null, null];

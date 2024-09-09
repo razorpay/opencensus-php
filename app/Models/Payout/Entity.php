@@ -1886,9 +1886,6 @@ class Entity extends Base\PublicEntity
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
         SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
-
-        // Push to PS queue for charge collection events
-        $this->pushChargeCollectionEvent($this, $currentStatus, $status);
     }
 
     public function setInitiatedAt()

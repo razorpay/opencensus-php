@@ -118,8 +118,6 @@ abstract class Base extends Core
         $this->triggerValidationCompletedWebhook();
 
         $this->pushFAVStatusChangeEvent($this->validation);
-
-        $this->pushChargeCollectionEvent($this->validation, $previousStatus, $errDesc);
     }
 
     public function markValidationAsFailed(string $errorCode = null, string $errorDescription = null)

@@ -301,8 +301,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
-
         $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
             ->shouldAllowMockingProtectedMethods()->makePartial();
 
@@ -407,8 +405,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
-
         $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
             ->shouldAllowMockingProtectedMethods()->makePartial();
 
@@ -492,8 +488,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
-
         $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
             ->shouldAllowMockingProtectedMethods()->makePartial();
 
@@ -571,8 +565,6 @@ class PayoutTest extends OAuthTestCase
     public function testCreatePayoutAndAllowByShieldEvalForUpi(): array
     {
         $this->ba->privateAuth();
-
-        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUT_SHIELD_EVALUATE_EXPERIMENT => 'on'], 'control');
 
         $shieldMock = Mockery::mock('RZP\Services\PayoutService\Shield', [$this->app])
             ->shouldAllowMockingProtectedMethods()->makePartial();
@@ -27826,6 +27818,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutCreateOnInternalContactByChargeCollections()
     {
+        $this->markTestSkipped('Charge collection is not onboarded so skipping for now');
+
         $this->ba->chargeCollectionsAuth();
 
         $this->fixtures->create('pricing', [
@@ -28015,6 +28009,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutCreateOnInternalContactByChargeCollectionsForDirectAccount()
     {
+        $this->markTestSkipped('Charge collection is not onboarded so skipping for now');
+
         $this->ba->chargeCollectionsAuth();
 
         $balance = $this->createDirectBankingBalance()->toArray();

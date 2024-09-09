@@ -2988,7 +2988,6 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals(1614325830, $response[Entity::INITIATED_AT]);
         $this->assertEquals("10000000000000", $response[Entity::MERCHANT_ID]);
 
-        $this->assertNull($assertionBody['fund_account_extra_info']);
         $this->assertFalse(isset($assertionBody['va_to_va_info']));
     }
 
@@ -3336,7 +3335,6 @@ class PayoutServiceTest extends TestCase
         $this->assertNotNull($txn['balance_id']);
         $this->assertNotNull($txn['posted_at']);
 
-        $this->assertNull($assertionBody['fund_account_extra_info']);
         $this->assertFalse(isset($assertionBody['va_to_va_info']));
 
         return $payout;
@@ -3968,8 +3966,6 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'on']);
-
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $testData = $this->testData['testCreatePayout'];
@@ -4044,8 +4040,6 @@ class PayoutServiceTest extends TestCase
         $assertionBody = [];
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'on']);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -4138,8 +4132,6 @@ class PayoutServiceTest extends TestCase
         $assertionBody = [];
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'on']);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -4441,8 +4433,6 @@ class PayoutServiceTest extends TestCase
 
         $this->mockRazorxDefault();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'off']);
-
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
@@ -4453,7 +4443,6 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
 
-        $this->assertNull($assertionBody['fund_account_extra_info']);
         $this->assertFalse(isset($assertionBody['va_to_va_info']));
     }
 
