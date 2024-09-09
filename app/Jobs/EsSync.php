@@ -2,6 +2,8 @@
 
 namespace RZP\Jobs;
 
+use Database\Connection;
+use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
@@ -123,8 +125,7 @@ class EsSync extends Job
                 {
                     return $this->syncRearchEntities();
                 }
-
-                if($this->entity === "merchant" && (new AsvRouter())->shouldRouteFilterToAsv('MerchantEsSync'))
+                if(in_array($this->entity,  [Entity::MERCHANT, Entity::ACCOUNT]) && (new AsvRouter())->shouldRouteFilterToAsv('MerchantEsSync'))
                 {
                     return $this->syncMerchantEntities();
                 }
