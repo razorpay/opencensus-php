@@ -647,11 +647,6 @@ class Core extends Base\Core
         {
             $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
 
-            // Locking the activation form when the  assisted merchants pos activation status moved to under review state
-            $merchantDetails->setLocked(true);
-
-            $this->repo->saveOrFail($merchantDetails);
-
             $this->publishKakfaEventForPOSNeedsClarificationResponded($merchantDetails->getMerchantId());
         }
 
@@ -4952,13 +4947,6 @@ class Core extends Base\Core
                                 'pos_activation_status'      => $merchantDetails->getActivationStatus()
                             ]);
 
-                            unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
-
-                            // Unlocking the activation form when the  assisted merchants pos activation status moved to needs_clarification review state
-                            $merchantDetails->setLocked(false);
-
-                            $this->repo->saveOrFail($merchantDetails);
-
                             if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
                                 (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
                             {
@@ -5138,13 +5126,6 @@ class Core extends Base\Core
                             'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
                             'pos_activation_status'      => $merchantDetails->getActivationStatus()
                         ]);
-
-                        unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
-
-                        // Unlocking the activation form when the  assisted merchants pos activation status moved to needs_clarification review state
-                        $merchantDetails->setLocked(false);
-
-                        $this->repo->saveOrFail($merchantDetails);
 
                         if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
                             (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
