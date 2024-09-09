@@ -375,6 +375,8 @@ final class RazorxTreatment
 
     const BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE = 'banking_account_statement_fetch_unlinked_query_optimize';
 
+    const PAYOUT_SERVICE_TXN_RECON = 'payout_service_txn_recon';
+
     // for creating upi recurring auth link via batch upload pick up as presented frequency by default
     const UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT = 'upi_auth_link_frequency_as_presented_default';
 

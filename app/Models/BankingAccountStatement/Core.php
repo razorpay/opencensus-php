@@ -29,6 +29,7 @@ use RZP\Constants\Environment;
 use RZP\Models\BankingAccount;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\PayoutService;
 use RZP\Jobs\RblBankingAccountStatement;
 use RZP\Jobs\IciciBankingAccountStatement;
 use RZP\Jobs\BankingAccountStatementRecon;
@@ -167,11 +168,16 @@ class Core extends Base\Core
 
     protected $mutex;
 
+    /** @var PayoutService\BankingAccountStatement */
+    protected $payoutServiceBankingAccountStatementClient;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->payoutServiceBankingAccountStatementClient = $this->app[PayoutService\BankingAccountStatement::PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT];
     }
 
     /** @var Details\Entity $basDetails  */
@@ -3011,6 +3017,10 @@ class Core extends Base\Core
 
     protected function saveAccountStatementV2(Base\PublicCollection $basEntities, Merchant\Entity $merchant)
     {
+        $payoutServiceTxnVariant = $this->app->razorx->getTreatment($merchant->getId(),
+                                                    Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
+                                                    $this->mode);
+
         /** @var Entity $basEntity */
         foreach ($basEntities as $basEntity)
         {
@@ -3029,14 +3039,23 @@ class Core extends Base\Core
                 if (($sourceEntity->getEntityName() === Constants\Entity::PAYOUT) and
                     ($sourceEntity->isBalanceAccountTypeDirect() === true) and
                     ($sourceEntity->isOfMerchantTransaction() === true) and
-                    ($sourceEntity->getStatus() === Status::PROCESSED))
+                    ($sourceEntity->getStatus() === Status::PROCESSED) and
+                    !($payoutServiceTxnVariant == 'on' and
+                      $sourceEntity->getIsPayoutService() == true and
+                      $basEntity->getType() == Type::DEBIT))
                 {
                     $event = "payout.processed";
                     (new Transaction\Notifier($sourceEntity->transaction, $event))->notify();
                 }
 
                 // for statement under fix we send event to ledger after inserting all the missing statements outside the transaction
-                if ($this->isStatementUnderFix === false)
+                // For payout service payout linked with debit, we dont send event to ledger since we make a call to ps which already does this
+                if ($this->isStatementUnderFix === false and
+                    !($payoutServiceTxnVariant == 'on' and
+                      $sourceEntity->getEntityName() === Constants\Entity::PAYOUT and
+                      $sourceEntity->getIsPayoutService() == true and
+                      $basEntity->getType() == Type::DEBIT)
+                )
                 {
                     // send event to ledger in shadow mode
                     $this->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity);
@@ -3081,7 +3100,14 @@ class Core extends Base\Core
             }
             else
             {
-                $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
+                if (!($payoutServiceTxnVariant == 'on' and
+                      $sourceEntity->getEntityName() === Constants\Entity::PAYOUT and
+                      $sourceEntity->getIsPayoutService() == true and
+                      $basEntity->getType() == Type::DEBIT)
+                )
+                {
+                    $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
+                }
             }
         }
     }
@@ -3444,6 +3470,7 @@ class Core extends Base\Core
     {
         $createExternalSource = false;
 
+        /** @var Payout\Entity $payout */
         $payout = $this->fetchExistingPayoutForAccountStatement($basEntity, $createExternalSource, $remarks);
 
         if ($createExternalSource === true)
@@ -3481,6 +3508,49 @@ class Core extends Base\Core
 
         (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
         $transactionId = $payout->transaction ? $payout->transaction->getID() : null;
+
+        $payoutServiceTxnVariant = $this->app->razorx->getTreatment($payout->getMerchantId(),
+                                                    Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
+                                                    $this->mode);
+
+        if ($payoutServiceTxnVariant == 'on' and $payout->getIsPayoutService() == true)
+        {
+            $input = [
+                Entity::BAS_ID                  => $transactionId,
+                Entity::ENTITY_ID               => $payout->getId(),
+                Entity::ENTITY_TYPE             => Constants\Entity::PAYOUT,
+                Entity::MERCHANT_ID             => $payout->getMerchantId(),
+                Entity::TRANSACTION_DATE        => $basEntity->getTransactionDate(),
+                Entity::CONVERTED_FROM_EXTERNAL => $basEntity->getEntityType() == Constants\Entity::EXTERNAL
+            ];
+
+            try
+            {
+                $this->payoutServiceBankingAccountStatementClient->updatePayoutAfterBASRecon($input);
+
+                $payout->setTransactionId(null);
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PS_PAYOUT_TRANSACTION, [
+                    'bas_id'                  => $basEntity->getId(),
+                    'merchant_id'             => $basEntity->getMerchantId(),
+                    'payout'                  => $payout,
+                    'transaction_id'          => $transactionId,
+                    'api_payout_txn_id'       => $payout->getTransactionId(),
+                    'converted_from_external' => $input[Entity::CONVERTED_FROM_EXTERNAL]
+                ]);
+
+                return $payout;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PAYOUT_TRANSACTION_ON_PS_FAILURE, [
+                    'input' => $input,
+                    'error_message' => $e->getMessage(),
+                    'error' => $e
+                ]);
+            }
+        }
+
         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PAYOUT_TRANSACTION, [
             'bas_id'         => $basEntity->getId(),
             'account_number' => $basEntity->getAccountNumber(),

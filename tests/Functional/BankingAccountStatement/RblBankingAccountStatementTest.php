@@ -21,6 +21,7 @@ use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\Payout\Status;
+use \WpOrg\Requests\Response;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 
@@ -69,6 +70,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Core as BasCore;
+use RZP\Services\PayoutService\BankingAccountStatement;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\BankingAccountStatement\Constants as BASConstants;
@@ -17195,5 +17197,148 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getId(), $txn->getId());
         $this->assertEquals($bas->getEntityType(), $txn->getType());
         $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testPayoutTransactionLinkingForPSPayout()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
+
+        $this->setMockRazorxTreatment([
+                                          RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE => 'on',
+                                          RazorxTreatment::PAYOUT_SERVICE_TXN_RECON                                => 'on'
+                                      ]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_SKIP_VALIDATE_BALANCE => ['10000000000000']]);
+
+        $this->setupForRblPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1234567,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => $payout['id'],
+                'source_type'         => 'payout',
+                'status'              => 'processed',
+                'utr'                 => '933815383814',
+                'source_account_id'   => 111111111,
+                'bank_account_type'   => 'current'
+            ],
+        ];
+
+        $this->ba->ftsAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
+
+        $transaction = $this->fixtures->create('transaction', [
+            'merchant_id'  => '10000000000000',
+            'type' => 'payout',
+            'balance' => 30019891,
+            'balance_id' => $payout['balance_id']
+        ]);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], [
+            'balance' => 30019891,
+        ]);
+
+        $this->fixtures->create('banking_account_statement',[
+            'type'                      => 'debit',
+            'amount'                    => '104',
+            'channel'                   => 'rbl',
+            'account_number'            => 2224440041626905,
+            'transaction_id'            => $transaction['id'],
+            'entity_id'                 => $payout['id'],
+            'entity_type'               =>  'payout',
+            'bank_transaction_id'       => 'SDHDH',
+            'balance'                   => 30019891,
+            'transaction_date'          => 1584987183
+        ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'debit',
+                                    'utr'                       => '933815383814',
+                                    'amount'                    => '10095',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'SDHDH1',
+                                    'balance'                   => 30019786,
+                                    'transaction_date'          => 1584987184,
+                                    'posted_date'               => Carbon::now()->getTimestamp(),
+                                ]);
+
+        $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(), [
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 30019786,
+        ]);
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'is_payout_service' => 1,
+        ]);
+
+        $payoutServiceBankingAccountStatementClient = Mockery::mock(
+            'RZP\Services\PayoutService\BankingAccountStatement', [$this->app])->makePartial();
+
+        $response = new Response();
+        $response->body = json_encode([]);
+        $response->success     = true;
+        $response->status_code = 200;
+        $isValidInput = true;
+
+        $payoutServiceBankingAccountStatementClient->shouldReceive('sendRequest')
+                                                   ->andReturnUsing(function(array $req) use($response, $payout, &$isValidInput) {
+                                                       $input = json_decode($req['content']);
+
+                                                       if (
+                                                           $input->entity_id != $payout->getId() ||
+                                                           $input->entity_type != 'payout' ||
+                                                           $input->merchant_id != $payout->getMerchantId() ||
+                                                           $input->bas_id == null ||
+                                                           $input->transaction_date == null
+                                                       )
+                                                       {
+                                                           $isValidInput = false;
+                                                       }
+
+                                                       return $response;
+                                                   })
+                                                   ->once();
+
+        $this->app->instance(BankingAccountStatement::PAYOUT_SERVICE_BANKING_ACCOUNT_STATEMENT,
+                             $payoutServiceBankingAccountStatementClient);
+
+        BankingAccountStatementProcessor::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $newBAS = $this->getDbEntity('banking_account_statement', ['utr' => '933815383814']);
+
+        $payout->reload();
+
+        $this->assertNull($payout->getTransactionId());
+        $this->assertNotNull($newBAS->getEntityId());
+        $this->assertNotNull($newBAS->getTransactionId());
+        $this->assertTrue($isValidInput);
     }
 }
