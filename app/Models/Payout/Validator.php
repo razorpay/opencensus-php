@@ -1586,6 +1586,15 @@ class Validator extends Base\Validator
                     'is_merchant_pan_empty'     => empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_PAN]),
                     'is_merchant_address_empty' => empty($input[Payout\Constants::REMITTER_DETAILS][PayoutConstants::MERCHANT_ADDRESS]),
                 ]);
+
+                throw new Exception\BadRequestValidationFailureException(
+                    "Remitter details is/are missing",
+                    Payout\Constants::REMITTER_DETAILS,
+                    [
+                        Payout\Constants::REMITTER_DETAILS => $input[Payout\Constants::REMITTER_DETAILS],
+                    ]
+                );
+
             }
         }
     }

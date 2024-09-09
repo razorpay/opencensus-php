@@ -355,6 +355,11 @@ return [
                         'source_type' => 'xpayroll',
                     ],
                 ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => '',
+                ],
                 'queue_if_low_balance' => true,
             ]
         ],

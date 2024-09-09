@@ -14534,6 +14534,11 @@ return [
                         'priority'    => 2,
                     ]
                 ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
+                ],
             ],
         ],
         'response' => [
@@ -14594,6 +14599,11 @@ return [
                         'priority'    => 1,
                     ]
                 ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
+                ]
             ],
         ],
         'response' => [
@@ -15315,6 +15325,11 @@ return [
                         'priority'    => 2,
                     ],
                 ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
+                ],
             ],
         ],
         'response' => [
@@ -15849,6 +15864,11 @@ return [
                         'source_type' => 'xpayroll',
                         'priority'    => 1,
                     ],
+                ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
                 ],
             ],
         ],
@@ -20213,6 +20233,53 @@ return [
         ],
     ],
 
+    'testRemitterDetailsInPayloadForXPayrollRemitterDetailsMissing'=>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ],
+                'remitter_details' => [
+                    'merchant_name' => '',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => '',
+                ]
+            ],
+        ],
+        'response' => ['content'     => [
+            'error' => [
+                'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                'description' => 'Remitter details is/are missing',
+            ],
+        ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCompositePayoutRemitterDetailsInPayloadForXPayroll'=>  [
         'request'  => [
             'method'  => 'POST',
@@ -20350,7 +20417,12 @@ return [
                         'source_type' => 'xpayroll',
                         'priority'    => 1,
                     ]
-                ]
+                ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
+                ],
             ],
         ],
         'response' => [
@@ -20398,7 +20470,12 @@ return [
                         'source_type' => 'xpayroll',
                         'priority'    => 1,
                     ]
-                ]
+                ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
+                ],
             ],
         ],
         'response' => [
@@ -20531,7 +20608,12 @@ return [
                         'source_type' => 'xpayroll',
                         'priority'    => 1,
                     ]
-                ]
+                ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
+                ],
             ],
         ],
         'response' => [

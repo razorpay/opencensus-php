@@ -27216,6 +27216,15 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('initiated', $fta->getStatus());
     }
 
+    public function testRemitterDetailsInPayloadForXPayrollRemitterDetailsMissing()
+    {
+        $this->ba->xpayrollAuth();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $this->startTest();
+    }
+
     public function testCompositePayoutRemitterDetailsInPayloadForXPayroll()
     {
         $this->ba->xpayrollAuth();

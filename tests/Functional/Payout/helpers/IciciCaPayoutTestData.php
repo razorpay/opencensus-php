@@ -1355,6 +1355,11 @@ return [
                         'priority'    => 1,
                     ]
                 ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => '',
+                ],
             ],
         ],
         'response' => [
@@ -1395,8 +1400,13 @@ return [
                         'source_id'   => '100000000000sa',
                         'source_type' => 'xpayroll',
                         'priority'    => 1,
-                    ]
+                    ],
                 ],
+                'remitter_details' => [
+                    'merchant_name' => 'merchantName',
+                    'merchant_pan' => 'merchantPAN',
+                    'merchant_address' => 'merchantAddress',
+                ]
             ],
         ],
         'response' => [
