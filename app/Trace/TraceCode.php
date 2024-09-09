@@ -10708,6 +10708,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OPGSP_IMPORT_INVOICE_UPLOAD_INPUT                 = 'OPGSP_IMPORT_INVOICE_UPLOAD_INPUT';
     const OPGSP_IMPORT_ZIP_INVOICE_UPLOAD_INPUT             = 'OPGSP_IMPORT_ZIP_INVOICE_UPLOAD_INPUT';
     const OPGSP_IMPORT_EMPTY_SETTLEMENTS                    = 'OPGSP_IMPORT_EMPTY_SETTLEMENTS';
+    const OPGSP_REVERSAL_REFUND_COUNT                       =  'OPGSP_REVERSAL_REFUND_COUNT';
 
     const DCC_PAYMENT_E_INVOICE_MESSAGE_DISPATCHED          = 'DCC_PAYMENT_E_INVOICE_MESSAGE_DISPATCHED';
     const DCC_PAYMENT_E_INVOICE_MESSAGE_DISPATCH_FAILED     = 'DCC_PAYMENT_E_INVOICE_MESSAGE_DISPATCH_FAILED';
@@ -11920,7 +11921,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STOREFRONT_CARD_PAYMENT_VIA_REARCH                    = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH';
 
     const STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR       = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR';
-
+    
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

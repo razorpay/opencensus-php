@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement\Processor\OPGSPImportICICI;
 
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Country;
 use RZP\Constants\Disputes;
 use RZP\Constants\Environment;
@@ -17,6 +18,8 @@ use RZP\Models\Base;
 use RZP\Models\Currency\Core;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Adjustment;
+use RZP\Models\Reversal;
+use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Merchant\HsCode\HsCodeList;
 use RZP\Models\Merchant\InternationalIntegration\Service as MIIService;
@@ -164,12 +167,32 @@ class Processor extends Base\Core
                         }
                     }
 
-                    [$paymentIds, $refundIds, $adjustmentIds] = $this->getPaymentAndRefundIdsFromTransactions($transactions);
+                    [$paymentIds, $refundIds, $adjustmentIds, $reversalIds] = $this->getPaymentAndRefundIdsFromTransactions($transactions);
 
                     $refunds = [];
                     $payments = [];
+                    $reversalIdToRefundIdMap = [];
+                    $reversalRefundIdPaymentIdMap = [];
                     $disputes = [];
                     $addressMap = array();
+
+                    // Reversals to Refund to Payment Map
+                    if(!empty($reversalIds))
+                    {
+                        $reversals = $this->repo->reversal->fetchReversalsByIdsAndEntityType($reversalIds, Constants::REQUEST_ACTION_REFUND);
+                        if(count($reversals) !== count($reversalIds))
+                        {
+                            $this->trace->info(TraceCode::OPGSP_REVERSAL_REFUND_COUNT,
+                                [
+                                    'countReversal' => count($reversals) ,
+                                    'countReversalIds' => count($reversalIds)
+                                ]);
+                        }
+                        list($reversalIdToRefundIdMap , $reversalRefundIds) = $this->getReversaltoRefunds($reversals);
+                        $reversalRefunds = $this->repo->refund->fetchRefundByRefundIds($reversalRefundIds);
+                        [$reversalRefundPaymentIds, $reversalRefundIdPaymentIdMap] = $this->getPaymentIdsForEntity($reversalRefunds);
+                        $paymentIds = array_merge($paymentIds,$reversalRefundPaymentIds);
+                    }
 
                     // Refunds to Payments map
 
@@ -200,7 +223,7 @@ class Processor extends Base\Core
 
                     if(!empty($paymentIds))
                     {
-                        $payments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds,Constants::PAYMENT_BATCH_SIZE);
+                        $payments = $this->repo->payment->fetchPaymentsGivenIdsFromTidb($paymentIds,Constants::PAYMENT_BATCH_SIZE, ConnectionType::DATA_WAREHOUSE_ADMIN);
 
                         $orderIds = (new OrderMeta\Core())->getOrderIdForPayment($payments);
 
@@ -244,7 +267,7 @@ class Processor extends Base\Core
 
                     $transactionalData = $this->getTransactionalFileData($transactions, $currency, $country,
                         $merchantAccount, $bankAccountCountry, $merchantDetail,$isGoodsMerchant, $miiNotes,
-                        $hsCodeDescription,$merchantId,$paymentIdMap,$refundIdPaymentIdMap, $addressMap, $adjustmentIdDisputeMap);
+                        $hsCodeDescription,$merchantId,$paymentIdMap,$refundIdPaymentIdMap, $addressMap, $adjustmentIdDisputeMap, $reversalIdToRefundIdMap, $reversalRefundIdPaymentIdMap);
 
                     $currentDate = Carbon::createFromTimestamp($settlement->getCreatedAt())->isoFormat('DD-MM-YYYY');
                     $fileName = 'Razorpay_settlement_'.$merchantId .'_' .$currentDate . '_'. $fileCount++;
@@ -297,7 +320,7 @@ class Processor extends Base\Core
 
     private function getTransactionalFileData($transactions, $currency, $country, $merchantAccount, $bankAccountCountry,
                                               $merchantDetail,$isGoodsMerchant, $miiNotes, $hsCodeDescription,$merchantId,
-                                              $paymentIdMap,$refundIdPaymentIdMap, $addressMap, $adjustmentIdDisputeMap)
+                                              $paymentIdMap,$refundIdPaymentIdMap, $addressMap, $adjustmentIdDisputeMap, $reversalIdToRefundIdMap, $reversalRefundIdPaymentIdMap)
     {
         $transactionalData = array();
 
@@ -374,6 +397,26 @@ class Processor extends Base\Core
                     {
                         $row->InvoiceNumber =  $disputePayment['notes']['invoice_number'];
                     }
+
+                    break;
+
+                case Type::REVERSAL:
+                    $netAmountValue = $this->getCreditAmount($transaction);
+                    $row->RequestedAction = Constants::REQUEST_ACTION_CHARGEBACK_REVERSAL;
+                    $reversalRefundId = $reversalIdToRefundIdMap[$transaction->getEntityId()];
+                    $reversalPaymentId = $reversalRefundIdPaymentIdMap[$reversalRefundId];
+                    $paymentAgainstReversal = $paymentIdMap[$reversalPaymentId];
+                    $row->OPGSPTransactionRefNo = $paymentAgainstReversal['id'];
+                    $address = $addressMap[$paymentAgainstReversal['id']];
+                    [$name,$consolidatedAddress] = $this->getBuyerAddressAndName($address);
+                    $row->BuyerName = $name;
+                    $row->BuyerAddress = $consolidatedAddress;
+                    $row->Mode = $paymentAgainstReversal['method'];
+                    if(!empty($paymentAgainstReversal['notes']))
+                    {
+                        $row->InvoiceNumber =  $paymentAgainstReversal['notes']['invoice_number'];
+                    }
+                    $row->AirwayBill = $isGoodsMerchant? $row->InvoiceNumber : 'NA';
 
                     break;
 
@@ -578,6 +621,7 @@ class Processor extends Base\Core
     {
         $paymentIds = [];
         $refundIds = [];
+        $reversalIds = [];
         $adjustmentIds = [];
 
         foreach ($data as $transaction)
@@ -595,11 +639,15 @@ class Processor extends Base\Core
                 case Type::ADJUSTMENT:
                     $adjustmentIds[] = $transaction->getEntityId();
                     break;
+
+                case Type::REVERSAL:
+                    $reversalIds[] = $transaction->getEntityId();
+                    break;
             }
 
         }
 
-        return [$paymentIds, $refundIds, $adjustmentIds];
+        return [$paymentIds, $refundIds, $adjustmentIds, $reversalIds];
     }
 
     protected function getPaymentIdsForEntity($data)
@@ -666,6 +714,21 @@ class Processor extends Base\Core
 
         return [$idMap, $disputeIds] ;
     }
+
+    protected function getReversaltoRefunds($data)
+    {
+        $idMap = array();
+        $refundIds = [];
+
+        foreach ($data as $datum)
+        {
+                $idMap[$datum[REVERSAl\Entity::ID]] = $datum[REVERSAl\Entity::ENTITY_ID];
+                array_push($refundIds,$datum[REVERSAl\Entity::ENTITY_ID]);
+        }
+
+        return [$idMap, $refundIds];
+    }
+
 
     protected  function getBuyerAddressAndName($address)
     {
@@ -788,7 +851,7 @@ class Processor extends Base\Core
                         ->getBySettlementIdAndTypesWithOffset($settlement->getId(), [Type::PAYMENT],
                             $offset, Constants::INVOICE_BATCH_SIZE);
 
-                    [$paymentIds, $refundIds, $adjustmentIds] = $this->getPaymentAndRefundIdsFromTransactions($transactions);
+                    [$paymentIds, $refundIds, $adjustmentIds, $reversalIds] = $this->getPaymentAndRefundIdsFromTransactions($transactions);
 
                     $paymentDocuments = (new InvoiceService())->findByPaymentIds($paymentIds, $merchantId);
 

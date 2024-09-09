@@ -36,6 +36,15 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num|size:14',
     ];
 
+    public function fetchReversalsByIdsAndEntityType(array $reversalIds , string $type)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->whereIn(Reversal\Entity::ID, $reversalIds)
+            ->where(Entity::ENTITY_TYPE, '=', $type)
+            ->get();
+    }
+
+
     /**
      * fetches reversals for a LA transfer by joining refunds
      *
