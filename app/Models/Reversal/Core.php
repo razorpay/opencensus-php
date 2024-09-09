@@ -406,6 +406,11 @@ class Core extends Base\Core
 
                         if ($reversal !== null && $sourcePayment !== null && $sourcePayment->isExternal())
                         {
+                            // payment entity needs to be reloaded for external payments since it has been updated by scrooge during refund creation
+                            $amountTransferred = $sourcePayment->getAmountTransferred();
+                            $sourcePayment = $sourcePayment->reload();
+                            $sourcePayment->setAmountTransferred($amountTransferred);
+
                             $this->repo->saveOrFail($sourcePayment);
                         }
 
