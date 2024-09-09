@@ -7,6 +7,7 @@ use RZP\Models\Address\Repository;
 use RZP\Models\Address\Type;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Modules;
+use Carbon\Carbon;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
@@ -1628,7 +1629,7 @@ class SubscriptionPaymentTest extends TestCase
     {
         $subscriptionMock = $this->getMockBuilder(Mock\External::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchSubscriptionInfo', 'paymentProcess'])
+            ->setMethods(['fetchSubscriptionInfo', 'paymentProcess', 'fetchSubscriptionInfoUpiAutoPay'])
             ->getMock();
 
         $subscriptionMock->method('fetchSubscriptionInfo')
@@ -1643,6 +1644,15 @@ class SubscriptionPaymentTest extends TestCase
                 function ()
                 {
                     return null;
+                }));
+
+        $subscriptionMock->method('fetchSubscriptionInfoUpiAutoPay')
+            ->will($this->returnCallback(
+                function ()
+                {
+                    return [
+                        'end_time' => $this->subscription['end_at'] + 604800
+                    ];
                 }));
 
         $moduleManagerMock = $this->getMockBuilder(Modules\Manager::class)

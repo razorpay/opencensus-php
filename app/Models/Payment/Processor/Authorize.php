@@ -10421,6 +10421,31 @@ trait Authorize
             $this->upiMandate['start_time'] = Carbon::now()->getTimestamp();
         }
 
+        if ((isset($payment) === true) and ($payment->getSubscriptionId() !== null) and
+            ($this->upiMandate !== null))
+        {
+            try
+            {
+                $subscriptionInput = [
+                    Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
+                ];
+
+                $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoUpiAutoPay($subscriptionInput, $payment->merchant);
+
+                if ((isset($subscriptionData) === true) and ($subscriptionData['end_time'] !== null))
+                {
+                    $this->upiMandate['end_time'] = $subscriptionData['end_time'];
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(TraceCode::UPI_AUTOPAY_SUBSCRIPTIONS_FETCH_FAILURE,
+                    [
+                    'exception'=> $ex->getMessage()
+                ]);
+            }
+        }
+
         $this->repo->saveOrFail($this->upiMandate);
 
         return $this->upiMandate;
