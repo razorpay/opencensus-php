@@ -569,7 +569,8 @@ class Repository extends Base\Repository
         }
 
         return $query->where(Entity::PRICING_PLAN_ID, '=', $planId)
-                     ->count();
+                    ->limit(2)
+                    ->count();
     }
 
     public function isMerchantIdRequiredForFetch()
@@ -1518,7 +1519,7 @@ class Repository extends Base\Repository
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER))
                     ->orgId($orgId)
                     ->findOrFailPublic($id);
     }
@@ -1531,7 +1532,7 @@ class Repository extends Base\Repository
         // Order by created_at asc so that the partner merchant makes it to
         // the top of the list followed by submerchants
         //
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER))
                     ->orgId($orgId)
                     ->where(Entity::EMAIL, $email)
                     ->orderBy(Entity::CREATED_AT, 'asc')
@@ -2364,9 +2365,13 @@ class Repository extends Base\Repository
      * @throws BaseException
      */
     public function fetchLinkedAccountIdsForParentMerchant(
-        string $parentMerchantId, bool $checkForActivated = false
-    ): array
+        string $parentMerchantId, bool $checkForActivated = false): array
     {
+        $this->trace->info(TraceCode::FETCH_ACCOUNT_IDS_FOR_PARENT_MERCHANT_INPUT, [
+            "route_or_job_name" => $this->asvRouter->getRouteOrJobName(),
+            "parentMerchantId" => $parentMerchantId,
+            "checkForActivated" => $checkForActivated,
+        ]);
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
             if ($this->repo->isTransactionActive())
