@@ -683,6 +683,8 @@ class Service extends Base\Service
 
     public function processPendingPaymentTransfersForKeyMerchants(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+        
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
         $limit = (int) ($input['limit'] ?? 300);
@@ -2195,9 +2197,15 @@ class Service extends Base\Service
     {
         $merchantCategory = $input['category'] ?? null;
 
-        $startOffsetMins = $input['start_offset_mins'] ?? null;
+        $startOffsetMins = $input['range_mins'] ?? null;
 
-        $endOffsetMins = $input['end_offset_mins'] ?? null;
+        $endOffsetMins = $input['threshold_mins'] ?? null;
+
+        $threshold = (int) $input['threshold_count'] ?? null;
+
+        $excludeMerchantIds = $input['exclude_merchant_ids'] ?? [];
+
+        $priority = $input['priority'] ?? 'P0';   // P0/P1
 
         $alertData = [];
 
@@ -2222,7 +2230,8 @@ class Service extends Base\Service
 
             $alertData['category'] = $merchantCategory;
 
-            [$orderTransfersCount, $paymentTransfersCount] = $this->fetchPendingTransfersCountForMerchants($categoryCodes, null, $startOffsetMins, $endOffsetMins);
+            [$orderTransfersCount, $paymentTransfersCount] = $this->fetchPendingTransfersCountForMerchants(
+                $categoryCodes, null, $excludeMerchantIds, $startOffsetMins, $endOffsetMins);
         }
 
         $merchantIds = $input['merchant_ids'] ?? [];
@@ -2231,16 +2240,19 @@ class Service extends Base\Service
         {
             $alertData['merchant_ids'] = $merchantIds;
 
-            [$orderTransfersCount, $paymentTransfersCount] = $this->fetchPendingTransfersCountForMerchants(null, $merchantIds, $startOffsetMins, $endOffsetMins);
+            [$orderTransfersCount, $paymentTransfersCount] = $this->fetchPendingTransfersCountForMerchants(
+                null, $merchantIds, $excludeMerchantIds, $startOffsetMins, $endOffsetMins);
         }
 
-        if ($orderTransfersCount > 0 || $paymentTransfersCount > 0)
+        if ($orderTransfersCount > $threshold || $paymentTransfersCount > $threshold)
         {
             $alertData['pending_order_transfers'] = $orderTransfersCount;
 
             $alertData['pending_payment_transfers'] = $paymentTransfersCount;
 
-            $this->pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins);
+            $alertData['severity'] = $priority === 'P0' ? 'critical' : 'warning';
+
+            $this->pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority);
         }
 
         $this->trace->info(
@@ -2258,30 +2270,32 @@ class Service extends Base\Service
         ];
     }
 
-    public function fetchPendingTransfersCountForMerchants($categoryCodes, $merchantIds, $startOffsetMins, $endOffsetMins)
+    public function fetchPendingTransfersCountForMerchants(
+        $categoryCodes, $merchantIds, $excludeMerchantIds, $startOffsetMins, $endOffsetMins)
     {
         $order_transfers_count = $this->repo->transfer->fetchPendingOrderTransfersCount(
-            $categoryCodes, $merchantIds, $startOffsetMins, $endOffsetMins);
+            $categoryCodes, $merchantIds, $excludeMerchantIds, $startOffsetMins, $endOffsetMins);
 
         $payment_transfers_count = $this->repo->transfer->fetchPendingPaymentTransfersCount(
-            $categoryCodes, $merchantIds, $startOffsetMins, $endOffsetMins);
+            $categoryCodes, $merchantIds, $excludeMerchantIds, $startOffsetMins, $endOffsetMins);
 
         return [$order_transfers_count, $payment_transfers_count];
     }
 
-    protected function pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins)
+    protected function pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority)
     {
         $channel = $this->app->config->get('slack.channels.payments-route-alerts');
 
-        $headline = sprintf('<!subteam^S01JSULB27N> P0 Alert: Pending transfers since %s minutes in last %s minutes',
-            $endOffsetMins, $startOffsetMins);
+        $headline = sprintf(
+            '<!subteam^S01JSULB27N> %s Alert: Pending transfers since %s minutes in last %s minutes',
+            $priority, $endOffsetMins, $startOffsetMins);
 
         if ($this->app->config->get('slack.is_slack_enabled') === true)
         {
             $settings = [];
             $settings['color'] = 'bad';
             $settings['icon'] = ':rotating_light:';
-            $settings['pretext'] = 'P0: Pending transfers alert';
+            $settings['pretext'] = sprintf('%s: Pending transfers alert', $priority);
             $settings['link_names'] = 1;
             $settings['channel'] = $channel;
 

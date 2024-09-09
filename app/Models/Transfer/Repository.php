@@ -490,7 +490,9 @@ class Repository extends Base\Repository
      * @param $categoryCodes
      * @return int
      */
-    public function fetchPendingOrderTransfersCount($categoryCodes = null, $merchantIds = null, $startOffsetMins = 30 * 24 * 60, $endOffsetMins = 24 * 60): int
+    public function fetchPendingOrderTransfersCount(
+        $categoryCodes = null, $merchantIds = null, $excludeMerchantIds = null,
+        $startOffsetMins = 30 * 24 * 60, $endOffsetMins = 24 * 60): int
     {
         $orderId            = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus      = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
@@ -532,6 +534,12 @@ class Repository extends Base\Repository
             $query = $query->whereIn($transferMerchantId, $merchantIds);
         }
 
+        if (empty($excludeMerchantIds) === false)
+        {
+            $query = $query->whereNotIn($transferMerchantId, $excludeMerchantIds);
+        }
+
+
         $result =  $query->get();
 
         return $result[0]['count'];
@@ -551,7 +559,9 @@ class Repository extends Base\Repository
      * @param $categoryCodes
      * @return int
      */
-    public function fetchPendingPaymentTransfersCount($categoryCodes = null, $merchantIds = null, $startOffsetMins = 30 * 24 * 60, $endOffsetMins = 24 * 60): int
+    public function fetchPendingPaymentTransfersCount(
+        $categoryCodes = null, $merchantIds = null, $excludeMerchantIds = null,
+        $startOffsetMins = 30 * 24 * 60, $endOffsetMins = 24 * 60): int
     {
         $merchantEntityId   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantCategory   = $this->repo->merchant->dbColumn(Merchant\Entity::CATEGORY);
@@ -588,6 +598,11 @@ class Repository extends Base\Repository
         if (empty($merchantIds) === false)
         {
             $query = $query->whereIn($transferMerchantId, $merchantIds);
+        }
+
+        if (empty($excludeMerchantIds) === false)
+        {
+            $query = $query->whereNotIn($transferMerchantId, $excludeMerchantIds);
         }
 
         $result = $query->get();
