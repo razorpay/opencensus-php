@@ -17793,6 +17793,7 @@ class Route
             'methods_update_merchants_internal',
             'role_list_admins_internal',
             'payment_fetch_multiple_internal',
+            'qr_code_merchant_create',
         ],
 
         'pos_app' => [
