@@ -3835,6 +3835,36 @@ class MerchantController extends Controller
         }
     }
 
+    public function get1ccPartialCodConfig(): array
+    {
+        return (new Merchant\OneClickCheckout\Config\Service())->get1ccPartialCodConfig();
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function getInternal1ccPartialCodConfig($merchantId): array
+    {
+        try
+        {
+            return (new Merchant\OneClickCheckout\Config\Service())->getInternal1ccPartialCodConfig($merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            if (($ex instanceof Exception\BadRequestException) === true)
+            {
+                $error = $ex->getError();
+                $errorCode = $error->getInternalErrorCode();
+                if ($errorCode == ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID)
+                {
+                    $data = ["error_class" => $error->getPublicErrorCode(), "internal_error_code" => $errorCode];
+                    return ApiResponse::json($data, 500);
+                }
+            }
+            throw $ex;
+        }
+    }
+
     public function getInternal1ccConfig($merchantId)
     {
         try

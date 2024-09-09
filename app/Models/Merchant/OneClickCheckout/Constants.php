@@ -44,6 +44,9 @@ class Constants
     const COD_ENGINE                        = 'cod_engine';
     const COD_ENGINE_TYPE                   = 'cod_engine_type';
     const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
+    // ONE_CC_PARTIAL_PAYMENTS_COD allows a merchant to charge an upfront prepaid amount to a customer
+    // and the remaining as cod to reduce the RTOs.
+    const ONE_CC_PARTIAL_PAYMENTS_COD     = 'one_cc_partial_payments_cod';
 
     // Coupon-Engine OneCC Config controls whether the merchant wants to use
     // coupon-engine's features (or) not.
@@ -255,6 +258,7 @@ class Constants
         self::SHIPPING_ENGINE,
         self::ONE_CC_SHIPPING_USING_CHECKOUT,
         self::ONE_CC_HIDE_COD_WHEN_DISABLED,
+        self::ONE_CC_PARTIAL_PAYMENTS_COD,
     ];
 
     /**
@@ -306,6 +310,7 @@ class Constants
        self::SHIPPING_ENGINE,
        self::ONE_CC_COUPON_ENGINE,
        self::ONE_CC_HIDE_COD_WHEN_DISABLED,
+       self::ONE_CC_PARTIAL_PAYMENTS_COD,
     ];
 
     public const COUPON_CONFIGS = [
@@ -318,6 +323,7 @@ class Constants
         self::ONE_CC_PREPAY_COD_CONVERSION,
         self::COD_INTELLIGENCE,
         self::MANUAL_CONTROL_COD_ORDER,
+        self::ONE_CC_PARTIAL_PAYMENTS_COD,
     ];
 
     const ALL_RISK_CATEGORIES = [
@@ -440,6 +446,13 @@ class Constants
     const HIGH = 'high';
     const MEDIUM = 'medium';
     const LOW = 'low';
+    const PREPAID_PAYMENT_AMOUNT = 'prepaid_payment_amount';
+
+    // Partial COD constants
+    const RULES = 'rules';
+    const CUSTOMER_RISK_CATEGORY = 'customer_risk_category';
+    const MIN_ORDER_AMOUNT = 'min_order_amount';
+    const MAX_ORDER_AMOUNT = 'max_order_amount';
 
     const TYPE_COD_FEE_COUPON = 'cod_fee';
 

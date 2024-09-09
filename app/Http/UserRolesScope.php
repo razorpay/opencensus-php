@@ -1329,6 +1329,7 @@ class UserRolesScope
             '1cc_configs_update'                                  => [Role::OWNER, Role::ADMIN],
             '1cc_configs_get'                                     => Role::ALL_ROLES,
             '1cc_prepay_cod_configs_get'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::ADMIN_READONLY],
+            '1cc_partial_cod_configs_get'                         => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::ADMIN_READONLY],
             '1cc_disable_magic'                                   => [Role::OWNER, Role::ADMIN],
             'update_merchant_platform'                            => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_list'                  => [Role::OWNER, Role::ADMIN, Role::ADMIN_READONLY],

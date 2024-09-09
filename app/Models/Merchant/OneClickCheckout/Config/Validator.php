@@ -38,6 +38,7 @@ class Validator extends Base\Validator
         "one_cc_capture_gstin"           => 'sometimes|boolean',
         "one_cc_capture_order_instructions"  => 'sometimes|boolean',
         'one_cc_prepay_cod_conversion'       => 'sometimes|array',
+        'one_cc_partial_payments_cod'  => 'sometimes|array',
         "shipping_engine"                => 'sometimes|boolean',
         "shipping_source"                => 'sometimes|string|in:shiprocket,merchant,null',
         "terra_wallet"                   => 'sometimes|boolean',
@@ -164,6 +165,19 @@ class Validator extends Base\Validator
         Constants::CONFIGS.'.'.Constants::COMMUNICATION.'.'.Constants::METHODS          => 'required_with:configs.communication|array|in:whatsapp,checkout'
     ];
 
+    protected static $partialCodConversionRules = [
+        Constants::ENABLED => 'required|boolean',
+        Constants::CONFIGS => 'required_if:enabled,true|array|custom:partial_cod_configs',
+        Constants::CONFIGS.'.'.Constants::TYPE => 'required_with:configs|string|in:basic,advanced',
+        Constants::CONFIGS.'.'.Constants::PREPAID_PAYMENT_AMOUNT => 'required_with:configs|array',
+        Constants::CONFIGS.'.'.Constants::PREPAID_PAYMENT_AMOUNT.'.*.'.Constants::TYPE => 'required_with:configs|string|in:flat,percentage',
+        Constants::CONFIGS.'.'.Constants::PREPAID_PAYMENT_AMOUNT.'.*.'.Constants::VALUE => 'required_with:configs|integer',
+        Constants::CONFIGS.'.'.Constants::PREPAID_PAYMENT_AMOUNT.'.*.'.Constants::RULES => 'required_with:configs|required|array',
+        Constants::CONFIGS.'.'.Constants::PREPAID_PAYMENT_AMOUNT.'.*.'.Constants::RULES. '.' . Constants::MIN_ORDER_AMOUNT => 'required_with:configs|integer',
+        Constants::CONFIGS.'.'.Constants::PREPAID_PAYMENT_AMOUNT.'.*.'.Constants::RULES. '.' . Constants::MAX_ORDER_AMOUNT => 'sometimes|integer',
+        Constants::CONFIGS.'.'.Constants::PREPAID_PAYMENT_AMOUNT.'.*.'.Constants::RULES. '.' . Constants::CUSTOMER_RISK_CATEGORY => 'required_with:configs|array|in:high,medium,low',
+    ];
+
     // validator rules for SOPC shopify APP config
     protected static $sopcRules = [
         Constants::COD_ENGINE_TYPE => 'required_if:cod_engine,true|string|in:slab_eligibility,slab_charges',
@@ -178,6 +192,99 @@ class Validator extends Base\Validator
         Constants::CONFIGS.'.'.Constants::COD_ENGINE_TYPE => 'required_if:enabled,true|string|in:slab_eligibility,slab_charges',
         Constants::CONFIGS.'.'.Constants::COD_INTELLIGENCE => 'sometimes|boolean'
     ];
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
+    public function validatePartialCodConfigs($attribute ,array $input)
+    {
+        $prepaidAmount = $input[Constants::PREPAID_PAYMENT_AMOUNT];
+
+        foreach ($prepaidAmount as $config)
+        {
+            if (isset($config[Constants::RULES][Constants::MAX_ORDER_AMOUNT]) &&
+                $config[Constants::RULES][Constants::MAX_ORDER_AMOUNT] < $config[Constants::RULES][Constants::MIN_ORDER_AMOUNT]) {
+                throw new BadRequestValidationFailureException(
+                    'Max order amount should be greater than min order amount',
+                    Constants::PREPAID_PAYMENT_AMOUNT . '.' . Constants::RULES . '.' . Constants::MAX_ORDER_AMOUNT,
+                    $prepaidAmount,
+                );
+            }
+
+            switch ($config[Constants::TYPE])
+            {
+                case Constants::PERCENTAGE:
+                    if ($config[Constants::VALUE] <= 0 ||
+                        $config[Constants::VALUE] > 50)
+                    {
+                        throw new BadRequestValidationFailureException(
+                            'Percentage value should be between 0 and 50',
+                            Constants::PREPAID_PAYMENT_AMOUNT . '.' . Constants::VALUE,
+                            $prepaidAmount,
+                        );
+                    }
+                    break;
+                case Constants::FLAT:
+                    if ($config[Constants::VALUE] <= 0) {
+                        throw new BadRequestValidationFailureException(
+                            'Flat value cannot be less than 0 or more than half of the max order amount',
+                            Constants::PREPAID_PAYMENT_AMOUNT . '.' . Constants::VALUE,
+                            $prepaidAmount,
+                        );
+                    }
+                    if (isset($config[Constants::RULES][Constants::MAX_ORDER_AMOUNT]) &&
+                            $config[Constants::VALUE] > $config[Constants::RULES][Constants::MAX_ORDER_AMOUNT] / 2)
+                    {
+                        throw new BadRequestValidationFailureException(
+                            'Flat value cannot be more than half of the max order amount',
+                            Constants::PREPAID_PAYMENT_AMOUNT . '.' . Constants::VALUE,
+                            $prepaidAmount,
+                        );
+                    }
+                    break;
+            }
+        }
+
+        $riskLevelAmountRanges = [];
+        foreach ($prepaidAmount as $config)
+        {
+            foreach ($config[Constants::RULES][Constants::CUSTOMER_RISK_CATEGORY] as $risk)
+            {
+                $riskLevelAmountRanges[$risk][] = [
+                    $config[Constants::RULES][Constants::MIN_ORDER_AMOUNT],
+                    $config[Constants::RULES][Constants::MAX_ORDER_AMOUNT] ?? PHP_INT_MAX,
+                ];
+            }
+        }
+
+        foreach ($riskLevelAmountRanges as $customerRiskCategory => $amountRanges)
+        {
+            {
+                if ($this->areAnyRangesCoinciding($amountRanges))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'One or more order amount ranges are coinciding for a given customer risk category' . ' - ' . $customerRiskCategory,
+                        Constants::MIN_ORDER_AMOUNT . ' or ' . Constants::MAX_ORDER_AMOUNT,
+                        $prepaidAmount,
+                    );
+                }
+            }
+        }
+    }
+
+    private function areAnyRangesCoinciding($ranges): bool {
+        usort($ranges, function($a, $b) {
+            return $a[0] <=> $b[0];
+        });
+
+        for ($i = 0; $i < count($ranges) - 1; $i++) {
+            if ($ranges[$i][1] >= $ranges[$i + 1][0]) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * @throws BadRequestValidationFailureException

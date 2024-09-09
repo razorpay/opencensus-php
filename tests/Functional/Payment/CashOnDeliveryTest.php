@@ -613,4 +613,162 @@ class CashOnDeliveryTest extends TestCase
 
         $this->assertEquals('captured', $payment['status']);
     }
+
+    public function testInitiatePaymentWithCODFeeForPartialPaymentOrder()
+    {
+        $this->order = $this->fixtures->create('order', [
+            'amount' => '30000',
+            'first_payment_min_amount' => '20000',
+            'partial_payment' => true,
+        ]);
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $this->order->getId(),
+                'value'    => ['line_items_total' => $this->order->getAmount(), 'cod_fee'=>'20000'],
+                'type'     => 'one_click_checkout',
+            ]);
+
+        $request =  [
+            'method'  => 'POST',
+            'content' => $this->getDefaultCoDPaymentArray([
+                'order_id' => $this->order->getPublicId(),
+                'capture'  => 1,
+            ]),
+            'url'     => '/payments',
+        ];
+
+        $paymentCreateResponse = $this->makeRequestParent($request)->json();
+
+        $paymentId = $paymentCreateResponse['razorpay_payment_id'];
+
+        $payment = $this->getLastPayment(true);
+
+        $orderId = $paymentCreateResponse['razorpay_order_id'];
+
+        $order = $this->getLastEntity('order', true);
+
+        $expectedPaymentData = [
+            'id'                     => $paymentId,
+            'status'                 => 'pending',
+            'verify_at'              => null,
+            'amount_authorized'      => 0,
+            'settled_by'             => 'delivery_partner',
+            'merchant_id'            => '10000000000000',
+            'amount'                 => 50000,
+            'currency'               => 'INR',
+            'base_amount'            => 50000,
+            'method'                 => 'cod',
+            'order_id'               => $orderId,
+            'description'            => 'random description',
+            'email'                  => 'a@b.com',
+            'contact'                => '+919918899029',
+            'notes'                  => [
+                'merchant_order_id' => 'random order id',
+            ],
+            'fee'                    => null,
+            'mdr'                    => null,
+            'error_code'             => null,
+            'terminal_id'            => null,
+            'gateway'                => null,
+            'authentication_gateway' => null,
+            'fee_bearer'             => 'platform',
+            //not setting to t+45 here because refund will anyway fail for cod payment. instead payment fail scheduler
+            // flow will be modified to fail the payment after t+45 if its still in pending status
+            'refund_at'              => null,
+            'captured'               => false,
+        ];
+
+        $expectedOrderData = [
+            'id'          => $orderId,
+            'merchant_id' => '10000000000000',
+            'amount'      => 30000,
+            'amount_paid' => 0,
+            'attempts'    => 1,
+            'status'      => 'placed',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPaymentData, $payment);
+
+        $this->assertArraySelectiveEquals($expectedOrderData, $order);
+    }
+
+    public function testInitiatePaymentWithoutCODFeeForPartialPaymentOrder()
+    {
+        $this->order = $this->fixtures->create('order', [
+            'amount' => '50000',
+            'first_payment_min_amount' => '20000',
+            'partial_payment' => true,
+        ]);
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $this->order->getId(),
+                'value'    => ['line_items_total' => $this->order->getAmount()],
+                'type'     => 'one_click_checkout',
+            ]);
+
+        $request =  [
+            'method'  => 'POST',
+            'content' => $this->getDefaultCoDPaymentArray([
+                'order_id' => $this->order->getPublicId(),
+                'capture'  => 1,
+            ]),
+            'url'     => '/payments',
+        ];
+
+        $paymentCreateResponse = $this->makeRequestParent($request)->json();
+
+        $paymentId = $paymentCreateResponse['razorpay_payment_id'];
+
+        $payment = $this->getLastPayment(true);
+
+        $orderId = $paymentCreateResponse['razorpay_order_id'];
+
+        $order = $this->getLastEntity('order', true);
+
+        $expectedPaymentData = [
+            'id'                     => $paymentId,
+            'status'                 => 'pending',
+            'verify_at'              => null,
+            'amount_authorized'      => 0,
+            'settled_by'             => 'delivery_partner',
+            'merchant_id'            => '10000000000000',
+            'amount'                 => 50000,
+            'currency'               => 'INR',
+            'base_amount'            => 50000,
+            'method'                 => 'cod',
+            'order_id'               => $orderId,
+            'description'            => 'random description',
+            'email'                  => 'a@b.com',
+            'contact'                => '+919918899029',
+            'notes'                  => [
+                'merchant_order_id' => 'random order id',
+            ],
+            'fee'                    => null,
+            'mdr'                    => null,
+            'error_code'             => null,
+            'terminal_id'            => null,
+            'gateway'                => null,
+            'authentication_gateway' => null,
+            'fee_bearer'             => 'platform',
+            //not setting to t+45 here because refund will anyway fail for cod payment. instead payment fail scheduler
+            // flow will be modified to fail the payment after t+45 if its still in pending status
+            'refund_at'              => null,
+            'captured'               => false,
+        ];
+
+        $expectedOrderData = [
+            'id'          => $orderId,
+            'merchant_id' => '10000000000000',
+            'amount'      => 50000,
+            'amount_paid' => 0,
+            'attempts'    => 1,
+            'status'      => 'placed',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPaymentData, $payment);
+
+        $this->assertArraySelectiveEquals($expectedOrderData, $order);
+    }
 }

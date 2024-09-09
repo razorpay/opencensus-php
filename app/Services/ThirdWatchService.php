@@ -172,10 +172,16 @@ class ThirdWatchService
             $rtoPredictionServiceRiskTier = "low";
             $rtoReasons = array();
             $rtoCategory = "";
+            $prepaidPayment = null;
 
             try
             {
                 $response = $this->app['rto_prediction_provider_service']->evaluate($input);
+
+                if (isset($response['prepaid_payment']) === true)
+                {
+                    $prepaidPayment = $response['prepaid_payment'];
+                }
 
                 if (strcmp($response['result']['action'], "allow") == 0)
                 {
@@ -258,7 +264,15 @@ class ThirdWatchService
 
             $this->updateCODIntelligenceDataFor1ccOrder($orderId, $codIntelligenceData);
 
-            return ['cod' => $codEligible ];
+            $codEligibilityResponse = [
+                'cod' => $codEligible
+            ];
+
+            if (isset($prepaidPayment)) {
+                $codEligibilityResponse['prepaid_payment'] = $prepaidPayment;
+            }
+
+            return $codEligibilityResponse;
         }
         finally
         {

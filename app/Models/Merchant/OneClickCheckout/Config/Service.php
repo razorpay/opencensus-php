@@ -394,6 +394,8 @@ class Service extends Base\Service
 
         $this->updatePrepayCodConfigs($input);
 
+        $this->updatePartialCodConfigs($input);
+
         $this->updateShippingInfoConfig($shippingProvider);
 
         if (isset($input[Constants::WALLET_PAYMENT]))
@@ -549,11 +551,22 @@ class Service extends Base\Service
         // -- code end --
     }
 
+    /**
+     * @throws BadRequestException
+     */
     protected function updatePrepayCodConfigs($input)
     {
         if (isset($input[Type::ONE_CC_PREPAY_COD_CONVERSION]) === true)
         {
             $prepayCod = $input[Type::ONE_CC_PREPAY_COD_CONVERSION];
+            // Prepay COD and Partial COD are mutually exclusive features. If one is enabled, the other should be disabled.
+            if ($prepayCod[Constants::ENABLED] === true) {
+                $partialCod = $this->get1ccPartialCodConfig();
+                if ($partialCod[Constants::ENABLED]) {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Prepay COD and Partial COD cannot be enabled together. Partial COD is already enabled.');
+                }
+            }
+
             (new Validator())->validateInput('prepayCodConversion', $prepayCod);
             if ($prepayCod[Constants::ENABLED] === true)
             {
@@ -587,6 +600,47 @@ class Service extends Base\Service
                 true
             );
         }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    protected function updatePartialCodConfigs($input)
+    {
+
+        if (isset($input[Type::ONE_CC_PARTIAL_PAYMENTS_COD]) === false)
+        {
+            return;
+        }
+
+        $partialCod = $input[Type::ONE_CC_PARTIAL_PAYMENTS_COD];
+        // Prepay COD and Partial COD are mutually exclusive features. If one is enabled, the other should be disabled.
+        if ($partialCod[Constants::ENABLED] === true) {
+            $prepayCod = $this->get1ccPrepayCodConfig();
+            if ($prepayCod[Constants::ENABLED]) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Prepay COD and Partial COD cannot be enabled together. Prepay COD is already enabled.');
+            }
+        }
+
+        (new Validator())->validateInput('partialCodConversion', $partialCod);
+
+        $this->mutex->acquireAndRelease(
+            self::MUTEX_KEY . ':' . $this->merchant->getId() . ':' . Type::ONE_CC_PARTIAL_PAYMENTS_COD,
+            function () use ($partialCod)
+            {
+                (new Core())->associateMerchant1ccCODConfig(
+                    Type::ONE_CC_PARTIAL_PAYMENTS_COD,
+                    $partialCod[Constants::ENABLED],
+                    $partialCod[Constants::CONFIGS] ?? []);
+            },
+            self::MUTEX_LOCK_TTL_SEC,
+            ErrorCode::BAD_REQUEST_ANOTHER_1CC_CONFIG_OPERATION_IN_PROGRESS,
+            self::MAX_RETRY_COUNT,
+            self::MAX_RETRY_DELAY_MILLIS - 500,
+            self::MAX_RETRY_DELAY_MILLIS,
+            true
+        );
+
     }
 
     protected function update1ccIntelligenceConfig($input)
@@ -671,6 +725,26 @@ class Service extends Base\Service
             return [
                 Constants::ENABLED => $prepayConfigsFlag,
                 Constants::CONFIGS => $prepayConfigsJson,
+            ];
+        }
+
+        return [
+            Constants::ENABLED => false,
+            Constants::CONFIGS => null,
+        ];
+    }
+
+    public function get1ccPartialCodConfig(): array
+    {
+        $configs = $this->merchant->get1ccConfig(Type::ONE_CC_PARTIAL_PAYMENTS_COD);
+
+        if ($configs != null && $configs->getValueJson() != null)
+        {
+            $configsJson = $configs->getValueJson();
+            $configsFlag = $configs->getValue() == '1';
+            return [
+                Constants::ENABLED => $configsFlag,
+                Constants::CONFIGS => $configsJson,
             ];
         }
 
@@ -893,6 +967,8 @@ class Service extends Base\Service
             "shipping_source" => $shippingSource
         ];
 
+        $result[Type::ONE_CC_PARTIAL_PAYMENTS_COD] = $this->get1ccPartialCodConfig();
+
         if (isset($configFlagsResponse[Constants::WALLET_PAYMENT])) {
             $result = array_merge($result, [
                 Constants::WALLET_PAYMENT => $configFlagsResponse[Constants::WALLET_PAYMENT]
@@ -925,6 +1001,11 @@ class Service extends Base\Service
                 in_array($config, Constants::SHOPIFY_SPECIFIC_CONFIGS) === false) {
                 $result[$config] = $value;
             }
+        }
+
+        if (empty($result[Constants::ONE_CLICK_CHECKOUT]) == true)
+        {
+            $result[Constants::ONE_CLICK_CHECKOUT] = $this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT);
         }
 
         return $result;
@@ -984,6 +1065,36 @@ class Service extends Base\Service
         $this->app['basicauth']->setMerchant($this->merchant);
 
         $response =  $this->get1ccPrepayCodConfig();
+        $platform = $this->merchant->getMerchantPlatformConfig();
+        if ($platform !== null && isset($platform["value"]))
+        {
+            $response["platform"] = $platform["value"] ;
+        }
+
+        return $response;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function getInternal1ccPartialCodConfig($merchantId): array
+    {
+        try
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::MAGIC_GET_PARTIAL_COD_CONFIGS_FAILED);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $response =  $this->get1ccPartialCodConfig();
         $platform = $this->merchant->getMerchantPlatformConfig();
         if ($platform !== null && isset($platform["value"]))
         {
@@ -1427,6 +1538,8 @@ class Service extends Base\Service
             $retargetingSettings = $this->getRetargetingSettings();
             $result = array_merge($result, $retargetingSettings);
         }
+
+        $result[Type::ONE_CC_PARTIAL_PAYMENTS_COD] = $this->get1ccPartialCodConfig();
 
         return $result;
     }

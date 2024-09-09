@@ -515,7 +515,7 @@ class Validator extends Base\Validator
         /** @var Entity $order */
         $order = $this->entity;
 
-        $amountDue             = $order->getAmountDue();
+        $amountDue             = $order->getAmountDue($payment);
         $amountPaid            = $order->getAmountPaid();
         $isFirstPayment        = ($amountPaid === 0);
         $firstPaymentMinAmount = $order->getFirstPaymentMinAmount();

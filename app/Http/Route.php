@@ -4768,6 +4768,8 @@ class Route
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         '1cc_prepay_cod_configs_get'                => ['get',        '1cc/prepay/configs',                           'MerchantController@get1ccPrepayCodConfig'],
         'internal_1cc_prepay_cod_configs_get'       => ['get',        'internal/1cc/merchants/{id}/prepay_configs',            'MerchantController@getInternal1ccPrepayCodConfig'],
+        '1cc_partial_cod_configs_get'                => ['get',        '1cc/partial_cod/configs',                           'MerchantController@get1ccPartialCodConfig'],
+        'internal_1cc_partial_cod_configs_get'       => ['get',        'internal/1cc/merchants/{id}/partial_cod_configs',            'MerchantController@getInternal1ccPartialCodConfig'],
         'internal_1cc_configs_get'                  => ['get',         'internal/1cc/merchants/{id}/configs',                  'MerchantController@getInternal1ccConfig'],
         'checkout_1cc_configs_get'                  => ['get',        'checkout/1cc/merchant/configs',                         'MerchantController@getCheckout1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
@@ -6755,6 +6757,7 @@ class Route
         // Address Service
         'internal_1cc_configs_get',
         'internal_1cc_prepay_cod_configs_get',
+        'internal_1cc_partial_cod_configs_get',
         'internal_1cc_shopify_customer_addresses_get',
         'raw_address_create_bulk',
 
@@ -7949,6 +7952,7 @@ class Route
         '1cc_configs_update',
         '1cc_configs_get',
         '1cc_prepay_cod_configs_get',
+        '1cc_partial_cod_configs_get',
         '1cc_disable_magic',
         'update_merchant_platform',
         '1cc_cod_eligibility_attribute_list',
@@ -13842,6 +13846,7 @@ class Route
             '1cc_configs_update',
             '1cc_configs_get',
             '1cc_prepay_cod_configs_get',
+            '1cc_partial_cod_configs_get',
             '1cc_disable_magic',
             'update_merchant_platform',
             '1cc_cod_eligibility_attribute_list',
@@ -14057,6 +14062,7 @@ class Route
             'merchant_vkyc_submit',
             'merchant_edd_details_fetch',
             '1cc_prepay_cod_configs_get',
+            '1cc_partial_cod_configs_get',
             'shipping_provider_list',
             'shipping_provider_post',
             'shipping_provider_patch',
@@ -18267,6 +18273,7 @@ class Route
         ],
         'magic_checkout_service' => [
             'internal_1cc_prepay_cod_configs_get',
+            'internal_1cc_partial_cod_configs_get',
             'fetch_trusted_badge_status',
             'internal_1cc_configs_get',
             'internal_1cc_configs_update',
@@ -18290,6 +18297,7 @@ class Route
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
+            'internal_1cc_partial_cod_configs_get',
         ],
         'edge' => [
             'third_party_authenticate'

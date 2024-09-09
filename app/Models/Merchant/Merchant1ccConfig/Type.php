@@ -34,6 +34,7 @@ class Type {
     const ORDER_STATUS_UPDATE_URL          = 'order_status_update_url';
     const MANUAL_CONTROL_COD_ORDER         = 'manual_control_cod_order';
     const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
+    const ONE_CC_PARTIAL_PAYMENTS_COD      = 'one_cc_partial_payments_cod';
     const API_KEY                          = 'api_key';
     const API_SECRET                       = 'api_secret';
     const USERNAME                         = 'username';
