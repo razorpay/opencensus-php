@@ -22,6 +22,7 @@ import { ALL_VALUE } from 'apps/self-serve/src/App/Transactions/v2/common/consta
 import { trackMethodFilter } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import { ExtraFiltersModalProps, PaymentMethodOption } from './types';
 import { getDefaultValuesAndOptions, getOptions } from './utils';
+import { COMMON_Z_INDEX } from '@dashboard/shared-utils/constants';
 
 const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Element => {
   const { defaultMethodValue, defaultChannelValue } = getDefaultValuesAndOptions();
@@ -81,7 +82,7 @@ const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Elemen
               defaultValue={method}
               onChange={onPaymentMethodChange}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {(paymentMethodOptions as PaymentMethodOption[]).map(({ title, value }) => (
                   <ActionListItem key={value} title={title} value={value} />
@@ -102,7 +103,7 @@ const ExtraFiltersModal = ({ handleSearch }: ExtraFiltersModalProps): JSX.Elemen
               defaultValue={channel}
               onChange={onChannelSelect}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {(paymentChannelOptions as Option[]).map(({ title, value }) => (
                   <ActionListItem key={value} title={title} value={value} />

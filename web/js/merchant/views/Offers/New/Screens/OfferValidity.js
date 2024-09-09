@@ -8,7 +8,7 @@ import {
   Checkbox,
   CheckboxGroup,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import Input from 'common/new-ui/Input';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import DocsLink from 'merchant/components/DocsLink';
@@ -90,7 +90,7 @@ export default class OfferValidity extends React.Component {
             validationState={touched.block && errors?.block ? 'error' : 'none'}
             errorText={errors?.block}
           />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               {Object.values(PAYMENT_FAILURE_OPTIONS).map((type) => (
                 <ActionListItem

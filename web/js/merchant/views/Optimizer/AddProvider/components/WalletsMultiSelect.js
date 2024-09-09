@@ -8,7 +8,7 @@ import {
   ActionList,
   ActionListItem,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { WalletLabels } from 'merchant/views/Navigator/components/util';
 
 const WalletsMultiSelect = (props) => {
@@ -29,7 +29,7 @@ const WalletsMultiSelect = (props) => {
               isDisabled={disabled}
               onChange={changeGatewayWallets}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {walletOptions.map((wallet) => (
                   <ActionListItem

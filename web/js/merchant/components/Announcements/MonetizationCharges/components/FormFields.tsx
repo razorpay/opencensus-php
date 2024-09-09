@@ -9,6 +9,7 @@ import {
   SelectInput,
   TextInput,
 } from '@razorpay/blade/components';
+import { COMMON_Z_INDEX } from 'common/constant';
 
 const FormFields = ({ errors, handleChange, values }) => {
   const { isDesktop } = useBladeBreakpoints();
@@ -31,7 +32,7 @@ const FormFields = ({ errors, handleChange, values }) => {
                 labelPosition={isDesktop ? 'left' : 'top'}
                 onChange={(e) => handleChange(e, 'select')}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {field.elements!.map((element, idx) => (
                     <ActionListItem key={idx} title={element.label} value={element.value} />

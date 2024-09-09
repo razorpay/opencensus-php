@@ -6,7 +6,7 @@ import {
   DropdownOverlay,
   SelectInput,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { ListFiltersContextType } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/context';
 import { activationStatusMenu } from 'merchant/views/PartnerDashboard/SubMerchant/components/ActivationStatusFilter';
 type ActivationStatusFilterProps = {
@@ -27,7 +27,7 @@ const ActivationStatusFilter = ({ value, onChange }: ActivationStatusFilterProps
         validationState="none"
         value={value}
       />
-      <DropdownOverlay>
+      <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
         <ActionList>
           {activationStatusMenu.map(({ name, label }, index) => (
             <ActionListItem title={label} value={name} key={`${name}-${index}`} />

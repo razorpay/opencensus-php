@@ -17,3 +17,7 @@ export const ANALYTICS = {
     GEO: 'geo',
   },
 };
+
+export const COMMON_Z_INDEX = {
+  DROPDOWN_OVERLAY: 2000000,
+};

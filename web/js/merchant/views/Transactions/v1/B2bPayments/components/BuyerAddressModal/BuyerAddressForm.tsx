@@ -15,7 +15,7 @@ import {
   DropdownOverlay,
 } from '@razorpay/blade/components';
 ///- components
-
+import { COMMON_Z_INDEX } from 'common/constant';
 // constants
 import {
   FIELDS_MAPPING,
@@ -147,7 +147,7 @@ const BuyerAddressModal = ({
                     onChange={handleFieldOnChange(fieldConfig, onChange)}
                     onBlur={handleFieldOnChange(fieldConfig, onBlur)}
                   />
-                  <DropdownOverlay>
+                  <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                     <ActionList>
                       {states.map((state) => (
                         <ActionListItem key={state.value} title={state.label} value={state.value} />
@@ -178,7 +178,7 @@ const BuyerAddressModal = ({
                   }}
                   onBlur={handleFieldOnChange(fieldConfig, onBlur)}
                 />
-                <DropdownOverlay>
+                <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                   <ActionList>
                     {countries.map((country) => (
                       <ActionListItem

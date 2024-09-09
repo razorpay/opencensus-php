@@ -13,7 +13,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
@@ -60,7 +60,7 @@ const EmailSettings = () => {
         </Box>
         <Dropdown>
           <SelectInput label="" placeholder="" value={values.email} onChange={handleSelectChange} />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               {CHECKOUT_EMAIL_CONFIG_OPTIONS.map((config) => (
                 <ActionListItem key={config.code} title={config.name} value={config.code} />

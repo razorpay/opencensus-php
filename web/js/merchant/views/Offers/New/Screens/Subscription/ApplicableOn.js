@@ -7,7 +7,7 @@ import {
   ActionList,
   ActionListItem,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { validatePaymentMethod, validateMaxPaymentCount } from 'merchant/views/Offers/New/helpers';
 import {
   SUBSCRIPTION_OFFERS_PAYMENT_METHODS,
@@ -61,7 +61,7 @@ export default class ApplicableOn extends React.Component {
             validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
             errorText={errors?.payment_method}
           />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               {Object.values(SUBSCRIPTION_OFFERS_PAYMENT_METHODS_OPTIONS).map((type) => (
                 <ActionListItem
@@ -88,7 +88,7 @@ export default class ApplicableOn extends React.Component {
                   this.handleFormChange(name, values[0]);
                 }}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {Object.values(CREDIT_DEBIT_CARDS_OPTIONS).map((type) => (
                     <ActionListItem
@@ -114,7 +114,7 @@ export default class ApplicableOn extends React.Component {
                   this.handleFormChange(name, values[0]);
                 }}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {Object.values(BankOptions).map((type) => (
                     <ActionListItem
@@ -140,7 +140,7 @@ export default class ApplicableOn extends React.Component {
                   this.handleFormChange(name, values[0]);
                 }}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {Object.values(SUBSCRIPTION_OFFERS_PAYMENT_NETWORKS_OPTIONS).map((type) => (
                     <ActionListItem

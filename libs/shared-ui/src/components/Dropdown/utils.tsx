@@ -99,7 +99,7 @@ export const getDropdownContent = ({
     );
   }
   return (
-    <DropdownOverlay>
+    <DropdownOverlay zIndex={200000}>
       <ActionListWrapper
         isMultipleSelection={isMultipleSelection}
         selectedOptions={selectedOptions}

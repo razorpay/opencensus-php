@@ -15,7 +15,7 @@ import {
   TextInput,
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { createSupportTicketForBlockRule } from 'merchant/views/RiskAndFraud/RiskAnalytics/services';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -113,7 +113,7 @@ const RequestBlacklist = ({
               necessityIndicator="required"
               isRequired
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {BLOCK_PARAMETERS.map(({ title, value }) => (
                   <ActionListItem key={value} title={title} value={value} />

@@ -94,7 +94,7 @@ describe('Test <ListTable />', () => {
   });
   test('Should show view action if payment has invoice id', () => {
     renderComponent({ items: testTxn, uploadState: {} });
-    expect(screen.getByText('VIEW')).toBeInTheDocument();
+    expect(screen.getByText(/VIEW/i)).toBeInTheDocument();
   });
   test('Should show upload button if payment status is authorized and invoice id is null', () => {
     renderComponent({
@@ -146,7 +146,7 @@ describe('Test <ListTable />', () => {
 
     expect(screen.queryByText('Upload')).not.toBeInTheDocument();
     expect(screen.queryByText('Add/Update Buyer Address')).not.toBeInTheDocument();
-    expect(screen.getByText('VIEW')).toBeInTheDocument();
+    expect(screen.getByText(/VIEW/i)).toBeInTheDocument();
   });
 
   test('should show add buyer address button if invoice is uploaded and payment is authorized', () => {
@@ -161,7 +161,7 @@ describe('Test <ListTable />', () => {
 
     expect(screen.queryByText('Upload')).not.toBeInTheDocument();
     expect(screen.getByText('Add/Update Buyer Address')).toBeInTheDocument();
-    expect(screen.getByText('VIEW')).toBeInTheDocument();
+    expect(screen.getByText(/VIEW/i)).toBeInTheDocument();
   });
 
   /** Sender Details - start */

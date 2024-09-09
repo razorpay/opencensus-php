@@ -17,6 +17,7 @@ import {
   Amount,
   useTheme,
 } from '@razorpay/blade/components';
+import { COMMON_Z_INDEX } from 'common/constant';
 import { AmountWrapper } from './styled';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
@@ -140,7 +141,7 @@ const FailedPaymentsRetry = (): JSX.Element => {
                   onChange={({ name, values }) => handleInputChange({ name, value: values[0] })}
                   helpText="Order revival rate is the percentage of customers who retry the payment with a payment success"
                 />
-                <DropdownOverlay>
+                <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                   <ActionList>
                     {ORDER_RATE.map((each, key) => (
                       <ActionListItem key={key} title={`${each}%`} value={each} />

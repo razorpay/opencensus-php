@@ -50,8 +50,12 @@ describe('testing COD engine allowlist component', () => {
   test.each(INPUT_FIELDS)('should be able to type in input fields', async (field) => {
     renderApp();
     const fieldElement = screen.getByPlaceholderText(new RegExp(field.placeholderText, 'i'));
+    // https://github.com/testing-library/user-event/discussions/970#discussioncomment-5487693
     if (field.placeholderText === 'Enter count') {
-      await userEvent.clear(fieldElement);
+      await waitFor(async () => {
+        await userEvent.clear(fieldElement);
+        expect(fieldElement).toHaveValue('');
+      });
     }
 
     await userEvent.type(fieldElement, field.value);

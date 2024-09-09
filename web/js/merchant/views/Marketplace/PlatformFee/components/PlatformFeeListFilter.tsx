@@ -9,6 +9,7 @@ import {
   ActionListItem,
   Button,
 } from '@razorpay/blade/components';
+import { COMMON_Z_INDEX } from 'common/constant';
 import {
   stringifyQueryParams,
   getURLQueryParams,
@@ -160,7 +161,7 @@ export const PlatformFeeListFilter = ({
             validationState="none"
             value={formData.status}
           />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               {statusMenu.map((item, index) => (
                 <ActionListItem title={item.title} value={item.value} key={`status-${index}`} />

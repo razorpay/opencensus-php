@@ -1,4 +1,3 @@
-import { routes } from 'testConstants';
 import { expect } from 'utils/base';
 
 const UCS_DATA_API_URL = '**/ucs/**/GetComponentData';
@@ -23,7 +22,7 @@ export function getWidgetResponse(components, widgetKey) {
 }
 
 export async function assertAPICallForDataRefresh({ page, title }) {
-  const container = await page.getByText(`${title}Last weekTodayLast weekLast month`);
+  const container = await page.getByTestId(`widget-${title}`);
   await expect(container).toBeVisible();
   const dropDown = await container.getByTestId('date-picker-component');
   await expect(dropDown).toBeVisible();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, ModalBody } from '@razorpay/blade/components';
+import { Box, Modal, ModalBody, ModalFooter } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
@@ -14,7 +14,6 @@ import { PRODUCT_TYPE, ORG_NAME } from 'merchant/views/PartnerDashboard/constant
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 import ChooseOAuthApp from './components/ChooseOAuthApp';
-import { ConditionalModalFooter } from './components/ModalCommon/ModalFooter';
 import ModalHeader from './components/ModalCommon/ModalHeader';
 import SelectProduct from './components/SelectProduct';
 import { INVITE_MERCHANT_STEPS } from './constants';
@@ -155,12 +154,12 @@ const InviteMerchantModal = ({
             </SuspenseWithLoader>
           ) : null}
         </ModalBody>
-        <ConditionalModalFooter
-          shouldShowFooter={shouldShowFooter}
-          // Note: these two props are needed to bypass Blade Modal's children validation check
-          mdxType="modal-footer"
-          originalType={{ componentId: 'modal-footer' }}
-        />
+
+        {shouldShowFooter ? (
+          <ModalFooter>
+            <Box backgroundColor="surface.background.gray.intense" height="36px" width="100%" />
+          </ModalFooter>
+        ) : null}
       </Modal>
     </ErrorBoundary>
   );

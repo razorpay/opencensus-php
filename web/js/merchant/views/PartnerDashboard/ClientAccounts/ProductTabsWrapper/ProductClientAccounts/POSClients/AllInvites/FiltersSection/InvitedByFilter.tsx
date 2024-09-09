@@ -7,7 +7,7 @@ import {
   SelectInput,
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { User } from 'common/typings';
 import { POSAgents } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/POSClients/AllInvites/api';
 import { ListFiltersContextType } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/context';
@@ -42,7 +42,7 @@ const InvitedByFilter = ({
         validationState="none"
         value={value}
       />
-      <DropdownOverlay>
+      <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
         <ActionList>
           {invitedByFilterMenu.map(({ name, id }) => (
             <ActionListItem title={name} value={id} key={id} />

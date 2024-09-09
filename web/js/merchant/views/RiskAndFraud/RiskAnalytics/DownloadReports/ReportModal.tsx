@@ -10,7 +10,7 @@ import {
   Text,
 } from '@razorpay/blade/components';
 import moment from 'moment';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
   CloseIcon,
@@ -186,7 +186,7 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
                 value={preset.value}
                 onChange={handlePreset}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {REPORTS_PRESETS.map(({ label, value }) => (
                     <ActionListItem key={value} title={label} value={value} />
@@ -221,7 +221,7 @@ const ReportModal: React.FC<ReportModalProps> = (props) => {
                 value={recipients}
                 onChange={handleRecipients}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 {availableEmails && Array.isArray(availableEmails) ? (
                   <ActionList>
                     {availableEmails.map((email) => (

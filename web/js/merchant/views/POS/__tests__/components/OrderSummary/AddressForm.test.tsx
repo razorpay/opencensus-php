@@ -42,14 +42,14 @@ describe('<AddressForm/>', () => {
     server.use(getPincodeInfoHandler({ type: 'delivery_available' }));
     const { name, phoneNumber, pincode, city, address } = MOCK_DELIVERY_ADDRESS;
     render(<AddressForm {...initProps} />);
-    await userEvent.type(screen.getByRole('textbox', { name: /Full Name/ }), name);
+    await userEvent.type(screen.getByRole('textbox', { name: /Full Name/i }), name);
     await userEvent.type(
-      screen.getByRole('textbox', { name: /Mobile Number/ }),
+      screen.getByRole('textbox', { name: /Mobile Number/i }),
       phoneNumber.toString(),
     );
-    await userEvent.type(screen.getByRole('textbox', { name: /Pincode/ }), pincode.toString());
-    await userEvent.type(screen.getByRole('textbox', { name: /City/ }), city);
-    await userEvent.type(screen.getByRole('textbox', { name: /Address/ }), address);
+    await userEvent.type(screen.getByRole('textbox', { name: /Pincode/i }), pincode.toString());
+    await userEvent.type(screen.getByRole('textbox', { name: /City/i }), city);
+    await userEvent.type(screen.getByRole('textbox', { name: /Address/i }), address);
     const stateDropdown = screen.getByPlaceholderText('Select a state');
     await userEvent.click(stateDropdown);
     await userEvent.click(screen.getByTestId('Karnataka-option'));
@@ -99,7 +99,8 @@ describe('<AddressForm/>', () => {
       },
     };
     render(<AddressForm {...newInitProps} />);
-    await userEvent.type(screen.getByRole('textbox', { name: /Mobile Number/ }), '321');
+
+    await userEvent.type(screen.getByRole('textbox', { name: /Mobile Number/i }), '321');
     await userEvent.click(screen.getByText('Save Address'));
 
     await waitFor(() => {

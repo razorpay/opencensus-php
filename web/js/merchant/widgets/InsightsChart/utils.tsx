@@ -35,11 +35,13 @@ export const durationOptionsSubtextMap: Record<DateRangeValues, string> = {
 
 interface InsightsChartWrapperProps {
   children: React.ReactNode;
+  title: string;
 }
 
-export const InsightsChartWrapper = ({ children }: InsightsChartWrapperProps) => (
+export const InsightsChartWrapper = ({ children, title }: InsightsChartWrapperProps) => (
   <Box
     display="flex"
+    testID={`widget-${title}`}
     flexDirection="column"
     gap="spacing.5"
     padding="spacing.7"

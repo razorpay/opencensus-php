@@ -9,6 +9,7 @@ import {
   Button,
   FileTextIcon,
 } from 'merchant_common/views/Reports/components';
+import { COMMON_Z_INDEX } from 'common/constant';
 import { ControlPanel, SchedulesWrapper, DropdownWrapper } from './styled';
 import { SchedulesPropsType } from './types';
 import { SchedulesTable } from './components/SchedulesTable';
@@ -98,7 +99,7 @@ const SchedulesSection = connect(
                   .findIndex((refFilter) => refFilter.value === scheduleFilter)
                   .toString()}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList
                   options={schedulesFilterDropdown}
                   itemComponent={({ data: { label }, index }) => (

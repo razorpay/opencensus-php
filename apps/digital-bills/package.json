@@ -24,7 +24,7 @@
     "test:e2e-infra": "pnpm exec universe infra-e2e e2e-run"
   },
   "dependencies": {
-    "@razorpay/blade": "11.10.0",
+    "@razorpay/blade": "11.28.0",
     "@razorpay/i18nify-js": "1.4.0",
     "@razorpay/universe-cli": "18.5.1",
     "prop-types": "15.7.2",

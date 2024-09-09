@@ -72,7 +72,7 @@ const InsightsChartWidget: React.FC<InsightsChartProps> = ({
   if (components.length === 0) return null;
 
   return (
-    <InsightsChartWrapper>
+    <InsightsChartWrapper title={title}>
       <InsightsChartHeaderWrapper>
         <Heading size="medium">{title}</Heading>
         {input &&

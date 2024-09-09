@@ -12,7 +12,7 @@ import {
   TextInput,
   Button,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { isInteger } from 'common/utils/validators';
 import { deepCopy } from 'common/utils/immutable';
@@ -195,7 +195,7 @@ function DynamicFieldsPl({ showNotification }): JSX.Element {
                       necessityIndicator="required"
                       isDisabled={isLoading}
                     />
-                    <DropdownOverlay>
+                    <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                       <ActionList>
                         <ActionListItem title="Integer" value="integer" />
                         <ActionListItem title="String" value="string" />

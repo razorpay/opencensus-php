@@ -227,7 +227,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await deliveryAddressContainer.getByPlaceholder('Enter Pincode').fill('560034');
       await deliveryAddressContainer.getByPlaceholder('Enter City').fill('Bengaluru');
       await deliveryAddressContainer.getByPlaceholder('Select a state').click();
-      await deliveryAddressContainer.getByTestId('Karnataka-option').click();
+      await page.getByTestId('Karnataka-option').click();
       await deliveryAddressContainer.getByPlaceholder('Enter Address').fill('Test Address');
       await deliveryAddressContainer.getByText('Save Address').click();
       await page.waitForSelector('text=Test Name, Test Address, Bengaluru');
@@ -251,7 +251,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await deliveryAddressContainer.getByPlaceholder('Enter Pincode').fill('560034');
       await deliveryAddressContainer.getByPlaceholder('Enter City').fill('Bengaluru');
       await deliveryAddressContainer.getByPlaceholder('Select a state').click();
-      await deliveryAddressContainer.getByTestId('Karnataka-option').click();
+      await page.getByTestId('Karnataka-option').click();
       await deliveryAddressContainer.getByPlaceholder('Enter Address').fill('Test Address');
       await deliveryAddressContainer.getByText('Save Address').click();
 

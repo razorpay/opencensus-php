@@ -290,7 +290,7 @@ const PaymentsListFilter = ({
           )}
         </StyledSubListFilter>
         <StyledSearchByFilter>
-          <Box display="flex" columnGap="spacing.1" marginLeft="auto">
+          <Box display="flex" columnGap="spacing.3" marginLeft="auto">
             <Dropdown
               onChange={onSearchByOptionChange}
               options={searchByOptions}

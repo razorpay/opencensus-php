@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@razorpay/universe-cli": "18.5.1",
-    "@razorpay/blade": "11.10.0",
+    "@razorpay/blade": "11.28.0",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "prop-types": "15.7.2",
     "react-dom": "17.0.2",

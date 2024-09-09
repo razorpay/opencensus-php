@@ -7,7 +7,7 @@ import {
   ActionList,
   ActionListItem,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { FIRS_START_YEAR } from 'merchant/views/AccountAndSettings/InternationalSettings/constants';
 import useFirsContext from 'merchant/views/AccountAndSettings/InternationalSettings/hooks/useFirsContext';
 import { getListOfYears } from 'merchant/views/AccountAndSettings/InternationalSettings/utils';
@@ -40,7 +40,7 @@ const DropdownAction = (): React.ReactElement => {
             value={listYear.toString()}
             onChange={onYearChange}
           />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               {getListOfYears(FIRS_START_YEAR).map(({ title, value }) => (
                 <ActionListItem key={title} title={title} value={value} />

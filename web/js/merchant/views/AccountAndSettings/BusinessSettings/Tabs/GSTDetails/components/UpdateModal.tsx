@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { closeModal } from 'merchant_common/reducers/modals';
-import { bindActionCreators } from 'redux';
 import {
   Button,
   Box,
@@ -24,15 +21,21 @@ import {
   RadioGroup,
   Radio,
 } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { COMMON_Z_INDEX } from 'common/constant';
 import { useMobile } from 'common/hooks/useMobile';
-import HelpContent from './HelpContent';
+import { fetchGST } from 'merchant/reducers/profile';
+import { submitGSTDetails } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/model';
+import { track } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/tracking';
 import {
   AlertType,
   UpdateModalProps,
 } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/types';
-import { fetchGST } from 'merchant/reducers/profile';
-import { track } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/tracking';
-import { submitGSTDetails } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/model';
+import { closeModal } from 'merchant_common/reducers/modals';
+
+import HelpContent from './HelpContent';
 
 const defaultSnapPoints: [number, number, number] = [0.5, 0.7, 0.85];
 
@@ -127,7 +130,7 @@ const UpdateModal = ({
                 {...commonProps}
                 onChange={({ values }) => setSelectedGSTIn(values[0])}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 {/* Ignoring TS check for Blade ActionList as its chilren type is not correctly defined to
                 accept a single child */}
                 {/* @ts-ignore:next-line */}

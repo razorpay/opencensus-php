@@ -12,6 +12,9 @@ import {
   Radio,
   Divider,
 } from '@razorpay/blade/components';
+
+import { COMMON_Z_INDEX } from 'common/constant';
+import { withSplitzService } from 'common/splitz';
 import {
   validatePaymentMethod,
   validateMaxPaymentCount,
@@ -20,7 +23,6 @@ import {
   validatePayerAccountTypes,
   validateDiscountType,
 } from 'merchant/views/Offers/New/helpers';
-import { isGranularOfferExperimentEnabled } from 'merchant/views/Offers/utils';
 import {
   PAYMENT_METHODS,
   PaymentMethodsOptions,
@@ -38,8 +40,9 @@ import {
   DISPLAY_TEXT,
   PAYER_ACCOUNT_TYPES_DISPLAY,
 } from 'merchant/views/Offers/constants';
+import { isGranularOfferExperimentEnabled } from 'merchant/views/Offers/utils';
+
 import UPISelector, { UPI_APPS_SELECT_OPTIONS } from '../components/UPISelector';
-import { withSplitzService } from 'common/splitz';
 
 class ApplicableOn extends React.Component {
   state = { selectedPaymentMethodType: '' };
@@ -208,7 +211,7 @@ class ApplicableOn extends React.Component {
             validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
             errorText={errors?.payment_method}
           />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               {Object.values(PaymentMethodsOptions).map((type) => (
                 <ActionListItem
@@ -235,7 +238,7 @@ class ApplicableOn extends React.Component {
                 this.handleFormChange(name, values[0]);
               }}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {Object.values(WalletIssuersOptions).map((type) => (
                   <ActionListItem
@@ -264,7 +267,7 @@ class ApplicableOn extends React.Component {
                 this.handleFormChange(name, values[0]);
               }}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {Object.values(CardLessEmiIssuersOptions).map((type) => (
                   <ActionListItem
@@ -290,7 +293,7 @@ class ApplicableOn extends React.Component {
                 validationState="none"
                 value={values.payment_method_type}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {Object.values(PaymentMethodTypeOptions).map((type) => (
                     <ActionListItem
@@ -316,7 +319,7 @@ class ApplicableOn extends React.Component {
                   this.handleFormChange(name, values[0]);
                 }}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {Object.values(bankOptions).map((type) => (
                     <ActionListItem
@@ -342,7 +345,7 @@ class ApplicableOn extends React.Component {
                   this.handleFormChange(name, values[0]);
                 }}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {Object.values(PaymentNetworksOptions).map((type) => (
                     <ActionListItem
@@ -409,7 +412,7 @@ class ApplicableOn extends React.Component {
                 this.handleFormChange(name, values[0]);
               }}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {Object.values(PaymentIssuersOptions).map((type) => (
                   <ActionListItem
@@ -447,13 +450,11 @@ class ApplicableOn extends React.Component {
             </RadioGroup>
 
             {upiApps !== UPI_APP_PROVIDERS.ALL && (
-              <>
-                <UPISelector
-                  onChangeHandler={this.handleFormChange}
-                  selectedValues={upiAppsList}
-                  errorText={errors?.upiAppsList && touched?.upiAppsList ? errors.upiAppsList : ''}
-                />
-              </>
+              <UPISelector
+                onChangeHandler={this.handleFormChange}
+                selectedValues={upiAppsList}
+                errorText={errors?.upiAppsList && touched?.upiAppsList ? errors.upiAppsList : ''}
+              />
             )}
             <Divider margin="spacing.6" />
 

@@ -45,7 +45,7 @@ test.describe
 
       await refundsList.getByPlaceholder('Search').fill('');
       await refundsList.getByRole('button', { name: 'Status: All' }).click();
-      await refundsList.getByRole('menuitem', { name: 'Processing' }).click();
+      await page.getByRole('menuitem', { name: 'Processing' }).click();
       await expect(page.getByText('No refund in selected duration')).toBeVisible();
       await expect(
         refundsList.getByText('Search using different keywords or time duration'),

@@ -17,7 +17,7 @@ import {
   Text,
 } from '@razorpay/blade/components';
 import { FormikErrors, FormikValues, useFormik } from 'formik';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { useSplitzService } from 'common/splitz';
 import { states as STATES } from 'merchant/helpers/data';
 import { deliveryAddressSchema, pincodeValidationSchema } from 'merchant/views/POS/constants';
@@ -151,7 +151,7 @@ const AddressFormFields = ({
               </BottomSheetBody>
             </BottomSheet>
           ) : (
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {Object.keys(STATES).map((state) => renderAddressOption(state))}
               </ActionList>

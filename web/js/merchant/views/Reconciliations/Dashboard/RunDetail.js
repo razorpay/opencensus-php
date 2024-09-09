@@ -28,7 +28,7 @@ import {
 } from '@razorpay/blade/components';
 import moment from 'moment';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
@@ -254,7 +254,7 @@ export default function RunDetail() {
           <BladeDropdownWrapper>
             <Dropdown value={fileWorkflowId} marginRight="spacing.4">
               <SelectInput value={selectdRunId} prefix="Run: " onChange={handleRunChange} />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   {Array.isArray(runsList) &&
                     runsList.map((run) => (

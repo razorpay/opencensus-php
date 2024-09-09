@@ -64,6 +64,7 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
   return (
     <Box
       key={`widget-${id}`}
+      testID={`widget-${title}`}
       display="flex"
       flexDirection="column"
       gap="spacing.5"

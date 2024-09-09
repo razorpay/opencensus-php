@@ -7,6 +7,7 @@ import {
   Box,
   ActionListItem,
 } from '@razorpay/blade/components';
+import { COMMON_Z_INDEX } from 'common/constant';
 import { durationOptionsMap } from 'merchant/widgets/InsightsChart/utils';
 import { SelectChangeEvent, SelectProps } from './types';
 import { track } from 'merchant/widgets/utils';
@@ -35,7 +36,7 @@ function Select({ value, onChange, values, default_value, analyticsProperties }:
           name="date"
           onChange={handleChange}
         />
-        <DropdownOverlay>
+        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
           <ActionList>
             {values.map((value) => {
               return (

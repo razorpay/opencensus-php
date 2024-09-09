@@ -145,7 +145,10 @@ describe('Zone Modal', () => {
     const ZoneModal = await screen.findByTestId('zone-modal');
     expect(ZoneModal).toBeInTheDocument();
     const nameInput = screen.getByRole('textbox', { name: 'Zone name' });
-    await userEvent.clear(nameInput);
+    await waitFor(async () => {
+      await userEvent.clear(nameInput);
+      expect(nameInput).toHaveValue('');
+    });
     await userEvent.type(nameInput, 'New Zone');
     await waitFor(async () => {
       expect(nameInput).toHaveValue('New Zone');

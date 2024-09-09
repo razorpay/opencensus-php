@@ -37,6 +37,7 @@ import TestModeIcon from 'assets/rtux/test-mode.svg';
 import SwitchMerchantIcon from 'assets/rtux/switch-merchant.svg';
 import { analyticsTrack } from 'common/utils/analytics';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import { COMMON_Z_INDEX } from 'common/constant';
 
 const TrustedBadgeIcon = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -149,7 +150,7 @@ const ProfileDropdownV2: React.FC<{
           });
         }}
       />
-      <DropdownOverlay>
+      <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
         <Box minWidth="300px">
           <Box display="flex" gap="spacing.3" alignItems="center" padding="spacing.5">
             <ImageContainer>

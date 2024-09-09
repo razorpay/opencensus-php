@@ -98,7 +98,8 @@ describe('<SalesDashboard/>', () => {
     renderApp();
     const statusFilterContainer = screen.getByTestId('sales-dashboard-filters');
     await userEvent.click(statusFilterContainer);
-    await userEvent.click(within(statusFilterContainer).getByText('Activated'));
+    await screen.getByPlaceholderText('Select Option').click();
+    await userEvent.click(screen.getByRole('option', { name: 'Activated' }));
     expect(screen.queryByTestId('sales-dashboard-status-counts')).toBeNull();
   });
 

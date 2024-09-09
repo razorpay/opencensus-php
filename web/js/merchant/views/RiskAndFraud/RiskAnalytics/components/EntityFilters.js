@@ -9,7 +9,7 @@ import {
   ActionListItem,
 } from '@razorpay/blade/components';
 import moment from 'moment';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import {
@@ -128,7 +128,7 @@ const EntityFilters = (props) => {
               value={preset.value}
               onChange={onDurationChange}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 <ActionListSection title="Duration">
                   {presetOptions.map(({ label, value }) => (
@@ -169,7 +169,7 @@ const EntityFilters = (props) => {
             value={metric}
             onChange={onMetricChange}
           />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               <ActionListSection title="In terms of">
                 {metricOptions.map(({ label, value }) => (
@@ -193,7 +193,7 @@ const EntityFilters = (props) => {
               value={graphOptions}
               onChange={onGraphOptionsChange}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 <ActionListSection title="Select options to display on the graph">
                   {chartOptions.map(({ label, value }) => (

@@ -16,6 +16,7 @@ import {
   BottomSheetBody,
   BottomSheetFooter,
 } from '@razorpay/blade/components';
+import { COMMON_Z_INDEX } from 'common/constant';
 import { useMobile } from 'common/hooks/useMobile';
 import {
   SERVICE_PROVIDER_LOGIN_HREF,
@@ -76,7 +77,7 @@ const AccountLink = ({ modalState: { isOpen }, onClose, setModalState }): JSX.El
       };
 
   return (
-    <Modal zIndex={1112} isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
+    <Modal isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
       <ModalHeader title="Link your existing Whatsapp Account" />
       <ModalBody>
         <Dropdown selectionType="single">
@@ -87,7 +88,7 @@ const AccountLink = ({ modalState: { isOpen }, onClose, setModalState }): JSX.El
             onChange={handleSelect}
             defaultValue={selectedProvider}
           />
-          <DropdownOverlay>
+          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
             <ActionList>
               {BusinessServiceProvider.map(({ title, value }) => (
                 <ActionListItem title={title} value={value} key={value} />

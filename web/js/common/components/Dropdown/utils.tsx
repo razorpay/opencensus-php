@@ -11,6 +11,8 @@ import {
   BottomSheetFooter,
 } from '@razorpay/blade/components';
 
+import { COMMON_Z_INDEX } from 'common/constant';
+
 import ActionListWrapper from './components/ActionListWrapper/ActionListWrapper';
 import FooterActions from './components/FooterActions/FooterActions';
 import { SectionOption, Option, Options, DropdownTarget, DropdownContent } from './types';
@@ -99,7 +101,7 @@ export const getDropdownContent = ({
     );
   }
   return (
-    <DropdownOverlay>
+    <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
       <ActionListWrapper
         isMultipleSelection={isMultipleSelection}
         selectedOptions={selectedOptions}

@@ -7,7 +7,7 @@ import {
   SelectInput,
   Box,
 } from '@razorpay/blade/components';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 export interface InputSelectorProps {
   setInput: Dispatch<SetStateAction<string>>;
   options: Array<{ label: string; name: string }>;
@@ -35,7 +35,7 @@ const InputSelector = ({ setInput, options }: InputSelectorProps): JSX.Element =
           testID="test-load-dropdown"
           defaultValue="accounts"
         />
-        <DropdownOverlay>
+        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
           <ActionList>
             {options?.map((type) => (
               <ActionListItem key={type.name} title={type.label} value={type.name} />

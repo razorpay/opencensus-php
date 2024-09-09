@@ -16,7 +16,7 @@ const InsightsChartWidgetLoader: React.FC<InsightsChartLoadingProps> = ({
 }): JSX.Element => {
   const input = inputs.find((input) => input.type === 'select');
   return (
-    <InsightsChartWrapper>
+    <InsightsChartWrapper title={title}>
       <InsightsChartHeaderWrapper>
         <Heading size="medium">{title}</Heading>
         {input && renderInput({ widget: input })}

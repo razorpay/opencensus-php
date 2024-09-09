@@ -14,7 +14,7 @@ import {
 } from '@razorpay/blade/components';
 import { convertToMajorUnit, formatNumber } from '@razorpay/i18nify-js/currency';
 import { useQuery } from '@tanstack/react-query';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import RadioButtonGroup from 'common/components/RadioButtonGroup';
 import { getCountryName } from 'merchant/views/Transactions/v1/B2bPayments/utils';
 
@@ -114,7 +114,7 @@ const EntityAnalyticsTable: React.FC<EntityAnalyticsTableProps> = (props) => {
               <DropdownLink icon={ChevronDownIcon} iconPosition="right">
                 {groupBy === 'cards_iin' ? 'Card BINs' : 'Countries'}
               </DropdownLink>
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList>
                   <ActionListItem title="Card BINs" value="cards_iin" onClick={handleGroupby} />
                   <ActionListItem title="Countries" value="cards_country" onClick={handleGroupby} />

@@ -17,7 +17,7 @@ import { useDashboardType } from 'merchant_common/views/Reports/contexts/Reports
 import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { handleLogsFilter } from 'merchant_common/views/Reports/redux/reducer';
-
+import { COMMON_Z_INDEX } from 'common/constant';
 import { DownloadsTable } from 'merchant_common/views/Reports/features/Downloads/components/DownloadsTable';
 import {
   ControlPanel,
@@ -118,7 +118,7 @@ const DownloadsSection = connect(
                   .findIndex((refFilter) => refFilter.value === logTableFilterType)
                   .toString()}
               />
-              <DropdownOverlay>
+              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
                 <ActionList
                   options={downloadsFilterDropdown}
                   itemComponent={({ data: { label }, index }) => (
