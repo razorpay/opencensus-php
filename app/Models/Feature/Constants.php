@@ -2256,6 +2256,12 @@ class Constants
     const POS_CHANNEL_PARTNERSHIP = 'pos_channel_partnership';
 
     /**
+     * If this flag is enabled then finops admin will be able to customize the dates in the merchant configuration 
+     * in admin dashboard to specify the dates when settlement should not happen for 365 day settlement product.
+     */
+    const CUSTOM_HOLIDAY_SETTLEMENT = 'custom_holiday_settlement';
+
+    /**
      * Feature flag will be enabled on partner.
      * All submerchants associated with the partner can
      * have a custom terminal procurement mapping
@@ -3154,6 +3160,9 @@ class Constants
         self::HIDE_AGGREGATOR_FIELDS         => true,
 
         self::POS_CHANNEL_PARTNERSHIP                => true,
+
+        self::CUSTOM_HOLIDAY_SETTLEMENT              => true,
+
         self::CUSTOM_TERMINAL_PROC                   => true,
     ];
 
