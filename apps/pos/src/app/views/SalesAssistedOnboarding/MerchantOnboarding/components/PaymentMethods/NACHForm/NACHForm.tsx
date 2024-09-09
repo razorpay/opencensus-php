@@ -67,6 +67,7 @@ const NACHForm: React.FC<NachFormProps> = ({
           })
         }
         isDisabled={isFormDisabled}
+        value={nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]}
       />
       <Box>
         <Heading marginBottom="spacing.5" size="large">
