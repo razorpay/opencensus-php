@@ -9323,7 +9323,10 @@ class Core extends Base\Core
             {
                 $this->trace->info(
                     TraceCode::PAYOUT_SERVICE_DUAL_WRITE_NO_ACTION,
-                    $input
+                    [
+                        'input' => $input,
+                        'metaData' => $metadata
+                    ]
                 );
 
                 return;

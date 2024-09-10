@@ -4,7 +4,9 @@ namespace RZP\Models\Payout\DualWrite;
 
 use App;
 
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Exception\BadRequestException;
 
@@ -27,8 +29,12 @@ class Payout extends Base
         /** @var Entity $apiPayout */
         $apiPayout = $this->repo->payout->find($id);
 
+        $previous_status = null;
+        $new_status = $payout->getStatus();
+
         if (empty($apiPayout) === false)
         {
+            $previous_status = $apiPayout->getStatus();
             $payout = $apiPayout->setRawAttributes($payout->getAttributes());
         }
 
@@ -38,9 +44,16 @@ class Payout extends Base
 
         $this->repo->payout->saveOrFail($payout);
 
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
         $this->trace->info(
             TraceCode::PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_DONE,
-            ['payout_id' => $id]
+            [
+                'payout_id' => $id,
+                'timestamp' => $timestamp,
+                'previous_status' => $previous_status,
+                'new_status' => $new_status,
+            ]
         );
 
         return $payout;
