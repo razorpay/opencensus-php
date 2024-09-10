@@ -290,7 +290,7 @@ class UserController extends Controller
 
             $milestone = $details['activation_form_milestone'] ?? null;
 
-            $isPosSalesAgentRedirectApplicable = $details["role"] === self::RAZORPAY_SALES_ROLE;
+            $isPosSalesAgentRedirectApplicable = ($details["role"] ?? null) === self::RAZORPAY_SALES_ROLE;
 
             if ($isPosSalesAgentRedirectApplicable) {
                 $rzpSalesMid = $details['id'] ?? '';
