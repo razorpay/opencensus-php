@@ -17,18 +17,18 @@
     {
       "purpose": "any",
       "sizes": "192x192",
-      "src": "icons/icon512_rounded.png",
+      "src": "icons/icon192_rounded.png",
       "type": "image/png"
     },
     {
       "purpose": "any",
       "sizes": "144x144",
-      "src": "icons/icon512_rounded.png",
+      "src": "icons/icon144_rounded.png",
       "type": "image/png"
     }
   ],
   "orientation": "portrait",
-  "display": "standalone",
+  "display": "fullscreen",
   "dir": "auto",
   "lang": "en-IN",
   "name": "Razorpay",
