@@ -25,6 +25,9 @@ class DowntimeManagerService
     const FETCH_DOWNTIMES_ADMIN = 'v2/admin/downtimes';
     const EDIT_DOWNTIMES_ADMIN = 'v2/admin/downtimes/'; // + id
 
+    // FPX
+    const HANDLE_DOWNTIMES_FPX = 'v2/fpx/downtimes/handle';
+
     private $srConfig;
     private $srBasePath;
     private $srHost;
@@ -41,6 +44,22 @@ class DowntimeManagerService
         $this->srHost = $this->srConfig['host'];
         $this->srBasePath = $this->srConfig['basePath'];
         $this->app = $app;
+    }
+
+    // FPX APIS
+
+    public function handleFpxDowntimes($downtimeData, $transactionMode)
+    {
+        $input = [
+            "data" => $downtimeData,
+            "mode" => $transactionMode,
+        ];
+
+        $response = $this->sendRequest(self::HANDLE_DOWNTIMES_FPX, DowntimeManagerController::POST, $input, "fpx");
+
+        unset($response["status_code"]);
+
+        return $response;
     }
 
     // Admin Dashboard APIs

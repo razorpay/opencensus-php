@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Downtime\Webhook;
 use App;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants as constants;
@@ -12,6 +13,7 @@ use RZP\Models\Gateway\Downtime\Entity;
 use RZP\Models\Gateway\Downtime\Webhook\Validator\Validator;
 use RZP\Models\Gateway\Downtime as GatewayDowntime;
 use RZP\Models\Gateway\Downtime\ReasonCode;
+use RZP\Models\Payment\Downtime\DowntimeManagerService;
 use RZP\Models\Payment\Method;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -75,12 +77,34 @@ class PaynetProcessor implements ProcessorInterface
 
             $downtimeData = $this->app[constants\Entity::MOZART]->getDowntimeIssuerData($input, Method::FPX);
 
+            $this->trace->info(TraceCode::FPX_DOWNTIME_MOZART_RESPONSE, [
+                "downtimeData"      => $downtimeData,
+                "transactionMode"   => $transactionMode
+            ]);
+
             if (empty($downtimeData["data"]["bankList"]) === true)
             {
                 throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_DATA);
             }
 
-            $response["status"] = $this->updateDowntimeFpxData($downtimeData["data"], $transactionMode);
+            if ($this->shouldUseDowntimeManagerService() === true)
+            {
+                $response["status"] = (new DowntimeManagerService($this->app))->handleFpxDowntimes($downtimeData["data"], $transactionMode);
+
+                $this->trace->info(TraceCode::FPX_DOWNTIME_API_RESPONSE, [
+                    "status"            => $response["status"],
+                    "transactionMode"   => $transactionMode
+                ]);
+            }
+            else
+            {
+                $response["status"] = $this->updateDowntimeFpxData($downtimeData["data"], $transactionMode);
+
+                $this->trace->info(TraceCode::FPX_DOWNTIME_API_RESPONSE, [
+                    "status"            => $response["status"],
+                    "transactionMode"   => $transactionMode
+                ]);
+            }
 
             array_push($responses, $response);
         }
@@ -246,6 +270,17 @@ class PaynetProcessor implements ProcessorInterface
         }
 
         return $baseInput;
+    }
+
+
+    protected function shouldUseDowntimeManagerService(): bool
+    {
+        if ((app()->isEnvironmentProduction() === true) && ($this->mode === Mode::LIVE))
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }
