@@ -325,6 +325,9 @@ class TraceCode
         self::SLACK_QUERY_RESPONSE                  => 'Slack Query Response Log'
     );
 
+    //pg3.0 tracing 
+    const PG3_REDIRECTION = 'PG3_REDIRECTION';
+
     /**
      * Translate event code to message
      *

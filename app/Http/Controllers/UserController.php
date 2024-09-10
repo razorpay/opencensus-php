@@ -893,6 +893,10 @@ class UserController extends Controller
 
     public function isPg3V1RedirectionApplicable($details)
     {
+        $this->trace->info(TraceCode::PG3_REDIRECTION, [
+            'INFO' => 'PG_V3_Redirection_START'
+        ]);
+        
         $merchantId = $details['current'];
 
         $experimentID = config(self::SPLITZ_EXPERIMENTS)[self::PG3_V1_ENABLED];
@@ -902,8 +906,11 @@ class UserController extends Controller
         if ((isset($data[$experimentID]['name']) === true) and
             ($data[$experimentID]['name'] === 'enabled'))
         {
-            if ((in_array(self::SHOW_PG_V3, $details['features']) === true) and
-                (in_array(self::PG_V3_ONBOARDING_COMPLETE, $details['features']) === false))
+            //get the Mx features from service
+            $merchantFeatures =  (new Merchant\Service)->getMerchantFeatures();
+
+            if ((in_array(self::SHOW_PG_V3, $merchantFeatures) === true) and
+                (in_array(self::PG_V3_ONBOARDING_COMPLETE, $merchantFeatures) === false))
             {
                 return true;
             }
