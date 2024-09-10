@@ -1490,7 +1490,14 @@ class Service extends Base\Service
         {
             $key = $this->repo->key->getLatestActiveKeyForMerchant($input[Constants::MERCHANT_ID]);
 
-            $result['key_id'] = $key->getPublicKey($input['mode']);
+            if (empty($key) == false)
+            {
+                $result['key_id'] = $key->getPublicKey($input['mode']);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::MERCHANT_1CC_CONFIGS_REQUESTED, ['key_status' => 'skipped']);
+            }
         }
 
         $result[Constants::MERCHANT_ID] = $input[Constants::MERCHANT_ID];
