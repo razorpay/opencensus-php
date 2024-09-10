@@ -1518,10 +1518,22 @@ class Repository extends Base\Repository
     public function findByIdAndOrgId(string $id, string $orgId)
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchant =  $this->findOrFailPublic($id);
+            if ($merchant !=null) {
+                if ($merchant->getOrgId() !== $orgId) {
 
-        return $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER))
-                    ->orgId($orgId)
-                    ->findOrFailPublic($id);
+                    $data = $this->getExceptionDataArray('find', array('id' => $id));
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+                }
+            }
+            return $merchant;
+        } else {
+            return $this->newQuery()
+                ->orgId($orgId)
+                ->findOrFailPublic($id);
+        }
     }
 
     public function fetchByEmailAndOrgId(string $email, string $orgId = Org\Entity::RAZORPAY_ORG_ID)
@@ -1532,7 +1544,7 @@ class Repository extends Base\Repository
         // Order by created_at asc so that the partner merchant makes it to
         // the top of the list followed by submerchants
         //
-        return $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER))
+        return $this->newQuery()
                     ->orgId($orgId)
                     ->where(Entity::EMAIL, $email)
                     ->orderBy(Entity::CREATED_AT, 'asc')
