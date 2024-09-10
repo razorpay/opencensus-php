@@ -121,6 +121,11 @@ class Service extends Base\Service
             $this->merchant = $merchant;
         }
 
+        if ($this->app['basicauth']->isCapitalEarlySettlementApp() === true) {
+            $requestDetails['scheduled'] = isset($input['scheduled']) ? (bool) $input['scheduled'] : $requestDetails['scheduled'];
+            unset($input['scheduled']);
+        }
+
         return $this->app['api.mutex']->acquireAndRelease(
         'settlement_ondemand'.$this->merchant->getId(),
         function() use ($input, $requestDetails)

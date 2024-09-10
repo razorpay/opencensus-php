@@ -85,6 +85,8 @@ class RequestHeader
 
     const X_TRANSFER_IDEMPOTENCY        = 'X-Transfer-Idempotency';
 
+    const X_ODS_IDEMPOTENCY             = 'X-ODS-Idempotency';
+
     const X_TASK_ID                     = 'X-Task-ID';
     const X_SERVICE_ID                  = 'X-Service-ID';
 

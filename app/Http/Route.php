@@ -3241,6 +3241,7 @@ class Route
         'settlement_ondemand_blocked'              => ['get',       'settlements/ondemand/merchant/config',          'SettlementOndemandController@isOndemandBlocked'                    ],
         'settlement_ondemand_linked_account'       => ['post',      'settlements/ondemand/linked_account_settlements','SettlementOndemandController@linkedAccountSettlement'             ],
         'settlement_ondemand_reverse'              => ['post',      'settlements/ondemand/reverse',                   'SettlementOndemandController@reverseOndemandSettlement'           ],
+        'settlement_ondemand_create_internal'      => ['post',      'settlements/ondemand/internal',                 'SettlementOndemandController@postSettlementOndemand'               ],
 
 
         // OAuth routes
@@ -6831,6 +6832,8 @@ class Route
 
         'expire_keys',
         'qr_code_merchant_create',
+
+        'settlement_ondemand_create_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17415,7 +17418,9 @@ class Route
         'capital_early_settlements' => [
             'settlement_ondemand_linked_account',
             'internal_balances_fetch_by_merchant_ids',
-            'merchant_la_fetch'
+            'merchant_la_fetch',
+            'feature_get_merchants_internal',
+            'settlement_ondemand_create_internal'
         ],
 
         'leegality' => [
@@ -18746,6 +18751,11 @@ class Route
         'composite_payout_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => false,
+        ],
+        'settlement_ondemand_create_internal' => [
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::SETTLEMENT_ONDEMAND,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_ODS_IDEMPOTENCY,
             IdempotencyKey\Constants::IKEY_MANDATORY => false,
         ]
     ];

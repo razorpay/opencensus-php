@@ -1707,6 +1707,19 @@ return [
         ],
     ],
 
+    'testOndemandPartialScheduledSettlementMerchantIdExcluded' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/scheduled/process',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'PartialScheduledSettlementJob job dispatched'
+            ],
+        ],
+    ],
+
     'testEarlySettlementFeaturePeriodCreateFullAccess' => [
         'request'  => [
             'url'     => '/es/feature/period',
@@ -2256,5 +2269,98 @@ return [
                 'success' => true
             ],
         ],
+    ],
+
+    'testCreateOndemandInternalNoIdemKeySuccess' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/internal',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'settle_full_balance' => true,
+                'description'         => 'testCreateODSNoIdemKeySuccess',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'settlement.ondemand',
+                'amount_requested'     => 20030000,
+                'fees'                 => 472708,
+                'tax'                  => 72108,
+                'amount_pending'       => 19557292,
+                'amount_settled'       => 0,
+                'amount_reversed'      => 0,
+                'settle_full_balance'  => true,
+                'currency'             => 'INR',
+                'status'               => 'initiated',
+                'description'          => 'testCreateODSNoIdemKeySuccess',
+            ]
+        ]
+    ],
+
+    'testCreateOndemandInternalIdemKeySuccess' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/internal',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X_ODS_Idempotency'    => 'createODSInternalIdemKey',
+            ],
+            'content' => [
+                'settle_full_balance' => true,
+                'description'         => 'testCreateODSIdemKeySuccess',
+                'scheduled'           => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'settlement.ondemand',
+                'amount_requested'     => 10000,
+                'fees'                 => 29,
+                'tax'                  => 4,
+                'amount_pending'       => 9971,
+                'amount_settled'       => 0,
+                'amount_reversed'      => 0,
+                'settle_full_balance'  => true,
+                'currency'             => 'INR',
+                'status'               => 'initiated',
+                'description'          => 'testCreateODSIdemKeySuccess',
+                'scheduled'            => true,
+            ]
+        ]
+    ],
+
+    'testCreateOndemandInternalDuplicateCaughtByIdemKey' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/internal',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X_ODS_Idempotency'    => 'createODSInternalIdemKey',
+            ],
+            'content' => [
+                'settle_full_balance' => true,
+                'description'         => 'testCreateODSIdemKeySuccess',
+                'scheduled'           => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'settlement.ondemand',
+                'amount_requested'     => 10000,
+                'fees'                 => 29,
+                'tax'                  => 4,
+                'amount_pending'       => 9971,
+                'amount_settled'       => 0,
+                'amount_reversed'      => 0,
+                'settle_full_balance'  => true,
+                'currency'             => 'INR',
+                'status'               => 'initiated',
+                'description'          => 'testCreateODSIdemKeySuccess',
+                'scheduled'            => true,
+            ]
+        ]
     ],
 ];

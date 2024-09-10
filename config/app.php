@@ -971,4 +971,6 @@ return array(
     'show_dcc_markup_visa_experiment_id' => env('SHOW_DCC_MARKUP_VISA_EXPERIMENT_ID'),
 
     'show_dcc_markup_mc_experiment_id' => env('SHOW_DCC_MARKUP_MC_EXPERIMENT_ID'),
+
+    'restricted_scheduled_es_migration_experiment_id' => env('RESTRICTED_SCHEDULED_ES_MIGRATION_EXP_ID'),
 );

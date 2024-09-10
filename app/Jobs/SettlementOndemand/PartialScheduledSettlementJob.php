@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs\SettlementOndemand;
 
+use App;
 use RZP\Jobs\Job;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -38,6 +39,8 @@ class PartialScheduledSettlementJob extends Job
 
         try
         {
+            $merchantIDsToExclude = $this->getMerchantIDsToExclude();
+
             $offset = 0;
 
             $i = 0;
@@ -63,6 +66,16 @@ class PartialScheduledSettlementJob extends Job
 
                 foreach ($merchantIds as $merchantId)
                 {
+                    if (in_array($merchantId, $merchantIDsToExclude, true))
+                    {
+                        // Exclude this merchant as it will be handled by the microservice as part of API Decomp.
+                        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULE_MERCHANT_EXCLUDED_DECOMP, [
+                            "merchant_id"   =>  $merchantId
+                        ]);
+
+                        continue;
+                    }
+
                     PartialScheduledSettlementForMerchantJob::dispatch($this->mode, $merchantId);
 
                     $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
@@ -83,5 +96,27 @@ class PartialScheduledSettlementJob extends Job
         {
             $this->delete();
         }
+    }
+
+    private function getMerchantIDsToExclude(): array
+    {
+        $app = App::getFacadeRoot();
+
+        $experimentId = $app['config']->get('app.restricted_scheduled_es_migration_experiment_id');
+        $request = ['experiment_id' => $experimentId];
+        $response = $app['splitzService']->evaluateRequest($request);
+
+        $variables = $response['response']['variant']['variables'] ?? [];
+        if (!is_array($variables)) {
+            return [];
+        }
+
+        foreach ($variables as $variable) {
+            if (is_array($variable) && $variable['key'] === 'mids') {
+                return explode(',', $variable['value']);
+            }
+        }
+
+        return [];
     }
 }

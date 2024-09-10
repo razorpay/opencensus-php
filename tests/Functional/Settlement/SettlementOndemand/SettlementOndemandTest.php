@@ -4,28 +4,28 @@ namespace RZP\Tests\Functional\SettlementOndemand;
 
 use Hash;
 use Mail;
-use PhpParser\Node\Expr\AssignOp\Mod;
 use Queue;
 use Config;
 use Mockery;
 use DateTime;
 use Carbon\Carbon;
-use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
-use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Settlement\Ondemand\Entity as OndemandEntity;
-use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\Mock;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Mail\Merchant\FullES;
 use RZP\Models\Pricing\Feature;
 use RZP\Mail\Merchant\PartialES;
+use RZP\Tests\Traits\MocksRazorx;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Services\Mock\RazorpayXClient;
+use RZP\Services\KafkaMessageProcessor;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
@@ -37,13 +37,14 @@ use RZP\Models\Admin\Permission\Name as AdminPermission;
 use RZP\Jobs\SettlementOndemand\PartialScheduledSettlementJob;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
-use RZP\Tests\Traits\MocksRazorx;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
 
 class SettlementOndemandTest extends TestCase
 {
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use MocksRazorx;
+    use MocksSplitz;
 
     protected $reportUrl;
 
@@ -780,11 +781,38 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->on(Mode::TEST)->merchant->edit($merchantId, ['pricing_plan_id' => '1BFFkd38fFGbnh', 'international' => 0]);
     }
 
+    private function mockSplitzExperimentForOndemandPartialEs($enabled = true)
+    {
+        $merchantId = $this->merchantDetail['merchant_id'];
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "mids",
+                            "value" => $enabled ? null : $merchantId,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.restricted_scheduled_es_migration_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+                   ->zeroOrMoreTimes()
+                   ->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))
+                   ->andReturns($splitzResp);
+    }
+
     public function testOndemandPartialScheduledSettlement()
     {
         $this->ba->cronAuth(MODE::TEST);
 
         $this->mockDataForOndemandPartialEs();
+
+        $this->mockSplitzExperimentForOndemandPartialEs(enabled: true);
 
         $this->fixtures->on(Mode::TEST)->base->editEntity('balance', '10000000000000', ['balance' => 3000000]);
 
@@ -822,6 +850,8 @@ class SettlementOndemandTest extends TestCase
         $this->ba->cronAuth(MODE::TEST);
 
         $this->mockDataForOndemandPartialEs();
+
+        $this->mockSplitzExperimentForOndemandPartialEs(enabled: true);
 
         $this->fixtures->on(Mode::TEST)->base->editEntity('balance', '10000000000000', ['balance' => 60000]);
 
@@ -863,6 +893,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->mockDataForOndemandPartialEs();
 
+        $this->mockSplitzExperimentForOndemandPartialEs(enabled: true);
+
         $this->fixtures->on(Mode::TEST)->base->editEntity('balance', $merchantId, ['balance' => 3000000]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
@@ -894,6 +926,10 @@ class SettlementOndemandTest extends TestCase
 
         $this->ba->cronAuth(MODE::TEST);
 
+        $this->mockDataForOndemandPartialEs();
+
+        $this->mockSplitzExperimentForOndemandPartialEs(enabled: true);
+
         $this->fixtures->on(Mode::TEST)->base->editEntity('balance', $merchantId, ['balance' => 9900]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
@@ -911,6 +947,23 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($settlementOndemand);
 
+    }
+
+    public function testOndemandPartialScheduledSettlementMerchantIdExcluded()
+    {
+        $merchantId = $this->merchantDetail['merchant_id'];
+
+        $this->ba->cronAuth(MODE::TEST);
+
+        $this->mockDataForOndemandPartialEs();
+
+        $this->mockSplitzExperimentForOndemandPartialEs(enabled: false);
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getDbEntity('settlement.ondemand', ['merchant_id' => $merchantId, 'scheduled' => true]);
+
+        $this->assertNull($settlementOndemand);
     }
 
     public function testEnableRestrictedOndemandViaCron()
@@ -5772,6 +5825,62 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry  soft deleted');
 
+    }
+
+    public function testCreateOndemandInternalNoIdemKeySuccess() {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+    }
+
+    public function testCreateOndemandInternalIdemKeySuccess() {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20000000]);
+
+        $this->mockDataForOndemandPartialEs();
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+
+        $ods = $this->getDbLastEntity('settlement.ondemand');
+        $iKey = $this->getDbEntity('idempotency_key', ['source_id' => $ods->id]);
+        $this->assertNotNull($iKey);
+    }
+
+    public function testCreateOndemandInternalDuplicateCaughtByIdemKey() {
+        $this->testCreateOndemandInternalIdemKeySuccess();
+
+        $this->testData[__FUNCTION__]['request']['content']['description'] = 'Duplicate request';
+
+        $this->testData[__FUNCTION__]['response'] = [
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Different request body sent for the same Idempotency Header',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class' => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
+        ];
+
+        $this->startTest();
     }
 
     private function createOndemandSettlement(bool $mockWebhhok)
