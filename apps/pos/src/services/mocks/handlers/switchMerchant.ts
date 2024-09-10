@@ -1,4 +1,4 @@
-import { rest } from 'msw';
+import { rest } from 'msw-old';
 import { SWITCH_MERCHANT_MOCKS } from 'apps/pos/src/services/mocks/fixtures/switchMerchant';
 
 export const switchMerchantHandler = (type: string) => {

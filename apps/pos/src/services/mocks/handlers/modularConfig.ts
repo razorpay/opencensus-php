@@ -1,4 +1,4 @@
-import { graphql } from 'msw';
+import { graphql } from 'msw-old';
 import { ERROR_MODULAR_RESPONSE, SUCCESS_MODULAR_RESPONSE } from '../fixtures/modularConfig';
 
 export const getModularConfig = ({ type }: { type: string }): any => {

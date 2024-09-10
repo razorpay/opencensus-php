@@ -1,4 +1,4 @@
-import { rest } from 'msw';
+import { rest } from 'msw-old';
 import { updateNameSuccessResponse } from './fixtures';
 
 export const updateNameSuccess = () => {

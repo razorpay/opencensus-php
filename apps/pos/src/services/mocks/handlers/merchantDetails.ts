@@ -1,4 +1,4 @@
-import { graphql } from 'msw';
+import { graphql } from 'msw-old';
 import {
   MERCHANT_ACTIVATION_SUCCESS_RESPONSE,
   MERCHANT_ACTIVATION_ERROR_RESPONSE,

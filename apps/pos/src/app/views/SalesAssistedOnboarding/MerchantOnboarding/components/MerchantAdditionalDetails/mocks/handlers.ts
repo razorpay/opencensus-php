@@ -1,4 +1,4 @@
-import { graphql } from 'msw';
+import { graphql } from 'msw-old';
 import { MODULAR_RESPONSE, workflowDataMock } from './fixtures';
 
 export const getModularConfig = ({ type }: { type: string }): any => {

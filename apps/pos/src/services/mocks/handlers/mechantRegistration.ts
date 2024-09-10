@@ -1,4 +1,4 @@
-import { rest } from 'msw';
+import { rest } from 'msw-old';
 import {
   MERCHANT_ID_REGISTER_ERROR,
   MERCHANT_ID_REGISTER_SUCCESS,

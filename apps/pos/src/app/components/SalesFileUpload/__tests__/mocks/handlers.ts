@@ -1,4 +1,4 @@
-import { rest } from 'msw';
+import { rest } from 'msw-old';
 
 const UFH_SUCCESS_RESPONSE = {
   status_code: 200,

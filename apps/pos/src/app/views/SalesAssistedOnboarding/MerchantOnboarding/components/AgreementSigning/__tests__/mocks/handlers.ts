@@ -1,4 +1,4 @@
-import { graphql } from 'msw';
+import { graphql } from 'msw-old';
 import { GetMockModularResponseProps, getMockModularResponse } from './fixtures';
 
 interface ModularConfigProps {

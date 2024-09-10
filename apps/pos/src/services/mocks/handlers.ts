@@ -1,2 +1,2 @@
-// import { rest, graphql } from 'msw';
+// import { rest, graphql } from 'msw-old';
 export const handlers: [] = [];

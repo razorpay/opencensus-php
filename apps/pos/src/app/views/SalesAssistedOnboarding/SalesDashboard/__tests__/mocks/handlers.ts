@@ -1,4 +1,4 @@
-import { graphql } from 'msw';
+import { graphql } from 'msw-old';
 import { SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE } from './fixtures';
 
 export const getSalesMappedMerchantsHandler = ({ type }: { type: string }): any => {
