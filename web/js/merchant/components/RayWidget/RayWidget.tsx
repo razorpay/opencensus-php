@@ -43,6 +43,24 @@ const RayWidget = ({
     // Using Existing Emitter setup desing for RayChat to maintain consistency
     // Will revamp this in future after rampup
 
+    window.rzpTicketSystem = {
+      openModal: (module, initialData, prompt): void => {
+        fireCustomEvent({
+          event: 'open-ticket-modal',
+          data: {
+            module,
+            initialData,
+            prompt,
+          },
+        });
+      },
+      closeModal: (): void => {
+        fireCustomEvent({
+          event: 'close-ticket-modal',
+        });
+      },
+    };
+
     CreateTicketEmitter.on('toggle-help-section', () => {
       fireCustomEvent({
         event: 'toggle-help-section',

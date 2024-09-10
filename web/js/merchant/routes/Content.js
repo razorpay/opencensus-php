@@ -657,7 +657,6 @@ class Content extends Component {
     const { user, splitz: { abExperiments: { ray_ai } = {} } = {} } = this.props;
     const {
       isINCountry,
-      live,
       isOrgRZP,
       isSourceRX,
       isPartnerAgentRole,
@@ -674,11 +673,7 @@ class Content extends Component {
       !isPosSalesAgent;
 
     return (
-      isINCountry &&
-      isValidMerchant &&
-      live &&
-      user.isAllowedView('ray') &&
-      isExperimentEnabled(ray_ai)
+      isINCountry && isValidMerchant && user.isAllowedView('ray') && isExperimentEnabled(ray_ai)
     );
   };
 
