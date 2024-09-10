@@ -1653,6 +1653,8 @@ class Core extends Base\Core
 
         $balanceAmount = $this->negateODIfApplicable($balanceEntity->merchant, $balanceAmount);
 
+        $balanceAmount = $this->negateMinimumBalance($balanceEntity->merchant, $balanceAmount, $balanceEntity->getId());
+
         return [
             Constants\Entity::BALANCE  => $balanceAmount,
             'isStaleAndDispatched'     => $isStaleAndDispatched
@@ -1694,6 +1696,8 @@ class Core extends Base\Core
             $updatedBasDetails = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($input);
 
             $balanceAmount = $this->negateODIfApplicable($updatedBasDetails->merchant, $updatedBasDetails->getGatewayBalance());
+
+            $balanceAmount = $this->negateMinimumBalance($updatedBasDetails->merchant, $balanceAmount, $updatedBasDetails->getBalanceId());
 
             return $balanceAmount;
         }
@@ -9746,6 +9750,34 @@ class Core extends Base\Core
         }
 
         return $merchantBalance;
+    }
+
+    public function negateMinimumBalance(Merchant\Entity $merchant, $merchantBalance, $balanceID)
+    {
+        try
+        {
+            $configValue = (new AdminService)->getConfigKey(
+                [
+                    'key' => ConfigKey::MINIMUM_BALANCE_QUEUING_THRESHOLD
+                ]);
+            if (array_key_exists($balanceID, $configValue) === true) {
+                $configuredMinimumBalance = $configValue[$balanceID];
+
+                $this->trace->info(TraceCode::DEDUCT_MINIMUM_BALANCE_FROM_GATEWAY_BALANCE, [
+                    'merchant' => $merchant->getId(),
+                    'configured_minimum_balance' => $configuredMinimumBalance,
+                    'gateway_balance' => $merchantBalance,
+                    'available_balance' => $merchantBalance - $configuredMinimumBalance
+                ]);
+
+                return $merchantBalance - $configuredMinimumBalance;
+            }
+            return $merchantBalance;
+        }
+        catch (\Exception $e)
+        {
+            return $merchantBalance;
+        }
     }
 
     private function getPartnerBankHealthConfigKey($accountType, $mode, $channel): string

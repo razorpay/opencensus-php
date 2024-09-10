@@ -883,13 +883,15 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(2000, $mozartSuccess, false, 0);
+        $this->mockMozartFetchGatewayBalance(2000, $mozartSuccess, false, 1);
 
-        $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
+        $bas = $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
             Details\Entity::GATEWAY_BALANCE           => 200000,
             Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(5)->getTimestamp(),
             Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(5)->getTimestamp(),
         ]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::MINIMUM_BALANCE_QUEUING_THRESHOLD => [$bas->getBalanceId() => 100]]);
 
         $queueParams = $this->getFundManagementPayoutCheckQueueParams([PayoutConstants::TOTAL_AMOUNT_THRESHOLD => 19000000]);
 
@@ -900,6 +902,13 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->clone()->subMinutes(120)->getTimestamp(),
                 PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(119)->getTimestamp(),
                 PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(100)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT       => 200000,
+                PayoutEntity::STATUS       => PayoutStatus::PROCESSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->clone()->subMinutes(120)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(119)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(3)->getTimestamp(),
             ],
             // Even though considered, it's not included in the calculation of the offset amount
             [

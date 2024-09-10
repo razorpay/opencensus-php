@@ -1484,6 +1484,94 @@ class RblPayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testMinimumBalanceCheckForQueuedPayoutDispatch()
+    {
+        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
+
+        $ba = $this->fixtures->edit('banking_account', 'xba00000000000', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::MINIMUM_BALANCE_QUEUING_THRESHOLD => [$ba->getBalanceId() => 100]]);
+//        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::MINIMUM_BALANCE_QUEUING_THRESHOLD => [$ba->getBalanceId()."1" => 100]]);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(4000);
+
+        sleep(1);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 400000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $payoutResponse = $this->makeRequestAndGetContent($request);
+
+        $this->fixtures->edit('banking_account', 'xba00000000000', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutResponse['id']);
+
+        // assert that payout is queued due to low balance
+        $this->assertEquals('queued', $updatedPayout->getStatus());
+
+        // dispatch queued payouts for processing
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        // assert that the balance id was picked up for queued payout processing
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $balanceId);
+
+        $updatedPayout->reload();
+
+        // Assert that the payout is still in queued state due to insufficient balance.
+        $this->assertEquals('queued', $updatedPayout->getStatus());
+
+        $this->fixtures->edit('banking_account', 'xba00000000000', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        // Add enough balance to allow the payout to get processed
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(4001);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $balanceId);
+
+        $updatedPayout->reload();
+
+        // Assert that the payout was processed after adding sufficient balance
+        $this->assertEquals('created', $updatedPayout->getStatus());
+    }
+
     public function testODBalanceCheckForQueuedPayoutDispatch()
     {
         $this->fixtures->merchant->addFeatures([Features::REDUCE_OD_BALANCE_FOR_CA]);
