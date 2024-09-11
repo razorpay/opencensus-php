@@ -2434,7 +2434,7 @@ class Repository extends Base\Repository
 
                     $results->push(...$subset);
 
-                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
+                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_LINKED_ACCOUNT_IDS_FOR_PARENT_MERCHANT_LIMIT);
 
                 return $results->pluck(MerchantEntity::ID)->toArray();
             }
