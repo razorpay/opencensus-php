@@ -7,8 +7,10 @@ import {
   createPaymentButton,
   updatePaymentButtonPostPaymentSettings,
   updatePaymentButtonReceiptSettings,
-  editAndCloneTest,
   searchButtonTest,
+  editTest,
+  cloneTest,
+  openBtnDetailsView,
 } from './utils';
 import { expectSuccessNotification, generateRandomText } from '../../utils';
 
@@ -81,12 +83,10 @@ test.describe
   });
 
   test.describe.serial('Edit and clone Payment button', () => {
-    let testButtonTitle = editAndCloneTest.buttontitle;
-    let testButtonId = editAndCloneTest.buttonId;
+    let testButtonId = editTest.buttonId;
 
     test('should edit payment button @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
-      await page.waitForLoadState();
+      openBtnDetailsView({ page, buttonId: testButtonId, willWaitForLoad: true });
       const editButton = await page.locator('i.i-edit-outline');
       await expect(editButton).toBeVisible();
       await editButton.click();
@@ -107,13 +107,12 @@ test.describe
 
       await page.getByRole('link', { name: 'Back To Dashboard' }).click();
       await page.locator('input[name="title"]').fill(updatedButtonTitle);
-      testButtonTitle = updatedButtonTitle;
       await page.getByRole('button', { name: 'Search' }).click();
       await expect(page.getByRole('link', { name: updatedButtonTitle })).toBeVisible();
     });
 
     test('should update and verify stock @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      openBtnDetailsView({ page, buttonId: testButtonId });
       await page.waitForTimeout(10 * 1000);
       await page.getByRole('button', { name: 'Update Stock' }).click();
       const isDisabled = await page.getByPlaceholder('Total Stock').isDisabled();
@@ -140,8 +139,7 @@ test.describe
     });
 
     test('should edit payments receipt @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
-      await page.waitForLoadState();
+      openBtnDetailsView({ page, buttonId: testButtonId, willWaitForLoad: true });
       const editButton = await page.locator('i.i-edit-outline');
       await expect(editButton).toBeVisible();
       await editButton.click();
@@ -163,8 +161,7 @@ test.describe
     });
 
     test('should edit post payments settings @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
-      await page.waitForLoadState();
+      openBtnDetailsView({ page, buttonId: testButtonId, willWaitForLoad: true });
       const settingsButton = await page.locator('i.i-settings-outline');
       await expect(settingsButton).toBeVisible();
       await settingsButton.click();
@@ -181,15 +178,15 @@ test.describe
     });
 
     test('should clone payment button @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
-      await page.waitForLoadState();
-
+      const cloneTestButtonId = cloneTest.buttonId;
+      const cloneTestButtonTitle = cloneTest.buttontitle;
+      openBtnDetailsView({ page, buttonId: cloneTestButtonId, willWaitForLoad: true });
       const cloneButton = await page.locator('i.i-copy');
       await expect(cloneButton).toBeVisible();
       await cloneButton.click();
 
       const duplicateButtonTitle = await page.locator('input[name="title"]').inputValue();
-      expect(duplicateButtonTitle).toBe(testButtonTitle);
+      await expect(duplicateButtonTitle).toBe(cloneTestButtonTitle);
 
       await page.getByRole('button', { name: 'Next', exact: false }).click();
       await page.getByRole('button', { name: 'Next', exact: false }).click();
@@ -200,10 +197,9 @@ test.describe
     });
 
     test('should active and deactivate payment button @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
+      openBtnDetailsView({ page, buttonId: testButtonId });
       await page.waitForTimeout(10 * 1000);
       const isActiveVisible = await page.getByText('Active', { exact: true }).isVisible();
-
       if (isActiveVisible) {
         await page.getByRole('button', { name: 'Deactivate', exact: true }).click();
         await page.getByRole('button', { name: 'Yes, deactivate' }).click();
@@ -294,17 +290,14 @@ test.describe
     test('should show and copy payment button code in details view @priority=critical', async ({
       page,
     }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
-      await page.waitForLoadState();
+      openBtnDetailsView({ page, buttonId: testButtonId, willWaitForLoad: true });
       await page.getByRole('button', { name: 'Get Code' }).click();
       await page.getByRole('button', { name: 'COPY CODE' }).click();
       await page.getByRole('link', { name: 'Back To Dashboard' }).click();
     });
 
     test('should show correct info in details view @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
-      await page.waitForLoadState();
-
+      openBtnDetailsView({ page, buttonId: testButtonId, willWaitForLoad: true });
       await expect(
         page.getByText(testButtonId, {
           exact: true,
@@ -323,9 +316,7 @@ test.describe
     });
 
     test('should download report @priority=critical', async ({ page }) => {
-      await page.goto(`${routes.PAYMENT_BUTTONS}/${testButtonId}/payments#paymentbuttons`);
-      await page.waitForLoadState();
-
+      openBtnDetailsView({ page, buttonId: testButtonId, willWaitForLoad: true });
       await page.getByText('Download Report').click();
 
       await expect(page.getByText('CSV')).toBeVisible();

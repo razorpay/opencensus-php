@@ -1,4 +1,5 @@
 import { expect } from 'utils/base';
+import { routes } from 'testConstants';
 
 import {
   expectSuccessNotification,
@@ -19,10 +20,16 @@ export const paymentButtonTitle = {
   buyNow: 'Buy Now',
   donations: 'Donations',
 };
-export const editAndCloneTest = {
+export const editTest = {
   buttontitle: 'TZFi6AGdPz',
   buttonId: 'pl_Or2cQzXQKRBjxa',
 };
+
+export const cloneTest = {
+  buttontitle: 'cloneTest-DontDeleteThis',
+  buttonId: 'pl_Oto6h8YJJY5KqF',
+};
+
 export const searchButtonTest = {
   activeButtonId: 'pl_Or58EGuQAvjRQQ',
   activeButtontitle: 'ActiveButtonTitle-DontDeleteThis',
@@ -183,8 +190,9 @@ export const createPaymentButton = async ({
   return { buttonTitle, buttonId };
 };
 
-export const openBtnDetailsView = async ({ page, buttonTitle }) => {
-  await page.locator('input[name="title"]').fill(buttonTitle);
-  await page.getByRole('button', { name: 'Search' }).click();
-  await page.getByRole('link', { name: buttonTitle }).click();
+export const openBtnDetailsView = async ({ page, buttonId, willWaitForLoad }) => {
+  await page.goto(`${routes.PAYMENT_BUTTONS}/${buttonId}/payments#paymentbuttons`);
+  if (willWaitForLoad) {
+    await page.waitForLoadState();
+  }
 };
