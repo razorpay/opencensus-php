@@ -233,6 +233,11 @@ class Constants
      */
     const SHOW_CUSTOM_DCC_DISCLOSURES = 'show_custom_dcc_discl';
 
+    /**
+     * Feature flag used to display checkout V2
+     */
+    const SHOW_CHECKOUT_V2 = 'show_checkout_v2';
+
     //org feature flag to hide monthly invoice report from dashboard
     const HIDE_INVOICE_REPORT = 'hide_invoice_report';
 
@@ -2336,6 +2341,7 @@ class Constants
         self::DISABLE_UPI_NUM_ON_L0,
         self::DISABLE_UPI_NUM_ON_L1,
         self::SHOW_CUSTOM_DCC_DISCLOSURES,
+        self::SHOW_CHECKOUT_V2,
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT,
         self::PERSONALISATION_V3_DISABLED,
         self::RAZORPAY_WALLET,
@@ -3064,6 +3070,7 @@ class Constants
         self::CUSTOMER_FEE_DONT_SETTLE                     => true,
         self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING             => true,
         self::SHOW_CUSTOM_DCC_DISCLOSURES                  => true,
+        self::SHOW_CHECKOUT_V2                             => true,
         self::DYNAMIC_CURRENCY_CONVERSION_CYBS             => true,
         self::ONE_ORDER_ONE_PAYMENT                        => true,
         self::ORG_ADMIN_PASSWORD_RESET                     => true,
