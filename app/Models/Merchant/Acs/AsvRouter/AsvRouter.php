@@ -3,10 +3,8 @@
 namespace RZP\Models\Merchant\Acs\AsvRouter;
 
 use App;
-use phpDocumentor\Reflection\Types\Self_;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Base\RepositoryManager;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
@@ -14,7 +12,6 @@ use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Constants\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\AsvFlows;
-use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as AsvSdkIntegrationConstant;
 
 
 /*
@@ -252,28 +249,7 @@ class AsvRouter
                 return false;
             }
 
-            if ($this->isTransactionActive($repoClass) === true) {
-                // in case of unit test fallback to api db as many test cases are dependent on api db
-                if ($this->app->runningUnitTests() === true) {
-                    return false;
-                }
-                return true;
-            }
-
-            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
-            $isExperimentRemoved = AsvMaps\RepoAndFunctionToSplitzMap::isExperimentRemoved($experimentName);
-            if ($isExperimentRemoved === true){
-                return true;
-            }
-
-            $result = $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $id);
-            if ($result === false) {
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                    'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::SPLITZ_REJECTED,
-                ]);
-            }
-            return $result;
+            return $this->shouldRouteToAsv();
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
@@ -315,11 +291,7 @@ class AsvRouter
             }
 
             // in case of unit test fallback to api db as many test cases are dependent on api db
-            if ($this->app->runningUnitTests() === true) {
-                return false;
-            }
-
-            return true;
+            return $this->shouldRouteToAsv();
         } catch (\Throwable $e) {
             $this->trace->traceException
             (
@@ -409,6 +381,15 @@ class AsvRouter
                 return false;
             }
 
+            if (in_array($callingIdentifier, AsvMaps\RepoAndFunctionToSplitzMap::SPLITZ_REMOVED_FILTER) === true) {
+                $this->trace->count(Metric::ASV_FILTER_ROUTING_RESULT, [
+                    'routeOrWorkerName' => $this->getRouteOrJobName(),
+                    'isFilterRequestRouted' => true,
+                    'identifier' => $callingIdentifier
+                ]);
+                return $this->shouldRouteToAsv();
+            }
+
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFilterMigration();
             $resp = $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
             if ($resp === false) {
@@ -435,6 +416,20 @@ class AsvRouter
         }
     }
 
+    // if unit test is running or env is automation then don't route to account service
+    // as we don't have account service in automation env
+    public function shouldRouteToAsv(): bool
+    {
+        if ($this->app->runningUnitTests() === true) {
+            return false;
+        }
+
+        if ($this->app['env'] === Environment::AUTOMATION) {
+            return false;
+        }
+        return true;
+    }
+
     public function shouldRouteReloadToAsv(string $callingIdentifier): bool
     {
         try {
@@ -449,22 +444,14 @@ class AsvRouter
                 return false;
             }
 
-            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForReloadMigration();
-            $resp = $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
-            if ($resp === false) {
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                    'routeOrWorkerName' => $this->getRouteOrJobName(),
-                    'reason' => self::SPLITZ_REJECTED,
-                ]);
-            }
-
-            return $resp;
+          return $this->shouldRouteToAsv();
         } catch (\Exception $e) {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
                 'routeOrWorkerName' => $this->getRouteOrJobName(),
                 'reason' => self::GOT_EXCEPTION,
             ]);
+            return false;
         }
     }
 

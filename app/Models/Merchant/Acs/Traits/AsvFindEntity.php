@@ -33,16 +33,18 @@ trait AsvFindEntity
                 if ($connectionType == null) {
                     $connectionType = Connection::ASV_WRITER;
                 } else {
-                    $this->trace->info(TraceCode::ACCOUNT_SERVICE_DO_NOT_ROUTE_REQUEST, [
-                        "route_or_job_name" => $this->asvRouter->getRouteOrJobName(),
-                        "connection_type" => $connectionType,
-                        "columns" => $columns,
-                        "id" => $id
-                    ]);
-                    $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
-                        'routeOrWorkerName' => $this->asvRouter->getRouteOrJobName(),
-                        'reason' => $this->asvRouter::REQUEST_WITH_CONNECTION_TYPE,
-                    ]);
+                    if ($connectionType != Connection::ASV_WRITER) {
+                        $this->trace->info(TraceCode::ACCOUNT_SERVICE_DO_NOT_ROUTE_REQUEST, [
+                            "route_or_job_name" => $this->asvRouter->getRouteOrJobName(),
+                            "connection_type" => $connectionType,
+                            "columns" => $columns,
+                            "id" => $id
+                        ]);
+                        $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED, [
+                            'routeOrWorkerName' => $this->asvRouter->getRouteOrJobName(),
+                            'reason' => $this->asvRouter::REQUEST_WITH_CONNECTION_TYPE,
+                        ]);
+                    }
                 }
             } else {
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND;
