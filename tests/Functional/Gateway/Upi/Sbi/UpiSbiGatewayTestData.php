@@ -280,6 +280,44 @@ return [
         ],
     ],
 
+    'testValidateAccountPaytm' => [
+        'request' => [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'vpa',
+                'value'  => 'success@paytm'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'vpa'           => "success@paytm",
+                'success'       => false,
+                'customer_name' => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testValidateAccountPaytmUpperCase' => [
+        'request' => [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'vpa',
+                'value'  => 'success@PAYTM'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'vpa'           => "success@PAYTM",
+                'success'       => false,
+                'customer_name' => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testValidateAccountVpaFailed' => [
         'request' => [
             'url'    => '/payments/validate/account',

@@ -16,6 +16,24 @@ class Vpa extends Base
 
     public function processValidation($input)
     {
+        // Block paytm handle
+        if ((isset($input['value']) === true) &&
+            (is_numeric($input['value']) === false))
+        {
+            $address =  $input['value'] ;
+            list($username, $handle) = explode('@', $address);
+            $handle = strtolower($handle);
+            // explicitly block paytm handles
+            if ($handle === 'paytm')
+            {
+                return [
+                    'vpa'               => $input['value'],
+                    'success'           => false,
+                    'customer_name'     => null,
+                ];
+            }
+        }
+
         // Check if we can process the validate account request for numeric/non-numeric VPA to UPS directly
         if (is_numeric($input['value']) and
             $this->shouldRouteValidateAccountRequestToUps())

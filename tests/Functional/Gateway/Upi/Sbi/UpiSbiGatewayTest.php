@@ -492,6 +492,24 @@ class UpiSbiGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateAccountPaytm()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountPaytmUpperCase()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testValidateAccountVpaFailed()
     {
         config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
