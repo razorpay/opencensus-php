@@ -415,7 +415,8 @@ class Activate extends Base\Core
         $merchantDetail = $merchant->merchantDetail;
 
         // @todo: add a check - should be through an instantly_activated state
-        if ($merchant->getCountry() !== Country::MY) {
+        $isCurlecMerchant = Country::matches($merchant->getCountry(), Country::MY);
+        if ($isCurlecMerchant === false) {
             $merchant->getValidator()->validateBeforeKycVerified();
         }
 

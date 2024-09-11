@@ -6478,9 +6478,7 @@ class Core extends Base\Core
 
     public function isMalaysianMerchant($merchant)
     {
-        $countryCode = $merchant->getCountry();
-
-        if ($countryCode !== null && $countryCode === Country::MY)
+        if (Country::matches($merchant->getCountry(), Country::MY))
         {
             return true;
         }
