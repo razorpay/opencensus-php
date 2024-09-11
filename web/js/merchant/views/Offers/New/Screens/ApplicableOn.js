@@ -184,7 +184,7 @@ class ApplicableOn extends React.Component {
               validationState={touched?.type && errors?.type ? 'error' : 'none'}
               errorText={errors?.type}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
               <ActionList>
                 {Object.values(OFFER_TYPES_OPTIONS).map((type) => (
                   <ActionListItem
