@@ -13,6 +13,7 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use Mockery\MockInterface;
 use Mockery\Matcher\AnyArgs;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -3626,6 +3627,274 @@ class CoreTest extends TestCase
         $this->assertEquals(false, $merchantDetails->islocked());
 
         $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(true, $merchantDetailData['locked']);
+
+    }
+
+    public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedThroughMDS()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+                       ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+                       ->willReturn(false);
+
+        $mockBA = $this->getMockBuilder(BasicAuth::class)
+                       ->setConstructorArgs([$this->app])
+                       ->setMethods(['getAdmin'])
+                       ->getMock();
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'needs_clarification',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $org = $this->fixtures->create('org');
+
+        $mockBA->expects($this->any())
+                       ->method('getAdmin')
+                       ->willReturn($merchantDetails->merchant);
+
+        $this->app->instance('basicauth', $mockBA);
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId($org->getId());
+
+        $this->assertEquals(false, $merchantDetails->islocked());
+
+        $response = $detailService->updateActivationStatus($merchantDetails->merchant->getId(), $activationStatusData);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+        $this->assertArrayHasKey('activation_status', $response);
+        $this->assertArrayHasKey('contact_name', $response);
+        $this->assertArrayHasKey('locked', $response);
+        $this->assertArrayHasKey('contact_email', $response);
+
+        $this->assertEquals('under_review', $response['activation_status']);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(true, $merchantDetailData['locked']);
+
+    }
+
+    public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedThroughMDSWithMutex()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+                       ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+                       ->willReturn(true);
+
+        $mockBA = $this->getMockBuilder(BasicAuth::class)
+                       ->setConstructorArgs([$this->app])
+                       ->setMethods(['getAdmin'])
+                       ->getMock();
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'needs_clarification',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $org = $this->fixtures->create('org');
+
+        $mockBA->expects($this->any())
+               ->method('getAdmin')
+               ->willReturn($merchantDetails->merchant);
+
+        $this->app->instance('basicauth', $mockBA);
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId($org->getId());
+
+        $this->assertEquals(false, $merchantDetails->islocked());
+
+        $response = $detailService->updateActivationStatus($merchantDetails->merchant->getId(), $activationStatusData);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+        $this->assertArrayHasKey('activation_status', $response);
+        $this->assertArrayHasKey('contact_name', $response);
+        $this->assertArrayHasKey('locked', $response);
+        $this->assertArrayHasKey('contact_email', $response);
+
+        $this->assertEquals('under_review', $response['activation_status']);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(true, $merchantDetailData['locked']);
+
+    }
+
+    public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedUsingInternalMerchantActivationStatus()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+                       ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+                       ->willReturn(false);
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'needs_clarification',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $activationStatusData["workflow_maker_id"] = $admin->getId();
+
+        $this->assertEquals(false, $merchantDetails->islocked());
+
+        $response = $detailService->updateActivationStatusInternal($merchantDetails->merchant->getId(), $activationStatusData);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+        $this->assertArrayHasKey('activation_status', $response);
+        $this->assertArrayHasKey('contact_name', $response);
+        $this->assertArrayHasKey('locked', $response);
+        $this->assertArrayHasKey('contact_email', $response);
+
+        $this->assertEquals('under_review', $response['activation_status']);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(true, $merchantDetailData['locked']);
+
+    }
+
+    public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedUsingInternalMerchantActivationStatusWithMutex()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+                       ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+                       ->willReturn(true);
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'needs_clarification',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $activationStatusData["workflow_maker_id"] = $admin->getId();
+
+        $this->assertEquals(false, $merchantDetails->islocked());
+
+        $response = $detailService->updateActivationStatusInternal($merchantDetails->merchant->getId(), $activationStatusData);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+        $this->assertArrayHasKey('activation_status', $response);
+        $this->assertArrayHasKey('contact_name', $response);
+        $this->assertArrayHasKey('locked', $response);
+        $this->assertArrayHasKey('contact_email', $response);
+
+        $this->assertEquals('under_review', $response['activation_status']);
 
         $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
 
@@ -17002,7 +17271,7 @@ class CoreTest extends TestCase
         $this->app->instance("rzp.mode", Mode::LIVE);
 
        // (new UpdateMerchantContext(Mode::TEST, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
-        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+        $response = (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
                                                                             'merchant_id'             => $merchantDetails->getId(),
                                                                             'activation_status'       => 'under_review',
                                                                             'fee_based_gating_flow'   => true,
@@ -17014,6 +17283,16 @@ class CoreTest extends TestCase
             'artefact_identifier'  => 'number',
             'artefact_type'        => 'mcc_categorisation_website'
         ]);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsObject($response);
+
+        $this->assertNotEmpty($response->getActivationStatus());
+        $this->assertNotEmpty($response->getContactName());
+        $this->assertNotEmpty($response->getBusinessType());
+        $this->assertNotEmpty($response->getId());
+
 
         $this->assertEquals('verified', $verificationData['status']);
 
@@ -17169,12 +17448,21 @@ class CoreTest extends TestCase
 
         $this->app->instance("rzp.mode", Mode::TEST);
 
-        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+        $response = (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
             'merchant_id'             => $merchantDetails->getId(),
             'activation_status'       => 'under_review',
             'fee_based_gating_flow'   => true,
             'action'                  => 'UPDATE_ACTIVATION_STATUS'
         ]);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsObject($response);
+
+        $this->assertNotEmpty($response->getActivationStatus());
+        $this->assertNotEmpty($response->getContactName());
+        $this->assertNotEmpty($response->getBusinessType());
+        $this->assertNotEmpty($response->getId());
 
         $merchantDetail = $this->getDbLastEntity('merchant_detail');
 
@@ -17325,11 +17613,20 @@ class CoreTest extends TestCase
 
         $this->app->instance("rzp.mode", Mode::TEST);
 
-        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+        $response = (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
             'merchant_id'             => $merchantDetails->getId(),
             'activation_status'       => 'under_review',
             'action'                  => 'UPDATE_ACTIVATION_STATUS'
         ]);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsObject($response);
+
+        $this->assertNotEmpty($response->getActivationStatus());
+        $this->assertNotEmpty($response->getContactName());
+        $this->assertNotEmpty($response->getBusinessType());
+        $this->assertNotEmpty($response->getId());
 
         $merchantDetail = $this->getDbLastEntity('merchant_detail');
 

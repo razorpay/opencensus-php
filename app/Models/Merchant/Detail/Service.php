@@ -155,6 +155,8 @@ class Service extends Base\Service
 
     protected bool $isGSTBvsSyncFlowSuccess = true;
 
+    protected $mutex;
+
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
         parent::__construct();
@@ -169,6 +171,13 @@ class Service extends Base\Service
 
         $this->pgosProxyController = new MerchantOnboardingProxyController();
 
+        $this->mutex = $this->app['api.mutex'];
+
+    }
+
+    public function replaceCoreForMocking($core)
+    {
+        $this->core = $core;
     }
 
     public function fetchMerchantDetailsForAccountReceivables(): array
@@ -1900,6 +1909,27 @@ class Service extends Base\Service
      */
     public function updateActivationStatus(string $merchantId, array $input): array
     {
+        if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input)
+                {
+                    return $this->handleUpdateActivationStatus($merchantId, $input);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+
+        } else {
+
+            return $this->handleUpdateActivationStatus($merchantId, $input);
+        }
+    }
+
+    private function handleUpdateActivationStatus(string $merchantId, array $input): array
+    {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $admin = $this->app['basicauth']->getAdmin();
@@ -1910,16 +1940,14 @@ class Service extends Base\Service
          */
         if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === false)
         {
-            $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input,$admin);
+            $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input, $admin);
 
             if (empty($input[Entity::ACTIVATION_STATUS]) === true) {
                 return $merchantDetails->toArrayPublic();
             }
         }
 
-        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $admin);
-
-        return $merchantDetails->toArrayPublic();
+        return (new Core)->updateActivationStatus($merchant, $input, $admin)->toArrayPublic();
     }
 
     public function updatePosActivationStatusOfMerchant(string $merchantId, array $input): array
@@ -1946,6 +1974,27 @@ class Service extends Base\Service
     }
 
     public function updateActivationStatusInternal(string $merchantId, array $input): array
+    {
+        if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input)
+                {
+                    return $this->handleUpdateActivationStatusInternal($merchantId, $input);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+
+        } else {
+
+            return $this->handleUpdateActivationStatusInternal($merchantId, $input);
+        }
+    }
+
+    private function handleUpdateActivationStatusInternal(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
@@ -5159,6 +5208,27 @@ class Service extends Base\Service
      */
     public function submitMerchantInternal($merchantId, $input)
     {
+        if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input)
+                {
+                    return $this->handleSubmitMerchantInternal($merchantId, $input);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+
+        } else {
+
+            return $this->handleSubmitMerchantInternal($merchantId, $input);
+        }
+    }
+
+    private function handleSubmitMerchantInternal($merchantId, $input)
+    {
         $this->trace->info(TraceCode::SUBMIT_MERCHANT_INTERNAL,[
             'request_submit_internal' => $input
         ]);
@@ -5243,7 +5313,6 @@ class Service extends Base\Service
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
                 return $this->core->submitMerchantInternal($input, $merchantDetails);
         }
-
     }
 
     private function unsetServiceAgreementConsent(array &$input)

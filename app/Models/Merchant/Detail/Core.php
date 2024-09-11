@@ -1066,6 +1066,42 @@ class Core extends Base\Core
         return $response['response']['variant']['name'] ?? '';
     }
 
+    public function shouldApplyMutexOnMerchantEntitiesUpdate(string $merchantId): bool
+    {
+        $mode = 'enable';
+        $routeName = $this->app['request.ctx']->getRoute() ?? 'NA';
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.apply_mutex_on_merchant_entities_update_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::APPLY_MUTEX_ON_MERCHANT_ENTITIES_UPDATE, [
+                'splitz_output' => $variant,
+                'route'         => $routeName,
+                'merchant_id'   => $merchantId
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'experiment_id' => $this->app['config']->get('app.apply_mutex_on_merchant_entities_update_experiment_id'),
+                'route'         => $routeName,
+                'merchant_id'   => $merchantId
+            ]);
+
+            return false;
+        }
+    }
+
     public function triggerOCRService($input, $ocrServiceName, $merchant)
     {
         try

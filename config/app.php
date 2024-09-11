@@ -461,6 +461,8 @@ return array(
 
     'apply_mutex_on_pgos_dual_write_experiment_id' => env('APPLY_MUTEX_ON_PGOS_DUAL_WRITE_EXPERIMENT_ID'),
 
+    'apply_mutex_on_merchant_entities_update_experiment_id' => env('APPLY_MUTEX_ON_MERCHANT_ENTITIES_UPDATE_EXPERIMENT_ID'),
+
     'easy_submerchant_pgos_live_mode_experiment_id' => env('EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID'),
 
     'pgos_phantom_live_mode_experiment_id' => env('PGOS_PHANTOM_LIVE_MODE_EXPERIMENT_ID'),
