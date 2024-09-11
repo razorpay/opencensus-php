@@ -313,4 +313,59 @@ return [
 
     ],
 
+    'testInternalCustomerCreateAddress' => [
+        'request' => [
+            'url' => '/internal/customers/cust_100000customer/addresses',
+            'method' => 'post',
+            'content' => [
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'zipcode'       => '560078',
+                'country'       => 'in',
+                'type'  => 'billing_address'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'  => 'billing_address',
+                'primary'       => true,
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'zipcode'       => '560078',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'country'       => 'in'
+            ],
+        ],
+    ],
+    'testInternalCustomerEditAddress' => [
+        'request' => [
+            'url' => '/internal/customers/cust_100000customer/addresses',
+            'method' => 'put',
+            'content' => [
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'zipcode'       => '560079',
+                'country'       => 'in',
+                'type'  => 'billing_address'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'  => 'billing_address',
+                'primary'       => true,
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'zipcode'       => '560079',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'country'       => 'in'
+            ],
+        ],
+    ],
+
 ];

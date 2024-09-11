@@ -4,12 +4,14 @@ namespace RZP\Tests\Functional\Address;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 use Mockery;
 
 class AddressTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -218,5 +220,31 @@ class AddressTest extends TestCase
                 'content'   => []
             ]
         ];
+    }
+
+    public function testInternalCustomerEditAddress()
+    {
+
+        $this->fixtures->create('customer', [
+            'merchant_id' => '10000000000000',
+            'contact'     => '+919988771111']);
+
+        $customer = $this->getDbLastEntity('customer');
+
+        // Create an address
+        $testInternalCustomerCreateAddress = $this->testData['testInternalCustomerCreateAddress'];
+        $testInternalCustomerCreateAddress['request']['url'] = '/internal/customers/' .  $customer->getPublicId() . '/addresses';
+        $this->ba->checkoutServiceProxyAuth();
+        $content = $this->startTest($testInternalCustomerCreateAddress);
+
+        //Assert that address has been successfully created.
+        $this->assertNotNull($content['id']);
+        $address = $this->getDbLastEntity('address');
+
+        //Edit Address
+        $testInternalCustomerEditAddress = $this->testData['testInternalCustomerEditAddress'];
+        $testInternalCustomerEditAddress['request']['url'] = '/internal/customers/' . $customer->getPublicId() . '/addresses';
+        $testInternalCustomerEditAddress['request']['content']['id']=$address['id']; // update dummy id with newly created address
+        $contentInternalCustomerEditAddress = $this->startTest($testInternalCustomerEditAddress);
     }
 }

@@ -251,6 +251,13 @@ class Service extends Base\Service
             }
         }
 
+        if($this->merchant->isLRSTravelCitiFlowEnabled())
+        {
+            $addresses = $this->repo->address->fetchAddressesForEntity($customer, ["type" => 'billing_address']);
+
+            $response['addresses'] = $addresses;
+        }
+
         return $response;
     }
 
@@ -393,6 +400,13 @@ class Service extends Base\Service
                 $customer->getContact(),
                 $this->merchant->getId()
             );
+        }
+
+        if($this->merchant->isLRSTravelCitiFlowEnabled())
+        {
+            $addresses = $this->repo->address->fetchAddressesForEntity($customer, ["type" => 'billing_address']);
+
+            $customerData['addresses'] = $addresses;
         }
 
         return $customerData;
@@ -1257,6 +1271,25 @@ class Service extends Base\Service
                                             $customerId, $this->merchant);
 
         $address = (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input);
+
+        return $address->toArrayPublic();
+    }
+
+    public function editLocalAddress($customerId, array $input)
+    {
+        $customer = $this->repo->customer->findByPublicIdAndMerchant(
+                                            $customerId, $this->merchant);
+        try
+        {
+            $address = $this->repo->address->findByEntityAndId($input[Base\UniqueIdEntity::ID], $customer);
+        }
+        catch (\Throwable $ex)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,null,null,PublicErrorDescription::BAD_REQUEST_CUSTOMER_ADDRESS_NOT_FOUND);
+        }
+                                    
+        $address = (new Address\Core)->edit($address, $input);
 
         return $address->toArrayPublic();
     }

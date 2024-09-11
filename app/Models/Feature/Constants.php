@@ -2105,6 +2105,12 @@ class Constants
     const LRSTravelFlow = 'lrs_travel_flow';
 
     /**
+     * Feature flag to enable merchants for LRS travel transactions via CITI
+     */
+
+    const LRSTravelCitiFlow = 'lrs_travel_citi_flow';
+
+    /**
      * Feature flag to enable merchants for LRS non standard checkout transactions
      */
     const LRSNonStandardCheckout = 'lrs_non_standard_checkout';
@@ -2355,6 +2361,7 @@ class Constants
         DcsConstants::ShowSingleDCCCurrency,
         DcsConstants::LRSEducationFlow,
         self::LRSTravelFlow,
+        self::LRSTravelCitiFlow,
         self::LRSNonStandardCheckout,
         DcsConstants::LRSImportFeeBreakup,
         self::CustomMessageForCFB,
@@ -2976,6 +2983,7 @@ class Constants
         DcsConstants::ImportSettlement                     => true,
         DcsConstants::LRSEducationFlow                     => true,
         self::LRSTravelFlow                                => true,
+        self::LRSTravelCitiFlow                            => true,
         self::LRSNonStandardCheckout                       => true,
         DcsConstants::LRSImportFeeBreakup                  => true,
         self::ONE_CLICK_OVERRIDE_THEME                     => true,
@@ -4291,6 +4299,11 @@ class Constants
         ],
         self::LRSTravelFlow => [
             'feature'       => self::LRSTravelFlow,
+            'display_name'  => 'Feature to enable LRS for Travel flow',
+            'documentation' => '',
+        ],
+        self::LRSTravelCitiFlow => [
+            'feature'       => self::LRSTravelCitiFlow,
             'display_name'  => 'Feature to enable LRS for Travel flow',
             'documentation' => '',
         ],

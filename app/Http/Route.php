@@ -1426,6 +1426,8 @@ class Route
         'customer_fetch_by_id_global'              => ['get',      'customers/1cc/global/{id}',                      'CustomerController@fetchGlobalCustomerByID' ],
         'customer_create_address'                  => ['post',     'customers/{id}/addresses',                       'CustomerController@postCreateAddress'                              ],
         'customer_delete_address'                  => ['delete',   'customers/{id}/addresses/{address_id}',          'CustomerController@deleteAddress'                                  ],
+        'internal_customer_create_address'         => ['post',     'internal/customers/{id}/addresses',              'CustomerController@postCreateAddress'                              ],
+        'internal_customer_edit_address'           => ['put',      'internal/customers/{id}/addresses',              'CustomerController@editLocalAddress'                               ],
         'customer_fetch_addresses'                 => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
         'customer_set_primary_address'             => ['put',      'customers/{id}/addresses/{address_id}/primary',  'CustomerController@putPrimaryAddress'                              ],
         'customer_get_wallet_balance'              => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
@@ -8176,12 +8178,13 @@ class Route
         'customer_truecaller_verify_internal',
         'checkout_personalisation_internal',
         'customer_fetch_internal_for_checkout',
+        'internal_customer_create_address',
+        'internal_customer_edit_address',
         'global_customer_find_or_create_for_checkout',
         'fetch_payment_config_checkout_internal',
         'order_fetch_internal_checkout',
         'merchant_methods_offers_checkout_internal',
         'checkout_1cc_configs_get',
-
 
         'partner_config_fetch',
         'partner_config_edit',
@@ -18204,6 +18207,8 @@ class Route
         ],
 
         'checkout_service' => [
+            'internal_customer_create_address',
+            'internal_customer_edit_address',
             'contact_get_checkout',
             'merchant_policy_details',
             'fetch_payment_config_checkout_internal',
