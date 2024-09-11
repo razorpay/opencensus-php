@@ -3417,18 +3417,8 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsCreatedBetweenOfOrg($from, $to, $org = Org\Entity::RAZORPAY_ORG_ID)
     {
-        $isBusinessBanking = false;
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
-
-            if ($this->repo->isTransactionActive()) {
-                $query = $this->newQueryWithConnection(
-                    $this->getConnectionFromType(Connection::ASV_WRITER)
-                );
-            } else {
-                $data = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantCreatedBetweenForOrgWithBusinessBanking($from, $to, $org, $isBusinessBanking);
-                $this->resetConnectionOnModels($data, $this->getSlaveConnection());
-                return $data->pluck(Entity::ID)->toArray();
-            }
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
         } else {
             $query = $this->newQueryWithConnection($this->getSlaveConnection());
         }
