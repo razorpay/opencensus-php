@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function isProductRequest()
     {
         return ($this->getAttribute(self::TYPE) === Type::PRODUCT);

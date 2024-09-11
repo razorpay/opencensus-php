@@ -26,14 +26,24 @@ class Repository extends BaseRepository
     public function getRequestDetails(string $id)
     {
         $relations = [
-            'merchant',
             'states',
             'states.rejectionReasons'
         ];
 
-        return $this->newQuery()
+         $merchantRequests = $this->newQuery()
                     ->where(Entity::ID, $id)
                     ->with($relations)
                     ->get();
+
+
+        foreach ($merchantRequests as $merchantRequest)
+        {
+            if(empty($merchantRequest) === false && $merchantRequest->getMerchantId() !== null)
+            {
+                $merchantRequest->merchant;
+            }
+        }
+
+        return $merchantRequests;
     }
 }

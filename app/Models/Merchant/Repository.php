@@ -1128,7 +1128,13 @@ class Repository extends Base\Repository
     {
         $tag = Constants::PARTNER_REFERRAL_TAG_PREFIX.$merchantId;
 
-        return $this->newQuery()
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        $merchants =  $query
                     ->select(
                         Entity::ID,
                         Entity::NAME,
@@ -1138,6 +1144,9 @@ class Repository extends Base\Repository
                     ->withAnyTag($tag)
                     ->whereNull(Entity::SUSPENDED_AT)
                     ->get();
+
+        $this->resetConnectionOnModels($merchants);
+        return $merchants;
     }
 
     public function fetchMerchantsWithTag($tagName)
