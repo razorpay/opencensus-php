@@ -4739,7 +4739,7 @@ class Service extends Base\Service
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
-        $merchant = (new Merchant\Entity)->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         if ($merchant->isLinkedAccount() === true)
         {
