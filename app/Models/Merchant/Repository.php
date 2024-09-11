@@ -2689,7 +2689,7 @@ class Repository extends Base\Repository
     }
     public function fetchAllMids($offsetID,$limit)
     {
-        $query=$this->newQuery()
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select(Entity::ID)
                     ->orderBy(Entity::CREATED_AT,'asc');
 
