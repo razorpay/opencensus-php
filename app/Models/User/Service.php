@@ -725,6 +725,11 @@ class Service extends Base\Service
             $uniqueUserId = UniqueIdEntity::generateUniqueId();
             $uniqueMerchantId = UniqueIdEntity::generateUniqueId();
 
+            $loggedInUserEmail = "";
+            if ($this->app['basicauth'] !== null && $this->app['basicauth']->getUser() !== null){
+                $loggedInUserEmail = $this->app['basicauth']->getUser()->getEmail();
+            }
+
             $countryCode = $input['country_code'] ?? 'IN';
 
             // Store the generated unique IDs in the configuration
@@ -733,7 +738,7 @@ class Service extends Base\Service
 
             try
             {
-                $this->handlePGOSOnboardingForAssistedMerchant($uniqueMerchantId, $signupCampaign, $countryCode, $input, $uniqueUserId);
+                $this->handlePGOSOnboardingForAssistedMerchant($uniqueMerchantId, $signupCampaign, $countryCode, $input, $uniqueUserId, $loggedInUserEmail);
             }
             catch (\Throwable $exception)
             {
@@ -1092,7 +1097,7 @@ class Service extends Base\Service
         }
     }
 
-    private function handlePGOSOnboardingForAssistedMerchant($merchantId, $signupCampaign, $countryCode, $input, $userId)
+    private function handlePGOSOnboardingForAssistedMerchant($merchantId, $signupCampaign, $countryCode, $input, $userId,$loggedInUserEmail)
     {
         $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
 
@@ -1123,7 +1128,8 @@ class Service extends Base\Service
                 'user_id'                               => $userId,
                 DeviceDetail\Constants::WORKFLOW_TYPE   => $workflowType,
                 DeviceDetail\Constants::PRODUCT         => $product,
-                DeviceDetail\Constants::PLATFORM        => $platform
+                DeviceDetail\Constants::PLATFORM        => $platform,
+                DeviceDetail\Constants::SALESEMAILID    => $loggedInUserEmail,
 
             ];
 

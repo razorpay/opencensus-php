@@ -41,6 +41,7 @@ class Constants
     const PRODUCT  = "product";
 
     const PLATFORM = "platform";
+    const SALESEMAILID = "sales_email_id";
 
     const ALL_PLATFORM = "all"; // to be used later when obs changes are done
 
