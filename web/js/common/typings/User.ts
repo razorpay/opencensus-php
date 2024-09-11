@@ -98,6 +98,8 @@ type Merchant = {
   pricing_plan_id?: string;
   name: string;
   country_code: CountryCodeType;
+  display_name: string;
+  email: string;
 };
 
 type UserProperties = {
