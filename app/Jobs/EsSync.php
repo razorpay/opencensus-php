@@ -130,6 +130,12 @@ class EsSync extends Job
                     return $this->syncMerchantEntities();
                 }
 
+                $this->trace->info(TraceCode::ES_DEBUG_INPUT_ASV, [
+                    'entity'       => $this->entity,
+                    'ids'          => $this->ids,
+                    'mode'         => $this->mode,
+                ]);
+
                 $this->syncApiEntities();
 
                 break;

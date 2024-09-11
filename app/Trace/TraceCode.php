@@ -3218,6 +3218,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_DEBUG_MERCHANT_COUNT                               = 'ES_DEBUG_MERCHANT_COUNT';
     const ES_DEBUG_TOTAL_COUNT                                  = 'ES_DEBUG_TOTAL_COUNT';
     const ES_DEBUG_INPUT                                        = 'ES_DEBUG_INPUT';
+    const ES_DEBUG_INPUT_ASV                                    = 'ES_DEBUG_INPUT_ASV';
+
 
     const RECON_ALERT                                           = 'RECON_ALERT';
     const RECON_EMAIL_VALIDATION_FAILED                         = 'RECON_EMAIL_VALIDATION_FAILED';
@@ -11929,7 +11931,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STOREFRONT_CARD_PAYMENT_VIA_REARCH                    = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH';
 
     const STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR       = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR';
-    
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

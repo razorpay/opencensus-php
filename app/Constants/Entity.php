@@ -906,7 +906,8 @@ class Entity
         self::MERCHANT_DOCUMENT,
         self::MERCHANT_EMAIL,
         self::MERCHANT_WEBSITE,
-        self::MERCHANT_BUSINESS_DETAIL
+        self::MERCHANT_BUSINESS_DETAIL,
+        self::ACCOUNT
     ];
 
     /**

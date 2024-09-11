@@ -14,7 +14,6 @@ use RZP\Models\Partner\Config as PartnerConfig;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
-    use AsvGetAttribute;
 
     const ID                = 'id';
 
@@ -197,6 +196,11 @@ class Entity extends Base\PublicEntity
     public function getMerchantAttribute()
     {
         return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "merchant", 'getPartnerId');
+    }
+
+    public function getPartnerAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "partner", 'getPartnerId');
     }
 
     public function isRecordOnly(): bool
