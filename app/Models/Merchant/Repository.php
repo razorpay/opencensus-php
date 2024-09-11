@@ -1553,11 +1553,29 @@ class Repository extends Base\Repository
         // Order by created_at asc so that the partner merchant makes it to
         // the top of the list followed by submerchants
         //
-        return $this->newQuery()
+
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+
+            if ($this->repo->isTransactionActive()) {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            } else {
+                $data = (new Acs\AsvSdkIntegration\Merchant())->fetchByOrgIdAndEmail($orgId, $email);
+                $this->resetConnectionOnModels($data);
+                return $data;
+            }
+        } else {
+            $query = $this->newQuery();
+        }
+
+        $data = $query
                     ->orgId($orgId)
                     ->where(Entity::EMAIL, $email)
                     ->orderBy(Entity::CREATED_AT, 'asc')
                     ->get();
+        $this->resetConnectionOnModels($data);
+        return $data;
     }
 
     /**
@@ -2505,16 +2523,30 @@ class Repository extends Base\Repository
     {
         $limit = 1000;
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
 
-        return $query->select(Entity::ID)
+            if ($this->repo->isTransactionActive()) {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            } else {
+                $data = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantMidsFromParentMerchantIdWhereLiveEnableWithOffset($merchantId, $offset);
+                $this->resetConnectionOnModels($data, $this->getSlaveConnection());
+                return $data->pluck(Entity::ID)->toArray();
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $data = $query->select(Entity::ID)
             ->where(Entity::PARENT_ID, $merchantId)
             ->where(Entity::LIVE, true)
             ->offset($offset)
             ->limit($limit)
-            ->get()
-            ->pluck(Entity::ID)
-            ->toArray();
+            ->get();
+        $this->resetConnectionOnModels($data, $this->getSlaveConnection());
+        return $data->pluck(Entity::ID)->toArray();
+
     }
 
     public function fetchLinkedAccountMidsLiveDisabledToParentMerchantLiveDisabled($merchantId, $offset = 0)
@@ -2522,17 +2554,32 @@ class Repository extends Base\Repository
         $limit  = 1000;
         $reason = Constants::LIVE_DISABLED_AS_PARENT_MERCHANT_LIVE_DISABLED;
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
 
-        return $query->select(Entity::ID)
+            if ($this->repo->isTransactionActive()) {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            } else {
+                $data = (new Acs\AsvSdkIntegration\Merchant())
+                    ->fetchMerchantMidsFromParentMerchantIdWhereLiveDisableReasonWithOffset($merchantId, $reason, $offset);
+                $this->resetConnectionOnModels($data, $this->getSlaveConnection());
+                return $data->pluck(Entity::ID)->toArray();
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+
+        $data = $query->select(Entity::ID)
             ->where(Entity::PARENT_ID, $merchantId)
             ->where(Entity::LIVE, false)
             ->where(Entity::LIVE_DISABLE_REASON, $reason)
             ->offset($offset)
             ->limit($limit)
-            ->get()
-            ->pluck(Entity::ID)
-            ->toArray();
+            ->get();
+        $this->resetConnectionOnModels($data, $this->getSlaveConnection());
+        return $data->pluck(Entity::ID)->toArray();
     }
 
 
@@ -3370,13 +3417,30 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsCreatedBetweenOfOrg($from, $to, $org = Org\Entity::RAZORPAY_ORG_ID)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $isBusinessBanking = false;
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+
+            if ($this->repo->isTransactionActive()) {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER)
+                );
+            } else {
+                $data = (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantCreatedBetweenForOrgWithBusinessBanking($from, $to, $org, $isBusinessBanking);
+                $this->resetConnectionOnModels($data, $this->getSlaveConnection());
+                return $data->pluck(Entity::ID)->toArray();
+            }
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $data = $query
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->where(Entity::ORG_ID, '=' , $org)
             ->where(Entity::BUSINESS_BANKING, '=', false)
-            ->get()
-            ->pluck(Entity::ID)
-            ->toArray();
+            ->get();
+
+        $this->resetConnectionOnModels($data, $this->getSlaveConnection());
+        return $data->pluck(Entity::ID)->toArray();
 
     }
 

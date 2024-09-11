@@ -12,11 +12,23 @@ use Rzp\Accounts\Merchant\V1\FilterRequest;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merchant as MerchantProtoMapper;
+use RZP\Trace\TraceCode;
 
 class Merchant extends Base
 {
     const FILTER_TIMEOUT_IN_MICRO_SECONDS = 5000000;
 
+    const FETCH_BY_ORG_ID_AND_EMAIL
+        = 'fetch_by_org_id_and_email';
+
+    const FETCH_LINKED_ACCOUNT_MIDS_FROM_PARENT_MERCHANT_ID_WHERE_LIVE_DISABLED_WITH_OFFSET
+        = 'fetch_linked_accountMids_from_parent_merchant_id_where_live_disabled_with_offset';
+
+    const FETCH_LINKED_ACCOUNT_MIDS_FROM_PARENT_MERCHANT_ID_WHERE_LIVE_ENABLED_WITH_OFFSET
+        = 'fetch_linked_accountMids_from_parent_merchant_id_where_live_enabled_with_offset';
+
+    const FETCH_MERCHANTS_CREATED_BETWEEN_FOR_ORG_WITH_BUSINESS_BANKING
+        = 'fetch_merchants_created_between_for_org_with_business_banking';
     const MERCHANT_FIND_BY_IDS
         = 'merchant_find_by_ids';
     const GET_NON_SUSPENDED_MERCHANTS_FROM_IDS
@@ -310,6 +322,58 @@ class Merchant extends Base
         $filterRequest->setQueryIdentifier(self::MERCHANT_FIND_BY_IDS);
         $filterRequest->setBindings(
             json_encode([$ids])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response);
+    }
+
+    public function fetchByOrgIdAndEmail(string $orgId, string $email, int $limit = 2000, int $offset = 0): Collection|PublicCollection
+    {
+        $filterRequest = new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::FETCH_BY_ORG_ID_AND_EMAIL);
+        $filterRequest->setBindings(
+            json_encode([$orgId, $email, $limit, $offset])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response);
+    }
+
+    public function fetchMerchantMidsFromParentMerchantIdWhereLiveDisableReasonWithOffset(string $parentMerchantId, string $liveDisabledReason, int $offset): Collection|PublicCollection
+    {
+        $filterRequest = new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::FETCH_LINKED_ACCOUNT_MIDS_FROM_PARENT_MERCHANT_ID_WHERE_LIVE_DISABLED_WITH_OFFSET);
+        $filterRequest->setBindings(
+            json_encode([$parentMerchantId, $liveDisabledReason, $offset])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response);
+    }
+
+    public function fetchMerchantMidsFromParentMerchantIdWhereLiveEnableWithOffset(string $parentMerchantId, int $offset): Collection|PublicCollection
+    {
+        $filterRequest = new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::FETCH_LINKED_ACCOUNT_MIDS_FROM_PARENT_MERCHANT_ID_WHERE_LIVE_ENABLED_WITH_OFFSET);
+        $filterRequest->setBindings(
+            json_encode([$parentMerchantId, $offset])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
+        return $this->getMerchantCollectionFromResponse($response);
+    }
+
+    public function fetchMerchantCreatedBetweenForOrgWithBusinessBanking(int $from, int $to, string $orgId, bool $isBusinessBanking, int $limit = 2000, int $offset = 0): Collection|PublicCollection
+    {
+        $filterRequest = new FilterRequest();
+        $filterRequest->setQueryIdentifier(self::FETCH_MERCHANTS_CREATED_BETWEEN_FOR_ORG_WITH_BUSINESS_BANKING);
+        $filterRequest->setBindings(
+            json_encode([$from, $to, $orgId, $isBusinessBanking, $limit, $offset])
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
