@@ -15,6 +15,7 @@ use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 use RZP\Services\CredcaseSigner;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Services\UpiPayment\Core as UpsCore;
 use RZP\Models\Payment\Analytics\Service as PaymentAnalyticsService;
 
 class PaymentController extends Controller
@@ -886,6 +887,15 @@ class PaymentController extends Controller
         $pricingResponse = $this->service()->internalPricingFetchForPayment($id, $input);
 
         return ApiResponse::json($pricingResponse);
+    }
+
+    public function internalPaymentsUpiActions($action)
+    {
+        $input = Request::all();
+
+        $response = (new UpsCore())->processActions($input, $action);
+
+        return ApiResponse::json($response);
     }
 
     public function internalPricingFetch($entityType, $entityId)

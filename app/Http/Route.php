@@ -4687,6 +4687,7 @@ class Route
         'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                         ],
         'internal_pricing'                           => ['get',        'internal/entity/{entityType}/{entityId}/pricing',     'PaymentController@internalPricingFetch'                         ],
         'internal_merchant_risk_notification'        => ['post',       'internal/payments/{id}/risk_notification',            'PaymentController@internalRiskNotificationForRearch'                      ],
+        'internal_payments_upi_action'               => ['post',       'internal/paymentsupi/{action}',                      'PaymentController@internalPaymentsUpiActions'                ],
         'internal_token_create'                      => ['post',       'internal/tokens',                                      'TokenController@internalTokenCreateForRearch'                      ],
         'internal_sign_payload'                      => ['post',       'internal/payments/signer',                             'PaymentController@signPayloadInternal'                      ],
         'internal_generate_coproto'                  => ['post',       'internal/payments/coproto',                           'PaymentCreateController@generateCoprotoForRearch'            ],
@@ -6558,6 +6559,7 @@ class Route
         'payment_update_reference6',
         'internal_payment_pricing',
         'internal_pricing',
+        'internal_payments_upi_action',
         'internal_merchant_risk_notification',
         'internal_token_create',
         'internal_sign_payload',
@@ -17876,6 +17878,7 @@ class Route
             'internal_merchant_risk_notification',
             'pricing_fetch_plan',
             'qr_code_merchant_create',
+            'internal_payments_upi_action',
         ],
 
         'emandate_service' => [

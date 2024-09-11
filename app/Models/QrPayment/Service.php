@@ -566,6 +566,31 @@ class Service extends Base\Service
         return [null, null];
     }
 
+    public function findQrCodeForQrPaymentRearch(array $gatewayResponse, string $gateway)
+    {
+        if (empty($gatewayResponse['upi']['merchant_reference']) === true)
+        {
+            return [null, null];
+        }
+
+        $qrVariant = strtolower(
+                $this->app->razorx->getTreatment(
+                    $gateway,
+                    RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
+                    $this->mode ?? Mode::LIVE
+                )) === RazorxTreatment::RAZORX_VARIANT_ON;
+
+        if ($qrVariant === false)
+        {
+            $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+            $gatewayResponse['upi']['merchant_reference'] =
+                $gatewayClass->getQrPaymentMerchantReference($gatewayResponse['upi']['merchant_reference']);
+        }
+
+        return $this->findQrCodeForQrPayment($gatewayResponse, $gateway);
+    }
+
     protected function findTerminalByGatewayAndTerminalData($gateway, $terminalData)
     {
         //TODO: Check how mode is handled here if not set by default
