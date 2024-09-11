@@ -385,7 +385,30 @@ class Core extends Base\Core
 
         $checker = new Checker($offer, $verbose);
 
-        if ($checker->checkApplicabilityOnOrder($order) === false)
+        $applicabilityOnOrder = $checker->checkApplicabilityOnOrder($order);
+
+        try
+        {
+            $validityOnOrder = $checker->checkValidityOnOrder($order);
+        }
+        catch (\Exception $e)
+        {
+            $validityOnOrder = false;
+        }
+        finally
+        {
+            if ($validityOnOrder !== $applicabilityOnOrder)
+            {
+                $this->trace->count(Metric::OFFERS_ENGINE_ORDER_APPLICABILITY_DIFF,
+                    [
+                        'applicability' => $applicabilityOnOrder,
+                        'validity' => $validityOnOrder
+                    ]
+                );
+            }
+        }
+
+        if ($applicabilityOnOrder === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
                 [

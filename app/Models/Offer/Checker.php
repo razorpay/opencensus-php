@@ -697,7 +697,11 @@ class Checker extends Base\Core
 
         try
         {
-            $calculator->calculateDiscountedAmount($this->order->getAmount(), null);
+            // this is only for instant discount offers
+            if ($this->offer->getOfferType() === Entity::INSTANT)
+            {
+                $calculator->calculateDiscountedAmount($this->order->getAmount(), null);
+            }
         }
         catch (LogicException $e)
         {

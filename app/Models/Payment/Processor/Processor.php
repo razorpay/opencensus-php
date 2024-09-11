@@ -6537,7 +6537,10 @@ class Processor
 
         $this->offer = $offer;
 
-        $this->validateOffersViaOffersEngine($payment, $offer, $experiments);
+        if (!$this->validateOffersViaOffersEngine($payment, $offer, $experiments))
+        {
+             return;
+        }
 
         $payment->associateOffer($this->offer);
 
@@ -6553,7 +6556,7 @@ class Processor
 
     }
 
-    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer, array $experiments): void
+    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer, array $experiments): bool
     {
         $core = New Offer\Core();
 
@@ -6561,7 +6564,7 @@ class Processor
 
         if ($order === null)
         {
-            return;
+            return false;
         }
 
         $isReverseShadowEnabled =  $experiments[Offer\Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP];
@@ -6570,11 +6573,17 @@ class Processor
 
         $resp = $core->validateOnOffersEngine($shouldValidateOnOffersEngine, $payment, $order, $this->offer, false);
 
+        if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === false)
+        {
+            return true;
+        }
+
         $isOfferValidAtOE = $resp[Offer\Constants::VALIDATE_OFFER_CALLED] === true &&
             isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]) === true &&
             isset($resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits']) === true;
 
         $hasException = false;
+
         if($isOfferValidAtOE)
         {
             try {
@@ -6596,8 +6605,9 @@ class Processor
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
+            return false;
         }
-
+        return true;
     }
 
     /**
