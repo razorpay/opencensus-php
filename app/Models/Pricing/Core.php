@@ -26,7 +26,11 @@ class Core extends Base\Core
 
         $rule = (new Entity)->addPlanRule($input, $plan);
 
-        $rule = $rule->generateId();
+        if (empty($input[Entity::ID])) {
+            $rule = $rule->generateId();
+        }else{
+            $rule->setId($input[Entity::ID]);
+        }
 
         $ruleOrgId = Entity::stripDefaultSign($ruleOrgId);
 
@@ -70,7 +74,11 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
-        $rule = $rule->generateId();
+        if (empty($input[Entity::ID])) {
+            $rule = $rule->generateId();
+        }else{
+            $rule->setId($input[Entity::ID]);
+        }
 
         $ruleOrgId = Entity::stripDefaultSign($ruleOrgId);
 

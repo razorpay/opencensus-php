@@ -59,6 +59,8 @@ class ChargeCollections
 
     // Charge Collections APIs
     const GetReceiptForInvoiceURL = 'v1/subscription/getReceiptForInvoice';
+    const GetPricingPlanURL = 'v1/mdr/pricing/plans/';
+    const CreatePricingPlanURL = 'v1/mdr/pricing';
     const OrgPricingURL = 'v1/org_pricing';
     const FetchOrgPricingURL = 'v1/org_pricing/fetch_multiple';
     const FetchOrgPricingAccessControl = 'v1/org_pricing_access_control/fetch_multiple';
@@ -439,6 +441,16 @@ class ChargeCollections
     {
         $this->merchantId = $input['merchantId'];
         return $this->sendRequest(self::GetReceiptForInvoiceURL, Requests::POST, $input, $requestHeaders);
+    }
+
+    public function getPricingPlan(array $input, $requestHeaders = [])
+    {
+        return $this->sendRequest(self::GetPricingPlanURL, Requests::GET, $input, $requestHeaders);
+    }
+
+    public function createPricingPlan(array $input, $requestHeaders = [])
+    {
+        return $this->sendRequest(self::CreatePricingPlanURL, Requests::POST, $input, $requestHeaders);
     }
 
 }

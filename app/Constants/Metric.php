@@ -201,6 +201,10 @@ class Metric
     const SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND             = 'server_error_multiple_pricing_rules_found';
     const MERCHANT_ON_DEMAND_PRICING_FETCH_PLAN_MISMATCH        = 'merchant_on_demand_pricing_fetch_plan_mismatch';
 
+    //ChargeCollections
+    const CC_REQUEST_NOT_ROUTED                                 = 'cc_request_not_routed';
+    const CC_REQUEST_ROUTED                                     = 'cc_request_routed';
+
 
     const KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS                 = 'kafka_adjustment_api_txn_push_success';
     const KAFKA_TRANSFER_API_TXN_PUSH_SUCCESS                   = 'kafka_transfer_api_txn_push_success';

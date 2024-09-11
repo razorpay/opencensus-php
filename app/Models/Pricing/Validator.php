@@ -37,6 +37,8 @@ class Validator extends Base\Validator
     const ALLOWED_AUTH_TYPE_FOR_BANKING_PRODUCT = [BasicAuth\Type::PRIVATE_AUTH, BasicAuth\Type::PROXY_AUTH];
 
     protected static $addPlanRuleRules = [
+        Entity::ID                      => 'sometimes|string',
+        Entity::PLAN_ID                 => 'sometimes|string',
         Entity::PRODUCT                 => 'sometimes|string|custom',
         Entity::FEATURE                 => 'sometimes|alpha_dash',
         Entity::GATEWAY                 => 'sometimes',

@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use App;
+use ApiResponse;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Error\Error;
@@ -11,6 +12,8 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Admin\Admin;
 use RZP\Http\Request\Requests;
+use RZP\Models\Pricing\ChargeCollections\CCRouter;
+use RZP\Models\Pricing\ChargeCollections\Utils;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Partner\Commission\Calculator;
@@ -40,15 +43,71 @@ class Service extends Base\Service
     const MERCHANT_PRICING_UPDATE_MUTEX_TIMEOUT = 30;
     const TERMINAL_BUY_PRICING_MUTEX_TIMEOUT = 30;
 
+    protected CCRouter $ccRouter;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->ccRouter = new CCRouter(true);
+    }
+
     public function createPlan($input, $type = null)
+    {
+        $sourceInput = $input;
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $ruleCount = $this->getInputRuleCount($input);
+        $planAndRuleIds = Pricing\ChargeCollections\Utils::generatePlanAndRuleIds($ruleCount);
+        $ccRequest = $this->transformCreatePlanRequest($input,$planAndRuleIds);
+
+        $legacyCallable = function () use ($sourceInput, $type, $planAndRuleIds) {
+            return $this->createPlanLegacy($sourceInput, $type, $planAndRuleIds);
+        };
+
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function transformCreatePlanRequest($input, $planAndRuleIds) {
+        if (isset($input['rules']) === true and is_string($input['rules']) === true)
+        {
+            $input['rules'] = json_decode($input['rules'], true);
+        }
+
+        if (isset($input['rules']) === true && $planAndRuleIds != null){
+            $input['rules'] = Utils::addPlanDetailsToRules($input['rules'], $planAndRuleIds);
+        }
+
+        $input[Entity::ORG_ID] = $this->getRuleOrgId();
+
+        $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
+            [
+                'method' => 'createPlan',
+                'request' => $input,
+            ]);
+
+        return $input;
+    }
+
+    public function createPlanLegacy($input, $type = null, $planAndRuleIds = null): array
     {
         // if rules are sent in json encoded form, decode it
         if (isset($input['rules']) === true and is_string($input['rules']) === true)
         {
             $input['rules'] = json_decode($input['rules'], true);
+
+            // Assign planId and ruleIds if $planAndRuleIds is provided
+            $planId = $planAndRuleIds['planId'] ?? null;
+            $ruleIds = $planAndRuleIds['ruleIds'] ?? [];
+
+
             // stringify each key value pair; to mimic how data arrives at php backend
             for ($counter = 0; $counter < count($input['rules']); $counter++)
             {
+                if (isset($ruleIds[$counter])) {
+                    $input['rules'][$counter][Entity::ID] = $ruleIds[$counter];
+                    $input['rules'][$counter][Entity::PLAN_ID] = $planId;
+                }
+
                 foreach ($input['rules'][$counter] as $key => $value)
                 {
                     $input['rules'][$counter][$key] = strval($value);
@@ -1072,5 +1131,18 @@ class Service extends Base\Service
         $ruleOrgId = $crossOrgId ?: $orgId;
 
         return $ruleOrgId;
+    }
+
+    private function getInputRuleCount($input){
+        if (isset($input['rules']) === true and is_string($input['rules']) === true)
+        {
+            $input['rules'] = json_decode($input['rules'], true);
+        }
+
+        if (isset($input['rules']) === true){
+            return count($input['rules']);
+        }else{
+            return 0;
+        }
     }
 }

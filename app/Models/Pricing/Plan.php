@@ -35,6 +35,11 @@ class Plan extends PublicCollection
         return null;
     }
 
+    public function getRules()
+    {
+        return $this->items;
+    }
+
     public function isTypePricing(): bool
     {
         return ($this->getType() === Type::PRICING);

@@ -403,7 +403,9 @@ class Entity extends Base\PublicEntity
 
     protected function generatePlanId()
     {
-        $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
+        if( empty($this->getPlanId())){
+            $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
+        }
     }
 
     protected function generateOrgId()

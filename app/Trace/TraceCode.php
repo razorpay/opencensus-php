@@ -2920,6 +2920,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_ADDITIONAL_FLAGS_PLAN_FETCH_ERROR             = 'PRICING_ADDITIONAL_FLAGS_PLAN_FETCH_ERROR';
     const PRICING_PLAN_CREATE_SUCCESS                           = 'PRICING_PLAN_CREATE_SUCCESS';
     const PRICING_PLAN_RULE_ADD_ATTEMPT                         = 'PRICING_PLAN_RULE_ADD_ATTEMPT';
+
+    // CC Router Traces
+    const CC_DEBUG_LOG                                          = 'CC_DEBUG_LOG';
+    const CC_ROUTER_SERVICE_RESPONSE                            = 'CC_ROUTER_SERVICE_RESPONSE';
+    const API_PRICING_LEGACY_RESPONSE                           = 'API_LEGACY_RESPONSE';
+    const API_PRICING_LEGACY_ERROR                              = 'API_LEGACY_ERROR';
+    const CC_ROUTING_TRANSFORMED_REQUEST                        = 'CC_ROUTING_TRANSFORMED_REQUEST';
+    const CC_ROUTER_ROUTE_ERROR                                 = 'CC_ROUTER_ROUTE_ERROR';
+    const CC_ROUTER_EXCEPTION                                   = 'CC_ROUTER_EXCEPTION';
+    const CC_ROUTER_SPLITZ_ERROR                                = 'CC_ROUTER_SPLITZ_ERROR';
+
     const PRICING_PLAN_RULE_UPDATE_ATTEMPT                      = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
     const PRICING_PLAN_RULE_ADD_SUCCESS                         = 'PRICING_PLAN_RULE_ADD_SUCCESS';
     const BUY_PRICING_PLAN_RULE_ADD_SUCCESS                     = 'BUY_PRICING_PLAN_RULE_ADD_SUCCESS';
