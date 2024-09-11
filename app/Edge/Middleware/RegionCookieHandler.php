@@ -53,7 +53,7 @@ class RegionCookieHandler
             $response->headers->setCookie(new Cookie(
                 self::RZP_USER_MERCHANT_REGION, $region, $this->getCookieExpirationDate($config),
                 $config['path'], null, $config['secure'] ?? false,
-                $config['http_only'] ?? false, false, $config['same_site'] ?? null
+                false, false, $config['same_site'] ?? null
             ));
         }
 
