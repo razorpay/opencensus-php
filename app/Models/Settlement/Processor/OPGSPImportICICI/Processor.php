@@ -80,7 +80,7 @@ class Processor extends Base\Core
             $settlements = $this->repo->settlement
                 ->getProcessedSettlementsForTimePeriodForMid($merchantId, $from, $to, null);
 
-            if(empty($settlements)) {
+            if($settlements->isEmpty() === true) {
                 $this->trace->info(TraceCode::OPGSP_IMPORT_EMPTY_SETTLEMENTS, [
                     'merchantId' => $merchantId,
                     'settlements' => $settlements,
