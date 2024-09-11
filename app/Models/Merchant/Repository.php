@@ -30,7 +30,7 @@ use RZP\Models\Admin\Group;
 use RZP\Services\WDAService;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
-use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\Status as Status;
 use RZP\Exception\BaseException;
 use Rzp\Wda_php\WDAQueryBuilder;
 use RZP\Models\Terminal\Category;
@@ -3149,9 +3149,9 @@ class Repository extends Base\Repository
                         $merchantIdColumn
                     )
                     ->join(Table::MERCHANT_DETAIL, $merchantIdColumn, '=', $merchantDetailsId)
-                    ->where($merchantDetailsActivationStatusColumn, '=', MerchantEntity::ACTIVATED)
                     ->where($merchantActivatedColumn, '=', 0)
                     ->where($merchantLiveColumn, '=', 0)
+                    ->wherein($merchantDetailsActivationStatusColumn, [Status::ACTIVATED, Status::ACTIVATED_MCC_PENDING])
                     ->whereNull($merchantActivatedAtColumn)
                     ->orderBy($createdAtColumn, 'desc')
                     ->get();
