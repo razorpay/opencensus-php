@@ -94,35 +94,41 @@ class Service extends Base\Service
         return (new Processor)->createSettlementEntry($input);
     }
 
-    public function getMerchantSettlementAmount($input){
-        $experimentVariable = $this->merchant->getId();
-        // shadow mode experiment
-        $shadow = $this->app->razorx->getTreatment($experimentVariable,
-            Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_SHADOW,
-            $this->mode
-        );
+    public function getMerchantSettlementAmount($input)
+    {
+        $reverseShadowFlag = $this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
 
-        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
+        if ($reverseShadowFlag === true)
         {
-            $nssResponse = app('settlements_dashboard')->settlementAmount($input);
-
             $experimentVariable = $this->merchant->getId();
-            // reverse shadow mode experiment
-            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
-                Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_REVERSE_SHADOW,
+            // shadow mode experiment
+            $shadow = $this->app->razorx->getTreatment($experimentVariable,
+                Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_SHADOW,
                 $this->mode
             );
 
-            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+            if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
             {
-                return $nssResponse;
+                $nssResponse = app('settlements_dashboard')->settlementAmount($input);
+
+                $experimentVariable = $this->merchant->getId();
+                // reverse shadow mode experiment
+                $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
+                    Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_REVERSE_SHADOW,
+                    $this->mode
+                );
+
+                if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+                {
+                    return $nssResponse;
+                }
+
+                $apiResponse = $this->getMerchantSettlementAmountOld($input);
+
+                $this->compareSettlementEntityAndLogDifference($apiResponse, $nssResponse, false, ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
-
-            $apiResponse = $this->getMerchantSettlementAmountOld($input);
-
-            $this->compareSettlementEntityAndLogDifference($apiResponse, $nssResponse, false, ['method_name' => __FUNCTION__]);
-
-            return $apiResponse;
         }
 
         return $this->getMerchantSettlementAmountOld($input);
