@@ -20,10 +20,17 @@ const PrCheckSuccessCheck = {
   reason: 'Necessary checks are not passed',
 };
 
+const ApiGracefullyHandledCheck = {
+  queryRegex: /[ \S]*(?=Ensure that all API calls are handled gracefully)/,
+  logMsg: 'Please check that all API calls are handled gracefully',
+  reason: 'Necessary checks are not passed',
+};
+
 module.exports = {
   PR_AUTOMATED_CHECKS,
   BUNDLE_SIZE_CHECKS,
   I18N_LINTER_CHECKS,
   AdheredToGuidelineCheck,
   PrCheckSuccessCheck,
+  ApiGracefullyHandledCheck,
 };
