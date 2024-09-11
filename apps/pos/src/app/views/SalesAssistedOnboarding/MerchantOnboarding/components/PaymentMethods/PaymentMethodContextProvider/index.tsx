@@ -263,7 +263,13 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   const { states, handlers } = useOnboardingContext();
   const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig, merchantDetails } =
     states;
-  const isFormDisabled = !!merchantDetails?.activation?.posActivationStatus;
+  const isFormDisabled = [
+    'ACTIVATED',
+    'REJECTED',
+    'KYC_QUALIFIED_STB',
+    'NEEDS_CLARIFICATION',
+  ].includes(merchantDetails?.activation?.posActivationStatus ?? '');
+
   const [paymentMethodType, setPaymentMethodType] = useState<PaymentMethodFormType>(
     PaymentMethodFormType.AGGREGATOR,
   );
