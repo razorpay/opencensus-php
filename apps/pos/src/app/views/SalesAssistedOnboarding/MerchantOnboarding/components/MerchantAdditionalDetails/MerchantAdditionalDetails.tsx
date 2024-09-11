@@ -24,6 +24,7 @@ import FormField from 'apps/pos/src/app/components/FormField';
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 import { MerchantPosActivationStatusEnum } from '@dashboard/shared-utils/graphql/graph-types';
 
 const MerchantAdditionalDetails = (): JSX.Element | null => {
@@ -82,8 +83,93 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
     }
   }, [omcValue]);
 
+  useEffect(() => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_PAGE,
+      action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ADDITIONAL_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.TAXATION_AND_COMPLIANCE,
+        section: 'Additional Details',
+        formName: 'Additional Details',
+        subSection: 'Taxation and Compliance',
+      },
+    });
+  }, []);
+
   const onSubmit = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ADDITIONAL_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.TAXATION_AND_COMPLIANCE,
+        label: 'Continue to next step',
+        section: 'Additional Details',
+        subSection: 'Taxation and Compliance',
+      },
+    });
     updateModularConfig(getValues());
+  };
+
+  const onBottomSheetDismiss = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.ICON,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ADDITIONAL_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.TAXATION_AND_COMPLIANCE,
+        section: 'Additional Details',
+        subSection: 'Taxation and Compliance',
+        type: 'Close Icon',
+      },
+    });
+  };
+
+  const onTextInputFocus = (field) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD_FILL,
+      action: analyticsTypes.ANALYTICS_ACTIONS.INITIATED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ADDITIONAL_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.TAXATION_AND_COMPLIANCE,
+        formName: 'Miscellaneous',
+        fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+        fieldName: field?.name,
+      },
+    });
+  };
+
+  const onRadioBtnChange = (field) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD,
+      action: analyticsTypes.ANALYTICS_ACTIONS.SELECTED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ADDITIONAL_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.TAXATION_AND_COMPLIANCE,
+        formName: 'Miscellaneous',
+        fieldType: analyticsTypes.FIELD_TYPES.RADIO_BUTTON,
+        fieldName: field?.name,
+        section: 'Additional Details',
+        subSection: 'Taxation and Compliance',
+      },
+    });
+  };
+
+  const onDropdownChange = (args) => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD,
+      action: analyticsTypes.ANALYTICS_ACTIONS.SELECTED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ADDITIONAL_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.TAXATION_AND_COMPLIANCE,
+        formName: 'Miscellaneous',
+        fieldType: analyticsTypes.FIELD_TYPES.DROPDOWN,
+        fieldName: args?.values[0],
+        section: 'Additional Details',
+        subSection: 'Taxation and Compliance',
+      },
+    });
   };
 
   const renderContinueBtn = () => {
@@ -149,6 +235,10 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
                   selectOptions={item?.meta?.options ?? []}
                   defaultValue={isStringValue(item) ? item.stringValue : ''}
                   isDisabled={isFormDisabled || item?.isDisabled}
+                  onBottomSheetDismissCallback={onBottomSheetDismiss}
+                  onTextInputClick={onTextInputFocus}
+                  onRadioBtnChangeCallback={onRadioBtnChange}
+                  onDropdownChangeCallback={onDropdownChange}
                 />
               ),
             )}

@@ -1,9 +1,16 @@
 import React from 'react';
 
 import { Box, ProgressBar, Text } from '@razorpay/blade/components';
+import { ClickAnalytics, OnboardingStep } from './MerchantOnboardingConfig';
 import useOnboardingContext from './providers/useOnboardingContext';
 import OnboardingStepCard from 'apps/pos/src/app/components/OnboardingStepCard/OnboardingStepCard';
 import OnboardingHeader from 'apps/pos/src/app/components/OnboardingHeader';
+import { trackEvent } from 'apps/pos/src/services/analytics';
+
+interface HandleStepCardClickProps {
+  step: OnboardingStep;
+  analytics: ClickAnalytics | undefined;
+}
 
 const MerchantOnboardingLanding = (): JSX.Element => {
   const { values, states, handlers } = useOnboardingContext();
@@ -11,6 +18,13 @@ const MerchantOnboardingLanding = (): JSX.Element => {
   const { isModularLoading } = states;
   const { handleStepClick, getOnboardingProgress } = handlers;
   const { totalSteps, totalCompletedSteps } = getOnboardingProgress();
+
+  const handleOnStepCardClick = ({ step, analytics }: HandleStepCardClickProps): void => {
+    handleStepClick({ step });
+    if (analytics) {
+      trackEvent(analytics);
+    }
+  };
 
   return (
     <Box margin="spacing.5">
@@ -31,7 +45,7 @@ const MerchantOnboardingLanding = (): JSX.Element => {
       />
       {isModularLoading ? <Text marginY="spacing.5">Loading...</Text> : null}
       {onboardingSteps.map((step, index) => {
-        const { slug, title, description, icon, getStatus, checkIfDisabled } = step;
+        const { slug, title, description, icon, getStatus, checkIfDisabled, clickAnalytics } = step;
         return (
           <OnboardingStepCard
             key={slug}
@@ -41,7 +55,7 @@ const MerchantOnboardingLanding = (): JSX.Element => {
             icon={icon}
             status={getStatus({ values, states })}
             isDisabled={checkIfDisabled({ values, states })}
-            onClick={() => handleStepClick({ step })}
+            onClick={() => handleOnStepCardClick({ step, analytics: clickAnalytics })}
           />
         );
       })}

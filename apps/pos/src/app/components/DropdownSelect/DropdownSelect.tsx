@@ -27,6 +27,7 @@ interface DropdownSelectProps {
   selectOptions: Array<SelectDropdownOptions>;
   necessityIndicator: 'required' | 'none' | 'optional' | undefined;
   isDisabled: boolean;
+  onBottomSheetDismissCallback?: () => void;
 }
 const DropdownSelect = ({
   label,
@@ -38,7 +39,9 @@ const DropdownSelect = ({
   rules,
   necessityIndicator,
   validationState,
+  onChange,
   isDisabled,
+  onBottomSheetDismissCallback,
 }: DropdownSelectProps) => {
   const { isMobile } = useScreen();
   const renderBody = (selectOptions) => {
@@ -50,6 +53,10 @@ const DropdownSelect = ({
         ))}
       </ActionList>
     );
+  };
+
+  const onBottomSheetDismiss = () => {
+    onBottomSheetDismissCallback?.();
   };
 
   return (
@@ -64,12 +71,13 @@ const DropdownSelect = ({
         errorText={errorText}
         onChange={(args) => {
           if (args) {
+            onChange(args);
             field.onChange(args.values[0]);
           }
         }}
       />
       {isMobile ? (
-        <BottomSheet snapPoints={[0.5, 0.8, 1]}>
+        <BottomSheet snapPoints={[0.5, 0.8, 1]} onDismiss={onBottomSheetDismiss}>
           <BottomSheetHeader title={label} />
           <BottomSheetBody>{renderBody(selectOptions)}</BottomSheetBody>
         </BottomSheet>

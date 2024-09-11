@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BladeProvider, Box, Button, Heading, Text, useTheme } from '@razorpay/blade/components';
 import { StyledAgreementContainer, StyledBanner } from './styles';
 import { bladeTheme } from '@razorpay/blade/tokens';
@@ -7,6 +7,8 @@ import SuccessTick from 'assets/success-check.svg';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { useNavigate } from 'react-router-dom';
 import { POS_BENEFITS } from 'merchant/views/POS/constants';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const POSAgreementConfirmation = (): JSX.Element => {
   const { theme } = useTheme();
@@ -21,9 +23,36 @@ const POSAgreementConfirmation = (): JSX.Element => {
     top: '4px',
   };
 
-  const handleClose = () => {
+  const handleConfirmationClick = () => {
+    analyticsTrack({
+      objectName: 'Website CTA',
+      actionName: 'Clicked',
+      screen: 'Agreement signing',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        label: 'Okay, got it',
+        section: 'Agreement Signing confirmation',
+        subSection: ' Merchant Signing-online',
+        l1FunnelStage: 'Agreement Signing confirmation',
+        l2FunnelStage: 'Merchant Signing-online',
+      },
+    });
     navigate('/app/dashboard');
   };
+
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'Agreement signing',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        pageType: 'Merchant Signing-online',
+        l1FunnelStage: 'Agreement Signing confirmation',
+        l2FunnelStage: 'Merchant Signing-online',
+      },
+    });
+  }, []);
 
   return (
     <BladeProvider themeTokens={bladeTheme} colorScheme="light">
@@ -80,7 +109,7 @@ const POSAgreementConfirmation = (): JSX.Element => {
                   </Box>
                 ))}
               </Box>
-              <Button onClick={handleClose} isFullWidth>
+              <Button onClick={handleConfirmationClick} isFullWidth>
                 Okay, got it
               </Button>
             </Box>

@@ -26,6 +26,7 @@ import {
   StatusCounts,
 } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { GraphQLErrorResponseType } from 'apps/pos/src/app/types/common';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface Filters {
   status: STATUS_FILTERS;
@@ -163,6 +164,19 @@ const SalesDashboard = (): JSX.Element => {
   };
 
   const handleOnAddMerchantClick = (): void => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Add New Merchant',
+        section: 'Merchant Details',
+        subSection: 'Agent Dashboard Homescreen',
+        pageType: analyticsTypes.PAGE_TYPES.AGENT_DASHBOARD,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.AGENT_DASHBOARD_HOMESCREEN,
+      },
+    });
+
     navigate('onboarding/new');
   };
 
@@ -170,6 +184,19 @@ const SalesDashboard = (): JSX.Element => {
     handleOnApplyFilter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
+
+  useEffect(() => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.PAGE,
+      action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        pageType: analyticsTypes.PAGE_TYPES.AGENT_DASHBOARD,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_DETAILS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAGE_VIEW,
+      },
+    });
+  });
+
   return (
     <Box display="flex" flexDirection="column" width="100%">
       <Box margin="spacing.5">

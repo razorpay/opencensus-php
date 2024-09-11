@@ -53,6 +53,14 @@ import {
   MODULAR_AGREEMENT_FIELDS,
 } from 'apps/pos/src/app/types/AgreementSigning';
 import copyToClipboard from 'apps/pos/src/app/utils/copyToClipboard';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
+import {
+  ANALYTICS_ACTIONS,
+  ANALYTICS_EVENTS,
+  L1_FUNNEL_STAGE,
+  L2_FUNNEL_STAGE,
+  PAGE_TYPES,
+} from 'apps/pos/src/services/analytics/types';
 
 interface PosAgreementModeProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
@@ -142,12 +150,35 @@ export const PosAgreementMode = ({
       return;
     }
     if (getAgreementSatusValue(modularConfig) === IN_PROGRESS) {
+      trackEvent({
+        eventName: ANALYTICS_EVENTS.WEBSITE_CTA,
+        action: ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          label: 'Re-send Link',
+          section: 'Agreement Signing',
+          subSection: 'Online method',
+          l1FunnelStage: L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+          l2FunnelStage: L2_FUNNEL_STAGE.ONLINE_METHOD,
+        },
+      });
       updateModularConfig({
         [MODULAR_AGREEMENT_FIELDS.RETRY_SEND_AGREEMENT_FIELD]: Math.floor(Date.now() / 1000),
         [MODULAR_AGREEMENT_FIELDS.MODULAR_CALLBACK]: handleRetry,
       });
       return;
     }
+
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Generate Link',
+        section: 'Agreement Signing',
+        subSection: 'Online method',
+        l1FunnelStage: L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+        l2FunnelStage: L2_FUNNEL_STAGE.ONLINE_METHOD,
+      },
+    });
     updateModularConfig({
       [MODULAR_AGREEMENT_FIELDS.AGREEMENT_TYPE_FIELD]: ONLINE,
       [MODULAR_AGREEMENT_FIELDS.MODULAR_CALLBACK]: handleOnlineAgreement,
@@ -175,9 +206,36 @@ export const PosAgreementMode = ({
       [MODULAR_AGREEMENT_FIELDS.MODULAR_CALLBACK]: handleSuccessfulSubmit,
     };
     updateModularConfig(payload);
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Submit Merchant Details',
+        section: 'Agreement Signing',
+        subSection: 'Offline method',
+        l1FunnelStage: L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+        l2FunnelStage: L2_FUNNEL_STAGE.OFFLINE_METHOD,
+      },
+    });
   };
 
   const handleSubmit = () => {
+    if (getAgreementSatusValue(modularConfig) === COMPLETED) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+        action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          label: 'Submit Merchant Details',
+          section: 'Agreement Signing',
+          subSection: agreementMode === ONLINE ? 'Online Method' : 'Offline Method',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+          l2FunnelStage:
+            agreementMode === ONLINE
+              ? analyticsTypes.L2_FUNNEL_STAGE.ONLINE_METHOD
+              : analyticsTypes.L2_FUNNEL_STAGE.OFFLINE_METHOD,
+        },
+      });
+    }
     if (agreementMode === ONLINE) return handleOnlineSubmit();
     if (agreementMode === OFFLINE) return handleOfflineSubmit();
   };
@@ -229,13 +287,75 @@ export const PosAgreementMode = ({
 
   const handleKycSubmit = () => {
     navigate('/pos-sales');
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Back to Dashboard',
+        section: 'Agreement Signing',
+        subSection: 'Merchant Onboarding',
+        l1FunnelStage: L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+        l2FunnelStage: L2_FUNNEL_STAGE.MERCHANT_ONBOARDING,
+      },
+    });
   };
 
   useEffect(() => {
     if (isAgreementExecuted) {
       setIsBottomSheetOpen(true);
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.IMAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          section: 'Agreement Signing',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.ONLINE_METHOD,
+        },
+      });
     }
+
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.FORM_PAGE,
+      action: ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        pageType: PAGE_TYPES.MERCHANT_SIGNING_ONLINE,
+        l1FunnelStage: L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+        l2FunnelStage: L2_FUNNEL_STAGE.MERCHANT_SIGNING_ONLINE,
+      },
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (agreementMode === ONLINE) {
+      trackEvent({
+        eventName: ANALYTICS_EVENTS.PAGE,
+        action: ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          formName: 'Agreement Signing',
+          section: 'Agreement Signing',
+          subSection: 'Online method',
+          l1FunnelStage: L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+          l2FunnelStage: L2_FUNNEL_STAGE.ONLINE_METHOD,
+        },
+      });
+    }
+  }, [agreementMode]);
+
+  useEffect(() => {
+    if (isBottomSheetOpen) {
+      trackEvent({
+        eventName: ANALYTICS_EVENTS.PAGE,
+        action: ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          pageType: PAGE_TYPES.AGREEMENT_DETAILS_SUCCESS,
+          l1FunnelStage: L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+          l2FunnelStage: L2_FUNNEL_STAGE.MERCHANT_ONBOARDING,
+        },
+      });
+    }
+  }, [isBottomSheetOpen]);
 
   if (isModularLoading)
     return (

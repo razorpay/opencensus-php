@@ -11,6 +11,7 @@ import {
   MODULAR_FLAGS,
 } from 'apps/pos/src/app/constants/DeviceSelection';
 import { getDeviceChargesFromModularConfig } from 'apps/pos/src/app/utils/deviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceOrderSummaryItemProps {
   isUpdateModularLoading: boolean;
@@ -42,6 +43,18 @@ const DeviceOrderSummaryItem = ({
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: () => setIsItemLoading(false),
       ...MODULAR_FLAGS.DELETE_CART_ITEM,
     };
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.ICON,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        type: 'Delete Icon',
+        pageType: analyticsTypes.PAGE_TYPES.ORDER_CONFIRMATION,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ORDER_CONFIRMATION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_CONFIRMATION,
+        section: 'Cart',
+        subSection: `${deviceConfig?.title} - Confirm order`,
+      },
+    });
     handleUpdateModular(payload);
   };
 

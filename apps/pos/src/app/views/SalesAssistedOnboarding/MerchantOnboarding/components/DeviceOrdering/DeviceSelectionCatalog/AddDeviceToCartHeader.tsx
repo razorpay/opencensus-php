@@ -12,6 +12,7 @@ import { useController, useFormContext } from 'react-hook-form';
 import { DeviceConfig } from 'apps/pos/src/app/types/modular';
 import { MODULAR_DEVICE_FIELDS, QuantityActions } from 'apps/pos/src/app/types/DeviceSelection';
 import { updateQuantity } from 'apps/pos/src/app/utils/deviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface AddDeviceToCartHeaderProps {
   deviceConfig: DeviceConfig;
@@ -37,6 +38,34 @@ const AddDeviceToCartHeader = ({
       currentQuantity: quantityField.value,
       action,
     });
+
+    if (action === QuantityActions.add) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.ICON,
+        action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          type: 'Add',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_EDITING,
+          section: 'Pre Checkout',
+          subSection: deviceConfig.title,
+          noOfItems: quantityField.value,
+        },
+      });
+    } else {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.ICON,
+        action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          type: 'Remove',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_EDITING,
+          subSection: deviceConfig.title,
+          section: 'Pre Checkout',
+          noOfItems: quantityField.value,
+        },
+      });
+    }
 
     setValue(MODULAR_DEVICE_FIELDS.DEVICE_QUANTITY, newQuantity);
   };

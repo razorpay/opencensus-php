@@ -19,6 +19,7 @@ import {
 import DeviceConfirmationCTA from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceOrdering/DeviceConfirmation/DeviceConfirmationCTA';
 import { DeviceCharges, ModularPayload } from 'apps/pos/src/app/types/modular';
 import PageError from 'apps/pos/src/app/components/PageError';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceDeliveryAddressProps {
   title: string;
@@ -67,6 +68,17 @@ const DeviceDeliveryAddress = ({
       [MODULAR_DEVICE_FIELDS.DEVICE_ORDER_QR_AMOUNT]: orderSummary?.totalOrderCharge,
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onAddressUpdate,
     };
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Confirm Delivery Address',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ORDER_DELIVERY_ADDRESS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.DELIVERY_ADDRESS_CONFIRMATION,
+        section: 'Order Delivery Address',
+        subSection: 'Delivery Address Confirmation',
+      },
+    });
     handleModularUpdate(payload);
   };
 

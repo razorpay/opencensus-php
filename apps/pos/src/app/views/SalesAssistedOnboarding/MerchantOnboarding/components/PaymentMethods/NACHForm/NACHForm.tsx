@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   ArrowRightIcon,
@@ -9,6 +9,7 @@ import {
   useToast,
 } from '@razorpay/blade/components';
 import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
+import { handleNachFormViewAnalytics } from 'apps/pos/src/app/utils/paymentsAndServices';
 
 export enum NachFormKeyNames {
   NACH_FORM_DOCUMENT_FIELD = 'nach_form_document_field',
@@ -43,7 +44,15 @@ const NACHForm: React.FC<NachFormProps> = ({
 }) => {
   const { id } = useParams();
   const toast = useToast();
+
+  useEffect(() => {
+    if (!isModularLoading) {
+      handleNachFormViewAnalytics();
+    }
+  }, []);
+
   if (isModularLoading) return null;
+
   return (
     <Box padding="spacing.5">
       <Heading marginBottom="spacing.5" size="large">

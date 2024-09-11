@@ -16,6 +16,7 @@ import {
   MODULAR_DEVICE_FIELDS,
   OrderSummaryItemWithDeviceConfig,
 } from 'apps/pos/src/app/types/DeviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceConfirmationProps {
   addedDevices: OrderSummaryItemWithDeviceConfig[];
@@ -65,8 +66,32 @@ const DeviceConfirmation = ({
       ...MODULAR_FLAGS.CONFIRM_ORDER,
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: handleGoToNextStep,
     };
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Confirm Order',
+        section: 'Order Confirmation',
+        subSection: 'POS Product Confirmation',
+        pageType: analyticsTypes.PAGE_TYPES.ORDER_CONFIRMATION,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ORDER_CONFIRMATION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_CONFIRMATION,
+      },
+    });
     handleUpdateModular(payload);
   };
+
+  useEffect(() => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.PAGE,
+      action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        pageType: analyticsTypes.PAGE_TYPES.ORDER_CONFIRMATION,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ORDER_CONFIRMATION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAGE_VIEW,
+      },
+    });
+  }, []);
 
   return (
     <Box margin="spacing.5">
@@ -108,7 +133,6 @@ const DeviceConfirmation = ({
           ))}
         </Box>
       )}
-
       <DeviceConfirmationCTA
         ctaName="Confirm Order"
         onCtaClick={handleOrderConfirmation}

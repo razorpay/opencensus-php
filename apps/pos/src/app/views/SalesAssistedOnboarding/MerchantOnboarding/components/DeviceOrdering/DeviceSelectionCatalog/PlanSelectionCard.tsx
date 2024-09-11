@@ -5,6 +5,7 @@ import { PlanConfig } from 'apps/pos/src/app/types/modular';
 import { StyledCard } from 'apps/pos/src/app/components/OnboardingStepCard/styled';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
 import { DevicePlanAvailableCharges } from 'apps/pos/src/app/constants/DeviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface PlanSelectionCardProps {
   plans: PlanConfig[];
@@ -17,13 +18,32 @@ const PlanSelectionCard = ({ plans = [] }: PlanSelectionCardProps): JSX.Element 
     control,
   });
 
+  const onPlanChange = ({ value }) => {
+    devicePlan.field.onChange(value);
+
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD,
+      action: analyticsTypes.ANALYTICS_ACTIONS.SELECTED,
+      properties: {
+        formName: 'Device Editing',
+        fieldName: 'Plan Selection/Setup Fee',
+        fieldType: analyticsTypes.FIELD_TYPES.RADIO,
+        label: 'Add Device',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+        l2FunnelStage: value,
+        section: 'Device Editing',
+        subSection: 'Plan Selection/Setup Fee',
+      },
+    });
+  };
+
   return (
     <RadioGroup
       name={devicePlan.field.name}
       value={devicePlan.field.value}
       defaultValue={devicePlan.formState.defaultValues?.[MODULAR_DEVICE_FIELDS.DEVICE_PLAN]}
       marginBottom="spacing.5"
-      onChange={({ value }) => devicePlan.field.onChange(value)}
+      onChange={onPlanChange}
       testID="plan-selection-card"
     >
       {plans.map((plan) => (

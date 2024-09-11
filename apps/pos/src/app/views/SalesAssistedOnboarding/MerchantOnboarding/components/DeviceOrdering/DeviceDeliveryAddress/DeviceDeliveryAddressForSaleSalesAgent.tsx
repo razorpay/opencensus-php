@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import DeviceDeliveryAddress from './DeviceDeliveryAddress';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers';
 import { getProgressFromModularStep } from 'apps/pos/src/app/utils/modularConfig';
 import { getOrderSummaryFieldsFromModularConfig } from 'apps/pos/src/app/utils/deviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import errorService from '@razorpay/universe-cli/errorService';
@@ -26,6 +27,20 @@ const DeviceDeliveryAddressForSaleSalesAgent = (): JSX.Element | null => {
   }, [modularConfig]);
 
   const { addedDevices = [], orderSummary } = deviceSummary ?? {};
+
+  useEffect(() => {
+    if (componentConfig && stepConfig?.modularKey && merchantDetails && orderSummary) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.PAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          pageType: analyticsTypes.PAGE_TYPES.ORDER_DELIVERY_ADDRESS,
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ORDER_DELIVERY_ADDRESS,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAGE_VIEW,
+        },
+      });
+    }
+  }, []);
 
   if (!componentConfig || !stepConfig?.modularKey || !merchantDetails || !orderSummary) return null;
 

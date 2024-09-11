@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Box, Button, Link, OTPInput, Text, TextInput } from '@razorpay/blade/components';
+import React, { useEffect, useState } from 'react';
+import { Box, Button, Link, OTPInput, TextInput, Text } from '@razorpay/blade/components';
 import KYCRedirectionLoader from './KYCRedirectionLoader';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface MerchantNumberVerifyProps {
   isOTPSent: boolean;
@@ -41,6 +42,17 @@ const MerchantNumberVerify = ({
   };
 
   const handleOnSubmitPhoneNumber = (): void => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.CTR,
+        section: 'merchant_signup',
+        subSection: 'merchant_number_entry',
+        label: 'Verify',
+      },
+    });
     handleOnPhoneNumberConfirm?.(phoneNumber);
   };
 
@@ -53,6 +65,18 @@ const MerchantNumberVerify = ({
 
   const handleResendOTPClick = (): void => {
     setOTP('');
+    console.log('Resend OTP');
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.MOBILE_OTP_VERIFICATION,
+        section: 'merchant_signup',
+        subSection: 'mobile_otp_verification',
+        label: 'Resend OTP',
+      },
+    });
     handleOnPhoneNumberConfirm(phoneNumber);
   };
 
@@ -62,7 +86,78 @@ const MerchantNumberVerify = ({
       token: OTPToken,
       contactMobile: phoneNumber,
     };
+
+    console.log('Submit OTP');
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.MOBILE_OTP_VERIFICATION,
+        section: 'merchant_signup',
+        subSection: 'mobile_otp_verification',
+        label: 'Submit OTP',
+      },
+    });
+
     handleOnOTPSubmit(payload);
+  };
+
+  useEffect(() => {
+    if (isOTPSent) {
+      // Track OTP verification UI //
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_PAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.MOBILE_NUMBER_ENTRY,
+          section: 'merchant_signup',
+          subSection: 'mobile_number_entry',
+          formName: 'merchant_details_signup',
+        },
+      });
+    } else {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_PAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.CONTACT_DETAILS_VERIFICATION,
+          section: 'merchant_signup',
+          subSection: 'contact_details_verification',
+          formName: 'merchant_details_signup',
+        },
+      });
+    }
+  }, [isOTPSent]);
+
+  const onOTPFilled = (): void => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD_FILL,
+      action: analyticsTypes.ANALYTICS_ACTIONS.INITIATED,
+      properties: {
+        formName: 'merchant_details_signup',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.MOBILE_NUMBER_ENTRY,
+        fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+        fieldName: 'mobile_otp',
+      },
+    });
+  };
+
+  const onPhoneNumberFocused = (): void => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD_FILL,
+      action: analyticsTypes.ANALYTICS_ACTIONS.INITIATED,
+      properties: {
+        formName: 'merchant_details_signup',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.MOBILE_NUMBER_ENTRY,
+        fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+        fieldName: 'mobile_number',
+      },
+    });
   };
 
   return (
@@ -78,6 +173,7 @@ const MerchantNumberVerify = ({
             validationState={!!error ? 'error' : 'none'}
             errorText={error ?? ''}
             autoFocus
+            onOTPFilled={onOTPFilled}
           />
           <Box display="flex" marginTop="spacing.4" marginBottom="spacing.8">
             <Text color="interactive.text.gray.subtle" size="small" marginRight="spacing.2">
@@ -113,6 +209,7 @@ const MerchantNumberVerify = ({
             onClearButtonClick={handleOnClearButtonClick}
             marginBottom="spacing.8"
             testID="phone-number-input"
+            onFocus={onPhoneNumberFocused}
           />
           <Button
             size="large"

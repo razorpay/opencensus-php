@@ -6,6 +6,7 @@ import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 import { processFilesForModularSave } from 'apps/pos/src/app/components/SalesFileUpload/helper';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceConfirmationCustomPricingProps {
   defaultValues: ArrayOfDocumentFieldsUpload[];
@@ -33,12 +34,25 @@ const DeviceConfirmationCustomPricing = ({
     [defaultValues],
   );
 
+  // gets called on mutation success //
   const handleOnPricingFileUploadChange = (files: FileItem[]) => {
     setIsLoading(true);
     const payload = {
       [MODULAR_DEVICE_FIELDS.DEVICE_CUSTOM_PRICING_DOC]: processFilesForModularSave(files),
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: () => setIsLoading(false),
     };
+
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.LINK,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Upload - Custom Pricing Proof',
+        section: 'Order Confirmation',
+        subSection: 'POS Product Confirmation',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.ORDER_CONFIRMATION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_CONFIRMATION,
+      },
+    });
 
     handleModularUpdate(payload);
   };

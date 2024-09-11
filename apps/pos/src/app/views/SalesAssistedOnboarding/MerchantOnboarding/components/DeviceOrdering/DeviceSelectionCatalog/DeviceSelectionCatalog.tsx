@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Heading } from '@razorpay/blade/components';
 import DeviceCard from './DeviceCard';
 import CatalogCartCta from './CatalogCartCta';
@@ -7,6 +7,7 @@ import {
   DeviceOrderSummaryItem,
   ModularPayload,
 } from 'apps/pos/src/app/types/modular';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceSelectionCatalogProps {
   heading: string;
@@ -27,6 +28,18 @@ const DeviceSelectionCatalog = ({
   handleModularUpdate,
   handleProceed,
 }: DeviceSelectionCatalogProps): JSX.Element | null => {
+  useEffect(() => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.PAGE,
+      action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        type: 'Device Exploration',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_ORDERING,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAGE_VIEW,
+      },
+    });
+  }, []);
+
   return (
     <Box margin="spacing.5">
       <Heading marginBottom="spacing.5" size="large">

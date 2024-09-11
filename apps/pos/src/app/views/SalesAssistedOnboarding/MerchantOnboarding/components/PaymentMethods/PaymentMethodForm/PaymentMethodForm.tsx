@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Heading,
@@ -24,6 +24,17 @@ import {
   AggregatorModelFormKeys,
   DirectModelFormKeys,
 } from 'apps/pos/src/app/constants/PaymentsAndService';
+import { trackEvent } from 'apps/pos/src/services/analytics';
+import {
+  ANALYTICS_ACTIONS,
+  ANALYTICS_EVENTS,
+  L1_FUNNEL_STAGE,
+  L2_FUNNEL_STAGE,
+} from 'apps/pos/src/services/analytics/types';
+import {
+  handleMdrEditAnalytics,
+  handleVasEditAnalytics,
+} from 'apps/pos/src/app/utils/paymentsAndServices';
 
 export type PaymentMethodForm = {
   type: PaymentMethodFormType;
@@ -56,14 +67,16 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   const [isMDREditEnabled, setIsMDREditEnabled] = useState(false);
   const [isVASEditEnabled, setIsVASEditEnabled] = useState(false);
 
-  const onEditVASClick = () => {
+  const onEditVASClick = (label: string) => {
+    handleVasEditAnalytics(label);
     if (isVASEditEnabled) {
       removeExistingPricingDocs();
     }
     setIsVASEditEnabled((prev) => !prev);
   };
 
-  const onEditMDRClick = () => {
+  const onEditMDRClick = (label: string) => {
+    handleMdrEditAnalytics(label);
     if (isMDREditEnabled) {
       removeExistingPricingDocs();
     }
@@ -97,6 +110,27 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
     if (isAggregatorFieldsPresent) return 'Choose MDR Rates & Value Added Services';
     return 'Choose Value Added Services';
   };
+
+  useEffect(() => {
+    if (form) {
+      trackEvent({
+        eventName: ANALYTICS_EVENTS.FORM_PAGE,
+        action: ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          formName: isAggregatorFieldsPresent
+            ? 'Aggregator Model form screen'
+            : 'Direct Model form screen',
+          section: 'Payment Method & Service Selection',
+          subSection: isAggregatorFieldsPresent ? 'Aggregator Model' : 'Direct Model',
+          l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+          l2FunnelStage: isAggregatorFieldsPresent
+            ? L2_FUNNEL_STAGE.AGGREGATOR_MODEL
+            : L2_FUNNEL_STAGE.DIRECT_MODEL,
+        },
+      });
+    }
+  }, [isAggregatorFieldsPresent]);
+
   return (
     <Box maxWidth="768px" padding="spacing.5" height="80vh" overflow="scroll">
       <Box display="flex" flexDirection="row" justifyContent="space-between">
@@ -107,7 +141,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
           <Link
             iconPosition="left"
             icon={!isVASEditEnabled ? EditIcon : undefined}
-            onClick={onEditVASClick}
+            onClick={() => onEditVASClick(isVASEditEnabled ? 'Save Changes' : 'Edit')}
             alignSelf="center"
             testID="edit-save-btn"
             isDisabled={isFormDisabled}
@@ -158,7 +192,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
               isDisabled={isFormDisabled}
               iconPosition="left"
               icon={!isMDREditEnabled ? EditIcon : undefined}
-              onClick={onEditMDRClick}
+              onClick={() => onEditMDRClick(isMDREditEnabled ? 'Save Changes' : 'Edit')}
               alignSelf="center"
               testID="mdr-edit-save"
               variant="button"
@@ -224,7 +258,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
               isDisabled={isFormDisabled}
               iconPosition="left"
               icon={!isVASEditEnabled ? EditIcon : undefined}
-              onClick={onEditVASClick}
+              onClick={() => onEditVASClick(isVASEditEnabled ? 'Save Changes' : 'Edit')}
               alignSelf="center"
               testID="vas-edit-save"
               variant="button"

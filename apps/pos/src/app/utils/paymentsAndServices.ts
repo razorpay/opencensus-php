@@ -1,6 +1,8 @@
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
 import { getComponentFromStep } from 'apps/pos/src/app/utils/modularConfig';
 import {
+  PaymentMethodFormType,
+  PaymentMethodsFieldKeyNames,
   PaymentMethodFormStringValue,
   PricingStepComponents,
 } from 'apps/pos/src/app/types/PaymentsAndService';
@@ -9,6 +11,15 @@ import {
   CHARGES_REGEX,
   DirectModelFormKeys,
 } from 'apps/pos/src/app/constants/PaymentsAndService';
+import { trackEvent } from 'apps/pos/src/services/analytics';
+import {
+  ANALYTICS_ACTIONS,
+  ANALYTICS_EVENTS,
+  FIELD_TYPES,
+  L1_FUNNEL_STAGE,
+  L2_FUNNEL_STAGE,
+  PAGE_TYPES,
+} from 'apps/pos/src/services/analytics/types';
 
 interface GetStandardPosPricingRatesProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
@@ -78,6 +89,207 @@ export const validatePricingRates = (rates: Record<string, string>) => {
     }
   }
   return { errFieldName };
+};
+
+interface HandleCheckboxAnalyticsProps {
+  key: string;
+  modelType: PaymentMethodFormType.DIRECT | PaymentMethodFormType.AGGREGATOR;
+}
+export const handleCheckboxAnalytics = ({ key, modelType }: HandleCheckboxAnalyticsProps) => {
+  if (key === PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD) {
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.FORM_FIELD,
+      action: ANALYTICS_ACTIONS.SELECTED,
+      properties: {
+        formName: modelType === PaymentMethodFormType.AGGREGATOR ? 'MDR Rates & VAS' : 'VAS Rates',
+        fieldName: 'Custom Rates',
+        fieldType: FIELD_TYPES.CHECKBOX,
+        section: 'Payment Method & Service Selection',
+        subSection:
+          modelType === PaymentMethodFormType.AGGREGATOR
+            ? L2_FUNNEL_STAGE.AGGREGATOR_MODEL
+            : L2_FUNNEL_STAGE.DIRECT_MODEL,
+        l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        l2FunnelStage:
+          modelType === PaymentMethodFormType.AGGREGATOR
+            ? L2_FUNNEL_STAGE.AGGREGATOR_MODEL
+            : L2_FUNNEL_STAGE.DIRECT_MODEL,
+      },
+    });
+  }
+};
+
+export const handleFileUploadAnalytics = (
+  modelType: PaymentMethodFormType.DIRECT | PaymentMethodFormType.AGGREGATOR,
+) => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.LINK,
+    action: ANALYTICS_ACTIONS.CLICKED,
+    properties: {
+      label: 'Upload - Custom Pricing Proof',
+      section: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      subSection:
+        modelType === PaymentMethodFormType.AGGREGATOR
+          ? L2_FUNNEL_STAGE.AGGREGATOR_MODEL
+          : L2_FUNNEL_STAGE.DIRECT_MODEL,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage:
+        modelType === PaymentMethodFormType.AGGREGATOR
+          ? L2_FUNNEL_STAGE.AGGREGATOR_MODEL
+          : L2_FUNNEL_STAGE.DIRECT_MODEL,
+    },
+  });
+};
+export const handleNachFileUploadAnalytics = () => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.LINK,
+    action: ANALYTICS_ACTIONS.CLICKED,
+    properties: {
+      label: 'Upload - NACH Form',
+      section: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      subSection: L2_FUNNEL_STAGE.NACH,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage: L2_FUNNEL_STAGE.NACH,
+    },
+  });
+};
+
+export const handleMdrEditAnalytics = (label: string) => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.LINK,
+    action: ANALYTICS_ACTIONS.CLICKED,
+    properties: {
+      label,
+      l1FunnelStage: L1_FUNNEL_STAGE.AGGREGATOR_MODEL,
+      l2FunnelStage: L2_FUNNEL_STAGE.MDR_RATES_AFFORDABILITY_CATEGORY,
+      section: 'Aggregator Model',
+      subSection: L2_FUNNEL_STAGE.MDR_RATES_AFFORDABILITY_CATEGORY,
+    },
+  });
+};
+
+export const handleVasEditAnalytics = (label: string) => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.LINK,
+    action: ANALYTICS_ACTIONS.CLICKED,
+    properties: {
+      label,
+      l1FunnelStage: L1_FUNNEL_STAGE.DIRECT_MODEL,
+      l2FunnelStage: L2_FUNNEL_STAGE.VAS_CATEGORY,
+      section: L1_FUNNEL_STAGE.DIRECT_MODEL,
+      subSection: L2_FUNNEL_STAGE.VAS_CATEGORY,
+    },
+  });
+};
+
+interface HandleCustomRatesAnalyticsProps {
+  key: string;
+  modelType: PaymentMethodFormType.DIRECT | PaymentMethodFormType.AGGREGATOR;
+}
+
+export const handleCustomRatesAnalytics = ({ key, modelType }: HandleCustomRatesAnalyticsProps) => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.FORM_FIELD_FILL,
+    action: ANALYTICS_ACTIONS.INITIATED,
+    properties: {
+      formName:
+        modelType === PaymentMethodFormType.AGGREGATOR ? 'MDR Rates & VAS Rates' : 'VAS Rates',
+      fieldName: 'Custom Rates',
+      fieldType: FIELD_TYPES.TEXTBOX,
+      l1FunnelStage:
+        modelType === PaymentMethodFormType.AGGREGATOR
+          ? L1_FUNNEL_STAGE.MDR_RATES_AFFORDABILITY_CATEGORY
+          : L1_FUNNEL_STAGE.VAS_CATEGORY,
+      l2FunnelStage: L2_FUNNEL_STAGE[key.toUpperCase()],
+    },
+  });
+};
+
+export const handleMdrVasFormSubmitAnalytics = (
+  modelType: PaymentMethodFormType.DIRECT | PaymentMethodFormType.AGGREGATOR,
+) => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.WEBSITE_CTA,
+    action: ANALYTICS_ACTIONS.CLICKED,
+    properties: {
+      label: 'Save & Continue',
+      section: 'Payment Method & Service Selection',
+      subSection:
+        modelType === PaymentMethodFormType.AGGREGATOR
+          ? L2_FUNNEL_STAGE.AGGREGATOR_MODEL
+          : L2_FUNNEL_STAGE.DIRECT_MODEL,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage:
+        modelType === PaymentMethodFormType.AGGREGATOR
+          ? L2_FUNNEL_STAGE.AGGREGATOR_MODEL
+          : L2_FUNNEL_STAGE.DIRECT_MODEL,
+    },
+  });
+};
+
+export const handleNachSubmitAnalytics = () => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.WEBSITE_CTA,
+    action: ANALYTICS_ACTIONS.CLICKED,
+    properties: {
+      label: 'Save & Continue',
+      section: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      subSection: L2_FUNNEL_STAGE.NACH,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage: L2_FUNNEL_STAGE.NACH,
+    },
+  });
+};
+
+export const handleNachSkipAnalytics = () => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.WEBSITE_CTA,
+    action: ANALYTICS_ACTIONS.CLICKED,
+    properties: {
+      label: 'Skip & add later',
+      section: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      subSection: L2_FUNNEL_STAGE.NACH,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage: L2_FUNNEL_STAGE.NACH,
+    },
+  });
+};
+
+export const handleNachFormViewAnalytics = () => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.FORM_PAGE,
+    action: ANALYTICS_ACTIONS.VIEWED,
+    properties: {
+      formName: 'Nach Form',
+      section: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      subSection: L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage: L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+    },
+  });
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.PAGE,
+    action: ANALYTICS_ACTIONS.VIEWED,
+    properties: {
+      pageType: PAGE_TYPES.ADDITIONAL_SALES_COMMENTS,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage: L2_FUNNEL_STAGE.ADDITIONAL_SALES_COMMENTS,
+    },
+  });
+};
+
+export const handleNachSalesCommentAnalytics = () => {
+  trackEvent({
+    eventName: ANALYTICS_EVENTS.FORM_FIELD_FILL,
+    action: ANALYTICS_ACTIONS.INITIATED,
+    properties: {
+      formName: 'Additional Sales Comments',
+      fieldName: 'Additional Sales Comments',
+      fieldType: FIELD_TYPES.TEXTBOX,
+      l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+      l2FunnelStage: L2_FUNNEL_STAGE.ADDITIONAL_SALES_COMMENTS,
+    },
+  });
 };
 
 export const replaceEmptyValues = (

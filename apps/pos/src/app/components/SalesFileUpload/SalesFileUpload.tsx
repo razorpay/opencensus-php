@@ -27,6 +27,8 @@ interface SalesFileUploadProps {
   isDisabled?: boolean;
   defaultValue?: FileItem[];
   onChange: (files: FileItem[]) => void;
+  onUpload?: (files: FileItem[]) => void;
+  onRemove?: (files: FileItem[]) => void;
   onError?: (errorData: unknown) => void;
   maxSize: number;
   maxLimit: number;
@@ -48,6 +50,8 @@ const SalesFileUpload = ({
   defaultValue,
   onError,
   onChange,
+  onUpload,
+  onRemove,
   value,
 }: SalesFileUploadProps): JSX.Element | null => {
   const { user } = getUser() ?? {};
@@ -80,6 +84,7 @@ const SalesFileUpload = ({
       const newFiles = [...fileItemList, ...data];
       setFileItemList(newFiles);
       onChange?.(newFiles);
+      onUpload?.(newFiles);
     },
     onError: (errorData) => {
       onError?.(errorData);
@@ -108,6 +113,7 @@ const SalesFileUpload = ({
     const newFiles = fileItemList.filter((item) => item.fileStoreId !== fileStoreId);
     setFileItemList(newFiles);
     onChange?.(newFiles);
+    onRemove?.(newFiles);
   };
 
   const handleFileDownloadClick = async (fileStoreId: string) => {

@@ -21,6 +21,7 @@ import {
 } from 'apps/pos/src/app/types/common';
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { MerchantDetails } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface UseOnboardingContextProps {
   onModularConfigUpdate?: (data: MerchantModularOnboardingDetailsSuccessResponse | null) => void;
@@ -111,7 +112,24 @@ const useOnboardingContext = ({
     updateModularConfig,
   };
 
+  const trackStepClick = (step: OnboardingStep) => {
+    if (step.modularKey === 'additional_details_step') {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.LINK,
+        action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_ONBOARDING,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.ADDITIONAL_DETAILS,
+          label: 'Step Clicked',
+          section: 'Merchant Onboarding',
+          subSection: 'Additional Details',
+        },
+      });
+    }
+  };
+
   const handleStepClick = ({ step }: { step: OnboardingStep }) => {
+    trackStepClick(step);
     const { customOnClickHandler, slug } = step ?? {};
     customOnClickHandler ? customOnClickHandler() : navigate(slug as string);
   };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   BottomSheet,
   BottomSheetHeader,
@@ -18,6 +18,7 @@ interface ModalWithBottomSheetProps extends Pick<BottomSheetProps, 'snapPoints'>
   onDismiss: () => void;
   content: JSX.Element;
   footer?: JSX.Element;
+  onBottomsheetOpen?: () => void;
 }
 
 const ModalWithBottomSheet = ({
@@ -27,17 +28,26 @@ const ModalWithBottomSheet = ({
   content,
   footer,
   snapPoints,
+  onBottomsheetOpen,
 }: ModalWithBottomSheetProps): JSX.Element => {
   const { isMobile } = useScreen();
 
+  useEffect(() => {
+    onBottomsheetOpen?.();
+  }, []);
+
+  const onDismissClick = () => {
+    onDismiss();
+  };
+
   return isMobile ? (
-    <BottomSheet isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints}>
+    <BottomSheet isOpen={isOpen} onDismiss={onDismissClick} snapPoints={snapPoints}>
       {headerText ? <BottomSheetHeader title={headerText} /> : null}
       <BottomSheetBody>{content}</BottomSheetBody>
       {footer ? <BottomSheetFooter>{footer}</BottomSheetFooter> : null}
     </BottomSheet>
   ) : (
-    <Modal isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal isOpen={isOpen} onDismiss={onDismissClick}>
       <ModalHeader title={headerText} />
       <ModalBody>{content}</ModalBody>
       <ModalFooter>{footer}</ModalFooter>

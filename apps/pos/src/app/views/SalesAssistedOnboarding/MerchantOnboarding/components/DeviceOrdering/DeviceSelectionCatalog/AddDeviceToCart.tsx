@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -30,6 +30,7 @@ import {
   MODULAR_FLAGS,
 } from 'apps/pos/src/app/constants/DeviceSelection';
 import { processFormDataForModularSubmit } from 'apps/pos/src/app/utils/modularConfig';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface AddDeviceToCartProps {
   deviceConfig: DeviceConfig;
@@ -79,6 +80,22 @@ const AddDeviceToCart = ({
 
   const toggleDetails = (): void => {
     if (isUpdateModularLoading) return;
+
+    // Tracking only add events //
+    if (!isEditFlow) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.LINK,
+        action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          label: 'Add Device',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EXPLORATION,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_DESCRIPTION,
+          section: 'Device EXploration',
+          subSection: deviceConfig?.title,
+        },
+      });
+    }
+
     setIsDetailsOpen((prevState) => !prevState);
   };
 
@@ -89,7 +106,57 @@ const AddDeviceToCart = ({
       ...processedFormData,
     };
 
+    // Track add to cart //
+    if (!isEditFlow) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+        action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          label: 'Add to cart',
+          section: 'Device Editing',
+          subSection: 'POS Product Editing',
+          pageType: analyticsTypes.PAGE_TYPES.DEVICE_EDITING,
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_EDITING,
+        },
+      });
+    }
+
     handleModularUpdate(payload);
+  };
+
+  const onCancelClick = (): void => {
+    if (isUpdateModularLoading) return;
+
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Cancel',
+        section: 'Device Editing',
+        subSection: 'POS Product Editing',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_EDITING,
+      },
+    });
+
+    setIsDetailsOpen((prevState) => !prevState);
+  };
+
+  const onDrawerDismissClick = (): void => {
+    if (isUpdateModularLoading) return;
+
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.ICON,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        type: 'Close Icon',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_EDITING,
+      },
+    });
+
+    setIsDetailsOpen((prevState) => !prevState);
   };
 
   const addDeviceText = isDeviceAlreadyAdded ? 'Add Another Device' : 'Add Device';
@@ -100,10 +167,38 @@ const AddDeviceToCart = ({
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onModularUpdate,
       ...MODULAR_FLAGS.DELETE_CART_ITEM,
     };
+
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.ICON,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Delete Icon',
+        section: 'Device Editing',
+        subSection: 'POS Product Editing',
+        pageType: analyticsTypes.PAGE_TYPES.DEVICE_EDITING,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_EDITING,
+      },
+    });
     handleModularUpdate(payload);
   };
 
   const devicePlan = watch(MODULAR_DEVICE_FIELDS.DEVICE_PLAN);
+
+  useEffect(() => {
+    // Track whenever the drawer is opened //
+    if (isDetailsOpen) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.PAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          pageType: analyticsTypes.PAGE_TYPES.DEVICE_EDITING,
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAGE_VIEW,
+        },
+      });
+    }
+  }, [isDetailsOpen]);
 
   return (
     <React.Fragment>
@@ -123,7 +218,7 @@ const AddDeviceToCart = ({
           {isEditFlow ? 'Edit' : addDeviceText}
         </Button>
       )}
-      <Drawer isOpen={isDetailsOpen} onDismiss={toggleDetails}>
+      <Drawer isOpen={isDetailsOpen} onDismiss={onDrawerDismissClick}>
         <DrawerHeader title="Device Selection" />
         <DrawerBody>
           <FormProvider {...methods}>
@@ -159,7 +254,7 @@ const AddDeviceToCart = ({
                 <Button
                   variant="tertiary"
                   marginRight="spacing.5"
-                  onClick={toggleDetails}
+                  onClick={onCancelClick}
                   isFullWidth
                 >
                   Cancel

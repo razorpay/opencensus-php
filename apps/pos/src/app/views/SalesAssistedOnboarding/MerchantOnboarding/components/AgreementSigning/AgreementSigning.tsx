@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box } from '@razorpay/blade/components';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
@@ -7,12 +7,29 @@ import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 const AgreementSigning = () => {
   const { states, handlers } = useOnboardingContext();
 
   const { modularConfig, isModularLoading, isUpdateModularLoading, merchantDetails } = states;
   const { updateModularConfig } = handlers;
+
+  useEffect(() => {
+    if (modularConfig) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_PAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          formName: 'Agreement Signing',
+          section: 'Agreement Signing',
+          subSection: 'Signing Mode',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.AGREEMENT_SIGNING,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.SIGNING_MODE,
+        },
+      });
+    }
+  }, []);
 
   if (!modularConfig) return null;
 

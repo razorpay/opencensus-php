@@ -3,6 +3,7 @@ import { ArrowRightIcon, Badge, Box, Button, ShoppingCartIcon } from '@razorpay/
 import { DeviceOrderSummaryItem, ModularPayload } from 'apps/pos/src/app/types/modular';
 import { MODULAR_FLAGS } from 'apps/pos/src/app/constants/DeviceSelection';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface CatalogCartCtaProps {
   addedDevices: DeviceOrderSummaryItem[];
@@ -22,6 +23,18 @@ const CatalogCartCta = ({
   const addedDeviceCount = addedDevices.length;
 
   const handleOnProceedToCartClick = (): void => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Proceed to cart',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EXPLORATION,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.POS_PRODUCT_DESCRIPTION,
+        section: 'Device Exploration',
+        subSection: 'POS Product Exploration',
+      },
+    });
+
     if (!isStepCompleted) {
       const payload = {
         ...MODULAR_FLAGS.CONFIRM_DEVICE_SELECTION,

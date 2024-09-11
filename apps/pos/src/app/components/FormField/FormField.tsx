@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, TextInput, RadioGroup, Radio } from '@razorpay/blade/components';
-import { Control, useController } from 'react-hook-form';
+import { Control, useController, ControllerRenderProps, FieldValues } from 'react-hook-form';
 import DropdownSelect from 'apps/pos/src/app/components/DropdownSelect/index';
 import { SelectDropdownOptions } from 'apps/pos/src/app/types/common';
 import { FieldRules } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
@@ -17,6 +17,10 @@ type FormFieldProps = {
   selectOptions?: Array<SelectDropdownOptions>;
   defaultValue: string;
   isDisabled: boolean;
+  onBottomSheetDismissCallback?: () => void;
+  onTextInputClick?: (field: ControllerRenderProps<FieldValues, string>) => void;
+  onRadioBtnChangeCallback?: (field: ControllerRenderProps<FieldValues, string>) => void;
+  onDropdownChangeCallback?: (args) => void;
 };
 
 const FormField = ({
@@ -30,6 +34,10 @@ const FormField = ({
   errorText = 'Required',
   necessityIndicator,
   isDisabled,
+  onBottomSheetDismissCallback,
+  onTextInputClick,
+  onRadioBtnChangeCallback,
+  onDropdownChangeCallback,
 }: FormFieldProps) => {
   const {
     field,
@@ -39,6 +47,19 @@ const FormField = ({
     control,
     rules: rules ?? { required: false },
   });
+
+  const onTextInputFocus = () => {
+    onTextInputClick?.(field);
+  };
+
+  const onRadioBtnChange = (value) => {
+    field.onChange(value);
+    onRadioBtnChangeCallback?.(field);
+  };
+
+  const onDropdownChange = (args) => {
+    onDropdownChangeCallback?.(args);
+  };
 
   const getFieldType = (type) => {
     if (!type) return null;
@@ -54,6 +75,7 @@ const FormField = ({
           validationState={errors[name] ? 'error' : 'none'}
           errorText={errorText}
           name={field.name}
+          onFocus={onTextInputFocus}
         />
       );
     }
@@ -68,13 +90,12 @@ const FormField = ({
           errorText={errorText}
           rules={rules}
           onChange={(args) => {
-            if (args) {
-              field.onChange(args.values[0]);
-            }
+            onDropdownChange(args);
           }}
           selectOptions={selectOptions}
           necessityIndicator={necessityIndicator}
           isDisabled={isDisabled}
+          onBottomSheetDismissCallback={onBottomSheetDismissCallback}
         />
       );
     }
@@ -86,7 +107,9 @@ const FormField = ({
             isDisabled={isDisabled}
             label={label}
             name={field.name}
-            onChange={({ value }) => field.onChange(value)}
+            onChange={({ value }) => {
+              onRadioBtnChange(value);
+            }}
             defaultValue={defaultValue}
           >
             {selectOptions?.map((option) => (

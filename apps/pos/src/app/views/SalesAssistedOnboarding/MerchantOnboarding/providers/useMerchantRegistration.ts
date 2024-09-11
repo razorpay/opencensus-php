@@ -12,6 +12,7 @@ import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
 import useMerchantSwitch from 'apps/pos/src/app/utils/hooks/useMerchantSwitch';
 import redirectToEasyOnboarding from 'apps/pos/src/app/utils/redirectToEasyOnboarding';
 import { MERCHANT_REGISTRATION_ERRORS } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface UseMerchantRegistration {
   isOTPSent: boolean;
@@ -91,13 +92,33 @@ const useMerchantRegistration = (): UseMerchantRegistration => {
       return response;
     },
     onSuccess: (response) => {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_PAGE_RESPONSE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.RECEIVED,
+        properties: {
+          formName: 'basic_details_step',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.MOBILE_OTP_VERIFICATION,
+          status: analyticsTypes.STATUS.SUCCESS,
+          fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+          fieldName: 'mobile_otp',
+        },
+      });
       handleSwitchMerchant(response?.data?.merchants?.[0].id as string);
     },
-    onError: (data) => {
-      const error: string = data?.errors?.[0] ?? '';
-      const genericError: string = MERCHANT_REGISTRATION_ERRORS.GENERIC_ERROR?.description;
-
-      setError(error || genericError);
+    onError: () => {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_PAGE_RESPONSE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.RECEIVED,
+        properties: {
+          formName: 'basic_details_step',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.MERCHANT_SIGNUP,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.MOBILE_OTP_VERIFICATION,
+          status: analyticsTypes.STATUS.FAILURE,
+          fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+          fieldName: 'mobile_otp',
+        },
+      });
     },
   });
 

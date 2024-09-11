@@ -40,6 +40,14 @@ import {
 import {
   extractPricingRates,
   getStandardPosPricingRates,
+  handleCheckboxAnalytics,
+  handleCustomRatesAnalytics,
+  handleFileUploadAnalytics,
+  handleMdrVasFormSubmitAnalytics,
+  handleNachFileUploadAnalytics,
+  handleNachSalesCommentAnalytics,
+  handleNachSkipAnalytics,
+  handleNachSubmitAnalytics,
   hasEditedStandardRates,
   replaceEmptyValues,
   validatePricingRates,
@@ -375,12 +383,14 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   };
 
   const onFileUploadChange = (files: FileItem[]) => {
+    handleFileUploadAnalytics(paymentMethodType);
     const newForm = JSON.parse(JSON.stringify(methodForm.form));
     newForm[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value = files;
     setMethodFormValue('form', newForm);
   };
 
   const onFieldCheckboxChange = (key: string) => {
+    handleCheckboxAnalytics({ key, modelType: paymentMethodType });
     const newForm = JSON.parse(JSON.stringify(methodForm.form));
     if (typeof newForm[key].value === 'boolean') {
       newForm[key].value = !newForm[key].value;
@@ -409,6 +419,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   };
 
   const onFieldInputChange = (key: string, value: any) => {
+    handleCustomRatesAnalytics({ key, modelType: paymentMethodType });
     const newForm = JSON.parse(JSON.stringify(methodForm.form));
     newForm[key].value = value;
     if (!newForm[key].value) {
@@ -436,11 +447,13 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   };
 
   const onFormSubmitClick = () => {
+    handleMdrVasFormSubmitAnalytics(paymentMethodType);
     const updatedForm = updateFormValues();
     updateConfigHandler(updatedForm);
   };
 
   const onNachTextAreaChange = (event) => {
+    handleNachSalesCommentAnalytics();
     setNachForm((prev) => {
       const newNACHForm: NachFormObject = JSON.parse(JSON.stringify(prev));
       newNACHForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD] = event.value;
@@ -449,6 +462,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   };
 
   const onNachFileUploadChange = (files: FileItem[]) => {
+    handleNachFileUploadAnalytics();
     setNachForm((prev) => {
       const newNACHForm: NachFormObject = JSON.parse(JSON.stringify(prev));
       newNACHForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD] = files;
@@ -457,6 +471,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   };
 
   const onNachSubmitClick = () => {
+    handleNachSubmitAnalytics();
     const payload: any = {
       ...nachForm,
     };
@@ -469,6 +484,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   };
 
   const onNachSkipClick = () => {
+    handleNachSkipAnalytics();
     handlers.handleProceedToNextComponent();
   };
 

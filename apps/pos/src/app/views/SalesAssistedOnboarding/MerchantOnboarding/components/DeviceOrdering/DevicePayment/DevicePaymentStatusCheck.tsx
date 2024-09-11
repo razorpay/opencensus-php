@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 import { Alert, Box, Button } from '@razorpay/blade/components';
 import { ModularPayload } from 'apps/pos/src/app/types/modular';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DevicePaymentStatusCheckProps {
   isUpdateModularLoading: boolean;
@@ -16,7 +17,19 @@ const DevicePaymentStatusCheck = ({
   const [isClicked, setIsClicked] = useState(false);
 
   const onStatusCheckAttempt = () => {
-    setIsClicked(true);
+    if (!isClicked) {
+      setIsClicked(true);
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.IMAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          section: 'Checkout Status',
+          subSection: 'Payment pending',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.CHECKOUT_STATUS,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAYMENT_PENDING,
+        },
+      });
+    }
   };
 
   const handlePaymentStatusCheck = () => {
@@ -24,8 +37,50 @@ const DevicePaymentStatusCheck = ({
       [MODULAR_DEVICE_FIELDS.DEVICE_QR_PAYMENT_STATUS_CHECK]: moment().unix(),
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onStatusCheckAttempt,
     };
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+      action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        label: 'Check Payment Status',
+        section: 'Checkout Status',
+        subSection: 'Checkout confirmation',
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.CHECKOUT_STATUS,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.CHECKOUT_CONFIRMATION,
+      },
+    });
+
+    if (!isClicked) {
+      // Refresh button clicked
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
+        action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
+        properties: {
+          label: 'Refresh status',
+          section: 'Checkout Status',
+          subSection: 'Checkout confirmation',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.CHECKOUT_STATUS,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.CHECKOUT_CONFIRMATION,
+        },
+      });
+    }
+
     handleModularUpdate(payload);
   };
+
+  useEffect(() => {
+    if (isUpdateModularLoading) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.IMAGE,
+        action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+        properties: {
+          section: 'Checkout Status',
+          subSection: 'Payment confirmation loading',
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.CHECKOUT_STATUS,
+          l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAYMENT_CONFIRMATION_LOADING,
+        },
+      });
+    }
+  }, [isUpdateModularLoading]);
 
   return (
     <Box

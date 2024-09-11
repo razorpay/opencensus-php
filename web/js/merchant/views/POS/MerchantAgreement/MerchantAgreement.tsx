@@ -5,7 +5,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import HandshakeImg from 'assets/pos/MerchantAgreement.svg';
 import { useNavigate } from 'react-router-dom';
 import { getOrg, getUser, useStore } from 'shell/commonStore';
-
 import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 import POSAgreementConfirmation from 'merchant/views/POS/MerchantAgreement/AgreementConfirmation';
 import {
@@ -30,6 +29,8 @@ import {
 import { agreeToPosMerchantAgreement, getModularOnboardingData } from 'merchant/views/POS/services';
 import { PosAgreementSignIds } from 'merchant/views/POS/types';
 import { ErrorBoundaryFallBackComponent } from 'merchant/widgets/utils';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const PosMerchantAgreement = (): JSX.Element => {
   const [isSignedSuccessfully, setIsSignedSuccessfully] = useState(false);
@@ -93,9 +94,55 @@ const PosMerchantAgreement = (): JSX.Element => {
   };
 
   const handleAgreeBtnClick = () => {
+    analyticsTrack({
+      objectName: 'Website CTA',
+      actionName: 'Clicked',
+      screen: 'Agreement signing',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        label: 'I Agree',
+        l1FunnelStage: 'Agreement Signing',
+        l2FunnelStage: 'Merchant Signing-online',
+        section: 'Agreement Signing',
+        subSection: 'Merchant Signing-online',
+      },
+    });
     signAllAgreements({
       ...getAgreementIds(workflowConfig?.data),
       [AGREEMENT_CONSENTED_AT_FIELD]: Math.floor(Date.now() / 1000),
+    });
+  };
+
+  const onCancelClick = () => {
+    analyticsTrack({
+      objectName: 'Website CTA',
+      actionName: 'Clicked',
+      screen: 'Agreement signing',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        label: 'Cancel',
+        l1FunnelStage: 'Agreement Signing',
+        l2FunnelStage: 'Merchant Signing-online',
+        section: 'Agreement Signing',
+        subSection: 'Merchant Signing-online',
+      },
+    });
+    navigate('/app/dashboard');
+  };
+
+  const onPricingAgreementBtnClick = () => {
+    analyticsTrack({
+      objectName: 'Link',
+      actionName: 'Clicked',
+      screen: 'Agreement signing',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        label: 'Pricing Agreement',
+        l1FunnelStage: 'Agreement Signing',
+        l2FunnelStage: 'Merchant Signing-online',
+        section: 'Agreement Signing',
+        subSection: 'Merchant Signing-online',
+      },
     });
   };
 
@@ -113,6 +160,22 @@ const PosMerchantAgreement = (): JSX.Element => {
       }
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    if (!isAgreementAlreadySigned || !isSignedSuccessfully) {
+      analyticsTrack({
+        objectName: 'Page',
+        actionName: 'Viewed',
+        screen: 'Agreement signing',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          pageType: 'Merchant Signing-online',
+          l1FunnelStage: 'Agreement Signing',
+          l2FunnelStage: 'Merchant Signing-online',
+        },
+      });
+    }
+  }, [isAgreementAlreadySigned, isSignedSuccessfully]);
 
   if (isLoading)
     return (
@@ -193,7 +256,11 @@ const PosMerchantAgreement = (): JSX.Element => {
               {isCustomRateEnabled(workflowConfig?.data) ? (
                 <Text color="interactive.text.neutral.muted" marginBottom="spacing.7">
                   You also agree to the pricing details outlined in our{' '}
-                  <Link target="_blank" href="/app/pos-merchant-agreement/pricing">
+                  <Link
+                    target="_blank"
+                    href="/app/pos-merchant-agreement/pricing"
+                    onClick={onPricingAgreementBtnClick}
+                  >
                     Pricing Agreement
                   </Link>
                   . This agreement explains the fees associated with your plan and details about the
@@ -215,7 +282,7 @@ const PosMerchantAgreement = (): JSX.Element => {
               gap={{ s: 'spacing.10' }}
             >
               <Box textAlign={getTextAlignment()} flex={{ xs: '1', s: '0' }}>
-                <Link onClick={() => navigate('/app/dashboard')} variant="button">
+                <Link onClick={onCancelClick} variant="button">
                   Cancel
                 </Link>
               </Box>

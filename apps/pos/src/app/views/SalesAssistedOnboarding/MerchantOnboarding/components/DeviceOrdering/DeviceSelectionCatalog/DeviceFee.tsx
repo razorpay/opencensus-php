@@ -8,6 +8,7 @@ import {
 } from 'apps/pos/src/app/types/DeviceSelection';
 import { DeviceFeeTypes } from 'apps/pos/src/app/constants/DeviceSelection';
 import { ONLY_NUMBER_REGEX } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceFeeProps {
   deviceFee: DeviceFeeType;
@@ -44,6 +45,23 @@ const DeviceFee = ({ deviceFee }: DeviceFeeProps): JSX.Element => {
 
   const selectedDevicePlan = watch(MODULAR_DEVICE_FIELDS.DEVICE_PLAN);
 
+  const onTextInputFocus = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD_FILL,
+      action: analyticsTypes.ANALYTICS_ACTIONS.INITIATED,
+      properties: {
+        fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+        formName: 'Device Editing',
+        fieldName: `Custom`,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+        l2FunnelStage:
+          deviceFee.field === MODULAR_DEVICE_FIELDS.DEVICE_SETUP_FEE_TYPE
+            ? analyticsTypes.L2_FUNNEL_STAGE.SETUP_FEE
+            : analyticsTypes.L2_FUNNEL_STAGE.MONTLY_RENTAL_FEE,
+      },
+    });
+  };
+
   return (
     <Box testID={`${deviceFee.field}-device-fee`}>
       <Heading weight="semibold" marginBottom="spacing.5">
@@ -72,6 +90,7 @@ const DeviceFee = ({ deviceFee }: DeviceFeeProps): JSX.Element => {
           isDisabled={feeTypeField.value !== 'custom'}
           validationState={customInputFieldState.error ? 'error' : 'none'}
           errorText={customInputFieldState?.error?.message}
+          onFocus={onTextInputFocus}
         />
       </RadioGroup>
     </Box>

@@ -10,6 +10,14 @@ import {
   BottomSheetFooter,
 } from '@razorpay/blade/components';
 import { PaymentMethodFormType } from 'apps/pos/src/app/types/PaymentsAndService';
+import { trackEvent } from 'apps/pos/src/services/analytics';
+import {
+  ANALYTICS_ACTIONS,
+  ANALYTICS_EVENTS,
+  FIELD_TYPES,
+  L1_FUNNEL_STAGE,
+  L2_FUNNEL_STAGE,
+} from 'apps/pos/src/services/analytics/types';
 
 const OnboardingModel = ({
   isOpen,
@@ -22,10 +30,37 @@ const OnboardingModel = ({
   );
 
   const onDismissClick = () => {
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.ICON,
+      action: ANALYTICS_ACTIONS.CLICKED,
+      properties: {
+        type: 'Close Icon',
+        l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        l2FunnelStage: L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+        section: 'Payment Method & Service Selection',
+        subSection: 'Onboarding Model',
+      },
+    });
     setIsOpen(false);
   };
 
   const onRadioButtonChange = (event) => {
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.FORM_FIELD,
+      action: ANALYTICS_ACTIONS.SELECTED,
+      properties: {
+        formName: 'Onboarding Model',
+        fieldName: 'Onboarding Model',
+        fieldType: FIELD_TYPES.RADIO_BUTTON,
+        l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        l2FunnelStage:
+          event.value === PaymentMethodFormType.AGGREGATOR
+            ? L2_FUNNEL_STAGE.ONBOARDING_OPTION_AGGREGATOR
+            : L2_FUNNEL_STAGE.ONBOARDING_OPTION_DIRECT,
+        section: 'Payment Method & Service Selection',
+        subSection: 'Onboarding Model',
+      },
+    });
     setPaymentMethodFormType(event.value);
   };
 
@@ -39,6 +74,17 @@ const OnboardingModel = ({
   };
 
   useEffect(() => {
+    trackEvent({
+      eventName: ANALYTICS_EVENTS.FORM_PAGE,
+      action: ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        formName: 'Onboarding Model screen',
+        section: 'Payment Method & Service Selection',
+        subSection: 'Onboarding Model',
+        l1FunnelStage: L1_FUNNEL_STAGE.PAYMENT_METHOD_AND_SERVICE_SELECTION,
+        l2FunnelStage: L2_FUNNEL_STAGE.ONBOARDING_MODEL,
+      },
+    });
     setPaymentMethodFormType(acquisitionModelField);
   }, [acquisitionModelField]);
 

@@ -1,8 +1,12 @@
 import React from 'react';
 import { Box, Checkbox, TextInput } from '@razorpay/blade/components';
 import { useController, useFormContext } from 'react-hook-form';
-import { DeviceOptionalFeature } from 'apps/pos/src/app/types/DeviceSelection';
+import {
+  DeviceOptionalFeature,
+  MODULAR_DEVICE_FIELDS,
+} from 'apps/pos/src/app/types/DeviceSelection';
 import { ONLY_NUMBER_REGEX } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface OptionalFeaturesProps {
   optionalFeature: DeviceOptionalFeature;
@@ -48,6 +52,54 @@ const OptionalFeatures = ({ optionalFeature }: OptionalFeaturesProps): JSX.Eleme
     setValue(name, Number(value));
   };
 
+  const onCheckboxClick = ({ isChecked }) => {
+    formField.onChange(isChecked);
+
+    if (isChecked) {
+      trackEvent({
+        eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD,
+        action: analyticsTypes.ANALYTICS_ACTIONS.SELECTED,
+        properties: {
+          fieldType: analyticsTypes.FIELD_TYPES.CHECKBOX,
+          formName: 'Device Editing',
+          fieldName: `${optionalFeature.title}`,
+          l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+          l2FunnelStage:
+            optionalFeature.field === MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
+              ? analyticsTypes.L2_FUNNEL_STAGE.RENTAL_ADVANCE
+              : analyticsTypes.L2_FUNNEL_STAGE.PURCHASE_PAPER_ROLL,
+          section: 'Device Editing',
+          subSection:
+            optionalFeature.field === MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
+              ? analyticsTypes.L2_FUNNEL_STAGE.RENTAL_ADVANCE
+              : analyticsTypes.L2_FUNNEL_STAGE.PURCHASE_PAPER_ROLL,
+        },
+      });
+    }
+  };
+
+  const onTextInputFocus = () => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.FORM_FIELD_FILL,
+      action: analyticsTypes.ANALYTICS_ACTIONS.INITIATED,
+      properties: {
+        fieldType: analyticsTypes.FIELD_TYPES.TEXTBOX,
+        formName: 'Device Editing',
+        fieldName: `${optionalFeature.title}`,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.DEVICE_EDITING,
+        l2FunnelStage:
+          optionalFeature.field === MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
+            ? analyticsTypes.L2_FUNNEL_STAGE.RENTAL_ADVANCE
+            : analyticsTypes.L2_FUNNEL_STAGE.PURCHASE_PAPER_ROLL,
+        section: 'Device Editing',
+        subSection:
+          optionalFeature.field === MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
+            ? analyticsTypes.L2_FUNNEL_STAGE.RENTAL_ADVANCE
+            : analyticsTypes.L2_FUNNEL_STAGE.PURCHASE_PAPER_ROLL,
+      },
+    });
+  };
+
   return (
     <Box
       display="flex"
@@ -57,7 +109,7 @@ const OptionalFeatures = ({ optionalFeature }: OptionalFeaturesProps): JSX.Eleme
     >
       <Checkbox
         value={optionalFeature.field}
-        onChange={({ isChecked }) => formField.onChange(isChecked)}
+        onChange={onCheckboxClick}
         isChecked={formField.value}
       >
         {optionalFeature.title}
@@ -74,6 +126,7 @@ const OptionalFeatures = ({ optionalFeature }: OptionalFeaturesProps): JSX.Eleme
             isDisabled={!formField.value}
             validationState={customInputFieldState.error ? 'error' : 'none'}
             errorText={customInputFieldState?.error?.message}
+            onFocus={onTextInputFocus}
           />
         </Box>
       ) : null}

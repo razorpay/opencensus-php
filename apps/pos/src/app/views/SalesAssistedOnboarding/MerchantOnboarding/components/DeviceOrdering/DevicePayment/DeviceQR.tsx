@@ -16,6 +16,7 @@ import { ModularPayload } from 'apps/pos/src/app/types/modular';
 import RzpLogo from 'apps/pos/src/assets/rzpLogo.svg';
 import PageError from 'apps/pos/src/app/components/PageError';
 import DevicePaymentBg from 'apps/pos/src/assets/paymentScreenBg.webp';
+import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface DeviceQRProps {
   qrCodeIntent: string;
@@ -60,6 +61,18 @@ const DeviceQR = ({
     void initializeQRCode();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qrCodeIntent]);
+
+  useEffect(() => {
+    trackEvent({
+      eventName: analyticsTypes.ANALYTICS_EVENTS.PAGE,
+      action: analyticsTypes.ANALYTICS_ACTIONS.VIEWED,
+      properties: {
+        pageType: analyticsTypes.PAGE_TYPES.CHECKOUT_PAGE,
+        l1FunnelStage: analyticsTypes.L1_FUNNEL_STAGE.CHECKOUT_PAGE,
+        l2FunnelStage: analyticsTypes.L2_FUNNEL_STAGE.PAGE_VIEW,
+      },
+    });
+  }, []);
 
   if (isError || (!qrImage && !isQrLoading)) {
     return <PageError title="Payment Failed!" description="Failed to generate QR" />;
