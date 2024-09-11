@@ -671,7 +671,7 @@ class RepositoryManager extends Illuminate\Support\Manager
             {
                 try
                 {
-                    $this->db->connection($connection)->commit();
+                   $this->db->connection($connection)->commit();
                 }
                 catch (\Throwable $ex)
                 {
@@ -801,6 +801,31 @@ class RepositoryManager extends Illuminate\Support\Manager
     {
         $this->db
             ->select('SELECT /* comment: ' . $comment . ' */ 1;' );
+    }
+
+    public function isTransactionActiveOnConnection(string $connection)
+    {
+        $env = $this->app->environment();
+
+        if (in_array($env, ['testing', 'testing_docker'], true) === true)
+        {
+            return ($this->transactionLevelOnConnection($connection) > 1);
+        }
+
+        return ($this->transactionLevelOnConnection($connection) > 0);
+    }
+
+    public function transactionLevelOnConnection(string $connection)
+    {
+        return $this->db->connection($connection)->transactionLevel();
+    }
+
+    public function rollbackWithConnection(string $connection) {
+        $this->db->connection($connection)->rollBack();
+    }
+
+    public function commitWithConnection(string $connection) {
+        $this->db->connection($connection)->commit();
     }
 
 }

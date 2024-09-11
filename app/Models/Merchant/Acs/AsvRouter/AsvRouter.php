@@ -534,4 +534,19 @@ class AsvRouter
         return $this->splitzHelper->checkSplitzValueForAsvTiDBComparison();
     }
 
+    public function shouldHandleOpenTransaction(string $callingIdentifier) : bool
+    {
+        try
+        {
+            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForHandlingOpenTransaction();
+
+            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+        } catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
+
+            return false;
+        }
+    }
+
 }

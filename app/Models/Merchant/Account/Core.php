@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Account;
 
+
 use RZP\Exception;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
@@ -9,8 +10,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use Database\Connection;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AccountV2\Type;
@@ -470,7 +473,6 @@ class Core extends Merchant\Core
                 array_push($successfulLA, $amcBankAccount->getBusinessName());
 
                 list($testEntity, $liveEntity, $asvEntity) = $this->repo->merchant->FetchRecordFromAllDBs($linkedAccount->getId());
-
                 $this->trace->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_DEBUG_LOGS,[
                     "id"     => $linkedAccount->getId(),
                     "testEntity empty" => empty($testEntity),
@@ -479,8 +481,9 @@ class Core extends Merchant\Core
                     "testEntity name" => empty($testEntity) === false ? $testEntity->getName() : null,
                     "liveEntity name" => empty($liveEntity) === false ? $liveEntity->getName() : null,
                     "asvEntity name" => empty($asvEntity) === false ? $asvEntity->getName() : null,
-                    "is txn active" => $this->repo->isTransactionActive(),
-                    "txn level" => $this->repo->getTransactionLevel()
+                    "live db txn level" => $this->repo->transactionLevelOnConnection(Mode::LIVE),
+                    "asv db txn level" => $this->repo->transactionLevelOnConnection(Connection::ASV_WRITER),
+                    "test db txn level" => $this->repo->transactionLevelOnConnection(Mode::TEST)
                 ]);
             }
             catch( \Exception $e)
@@ -493,6 +496,8 @@ class Core extends Merchant\Core
 
                 array_push($failedLA, $amcBankAccount->getBusinessName());
             }
+
+            $this->handleOpenTransaction();
         }
 
         $response = [
@@ -516,6 +521,49 @@ class Core extends Merchant\Core
         return $response;
 
     }
+
+    protected function handleOpenTransaction()
+    {
+        if ($this->repo->isTransactionActiveOnConnection(Mode::LIVE) ||
+            $this->repo->isTransactionActiveOnConnection(Connection::ASV_WRITER) ||
+            $this->repo->isTransactionActiveOnConnection(Mode::TEST))
+        {
+            $connections = [Mode::LIVE, Connection::ASV_WRITER, Mode::TEST];
+            $router = new Merchant\Acs\AsvRouter\AsvRouter();
+
+            if ($router->shouldHandleOpenTransaction('commitOpenTransaction'))
+            {
+                $this->processTransactions($connections, 'commitWithConnection', TraceCode::LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_COMMIT);
+            }
+            else if ($router->shouldHandleOpenTransaction('rollbackOpenTransaction'))
+            {
+                $this->processTransactions($connections, 'rollbackWithConnection', TraceCode::LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_ROLLBACK);
+            }
+        }
+    }
+
+    protected function processTransactions(array $connections, string $action, string $traceCode) {
+        foreach ($connections as $connection) {
+            try {
+                if ($this->repo->isTransactionActiveOnConnection($connection)) {
+                    $txnLevel = $this->repo->transactionLevelOnConnection($connection);
+                    for ($i = 0; $i < $txnLevel; $i++) {
+                        $this->repo->$action($connection);
+                    }
+                }
+            } catch (\Throwable $ex) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    $traceCode, [
+                        'info' => "Error thrown in transaction $action on $connection db",
+                        'error' => $ex->getMessage(),
+                    ]
+                );
+            }
+        }
+    }
+
 
     protected function preProcessAMCBankAccountDetailsToCreateLinkedAccount(LinkedAccountReferenceData\Entity $laRefData)
     {
