@@ -1945,6 +1945,9 @@ class Core extends Base\Core
         $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
         $formattedPaymentDetails['payment']['gateway'] = $payment->getGateway();
         $formattedPaymentDetails['payment']['optimizer_payment'] = $payment->terminal->isOptimizer();
+        if (isset($payment->order)) {
+            $formattedPaymentDetails['payment']['order_id'] = $payment->order->getPublicId();
+        }
 
         $formattedPaymentDetails['insurance'] = [];
         if (!empty($payment['insurance_status']))
