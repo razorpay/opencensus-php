@@ -115,6 +115,15 @@ jobs:
             exit 1
           fi
 
+      - name: Send Slack notification on conflict
+        if: steps.merge.outputs.merge_status == 'conflict'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BRANCH_AUTO_MERGER_SLACK_APP_WEBHOOK }}
+          SLACK_MESSAGE: 'Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required.'
+          SLACK_TITLE: Message
+          MSG_MINIMAL: commit
+
   check-overall-status:
     needs: merge-master-to-special-branch
     runs-on: [k8s-runner, linux-arm64]

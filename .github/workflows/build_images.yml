@@ -3,10 +3,12 @@ on:
   pull_request:
     branches:
       - 'master'
+      - singapore_release
   push:
     branches:
       - 'master'
       - 'hotfix**'
+      - singapore_release
   workflow_dispatch:
 
 concurrency:
