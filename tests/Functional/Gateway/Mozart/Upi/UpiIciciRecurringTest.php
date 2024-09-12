@@ -417,6 +417,268 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
         ], $payment->toArray());
     }
 
+    public function testMandateCallbackFailed()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+            Entity::USED_COUNT      => 0,
+            Entity::GATEWAY_DATA    => null,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $response = $this->doAuthPayment($this->payment);
+
+        // Just to validate that a proper coproto is being send
+        $this->assertArraySubset([
+            'type'      => 'async',
+            'request'   => [
+                'method' => 'get'
+            ],
+        ], $response);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $upiMandate->reload();
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::USED_COUNT      => 1,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW    => 'collect',
+            ],
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION        => 'authenticate',
+            Base\Entity::TYPE          => 'collect',
+            Base\Entity::PAYMENT_ID    => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'create',
+                'ano'       => 1,
+                'sno'       => 1,
+            ]
+        ], $upi->toArray());
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'auth_verify')
+            {
+                $content['success'] = false;
+                $content['data']['status'] = "mandate_failed";
+                $content['error']['internal_error_code'] = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
+            }
+        });
+
+        $this->mandateCreateCallback($payment);
+
+        $payment->reload();
+
+        $upiMandate->reload();
+
+        $token->reload();
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'failed',
+            Payment\Entity::INTERNAL_ERROR_CODE => ErrorCode::GATEWAY_ERROR_BANK_OFFLINE
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::STATUS          => Status::CREATED,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW        => 'collect',
+            ]
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+    }
+
+    public function testInitialDebitCallbackFailed()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+            Entity::USED_COUNT      => 0,
+            Entity::GATEWAY_DATA    => null,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $response = $this->doAuthPayment($this->payment);
+
+        // Just to validate that a proper coproto is being send
+        $this->assertArraySubset([
+            'type'      => 'async',
+            'request'   => [
+                'method' => 'get'
+            ],
+        ], $response);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $upiMandate->reload();
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::USED_COUNT      => 1,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW    => 'collect',
+            ],
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION        => 'authenticate',
+            Base\Entity::TYPE          => 'collect',
+            Base\Entity::PAYMENT_ID    => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'create',
+                'ano'       => 1,
+                'sno'       => 1,
+            ]
+        ], $upi->toArray());
+
+        $this->mandateCreateCallback($payment);
+
+        $payment->reload();
+
+        $upiMandate->reload();
+
+        $token->reload();
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::STATUS          => Status::CONFIRMED,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW        => 'collect',
+                Entity::VPA         => 'vishnu@icici',
+            ]
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'pay_verify')
+            {
+                $content['success'] = false;
+                $content['data']['status'] = "mandate_failed";
+                $content['error']['internal_error_code'] = ErrorCode::GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT;
+            }
+        });
+
+        $this->firstDebitCallback($payment);
+
+        $payment->reload();
+
+        $token->reload();
+
+        $upi->reload();
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            MetaData::INTERNAL_STATUS => 'failed'
+        ], $upiMetadata->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING        => false,
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->assertNotNull($upiMandate[Entity::UMN]);
+        $this->assertNotNull($upiMandate[Entity::RRN]);
+        $this->assertNotNull($upiMandate[Entity::NPCI_TXN_ID]);
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'failed',
+            Payment\Entity::INTERNAL_ERROR_CODE => ErrorCode::GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT
+        ], $payment->toArray());
+    }
+
     /**
      * This is a tabular test that checks all MID based whitelisted vpa handles for upi recurring
      *

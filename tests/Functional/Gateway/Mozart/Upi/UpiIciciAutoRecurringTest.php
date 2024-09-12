@@ -2469,6 +2469,385 @@ class UpiIciciAutoRecurringTest extends TestCase
         ], false);
     }
 
+    public function testAutoRecurringPaymentSubsequentDebitCallbackFailed()
+    {
+        Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
+
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $requestAsserted = false;
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $response = $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway' => 'upi_icici',
+        ]);
+
+        $this->assertArraySubset([
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $this->order->getPublicId(),
+        ], $response);
+
+        $this->assertArrayHasKey('razorpay_signature', $response);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $requestAsserted = [
+            'notify'    => false,
+        ];
+
+        $calls = [];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $requestAsserted)
+        {
+            if ($action === 'notify')
+            {
+                $requestAsserted['notify'] = true;
+
+                $paymentId = $content['payment']['id'];
+                $paymentCreatedAt = $content['payment']['created_at'];
+
+                $this->assertArraySubset([
+                    'act'   => 'notify',
+                    'ano'   => 1,
+                    'ext'   => $paymentCreatedAt + 90000,
+                    'sno'   => 2,
+                    'id'    => $paymentId . '0notify' . 1,
+                ], $content['upi']['gateway_data']);
+
+                // All the entities sent to mozart
+                $this->assertSame([
+                    'action',
+                    'gateway',
+                    'terminal',
+                    'payment',
+                    'merchant',
+                    'upi_mandate',
+                    'upi',
+                ], array_keys($content));
+
+                return;
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action no ICICI Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertTrue($requestAsserted['notify']);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'internal_status'   => 'reminder_in_progress_for_authorize',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 90000,
+                'sno'   => 2,
+            ],
+        ]);
+
+        // Skipping to execution time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addHours(25)->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // Triggering the actual authorization call from RS - 1st Subsequent Debit request
+        $this->sendReminderRequest($updateReminder);
+
+        // Assert payment is not marked as failed
+        $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+        ], false);
+
+        // Mock the response for debit request to the gateway
+        $this->mockServerContentFunction(function (& $content, $action) use (& $calls)
+        {
+            if ($action === 'pay_verify')
+            {
+                $content = array_merge_recursive($content, [
+                    'success'   => false,
+                    'error'     => [
+                        'gateway_error_code'        => '5009',
+                        'internal_error_code'       => ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
+                        'gateway_error_description' => 'Service unavailable.'
+                    ],
+                ]);
+
+                $calls[$action]['attempts'] = 1 + ($calls[$action]['attempts'] ?? 0);
+            }
+        });
+
+        $content = $this->mockServer()->getAsyncCallbackResponseAutoDebitForIcici($payment);
+
+        $this->makeS2sCallbackAndGetContent($content, 'upi_icici');
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'npci_txn_id'       => 'HDF542de25ds56ad9896ac96cef89475623',
+            'internal_status'   => 'authorize_initiated',
+            'remind_at'         => null,
+        ]);
+
+        // Assert action and attempt number (ano)
+        $this->assertUpiDbLastEntity('upi', [
+            'action'            => 'authorize',
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'execte',
+                'ano'   => $calls['pay_verify']['attempts'],
+                'ext'   => null,
+                'sno'   => 2,
+            ],
+        ], false);
+
+        // Assert payment is not marked as failed
+        $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'failed',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE
+        ], false);
+    }
+
+    public function testAutoRecurringPaymentSubsequentDebitCallbackRetry()
+    {
+        $this->setMockRazorxTreatment(['upi_autopay_increase_debit_retries' => 'on']);
+
+        Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
+
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $requestAsserted = false;
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $response = $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway' => 'upi_icici',
+        ]);
+
+        $this->assertArraySubset([
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $this->order->getPublicId(),
+        ], $response);
+
+        $this->assertArrayHasKey('razorpay_signature', $response);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $requestAsserted = [
+            'notify'    => false,
+        ];
+
+        $calls = [];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $requestAsserted)
+        {
+            if ($action === 'notify')
+            {
+                $requestAsserted['notify'] = true;
+
+                $paymentId = $content['payment']['id'];
+                $paymentCreatedAt = $content['payment']['created_at'];
+
+                $this->assertArraySubset([
+                    'act'   => 'notify',
+                    'ano'   => 1,
+                    'ext'   => $paymentCreatedAt + 90000,
+                    'sno'   => 2,
+                    'id'    => $paymentId . '0notify' . 1,
+                ], $content['upi']['gateway_data']);
+
+                // All the entities sent to mozart
+                $this->assertSame([
+                    'action',
+                    'gateway',
+                    'terminal',
+                    'payment',
+                    'merchant',
+                    'upi_mandate',
+                    'upi',
+                ], array_keys($content));
+
+                return;
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action no ICICI Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertTrue($requestAsserted['notify']);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'internal_status'   => 'reminder_in_progress_for_authorize',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 90000,
+                'sno'   => 2,
+            ],
+        ]);
+
+        // Skipping to execution time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addHours(25)->addSeconds(90));
+
+        // Remind at should be in last 3 minutes
+        $this->assertLessThan(Carbon::now()->getTimestamp(), $metadata->getRemindAt());
+        $this->assertGreaterThan(Carbon::now()->subMinute(3)->getTimestamp(), $metadata->getRemindAt());
+
+        // Triggering the actual authorization call from RS - 1st Subsequent Debit request
+        $this->sendReminderRequest($updateReminder);
+
+        // Assert payment is not marked as failed
+        $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+        ], false);
+
+        // Mock the response for debit request to the gateway
+        $this->mockServerContentFunction(function (& $content, $action) use (& $calls)
+        {
+            if ($action === 'pay_verify')
+            {
+                $content = array_merge_recursive($content, [
+                    'success'   => false,
+                    'error'     => [
+                        'gateway_error_code'        => '5009',
+                        'internal_error_code'       => ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
+                        'gateway_error_description' => 'Service unavailable.'
+                    ],
+                ]);
+
+                $calls[$action]['attempts'] = 1 + ($calls[$action]['attempts'] ?? 0);
+            }
+        });
+
+        $content = $this->mockServer()->getAsyncCallbackResponseAutoDebitForIcici($payment);
+
+        $this->makeS2sCallbackAndGetContent($content, 'upi_icici');
+
+        // Assert action and attempt number (ano)
+        $this->assertUpiDbLastEntity('upi', [
+            'action'            => 'authorize',
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'execte',
+                'ano'   => $calls['pay_verify']['attempts'],
+                'ext'   => null,
+                'sno'   => 2,
+            ],
+        ], false);
+
+        // Assert payment is not marked as failed
+        $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+        ], false);
+
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'internal_status'   => 'reminder_in_progress_for_authorize',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ], false);
+
+        // Skipping to execution time, with 90 seconds buffer
+        Carbon::setTestNow(Carbon::now()->addMinutes(30)->addSeconds(90));
+
+        // Triggering the actual authorization call from RS
+        $this->sendReminderRequest($updateReminder);
+
+        // Mock the response for debit request to the gateway
+        $this->mockServerContentFunction(function (& $content, $action) use (& $calls)
+        {
+            if ($action === 'pay_verify')
+            {
+                $calls[$action]['attempts'] = 1 + ($calls[$action]['attempts'] ?? 0);
+            }
+        });
+
+        $content = $this->mockServer()->getAsyncCallbackResponseAutoDebitForIcici($payment);
+
+        $this->makeS2sCallbackAndGetContent($content, 'upi_icici');
+
+        // Assert action and attempt number (ano)
+        $this->assertUpiDbLastEntity('upi', [
+            'action'            => 'authorize',
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'execte',
+                'ano'   => $calls['pay_verify']['attempts'],
+                'ext'   => null,
+                'sno'   => 2,
+            ],
+        ], false);
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'captured',
+            'reference1'    => 'HDFC00001124',
+            'reference16'   => '019721040510',
+        ], false);
+
+
+        // Assert internal status in metadata is authorized
+        // and remind_at is null
+        $this->assertUpiDbLastEntity('upi_metadata', [
+            'internal_status'   => 'authorized',
+            'remind_at'         =>  null,
+        ], false);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'action'                => 'authorize',
+            'merchant_reference'    => $this->upiMandate->getId(),
+            'gateway_payment_id'    => 'GatewayPaymentIdDebit',
+            'status_code'           => '0',
+            'npci_txn_id'           => 'HDFC00001124',
+            'npci_reference_id'     => '019721040510',
+            'gateway_error'         => [
+                'gatewayStatusCode'     => null,
+                'gatewayStatusDesc'     => 'Debit Success',
+                'pspStatusCode'         => 'ZM',
+                'pspStatusDesc'         => 'Valid MPIN',
+            ],
+        ]);
+    }
+
     /**
      * returns a mock response of the razorx request
      *
