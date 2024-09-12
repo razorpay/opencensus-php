@@ -5,9 +5,12 @@ namespace RZP\Models\IdempotencyKey;
 use Hash;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                = 'id';
     const IDEMPOTENCY_KEY   = 'idempotency_key';
     const MERCHANT_ID       = 'merchant_id';
