@@ -758,7 +758,7 @@ class Gateway extends Base\Gateway
 
         if ($vpa === '111000111@SBIN0007105.ifsc.npci')
         {
-            return "Penniless Customer";
+            return " Penniless Customer  ";
         }
 
         if ($vpa === '111000111@SBIN0007109.ifsc.npci')

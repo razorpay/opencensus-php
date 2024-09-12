@@ -331,6 +331,9 @@ class Entity extends Base\PublicEntity
 
     public function setRegisteredName(string $name = null)
     {
+        if ($name !== null) {
+            $name = preg_replace('/\s+/', ' ', trim($name));
+        }
         return $this->setAttribute(self::REGISTERED_NAME, $name);
     }
 
