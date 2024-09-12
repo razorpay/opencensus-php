@@ -10,7 +10,7 @@ use RZP\Models\Card;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN                => 'required|string|regex:/^[0-9]{6}$/',
+        Entity::IIN                => 'required|string|regex:/^[0-9]{6,8}$/',
         Entity::NETWORK            => 'required',
         Entity::TYPE               => 'required',
         Entity::SUBTYPE            => 'filled|string|custom',
@@ -51,7 +51,7 @@ class Validator extends Base\Validator
 
     protected static $editBulkRules = [
         Entity::IINS        => 'required|array',
-        Entity::IINS . '.*' => 'numeric|digits:6',
+        Entity::IINS . '.*' => 'numeric|digits_between:6,8',
         Entity::PAYLOAD     => 'required|array',
     ];
 
@@ -61,7 +61,7 @@ class Validator extends Base\Validator
 
     protected static $getIinDetailsRules = [
         'callback'                  => 'sometimes', // JSONP
-        'iin'                       => 'required|numeric|digits:6',
+        'iin'                       => 'required|numeric|digits_between:6,8',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
         'language_code'             => 'sometimes',
