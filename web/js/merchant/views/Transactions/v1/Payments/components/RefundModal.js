@@ -542,7 +542,10 @@ class RefundModal extends Component {
     const instant_refund_supported =
       payment.instant_refund_support && payment.instant_refund_support === true;
     const refund_check_disabled = isInstantDisabled || !instant_refund_supported;
+    const optimierInstantRefundDisabled =
+      payment.instant_refund_support === false && user?.isOptimizerEnabled;
     if (
+      !optimierInstantRefundDisabled &&
       !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
       !this.props.i18.isConfigTagEnabled('refunds.instant_refunds')
     ) {
