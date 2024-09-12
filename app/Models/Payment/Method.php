@@ -142,6 +142,12 @@ class Method
         self::NETBANKING,
     ];
 
+    const LRS_TRAVEL_CITI_SUPPORTED_METHODS = [
+        self::UPI,
+        self::CARD,
+        self::NETBANKING,
+    ];
+
     public static function formatted($method)
     {
         return self::$methods[$method];

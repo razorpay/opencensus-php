@@ -88,6 +88,7 @@ class Core extends Base\Core
             (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and
                 $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false) and
                 $merchant->isLRSFlowEnabled() === false and
+                $merchant->isLRSTravelCitiFlowEnabled() === false and
                 ($merchant->isJpmcImportFlowEnabled() === false))
         {
           throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
@@ -658,6 +659,7 @@ class Core extends Base\Core
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true or
             $merchant->isLRSFlowEnabled() === true or
+            $merchant->isLRSTravelCitiFlowEnabled() === true or
             ($merchant->isJpmcImportFlowEnabled() === true))
         {
             $bankValidator = 'addInternationalBankAccount';
@@ -687,6 +689,7 @@ class Core extends Base\Core
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false and
             $merchant->isLRSFlowEnabled() === false and
+            $merchant->isLRSTravelCitiFlowEnabled() === false and
             ($merchant->isJpmcImportFlowEnabled() === false) and
             (in_array(strtolower($merchant->getCountry()), Entity::$IfscAllowedCountries) === true) and
             ($authType !== 'migrated'))
@@ -1007,6 +1010,7 @@ class Core extends Base\Core
 
         if (($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true) or (
                 $merchant->isLRSFlowEnabled() === true) or
+            ($merchant->isLRSTravelCitiFlowEnabled() === true) or
             ($merchant->isJpmcImportFlowEnabled() === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);

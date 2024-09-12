@@ -989,6 +989,11 @@ class Processor
         return $this->merchant->isLRSFlowEnabled();
     }
 
+    private function isLRSTravelCitiMerchant(): bool
+    {
+        return $this->merchant->isLRSTravelCitiFlowEnabled();
+    }
+
     private function isJPMCImportFlowMerchant(): bool
     {
         return $this->merchant->isJpmcImportFlowEnabled();
@@ -3571,6 +3576,7 @@ class Processor
                 ($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
                 ($isPaCbPartnerPayment === false) and
+                ($this->isLRSTravelCitiMerchant() === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or

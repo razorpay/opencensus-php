@@ -227,6 +227,8 @@ trait Authorize
 
         $this->saveJPMCImportFlowDataIfApplicable($payment);
 
+        $this->saveLRSCitiInvoiceIfApplicable($payment);
+
         return $authPaymentData;
     }
 
@@ -2392,6 +2394,8 @@ trait Authorize
             $this->validateJPMCImportFlowDataIfApplicable($payment);
 
             $this->validatePaCBDataIfApplicable($payment);
+
+            $this->validateLRSTravelCitiDataIfApplicable($payment);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
@@ -4568,6 +4572,115 @@ trait Authorize
                 ]
             );
         }
+    }
+
+    protected function validateLRSTravelCitiDataIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->merchant->isLRSTravelCitiFlowEnabled() === false)
+        {
+            return;
+        }
+
+
+        // validate if lrs travel citi supported payment libraries
+        $library = (new Payment\Service)->getLibraryFromPayment($payment);
+        if(in_array($library, Analytics\Metadata::LRS_TRAVEL_CITI_SUPPORTED_LIBRARIES) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_LIBRARY,
+                [
+                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
+                ]);
+        }
+
+        if (in_array($payment->getMethod(), Method::LRS_TRAVEL_CITI_SUPPORTED_METHODS) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
+                [
+                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
+                ]);
+        }
+
+        // Validate supported currencies
+        if (Currency\Currency::isLRSTravelCitiSupportedCurrency($payment->getCurrency()) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                'currency');
+        }
+
+        // Validate if payment has order
+        if ($payment->hasOrder() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
+                    'merchant_id' => $payment->merchant->getId(),
+                ]
+            );
+        }
+
+        //Validate if invoice number is present in notes
+        if (empty($payment->getNotes()))
+        {
+            $this->trace->error(
+                TraceCode::INVALID_NOTES_FOR_CITI_LRS_TRAVEL,
+                ['payment_id' => $payment->getId()]
+            );
+            throw new Exception\BadRequestValidationFailureException(
+                'Notes field is required with invoice_number.', 'notes');
+        }
+
+        $paymentNotes = $payment->getNotes()->toArray();
+
+        // Validate invoice number is present in notes
+        if (empty($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]))
+        {
+            $this->trace->error(
+                TraceCode::INVALID_INVOICE_FOR_CITI_LRS_TRAVEL, [
+                    'payment_id' => $payment->getId(),
+                    'message' => 'invoice number is missing'
+                ]
+            );
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice number field is required with in the notes.', 'notes');
+        }
+
+        // Validate length of invoice number
+        if (strlen($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]) > InvoiceConstants::INVOICE_NUMBER_LENGTH)
+        {
+            $this->trace->error(
+                TraceCode::INVALID_INVOICE_FOR_CITI_LRS_TRAVEL, [
+                    'message' => 'Length of invoice number is greater than expected'
+                ]
+            );
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice number should be less than or equal to ' . InvoiceConstants::INVOICE_NUMBER_LENGTH . ' characters.', 'notes');
+        }
+
+        $invoiceNumber = $paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER];
+
+        // Validate uniqueness of invoice number
+        $invoice = (new InvoiceService())
+            ->findByMerchantIdDocumentTypeDocumentNumber($payment->getMerchantId(), InvoiceType::CITI_INVOICE, $invoiceNumber);
+        if (isset($invoice) === false) return;
+
+        $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
+        if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
+        {
+            $this->trace->error(
+                TraceCode::INVALID_INVOICE_FOR_CITI_LRS_TRAVEL, [
+                    'payment_id' => $payment->getId(),
+                    'message' => 'Payment already exist with same invoice number'
+                ]
+            );
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment already exist with same invoice number.', 'notes');
+        }
+
+
     }
 
     protected function checkAndValidateDebitEmiProviders(Payment\Entity $payment)
@@ -14591,6 +14704,49 @@ trait Authorize
                     'invoiceEntity' => $invoiceEntity,
                     'payment_notes' => $paymentNotes ?? [],
                 ]);
+
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(Error\PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
+        }
+    }
+
+    protected function saveLRSCitiInvoiceIfApplicable($payment)
+    {
+        if($payment->merchant->isLRSTravelCitiFlowEnabled() === false)
+        {
+            return;
+        }
+
+        $invoiceEntity = [];
+
+        try
+        {
+            $paymentNotes = $payment->getNotes()->toArray();
+
+            //Save invoice entity only if invoice_no is present in payment notes.
+            if (empty($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]) === false) {
+
+                $invoiceEntity[InvoiceEntity::TYPE] = InvoiceType::CITI_INVOICE;
+
+                $invoice = (new InvoiceService())->createPaymentSupportingDocuments($invoiceEntity, $payment);
+
+                $receipt = trim($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]);
+
+                $invoice->setReceipt($receipt);
+
+                $this->repo->saveOrFail($invoice);
+
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::LRS_CITI_INVOICE_SAVE_FAILED, [
+                'payment' => $payment,
+                'invoiceEntity' => $invoiceEntity,
+                'payment_notes' => $paymentNotes ?? [],
+            ]);
 
             $this->trace->traceException($e);
 

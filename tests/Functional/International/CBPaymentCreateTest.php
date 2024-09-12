@@ -1085,19 +1085,69 @@ class CBPaymentCreateTest extends TestCase
         $this->assertSame('authorized', $lastPayment['status']);
     }
 
-    public function testLRSTravelPaymentPositive()
+    public function testCitiTravelLrsPaymentWithUnsupportedLibrary()
     {
-        $this->fixtures->merchant->addFeatures(['lrs_travel_flow', 'tpv']);
-        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
-        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow', 's2s', 's2s_json']);
 
-        $this->setMockForPCBClient();
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'The payment request has invalid library');
+
+        },
+            \RZP\Exception\BadRequestException::class,
+            'The payment request has invalid library'
+        );
+    }
+
+    public function testCitiTravelLrsWithUnsupportedMethod()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+        $payment['_']['library'] = 'checkoutjs';
+
+        $payment['amount'] = '1000000';
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'Payment method invalid / not allowed');
+
+        },
+            \RZP\Exception\BadRequestException::class,
+            'Payment method invalid / not allowed');
+    }
+
+    public function testCitiTravelLrsPaymentWithUnsupportedCurrency()
+    {
+        $merchantId = "10000000000000";
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+            'convert_currency' => true,
+            'international' => false,
+        ];
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['currency'] = 'USD';
         $order = $this->createOrder([
-            'amount' => $payment['amount'],
-            'currency' => $payment['currency'],
+            'amount'            => '50000',
+            'currency'          => 'USD',
             'bank_account' => [
                 'account_number' => '765432123456789',
                 'name' => 'test user',
@@ -1108,13 +1158,69 @@ class CBPaymentCreateTest extends TestCase
         $payment['order_id'] = $order['id'];
         $payment['bank'] = 'ICIC';
 
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'Currency is not supported');
+
+        },
+            \RZP\Exception\BadRequestException::class,
+            'Currency is not supported');
+    }
+
+    public function testCitiTravelLrsPaymentWithoutOrder()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['_']['library'] = 'checkoutjs';
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+            $error = $response['error'];
+
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+
+        },
+            \RZP\Exception\BadRequestException::class,
+            'Payment processing failed due to missing order id');
+    }
+
+    public function testCitiTravelLrsPaymentPositive()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $order = $this->createOrder([
+            'amount' => $payment['amount'],
+            'currency' => $payment['currency'],
+        ]);
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order['id'];
+        $payment['bank'] = 'ICIC';
+        $payment['notes'] = [
+            'invoice_number' => '1234567890qwertyuiop'
+        ];
+
         $this->doAuthPaymentViaAjaxRoute($payment);
 
         $lastPayment = $this->getLastEntity('payment');
 
-        $this->assertSame('authorized', $lastPayment['status']);
-    }
+        $this->assertEquals($payment['notes']['invoice_number'], $lastPayment['notes']['invoice_number']);
 
+        // validate payment invoice updated
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals($lastPayment['id'], 'pay_'. $paymentInvoice['entity_id']);
+        $this->assertEquals('citi_invoice', $paymentInvoice['type']);
+        $this->assertEquals($lastPayment['notes']['invoice_number'], $paymentInvoice['receipt']);
+        $this->assertNull($paymentInvoice['ref_num']);
+    }
     public function setMockForPCBClient()
     {
         $mockResponseGetLRSQuote =[

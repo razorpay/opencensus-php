@@ -4909,6 +4909,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OPGSP_INVOICE_SAVE_FAILED                             = 'OPGSP_INVOICE_SAVE_FAILED';
     const INVALID_NOTES_FOR_OPGSP_IMPORT                        = 'INVALID_NOTES_FOR_OPGSP_IMPORT';
     const INVALID_INVOICE_FOR_OPGSP_IMPORT                      = 'INVALID_INVOICE_FOR_OPGSP_IMPORT';
+
+    const INVALID_INVOICE_FOR_CITI_LRS_TRAVEL                   = 'INVALID_INVOICE_FOR_CITI_LRS_TRAVEL';
+    const INVALID_NOTES_FOR_CITI_LRS_TRAVEL                     = 'INVALID_NOTES_FOR_CITI_LRS_TRAVEL';
     const PAYMENT_NOT_FOUND_TO_UPDATE_MERCHANT_DOC              = 'PAYMENT_NOT_FOUND_TO_UPDATE_MERCHANT_DOC';
     const PAYMENT_UPDATED_WITH_MERCHANT_DOC                     = 'PAYMENT_UPDATED_WITH_MERCHANT_DOC';
     const PAYMENT_SUPPORTING_DOC_NOT_FOUND                      = 'PAYMENT_SUPPORTING_DOC_NOT_FOUND';
@@ -11704,6 +11707,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const JPMC_INVOICE_SAVE_SUCCESS                            = 'JPMC_INVOICE_SAVE_SUCCESS';
     const JPMC_INVOICE_SAVE_FAILED                             = 'JPMC_INVOICE_SAVE_FAILED';
+
+    const LRS_CITI_INVOICE_SAVE_FAILED                         = 'LRS_CITI_INVOICE_SAVE_FAILED';
     const INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW                 = 'INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW';
     const JPMC_TRANSACTION_META                                = 'JPMC_TRANSACTION_META';
     const MERCHANT_UPDATE_POS_ACTIVATION_STATUS                = 'MERCHANT_UPDATE_POS_ACTIVATION_STATUS';

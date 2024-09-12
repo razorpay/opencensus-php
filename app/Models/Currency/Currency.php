@@ -180,6 +180,10 @@ class Currency
         self::USD,
     ];
 
+    const LRS_TRAVEL_CITI_SUPPORTED_CURRENCIES = [
+        self::INR
+    ];
+
     const ISO_NUMERIC_CODES = [
         self::AED => '784',
         self::ALL => '008',
@@ -1451,6 +1455,11 @@ class Currency
     public static function isLRSSupportedCurrency($currency)
     {
         return in_array($currency, self::LRS_SUPPORTED_CURRENCIES);
+    }
+
+    public static function isLRSTravelCitiSupportedCurrency($currency)
+    {
+        return in_array($currency, self::LRS_TRAVEL_CITI_SUPPORTED_CURRENCIES);
     }
 
     public static function getCurrencyForCountry(string $countryCode)

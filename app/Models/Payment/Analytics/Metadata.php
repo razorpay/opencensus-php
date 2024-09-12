@@ -185,6 +185,10 @@ class Metadata
         self::CHECKOUTJS,
     ];
 
+    const LRS_TRAVEL_CITI_SUPPORTED_LIBRARIES = [
+        self::CHECKOUTJS,
+    ];
+
     const ADDRESS_COLLECTION_VIA_REDIRECT_LIBS = [
         self::RAZORPAYJS,
         self::CUSTOM,

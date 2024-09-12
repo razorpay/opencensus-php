@@ -14,6 +14,7 @@ class Type
     const OPGSP_INVOICE = 'opgsp_invoice';
     const JPMC_INVOICE = 'jpmc_invoice';
     const OPGSP_AWB = 'opgsp_awb';
+    const CITI_INVOICE = 'citi_invoice';
 
     protected static $paymentLinkTypes = [
         self::LINK,
