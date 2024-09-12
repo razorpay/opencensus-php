@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\Transaction\CreditType;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
@@ -195,6 +196,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
+    public function getPartnerId()
+    {
+        return $this->getAttribute(self::PARTNER_ID);
+    }
+
     public function getProduct()
     {
         return $this->getAttribute(self::PRODUCT);
@@ -250,5 +256,10 @@ class Entity extends Base\PublicEntity
     public function setEndAt($time = null)
     {
         $this->setAttribute(self::END_AT, $time);
+    }
+
+    public function getPartnerAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "partner", 'getPartnerId');
     }
 }

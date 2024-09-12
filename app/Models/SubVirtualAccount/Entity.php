@@ -5,6 +5,7 @@ namespace RZP\Models\SubVirtualAccount;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 
 /**
  * @property Merchant\Entity $masterMerchant
@@ -187,6 +188,18 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT);
     }
+
+    public function getMasterMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "masterMerchant", 'getMasterMerchantId');
+    }
+
+    public function getSubMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "subMerchant", 'getSubMerchantId');
+    }
+
+
 
     // ------------- End Helpers -------------
 }
