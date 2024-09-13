@@ -726,14 +726,17 @@ class BulkUploadMIQParser
             $netBankingRules = $this->filterMethodRules($filteredRules, MethodEntity::NETBANKING);
             foreach (self::$netBankingPricingMapping as $key => $value)
             {
-                if (($key === Header::MIQ_NB_ANY && strtolower($entry[$key]) != 'na') || $feeBearer != 'na')
+                if($feeBearer != 'na')
                 {
-                    $this->updateAnyRules($rules, $netBankingRules, $feeBearer, $feeType, $entry[Header::MIQ_NB_ANY]);
-                }
-                else if (strtolower($entry[$key]) != 'na')
-                {
-                    $netBankingNetworkRules = $this->filterNetworkRules($rules, MethodEntity::NETBANKING, $value);
-                    $this->updateRules($rules, $netBankingNetworkRules, $feeBearer, $feeType, $entry[$key]);
+                    if (($key === Header::MIQ_NB_ANY && strtolower($entry[$key]) != 'na'))
+                    {
+                        $this->updateAnyRules($rules, $netBankingRules, $feeBearer, $feeType, $entry[Header::MIQ_NB_ANY]);
+                    }
+                    else if (strtolower($entry[$key]) != 'na')
+                    {
+                        $netBankingNetworkRules = $this->filterNetworkRules($rules, MethodEntity::NETBANKING, $value);
+                        $this->updateRules($rules, $netBankingNetworkRules, $feeBearer, $feeType, $entry[$key]);
+                    }
                 }
             }
         }
@@ -788,7 +791,6 @@ class BulkUploadMIQParser
                         $this->updateAmount($feeType, $amount, $rule);
                     }
                 }
-                break;
             }
         }
     }
@@ -798,7 +800,7 @@ class BulkUploadMIQParser
     {
         // Index rules by ID for faster lookup
         $indexedRules = [];
-        foreach ($rules as $rule)
+        foreach ($rules as &$rule)
         {
             $indexedRules[$rule['id']] = &$rule;
         }
