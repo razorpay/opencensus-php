@@ -670,7 +670,7 @@ class Repository extends Base\Repository
         $query
             ->withTrashed()
             ->where(Entity::IFSC_CODE, '=', $ifscCode)
-            ->where(Entity::GATEWAY_SYNC, '=', 1)
+           // ->where(Entity::GATEWAY_SYNC, '=', 1)
             ->where(Entity::TYPE, '=', 'virtual_account')
             ->whereNotNull(Entity::DELETED_AT)
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)

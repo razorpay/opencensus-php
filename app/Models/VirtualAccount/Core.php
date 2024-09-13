@@ -1428,7 +1428,7 @@ class Core extends Base\Core
             $accountPrefix = substr($bankAccount->getAccountNumber(), 0, 4);
 
             if((isset($virtualAccountForBank)) === true and
-                ($virtualAccountForBank->hasBankAccount2()) === true and
+                // ($virtualAccountForBank->hasBankAccount2()) === true and
                 (in_array($accountPrefix, $validPrefixes)) === true)
             {
                 $this->repo->deleteOrFail($bankAccount);
