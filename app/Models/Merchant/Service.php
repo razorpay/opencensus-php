@@ -176,6 +176,7 @@ use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\SmsTemplates as SmsTemplates;
 use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
@@ -200,6 +201,7 @@ use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\HsCode\HsCodeList;
 use RZP\Models\Merchant\Consent as Consent;
 use RZP\Models\Merchant\Analytics\DataProcessor;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
 
 class Service extends Base\Service
 {
@@ -1972,6 +1974,13 @@ class Service extends Base\Service
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         $data['signup_campaign'] = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 
+        if ( empty($userDeviceDetail) === false && $this->pgosProxyController->isIndiaPgModularMerchant($merchant) === true)
+        {
+            $res = $this->getModularFieldsFromASV($merchantId);
+
+            $data["additional_onboarding_details"] = $res ? $res["pg_onboarding"] : null; ;
+        }
+
         // Merchant confirmed details
         $data['confirmed'] = $this->getMerchantConfirmed($merchant);
 
@@ -2001,6 +2010,34 @@ class Service extends Base\Service
             (new Methods\Core)->addCustomTextForCredIfApplicable($this->merchant, $methods, $data['methods']);
 
             (new Methods\Core)->addIntlBankTransferMethodsIfApplicable($methods, $data['methods']);
+        }
+
+        return $data;
+    }
+
+    public function getModularFieldsFromASV(string $merchantId)
+    {
+        $data = null;
+        $fieldList = [
+            "account.additional_detail.details",
+        ];
+
+        try
+        {
+            $account = (new AccountSDKWrapper())->getAccountByIDAndFieldMask($merchantId, $fieldList);
+
+            if ( empty($account) === false and empty($account->getAdditionalDetail()) === false  )
+            {
+                $data =  $account->getAdditionalDetail()->getDetails();
+                $data = json_decode($data->serializeToJsonString(), true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::ACCOUNT_SERVICE_GET_ENTITY_DETAILS_EXCEPTION,[
+                'error_code'    => $e->getCode(),
+                'error_message' => $e->getMessage(),
+            ]);
         }
 
         return $data;
@@ -6518,10 +6555,12 @@ class Service extends Base\Service
          * Setting Merchant in header validates admin access to
          * that merchant in admin access middleware.
          */
+
         if (empty($this->merchant) === false)
         {
             $data = $this->getMerchantData($this->merchant->getId());
         }
+
 
         return $data;
     }

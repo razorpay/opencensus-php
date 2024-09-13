@@ -491,6 +491,21 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return (empty($workflowType) === false && $workflowType === DeviceDetailConstants::MODULAR_ONBOARDING);
     }
 
+    public function isCurlecModularMerchant($merchant): bool
+    {
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
+
+        if (empty($userDeviceDetail) === true)
+        {
+            return false;
+        }
+
+
+        $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+
+        return (empty($workflowType) === false && $workflowType === DeviceDetailConstants::MODULAR_ONBOARDING);
+    }
+
     public function isIndiaPgModularMerchant($merchant): bool
     {
         if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)

@@ -300,6 +300,7 @@ class Type
         self::HUF_DEED,
         self::SOCIETY_REGISTRATION_CERTIFICATE,
         self::POWER_OF_ATTORNEY,
+        self::BOARD_RESOLUTION,
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -401,6 +402,7 @@ class Type
         self::HUF_DEED                          =>  "HUF Deed",
         self::SOCIETY_REGISTRATION_CERTIFICATE  =>  "Society Registration Certificate",
         self::POWER_OF_ATTORNEY                 =>  "Power Of Attorney",
+        self::BOARD_RESOLUTION                  =>  "Board Resolution",
     ];
 
     const PROOF_TYPES = [

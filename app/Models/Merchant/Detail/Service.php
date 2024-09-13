@@ -273,6 +273,12 @@ class Service extends Base\Service
             $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
         }
 
+        if ( $this->pgosProxyController->isIndiaPgModularMerchant($this->merchant) === true )
+        {
+            $data = (new Merchant\Service())->getModularFieldsFromASV($merchantId);
+
+            $response["additional_onboarding_details"] = $data ? $data["pg_onboarding"] : null; ;
+        }
 
 
         return $response;

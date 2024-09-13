@@ -5353,7 +5353,7 @@ class Core extends Base\Core
 
         $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $merchant = $this->repo->merchant->find($merchantId);
-        if( $merchant != null and $this->pgosProxyController->isModularMerchant($merchant)){
+        if( $merchant != null and $this->pgosProxyController->isCurlecModularMerchant($merchant)){
             $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ACTIVATION_DOCUMENT_TYPES, [], $merchant);
             return $pgosResponse['data'];
         }

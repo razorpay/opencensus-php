@@ -94,7 +94,7 @@
         "razorpay/dcs-php-sdk": "dev-master",
         "selective/transformer": "1.2.0",
         "grpc/grpc": "1.52.0",
-        "razorpay/account-service-php-sdk": "^2.0.0",
+        "razorpay/account-service-php-sdk": "v2.0.1",
         "ext-grpc": "*",
         "ext-pdo": "*",
         "guzzlehttp/guzzle": "7.7",

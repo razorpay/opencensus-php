@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Accounts\Account\V1\Account;
+use Accounts\Account\V1\GetAccountByIdResponse;
 use DB;
 use Illuminate\Support\Facades\App;
 use Mail;
@@ -23,9 +25,12 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Models\ClarificationDetail\Repository;
 use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AsvSdkAccount;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
+use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Detail\POIStatus;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
 use RZP\Models\Merchant\Document\Type;
@@ -4005,6 +4010,80 @@ We look forward to transacting with you!
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
+    }
+
+    public function testMerchantDetailsFetchForIndiaPgModularMerchant()
+    {
+        $this->enableRazorXTreatmentForRazorXRefund();
+
+        $this->mockModularFieldsFromAccountService();
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000002',
+            'email' => 'razorpay@razorpay.com']);
+
+        $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => '10000000000002']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            'merchant_id'    => $merchant->getId(),
+            Entity::POI_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::POA_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BUSINESS_TYPE => (new BusinessType())->getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            Entity::BUSINESS_CATEGORY => 'tours_and_travel',
+            Entity::BUSINESS_SUBCATEGORY => 'accommodation',
+        ]);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+            ]
+        ]);
+
+        $this->fixtures->merchant->enableInternational('10000000000002');
+
+        $admin = $this->ba->getAdmin();
+
+        $merchant->admins()->attach($admin);
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $response = $this->startTest();
+
+        $this->assertArraySelectiveEquals(['declare_ubo' => "yes"], $response["additional_onboarding_details"]);
+    }
+
+    protected function mockModularFieldsFromAccountService()
+    {
+        $asvSdkAccount = new AsvSdkAccount();
+
+        $mockAccountClient = $this->getMockAsvClient();
+
+        $asvSdkAccount->getAsvSdkClient()->setAccount($mockAccountClient);
+
+        $jsonData = '{"id":"10000000000002","additional_detail":{"details":{"pg_onboarding":{"declare_ubo":"yes"}}}}';
+
+        $account = new Account();
+
+        $account->mergeFromJsonString($jsonData);
+
+        $response = new GetAccountByIdResponse();
+
+        $response->setAccount($account);
+
+        $mockAccountClient->expects($this->any())->method("GetAccountById")->withAnyParameters()->willReturn([$response, null]);
+    }
+
+    protected function getMockAsvClient()
+    {
+        return $this->getMockBuilder("Razorpay\Asv\Interfaces\AccountInterface")
+            ->enableOriginalConstructor()
+            ->getMock();
     }
 
     public function testMerchantDataFetch()

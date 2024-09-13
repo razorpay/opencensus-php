@@ -3206,6 +3206,20 @@ return [
         ],
     ],
 
+    'testMerchantDetailsFetchForIndiaPgModularMerchant' => [
+        'request' => [
+            'url'       => '/merchants/details',
+            'method'    => 'GET',
+            'content'   => [],
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000002',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testSmartDashboardMerchantDetailsFetch' => [
         'request' => [
             'url'       => '/smart_dashboard/merchants/details',
