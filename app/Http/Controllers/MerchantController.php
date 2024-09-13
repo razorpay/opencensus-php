@@ -402,6 +402,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMerchantIdsFromEs()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getMerchantIdsFromEs($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function sendLoginOtpEmailForEnterpriseDashboard()
     {
         $input = Request::all();

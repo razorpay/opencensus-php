@@ -561,6 +561,7 @@ class Route
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'internal_merchant_details_fetch'          => ['get',      'internal/merchants/{id}/details',                'MerchantController@internalGetMerchantDetails'                             ],
+        'internal_fetch_merchant_ids'              => ['get',      'internal/merchant_ids',                          'MerchantController@getMerchantIdsFromEs'                       ],
         'internal_get_merchant_key'                => ['get',      'internal/merchants/{id}/keys',                   'MerchantController@internalGetMerchantKeys'                         ],
         'account_receivables_merchant_details_fetch' => ['get',    'account_receivables/merchants/details',          'MerchantController@fetchMerchantDetailsForAccountReceivables'                             ],
         'smart_dashboard_merchant_details_fetch'   => ['get',      'smart_dashboard/merchants/details',              'MerchantController@getSmartDashboardMerchantDetails'               ],
@@ -5764,6 +5765,7 @@ class Route
         'merchant_nc_revamp_eligibility_internal',
         'dcc_invoice_generation_cron',
         'internal_merchant_details_fetch',
+        'internal_fetch_merchant_ids',
         'internal_merchant_partnership',
         'fpx_downtime_detection_cron',
         'retry_store_legal_documents_cron',
@@ -18066,7 +18068,8 @@ class Route
             'check_user_exists',
             'fetch_users_internal',
             'internal_fd_create_ticket_graphql',
-            'internal_fd_add_note_graphql'
+            'internal_fd_add_note_graphql',
+            'internal_fetch_merchant_ids'
         ],
 
         'disputes' => [

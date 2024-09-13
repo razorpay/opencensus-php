@@ -87,6 +87,8 @@ class Repository extends Base\Repository
     protected $sharedMerchant = null;
 
     protected $appFetchParamRules = [
+        EsRepository::SEARCH_HITS       => 'sometimes|boolean',
+        EsRepository::QUERY             => 'sometimes|string|min:2|max:100',
         Entity::ACTIVATED               => 'sometimes|boolean',
         Entity::HOLD_FUNDS              => 'sometimes|boolean',
         Entity::LIVE                    => 'sometimes|boolean',

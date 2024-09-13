@@ -11081,7 +11081,7 @@ class Core extends Base\Core
 
             if (!empty($partnerActivation))
             {
-                $response[DEConstants::LOCK_COMMON_FIELDS] = $this->fetchCommonFieldsToBeLocked($partnerActivation);
+                $response[DEConstants::LOCK_COMMON_FIELDS] = $merchantDetailCore->fetchCommonFieldsToBeLocked($partnerActivation);
             }
 
             return $response;

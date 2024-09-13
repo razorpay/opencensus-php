@@ -30,6 +30,36 @@ return [
         ],
     ],
 
+    'testGetMerchantIdsFromEs' => [
+        'request'  => [
+            'url'     => '/internal/merchant_ids',
+            'method'  => 'GET',
+            'content' => [
+                'q'              => 'random_name_not_in_es',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_ids' => [],
+            ],
+        ],
+    ],
+
+    'testGetMerchantIdsFromEsWithData' => [
+        'request'  => [
+            'url'     => '/internal/merchant_ids',
+            'method'  => 'GET',
+            'content' => [
+                'q'              => 'jitendra selva',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_ids' => ['10000000000012','10000000000013','10000000000011'],
+            ],
+        ],
+    ],
+
     'testGetMerchantsFromEsByMiqSharingDateHappy' => [
         'request'  => [
             'url'     => '/admins/unified_dashboard_merchants',

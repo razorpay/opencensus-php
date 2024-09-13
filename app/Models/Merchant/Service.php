@@ -2303,6 +2303,27 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
+    public function getMerchantIdsFromEs(array $input): array
+    {
+        $input[Base\EsRepository::SEARCH_HITS] = 1;
+
+        $this->trace->info(TraceCode::GET_MERCHANT_IDS_BY_ES_INPUT_LOG, [
+            'input'         => $input
+        ]);
+
+        $merchants = $this->repo->merchant->fetch($input);
+
+        $response["merchant_ids"] = [];
+
+        foreach ($merchants as $merchant) {
+            if($merchant["id"]){
+                array_push($response["merchant_ids"], $merchant["id"]);
+            }
+        }
+
+        return $response;
+    }
+
     public function fetchConfig(bool $isInternal = false): array
     {
         $merchantId = $this->merchant->getId();

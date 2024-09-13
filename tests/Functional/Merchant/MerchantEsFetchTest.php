@@ -116,6 +116,19 @@ class MerchantEsFetchTest extends TestCase
             ]);
     }
 
+    public function testGetMerchantIdsFromEs()
+    {
+        $this->ba->pgosAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantIdsFromEsWithData()
+    {
+        $this->ba->pgosAppAuth();
+
+        $this->startTest();
+    }
 
 
     public function testGetMerchantsFromEsByQForAdmin16()

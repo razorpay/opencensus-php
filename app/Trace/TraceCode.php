@@ -3785,7 +3785,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const METRO_PUBLISH_NEEDS_CLARIFICATION_EVENT               = 'METRO_PUBLISH_NEEDS_CLARIFICATION_EVENT';
     const NC_ADDITIONAL_DOCUMENTS                               = 'NC_ADDITIONAL_DOCUMENTS';
 
-
+    const GET_MERCHANT_IDS_BY_ES_INPUT_LOG                     = 'GET_MERCHANT_IDS_BY_ES_INPUT_LOG';
     const CMMA_CASE_EVENT_PUBLISH_ERROR                        = 'CMMA_CASE_EVENT_PUBLISH_ERROR';
     const CMMA_CASE_EVENT_KAFKA_PUBLISH                        = 'CMMA_CASE_EVENT_KAFKA_PUBLISH';
     const CMMA_CASE_EVENT_METRO_PUBLISH                        = 'CMMA_CASE_EVENT_METRO_PUBLISH';
