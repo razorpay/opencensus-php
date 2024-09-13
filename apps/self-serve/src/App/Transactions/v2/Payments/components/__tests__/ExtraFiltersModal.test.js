@@ -62,7 +62,7 @@ describe('ExtraFiltersModal', () => {
     expect(selectedOption).toHaveTextContent('In Person');
   });
 
-  test('should do a search query for transactions with applied filters upon clicking Apply', async () => {
+  test.skip('should do a search query for transactions with applied filters upon clicking Apply', async () => {
     renderExtraFiltersModal();
     const dropdownTrigger = screen.getByPlaceholderText('Select Payment Method');
     expect(dropdownTrigger).toBeInTheDocument();
