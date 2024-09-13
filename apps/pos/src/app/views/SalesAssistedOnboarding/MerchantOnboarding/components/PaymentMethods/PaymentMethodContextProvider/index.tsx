@@ -52,6 +52,7 @@ import {
   replaceEmptyValues,
   validatePricingRates,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
+import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
 
 const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   const defaultFormValue: PaymentMethodFormStringValue = {
@@ -271,12 +272,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   const { states, handlers } = useOnboardingContext();
   const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig, merchantDetails } =
     states;
-  const isFormDisabled = [
-    'ACTIVATED',
-    'REJECTED',
-    'KYC_QUALIFIED_STB',
-    'NEEDS_CLARIFICATION',
-  ].includes(merchantDetails?.activation?.posActivationStatus ?? '');
+  const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
 
   const [paymentMethodType, setPaymentMethodType] = useState<PaymentMethodFormType>(
     PaymentMethodFormType.AGGREGATOR,

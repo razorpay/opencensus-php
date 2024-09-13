@@ -16,15 +16,15 @@ describe('DeviceOrderPricing', () => {
   test('should render pricing component on screen with data', () => {
     renderApp();
     expect(screen.getByText('Device Charges')).toBeInTheDocument();
-    expect(screen.getByText('2,000')).toBeInTheDocument();
+    expect(screen.getByText('2,000.00')).toBeInTheDocument();
     expect(screen.getByText('Advance Rental Charges')).toBeInTheDocument();
-    expect(screen.getAllByText('0').length).toBe(3);
+    expect(screen.getAllByText('0.00').length).toBe(3);
     expect(screen.getByText('GST @18%')).toBeInTheDocument();
-    expect(screen.getByText('360')).toBeInTheDocument();
+    expect(screen.getByText('360.00')).toBeInTheDocument();
     expect(screen.getByText('Total Order Price')).toBeInTheDocument();
-    expect(screen.getByText('2,478')).toBeInTheDocument();
+    expect(screen.getByText('2,478.00')).toBeInTheDocument();
     expect(screen.getByText('Rental Charges')).toBeInTheDocument();
-    expect(screen.getAllByText('118').length).toBe(2);
+    expect(screen.getAllByText('118.00').length).toBe(2);
   });
 
   test('should expand collapsible content on click', async () => {

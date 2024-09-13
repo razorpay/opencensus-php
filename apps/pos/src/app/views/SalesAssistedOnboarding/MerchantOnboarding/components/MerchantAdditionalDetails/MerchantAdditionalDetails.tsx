@@ -25,7 +25,7 @@ import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
-import { MerchantPosActivationStatusEnum } from '@dashboard/shared-utils/graphql/graph-types';
+import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
 
 const MerchantAdditionalDetails = (): JSX.Element | null => {
   const toast = useToast();
@@ -43,14 +43,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
   const { modularConfig, isUpdateModularLoading, isModularLoading, merchantDetails } = states;
   const { isMobile } = useScreen();
   const { updateModularConfig } = handlers;
-  const posActivationStatus = merchantDetails?.activation?.posActivationStatus;
-  const isFormDisabled = posActivationStatus
-    ? [
-        MerchantPosActivationStatusEnum.KYC_QUALIFIED_STB,
-        MerchantPosActivationStatusEnum.ACTIVATED,
-        MerchantPosActivationStatusEnum.REJECTED,
-      ].includes(posActivationStatus)
-    : false;
+  const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
 
   const defaultValues = getInitialMerchantAdditionalDetails({ modularConfig });
   const {

@@ -1,5 +1,5 @@
 import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
-import { checkIfKycComplete } from '../merchantActivation';
+import { checkIfKycComplete, isKycQualified } from '../merchantActivation';
 
 const COMMON_PAYMENT_ACCEPTANCE_CHANNELS = {
   websites: {
@@ -100,5 +100,43 @@ describe('checkIfKycComplete', () => {
     } as unknown as Merchant;
 
     expect(checkIfKycComplete({ merchant })).toBe(false);
+  });
+});
+
+describe('isKycQualified', () => {
+  test('returns true for "ACTIVATED"', () => {
+    expect(isKycQualified('ACTIVATED')).toBe(true);
+  });
+
+  test('returns true for "REJECTED"', () => {
+    expect(isKycQualified('REJECTED')).toBe(true);
+  });
+
+  test('returns true for "KYC_QUALIFIED_STB"', () => {
+    expect(isKycQualified('KYC_QUALIFIED_STB')).toBe(true);
+  });
+
+  test('returns true for "NEEDS_CLARIFICATION"', () => {
+    expect(isKycQualified('NEEDS_CLARIFICATION')).toBe(true);
+  });
+
+  test('returns false for an unknown status', () => {
+    expect(isKycQualified('UNKNOWN_STATUS')).toBe(false);
+  });
+
+  test('returns false for an empty string', () => {
+    expect(isKycQualified('')).toBe(false);
+  });
+
+  test('returns false for undefined input', () => {
+    expect(isKycQualified(undefined)).toBe(false);
+  });
+
+  test('returns false for null input', () => {
+    expect(isKycQualified(null)).toBe(false);
+  });
+
+  test('returns false for non-string input (number)', () => {
+    expect(isKycQualified(123)).toBe(false);
   });
 });

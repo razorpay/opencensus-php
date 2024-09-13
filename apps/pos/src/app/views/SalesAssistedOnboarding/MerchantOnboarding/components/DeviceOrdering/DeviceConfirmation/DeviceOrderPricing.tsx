@@ -53,7 +53,7 @@ const PricingItem = ({
         <Amount
           value={value ?? 0}
           isAffixSubtle={false}
-          suffix="none"
+          suffix="decimals"
           weight="semibold"
           size={size}
           color={color}

@@ -29,3 +29,9 @@ export const checkIfKycComplete = ({ merchant }: CheckIfKycCompleteProps): boole
   if (merchantHasOnlinePresence) return isL2FormSubmitted;
   else return hasShopImages && isL2FormSubmitted;
 };
+
+export const isKycQualified = (posActivationStatus) => {
+  return ['ACTIVATED', 'REJECTED', 'KYC_QUALIFIED_STB', 'NEEDS_CLARIFICATION'].includes(
+    posActivationStatus ?? '',
+  );
+};
