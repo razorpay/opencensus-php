@@ -120,9 +120,10 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.BRANCH_AUTO_MERGER_SLACK_APP_WEBHOOK }}
-          SLACK_MESSAGE: 'Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required.'
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: 'Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required. Please visit the Actions URL for more details.'
           SLACK_TITLE: Message
-          MSG_MINIMAL: commit
+          MSG_MINIMAL: ref,actions url,commit
 
   check-overall-status:
     needs: merge-master-to-special-branch
