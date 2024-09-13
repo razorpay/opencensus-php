@@ -17,6 +17,7 @@ class Role
     // This is internal role which is implicitly assigned when an admin login as merchant
     // this will/should grant permission to the routes which are view only
     const ADMIN_READONLY        = 'admin_readonly';
+    const BANKING_READONLY      = 'banking_readonly';
     const PARTNER ='partner';
     const MANAGER               = 'manager';
     const OPERATIONS            = 'operations';

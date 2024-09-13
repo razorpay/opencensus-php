@@ -7,10 +7,13 @@ use Razorpay\Edge\Passport;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\BasicAuth\KeyAuthCreds;
 use RZP\Http\Middleware\Authenticate;
 use RZP\Http\Route;
 use RZP\Models\User\Role;
+use RZP\Services\Edge\Service;
 use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
 use RZP\Tests\TestCase;
 use \Mockery;
@@ -22,6 +25,8 @@ class BasicAuthTest extends TestCase
 
     use HasRequestCases;
     use PassportTrait;
+
+    protected $merchantRepoMock = null;
 
     protected function setUp(): void
     {
@@ -165,5 +170,53 @@ class BasicAuthTest extends TestCase
 
         self::assertEquals(Role::ADMIN_READONLY, $role);
 
+    }
+
+    public function testSetUserRoleIsBankingReadOnlyWhenAdminIsLoggedInAsMerchant()
+    {
+        $this->repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantUserMapping = Mockery::mock('RZP\Models\Merchant\MerchantUser\Entity');
+
+        $mock = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['isAdminLoggedInAsMerchantOnDashboard','isProxyAuth','isProductBanking'])
+            ->getMock();
+
+        $this->app->instance('repo', $this->repoMock);
+        $this->repoMock->shouldReceive('driver')->
+        with('merchant')->andReturn($this->merchantRepoMock);
+
+        $mock->expects($this->exactly(2))
+            ->method('isAdminLoggedInAsMerchantOnDashboard')
+            ->willReturn(true);
+
+        $mock->expects($this->exactly(1))
+            ->method('isProxyAuth')
+            ->willReturn(true);
+
+        $this->merchantRepoMock
+            ->shouldReceive('getMerchantUserMapping')
+            ->andReturn($merchantUserMapping);
+
+
+        $mock->expects($this->exactly(1))
+            ->method('isProductBanking')
+            ->willReturn(true);
+
+        $mock->init();
+        $authClas = KeyAuthCreds::class;
+        $authCreds = new $authClas($this->app);
+        $authCreds->creds['key_id'] = '1000000razorpay';
+        $mock->setAuthCreds($authCreds);
+
+
+        $mock->setUserRole('user_id');
+
+        $role = $mock->getUserRole();
+
+
+        self::assertEquals(Role::BANKING_READONLY, $role);
+        Mockery::close();
     }
 }

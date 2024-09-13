@@ -3335,7 +3335,20 @@ class BasicAuth
 
             if (empty($userMapping) === false)
             {
-                $this->userRole = $userMapping->pivot->role;
+                if($this->isAdminLoggedInAsMerchantOnDashboard() === true && $this->isProductBanking())
+                {
+                    $this->userRole = Role::BANKING_READONLY;
+                    $this->trace->info(
+                        TraceCode::LOGIN_AS_ADMIN_MERCHANT_X,
+                        [
+                            'merchant_id' => $this->getMerchantId(),
+                        ]
+                    );
+                }
+                else
+                {
+                    $this->userRole = $userMapping->pivot->role;
+                }
             }
             else
             {

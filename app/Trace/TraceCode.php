@@ -3016,6 +3016,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LA_REFERENCE_DATA_CREATED                             = 'LA_REFERENCE_DATA_CREATED';
     const LA_REFERENCE_DATA_CREATE_REQUEST_RECEIVED             = 'LA_REFERENCE_DATA_CREATE_REQUEST_RECEIVED';
     const LA_REFERENCE_DATA_CREATION_FAILED                     = 'LA_REFERENCE_DATA_CREATION_FAILED';
+    const LOGIN_AS_ADMIN_MERCHANT_X                             = 'LOGIN_AS_ADMIN_MERCHANT_X';
 
     const AUTH_TYPE_USED                                        = 'AUTH_TYPE_USED';
 

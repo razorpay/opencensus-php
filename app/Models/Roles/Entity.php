@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\User\BankingRole;
 use RZP\Models\RoleAccessPolicyMap;
 use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\User\Role;
 
 
 class Entity extends Base\PublicEntity
@@ -107,6 +108,9 @@ class Entity extends Base\PublicEntity
     public static $rolesHiddenFromDashboard = [
         BankingRole::OWNER,
         BankingRole::VENDOR,
+
+        // Standard role created for just Login as a merchant (Read-only) - not to be shown in dashboard
+        Role::BANKING_READONLY,
     ];
 
     public static $disableCopyForRoles = [
