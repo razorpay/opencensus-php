@@ -2286,6 +2286,18 @@ class Constants
      */
     const VAS_ORG_IDENTIFIER = 'vas_org_identifier';
 
+    /**
+     * Feature flag will be enabled for HDFC corp payments
+     * below feature flag is org level
+     */
+    const VAS_NB_CORP_ORG = 'vas_nb_corp_org';
+
+    /**
+     * Feature flag will be enabled for HDFC corp payments
+     * below feature flag is mer level
+     */
+    const VAS_NB_CORP_MER = 'vas_nb_corp_mer';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2368,6 +2380,8 @@ class Constants
         self::ONE_CC_EMAIL_CUSTOMER_CONSENT,
         self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT,
         self::ONE_CC_SMS_CUSTOMER_CONSENT,
+        self::VAS_NB_CORP_MER,
+        self::VAS_NB_CORP_ORG,
     ];
 
     const ONE_CC_FEATURES = [
@@ -3179,6 +3193,8 @@ class Constants
         self::CUSTOM_HOLIDAY_SETTLEMENT              => true,
 
         self::CUSTOM_TERMINAL_PROC                   => true,
+        self::VAS_NB_CORP_ORG                        => true,
+        self::VAS_NB_CORP_MER                        => true,
     ];
 
     // Entity type constants
