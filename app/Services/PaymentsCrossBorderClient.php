@@ -37,6 +37,7 @@ class PaymentsCrossBorderClient
 
     const GET_FOREX_RATES = 'v1/internal/forex_charges';
 
+    const POST_FOREX_CHARGES = 'v1/internal/forex_charges';
 
     const PAYMENTS_CROSS_BORDER_URLS = [
         "GET_DOCUMENTS" => self::GET_DOCUMENTS,
@@ -46,6 +47,7 @@ class PaymentsCrossBorderClient
         "UPDATE_PAYMENT_STATUS" => self::UPDATE_PAYMENT_STATUS,
         "REQUEST_INTERNAL_FIRS_DOCUMENT" => self::REQUEST_INTERNAL_FIRS_DOCUMENT,
         "GET_FOREX_RATES" => self::GET_FOREX_RATES,
+        "POST_FOREX_CHARGES" => self::POST_FOREX_CHARGES,
     ];
 
     protected $client;
@@ -257,6 +259,20 @@ class PaymentsCrossBorderClient
                 'error' => $e,
             ]);
 
+            throw $e;
+        }
+    }
+
+    public function createForexCharges($headers, $input)
+    {
+        $url = self::PAYMENTS_CROSS_BORDER_URLS['POST_FOREX_CHARGES'];
+
+        try {
+            return $this->makeRequest($url, self::POST, $input, $headers);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_CREATE_FOREX_CHARGES_ERROR,[
+                'error' => $e,
+            ]);
             throw $e;
         }
     }

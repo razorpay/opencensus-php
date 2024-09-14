@@ -85,6 +85,8 @@ class CrossBorderCommonUseCases extends Job
     const UPDATE_PAYMENT_STATUS = 'update_payment_status';
     const CAPTURE_PACB_BANK_TRANSFER_PAYMENT = 'capture_pacb_bank_transfer_payment';
 
+    const CREATE_FOREX_CHARGES = 'create_forex_charges';
+
     const SEND_OPGSP_INVOICES_ZIP = 'SEND_OPGSP_INVOICES_ZIP';
     /**
      * @var string
@@ -136,6 +138,9 @@ class CrossBorderCommonUseCases extends Job
             {
                 case self::UPDATE_PAYMENT_STATUS:
                     $this->app['payments-cross-border']->updatePaymentStatus($this->payload['body']);
+                    break;
+                case self::CREATE_FOREX_CHARGES:
+                    $this->createForexCharges();
                     break;
                 case self::GENERATE_DCC_E_INVOICE:
                     $this->generateEInvoice();
@@ -968,5 +973,58 @@ class CrossBorderCommonUseCases extends Job
                 'features_disabled' => $featuresDisabled,
             ]);
         }
+    }
+
+    protected function slackPost($headline, $postData, $channel, $pretext = '', $color = 'good')
+    {
+        if ($this->app->config->get('slack.is_slack_enabled') === true)
+        {
+            $settings = [];
+            $settings['color'] = $color;
+            $settings['pretext'] = $pretext;
+            $settings['link_names'] = 1;
+            $settings['channel'] =$channel;
+
+            $this->app['slack']->queue($headline, $postData, $settings);
+        }
+    }
+
+    private function createForexCharges() {
+        try{
+            $input = $this->payload['input'];
+            $body = $this->payload['body'];
+            $headers = $this->payload['header'];
+            $pxbResponse = $this->app['payments-cross-border']->createForexCharges($headers, $body);
+
+            if(floatval($pxbResponse['markdown_percent']) != floatval($input['mcc_mark_down_percent'])){
+                $this->trace->info(TraceCode::CREATE_FOREX_CHARGES_MCC_PARITY_FOUND, [
+                    'PXB_DATA' => $pxbResponse,
+                    'API_PAYMENT_META' => $input,
+                ]);
+                //Sending Slack Notification
+                $team = "<@U03HU7A7TA5> <@U064QR4UTND> <@U079V6T4MAQ>"; // @jay-shah, @sai-prasad, @vikasdeep-jangra in order
+                $text = $team . " CREATE FOREX CHARGES MCC PARITY: ";
+                $data = [
+                    'payment_id' => $pxbResponse['entity_id'],
+                    'pxb_markdown_percent' => floatval($pxbResponse['markdown_percent']),
+                    'pxb_base_forex_rate' => $pxbResponse['base_forex_rate'],
+                    'pxb_base_amount' => $pxbResponse['base_amount'],
+                    'api_markdown_percent' => floatval($input['mcc_mark_down_percent']),
+                    'api_mcc_forex_rate' => $input['mcc_forex_rate'],
+                    'api_base_amount' => $input['base_amount'],
+                ];
+                $channel = $this->app->config->get('slack.channels.tech-cross-border-alerts');
+                $color = 'danger';
+
+                $this->slackPost($text, $data, $channel, '', $color);
+            }
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CROSS_BORDER_COMMON_USE_CASES_CREATE_FOREX_CHARGES_ERROR
+            );
+        }
+
     }
 }

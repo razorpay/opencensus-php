@@ -5745,6 +5745,42 @@ trait Authorize
         }
     }
 
+    private function evaluateSplitzExperimentforMCCParityCheck($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_mcc_parity_check_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
     protected function processCurrencyConversions(Payment\Entity $payment, &$input = null)
     {
         $currency = $payment->getCurrency();
@@ -5929,6 +5965,52 @@ trait Authorize
             else
             {
                 $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateMccInfo($paymentMeta, $paymentMetaInput);
+            }
+            try {
+                if ($merchant->isFeeBearerCustomerOrDynamic() === false and
+                    $currency !== $merchant->getCurrency() and
+                    $payment->isInternational() and
+                    $payment->isCard() and
+                    $this->evaluateSplitzExperimentforMCCParityCheck($payment) === true)
+                    {
+                    $body = [
+                        'amount' => $payment->getAmount(),
+                        'base_currency' => $input['currency'],
+                        'conversion_currency' => Currency\Currency::INR,
+                        'entity_id' => $payment->getId(),
+                        'entity_type' => Entity::PAYMENT,
+                        'merchant_id' => $payment->getMerchantId(),
+                        'org_id' => $payment->getMerchantOrgId(),
+                        'filters' => [
+                            'method' => Method::CARD
+                        ]
+                    ];
+                    $headers = [
+                        RequestHeader::X_RAZORPAY_ACCOUNT => $this->merchant->getId()
+                    ];
+                    $paymentMetaData = [
+                        'mcc_applied'           => $input['mcc_applied'],
+                        'mcc_mark_down_percent' => $input['mcc_mark_down_percent'],
+                        'mcc_forex_rate'        => $input['mcc_forex_rate'],
+                        'payment_id'            => $payment->getId(),
+                        'base_amount'           => $baseAmount
+                    ];
+                    $payload = [
+                        'action' => CrossBorderCommonUseCases::CREATE_FOREX_CHARGES,
+                        'input' => $paymentMetaData,
+                        'body' => $body,
+                        'header' => $headers
+                    ];
+                    $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_CREATE_FOREX_CHARGES_DISPATCHED, [
+                        'payload' => $payload,
+                    ]);
+                    CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
+                }
+            } catch (\Exception $e){
+                $this->trace->error(
+                    TraceCode::PAYMENTS_CROSS_BORDER_CREATE_FOREX_CHARGES_DISPATCHED_ERROR,
+                    ['error' => $e]
+                );
             }
         }
         unset($input['mcc_mark_down_percent'], $input['mcc_forex_rate'], $input['mcc_applied'], $input['is_lrs_merchant']);
