@@ -3639,6 +3639,7 @@ class Service extends Base\Service
             (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true) or
             $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true or
             $merchant->isLRSFlowEnabled() === true or
+            $merchant->isLRSTravelCitiFlowEnabled() === true or
             ($merchant->isJpmcImportFlowEnabled() === true)))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
