@@ -4,17 +4,7 @@ namespace RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 final class AsvFlows
 {
 
-    public const MAP = array(
-        'worker:update_merchant_context' => true,
-        'worker:pgos_cdc_events_job' => true,
-        'merchant_activation_status' => true,
-        'merchant_submit_internal' => true,
-        'merchant_activation_save' => true,
-        'merchant_activation_update' => true,
-        'internal_merchant_activation_status' => true,
-        'merchant_details_patch' => true,
-        'action_checker_create' => true,
-    );
+    public const MAP = array();
 
     public const CacheDisabledFlows = array(
         'account_create_india_v2' => true,

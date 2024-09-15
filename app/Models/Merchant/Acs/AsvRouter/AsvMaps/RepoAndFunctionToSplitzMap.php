@@ -129,7 +129,6 @@ final class RepoAndFunctionToSplitzMap
         "getDetailsUnified",
         "getEmailByMerchantId",
         "getEmailsByMerchantIdsAndTypes",
-        "getFailedSettlementsForRetry",
         "getIdByAccountCodeAndParent",
         "getMerchantDetailsForPayroll",
         "getMerchantsForSettlementsEventsCron",

@@ -64,7 +64,8 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+        $newAsvFlow = $this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__);
+        if ($newAsvFlow === true) {
 
             $merchantIdsConsidered = $query->select($settlementMerchantId)
                                            ->whereIn($settlementId, $setlIds)
@@ -101,8 +102,7 @@ class Repository extends Base\Repository
                                ->where(Entity::STATUS, '=', Status::FAILED)
                                ->whereIn($settlementId, $setlIds)
                                ->whereIn($settlementMerchantId, $filteredMerchantIds)
-                               ->where(Entity::IS_NEW_SERVICE, '=', 0)
-                               ->with('merchant', 'merchant.bankAccount');
+                               ->where(Entity::IS_NEW_SERVICE, '=', 0);
             }
         }
         else
@@ -116,7 +116,22 @@ class Repository extends Base\Repository
                            ->with('merchant', 'merchant.bankAccount');
         }
 
-        return $setls->get();
+        $settlements = $setls->get();
+
+        if ($newAsvFlow === true) {
+            foreach ($settlements as $settlement) {
+                if(empty($settlement) === false && $settlement->getMerchantId() !== null)
+                {
+                    $merchant = $settlement->merchant;
+                }
+
+                if(empty($merchant) === false) {
+                    $settlement->merchant->bankAccount;
+                }
+            }
+        }
+
+        return $settlements;
     }
 
     public function getSettlementWithFeesAsNullOrZero()
