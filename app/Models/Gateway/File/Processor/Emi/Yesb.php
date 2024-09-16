@@ -39,7 +39,7 @@ class Yesb extends Base
 
     protected $totalTransactions;
 
-    protected $shouldEncrypt = true;
+    protected $shouldEncrypt = false;
 
     protected function formatDataForFile($input)
     {
@@ -239,6 +239,7 @@ class Yesb extends Base
         Mail::queue($emiFileMail);
     }
 
+    /*
     protected function getEncryptionParams()
     {
         $publicKey = Config::get('applications.emi.yesb_encryption_key');
@@ -247,5 +248,6 @@ class Yesb extends Base
 
         return [PGPEncryption::PUBLIC_KEY => $publicKey];
     }
+    */
 
 }
