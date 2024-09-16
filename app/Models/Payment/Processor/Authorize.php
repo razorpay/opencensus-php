@@ -9049,6 +9049,26 @@ trait Authorize
                 }
             }
 
+            if ($token->card->isAmex() === true)
+            {
+                $authReferenceNumber = $callbackData['AEVV'];
+                $callbackData['sync']=true;
+
+                if ($authReferenceNumber === '')
+                {
+                    $this->trace->info(TraceCode::BAD_REQUEST_ERROR_VALIDATION_FAILURE, [
+                        'authReferenceNumber'  => $authReferenceNumber,
+                        'token'                => $token->getId()
+                    ]);
+
+                    $errorCode = ErrorCode::BAD_REQUEST_ERROR;
+
+                    $core->updateTokenStatus($token->getId(), Token\Constants::FAILED, $errorCode);
+
+                    return;
+                }
+            }
+
             $rupay_recurring = false;
             if (($payment->isRecurring() === true) &&
                 ($token->getMethod() === Method::CARD) &&
@@ -9111,7 +9131,7 @@ trait Authorize
 
             // For Rupay we have to do token provison in sync so we don;t have to dispatch it sqs , $callbackData['sync'] paramter is being set from rearch input  and migrateTokenPostAuthenticationIfApplicable (non rearch)
 
-            if ($payment['recurring'] === false && Environment::isEnvironmentQA($this->app['env']) === false && $this->canRunRupayTokenMigrationInSync($token,$callbackData)){
+            if ($payment['recurring'] === false && Environment::isEnvironmentQA($this->app['env']) === false && $this->canRunRupayTokenMigrationInSync($token,$callbackData) && $this->canRunAmexTokenMigrationInSync($token,$callbackData)){
 
                 $asyncTokenisationJobId = "paymentmigrate";
 
@@ -10533,6 +10553,10 @@ trait Authorize
     protected function canRunRupayTokenMigrationInSync($token,$callbackData)
     {
         return !($token->card->isRupay() === true && isset($callbackData['sync']) && $callbackData['sync'] === true);
+    }
+    protected function canRunAmexTokenMigrationInSync($token,$callbackData)
+    {
+        return !($token->card->isAmex() === true && isset($callbackData['sync']) && $callbackData['sync'] === true);
     }
     protected function callGatewayOtpGenerate(array $data, Payment\Entity $payment, $otpResend = false)
     {

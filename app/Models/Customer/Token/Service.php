@@ -2261,6 +2261,19 @@ class Service extends Base\Service
 
         }
 
+        if( $payment->card->isAmex() ==true){
+            $payment->localToken()->associate($token);
+
+            (new Payment\Processor\Processor($token->merchant))->migrateTokenIfApplicable($payment, $callbackData);
+
+            $createTokenResponse = $token->toArrayPublic();
+
+            $createTokenResponse['vault_token']      = $token->card->getVaultToken();
+
+            return $createTokenResponse;
+
+        }
+
         $asyncTokenisationJobId = "paymentmigrate";
 
         $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [
