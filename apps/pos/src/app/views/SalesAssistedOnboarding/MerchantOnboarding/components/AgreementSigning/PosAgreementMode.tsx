@@ -41,6 +41,7 @@ import {
   OFFLINE,
   ONLINE,
   getSubmitIcon,
+  getAgreementComponentStatus,
 } from 'apps/pos/src/app/utils/agreementSigning';
 import SuccessIcon from 'apps/pos/src/assets/paymentSuccess.svg';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
@@ -99,7 +100,11 @@ export const PosAgreementMode = ({
   const { isMobile } = useScreen();
   const toast = useToast();
   const navigate = useNavigate();
-  const isAgreementExecuted = getAgreementSatusValue(modularConfig) === COMPLETED;
+  const isOnlineAgreementExecuted =
+    getAgreementMode(modularConfig) === ONLINE &&
+    getAgreementSatusValue(modularConfig) === COMPLETED;
+  const isOfflineAgreementExecuted =
+    getAgreementMode(modularConfig) === OFFLINE && getAgreementComponentStatus(modularConfig);
   const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
 
   const handleOnlineAgreement = (data: MerchantModularOnboardingDetailsSuccessResponse) => {
@@ -272,7 +277,7 @@ export const PosAgreementMode = ({
             maxLimit={5}
             isLoading={isHandlingFile}
             defaultValue={defaultUploadedDocs}
-            isDisabled={isFormDisabled || isAgreementExecuted}
+            isDisabled={isFormDisabled || isOnlineAgreementExecuted || isOfflineAgreementExecuted}
             onError={() => {
               toast.show({
                 content: 'Failed to upload agreement proof',
@@ -302,7 +307,7 @@ export const PosAgreementMode = ({
   };
 
   useEffect(() => {
-    if (isAgreementExecuted) {
+    if (isOnlineAgreementExecuted || isOfflineAgreementExecuted) {
       setIsBottomSheetOpen(true);
       trackEvent({
         eventName: analyticsTypes.ANALYTICS_EVENTS.IMAGE,
@@ -386,7 +391,7 @@ export const PosAgreementMode = ({
             setAgreementMode(item.value as AgreementModeType);
           }}
           defaultValue={!agreementMode ? ONLINE : agreementMode}
-          isDisabled={isFormDisabled || isAgreementExecuted}
+          isDisabled={isFormDisabled || isOnlineAgreementExecuted || isOfflineAgreementExecuted}
         >
           {getAgreementTypeField(modularConfig)?.meta?.options?.map((mode) => (
             <StyledCardContainer key={mode.value} selected={agreementMode === mode.value}>
@@ -398,7 +403,7 @@ export const PosAgreementMode = ({
           ))}
         </RadioGroup>
       </Box>
-      {!isAgreementExecuted ? (
+      {isOnlineAgreementExecuted || isOfflineAgreementExecuted ? null : (
         <Box
           display="flex"
           justifyContent="center"
@@ -426,7 +431,7 @@ export const PosAgreementMode = ({
             {getSubmitBtnText({ modularConfig, mode: agreementMode })}
           </Button>
         </Box>
-      ) : null}
+      )}
       <BottomSheet onDismiss={() => setIsBottomSheetOpen(false)} isOpen={isBottomSheetOpen}>
         <BottomSheetHeader />
         <BottomSheetBody>

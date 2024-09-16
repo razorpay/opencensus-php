@@ -2,6 +2,7 @@ import { ArrowRightIcon, CheckCircleIcon, InfoIcon } from '@razorpay/blade/compo
 import moment from 'moment';
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
 import {
+  getComponentFromStep,
   getFieldFromComponent,
   getProgressFromModularStep,
 } from 'apps/pos/src/app/utils/modularConfig';
@@ -35,8 +36,9 @@ export const formatUnixTimestamp = (unixTimestamp: number | string) => {
 };
 
 export const getAgreementSatusValue = (
-  modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
-) => {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
+): AgreementStatus => {
+  if (!modularConfig) return '';
   const agreementStatusField = getFieldFromComponent({
     modularConfig,
     step: MODULAR_AGREEMENT_FIELDS.AGREEMENT_STEP,
@@ -183,7 +185,7 @@ export const getAgreementDocsField = (
 };
 
 export const getAgreementMode = (
-  modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
 ): AgreementModeType => {
   if (!modularConfig) return '';
   const agreementTypeField = getFieldFromComponent({
@@ -246,4 +248,16 @@ export const getAgreementStepStatus = ({
     COMPLETED;
   if (isAgreementStepCompleted) return COMPLETED;
   return PENDING;
+};
+
+export const getAgreementComponentStatus = (
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
+): boolean => {
+  if (!modularConfig) return false;
+  const agreementComponent = getComponentFromStep({
+    modularConfig,
+    step: MODULAR_AGREEMENT_FIELDS.AGREEMENT_STEP,
+    component: MODULAR_AGREEMENT_FIELDS.AGREEMENT_COMPONENT,
+  });
+  return agreementComponent?.status === EXECUTED;
 };

@@ -5,7 +5,15 @@ import {
   ModularOnboardingStepWithModularComponents,
 } from 'apps/pos/src/app/types/modular';
 import { StepProgressTypes } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
-import { COMPLETED } from 'apps/pos/src/app/utils/agreementSigning';
+import {
+  COMPLETED,
+  getAgreementComponentStatus,
+  getAgreementMode,
+  getAgreementSatusValue,
+  OFFLINE,
+  ONLINE,
+  PENDING,
+} from 'apps/pos/src/app/utils/agreementSigning';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 
 interface GetStepsFromModularConfigProps {
@@ -121,4 +129,18 @@ export const isDevicePricingAdditionalDetailsCompleted = ({
     }) === COMPLETED;
   if (isDeviceOrderingCompleted && isPricingCompleted && isAdditionalDetailsCompleted) return true;
   return false;
+};
+
+interface GetAgreementSigningStatus {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
+}
+export const getAgreementSigningStatus = ({
+  modularConfig,
+}: GetAgreementSigningStatus): 'completed' | 'pending' => {
+  const isOnlineAgreementExecuted =
+    getAgreementMode(modularConfig) === ONLINE &&
+    getAgreementSatusValue(modularConfig) === COMPLETED;
+  const isOfflineAgreementExecuted =
+    getAgreementMode(modularConfig) === OFFLINE && getAgreementComponentStatus(modularConfig);
+  return isOnlineAgreementExecuted || isOfflineAgreementExecuted ? COMPLETED : PENDING;
 };

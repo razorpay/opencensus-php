@@ -25,12 +25,13 @@ import {
   AvailableComponents,
 } from 'apps/pos/src/app/types/common';
 import {
+  getAgreementSigningStatus,
   getProgressFromModularStep,
   isDevicePricingAdditionalDetailsCompleted,
 } from 'apps/pos/src/app/utils/modularConfig';
 import { getDeviceStepStatus } from 'apps/pos/src/app/utils/deviceSelection';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
-import { getAgreementStepStatus } from 'apps/pos/src/app/utils/agreementSigning';
+import { COMPLETED } from 'apps/pos/src/app/utils/agreementSigning';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 import { MODULAR_AGREEMENT_FIELDS } from 'apps/pos/src/app/types/AgreementSigning';
 import { checkIfKycComplete } from 'apps/pos/src/app/utils/merchantActivation';
@@ -253,15 +254,12 @@ const AGREEMENT_SIGNING_STEP = {
   modularKey: MODULAR_AGREEMENT_FIELDS.AGREEMENT_STEP,
   title: 'Agreement Signing',
   description: 'Merchant’s T&C and Pricing Agreement with Razorpay',
-  getStatus: ({ states }) => getAgreementStepStatus({ modularConfig: states.modularConfig }),
+  getStatus: ({ states }) => getAgreementSigningStatus({ modularConfig: states.modularConfig }),
   checkIfDisabled: ({ states, values }) =>
     !values.merchantId ||
     !isDevicePricingAdditionalDetailsCompleted({ modularConfig: states.modularConfig }),
   checkIfCompleted: ({ states }) =>
-    getProgressFromModularStep({
-      modularConfig: states.modularConfig,
-      step: MODULAR_AGREEMENT_FIELDS.AGREEMENT_STEP,
-    }) === 'completed',
+    getAgreementSigningStatus({ modularConfig: states.modularConfig }) === COMPLETED,
   icon: <CheckCircleIcon />,
   components: [
     {
