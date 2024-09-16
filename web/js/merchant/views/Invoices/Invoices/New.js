@@ -70,7 +70,7 @@ import {
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
 import debounce from 'common/utils/debounce';
-import { removeTaxForNonINRItems } from './helpers';
+import { removeTaxForNonINRItems, TAX_DIVISOR } from './helpers';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function validate(values) {
@@ -504,7 +504,7 @@ class InvoicesNewContainer extends Component {
           }
 
           if (applyTaxes && line_item.cess) {
-            cess = calculateTax(totalAmt, line_item.cess / 100, line_item.tax_inclusive);
+            cess = calculateTax(totalAmt, line_item.cess / TAX_DIVISOR, line_item.tax_inclusive);
           }
 
           return total + cess + tax;
@@ -526,7 +526,7 @@ class InvoicesNewContainer extends Component {
           }
 
           if (applyTaxes && line_item.cess) {
-            cess = calculateTax(totalAmt, line_item.cess / 100);
+            cess = calculateTax(totalAmt, line_item.cess / TAX_DIVISOR);
           }
         }
 

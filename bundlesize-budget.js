@@ -136,7 +136,7 @@ module.exports = [
   {
     name: 'Invoices',
     path: 'js/merchant/Invoices.*.js',
-    limit: '76 KB',
+    limit: '77 KB',
     gzip: true,
   },
 ];

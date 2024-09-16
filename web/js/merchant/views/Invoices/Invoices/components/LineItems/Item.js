@@ -12,6 +12,7 @@ import { findBy, isTaxOfTypeCess, calculateTax } from 'common/utils/rzp-utils';
 import Item from 'merchant/models/Item';
 import { track } from 'merchant/views/Invoices/ga';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { TAX_DIVISOR, TAX_PERCENTAGE_DIVISOR } from '../../helpers';
 
 const selector = formValueSelector('newInvoice');
 
@@ -569,10 +570,10 @@ export default class InvoiceLineItem extends React.Component {
               {gstSlab &&
                 gstSlab.groups.map((group) => (
                   <p key={`${selectedOption.item_id}_${group}`}>
-                    {group} @ {gstSlab.perGroup / 10000.0}%
+                    {group} @ {gstSlab.perGroup / TAX_PERCENTAGE_DIVISOR}%
                   </p>
                 ))}
-              {cess && <p>Cess @ {cess / 100.0}%</p>}
+              {cess && <p>Cess @ {cess / TAX_PERCENTAGE_DIVISOR}%</p>}
             </div>
           )}
         </td>
@@ -621,7 +622,7 @@ export default class InvoiceLineItem extends React.Component {
                   {selectedOption.tax_inclusive ? '' : '+ '}
                   <Amount
                     value={
-                      calculateTax(lineItemTotalFloat, cess / 100, selectedOption.tax_inclusive) *
+                      calculateTax(lineItemTotalFloat, cess / TAX_DIVISOR, selectedOption.tax_inclusive) *
                       100
                     }
                     currency={invoiceCurrency}

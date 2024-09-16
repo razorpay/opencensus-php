@@ -18,6 +18,7 @@ import Item from 'merchant/models/Item';
 import { isTaxOfTypeCess } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 import CheckableItem from './components/CheckableItem';
+import { TAX_DIVISOR, TAX_PERCENTAGE_DIVISOR } from '../Invoices/helpers';
 
 const selector = formValueSelector('newItem');
 
@@ -146,11 +147,11 @@ export default class AddItem extends Component {
     if (this.props.showTaxes) {
       // Convert cess
       if (isTaxOfTypeCess(item.tax)) {
-        item.cess = `${item.tax.rate / 100.0}`;
+        item.cess = `${item.tax.rate / TAX_PERCENTAGE_DIVISOR}`;
         showCessForm = true;
       } else if (item.cess) {
         // Else if this is being edited using a Line Item
-        item.cess = item.cess / 100.0;
+        item.cess = item.cess / TAX_PERCENTAGE_DIVISOR;
         showCessForm = true;
       }
 
@@ -258,7 +259,7 @@ export default class AddItem extends Component {
         let cessPerc = cess;
 
         // Convert to an integer. (5% => 500)
-        cessPerc = parseInt(parseFloat(cessPerc) * 100, 10);
+        cessPerc = parseInt(parseFloat(cessPerc) * TAX_DIVISOR, 10);
 
         // Find an existing cess.
         const { taxes } = this.state;
@@ -277,7 +278,7 @@ export default class AddItem extends Component {
           // Create a new tax if one doesn't exist.
           this.props
             .saveTax({
-              name: `Cess @ ${cessPerc / 100.0}%`,
+              name: `Cess @ ${cessPerc / TAX_PERCENTAGE_DIVISOR}%`,
               rate_type: 'percentage',
               rate: cessPerc,
             })
@@ -353,7 +354,7 @@ export default class AddItem extends Component {
     if (!(gst && gst.gst_tax_slabs_v2)) return [];
 
     return gst.gst_tax_slabs_v2.map((rate) => {
-      return `${rate / 10000}%`;
+      return `${rate / TAX_DIVISOR}%`;
     });
   };
 

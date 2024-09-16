@@ -48,3 +48,6 @@ export const shareURL = (url, title) => {
     copyToClipboard(url);
   }
 };
+
+export const TAX_DIVISOR = 10000;
+export const TAX_PERCENTAGE_DIVISOR = 10000.0;
