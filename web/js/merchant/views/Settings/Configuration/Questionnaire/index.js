@@ -76,7 +76,7 @@ const Questionnaire = ({
     abExperiments: { internationalAdditionalDocs },
   } = useSplitzService();
 
-  const isAdditionalDocExperimentEnabled = internationalAdditionalDocs.variables.result === 'on';
+  const isAdditionalDocExperimentEnabled = internationalAdditionalDocs?.variables?.result === 'on';
 
   useEffect(() => {
     dispatch({ type: 'LOADING', payload: true });

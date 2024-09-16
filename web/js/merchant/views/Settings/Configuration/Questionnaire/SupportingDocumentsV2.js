@@ -26,7 +26,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
   const {
     abExperiments: { internationalAdditionalDocs },
   } = useSplitzService();
-  const isAdditionalDocExperimentEnabled = internationalAdditionalDocs.variables.result === 'on';
+  const isAdditionalDocExperimentEnabled = internationalAdditionalDocs?.variables?.result === 'on';
 
   const handleFileUpload = (docType, file, progressTracker) => {
     const formData = new FormData();
