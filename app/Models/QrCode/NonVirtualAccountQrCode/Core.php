@@ -416,7 +416,10 @@ class Core extends QrCode\Core
         {
             $gateway = 'upi_icici';
         }
-
+        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'hdfcbank'))
+        {
+            $gateway = 'upi_mindgate';
+        }
         if ($gateway === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);

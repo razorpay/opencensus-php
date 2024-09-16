@@ -728,6 +728,44 @@ class UpiMindgateQRCodeTest extends TestCase
         );
         $this->runEntityAssertionsForDedicatedTerminalQr();
     }
+    public function testStaticQrCodeCreateWithVpa(): void
+    {
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                'vpa' => 'razorpay@hdfcbank',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $this->runEntityAssertionsForDedicatedTerminalQr();
 
 
+    }
+    public function testPaymentForStaticQrCodeWithVpa(): void
+    {
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                'vpa' => 'razorpay@hdfcbank',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity, $this->terminal);
+
+        $this->runQrPaymentEntityAssertions();
+
+        $this->assertTrue($response['success']);
+    }
 }
