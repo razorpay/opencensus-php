@@ -2361,6 +2361,9 @@ class Service extends Base\Service
                 'tokendata' => $token['id'],
                 'carddata' => $cardData,
             ]);
+            //Required to override incase of global/standard checkout cases merchant needs to be explicitly set to local merchant.
+            $token->merchant()->associate($this->merchant);
+
             $this->core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
             $token->setUsedAt(Carbon::now()->getTimestamp());
             $token->setSource("issuer");
