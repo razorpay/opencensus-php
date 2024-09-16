@@ -313,6 +313,37 @@ class Core extends Base\Core
 
     }
 
+    /**
+     * calculates the max negative limit for transfer. Doesn't take transfer entity as input as it is not required for this computation.
+     * The merchant is derived from this->merchant which is set in the constructor. This function can be used as a replacement for getMaxNegativeLimitForTransfer
+     * @return int
+     */
+    public function getMaxNegativeLimitForTransferV2(): int
+    {
+        $balanceType = Balance\Type::PRIMARY;
+        $txnType = Transaction\Type::TRANSFER;
+
+        $isNegativeBalanceEnabled = $this->isNegativeBalanceEnabledForTxnTypeAndMerchant($txnType, $balanceType);
+
+        if ($isNegativeBalanceEnabled === false)
+        {
+            return 0;
+        }
+
+        $balance = $this->merchant->getBalanceByTypeOrFail($balanceType);
+
+        $negativeAllowedFlows = (new BalanceConfig\Core())->getNegativeFlowsForBalance($balance->getId());
+
+        if (in_array($txnType, $negativeAllowedFlows) === false)
+        {
+            return 0;
+        }
+
+        $maxNegative = (new BalanceConfig\Core())->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+        return $maxNegative;
+    }
+
 
     private function pushTransferDataToKafkaForAPITransactionCreation($transfer, $transferPayment, $creditJournalId, $debitJournalId)
     {

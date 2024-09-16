@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use Ramsey\Uuid\Uuid;
 use Razorpay\Trace\Logger;
 use Neves\Events\TransactionalClosureEvent;
 
@@ -811,7 +812,7 @@ class Core extends Base\Core
                    ->customer
                    ->findByPublicIdAndMerchant($customerId, $merchant);
 
-        if ($this->shouldUseCustomerTransferReverseShadowV2Flow())
+        if ($this->shouldUseCustomerTransferReverseShadowV2Flow($source, $asyncTransfer))
         {
             $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
 
@@ -878,30 +879,81 @@ class Core extends Base\Core
         }
     }
 
-    protected function shouldUseCustomerTransferReverseShadowV2Flow()
+    protected function shouldUseCustomerTransferReverseShadowV2Flow(Base\Entity $source, bool $asyncTransfer) : bool
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
         {
             return false;
         }
 
+        if ($asyncTransfer === true)
+        {
+            return false;
+        }
 
-        $properties = [
-            'id'            => $this->merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.customer_transfer_reverse_shadow_v2'),
+        $experimentIds = [
+            $this->app['config']->get('app.customer_transfer_reverse_shadow_v2'),
         ];
 
-        $reverseShadowV2Enabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enabled');
+        if ($this->merchant->isPostpaid() === true)
+        {
+            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_postpaid');
+        }
+
+        $ledgerService = $this->app['ledger'];
+
+        $core = (new ReverseShadowTransfersCore());
+
+        $merchantAccountBalances = $core->getMerchantAccountBalances($ledgerService, $this->merchant->getId());
+
+        if ($merchantAccountBalances[LedgerConstants::MERCHANT_AMOUNT_CREDITS] > 0)
+        {
+            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_amount_credits');
+        }
+
+        $negativeLimit = $core->getMaxNegativeLimitForTransferV2();
+
+        if ($negativeLimit > 0)
+        {
+            $experimentIds[] = $this->app['config']->get('app.customer_transfer_reverse_shadow_v2_negative_limit');
+        }
+
+        $experimentData = [];
+
+        foreach ($experimentIds as $experimentId)
+        {
+            $id = $source->getId();
+
+            // override id in case of balance transfers
+            if ($source instanceof Merchant\Entity)
+            {
+                $id = Uuid::uuid1();
+            }
+
+            $experimentData[] = array(
+                'id'              => strval($id),
+                'experiment_id'   => $experimentId,
+                'request_data'    => json_encode([
+                    'merchant_id' => $this->merchant->getId(),
+                ])
+            );
+        }
+
+        $response = $this->app['splitzService']->bulkCallsToSplitz($experimentData);
+
+        // check all the experiments returned enabled variant, if any of them is not ramped up, this flow should not get triggered.
+        $enabled = array_reduce($response, function ($carry, $item) {
+            return $carry && ($item['variant']['name'] === "enabled");
+        }, true);
 
         $this->trace->info(
             TraceCode::CUSTOMER_TRANSFER_REVERSE_SHADOW_EXP,
             [
                 'merchant_id'           => $this->merchant->getId(),
-                'enabled'     => $reverseShadowV2Enabled,
-                'experiment_id' => $properties['experiment_id']
+                'enabled'     => $enabled,
             ]);
 
-        return $reverseShadowV2Enabled;
+        return $enabled;
     }
 
     public function createLedgerEntriesForCustomerTransferReverseShadow(Transfer\Entity $transfer)

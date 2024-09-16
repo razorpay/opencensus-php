@@ -900,6 +900,12 @@ return array(
 
     'customer_transfer_reverse_shadow_v2' => env('CUSTOMER_TRANSFER_REVERSE_SHADOW_V2_EXPERIMENT_ID'),
 
+    'customer_transfer_reverse_shadow_v2_postpaid' => env('CUSTOMER_TRANSFER_REVERSE_SHADOW_V2_POSTPAID_EXPERIMENT_ID'),
+
+    'customer_transfer_reverse_shadow_v2_amount_credits' => env('CUSTOMER_TRANSFER_REVERSE_SHADOW_V2_AMOUNT_CREDITS_EXPERIMENT_ID'),
+
+    'customer_transfer_reverse_shadow_v2_negative_limit' => env('CUSTOMER_TRANSFER_REVERSE_SHADOW_V2_NEGATIVE_LIMIT_EXPERIMENT_ID'),
+
     'enable_routes_for_pos_merchant_exp_id' => env('POS_ENABLE_ROUTES_FOR_POS_MERCHANTS_EXP_ID'),
 
     'freshdesk_onboarding_type_key'     => env('FRESHDESK_ONBOARDING_TYPE_KEY'),
