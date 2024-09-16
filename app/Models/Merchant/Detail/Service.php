@@ -2164,17 +2164,13 @@ class Service extends Base\Service
      */
     public function getBusinessCategories(): array
     {
-        $experimentResult = (new Merchant\Core)->isRazorxExperimentEnable(
-            $this->merchant->org->getId(),
-            RazorxTreatment::EASY_ONBOARDING_UPDATED_MCC);
-
         $this->trace->info(TraceCode::BUSINESS_CATEGORIES_VAS_MERCHANT_DETAILS, [
             'merchant_id' => $this->merchant->getId(),
             'org_id'       => $this->merchant->org->getId(),
-            'experiment_result' => $experimentResult,
+            'vas_org_ff_enabled' => $this->merchant->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER)
         ]);
 
-        if ($experimentResult === true)
+        if ($this->merchant->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER) === true)
         {
             return $this->getBusinessCategoriesVasMerchant();
         }
