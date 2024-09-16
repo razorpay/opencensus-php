@@ -441,7 +441,7 @@ class Base
      *
      * @return PublicCollection|Collection
      */
-    public function getMerchantCollectionFromResponse(FilterResponse $response): PublicCollection|Collection
+    public function getMerchantCollectionFromResponse(FilterResponse $response, string $entity): PublicCollection|Collection
     {
         $merchants = $response->getMerchants();
         $merchantArray = [];
@@ -450,12 +450,12 @@ class Base
          * @var $merchant \Rzp\Accounts\Merchant\V1\Merchant
          */
         foreach ($merchants as $merchant) {
-            $merchantProtoConvertor = new MerchantProtoMapper($merchant);
+            $merchantProtoConvertor = new MerchantProtoMapper($merchant, $entity);
             $merchantEntity = $merchantProtoConvertor->ToEntity();
             $merchantArray[] = $merchantEntity;
         }
 
-        return (new Merchant\Entity())->newCollection($merchantArray);
+        return (new $entity())->newCollection($merchantArray);
     }
 
     /**

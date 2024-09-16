@@ -19,7 +19,9 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakholderSdkWrappe
 use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail as MerchantDetailSDKWrapper;
 use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Models\Merchant\Account\Repository as AccountRepository;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as MerchantSDKWrapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantAccount as MerchantAccountSDKWrapper;
 
 
 final class RepoToSdkWrapperMap {
@@ -33,6 +35,7 @@ final class RepoToSdkWrapperMap {
         StakeholderRepository::class => StakholderSdkWrapper::class,
         MerchantDetailRepository::class => MerchantDetailSDKWrapper::class,
         MerchantRepository::class => MerchantSDKWrapper::class,
+        AccountRepository::class => MerchantAccountSDKWrapper::class,
     );
 
     /**

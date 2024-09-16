@@ -1171,9 +1171,14 @@ class Repository extends Base\Repository
      * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function findByAccountIdAndParent(string $accountId, Entity $parent): Entity
+    public function findByAccountIdAndParent(string $accountId, Entity $parent,
+                                             bool $stripSignOrFail = true, bool $associateParent = true): Base\PublicEntity
     {
-        Account\Entity::verifyIdAndStripSign($accountId);
+        if ($stripSignOrFail) {
+            Account\Entity::verifyIdAndStripSign($accountId);
+        } else {
+            Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        }
 
         if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
         {
@@ -1196,7 +1201,9 @@ class Repository extends Base\Repository
                 {
                     if ($account->getParentId() == $parent->getId())
                     {
-                        $account->parent()->associate($parent);
+                        if ($associateParent === true) {
+                            $account->parent()->associate($parent);
+                        }
                         return $account;
                     }
                 }
@@ -1222,8 +1229,9 @@ class Repository extends Base\Repository
         $account = $query->findOrFailPublic($accountId);
 
         $this->resetConnectionOnModels($account);
-
-        $account?->parent()->associate($parent);
+        if ($associateParent === true) {
+            $account?->parent()->associate($parent);
+        }
 
         return $account;
     }

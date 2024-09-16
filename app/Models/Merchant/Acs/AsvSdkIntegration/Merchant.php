@@ -60,6 +60,8 @@ class Merchant extends Base
     const FETCH_MERCHANTS_WITH_PRICING_PLAN_ID_LIMIT_2
         = 'fetch_merchants_with_pricing_plan_id_limit_2';
 
+    protected $entity = MerchantEntity::class;
+
     public function __construct()
     {
         parent::__construct();
@@ -85,7 +87,7 @@ class Merchant extends Base
 
         $merchant = $response->getMerchant();
 
-        return (new MerchantProtoMapper($merchant))->ToEntity();
+        return (new MerchantProtoMapper($merchant, $this->entity))->ToEntity();
     }
 
     /**
@@ -112,7 +114,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -130,7 +132,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -153,7 +155,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -177,7 +179,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -223,7 +225,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -246,7 +248,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -269,7 +271,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -293,7 +295,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -313,7 +315,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     public function fetchMerchantsByIds(array $ids): Collection|PublicCollection
@@ -326,7 +328,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     public function fetchByOrgIdAndEmail(string $orgId, string $email, int $limit = 2000, int $offset = 0): Collection|PublicCollection
@@ -339,7 +341,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     public function fetchMerchantMidsFromParentMerchantIdWhereLiveDisableReasonWithOffset(string $parentMerchantId, string $liveDisabledReason, int $offset): Collection|PublicCollection
@@ -352,7 +354,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     public function fetchMerchantMidsFromParentMerchantIdWhereLiveEnableWithOffset(string $parentMerchantId, int $offset): Collection|PublicCollection
@@ -365,7 +367,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     public function fetchMerchantCreatedBetweenForOrgWithBusinessBanking(int $from, int $to, string $orgId, bool $isBusinessBanking, int $limit = 2000, int $offset = 0): Collection|PublicCollection
@@ -378,7 +380,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     public function getNonSuspendedMerchantsFromIds(array $ids):  PublicCollection|Collection
@@ -390,7 +392,7 @@ class Merchant extends Base
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     public function getMerchantsWithSecondFactorAuthPresentInIds(array $ids): PublicCollection|Collection
@@ -405,7 +407,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -429,7 +431,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -453,7 +455,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
 
@@ -479,7 +481,7 @@ class Merchant extends Base
             self::FILTER_TIMEOUT_IN_MICRO_SECONDS,
         );
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
     /**
@@ -525,7 +527,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response);
+        return $this->getMerchantCollectionFromResponse($response, $this->entity);
     }
 
 }

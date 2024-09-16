@@ -3,18 +3,9 @@
 namespace Unit\Models\Merchant;
 
 use Config;
-use Google\Protobuf\Int32Value;
-use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
-use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
-use Rzp\Accounts\Merchant\V1\MerchantSaveRequest;
-use Rzp\Accounts\Merchant\V1\SaveRequest;
-use Rzp\Accounts\Merchant\V1\SaveResponse;
 use RZP\Exception\DbQueryException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
-use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument;
-use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
 use RZP\Models\Merchant\Repository;
@@ -460,6 +451,93 @@ class RepositoryTest extends RepositoryTestHelper
         Config::set('applications.asv_v2.splitz_send_reload_to_asv', $id);
         $this->setSplitzWithOutput("true", 6);
         $this->verifyMerchantRefreshOperation($id);
+    }
+
+    public function testAccountFindByIdAndMerchantOperation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $parentId = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $parentId]);
+        $this->fixtures->create('merchant', ['id' => $id1, 'parent_id' => $parentId]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'parent_id' => $parentId]);
+        $repository = new Account\Repository();
+
+        $parentMerchant       = $repository->find($parentId);
+        $merchant1            = $repository->find($id1);
+        $merchant2            = $repository->find($id2);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();
+        $resultWithoutSplitz1 = $repository->findByIdAndMerchant($id1, $parentMerchant);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();
+        $resultWithoutSplitz2 = $repository->findByIdAndMerchant($id2, $parentMerchant);
+        $this->assertEquals($merchant1, $resultWithoutSplitz1, "created merchant and merchant without splitz are not same");
+        $this->assertEquals($merchant2, $resultWithoutSplitz2, "created merchant and merchant without splitz are not same");
+
+        // reset connection because when we query from asv laravel attaches db connection with entity ,
+        // so we manually reset the connection with entity
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+        $repository->resetConnectionOnModels($resultWithoutSplitz2);
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $resultWithSplitz1 = $repository->findByIdAndMerchant($id1, $parentMerchant);
+        $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $resultWithSplitz2 = $repository->findByIdAndMerchant($id2, $parentMerchant);
+        $this->assertEquals($resultWithoutSplitz2, $resultWithSplitz2, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitz2), get_class($resultWithSplitz2));
+    }
+
+    public function testAccountFindByPublicIdAndMerchantOperation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $parentId = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $parentId]);
+        $this->fixtures->create('merchant', ['id' => $id1, 'parent_id' => $parentId]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'parent_id' => $parentId]);
+        $repository = new Account\Repository();
+
+        $parentMerchant       = $repository->find($parentId);
+        $merchant1            = $repository->find($id1);
+        $merchant2            = $repository->find($id2);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();
+        $resultWithoutSplitz1 = $repository->findByPublicIdAndMerchant("acc_".$id1, $parentMerchant);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();
+        $resultWithoutSplitz2 = $repository->findByPublicIdAndMerchant("acc_".$id2, $parentMerchant);
+        $this->assertEquals($merchant1, $resultWithoutSplitz1, "created merchant and merchant without splitz are not same");
+        $this->assertEquals($merchant2, $resultWithoutSplitz2, "created merchant and merchant without splitz are not same");
+
+        // reset connection because when we query from asv laravel attaches db connection with entity ,
+        // so we manually reset the connection with entity
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+        $repository->resetConnectionOnModels($resultWithoutSplitz2);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $resultWithSplitz1 = $repository->findByPublicIdAndMerchant("acc_".$id1, $parentMerchant);
+        $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $resultWithSplitz2 = $repository->findByPublicIdAndMerchant("acc_".$id2, $parentMerchant);
+        $this->assertEquals($resultWithoutSplitz2, $resultWithSplitz2, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitz2), get_class($resultWithSplitz2));
     }
 
 

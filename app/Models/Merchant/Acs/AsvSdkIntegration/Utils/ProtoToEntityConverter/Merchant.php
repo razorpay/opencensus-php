@@ -10,9 +10,12 @@ class Merchant
 {
     protected MerchantV1\Merchant $proto;
 
-    function __construct(MerchantV1\Merchant $proto)
+    protected string $entity;
+
+    function __construct(MerchantV1\Merchant $proto, string $entity)
     {
         $this->proto = $proto;
+        $this->entity = $entity;
     }
 
     public function ToEntity(): MerchantEntity
@@ -96,7 +99,7 @@ class Merchant
             MerchantEntity::COUNTRY_CODE => $this->proto->getCountryCodeUnwrapped(),
         ];
 
-        $merchantEntity = new MerchantEntity();
+        $merchantEntity = new $this->entity();
         $merchantEntity->setRawAttributes($merchantRawAttributes, true);
         $merchantEntity->exists = true;
         return $merchantEntity;

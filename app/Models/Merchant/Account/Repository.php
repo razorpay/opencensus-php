@@ -4,7 +4,9 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Base\Fetch;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Entity;
 
 class Repository extends Merchant\Repository
 {
@@ -26,5 +28,17 @@ class Repository extends Merchant\Repository
         Entity::stripSignWithoutValidation($id);
 
         $query->where(Entity::ID, '=', $id);
+    }
+
+    public function findByIdAndMerchant(string $id,
+                                        Merchant\Entity $merchant,
+                                        array $params = [],
+                                        string $connectionType = null): PublicEntity {
+
+        if ($this->asvRouter->shouldRouteFilterToAsv('accountFindByIdAndMerchant')) {
+            return $this->findByAccountIdAndParent($id, $merchant, false, false);
+        }
+
+        return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 }
