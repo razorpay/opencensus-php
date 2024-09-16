@@ -252,7 +252,6 @@ class Core extends Base\Core
                 $input[Entity::EMAIL], $input[Entity::ORG_ID]
             );
         }
-        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
 
@@ -272,6 +271,11 @@ class Core extends Base\Core
         $merchant->setPricingPlan($planId);
 
         $merchant->org()->associate($org);
+
+        if ($merchant->isRazorpayOrgId())
+        {
+            $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
+        }
 
         // override the pricing plan with the no code app pricing plan if applicable
         $noCodeAppPricingPlan = $this->getNoCodeAppsPricingPlan($merchant);
