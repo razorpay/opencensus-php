@@ -30,3 +30,10 @@
 //     });
 //   });
 // });
+
+// @ts-nocheck
+import { test } from '@playwright/test';
+
+test.skip('POS activation status @flow=pos-sales-assisted @project=payments', () => {
+  return 'remove this later when fixing it';
+});
