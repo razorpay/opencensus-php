@@ -38,6 +38,7 @@ import SwitchMerchantIcon from 'assets/rtux/switch-merchant.svg';
 import { analyticsTrack } from 'common/utils/analytics';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { COMMON_Z_INDEX } from 'common/constant';
+import SwitchMerchantTypeaheadV2 from 'merchant/components/HeaderNav/SwitchMerchantTypeaheadV2';
 
 const TrustedBadgeIcon = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -72,6 +73,9 @@ const ProfileDropdownV2: React.FC<{
   isRTBEnabled: boolean;
   trustedBadgeTooltipInfo: string;
   showPartnerIntent: () => void;
+  showSwitchMerchantModal: boolean;
+  onSwitchMerchantDismiss: () => void;
+  onSwitchMerchant: () => void;
 }> = ({
   user,
   mode,
@@ -81,6 +85,9 @@ const ProfileDropdownV2: React.FC<{
   isRTBEnabled,
   trustedBadgeTooltipInfo,
   showPartnerIntent,
+  showSwitchMerchantModal,
+  onSwitchMerchantDismiss,
+  onSwitchMerchant,
 }) => {
   const {
     id: merchantId,
@@ -137,126 +144,137 @@ const ProfileDropdownV2: React.FC<{
   };
 
   return (
-    <Dropdown>
-      <DropdownLink
-        margin="spacing.5"
-        icon={() => <UserIcon size="medium" color="interactive.icon.gray.subtle" />}
-        onClick={() => {
-          analyticsTrack({
-            objectName: 'Account Dropdown',
-            actionName: 'clicked',
-            screen: 'home page',
-            properties: commonAnalyticsProperties,
-          });
-        }}
-      />
-      <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
-        <Box minWidth="300px">
-          <Box display="flex" gap="spacing.3" alignItems="center" padding="spacing.5">
-            <ImageContainer>
-              {imageUrl ? (
-                <img
-                  title="profile-pic"
-                  src={imageUrl}
-                  alt="user-profile-pic"
-                  height="50px"
-                  width="50px"
-                  style={{
-                    borderRadius: '50%',
-                  }}
-                />
-              ) : userNameInitials ? (
-                <Text>{userNameInitials}</Text>
-              ) : (
-                <UserIcon size="large" color="interactive.icon.gray.subtle" />
-              )}
-            </ImageContainer>
-            <Box display="flex" flexDirection="column">
-              <Text weight="semibold" size="large">
-                {loggedInUserName ? titleCase(loggedInUserName) : '--'}
-              </Text>
-              <Text>{userRole}</Text>
+    <>
+      <Dropdown>
+        <DropdownLink
+          margin="spacing.5"
+          icon={() => <UserIcon size="medium" color="interactive.icon.gray.subtle" />}
+          onClick={() => {
+            analyticsTrack({
+              objectName: 'Account Dropdown',
+              actionName: 'clicked',
+              screen: 'home page',
+              properties: commonAnalyticsProperties,
+            });
+          }}
+        />
+        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <Box minWidth="300px">
+            <Box display="flex" gap="spacing.3" alignItems="center" padding="spacing.5">
+              <ImageContainer>
+                {imageUrl ? (
+                  <img
+                    title="profile-pic"
+                    src={imageUrl}
+                    alt="user-profile-pic"
+                    height="50px"
+                    width="50px"
+                    style={{
+                      borderRadius: '50%',
+                    }}
+                  />
+                ) : userNameInitials ? (
+                  <Text>{userNameInitials}</Text>
+                ) : (
+                  <UserIcon size="large" color="interactive.icon.gray.subtle" />
+                )}
+              </ImageContainer>
+              <Box display="flex" flexDirection="column">
+                <Text weight="semibold" size="large">
+                  {loggedInUserName ? titleCase(loggedInUserName) : '--'}
+                </Text>
+                <Text>{userRole}</Text>
+              </Box>
             </Box>
+            <Divider />
+          </Box>
+          <Box padding="spacing.5">
+            <Box display="flex" flexDirection="row" alignItems="center">
+              <Text weight="semibold" display="block">
+                {name}
+              </Text>
+              {isRTBEnabled && (
+                <Tooltip content={trustedBadgeTooltipInfo} placement="bottom">
+                  <Link to={ROUTES_INFO.TRUSTED_BADGE}>
+                    <TrustedBadgeIcon data-testid="trusted-badge" />
+                  </Link>
+                </Tooltip>
+              )}
+            </Box>
+            <CopyWrapper onClick={handleMIDClick}>
+              <Text weight="semibold">MID:</Text>
+              <Text>{merchantId}</Text>
+            </CopyWrapper>
           </Box>
           <Divider />
-        </Box>
-        <Box padding="spacing.5">
-          <Box display="flex" flexDirection="row" alignItems="center">
-            <Text weight="semibold" display="block">
-              {name}
-            </Text>
-            {isRTBEnabled && (
-              <Tooltip content={trustedBadgeTooltipInfo} placement="bottom">
-                <Link to={ROUTES_INFO.TRUSTED_BADGE}>
-                  <TrustedBadgeIcon data-testid="trusted-badge" />
-                </Link>
-              </Tooltip>
-            )}
-          </Box>
-          <CopyWrapper onClick={handleMIDClick}>
-            <Text weight="semibold">MID:</Text>
-            <Text>{merchantId}</Text>
-          </CopyWrapper>
-        </Box>
-        <Divider />
-        <ActionList>
-          {user.merchants && Object.keys(user.merchants).length > 1 && (
-            <ActionListItem
-              leading={<ActionListItemAsset alt="switch-merchant-icon" src={SwitchMerchantIcon} />}
-              title="Switch Merchant"
-              value="Switch Merchant"
-              onClick={handleSwitchMerchantClick}
-            />
-          )}
-          <ActionListItem
-            leading={
-              <ActionListItemAsset
-                alt="test-mode-icon"
-                src={mode === 'live' ? TestModeIcon : LiveModeIcon}
+          <ActionList>
+            {user.merchants && Object.keys(user.merchants).length > 1 && (
+              <ActionListItem
+                leading={
+                  <ActionListItemAsset alt="switch-merchant-icon" src={SwitchMerchantIcon} />
+                }
+                title="Switch Merchant"
+                value="Switch Merchant"
+                onClick={handleSwitchMerchantClick}
               />
-            }
-            title={`Enable ${titleCase(invertMode)} Mode`}
-            value={`Enable ${titleCase(invertMode)} Mode`}
-            onClick={handleModeSwitch}
-          />
-          {isRazorxAnnouncementEnabled && (
+            )}
             <ActionListItem
-              leading={<ActionListItemIcon icon={RazorpayXIcon} />}
-              title="Go to RazorpayX"
-              value="Go to RazorpayX"
-              href="https://x.razorpay.com"
+              leading={
+                <ActionListItemAsset
+                  alt="test-mode-icon"
+                  src={mode === 'live' ? TestModeIcon : LiveModeIcon}
+                />
+              }
+              title={`Enable ${titleCase(invertMode)} Mode`}
+              value={`Enable ${titleCase(invertMode)} Mode`}
+              onClick={handleModeSwitch}
             />
-          )}
-          <ActionListItem
-            leading={<ActionListItemIcon icon={HeadphonesIcon} />}
-            title="Help & Support"
-            value="Help & Support"
-            onClick={handleHelpSupport}
-          />
-          <ActionListItem
-            leading={<ActionListItemIcon icon={LogOutIcon} />}
-            title="Log out"
-            value="Log out"
-            onClick={handleLogout}
-          />
-        </ActionList>
-        <ShowWhen
-          additionalCondition={(user) =>
-            user.role === rolesList.OWNER &&
-            user.partner_type === null &&
-            !isOrgFeatureExist('hide_razorpay_text_link')
-          }
-        >
-          <Divider />
-          <Box display="flex" flexDirection="column" padding="spacing.5" gap="spacing.2">
-            Partner with us and start earning on every referral
-            <BladeLink variant="button" onClick={showPartnerIntent}>
-              Explore Partner Program
-            </BladeLink>
-          </Box>
-        </ShowWhen>
-      </DropdownOverlay>
-    </Dropdown>
+            {isRazorxAnnouncementEnabled && (
+              <ActionListItem
+                leading={<ActionListItemIcon icon={RazorpayXIcon} />}
+                title="Go to RazorpayX"
+                value="Go to RazorpayX"
+                href="https://x.razorpay.com"
+              />
+            )}
+            <ActionListItem
+              leading={<ActionListItemIcon icon={HeadphonesIcon} />}
+              title="Help & Support"
+              value="Help & Support"
+              onClick={handleHelpSupport}
+            />
+            <ActionListItem
+              leading={<ActionListItemIcon icon={LogOutIcon} />}
+              title="Log out"
+              value="Log out"
+              onClick={handleLogout}
+            />
+          </ActionList>
+          <ShowWhen
+            additionalCondition={(user) =>
+              user.role === rolesList.OWNER &&
+              user.partner_type === null &&
+              !isOrgFeatureExist('hide_razorpay_text_link')
+            }
+          >
+            <Divider />
+            <Box display="flex" flexDirection="column" padding="spacing.5" gap="spacing.2">
+              Partner with us and start earning on every referral
+              <BladeLink variant="button" onClick={showPartnerIntent}>
+                Explore Partner Program
+              </BladeLink>
+            </Box>
+          </ShowWhen>
+        </DropdownOverlay>
+      </Dropdown>
+      {showSwitchMerchantModal ? (
+        <SwitchMerchantTypeaheadV2
+          isOpen={showSwitchMerchantModal}
+          onDismiss={onSwitchMerchantDismiss}
+          onSwitchMerchant={onSwitchMerchant}
+        />
+      ) : null}
+    </>
   );
 };
 

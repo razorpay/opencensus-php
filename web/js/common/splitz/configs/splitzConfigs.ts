@@ -281,6 +281,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'switch_merchant_modal_revamp',
+        experimentId: {
+          beta: 'OtU1plzdsGGh92',
+          production: 'OtUWWTBEIKFbn6',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'ray_ai',
         experimentId: {
           beta: 'NgMk9aLHhP79nc',

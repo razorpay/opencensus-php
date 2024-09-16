@@ -31,6 +31,7 @@ import ProfileDropdownV2 from './ProfileDropdownV2';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const trustedBadgeTooltipInfo =
   'You are a trusted business and the Razorpay trusted business badge is now being displayed on checkout for customers to see';
@@ -52,6 +53,7 @@ const trustedBadgeTooltipInfo =
 class ProfileDropdown extends Component {
   state = {
     showRazorpayxToolTip: false,
+    showSwitchMerchantModal: false,
   };
 
   handleHide = () => {
@@ -180,6 +182,10 @@ class ProfileDropdown extends Component {
     });
   };
 
+  openSwitchMerchantModalV2 = () => {
+    this.setState({ ...this.state, showSwitchMerchantModal: true });
+  };
+
   static getDerivedStateFromProps(nextProps, prevState) {
     const { trustedBadge, tracking, user } = nextProps;
     const { badgeStatus } = trustedBadge || {};
@@ -212,11 +218,17 @@ class ProfileDropdown extends Component {
       i18: { isConfigTagEnabled },
       isRTUXHomepage,
       splitz,
+      onSwitchMerchant,
     } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
     const merchant = user.merchants[user.current];
-    const { showRazorpayxToolTip } = this.state;
+    const { showRazorpayxToolTip, showSwitchMerchantModal } = this.state;
+
+    const isSwitchMerchantV2Enabled = isExperimentEnabled(
+      splitz?.abExperiments?.switch_merchant_modal_revamp,
+    );
+
     const { isPosSalesAgent } = checkIfPosSalesAgent({
       user,
       abExperiments: splitz.abExperiments,
@@ -229,10 +241,19 @@ class ProfileDropdown extends Component {
           mode={mode}
           onSwitchMode={onSwitchMode}
           onLogout={this.logout}
-          openSwitchMerchantModal={this.openSwitchMerchantModal}
+          openSwitchMerchantModal={
+            isSwitchMerchantV2Enabled
+              ? this.openSwitchMerchantModalV2
+              : this.openSwitchMerchantModal
+          }
           isRTBEnabled={isRTBEnabled}
           trustedBadgeTooltipInfo={trustedBadgeTooltipInfo}
           showPartnerIntent={this.showPartnerIntent}
+          showSwitchMerchantModal={showSwitchMerchantModal}
+          onSwitchMerchantDismiss={() =>
+            this.setState({ ...this.state, showSwitchMerchantModal: false })
+          }
+          onSwitchMerchant={onSwitchMerchant}
         />
       );
     }
