@@ -1696,8 +1696,14 @@ class Repository extends Base\Repository
         // merchantDetail is not fetched as a relation below because
         // a filter has to be added for merchantDetail.activation_status in the query
         //
-        $query = $this->newQuery()
-            ->with(['owners'])
+
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        $query = $query->with(['owners'])
             ->select($attributes)
             ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
             ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
