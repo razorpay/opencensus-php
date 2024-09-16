@@ -114,7 +114,7 @@ const DeviceOrderSummaryItem = ({
           {!isNaN(device?.totalSetupCharge as number) ? (
             <Amount
               value={Number(device?.totalSetupCharge)}
-              suffix="none"
+              suffix="decimals"
               weight="semibold"
               isAffixSubtle={false}
             />

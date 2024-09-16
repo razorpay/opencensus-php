@@ -24,7 +24,7 @@ describe('DeviceOrderSummaryItem', () => {
     renderApp();
     expect(screen.getByText('Test Device')).toBeInTheDocument();
     expect(screen.getByText('Monthly')).toBeInTheDocument();
-    expect(screen.getByText('2,000')).toBeInTheDocument();
+    expect(screen.getByText('2,000.00')).toBeInTheDocument();
     expect(screen.getByText('Qty: 1')).toBeInTheDocument();
     expect(screen.getByText('Edit')).toBeInTheDocument();
   });

@@ -42,7 +42,7 @@ describe('DeviceConfirmation', () => {
     renderApp();
     expect(screen.getByText('Test Device')).toBeInTheDocument();
     expect(screen.getByText('Monthly')).toBeInTheDocument();
-    expect(screen.getByText('30,000')).toBeInTheDocument();
+    expect(screen.getByText('30,000.00')).toBeInTheDocument();
   });
 
   test('should render delete item button and clicking on it should trigger modular with correct payload', async () => {

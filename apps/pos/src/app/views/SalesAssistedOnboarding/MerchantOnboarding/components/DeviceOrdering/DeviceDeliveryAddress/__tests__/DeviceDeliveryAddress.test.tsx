@@ -42,7 +42,7 @@ describe('DeviceDeliveryAddress', () => {
   test('should order confirmation with confirmation warning', () => {
     renderApp();
     expect(screen.getByText('Are you sure about your order?')).toBeInTheDocument();
-    expect(screen.getByText('2,478')).toBeInTheDocument();
+    expect(screen.getByText('2,478.00')).toBeInTheDocument();
     expect(screen.getByText('View Details')).toBeInTheDocument();
   });
 

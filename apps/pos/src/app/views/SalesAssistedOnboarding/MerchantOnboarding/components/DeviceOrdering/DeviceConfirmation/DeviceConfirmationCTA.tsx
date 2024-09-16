@@ -115,7 +115,7 @@ const DeviceConfirmationCTA = ({
           <Amount
             value={orderSummary?.totalOrderCharge || 0}
             isAffixSubtle={false}
-            suffix="none"
+            suffix="decimals"
             weight="semibold"
           />
         </Box>
