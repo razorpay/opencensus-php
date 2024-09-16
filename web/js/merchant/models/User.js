@@ -2079,6 +2079,10 @@ export default class User {
   get isAssistedOnboardingMerchant() {
     return this.user.signup_campaign === 'assisted_onboarding';
   }
+
+  get isMagicCouponEngineEnabled() {
+    return this.isFeatureEnabled('one_cc_coupon_engine');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

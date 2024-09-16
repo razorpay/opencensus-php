@@ -19,6 +19,7 @@ const initState = {
       isMagicPrepayCODEnabled: true,
       isMagicCODOrderAutomationEnabled: true,
       isMagicCODEngineEnabled: true,
+      isMagicCouponEngineEnabled: true,
       role: 'owner',
     },
   },
@@ -32,9 +33,7 @@ jest.mock('common/splitz', () => ({
     abExperiments: {
       magic_analytics_setting: variantOn,
       magic_shopify_shipping_engine: variantOn,
-      magic_coupon_engine: variantOn,
       magic_hide_cod_when_disabled: variantOn,
-      checkout_v2: variantOn,
     },
   }),
   withSplitzService: jest.fn(),

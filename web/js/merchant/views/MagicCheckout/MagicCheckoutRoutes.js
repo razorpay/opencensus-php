@@ -7,7 +7,6 @@ import OrderStatusUpload from 'merchant/views/MagicCheckout/OrderStatusUpload';
 import ShopifyOrderEditing from 'merchant/views/MagicCheckout/ShopifyOrderEditing';
 import CODToPrepaidLinks from 'merchant/views/MagicCheckout/CODToPrepaid/CODToPrepaidLinks';
 import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics';
-import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 const CouponEngine = lazy(() =>
   /* webpackChunkName: 'MagicCouponEngine' */ import('merchant/views/MagicCheckout/CouponEngine'),
@@ -86,9 +85,7 @@ const routes = [
     path: '/magic/coupons',
     Component: CouponEngine,
     onRCOD: true,
-    condition: (_user, abExperiments, platform) =>
-      abExperiments?.magic_coupon_engine?.variables?.result === 'on' &&
-      platform === PLATFORMS.VALUES.SHOPIFY,
+    condition: (user) => user.isMagicCouponEngineEnabled,
   },
 ];
 

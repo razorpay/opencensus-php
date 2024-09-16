@@ -45,8 +45,7 @@ const routesV2 = [
     path: '/magic/coupons',
     Component: CouponEngine,
     onRCOD: true,
-    condition: (_user, abExperiments) =>
-      abExperiments?.magic_coupon_engine?.variables?.result === 'on',
+    condition: (user) => user.isMagicCouponEngineEnabled,
   },
   {
     tabName: 'Reports & Analytics',

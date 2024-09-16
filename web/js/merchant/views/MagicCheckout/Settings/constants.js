@@ -112,8 +112,7 @@ export const TABS = {
       path: '/magic/settings/coupons',
       label: 'Coupon Settings',
       Component: CouponEngineSettingsTab,
-      condition: (_, abExperiments) =>
-        abExperiments?.magic_coupon_engine?.variables?.result === 'on',
+      condition: (user) => user.isMagicCouponEngineEnabled,
       onRCOD: true,
     },
     {
@@ -448,9 +447,7 @@ export const ROUTES = {
           heading="You can setup Coupons under 'Coupons' tab."
         />
       ),
-      condition: (_user, abExperiments) => {
-        return abExperiments?.magic_coupon_engine?.variables?.result === 'on';
-      },
+      condition: (user) => user.isMagicCouponEngineEnabled,
     },
     {
       className: 'analytics-settings',

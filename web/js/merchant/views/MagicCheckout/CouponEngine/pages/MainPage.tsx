@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 // helper imports
 import { getItem, setItem } from 'common/utils/localStorage';
-import { useSplitzService } from 'common/splitz';
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
 
 // ui components
@@ -49,12 +48,7 @@ const MainPage: React.FC<MainPageProps> = ({
   updatedCouponEngineEnabled,
   isRcodEnabled,
 }) => {
-  const { abExperiments } = useSplitzService();
-
-  const isShopifyCouponSyncEnabled =
-    abExperiments?.magic_shopify_coupon_sync?.variables?.result === 'on';
-
-  const NAV_ITEMS = getNavItems(isShopifyCouponSyncEnabled);
+  const NAV_ITEMS = getNavItems();
   const [activeNav, setActiveNav] = useState<string>(NAV_ITEMS[0].id);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { setAllCouponsList, setShopifySyncStatus } = useContext(ModalContext);
@@ -114,9 +108,7 @@ const MainPage: React.FC<MainPageProps> = ({
   };
 
   useEffect(() => {
-    if (isShopifyCouponSyncEnabled) {
-      fetchInitialDataWithSync();
-    }
+    fetchInitialDataWithSync();
   }, []);
 
   const setContent = useCallback(

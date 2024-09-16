@@ -6,15 +6,14 @@ describe('testing constants', () => {
       isMagicCODOrderAutomationEnabled: true,
       isMagicPrepayCODEnabled: true,
       isMagicCODEngineEnabled: true,
+      isMagicCouponEngineEnabled: true,
       role: 'owner',
     };
 
     const abExperiments = {
       magic_analytics_setting: { variables: { result: 'on' } },
       magic_shopify_shipping_engine: { variables: { result: 'on' } },
-      magic_coupon_engine: { variables: { result: 'on' } },
       magic_hide_cod_when_disabled: { variables: { result: 'on' } },
-      checkout_v2: { variables: { result: 'on' } },
       magic_x_store_settings: { variables: { result: 'on' } },
     };
 

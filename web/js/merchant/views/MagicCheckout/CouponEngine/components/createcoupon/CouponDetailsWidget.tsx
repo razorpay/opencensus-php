@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
-import { useSplitzService } from 'common/splitz';
 
 // ui imports
 import Input from 'common/new-ui/Input';
@@ -33,8 +32,6 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({
   isRcodEnabled,
 }) => {
   const { widgetsData, setWidgetsData, errorStates, setErrorStates } = useContext(ModalContext);
-  const { abExperiments } = useSplitzService();
-  const shouldShowCheckoutV2Changes = abExperiments?.checkout_v2?.variables?.result === 'on';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
     const { type, checked: isChecked } = e.target;
@@ -112,7 +109,7 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({
               <span>Display this coupon at checkout</span>
             </CheckboxGroup>
 
-            {shouldShowCheckoutV2Changes && widgetsData.couponDetails.display && (
+            {widgetsData.couponDetails.display && (
               <CheckboxGroup>
                 <Input.Check
                   checked={widgetsData.couponDetails.couponDiscoveryEnabled}

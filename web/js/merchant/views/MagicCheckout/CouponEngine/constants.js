@@ -28,8 +28,13 @@ const EnableCouponsTab = lazy(() =>
   ),
 );
 
-export const getNavItems = (syncExperiment = false) => {
+export const getNavItems = () => {
   const navItems = [
+    {
+      id: 'setup',
+      title: 'Setup',
+      component: <EnableCouponsTab />,
+    },
     {
       id: 'allCoupons',
       title: 'All coupons',
@@ -51,14 +56,6 @@ export const getNavItems = (syncExperiment = false) => {
       component: <ExpiredCouponsTab />,
     },
   ];
-
-  if (syncExperiment) {
-    navItems.unshift({
-      id: 'setup',
-      title: 'Setup',
-      component: <EnableCouponsTab />,
-    });
-  }
 
   return navItems;
 };

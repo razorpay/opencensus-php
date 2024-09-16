@@ -44,10 +44,8 @@ const variantOn = { variables: { result: 'on' } };
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {
-      magic_shopify_coupon_sync: variantOn,
       magic_hide_cod_when_disabled: variantOn,
       magic_free_shipping_coupon: variantOn,
-      checkout_v2: variantOn,
     },
   }),
   withSplitzService: jest.fn(),
