@@ -277,6 +277,95 @@ class PayoutTest extends OAuthTestCase
 
         return $payout;
     }
+    public function testFTACreateWithMutex()
+    {
+        $this->ba->privateAuth();
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => 'on',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.double_fta_fix_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Superman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+    }
+
+    public function testPayoutCreateWithExistingFta()
+    {
+        $this->testCreatePayoutForRequestSubmitted(true);
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        s($payout->toArray());
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'id'             => 'OM099FG62ADQWJ',
+                'source_type'    => 'payout',
+                'source_id'      => $payout->getId(),
+                'status'         => 'processed',
+                'merchant_id'    => '10000000000000',
+                'purpose'        => 'refund',
+                'channel'        => 'axis',
+                'initiate_at'   => '1725001621',
+            ]);
+        $fta1 = $this->getDbLastEntity('fund_transfer_attempt');
+        s($fta1->toArray());
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'key' => 'result',
+                            'value' => 'on',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.double_fta_fix_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        PayoutPostCreateProcessLowPriority::dispatch('test', $payout->getId(), 'false');
+
+        $payout->reload();
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
 
     public function testCreatePayoutAndBlockByShield(): array
     {

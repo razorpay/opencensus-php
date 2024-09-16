@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
@@ -16,6 +17,8 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Base extends BaseCore
 {
+    const FTA_MUTEX_LOCK_TIMEOUT = 30;
+
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
         $this->setChannel($payout);
@@ -49,16 +52,8 @@ class Base extends BaseCore
         return $this->saveCreatedTxn($payout, $txn, $feeSplit);
     }
 
-    protected function createFundTransferAttempt(Entity $payout, $ftaAccount)
+    protected function createFundTransferAttemptProcess(Entity $payout, $ftaAccount, $ftaCreateStartTime)
     {
-        $ftaCreateStartTime = millitime();
-
-        // For VA to VA transfers using creditTransfer entity we don't create FTA
-        if ($payout->isVaToVaPayout() === true)
-        {
-            return;
-        }
-
         $ftaInput = [
             FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
@@ -111,6 +106,87 @@ class Base extends BaseCore
                 'merchant_id'       => $payout->getMerchantId(),
                 'fta_creation_time' => $ftaCreateEndTime - $ftaCreateStartTime,
             ]);
+    }
+
+    protected function createFundTransferAttempt(Entity $payout, $ftaAccount)
+    {
+        $ftaCreateStartTime = millitime();
+
+        // For VA to VA transfers using creditTransfer entity we don't create FTA
+        if ($payout->isVaToVaPayout() === true)
+        {
+            return;
+        }
+
+        $isDoubleFTAExperimentEnabled = $this->fetchSplitzExperiment($payout->getMerchantId(),
+                                                                     $this->app['config']->get('app.double_fta_fix_experiment_id'));
+
+        if ($isDoubleFTAExperimentEnabled === true) {
+
+            // Check if there exists an FTA entity for this source id, if it does then return
+            $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payout->getId(),Entity::PAYOUT);
+
+            if (empty($fta) === false) {
+                $this->trace->info(
+                    TraceCode::FTA_ENTITY_ALREADY_EXISTS,
+                    [
+                        'fta_id'    => $fta->getId(),
+                        'payout_id' => $payout->getId(),
+                    ]);
+
+                return;
+            }
+
+            $mutexKey = 'fta_create_mutex_key_'.$payout->getId();
+
+            return $this->app['api.mutex']->acquireAndRelease(
+                $mutexKey,
+                function() use ($payout, $ftaAccount,$ftaCreateStartTime){
+
+                    $this->trace->info(
+                        TraceCode::FTA_MUTEX_ACQUIRED,
+                        [
+                            'payout_id'         => $payout->getId(),
+                            'merchant_id'       => $payout->getMerchantId(),
+                        ]);
+
+                    $this->createFundTransferAttemptProcess($payout, $ftaAccount, $ftaCreateStartTime);
+                },
+                self::FTA_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_FTA_ALREADY_BEING_PROCESSED);
+        }
+
+        $this->createFundTransferAttemptProcess($payout, $ftaAccount, $ftaCreateStartTime);
+    }
+
+    public function fetchSplitzExperiment(string $merchantID, string $experimentID): bool
+    {
+        try {
+            $properties = [
+                "id" => $merchantID,
+                "experiment_id" => $experimentID,
+                'request_data'  => json_encode(['merchant_id' => $merchantID])
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variables = $response['response']['variant']['variables'];
+
+            foreach ($variables as $variable) {
+                if ($variable['key'] == "result" && $variable['value'] == "on") {
+                    return true;
+                }
+            }
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::DOUBLE_FTA_SPLITZ_EXPERIMENT_FETCH_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return false;
     }
 
     protected function modifyFTAInputForCARDModeIfRequired(array $ftaInput)
