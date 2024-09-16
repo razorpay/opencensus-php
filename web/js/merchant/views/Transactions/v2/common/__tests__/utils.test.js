@@ -346,6 +346,20 @@ describe('utils', () => {
       expect(result).toBe(true);
     });
 
+    test('should return true for SG user', () => {
+      const splitz = {
+        abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
+      };
+      const user = {
+        isOrgCurlec: false,
+        isOrgRZP: true,
+        isSGCountry: true,
+        isFeatureEnabled: jest.fn(() => false),
+      };
+      const result = isTransactionsV2Enabled(splitz, user);
+      expect(result).toBe(true);
+    });
+
     test('should return false for Optimizer raas feature check', () => {
       const splitz = {
         abExperiments: { Transactions_Revamp: { variables: { result: 'on' } } },
