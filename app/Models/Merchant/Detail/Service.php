@@ -1689,7 +1689,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function editMerchantDetails($id, array $input)
+    public function editMerchantDetails($merchantId, array $input)
     {
         $slackAction = null;
 
@@ -1712,10 +1712,31 @@ class Service extends Base\Service
             $admin->hasMerchantActionPermissionOrFail($action);
         }
 
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input, $slackAction)
+                {
+                    return $this->handleEditMerchantDetails($merchantId, $input, $slackAction);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+
+        } else {
+
+            return $this->handleEditMerchantDetails($merchantId, $input, $slackAction);
+        }
+    }
+
+    private function handleEditMerchantDetails($merchantId, $input, $slackAction)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         // if merchant is PGOS onboarded and editing fields which are owned by PGOS throw an exception
-        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($id, $merchant->getCountry());
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
 
         $inputKeys = array_keys($input);
 

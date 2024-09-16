@@ -3902,6 +3902,108 @@ class CoreTest extends TestCase
 
     }
 
+    public function testEditMerchantDetailsWithoutMutex()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+                       ->willReturn(false);
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $input = [
+            Entity::BUSINESS_DESCRIPTION => "Testing",
+        ];
+
+        $this->assertEquals(false, $merchantDetails->islocked());
+
+        $response = $detailService->editMerchantDetails($merchantDetails->merchant->getId(), $input);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+        $this->assertArrayHasKey('activation_status', $response);
+        $this->assertArrayHasKey('contact_name', $response);
+        $this->assertArrayHasKey('locked', $response);
+        $this->assertArrayHasKey('contact_email', $response);
+
+        $this->assertEquals('Testing', $response['business_description']);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals('Testing', $merchantDetailData['business_description']);
+
+    }
+
+    public function testEditMerchantDetailsWithMutex()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+                       ->willReturn(true);
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $input = [
+            Entity::BUSINESS_DESCRIPTION => "Testing",
+        ];
+
+        $this->assertEquals(false, $merchantDetails->islocked());
+
+        $response = $detailService->editMerchantDetails($merchantDetails->merchant->getId(), $input);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+        $this->assertArrayHasKey('activation_status', $response);
+        $this->assertArrayHasKey('contact_name', $response);
+        $this->assertArrayHasKey('locked', $response);
+        $this->assertArrayHasKey('contact_email', $response);
+
+        $this->assertEquals('Testing', $response['business_description']);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals('Testing', $merchantDetailData['business_description']);
+
+    }
+
     // Below test case is to check that the merchant(registered) should not go from nc to amp
     // if he has been in Nc already
 
