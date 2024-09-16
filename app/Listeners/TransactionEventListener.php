@@ -29,7 +29,7 @@ class TransactionEventListener
         {
             $rand = rand(1,500000);
 
-            if ($rand > 100000)
+            if ($rand > 50000)
             {
                 return;
             }
@@ -45,6 +45,11 @@ class TransactionEventListener
                 $requestCtx = app('request.ctx');
 
                 $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow();
+            }
+
+            if ($isDualWriteFlow === true)
+            {
+                return;
             }
 
             $input = [
@@ -80,6 +85,13 @@ class TransactionEventListener
 
         try
         {
+            $rand = rand(1,500000);
+
+            if ($rand > 50000)
+            {
+                return;
+            }
+            
             if (app()->runningInQueue() === true)
             {
                 $workerCtx = app('worker.ctx');
@@ -91,6 +103,11 @@ class TransactionEventListener
                 $requestCtx = app('request.ctx');
 
                 $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow();
+            }
+
+            if ($isDualWriteFlow === true)
+            {
+                return;
             }
 
             $input = [

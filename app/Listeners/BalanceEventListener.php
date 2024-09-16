@@ -28,7 +28,7 @@ class BalanceEventListener
         {
             $rand = rand(1,500000);
 
-            if ($rand > 100000)
+            if ($rand > 50000)
             {
                 return;
             }
@@ -44,6 +44,11 @@ class BalanceEventListener
                 $requestCtx = app('request.ctx');
 
                 $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow();
+            }
+
+            if ($isDualWriteFlow === true)
+            {
+                return;
             }
 
             $input = [
@@ -78,6 +83,13 @@ class BalanceEventListener
 
         try
         {
+            $rand = rand(1,500000);
+
+            if ($rand > 50000)
+            {
+                return;
+            }
+
             if (app()->runningInQueue() === true)
             {
                 $workerCtx = app('worker.ctx');
@@ -89,6 +101,11 @@ class BalanceEventListener
                 $requestCtx = app('request.ctx');
 
                 $isDualWriteFlow = $requestCtx->getLedgerDualWriteFlow();
+            }
+
+            if ($isDualWriteFlow === true)
+            {
+                return;
             }
 
             $input = [
