@@ -834,7 +834,19 @@ trait Authorize
                             }
                             else if ($payment->getGateway() !== GATEWAY::PAYSECURE)
                             {
-                                $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
+                                try {
+                                    $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
+                                } catch (\Throwable $e)
+                                {
+                                    $this->trace->error(
+                                        TraceCode::ALT_ID_FETCH_ERROR,
+                                        [
+                                            'message'       => 'Failed to fetch alt id data'
+                                        ]
+                                    );
+                                    throw new Exception\BadRequestException(TraceCode::ALT_ID_FETCH_ERROR, $e);
+                                }
+
                             }
                         }
                  }
@@ -1174,8 +1186,20 @@ trait Authorize
 
         $cardCore = new Card\Core;
         $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment, $currentTerminal);
+        try{
+            $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput, $payment);
+        } catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::ALT_ID_FETCH_ERROR,
+                [
+                    'message'       => 'Failed to fetch alt id data'
+                ]
+            );
+            return $e;
+        }
 
-        $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput, $payment);
+
 
         // saving data in card entity for future use
         if(isset($altIdData['token']) && isset($altIdData['alt_id'])){

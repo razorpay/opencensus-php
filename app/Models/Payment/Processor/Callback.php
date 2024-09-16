@@ -565,10 +565,22 @@ trait Callback
                      {
 
                         $input['card']['number'] =  (new Card\CardVault)->getCardNumber($payment->card->GetVaultToken(), $payment->card->toArray(), $payment->getGateway());
+                        try{
+                            $this->fetchAltIdData($input, $gatewayInput, $payment, $input);
+                        } catch (\Throwable $e)
+                        {
+                            $this->trace->error(
+                                TraceCode::ALT_ID_FETCH_ERROR,
+                                [
+                                    'message'       => 'Failed to fetch alt id data'
+                                ]
+                            );
+                            throw new Exception\BadRequestException(TraceCode::ALT_ID_FETCH_ERROR, $e);
+                        }
 
-                        $this->fetchAltIdData($input, $gatewayInput, $payment, $input);
 
-                        // Storing alt id data in cache
+
+                         // Storing alt id data in cache
                         if ($input['card']['trivia'] == '2'  && isset($input['alt_id_data']))
                         {
                             $keyAltId = $this->getAltIdCacheKey($input);
