@@ -15,7 +15,7 @@ import {
 import { trackTransactionsTabClick } from 'merchant/views/Transactions/v2/common/tracking';
 import React from 'react';
 import { connect } from 'react-redux';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 import { StyledHeading } from './styled';
 import { EntitiesOverviewProps } from './types';
@@ -25,7 +25,7 @@ const { FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE, REFUNDS, BATCH_REFUNDS, BATCH_R
   TransactionsEntityRoute;
 
 const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JSX.Element => {
-  const shouldShowHeading = [FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE].includes(
+  const shouldShowHeading = [FAILED_PAYMENTS, SUCCESS_RATE].includes(
     pathname as TransactionsEntityRoute,
   );
   const shouldShowOverview = [
@@ -37,16 +37,19 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
   const entityAnalyticsType =
     pathname === FAILED_PAYMENTS ? EntityOverviewType.Failed : EntityOverviewType.Refunds;
   const { isConfigTagEnabled } = useI18Service();
+  const navigate = useNavigate();
+
+  const goBackProps = pathname === DISPUTES ? { onClickCb: () => navigate('/payments') } : {};
 
   return (
     <div className="tabbed-container">
-      <GoBack />
+      <GoBack {...goBackProps} />
       {shouldShowOverview ? <EntityAnalytics type={entityAnalyticsType} /> : null}
       {shouldShowHeading ? (
         <StyledHeading id="transactions-header">
           <Heading size="medium">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
         </StyledHeading>
-      ) : (
+      ) : pathname !== DISPUTES ? (
         <StyledTabHeader id="transactions-header">
           <ShowWhen
             additionalCondition={(usr) =>
@@ -72,7 +75,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
             </StyledTabItem>
           </ShowWhen>
         </StyledTabHeader>
-      )}
+      ) : null}
       <StyledContent className="content transactions-content">
         <ErrorBoundary resetOnProps>
           <Outlet />

@@ -31,6 +31,7 @@ import {
   isTrustedBadgeAllowed,
   shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { isDisputesRevampV2Enabled } from 'merchant/views/Transactions/v2/Disputes/utils';
 import {
   canViewCashAdvanceProduct,
   canViewLOCEMIProduct,
@@ -116,6 +117,12 @@ const BatchRefundsList = lazy(() =>
 
 const DisputesList = lazy(() =>
   import(/* webpackChunkName: "DisputesList" */ 'merchant/views/Transactions/v1/Disputes/List'),
+);
+
+const DisputesListV2 = lazy(() =>
+  import(
+    /* webpackChunkName: "DisputesList" */ 'merchant/views/Transactions/v2/Disputes/DisputeList'
+  ),
 );
 
 const OrdersList = lazy(() =>
@@ -677,6 +684,11 @@ class Content extends Component {
     );
   };
 
+  checkIsDisputesRevampV2Enabled = () => {
+    const { splitz, user } = this.props;
+    return isDisputesRevampV2Enabled(splitz, user);
+  };
+
   setBaseLocation = (location) => {
     const blacklistedDetailsRoutes = ['/payments/:id', '/refunds/:id'];
     let matchDetailsRoute;
@@ -812,6 +824,8 @@ class Content extends Component {
     const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
     const isPosSalesAgent = this.checkIfPosSalesAgent();
     const isAssistedOnboardingUser = this.checkIfAssistedOnboardingUser();
+    const isDisputesRevampV2Enabled = this.checkIsDisputesRevampV2Enabled();
+
     return (
       <Suspense fallback={<Loader />}>
         <Routes location={this.baseLocation}>
@@ -1061,7 +1075,7 @@ class Content extends Component {
                     usr.isAllowedView('refunds') && !isConfigTagEnabled('disputes.disputes')
                   }
                 >
-                  <DisputesList />
+                  {isDisputesRevampV2Enabled ? <DisputesListV2 /> : <DisputesList />}
                 </RouteGuard>
               }
             />

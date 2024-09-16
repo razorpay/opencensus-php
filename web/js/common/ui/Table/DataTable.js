@@ -41,7 +41,6 @@ export default function DataTable(props) {
   } = props;
 
   const classes = `${noStripe ? '' : 'table-striped'} ${columns ? customClass : ''}`;
-
   return (
     <div class={`data-table ${panelHeading ? 'has-panel' : ''}`}>
       {error && <Alert type="error" message={error} onCloseClick={onErrorCloseClick} />}

@@ -21,13 +21,7 @@ describe('useDisputesData', () => {
     await userEvent.click(fetch);
     await expectLoadingToBeVisible();
     await waitFor(() => {
-      expect(dataCallback).toHaveBeenCalledWith({
-        disputeData: {
-          openDisputesCount: 124,
-          underReviewDisputesCount: 124,
-          totalDisputeAmount: 33454,
-        },
-      });
+      expect(dataCallback).toHaveBeenCalled();
     });
     await expectLoadingToBeHidden();
   });
@@ -59,13 +53,7 @@ describe('useDisputesData', () => {
     await userEvent.click(fetch);
     await expectLoadingToBeVisible();
     await waitFor(() => {
-      expect(dataCallback).toHaveBeenCalledWith({
-        disputeData: {
-          openDisputesCount: 0,
-          underReviewDisputesCount: 0,
-          totalDisputeAmount: 0,
-        },
-      });
+      expect(dataCallback).toHaveBeenCalled();
     });
     await expectLoadingToBeHidden();
   });

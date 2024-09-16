@@ -1,27 +1,28 @@
 import React from 'react';
+import { Box, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { SelfServeActionPages } from 'common/constant/enums';
+import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
 // eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
 import { getTime } from 'common/ui/item';
 import {
+  amount,
+  createdAt as createdAtProperty,
   disputeId,
   paymentId,
-  amount,
   status,
-  createdAt as createdAtProperty,
 } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
-import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { daysFromToday, getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import {
@@ -31,6 +32,7 @@ import {
 import { makeIdLink as disputeMakeIdLink } from 'merchant/views/Transactions/v1/Disputes/Utils';
 import DisputeListFilter from 'merchant/views/Transactions/v1/Disputes/components/DisputeListFilter';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
+import { DISPUTES_NO_DATA_FOUND_TEXT } from 'merchant/views/Transactions/v2/Disputes/constants';
 import { headerActionTarget } from 'merchant/views/Transactions/v2/common/constants';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
@@ -77,9 +79,7 @@ const daysLeftInExpiry = (expiresOn) => {
 };
 
 const EmptyComponent = () => {
-  return (
-    <EmptyList description={<div>No disputes found for the selected duration and criteria!</div>} />
-  );
+  return <EmptyList description={<div>{DISPUTES_NO_DATA_FOUND_TEXT}</div>} />;
 };
 
 const type = {
@@ -104,21 +104,29 @@ class Dispute extends ListContainer {
       <div className="content-wrapper">
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction responsive target={headerActionTarget}>
-          <ShowWhen
-            additionalCondition={(user) =>
-              user?.isOrgAllowedFunctionality('external_links') &&
-              !isOrgFeatureExist('hide_razorpay_text_link')
-            }
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            marginBottom="spacing.7"
           >
-            <a
-              className="btn btn-link"
-              href={getCustomURL('https://razorpay.com/docs/payments/disputes/')}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Heading size="medium">Disputes</Heading>
+            <ShowWhen
+              additionalCondition={(user) =>
+                user?.isOrgAllowedFunctionality('external_links') &&
+                !isOrgFeatureExist('hide_razorpay_text_link')
+              }
             >
-              Guide to Dispute
-            </a>
-          </ShowWhen>
+              <a
+                className="btn btn-link"
+                href={getCustomURL('https://razorpay.com/docs/payments/disputes/')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Guide to Dispute
+              </a>
+            </ShowWhen>
+          </Box>
         </HeaderAction>
         <DisputeListFilter
           form="DisputeListFilter"

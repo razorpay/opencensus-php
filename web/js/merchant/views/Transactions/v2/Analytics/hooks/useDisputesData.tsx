@@ -12,18 +12,39 @@ import {
 import { Duration } from 'merchant/views/Transactions/v2/common/types';
 
 export default function useDisputesData({ mode }: { mode: Environments }): DisputeDataHookResponse {
-  const [openDisputesCount, setOpenDisputesCount] = useState<DisputeTypeState>({
-    value: 0,
+  const [openDisputes, setOpenDisputes] = useState<DisputeTypeState>({
+    count: 0,
+    amount: 0,
     loading: false,
     failed: false,
   });
-  const [underReviewDisputesCount, setUnderReviewDisputesCount] = useState<DisputeTypeState>({
-    value: 0,
+  const [underReviewDisputes, setUnderReviewDisputes] = useState<DisputeTypeState>({
+    count: 0,
+    amount: 0,
     loading: false,
     failed: false,
   });
-  const [totalDisputeAmount, setTotalDisputeAmount] = useState<DisputeTypeState>({
-    value: 0,
+  const [wonDisputes, setWonDisputes] = useState<DisputeTypeState>({
+    count: 0,
+    amount: 0,
+    loading: false,
+    failed: false,
+  });
+  const [lostDisputes, setLostDisputes] = useState<DisputeTypeState>({
+    count: 0,
+    amount: 0,
+    loading: false,
+    failed: false,
+  });
+  const [closedDisputes, setClosedDisputes] = useState<DisputeTypeState>({
+    count: 0,
+    amount: 0,
+    loading: false,
+    failed: false,
+  });
+  const [totalDispute, setTotalDispute] = useState<DisputeTypeState>({
+    count: 0,
+    amount: 0,
     loading: false,
     failed: false,
   });
@@ -46,9 +67,10 @@ export default function useDisputesData({ mode }: { mode: Environments }): Dispu
         failed: false,
       }));
     },
-    onSuccess: (data: DisputeAPIResponse, { setState, dataField }) => {
+    onSuccess: (data: DisputeAPIResponse, { setState }) => {
       setState({
-        value: data[dataField] || 0,
+        count: data.count || 0,
+        amount: data.disputed_amount_sum || 0,
         loading: false,
         failed: false,
       });
@@ -68,36 +90,79 @@ export default function useDisputesData({ mode }: { mode: Environments }): Dispu
         ...duration,
         status: 'open',
       },
-      setState: setOpenDisputesCount,
-      dataField: 'count',
+      setState: setOpenDisputes,
     });
     fetchDisputes({
       params: {
         ...duration,
         status: 'under_review',
       },
-      setState: setUnderReviewDisputesCount,
-      dataField: 'count',
+      setState: setUnderReviewDisputes,
+    });
+    fetchDisputes({
+      params: {
+        ...duration,
+        status: 'won',
+      },
+      setState: setWonDisputes,
+    });
+    fetchDisputes({
+      params: {
+        ...duration,
+        status: 'lost',
+      },
+      setState: setLostDisputes,
+    });
+    fetchDisputes({
+      params: {
+        ...duration,
+        status: 'closed',
+      },
+      setState: setClosedDisputes,
     });
     fetchDisputes({
       params: {
         ...duration,
       },
-      setState: setTotalDisputeAmount,
-      dataField: 'disputed_amount_sum',
+      setState: setTotalDispute,
     });
   };
 
   return {
     fetchDisputesData,
     disputeData: {
-      openDisputesCount: openDisputesCount.value,
-      underReviewDisputesCount: underReviewDisputesCount.value,
-      totalDisputeAmount: totalDisputeAmount.value,
+      totalDisputeAmount: totalDispute.amount - closedDisputes.amount,
+      totalDisputesCount: totalDispute.count - closedDisputes.count,
+      openDisputes: {
+        count: openDisputes.count,
+        amount: openDisputes.amount,
+      },
+      underReviewDisputes: {
+        count: underReviewDisputes.count,
+        amount: underReviewDisputes.amount,
+      },
+      wonDisputes: {
+        count: wonDisputes.count,
+        amount: wonDisputes.amount,
+      },
+      lostDisputes: {
+        count: lostDisputes.count,
+        amount: lostDisputes.amount,
+      },
     },
     loading:
-      openDisputesCount.loading || underReviewDisputesCount.loading || totalDisputeAmount.loading,
+      openDisputes.loading ||
+      underReviewDisputes.loading ||
+      wonDisputes.loading ||
+      lostDisputes.loading ||
+      closedDisputes.loading ||
+      totalDispute.loading,
     failed:
-      openDisputesCount.failed || underReviewDisputesCount.failed || totalDisputeAmount.failed,
+      openDisputes.failed ||
+      underReviewDisputes.failed ||
+      wonDisputes.failed ||
+      lostDisputes.failed ||
+      closedDisputes.failed ||
+      totalDispute.failed,
   };
 }

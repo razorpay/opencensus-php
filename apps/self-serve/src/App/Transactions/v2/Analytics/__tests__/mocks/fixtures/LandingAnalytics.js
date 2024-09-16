@@ -89,8 +89,10 @@ jest.mock('apps/self-serve/src/App/Transactions/v2/Analytics/hooks', () => ({
   }),
   useDisputesData: () => ({
     disputeData: {
-      openDisputesCount: 323,
-      underReviewDisputesCount: 24,
+      openDisputes: { count: 2, amount: 100 },
+      underReviewDisputes: { count: 3, amount: 4 },
+      wonDisputes: { count: 4, amount: 5 },
+      lostDisputes: { count: 21, amount: 30 },
       totalDisputeAmount: 234,
     },
     fetchDisputesData: mockFetchDisputesData,

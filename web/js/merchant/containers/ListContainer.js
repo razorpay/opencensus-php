@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 // utils
 import { getURLQueryParams, stringifyQueryParams } from 'common/utils/rzp-utils';
 import { trimDeep } from 'common/utils/validators';
+import { isDisputesRevampV2Enabled } from 'merchant/views/Transactions/v2/Disputes/utils';
 
 class ListContainer extends Component {
   static SKIP = 0;
@@ -101,7 +102,8 @@ class ListContainer extends Component {
     }
 
     if (pathname === '/disputes' && !params?.from && !params?.to) {
-      params.from = moment().add(-90, 'd').startOf('day').unix();
+      const days = isDisputesRevampV2Enabled(this.props.splitz, this.props.user) ? -7 : -90;
+      params.from = moment().add(days, 'd').startOf('day').unix();
       params.to = moment().endOf('day').unix();
     }
 

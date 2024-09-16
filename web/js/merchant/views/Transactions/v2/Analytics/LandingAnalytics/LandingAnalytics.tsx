@@ -60,7 +60,11 @@ const LandingAnalytics = ({
   } = usePaymentsData({ isRefundPendingEnabled });
   const {
     fetchDisputesData,
-    disputeData: { openDisputesCount, totalDisputeAmount, underReviewDisputesCount },
+    disputeData: {
+      openDisputes: { count: openDisputesCount },
+      totalDisputeAmount,
+      underReviewDisputes: { count: underReviewDisputesCount },
+    },
     loading: isDisputeDataLoading,
     failed: isDisputeDataFailed,
   } = useDisputesData({

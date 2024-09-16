@@ -666,6 +666,7 @@ export const splitzConfig: SplitzInitConfig = {
         INVOICES,
         `${PAYMENTS}/:id`,
         `${REFUNDS}/:id`,
+        `${DISPUTES}/:id`,
       ],
       abExperiments: [
         {
@@ -721,6 +722,22 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'OH6P4bLoL8lgSh',
             production: 'OH6XOpF0HzXGUH',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'Disputes_Revamp_V2',
+          experimentId: {
+            beta: 'NMqWLS3CYxKkBg',
+            production: 'NMt4EHe96Igguy',
           },
           defaultVariant: {
             name: 'variables',

@@ -279,21 +279,20 @@ const DisputeDetails = (props) => {
                 </EntityDetailRow>
 
                 {/* status of dispute */}
-                <EntityDetailRow label="Status">
-                  <DisputeStatusLabel status={dispute.status} />
-                  {dispute.amount_deducted > 0 && (
-                    <div class="alert alert-info status-alert">
-                      <div class="rzp-banner-text">
-                        <p>
-                          <Amount value={dispute.amount_deducted} currency={dispute.currency} /> has
-                          been debited from your Razorpay account balance
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </EntityDetailRow>
               </div>
-
+              <EntityDetailRow label="Status">
+                <DisputeStatusLabel status={dispute.status} />
+                {dispute.amount_deducted > 0 && (
+                  <div class="alert alert-info status-alert">
+                    <div class="rzp-banner-text">
+                      <p>
+                        <Amount value={dispute.amount_deducted} currency={dispute.currency} /> has
+                        been debited from your Razorpay account balance
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </EntityDetailRow>
               {/* expiry date of dispute */}
               <EntityDetailRow label="Respond By">
                 {isDisputeOpen ? (

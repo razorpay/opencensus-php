@@ -622,8 +622,11 @@ export default class InvoiceLineItem extends React.Component {
                   {selectedOption.tax_inclusive ? '' : '+ '}
                   <Amount
                     value={
-                      calculateTax(lineItemTotalFloat, cess / TAX_DIVISOR, selectedOption.tax_inclusive) *
-                      100
+                      calculateTax(
+                        lineItemTotalFloat,
+                        cess / TAX_DIVISOR,
+                        selectedOption.tax_inclusive,
+                      ) * 100
                     }
                     currency={invoiceCurrency}
                   />

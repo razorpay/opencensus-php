@@ -23,14 +23,23 @@ export enum EnvironmentsModes {
   TEST = 'test',
 }
 
-export type DisputeDataResponse = {
-  openDisputesCount: number;
-  underReviewDisputesCount: number;
-  totalDisputeAmount: number;
+type PhaseInfoType = {
+  count: number;
+  amount: number;
 };
 
+export interface DisputeDataResponse {
+  totalDisputeAmount: number;
+  totalDisputesCount: number;
+  openDisputes: PhaseInfoType;
+  underReviewDisputes: PhaseInfoType;
+  wonDisputes: PhaseInfoType;
+  lostDisputes: PhaseInfoType;
+}
+
 export type DisputeTypeState = {
-  value: number;
+  count: number;
+  amount: number;
   loading: boolean;
   failed: boolean;
 };
@@ -380,5 +389,4 @@ export interface SuccessRateRequestPayload {
 export interface FetchDisputesData {
   params: { status?: string; from: number; to: number };
   setState: Dispatch<SetStateAction<DisputeTypeState>>;
-  dataField: string;
 }

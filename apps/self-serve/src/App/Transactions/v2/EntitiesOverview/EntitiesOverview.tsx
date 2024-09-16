@@ -26,7 +26,7 @@ const { FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE, REFUNDS, BATCH_REFUNDS, BATCH_R
   TransactionsEntityRoute;
 
 const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JSX.Element => {
-  const shouldShowHeading = [FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE].includes(
+  const shouldShowHeading = [FAILED_PAYMENTS, SUCCESS_RATE].includes(
     pathname as TransactionsEntityRoute,
   );
   const shouldShowOverview = [
@@ -38,44 +38,35 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
   const entityAnalyticsType =
     pathname === FAILED_PAYMENTS ? EntityOverviewType.Failed : EntityOverviewType.Refunds;
   const { isConfigTagEnabled } = useI18Service();
+  const navigate = useNavigate();
+  const goBackProps = pathname === DISPUTES ? { onClickCb: () => navigate('/payments') } : {};
 
   return (
     <div className="tabbed-container">
-      <GoBack />
+      <GoBack {...goBackProps} />
       {shouldShowOverview ? <EntityAnalytics type={entityAnalyticsType} /> : null}
       {shouldShowHeading ? (
         <StyledHeading id="transactions-header">
           <Heading size="medium">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
         </StyledHeading>
-      ) : (
+      ) : pathname !== DISPUTES ? (
         <StyledTabHeader id="transactions-header">
           <ShowWhen
-            additionalCondition={(usr: any) =>
+            additionalCondition={(usr) =>
               usr.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
             }
           >
-            <StyledTabItem
-              to={REFUNDS}
-              onClick={trackTransactionsTabClick(REFUNDS)}
-              replace
-              end
-              state={{
-                prevPath: pathname,
-              }}
-            >
+            <StyledTabItem to={REFUNDS} onClick={trackTransactionsTabClick(REFUNDS)} replace end>
               Refunds
             </StyledTabItem>
           </ShowWhen>
           <ShowWhen
-            additionalCondition={(usr: any) =>
+            additionalCondition={(usr) =>
               usr.isAllowedView('refunds_batch_uploads') && !isConfigTagEnabled('refunds.refund')
             }
           >
             <StyledTabItem
               to={BATCH_REFUNDS}
-              state={{
-                prevPath: pathname,
-              }}
               onClick={trackTransactionsTabClick(BATCH_REFUNDS)}
               replace
               className={[BATCH_REFUNDS_UPLOAD, BATCH_REFUNDS].includes(pathname) ? 'active' : ''}
@@ -84,7 +75,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
             </StyledTabItem>
           </ShowWhen>
         </StyledTabHeader>
-      )}
+      ) : null}
       <StyledContent className="content transactions-content">
         <ErrorBoundary resetOnProps>
           <Outlet />

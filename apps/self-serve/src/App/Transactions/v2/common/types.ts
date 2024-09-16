@@ -5,6 +5,7 @@ export enum Page {
   FAILED_PAYMENTS = 'failed payments',
   REFUNDS = 'refunds',
   ORDERS = 'orders',
+  DISPUTES = 'disputes',
 }
 
 export enum View {
