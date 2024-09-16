@@ -506,6 +506,13 @@ class CardVault extends Base\Core
             ]);
             $input['authentication_data'] = $tokenInput['authentication'];
         }
+        else if(empty($tokenInput['authentication']) === false && empty($tokenInput['authentication']['authentication_reference_number']) === false)
+        {
+            if((new TokenCore)->isNetworkAmex($input[Entity::CARD]))
+            {
+                $input['authentication_data'] = $tokenInput['authentication'];
+            }
+        }
 
         $input = $this->setMerchantDetails($input, $merchant);
 
@@ -571,6 +578,11 @@ class CardVault extends Base\Core
         if ((empty($cardInput['authentication_reference_number']) === false)
             && ($this->shouldPanSourceChangeForMigration($cardInput, $merchant, $card)==true))
         {
+            $input['authentication_data'] = [
+                'authentication_reference_number' => $cardInput['authentication_reference_number'],
+            ];
+        }
+        if($card->isAmex() === true){
             $input['authentication_data'] = [
                 'authentication_reference_number' => $cardInput['authentication_reference_number'],
             ];

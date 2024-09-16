@@ -2025,7 +2025,10 @@ class Core extends Base\Core
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
 
         }
-
+        else if ($this->isNetworkAmex($input[Entity::CARD]))
+        {
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AMEX, $input);
+        }
         else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
@@ -2377,6 +2380,10 @@ class Core extends Base\Core
         if ($this->isNetworkRuPay($input[Entity::CARD]) && (empty($input[Token\Entity::AUTHENTICATION]) === false))
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_RUPAY, $input[Token\Entity::AUTHENTICATION]);
+        }
+        else if ($this->isNetworkAmex($input[Entity::CARD]) && (empty($input[Token\Entity::AUTHENTICATION]) === false))
+        {
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_AMEX, $input[Token\Entity::AUTHENTICATION]);
         }
         else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
         {
@@ -2768,6 +2775,15 @@ class Core extends Base\Core
         $networkName = Card\Network::getFullName($network);
 
         return ($networkName === Card\Network::$fullName[Card\Network::RUPAY]);
+    }
+
+
+    public function isNetworkAmex($card)
+    {
+        $iin =  substr($card['number'] ?? 0, 0, 6);
+        $network = Card\Network::detectNetwork($iin);
+        $networkName = Card\Network::getFullName($network);
+        return ($networkName === Card\Network::$fullName[Card\Network::AMEX]);
     }
 
     /**

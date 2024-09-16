@@ -22,9 +22,11 @@ class Validator extends Base\Validator
     const CREATE_DIRECT                                 = 'create_direct';
     const CREATE_NETWORK_TOKEN                          = 'create_network_token';
     const CREATE_NETWORK_TOKEN_RUPAY                    = 'create_network_token_rupay';
+    const CREATE_NETWORK_TOKEN_AMEX                    = 'create_network_token_amex';
     const CREATE_NETWORK_CARD                           = 'create_network_card';
     const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA       = 'create_network_token_authentication_data';
     const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_RUPAY = 'create_network_token_authentication_data_rupay';
+    const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_AMEX = 'create_network_token_authentication_data_amex';
     const FETCH_CRYPTOGRAM                              = 'fetch_cryptogram';
     const FETCH_TOKEN                                   = 'fetch_token';
     const DELETE_TOKEN                                  = 'delete_token';
@@ -126,6 +128,15 @@ class Validator extends Base\Validator
         'via_push_provisioning'      => 'sometimes|boolean'
     ];
 
+    protected static $createNetworkTokenAmexRules = [
+        Entity::CARD                 => 'required|array',
+        Entity::CUSTOMER_ID          => 'sometimes|public_id',
+        Entity::METHOD               => 'required|in:card',
+        Entity::AUTHENTICATION       => 'sometimes',
+        Entity::NOTES                => 'sometimes|notes',
+        'via_push_provisioning'      => 'sometimes|boolean'
+    ];
+
     protected static $createNetworkCardRules = [
         'number'       => 'required',
         'expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
@@ -147,6 +158,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $createNetworkTokenAuthenticationDataRupayRules = [
+        "provider"                        => "sometimes|string",
+        "provider_reference_id"           => "sometimes|string",
+        "authentication_reference_number" => "sometimes|string",
+    ];
+
+    protected static $createNetworkTokenAuthenticationDataAmexRules = [
         "provider"                        => "sometimes|string",
         "provider_reference_id"           => "sometimes|string",
         "authentication_reference_number" => "sometimes|string",
