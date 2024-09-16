@@ -419,6 +419,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const GatewayTerminalId = 'gateway_terminal_id';
     const DeviceId          = 'device_id';
 
+    const REFUND_UNEXPECTED_PAYMENT = 'refund_unexpected_payment';
+
     protected $fillable = [
         self::ID,
         self::AMOUNT,
@@ -557,6 +559,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD,
         self::REWARD_ID,
         self::GST_QR, // Added here to support entry in dummy payment array for routing
+        self::REFUND_UNEXPECTED_PAYMENT,
     ];
 
     protected $public = [

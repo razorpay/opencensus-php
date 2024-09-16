@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
-
+use Mockery;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -11,6 +11,7 @@ use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
+use RZP\Services\SplitzService;
 
 class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 {
@@ -961,6 +962,115 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
         $this->assertTrue($response['success']);
 
         $payment = $this->getLastEntity('payment', true);
+    }
+
+    public function testDuplicateUnexpectedPayment_ART()
+    {
+        // Random paymentID
+        $paymentID          = 'Op6QwYA1SGl2A8';
+        $unexpectedContent  = $this->buildUnexpectedPaymentRequest();
+
+        $unexpectedContent['payment']['amount']     = '50000';
+        $merchantReference = $unexpectedContent['upi']['merchant_reference'];
+
+        $this->mockServerContentFunction(function(& $content) use($paymentID, $merchantReference)
+        {
+            $content['entities'][0]['payment_id']           = $paymentID;
+            $content['entities'][0]['gateway']              = $this->gateway;
+            $content['entities'][0]['amount']               = (int)($this->payment['amount']);
+            $content['entities'][0]['merchant_reference']   = $merchantReference;
+        });
+
+        // Mock Fetch request to pg router
+        $this->pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
+            {
+                if ($method === 'GET') {
+                    return [
+                        'body' => [
+                            "data" => [
+                                "payment" => [
+                                    'id' => 'Op6QwYA1SGl2A8',
+                                    'amount' => '50000',
+                                    'currency' => 'INR',
+                                    'status' => 'captured',
+                                    'order_id' => NULL,
+                                    'invoice_id' => NULL,
+                                    'international' => FALSE,
+                                    'method' => 'upi',
+                                    'amount_refunded' => 0,
+                                    'refund_status' => NULL,
+                                    'captured' => TRUE,
+                                    'description' => 'random description',
+                                    'card_id' => NULL,
+                                    'bank' => NULL,
+                                    'wallet' => NULL,
+                                    'vpa' => 'test@okhdfcbank',
+                                    'email' => 'a@b.com',
+                                    'contact' => '+919918899029',
+                                    'notes' => [
+                                        'merchant_order_id' => 'random order id',
+                                    ],
+                                    'fee' => 1000,
+                                    'tax' => 0,
+                                    'reference_2' => '599962',
+                                    'created_at' => 1614252933,
+                                    'authorized_at' => 1614252933,
+                                    'merchant_id' => '10000000000000'
+                                ]
+                            ]
+                        ],
+                    ];
+                }
+
+                if ($method === 'POST')
+                {
+                    return [];
+                }
+            });
+
+       // Mock Save request to pg router
+        $this->pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure) {
+
+                $this->assertEquals($data['refund_unexpected_payment'], true);
+                    return [];
+            });
+
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $expectedTreatment = "variant_on";
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($expectedTreatment) {
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => $expectedTreatment,
+                        ],
+                    ],
+                ];
+            });
+
+        // Hitting the unexpected payment create request
+        $this->makeRequestAndCatchException(function() use ($unexpectedContent) {
+            $request = [
+                'url'       => '/payments/create/upi/unexpected',
+                'method'    => 'POST',
+                'content'   => $unexpectedContent,
+            ];
+
+            $this->ba->appAuth();
+
+            return $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Duplicate Unexpected payment with same amount');
     }
 
     /**

@@ -17950,6 +17950,7 @@ class Route
             'post_force_authorize_payments',
             'feature_get_all_internal',
             'order_fetch_by_id',
+            'payment_create_upi_unexpected',
         ],
 
         'freshdesk_webhook' => [

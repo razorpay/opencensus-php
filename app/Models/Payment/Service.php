@@ -100,6 +100,7 @@ use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\GenericDocument\Service as DocumentService;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
+use RZP\Services\UpiPayment\Constants as UpsConstants;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\GenericDocument\Constants as GenericDocumentConstants;
@@ -6559,6 +6560,11 @@ class Service extends Base\Service
                 }
             }
 
+            if ($this->shouldProcessUpsUnexpectedPayment($gateway) === true)
+            {
+                $this->processUpsUnexpectedPayment($input);
+            }
+
             $response = $this->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
 
             if (empty($response['payment_id']) === false)
@@ -8925,4 +8931,157 @@ class Service extends Base\Service
         return false;
     }
 
+    /** processes unexpected preprocess logic for rearch payments
+     * @param array $input
+     * @return void
+     * @throws BadRequestException
+     */
+    protected function processUpsUnexpectedPayment(array $input)
+    {
+        $customerReference = $input['upi']['npci_reference_id'];
+
+        $gateway = $input['terminal']['gateway'];
+
+        $merchantReference = $input['upi']['merchant_reference'];
+
+        $requiredColumns = [
+            UpsConstants::CUSTOMER_REFERENCE,
+            UpsConstants::MERCHANT_REFERENCE,
+            UpsConstants::PAYMENT_ID,
+            UpsConstants::AMOUNT,
+            UpsConstants::GATEWAY,
+        ];
+
+        $upsEntities = $this->app['upi.payments']->fetchAuthorizeEntityViaRRN($customerReference, $requiredColumns) ?? [];
+
+        if (count($upsEntities) == 0)
+        {
+            return;
+        }
+
+        // filter the records to contain the records with gateway
+        $upsEntities = array_values(array_filter($upsEntities, function ($row)  use ($gateway)
+        {
+            return $row[UpsConstants::GATEWAY] === $gateway;
+        }));
+
+        if (($this->shouldUseMerchantReferenceForUnexpectedPayment($gateway) === true) and
+            (empty($merchant_reference) === false))
+        {
+            // filter the records to contain the records with merchant_reference
+            $upsEntities = array_values(array_filter($upsEntities, function ($row)  use ($merchantReference)
+            {
+                return $row[UpsConstants::MERCHANT_REFERENCE] === $merchantReference;
+            }));
+        }
+
+        if ((empty($upsEntities) === false) and (count($upsEntities) > 1))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [
+                    'payment_id'        => null,
+                    'npci_reference_id' => $customerReference,
+                    'gateway'           => $gateway,
+                ],
+                'Multiple payments with same RRN'
+            );
+        }
+
+        if ((empty($upsEntities) === false) and (count($upsEntities) === 1))
+        {
+            if ($upsEntities[0]['amount'] === (int)($input['payment']['amount']))
+            {
+                $unexpectedPaymentId = $upsEntities[0][UpsConstants::PAYMENT_ID];
+
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($unexpectedPaymentId);
+
+                }
+                catch (\Throwable $exception){}
+
+                $this->setRefundAtInRecon($payment);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    [
+                        'payment_id'        => $unexpectedPaymentId,
+                        'npci_reference_id' => $customerReference,
+                        'gateway'           => $gateway,
+                    ],
+                    'Duplicate Unexpected payment with same amount'
+                );
+            }
+        }
+    }
+
+    /** sets refundAt in recon flow
+     * @param Entity $payment
+     * @return void
+     */
+    protected function setRefundAtInRecon(Entity $payment)
+    {
+        if ((in_array($payment->getMerchantId(), self::$demoAccounts, false) === false) or
+            ($payment->isUpi() === false) or
+            ($payment->isExternal() === false))
+        {
+            return;
+        }
+
+        if (empty($payment->getRefundAt()) === true)
+        {
+            $payment->setRefundAt(Carbon::now()->getTimestamp());
+
+            $payment->setAttribute(Entity::REFUND_UNEXPECTED_PAYMENT, true);
+
+            $this->repo->saveOrFail($payment);
+        }
+    }
+
+    /**
+     * Checks if gateway is enabled for create unexpected payment on rearch
+     * for identifying unexpected payments
+     * @param string $gateway
+     * @return bool
+     */
+    private function shouldProcessUpsUnexpectedPayment(string $gateway): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.ups_unexpected_payment_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'gateway' => $gateway,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPS_UNEXPECTED_PAYMENT_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
 }
