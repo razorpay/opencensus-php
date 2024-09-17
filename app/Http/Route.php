@@ -18323,6 +18323,8 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
+            'merchant_nc_revamp_eligibility',
+            'merchant_activation_clarifications_fetch',
             'merchant_activation_business_categories',
             'merchant_activation_needs_clarification',
             'fd_create_ticket',
