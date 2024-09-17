@@ -82,7 +82,7 @@ class QrGatewayModule
             ],
         ];
 
-        if (empty($notes['payment_context'] === false))
+        if (empty($notes['payment_context']) === false)
         {
             $input['metadata']['payment_context'] = strtoupper($notes['payment_context']);
         }
