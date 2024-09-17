@@ -1,10 +1,15 @@
 import React, { useContext } from 'react';
 import { Amount, Box, Divider, Text, BoxProps } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-
 import PosCatalogPartnerExclusivePrice from 'assets/partner-dashboard/PosCatalogPartnerExclusivePrice.svg';
+
 import { useSplitzService } from 'common/splitz';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
+import {
+  OFFER_CARDS_STRUCT,
+  SOUNDBOX,
+  WD_10_OFFER_CARDS_STRUCT,
+} from 'merchant/views/POS/constants/index';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { getProductFromProductDescriptions, fetchProductOffers } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
@@ -46,7 +51,7 @@ const ProductPriceCards = ({
 
   if (!product || !product.pricing) return null;
 
-  const { pricing, offer } = product;
+  const { pricing, offer, rentalDiscountPeriod } = product;
   const isPartnerPricing = product?.isPartnerPricing;
   return (
     <Box>
@@ -99,11 +104,16 @@ const ProductPriceCards = ({
                 position="relative"
                 display="flex"
                 flexDirection="column"
-                justifyContent="center"
                 borderRadius="large"
               >
                 {isShowOfferPriceCard ? (
-                  <OfferPriceCardContent pricing={pricing} />
+                  <OfferPriceCardContent
+                    pricing={pricing}
+                    offers={
+                      productCode === SOUNDBOX.code ? WD_10_OFFER_CARDS_STRUCT : OFFER_CARDS_STRUCT
+                    }
+                    rentalDiscountPeriod={rentalDiscountPeriod}
+                  />
                 ) : (
                   <React.Fragment>
                     {breakups.map(({ key, value, description }, index) => (

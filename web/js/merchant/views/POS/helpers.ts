@@ -26,6 +26,8 @@ import {
   AGREEMENT_COMPONENT,
   DEVICE_CATALOG_COMPONENT,
   DEVICE_SELECTION_STEP,
+  SOUNDBOX,
+  STANDEEANDSTICKER,
 } from './constants';
 import {
   CartItem,
@@ -46,6 +48,10 @@ import {
   ModularOnboardingStep,
   WorkflowConfig,
   ModularOnboardingStepComponent,
+  RateConfig,
+  PricingBreakupkeys,
+  PricingTypes,
+  DeviceMetaData,
 } from './types';
 
 export const isValidFee = (value: number | null | undefined): boolean => {
@@ -165,6 +171,22 @@ export const getCartItemTotal = ({
   };
 };
 
+export const getOrderQuantityError = ({
+  currQuantity,
+  maxQuantity,
+  errMsg,
+}: {
+  currQuantity: number;
+  maxQuantity: number | null;
+  errMsg: string;
+}): string => {
+  if (!errMsg) return '';
+  if (maxQuantity && currQuantity && currQuantity >= maxQuantity) {
+    return errMsg;
+  }
+  return '';
+};
+
 export const saveCartInBrowserStorage = ({
   cartItems,
   userId,
@@ -187,6 +209,65 @@ export const getCartFromLocalStorage = ({ userId }: { userId: string }): CartIte
   return filteredValidCartItems;
 };
 
+type GetPricingValuesReturnType = {
+  value: number;
+  prevValue: number | null;
+  nextValue: number;
+};
+type GetPricingValues = {
+  rateConfig: RateConfig;
+  offerConfig?: OfferConfig | null;
+  planType: PricingTypes;
+  breakupKey: PricingBreakupkeys;
+};
+const getPricingValues = ({
+  rateConfig,
+  offerConfig,
+  planType,
+  breakupKey,
+}: GetPricingValues): GetPricingValuesReturnType => {
+  const plan = rateConfig?.plans.find((plan) => plan.plan_name === planType);
+  const getNextValue = () => {
+    if (planType === 'lifetime') return plan?.one_time_charge ?? 0;
+    if (planType === 'monthly') {
+      if (breakupKey === 'monthly') return plan?.rental_charges ?? 0;
+      if (breakupKey === 'setup_fee') return plan?.setup_fee ?? 0;
+      if (breakupKey === 'lifetime') return plan?.one_time_charge ?? 0;
+    }
+    return 0;
+  };
+  return {
+    value: getNextValue(),
+    prevValue: offerConfig ? offerConfig?.preRateConfig[breakupKey] : null,
+    nextValue: getNextValue(),
+  };
+};
+
+type GetFilteredPricing = {
+  deviceConfig: {
+    name: string;
+    code: string;
+    entity_type?: string;
+    rate_config: {
+      monthly: number;
+      lifetime: number;
+      setup_fee: number;
+    };
+    metadata?: DeviceMetaData;
+  };
+  pricing: ProductDescriptionPricing[];
+};
+const getFilteredPricing = ({
+  pricing,
+  deviceConfig,
+}: GetFilteredPricing): ProductDescriptionPricing[] => {
+  const availablePlans = deviceConfig.metadata?.rate_config_v2?.plans;
+  const result = pricing.filter((pricingPlan) => {
+    return availablePlans?.find((plan) => pricingPlan.type === plan.plan_name);
+  });
+  return result;
+};
+
 type GetProductDescriptionWithPricingPlan = {
   productCode: string;
   pricingPlanDict: ProductPricingMap;
@@ -204,29 +285,53 @@ export const getProductDescriptionWithPricingPlan = ({
     return null;
   }
   const pricing = productDescription?.pricing;
+  const filteredPricingPlans = getFilteredPricing({
+    pricing,
+    deviceConfig: productPricingWithValues,
+  });
+  const shouldReadFromRateConfigV2 =
+    !!productPricingWithValues?.metadata?.rate_config_v2?.plans?.length;
   if (pricing) {
-    const newPricingWithValue = pricing.map((plan) => {
-      const { breakups } = plan;
-      const newBreakups = breakups.map((breakup) => {
+    const newRentalDiscountPeriod = shouldReadFromRateConfigV2
+      ? productPricingWithValues?.metadata?.rate_config_v2?.rental_discount_periods
+      : productDescription.rentalDiscountPeriod;
+    const newPricingWithValue = (shouldReadFromRateConfigV2 ? filteredPricingPlans : pricing).map(
+      (plan) => {
+        const { breakups } = plan;
+        const newBreakups = breakups.map((breakup) => {
+          if (productPricingWithValues?.metadata?.rate_config_v2?.plans?.length) {
+            return {
+              ...breakup,
+              ...getPricingValues({
+                rateConfig: productPricingWithValues.metadata.rate_config_v2,
+                offerConfig: offerConfigForProduct,
+                planType: plan.type,
+                breakupKey: breakup.key,
+              }),
+            };
+          }
+          return {
+            ...breakup,
+            value: productPricingWithValues?.rate_config?.[breakup.key] ?? 0,
+            prevValue: offerConfigForProduct
+              ? offerConfigForProduct?.preRateConfig[breakup.key]
+              : null,
+            nextValue: offerConfigForProduct
+              ? offerConfigForProduct?.nextRateConfig[breakup.key]
+              : null,
+          };
+        });
         return {
-          ...breakup,
-          value: productPricingWithValues?.rate_config?.[breakup.key] ?? 0,
-          prevValue: offerConfigForProduct
-            ? offerConfigForProduct?.preRateConfig[breakup.key]
-            : null,
-          nextValue: offerConfigForProduct
-            ? offerConfigForProduct?.nextRateConfig[breakup.key]
-            : null,
+          ...plan,
+          breakups: newBreakups,
         };
-      });
-      return {
-        ...plan,
-        breakups: newBreakups,
-      };
-    }, []);
+      },
+      [],
+    );
     return {
       ...productDescription,
       pricing: newPricingWithValue,
+      rentalDiscountPeriod: newRentalDiscountPeriod ?? 0,
       offer: offerConfigForProduct
         ? {
             offerText: offerConfigForProduct.offerText ?? null,
@@ -244,13 +349,20 @@ export const getProductDescriptionWithPricingPlan = ({
 type ConstructProductDescription = {
   pricingPlanDict: ProductPricingMap;
   offerConfig?: Record<string, OfferConfig> | null;
+  isSoundboxEnabled?: boolean;
 };
 
 export const constructProductDescription = ({
   pricingPlanDict,
   offerConfig,
+  isSoundboxEnabled,
 }: ConstructProductDescription): ProductDescription[] => {
-  const availableProducts = Object.keys(PRODUCT_DESCRIPTIONS);
+  let availableProducts = Object.keys(PRODUCT_DESCRIPTIONS);
+  if (!isSoundboxEnabled) {
+    availableProducts = availableProducts.filter(
+      (productCode) => productCode !== SOUNDBOX.code && productCode !== STANDEEANDSTICKER.code,
+    );
+  }
   const productDescriptions = availableProducts
     .map((productCode) =>
       getProductDescriptionWithPricingPlan({
@@ -260,8 +372,12 @@ export const constructProductDescription = ({
       }),
     )
     .filter(Boolean);
-
   return productDescriptions as ProductDescription[];
+};
+
+export const isItemPresentInCart = (productCode: string, cartItems: CartItem[]): boolean => {
+  if (!cartItems?.length) return false;
+  return !!cartItems.find((item) => item.code === productCode);
 };
 
 type GetProductFromCart = {
@@ -281,15 +397,15 @@ type UpdateCartQuantity = {
   cart: CartItem[];
   type: Omit<UpdateCartTypes, 'TOGGLE_PLAN'>;
   product: Product;
+  maxOrder?: number | null | undefined;
 };
 
-const updateCartQuantity = ({ cart, type, product }: UpdateCartQuantity): CartItem[] => {
+const updateCartQuantity = ({ cart, type, product, maxOrder }: UpdateCartQuantity): CartItem[] => {
   let newQuantity = 0;
   const cartItem = getProductFromCart({ cart, product });
   const { productCode, plan } = product;
   const currentQuantity = cartItem?.quantity ?? 0;
   const { ADD_TO_CART, INCREASE_QUANTITY, DECREASE_QUANTITY, REMOVE_ITEM } = UPDATE_CART_ACTIONS;
-
   if ((type === ADD_TO_CART && !cartItem) || !currentQuantity) {
     const newCartItem = {
       quantity: 1,
@@ -298,9 +414,12 @@ const updateCartQuantity = ({ cart, type, product }: UpdateCartQuantity): CartIt
     };
     return [...cart, newCartItem];
   }
-
   if (type === INCREASE_QUANTITY || (type === ADD_TO_CART && cartItem)) {
-    newQuantity = currentQuantity + 1;
+    if (maxOrder && currentQuantity && currentQuantity >= maxOrder) {
+      newQuantity = maxOrder;
+    } else {
+      newQuantity = currentQuantity + 1;
+    }
   }
   if (type === DECREASE_QUANTITY) {
     newQuantity = currentQuantity - 1;
@@ -382,18 +501,18 @@ type UpdateCart = {
   cart: CartItem[];
   type: UpdateCartTypes;
   product: Product;
+  maxOrder?: number | null;
 };
 
-export const updateCart = ({ cart, type, product }: UpdateCart): CartItem[] => {
+export const updateCart = ({ cart, type, product, maxOrder }: UpdateCart): CartItem[] => {
   const { ADD_TO_CART, INCREASE_QUANTITY, DECREASE_QUANTITY, REMOVE_ITEM, TOGGLE_PLAN } =
     UPDATE_CART_ACTIONS;
-
   switch (type) {
     case ADD_TO_CART:
     case INCREASE_QUANTITY:
     case DECREASE_QUANTITY:
     case REMOVE_ITEM:
-      return updateCartQuantity({ cart, type, product });
+      return updateCartQuantity({ cart, type, product, maxOrder });
     case TOGGLE_PLAN:
       return toggleProductPlan({ cart, product });
     default:
@@ -871,6 +990,40 @@ export const getProductFromProductDescriptions = ({
   productDescriptions,
 }: GetProductFromProductDescriptions): ProductDescription | null => {
   return productDescriptions.find(({ code: productCode }) => productCode === code) ?? null;
+};
+
+type GetAvailablePricingPlansReturnType = {
+  hasMonthlyPlan: boolean;
+  hasLifetimePlan: boolean;
+};
+export const getAvailablePricingPlans = (
+  productDescription: ProductDescription | null,
+): GetAvailablePricingPlansReturnType => {
+  if (!productDescription) return { hasMonthlyPlan: false, hasLifetimePlan: false };
+  let hasMonthlyPlan = false;
+  let hasLifetimePlan = false;
+  productDescription.pricing.forEach((plan) => {
+    if (plan.type === 'monthly') {
+      hasMonthlyPlan = true;
+    } else if (plan.type === 'lifetime') {
+      hasLifetimePlan = true;
+    }
+  });
+  return { hasMonthlyPlan, hasLifetimePlan };
+};
+
+type GetInitialPlan = {
+  productDescription: ProductDescription | null;
+};
+
+type GetInitialPlanReturnType = PricingTypes;
+export const getInitialPlan = ({
+  productDescription,
+}: GetInitialPlan): GetInitialPlanReturnType => {
+  const { hasLifetimePlan, hasMonthlyPlan } = getAvailablePricingPlans(productDescription);
+  if (!hasLifetimePlan && !hasMonthlyPlan) return 'free'; //device is for free
+  if (hasLifetimePlan && !hasMonthlyPlan) return 'lifetime';
+  return 'monthly';
 };
 
 type GetOrderPricingFromOrderDetails = {

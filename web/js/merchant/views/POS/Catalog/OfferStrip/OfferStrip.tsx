@@ -8,6 +8,8 @@ type OfferStripProps = {
   type?: 'light' | 'dark';
   variant?: 'offer' | 'info';
   isPartnerPricing?: boolean;
+  isRounded?: boolean;
+  size?: 'small' | 'large';
 };
 
 type getOfferTextAndColorProps = {
@@ -45,9 +47,17 @@ const OfferStrip = ({
   type = 'light',
   variant = 'offer',
   isPartnerPricing = false,
-}: OfferStripProps): JSX.Element => {
+  isRounded = false,
+  size = 'large',
+}: OfferStripProps): JSX.Element | null => {
+  if (!text) return null;
   return (
-    <OfferStripContainer type={type} isPartnerPricing={isPartnerPricing}>
+    <OfferStripContainer
+      size={size}
+      isRounded={isRounded}
+      type={type}
+      isPartnerPricing={isPartnerPricing}
+    >
       {variant === 'offer' ? (
         <OffersIcon
           color={getOfferAndInfoIconColor({ type, isPartnerPricing })}
@@ -61,7 +71,12 @@ const OfferStrip = ({
           marginRight="spacing.3"
         />
       )}
-      <Text color={getOfferTextColor({ type, isPartnerPricing })} size="small" weight="semibold">
+      <Text
+        testID="offer-strip-text"
+        color={getOfferTextColor({ type, isPartnerPricing })}
+        size="small"
+        weight="semibold"
+      >
         {text}
       </Text>
     </OfferStripContainer>

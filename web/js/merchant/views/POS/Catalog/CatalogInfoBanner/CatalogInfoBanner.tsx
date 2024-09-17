@@ -33,6 +33,9 @@ const CatalogInfoBanner = (): JSX.Element => {
       justifyContent="center"
       marginBottom="spacing.5"
       ref={foldRef}
+      maxWidth="1300px"
+      marginLeft="auto"
+      marginRight="auto"
     >
       <Box
         minHeight="400px"

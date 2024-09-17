@@ -92,6 +92,7 @@ export const PosDeviceStoreProvider = ({
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { abExperiments } = useSplitzService();
+  const isSoundboxEnabled = abExperiments?.pos_onboarding?.variables?.soundboxEnabled === 'on';
   const offersInfo = fetchProductOffers({ abExperiments });
 
   const onFetchProductPricing = (
@@ -103,6 +104,7 @@ export const PosDeviceStoreProvider = ({
       const productDescriptions = constructProductDescription({
         pricingPlanDict: configs,
         offerConfig,
+        isSoundboxEnabled,
       });
 
       dispatch({

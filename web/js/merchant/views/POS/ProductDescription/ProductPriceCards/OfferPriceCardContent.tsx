@@ -8,6 +8,8 @@ import { ProductDescriptionPricing } from 'merchant/views/POS/types';
 type OfferPriceCardContentProps = {
   pricing: ProductDescriptionPricing;
   showHeaders?: boolean;
+  offers?: Record<string, any[]>;
+  rentalDiscountPeriod: number;
 };
 
 type CurrencyTypes = 'INR';
@@ -15,6 +17,8 @@ type CurrencyTypes = 'INR';
 const OfferPriceCardContent = ({
   pricing,
   showHeaders = true,
+  offers = OFFER_CARDS_STRUCT,
+  rentalDiscountPeriod,
 }: OfferPriceCardContentProps): JSX.Element => {
   const { name, type } = pricing;
   const { state } = useContext(PosDeviceStoreContext);
@@ -28,9 +32,11 @@ const OfferPriceCardContent = ({
         </Text>
       ) : null}
       <Box>
-        {OFFER_CARDS_STRUCT?.[type].map((offerObj, index) => {
+        {offers?.[type].map((offerObj, index) => {
           const offerPricing = offerObj.pricing(pricing);
-
+          const rentalPeriodTxt = offerObj.text(rentalDiscountPeriod);
+          //null is added to hide the first 3 months offer line if rental_discount_period is 0 in api response
+          if (rentalPeriodTxt === null) return null;
           return (
             <Box
               display="flex"
@@ -66,7 +72,7 @@ const OfferPriceCardContent = ({
                     weight="semibold"
                   />
                 ) : null}
-                {offerObj.text}
+                {offerObj.text(rentalDiscountPeriod)}
               </Text>
             </Box>
           );

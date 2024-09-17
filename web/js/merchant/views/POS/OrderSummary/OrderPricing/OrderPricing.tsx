@@ -23,16 +23,20 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
 
   const totalAmountDetailedPricing = (pricing?.orderedDevices ?? []).map(
     ({ productDescription, deviceTotal, plan, quantity }) => ({
-      title: `${productDescription.productTitle} | ${PLAN_NAME_MAPPINGS[plan]} (Qty: ${quantity})`,
+      title: PLAN_NAME_MAPPINGS[plan]
+        ? `${productDescription.productTitle} | ${PLAN_NAME_MAPPINGS[plan]} (Qty: ${quantity})`
+        : `${productDescription.productTitle} (Qty: ${quantity})`,
       value: deviceTotal ?? 0,
     }),
   );
 
   const totalRentalAmountDetailedPricingWithOffers = (pricing?.rentalDevicesWithOffer ?? []).map(
-    ({ productDescription, rentalAmount, plan, quantity }) => ({
+    ({ productDescription, plan, quantity }) => ({
       title: ` ${PLAN_NAME_MAPPINGS[plan]} - ${productDescription.productTitle} X ${quantity}`,
-      value: rentalAmount ?? 0,
-      subTitle: `first 3 months`,
+      value: 0,
+      subTitle: `first ${productDescription.rentalDiscountPeriod} ${
+        productDescription.rentalDiscountPeriod > 1 ? 'months' : 'month'
+      }`,
     }),
   );
 
@@ -42,7 +46,9 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
       title: ` ${PLAN_NAME_MAPPINGS[plan]} - ${productDescription.productTitle} X ${quantity}`,
       value: nextRentalAmount as number,
       prevValue: prevRetalAmount,
-      subTitle: `post 3 months`,
+      subTitle: `post ${productDescription.rentalDiscountPeriod} ${
+        productDescription.rentalDiscountPeriod > 1 ? 'months' : 'month'
+      }`,
     }));
 
   const totalRentalAmountDetailedPricing = (pricing?.rentalDevices ?? []).map(
@@ -88,6 +94,7 @@ const OrderPricing = ({ pricing }: OrderPricingProps): JSX.Element => {
             type="body"
             size="large"
             weight="semibold"
+            testID="total-order-price"
           />
         }
       />

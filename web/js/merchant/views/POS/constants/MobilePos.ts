@@ -47,7 +47,7 @@ const MOBILE_POS: ProductDescription = {
   productTitle: 'Mobile POS (mPOS)',
   description:
     'Android and iOS compatible | PCI PTS 5.x Certified | USB Port for high-speed data transmission |  128 x 64 pixels LCD Display',
-  maxOrder: 0,
+  maxOrder: null,
   cartImage: CartImage,
   pricing: [
     {
@@ -184,6 +184,8 @@ const MOBILE_POS: ProductDescription = {
     },
   ],
   offer: null,
+  shouldShowProductVarietyTable: true,
+  rentalDiscountPeriod: 3,
 };
 
 export default MOBILE_POS;

@@ -28,18 +28,18 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       });
       await expect(
         page
-          .getByTestId('android-mini-pos-product-card')
+          .getByTestId('android-smart-mini-pos-product-card')
           .getByText('Android Smart Mini POS', { exact: true }),
       ).toBeVisible();
 
       await expect(
         page
-          .getByTestId('android-mini-pos-product-card')
+          .getByTestId('android-smart-mini-pos-product-card')
           .getByText('Limited Time Offer till 31st May'),
       ).toBeVisible();
 
       await expect(page.getByText('Feature packed and portable')).toBeVisible();
-      const mobilePosProductCart = page.getByTestId('mobile-pos-product-card');
+      const mobilePosProductCart = page.getByTestId('mobile-pos-(mpos)-product-card');
       await expect(mobilePosProductCart).toContainText('Mobile POS (mPOS)');
       await expect(page.getByText('Pocket-sized and affordable')).toBeVisible();
     });
@@ -64,14 +64,14 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       expect(cartItem).not.toBeVisible();
       await page.getByLabel('cart close button').click();
 
-      const mobilePos = page.getByTestId('mobile-pos-product-card');
+      const mobilePos = page.getByTestId('mobile-pos-(mpos)-product-card');
       await mobilePos.getByText('Add to cart').click();
-      const mobilePosCartItem = page.getByTestId(`${DEVICE_CODES.mobilePos}-monthly-cart-item`);
+      const mobilePosCartItem = page.getByTestId(`${DEVICE_CODES.mobilePos}-lifetime-cart-item`);
       //TODO:: cart item plan change assertion
       await expect(mobilePosCartItem.getByTestId('quantity-value')).toHaveText('1');
       await page.getByLabel('cart close button').click();
 
-      const miniPos = page.getByTestId('android-mini-pos-product-card');
+      const miniPos = page.getByTestId('android-smart-mini-pos-product-card');
       await miniPos.getByText('Add to cart').click();
       const miniPosCartItem = page.getByTestId(`${DEVICE_CODES.androidMiniPos}-monthly-cart-item`);
       await expect(miniPosCartItem.getByTestId('quantity-value')).toHaveText('1');
@@ -97,7 +97,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
 
       await page.getByText('Catalog').click();
 
-      const mobilePos = page.getByTestId('mobile-pos-product-card');
+      const mobilePos = page.getByTestId('mobile-pos-(mpos)-product-card');
       await mobilePos.getByText('Learn More').click();
       await expect(page.getByText(PDP_CONTENT[DEVICE_CODES.mobilePos].subtitle)).toBeVisible();
       await expect(page.getByTestId('pdp-title')).toHaveText(
@@ -105,7 +105,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       );
       await page.getByText('Catalog').click();
 
-      const miniPos = page.getByTestId('android-mini-pos-product-card');
+      const miniPos = page.getByTestId('android-smart-mini-pos-product-card');
       await miniPos.getByText('Learn More').click();
       await expect(page.getByText(PDP_CONTENT[DEVICE_CODES.androidMiniPos].subtitle)).toBeVisible();
       await expect(page.getByTestId('pdp-title')).toHaveText(
@@ -172,7 +172,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
 
       await page.getByTestId('pos-cart-overlay').click();
 
-      const mposAddToCartBtn = page.getByTestId('mobile-pos-product-card').getByText('Add');
+      const mposAddToCartBtn = page.getByTestId('mobile-pos-(mpos)-product-card').getByText('Add');
       await mposAddToCartBtn.click();
 
       const cartItem = page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-cart-item`);
@@ -188,7 +188,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(deviceCharges.getByText('Monthly Plan | (Qty: 1)')).toBeVisible();
 
       await expect(
-        deviceCharges.getByText('Mobile POS (mPOS) | Monthly Plan (Qty: 1)'),
+        deviceCharges.getByText('Mobile POS (mPOS) | Lifetime Plan (Qty: 1)'),
       ).toBeVisible();
 
       await expect(page.getByText('Shipping')).toBeVisible();
@@ -198,13 +198,8 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await expect(
         rentalCharges.getByText('Monthly Plan - Android Smart POS X 1').nth(1),
       ).toBeVisible();
-
-      await expect(
-        rentalCharges.getByText('Mobile POS (mPOS) | Monthly Plan (Qty: 1)'),
-      ).toBeVisible();
-
-      await expect(rentalCharges.getByText('first 3 months')).toBeVisible();
-      await expect(rentalCharges.getByText('post 3 months')).toBeVisible();
+      await expect(rentalCharges.getByText(/first \d+ months?/)).toBeVisible();
+      await expect(rentalCharges.getByText(/post \d+ months?/)).toBeVisible();
       await expect(rentalCharges.getByText('MDR (%)')).toBeVisible();
 
       await expect(page.getByText('Renewal')).toBeVisible();
@@ -277,9 +272,16 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await page.getByText('Place Order').click();
 
       await page.getByText('Confirm Address & Pay').click();
-      await expect(
-        page.getByText('By clicking on Confirm, your order will be placed!'),
-      ).toBeVisible();
+      const totalOrderPrice = await page.getByTestId('total-order-price').innerText();
+      if (totalOrderPrice === '₹\n0') {
+        await expect(
+          page.getByText('By clicking on Confirm, your order will be placed!'),
+        ).toBeVisible();
+      } else {
+        await expect(
+          page.getByText('By clicking on Confirm, your order will be placed!'),
+        ).not.toBeVisible();
+      }
     });
   });
 
@@ -294,57 +296,55 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await page.getByText('Shop now').click();
       await expect(
         page
-          .getByTestId('android-mini-pos-product-card')
+          .getByTestId('android-smart-mini-pos-product-card')
           .getByText('Android Smart Mini POS', { exact: true }),
       ).toBeVisible();
     });
   });
 });
 
-test.describe.parallel(
-  'POS Device Store Order Details with order @flow=pos-device-ordering @project=payments',
-  () => {
-    test.use({
-      storageState: getStorageStatePath(BASE_PATH).POS_ORDER_DETAILS_LOGIN_STATE,
-    });
+test.describe
+  .parallel('POS Device Store Order Details with order @flow=pos-device-ordering @project=payments', () => {
+  test.use({
+    storageState: getStorageStatePath(BASE_PATH).POS_ORDER_DETAILS_LOGIN_STATE,
+  });
 
-    test.skip('should render order listing screen for ordered items @flow=pos-device-ordering @project=pos-onboarding', async ({
-      page,
-    }) => {
-      await navigateTo(page, routes.POS);
-      await waitForPosCatalogToLoad({ page });
-      await page.getByText('Orders').click();
-      await page.waitForSelector('text=Your Orders');
-      await expect(page.getByText('Arriving by')).toBeVisible();
-      await expect(page.getByText('ORDER RECEIVED')).toBeVisible();
-      await page.getByText('View Order Details').click();
-      await page.waitForSelector('text=Arriving by');
-      const orderStatustimeline = page.getByTestId('order-status-timeline-container');
-      await expect(orderStatustimeline.getByText('Order Received')).toBeVisible();
-      await expect(orderStatustimeline.getByText('Order Confirmed')).toBeVisible();
-      await expect(orderStatustimeline.getByText('Delivered')).toBeVisible();
-      await expect(page.getByText('Shipping Address')).toBeVisible();
-      await expect(page.getByText('POS merchant')).toBeVisible();
-      await expect(page.getByText('razorpay sjr, adugodi, Bengaluru, KA-560066')).toBeVisible();
+  test.skip('should render order listing screen for ordered items @flow=pos-device-ordering @project=pos-onboarding', async ({
+    page,
+  }) => {
+    await navigateTo(page, routes.POS);
+    await waitForPosCatalogToLoad({ page });
+    await page.getByText('Orders').click();
+    await page.waitForSelector('text=Your Orders');
+    await expect(page.getByText('Arriving by')).toBeVisible();
+    await expect(page.getByText('ORDER RECEIVED')).toBeVisible();
+    await page.getByText('View Order Details').click();
+    await page.waitForSelector('text=Arriving by');
+    const orderStatustimeline = page.getByTestId('order-status-timeline-container');
+    await expect(orderStatustimeline.getByText('Order Received')).toBeVisible();
+    await expect(orderStatustimeline.getByText('Order Confirmed')).toBeVisible();
+    await expect(orderStatustimeline.getByText('Delivered')).toBeVisible();
+    await expect(page.getByText('Shipping Address')).toBeVisible();
+    await expect(page.getByText('POS merchant')).toBeVisible();
+    await expect(page.getByText('razorpay sjr, adugodi, Bengaluru, KA-560066')).toBeVisible();
 
-      const merchantContactContainer = page.getByTestId('merchant-contact-container');
-      await expect(merchantContactContainer.getByText('+913999233214')).toBeVisible();
-      await expect(merchantContactContainer.getByText('omnitest@gmail.com')).toBeVisible();
-    });
+    const merchantContactContainer = page.getByTestId('merchant-contact-container');
+    await expect(merchantContactContainer.getByText('+913999233214')).toBeVisible();
+    await expect(merchantContactContainer.getByText('omnitest@gmail.com')).toBeVisible();
+  });
 
-    test.skip('should show order confirmation screen with confirmation content @flow=pos-device-ordering @project=pos-onboarding', async ({
-      page,
-    }) => {
-      await navigateTo(page, routes.POS);
-      await waitForPosCatalogToLoad({ page });
-      await page.getByText('Orders').click();
-      await page.waitForSelector('text=Your Orders');
-      await navigateTo(page, `/app/pos/order-status/NBrJW3mPg4xfGY`);
-      await page.waitForSelector('text=Your order is successfully placed!');
-      await expect(page.getByText('NBrJW3mPg4xfGY')).toBeVisible();
-      await expect(page.getByText('has successfully been placed with us')).toBeVisible();
-      await page.getByText('View Orders').click();
-      await page.waitForSelector('text=Your Orders');
-    });
-  },
-);
+  test.skip('should show order confirmation screen with confirmation content @flow=pos-device-ordering @project=pos-onboarding', async ({
+    page,
+  }) => {
+    await navigateTo(page, routes.POS);
+    await waitForPosCatalogToLoad({ page });
+    await page.getByText('Orders').click();
+    await page.waitForSelector('text=Your Orders');
+    await navigateTo(page, `/app/pos/order-status/NBrJW3mPg4xfGY`);
+    await page.waitForSelector('text=Your order is successfully placed!');
+    await expect(page.getByText('NBrJW3mPg4xfGY')).toBeVisible();
+    await expect(page.getByText('has successfully been placed with us')).toBeVisible();
+    await page.getByText('View Orders').click();
+    await page.waitForSelector('text=Your Orders');
+  });
+});

@@ -1,20 +1,25 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
-import MiniPosMobile from 'assets/pos/main-banner/minipos-mobile.webp';
-import MPos from 'assets/pos/main-banner/mpos-mobile.webp';
-import { ANDROID_MINI_POS, MOBILE_POS } from 'merchant/views/POS/constants';
+import { useSplitzService } from 'common/splitz';
+import PosProductCard, { Variant } from 'merchant/views/POS/Catalog/ProductCards/PosProductCard';
+import PosProductCardMobile from 'merchant/views/POS/Catalog/ProductCards/PosProductCardMobile';
+import { ProductCardsContainer } from 'merchant/views/POS/Catalog/ProductCards/styles';
+import { SOUNDBOX, STANDEEANDSTICKER } from 'merchant/views/POS/constants';
+import { getAllPosProducts } from 'merchant/views/POS/constants/ProductCards';
+import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { ProductPlans } from 'merchant/views/POS/types';
 import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
-
-import AndroidMiniPos from './AndroidMiniPos';
-import MobileCardContainer from './MobileCardContainer';
-import MobilePos from './MobilePos';
-import { ProductCardsContainer } from './styles';
 
 const ProductCards = (): JSX.Element => {
   const { isMobile } = useBladeBreakpoints();
   const foldRef = React.useRef<HTMLDivElement>(null);
+  const { state } = useContext(PosDeviceStoreContext);
+  const { productDescriptions } = state;
+  const { abExperiments } = useSplitzService();
+  const isSoundboxEnabled = abExperiments?.pos_onboarding?.variables?.soundboxEnabled === 'on';
+  const soundboxProducts = [SOUNDBOX.code, STANDEEANDSTICKER.code];
 
   useScrollObserver(foldRef, () => {
     analytics.track_EXPERIMENTAL(SignUpEvents.pageSectionViewed, {
@@ -25,25 +30,76 @@ const ProductCards = (): JSX.Element => {
     });
   });
 
+  const getPosCatalog = () => {
+    if (!isSoundboxEnabled) {
+      return getAllPosProducts(productDescriptions, isMobile).filter(
+        (product) => !soundboxProducts.includes(product.productDescription?.code as string),
+      );
+    }
+    return getAllPosProducts(productDescriptions, isMobile);
+  };
+
   return (
     <ProductCardsContainer>
       {isMobile ? (
         <React.Fragment>
-          <MobileCardContainer
-            code={ANDROID_MINI_POS.code}
-            image={MiniPosMobile}
-            cardDescription="Feature packed and portable"
-          />
-          <MobileCardContainer
-            code={MOBILE_POS.code}
-            image={MPos}
-            cardDescription="Pocket Sized and Affordable"
-          />
+          {getPosCatalog().map(
+            ({
+              productDescription,
+              title,
+              description,
+              imageSrc,
+              tncText,
+              plan,
+              pricingDescription,
+              cta,
+              footer,
+            }) => (
+              <PosProductCardMobile
+                key={productDescription?.code}
+                productDescription={productDescription}
+                title={title}
+                description={description}
+                imageSrc={imageSrc}
+                tncText={tncText}
+                footer={footer}
+                cta={cta}
+                plan={plan as ProductPlans}
+                pricingDescription={pricingDescription}
+              />
+            ),
+          )}
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <AndroidMiniPos />
-          <MobilePos />
+          {getPosCatalog().map(
+            ({
+              productDescription,
+              title,
+              description,
+              imageSrc,
+              tncText,
+              plan,
+              variant,
+              pricingDescription,
+              cta,
+              footer,
+            }) => (
+              <PosProductCard
+                key={productDescription?.code}
+                productDescription={productDescription}
+                title={title}
+                description={description}
+                imageSrc={imageSrc}
+                tncText={tncText}
+                footer={footer}
+                cta={cta}
+                variant={variant as Variant}
+                plan={plan as ProductPlans}
+                pricingDescription={pricingDescription}
+              />
+            ),
+          )}
         </React.Fragment>
       )}
     </ProductCardsContainer>

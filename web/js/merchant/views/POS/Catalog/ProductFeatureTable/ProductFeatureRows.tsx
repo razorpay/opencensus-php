@@ -8,6 +8,7 @@ import {
   getPricingByProduct,
   getProductFromProductDescriptions,
   fetchProductOffers,
+  getAvailablePricingPlans,
 } from 'merchant/views/POS/helpers';
 import { Feature, ProductFeaturesColumn, ProductTableProduct } from 'merchant/views/POS/types';
 
@@ -41,36 +42,40 @@ const CustomRow = ({ feature, boxSize, code }): JSX.Element | null => {
       if (!product?.pricing) return null;
       const isPartnerPricing = product?.isPartnerPricing && !isOfferEnabled;
       const pricings = getPricingByProduct({ productDescription: product });
+      const { hasMonthlyPlan, hasLifetimePlan } = getAvailablePricingPlans(product);
+      const hasOnlyLifeTimePlan = hasLifetimePlan && !hasMonthlyPlan;
       const amountTextIntent = isPartnerPricing ? 'feedback.text.notice.intense' : undefined;
       return (
         <Box paddingX="spacing.5" height={`${BOX_SIZE_MAP[boxSize ?? 'medium']}px`}>
           <Text weight="regular" marginX="spacing.2" size="large">
-            Subscription Pricing:
+            {hasOnlyLifeTimePlan ? 'Subscription Pricing: NA' : 'Subscription Pricing:'}
           </Text>
-          <Text
-            weight="regular"
-            color={isPartnerPricing ? 'feedback.text.notice.intense' : 'surface.text.gray.normal'}
-            size="large"
-          >
-            <Amount
-              value={pricings.monthly}
-              suffix="none"
-              isAffixSubtle={false}
-              color={amountTextIntent}
-              type="body"
+          {!hasOnlyLifeTimePlan ? (
+            <Text
+              weight="regular"
+              color={isPartnerPricing ? 'feedback.text.notice.intense' : 'surface.text.gray.normal'}
               size="large"
-            />
-            /month +{' '}
-            <Amount
-              value={pricings.setupFee}
-              suffix="none"
-              isAffixSubtle={false}
-              color={amountTextIntent}
-              type="body"
-              size="large"
-            />{' '}
-            setup fee
-          </Text>
+            >
+              <Amount
+                value={pricings.monthly}
+                suffix="none"
+                isAffixSubtle={false}
+                color={amountTextIntent}
+                type="body"
+                size="large"
+              />
+              /month +{' '}
+              <Amount
+                value={pricings.setupFee}
+                suffix="none"
+                isAffixSubtle={false}
+                color={amountTextIntent}
+                type="body"
+                size="large"
+              />{' '}
+              setup fee
+            </Text>
+          ) : null}
           <Text weight="regular" marginX="spacing.2" size="large">
             Lifetime Pricing:{' '}
             <Amount

@@ -4,7 +4,11 @@ import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import { ACTIONS, UPDATE_CART_ACTIONS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
-import { getProductFromCart, updateCart } from 'merchant/views/POS/helpers';
+import {
+  getProductFromCart,
+  getProductFromProductDescriptions,
+  updateCart,
+} from 'merchant/views/POS/helpers';
 import { ProductPlans, Product as ProductType, ProductUpdateTypes } from 'merchant/views/POS/types';
 
 import CartItem from './CartItem';
@@ -17,7 +21,7 @@ type CartProps = {
 
 const Cart = ({ onCartUpdate, isCartModal, isOrderDetails }: CartProps): JSX.Element => {
   const { state, dispatch } = useContext(PosDeviceStoreContext);
-  const { cartItems } = state;
+  const { cartItems, productDescriptions } = state;
 
   const onPricingUpdate = (
     selectedPlan: ProductPlans,
@@ -32,11 +36,15 @@ const Cart = ({ onCartUpdate, isCartModal, isOrderDetails }: CartProps): JSX.Ele
       l1FunnelStage: 'Purchase Intention',
       l2FunnelStage: isCartModal ? 'Cart' : 'Pre-checkout - Edit Order',
     });
-
+    const productDescription = getProductFromProductDescriptions({
+      code: product.productCode,
+      productDescriptions,
+    });
     const newCartItems = updateCart({
       cart: cartItems,
       type: UPDATE_CART_ACTIONS.TOGGLE_PLAN,
       product,
+      maxOrder: productDescription?.maxOrder,
     });
 
     onCartUpdate?.(newCartItems);
@@ -85,7 +93,10 @@ const Cart = ({ onCartUpdate, isCartModal, isOrderDetails }: CartProps): JSX.Ele
       l1FunnelStage: 'Purchase Intention',
       l2FunnelStage: isCartModal ? 'Cart' : 'Pre-checkout - Edit Order',
     });
-
+    const productDescription = getProductFromProductDescriptions({
+      code: product.productCode,
+      productDescriptions,
+    });
     const newCartItems = updateCart({
       cart: cartItems,
       type:
@@ -93,6 +104,7 @@ const Cart = ({ onCartUpdate, isCartModal, isOrderDetails }: CartProps): JSX.Ele
           ? UPDATE_CART_ACTIONS.INCREASE_QUANTITY
           : UPDATE_CART_ACTIONS.DECREASE_QUANTITY,
       product,
+      maxOrder: productDescription?.maxOrder,
     });
     onCartUpdate?.(newCartItems);
     dispatch({

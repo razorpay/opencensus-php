@@ -1,4 +1,6 @@
 import { Theme } from '@razorpay/blade/components';
+import ConfettiMobile from 'assets/pos/confetti-mobile.webp';
+import Confetti from 'assets/pos/confetti.webp';
 import styled from 'styled-components';
 
 export const ProductCardsContainer = styled.div(
@@ -6,9 +8,12 @@ export const ProductCardsContainer = styled.div(
     width: 100%;
     display: block;
     gap: ${theme.spacing[5]}px;
-
+    display:grid;
+    max-width:1300px;
+    margin:auto;
     @media screen and (min-width: ${theme.breakpoints.xl + 100}px) {
-      display: flex;
+        grid-template-columns: 1fr 1fr;
+        justify-items: center;
     }
   `,
 );
@@ -41,6 +46,35 @@ export const ProductCardLeftImageAnimate = styled.div(
   position: absolute;
   bottom: ${isOfferExits ? '-5px' : '0px'};
   left: 0;
+  `,
+);
+
+export const PosProductCardContainer = styled.div(
+  ({ theme, isHovered, hasFooter }: { theme: Theme; isHovered: boolean; hasFooter: boolean }) => `
+    width: 100%;
+    min-height:385px;
+    min-width: 100px;
+    background-color: ${theme.colors.surface.background.gray.subtle};
+    position: relative;
+    border-radius: ${theme.border.radius.large}px;
+    overflow: hidden;
+    box-shadow: ${isHovered ? theme.elevation.highRaised : 'none'};
+    transition: box-shadow ease 0.5s;
+    margin-bottom: ${theme.spacing[5]}px;
+    display:flex;
+    flex-direction:column;
+    padding-bottom:${!hasFooter ? '60px' : '0px'};
+  `,
+);
+
+export const PosProductCardLeftImageAnimate = styled.div(
+  ({ isHovered, variant }: { isHovered: boolean; variant: string }) => `
+  max-width: 540px;
+  width:100%;
+  position: relative;
+  transform: scale(${isHovered ? '1.03' : '1'});
+  transition: transform ease 0.5s;
+  transform-origin: bottom ${variant === 'left' ? 'left' : 'right'};
   `,
 );
 
@@ -159,7 +193,7 @@ export const StyledProductCardImage = styled.img(
   max-height: 500px;
 
   @media screen and (min-width: ${theme.breakpoints.m}px) {
-    max-height: 350px;
+    max-height: 420px;
   }
 `,
 );
@@ -177,5 +211,25 @@ export const MobileEllpise = styled.div(
   position: absolute;
   transform: rotate(7.869deg);
   z-index:0;
+  `,
+);
+
+export const StyledCardFooter = styled.div(
+  ({ theme, isMobile }: { theme: Theme; isMobile?: boolean }) => `
+  width:100%;
+  min-height:70px;
+  z-index:4;
+  background-image:url(${Confetti});
+  background-size: cover; 
+  background-position: center;
+  background-repeat: no-repeat;
+  display:${isMobile ? 'block' : 'flex'};
+  align-items:center;
+  gap:${theme.spacing[5]}px;
+  padding:${theme.spacing[5]}px ${theme.spacing[7]}px;
+
+  @media screen and (max-width: ${theme.breakpoints.s}px) {
+         background-image:url(${ConfettiMobile});
+    }
   `,
 );

@@ -1,9 +1,14 @@
 import React, { useContext } from 'react';
-import { Amount, Box, IconButton, Text, TrashIcon } from '@razorpay/blade/components';
+import { Amount, Badge, Box, Divider, InfoIcon, Text, TrashIcon } from '@razorpay/blade/components';
 
 import QuantityWidget from 'merchant/views/POS/Cart/QuantityWidget';
+import { SOUNDBOX, STANDEEANDSTICKER } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
-import { getCartItemTotal, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
+import {
+  getCartItemTotal,
+  getOrderQuantityError,
+  getProductFromProductDescriptions,
+} from 'merchant/views/POS/helpers';
 import {
   CartItem as CartItemType,
   ProductPlans,
@@ -11,6 +16,7 @@ import {
   ProductUpdateTypes,
 } from 'merchant/views/POS/types';
 
+import CartHeader from './CartHeader';
 import OfferCartItemContent from './OfferCartItemContent';
 import { PricingCard } from './styles';
 
@@ -40,7 +46,8 @@ const CartItem = ({
     return null;
   }
 
-  const { productTitle, pricing, cartImage } = product;
+  const { productTitle, pricing, cartImage, linkedItems, offer, isPartnerPricing, maxOrder } =
+    product;
   const total = getCartItemTotal({ pricing, quantity, selectedPlan: plan });
 
   const handlePricingCardClick = (selectedPlan: ProductPlans) => {
@@ -60,6 +67,32 @@ const CartItem = ({
     onProductRemove(product, productTitle);
   };
 
+  const getCartHeaderOfferStrip = () => {
+    switch (code) {
+      case STANDEEANDSTICKER.code:
+        return {
+          text: 'Offer Applied',
+          isPartnerPricing,
+        };
+      case SOUNDBOX.code:
+        if (!!offer) {
+          return {
+            text: 'Combo Offer',
+            isPartnerPricing,
+          };
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  const orderQuantityError = getOrderQuantityError({
+    maxQuantity: maxOrder,
+    currQuantity: cartItem.quantity,
+    errMsg: product?.maxQuantityErrMsg?.(maxOrder) ?? '',
+  });
+
   return (
     <Box
       key={code}
@@ -69,32 +102,13 @@ const CartItem = ({
       testID={`${code}-${plan}-cart-item`}
       marginBottom="spacing.5"
     >
-      <Box display="flex" justifyContent="space-between">
-        <Box display="flex" alignItems="center">
-          <Box
-            backgroundImage={`url("${cartImage}")`}
-            backgroundRepeat="no-repeat"
-            backgroundSize="cover"
-            height={{ base: '65px', l: '70px' }}
-            width={{ base: '65px', l: '70px' }}
-            backgroundPosition="center center"
-            backgroundColor="surface.background.gray.moderate"
-            borderRadius="large"
-            marginRight="spacing.4"
-          />
-          <Text size="large" color="surface.text.gray.subtle">
-            {productTitle}
-          </Text>
-        </Box>
-        <Box paddingTop="spacing.5">
-          <IconButton
-            icon={TrashIcon}
-            size="large"
-            onClick={handleOnRemoveClick}
-            accessibilityLabel="product delete icon"
-          />
-        </Box>
-      </Box>
+      <CartHeader
+        productTitle={productTitle}
+        icon={TrashIcon}
+        iconClickHandler={handleOnRemoveClick}
+        cartImage={cartImage}
+        offerStrip={getCartHeaderOfferStrip()}
+      />
       <Box display={{ base: 'block', l: 'flex' }} gap="spacing.3" marginTop="spacing.5">
         {pricing.map(({ name, breakups, type }, index) => (
           <PricingCard
@@ -108,7 +122,10 @@ const CartItem = ({
               {name}
             </Text>
             {product?.offer ? (
-              <OfferCartItemContent pricing={pricing[index]} />
+              <OfferCartItemContent
+                rentalDiscountPeriod={product.rentalDiscountPeriod}
+                pricing={pricing[index]}
+              />
             ) : (
               <Box>
                 {breakups.map(({ key, value, isExtraFee, suffix }) => (
@@ -128,28 +145,98 @@ const CartItem = ({
           </PricingCard>
         ))}
       </Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" gap="spacing.3">
+        <Box maxWidth="65%">
           <Text marginBottom="spacing.2">Quantity</Text>
           <QuantityWidget
             cartItem={cartItem}
             onProductQuantityUpdate={onProductQuantityUpdate}
             productTitle={productTitle}
             size="small"
+            maxOrder={maxOrder}
           />
+          {orderQuantityError ? (
+            <Box
+              marginTop="spacing.2"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              gap="spacing.3"
+            >
+              <InfoIcon size="small" color="feedback.icon.information.intense" />
+              <Text size="small" variant="caption" color="feedback.text.information.intense">
+                {orderQuantityError}
+              </Text>
+            </Box>
+          ) : null}
         </Box>
         <Box>
           <Text>Device charge</Text>
-          <Amount
-            value={total.value ?? 0}
-            suffix="none"
-            isAffixSubtle={false}
-            type="body"
-            size="large"
-            weight="semibold"
-          />
+          <Box
+            display="flex"
+            alignItems="center"
+            gap="spacing.3"
+            marginLeft="auto"
+            width="fit-content"
+          >
+            {plan === 'free' ? (
+              <Badge color="primary" emphasis="intense">
+                Free
+              </Badge>
+            ) : null}
+            <Amount
+              value={total.value ?? 0}
+              suffix="none"
+              isAffixSubtle={false}
+              type="body"
+              size="large"
+              weight="semibold"
+            />
+          </Box>
         </Box>
       </Box>
+      {linkedItems?.length ? (
+        <Box paddingTop="spacing.4">
+          <Divider />
+          {linkedItems.map((item, idx) => (
+            <Box marginTop="spacing.3" marginBottom="spacing.3" key={item.title}>
+              <CartHeader
+                offerStrip={{ text: item.offerLabel, isPartnerPricing }}
+                productTitle={item.title}
+                cartImage={item.image}
+              />
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                marginTop="spacing.3"
+                marginBottom="spacing.3"
+              >
+                <Text>Quantity: {quantity * item.quantity}</Text>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  gap="spacing.3"
+                  alignItems="center"
+                >
+                  <Badge color="primary" emphasis="intense">
+                    Free
+                  </Badge>
+                  <Amount
+                    value={0}
+                    suffix="none"
+                    isAffixSubtle={false}
+                    type="body"
+                    size="large"
+                    weight="semibold"
+                  />
+                </Box>
+              </Box>
+              {idx !== linkedItems.length - 1 ? <Divider /> : null}
+            </Box>
+          ))}
+        </Box>
+      ) : null}
     </Box>
   );
 };

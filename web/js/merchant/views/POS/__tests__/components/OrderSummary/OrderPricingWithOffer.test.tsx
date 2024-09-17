@@ -33,6 +33,7 @@ const initProps: OrderPricingProps = {
     productDescriptions: [
       {
         ...MOCK_PRODUCT,
+        rentalDiscountPeriod: 3,
         pricing: MOCK_PRICING_WITH_PRICES_WITH_OFFER,
         offer: {
           offerText: 'Mock Offer',
@@ -96,7 +97,6 @@ describe('<OrderPricing/> with offer', () => {
     ).toBe(2);
     expect(within(deviceChargesContainer).getByText(/post 3 months/)).toBeVisible();
     expect(within(deviceChargesContainer).getByText('first 3 months')).toBeVisible();
-    expect(within(deviceChargesContainer).getByText('300')).toBeVisible();
     expect(within(deviceChargesContainer).getByText('354')).toBeVisible();
     expect(within(deviceChargesContainer).getByText('MDR (%)')).toBeVisible();
   });
@@ -136,6 +136,7 @@ describe('<OrderPricing/> with offer', () => {
         {
           ...MOCK_PRODUCT,
           pricing: MOCK_PRICING_WITH_PRICES_WITH_OFFER,
+          rentalDiscountPeriod: 3,
           offer: {
             offerText: 'Mock Offer',
             pdpOfferText: 'Mock PDP offer',
@@ -158,7 +159,6 @@ describe('<OrderPricing/> with offer', () => {
     ).toBe(2);
     expect(within(deviceChargesContainer).getByText(/post 3 months/)).toBeVisible();
     expect(within(deviceChargesContainer).getByText('first 3 months')).toBeVisible();
-    expect(within(deviceChargesContainer).getByText('300')).toBeVisible();
     expect(within(deviceChargesContainer).getByText('354')).toBeVisible();
     expect(within(deviceChargesContainer).getByText('MDR (%)')).toBeVisible();
   });

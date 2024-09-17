@@ -3,6 +3,8 @@ import { Box } from '@razorpay/blade/components';
 
 import DetailedPricing from 'merchant/views/POS/ProductDescription/DetailedPricing/DetailedPricing';
 import TermsAndConditions from 'merchant/views/POS/ProductDescription/TermsAndConditions';
+import { DETAILED_PRICING, WD10_DETAILED_OFFER_PRICING } from 'merchant/views/POS/constants';
+import SOUNDBOX from 'merchant/views/POS/constants/Soundbox';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
@@ -20,10 +22,16 @@ const DetailedPricingAndTncWrapper = forwardRef(
       code: productCode as string,
       productDescriptions,
     });
-
     if (!product) return null;
 
     const isOfferExists = !!product?.offer;
+
+    const getPricingDetails = () => {
+      if (productCode === SOUNDBOX.code) {
+        return WD10_DETAILED_OFFER_PRICING;
+      }
+      return DETAILED_PRICING;
+    };
 
     return (
       <Box
@@ -34,7 +42,7 @@ const DetailedPricingAndTncWrapper = forwardRef(
         paddingTop="55px"
         ref={ref as React.RefObject<HTMLDivElement>}
       >
-        <DetailedPricing product={product} />
+        <DetailedPricing pricingDetails={getPricingDetails()} product={product} />
         <TermsAndConditions
           title={isOfferExists ? 'Offer Terms & Conditions' : 'Terms & Conditions'}
           product={product}

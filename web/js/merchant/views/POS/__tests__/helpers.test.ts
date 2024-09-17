@@ -6,6 +6,7 @@ import {
   MOCK_USER,
   MOCK_PRODUCT_PRICING_RESPONSE,
   MOCK_PRODUCT_OFFER_CONFIG,
+  MOCK_PRICING_WITH_ONLY_LIFETIME_PLAN,
 } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import { UPDATE_CART_ACTIONS } from 'merchant/views/POS/constants';
 import {
@@ -23,8 +24,12 @@ import {
   getAllDeliveryAddressFromLocalStorage,
   processPrecheckoutPricing,
   isPosExperimentEnabled,
+  getOrderQuantityError,
+  isItemPresentInCart,
+  getAvailablePricingPlans,
+  getInitialPlan,
 } from 'merchant/views/POS/helpers';
-import { PricingTypes, ProductPlans } from 'merchant/views/POS/types';
+import { CartItem, PricingTypes, ProductDescription, ProductPlans } from 'merchant/views/POS/types';
 
 const cartItems = [
   {
@@ -728,5 +733,161 @@ describe('processPrecheckoutPricing', () => {
       });
       expect(isExperimentEnabled).toBe(false);
     });
+  });
+});
+describe('getOrderQuantityError', () => {
+  test('returns an empty string when errMsg is an empty string', () => {
+    const result = getOrderQuantityError({
+      currQuantity: 1,
+      maxQuantity: 5,
+      errMsg: '',
+    });
+    expect(result).toBe('');
+  });
+
+  test('returns errMsg when currQuantity is greater than or equal to maxQuantity', () => {
+    const result = getOrderQuantityError({
+      currQuantity: 5,
+      maxQuantity: 5,
+      errMsg: 'Quantity limit reached',
+    });
+    expect(result).toBe('Quantity limit reached');
+  });
+
+  test('returns errMsg when currQuantity is greater than maxQuantity', () => {
+    const result = getOrderQuantityError({
+      currQuantity: 6,
+      maxQuantity: 5,
+      errMsg: 'Quantity limit reached',
+    });
+    expect(result).toBe('Quantity limit reached');
+  });
+
+  test('returns an empty string when currQuantity is less than maxQuantity', () => {
+    const result = getOrderQuantityError({
+      currQuantity: 4,
+      maxQuantity: 5,
+      errMsg: 'Quantity limit reached',
+    });
+    expect(result).toBe('');
+  });
+
+  test('returns an empty string when maxQuantity is null', () => {
+    const result = getOrderQuantityError({
+      currQuantity: 4,
+      maxQuantity: null,
+      errMsg: 'Quantity limit reached',
+    });
+    expect(result).toBe('');
+  });
+
+  test('returns an empty string when currQuantity is 0', () => {
+    const result = getOrderQuantityError({
+      currQuantity: 0,
+      maxQuantity: 5,
+      errMsg: 'Quantity limit reached',
+    });
+    expect(result).toBe('');
+  });
+
+  test('returns an empty string when maxQuantity is 0', () => {
+    const result = getOrderQuantityError({
+      currQuantity: 5,
+      maxQuantity: 0,
+      errMsg: 'Quantity limit reached',
+    });
+    expect(result).toBe('');
+  });
+});
+
+describe('isItemPresentInCart', () => {
+  test('returns false if cartItems is empty', () => {
+    const isPresent = isItemPresentInCart('a50', []);
+    expect(isPresent).toBe(false);
+  });
+
+  test('returns true if productCode is present in cart', () => {
+    const cartItems: CartItem[] = [
+      { code: 'a50', plan: 'monthly', quantity: 1 },
+      { code: 'd180', plan: 'monthly', quantity: 1 },
+    ];
+    const isPresent = isItemPresentInCart('a50', cartItems);
+    expect(isPresent).toBe(true);
+  });
+
+  test('returns false if productCode is not present in cart', () => {
+    const cartItems: CartItem[] = [
+      { code: 'a50', plan: 'monthly', quantity: 1 },
+      { code: 'd180', plan: 'monthly', quantity: 1 },
+    ];
+    const isPresent = isItemPresentInCart('wd10', cartItems);
+    expect(isPresent).toBe(false);
+  });
+
+  test('returns true if productCode is present more than once in cart', () => {
+    const cartItems: CartItem[] = [
+      { code: 'a50', plan: 'monthly', quantity: 1 },
+      { code: 'd180', plan: 'monthly', quantity: 1 },
+      { code: 'd180', plan: 'lifetime', quantity: 1 },
+    ];
+    const isPresent = isItemPresentInCart('d180', cartItems);
+    expect(isPresent).toBe(true);
+  });
+});
+
+describe('getAvailablePricingPlans', () => {
+  test('returns both hasMonthlyPlan and hasLifetimePlan as false when productDescription is null', () => {
+    const result = getAvailablePricingPlans(null);
+    expect(result).toEqual({ hasMonthlyPlan: false, hasLifetimePlan: false });
+  });
+
+  test('returns hasLifetimePlan as true when there is a lifetime plan', () => {
+    const productDescription: ProductDescription = {
+      ...MOCK_PRODUCT,
+      pricing: MOCK_PRICING_WITH_ONLY_LIFETIME_PLAN,
+    };
+    const result = getAvailablePricingPlans(productDescription);
+    expect(result).toEqual({ hasMonthlyPlan: false, hasLifetimePlan: true });
+  });
+
+  test('returns both hasMonthlyPlan and hasLifetimePlan as true when both plans are present', () => {
+    const productDescription: ProductDescription = {
+      ...MOCK_PRODUCT,
+      pricing: MOCK_PRICING_WITH_PRICES,
+    };
+    const result = getAvailablePricingPlans(productDescription);
+    expect(result).toEqual({ hasMonthlyPlan: true, hasLifetimePlan: true });
+  });
+
+  test('returns both hasMonthlyPlan and hasLifetimePlan as false when no valid plans are present', () => {
+    const productDescription: ProductDescription = {
+      ...MOCK_PRODUCT,
+      pricing: [],
+    };
+    const result = getAvailablePricingPlans(productDescription);
+    expect(result).toEqual({ hasMonthlyPlan: false, hasLifetimePlan: false });
+  });
+});
+
+describe('getInitialPlan', () => {
+  test('should return "free" if neither lifetime nor monthly plans are available', () => {
+    const mockProductDescription = { ...MOCK_PRODUCT, pricing: [] };
+    const result = getInitialPlan({ productDescription: mockProductDescription });
+    expect(result).toBe('free');
+  });
+
+  test('should return "lifetime" if only lifetime plan is available', () => {
+    const mockProductDescription = {
+      ...MOCK_PRODUCT,
+      pricing: MOCK_PRICING_WITH_ONLY_LIFETIME_PLAN,
+    };
+    const result = getInitialPlan({ productDescription: mockProductDescription });
+    expect(result).toBe('lifetime');
+  });
+
+  test('should return "monthly" if monthly plan is available (even if lifetime plan is available)', () => {
+    const mockProductDescription = { ...MOCK_PRODUCT, pricing: MOCK_PRICING_WITH_PRICES };
+    const result = getInitialPlan({ productDescription: mockProductDescription });
+    expect(result).toBe('monthly');
   });
 });

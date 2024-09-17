@@ -2,13 +2,14 @@ import React from 'react';
 import { Box, Heading, Text, Divider } from '@razorpay/blade/components';
 
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
-import { DETAILED_PRICING, OFFER_DETAILED_PRICING } from 'merchant/views/POS/constants';
+import { OFFER_DETAILED_PRICING, SOUNDBOX } from 'merchant/views/POS/constants';
 import { isValidFee } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
-import { ProductDescription } from 'merchant/views/POS/types';
+import { DetailedPricingModel, ProductDescription } from 'merchant/views/POS/types';
 
 type DetailedPricingProps = {
   product: ProductDescription;
+  pricingDetails: DetailedPricingModel[];
 };
 
 type ShowOfferProps = {
@@ -34,10 +35,15 @@ const ShowOffer = ({ banner, offer, isPartnerPricing }: ShowOfferProps): JSX.Ele
     </Box>
   );
 };
-const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
+const DetailedPricing = ({ product, pricingDetails }: DetailedPricingProps): JSX.Element => {
   const { isMobile } = useBladeBreakpoints();
   const isShowOffer = !!product?.offer;
   const isPartnerPricing = product?.isPartnerPricing;
+
+  const getPricingDetails = () => {
+    if (product.code === SOUNDBOX.code) return pricingDetails;
+    return [...(isShowOffer ? OFFER_DETAILED_PRICING : []), ...pricingDetails];
+  };
 
   return (
     <Box
@@ -51,62 +57,56 @@ const DetailedPricing = ({ product }: DetailedPricingProps): JSX.Element => {
           Detailed Pricing
         </Heading>
       </Box>
-      {[...(isShowOffer ? OFFER_DETAILED_PRICING : []), ...DETAILED_PRICING].map(
-        ({ title, rows, banner }, index) => (
-          <Box key={title ?? `heading-${index}`}>
-            {banner && product?.offer ? (
-              <ShowOffer
-                banner={banner}
-                offer={product.offer}
-                isPartnerPricing={isPartnerPricing}
-              />
-            ) : null}
-            {title ? (
-              <Text weight="semibold" size="large" marginBottom="spacing.5">
-                {title}
-              </Text>
-            ) : null}
-            <Box
-              backgroundColor="surface.background.gray.intense"
-              marginBottom={
-                index === OFFER_DETAILED_PRICING.length - 1 ? 'spacing.10' : 'spacing.5'
-              }
-              borderRadius="medium"
-            >
-              {rows.map(({ name, value, text, prevValue, isOfferOnlyField }, index) =>
-                (isOfferOnlyField && isShowOffer) || !isOfferOnlyField ? (
-                  <React.Fragment key={name}>
-                    <Box display="flex" width="100%" padding="spacing.5">
-                      <Box width="70%">
-                        <Text weight={title !== null ? 'regular' : 'semibold'}>{name}</Text>
-                      </Box>
-                      <Box display="flex">
-                        <Text weight="semibold" marginRight="spacing.2">
-                          {value}
-                        </Text>
-                        {isValidFee(Number(prevValue)) && isShowOffer ? (
-                          <Text textDecorationLine="line-through">{prevValue}</Text>
-                        ) : null}
-                        {text ? <Text weight="semibold">{text}</Text> : null}
-                      </Box>
+      {getPricingDetails().map(({ title, rows, banner }, index) => (
+        <Box key={title ?? `heading-${index}`}>
+          {product.code !== SOUNDBOX.code && banner && product?.offer ? (
+            <ShowOffer banner={banner} offer={product.offer} isPartnerPricing={isPartnerPricing} />
+          ) : null}
+          {title ? (
+            <Text weight="semibold" size="large" marginBottom="spacing.5">
+              {title}
+            </Text>
+          ) : null}
+          <Box
+            backgroundColor="surface.background.gray.intense"
+            marginBottom={index === OFFER_DETAILED_PRICING.length - 1 ? 'spacing.10' : 'spacing.5'}
+            borderRadius="medium"
+          >
+            {rows.map(({ name, value, text, prevValue, isOfferOnlyField }, index) =>
+              (isOfferOnlyField && isShowOffer) || !isOfferOnlyField ? (
+                <React.Fragment key={name}>
+                  <Box display="flex" width="100%" padding="spacing.5">
+                    <Box width="70%">
+                      <Text weight={title !== null ? 'regular' : 'semibold'}>{name}</Text>
                     </Box>
-                    {index !== rows.length - 1 && rows.length > 1 ? (
-                      <Divider marginX="spacing.5" />
-                    ) : null}
-                  </React.Fragment>
-                ) : null,
-              )}
-            </Box>
+                    <Box display="flex">
+                      <Text weight="semibold" marginRight="spacing.2">
+                        {value}
+                      </Text>
+                      {isValidFee(Number(prevValue)) && isShowOffer ? (
+                        <Text textDecorationLine="line-through">{prevValue}</Text>
+                      ) : null}
+                      {text ? <Text weight="semibold">{text}</Text> : null}
+                    </Box>
+                  </Box>
+                  {index !== rows.length - 1 && rows.length > 1 ? (
+                    <Divider marginX="spacing.5" />
+                  ) : null}
+                </React.Fragment>
+              ) : null,
+            )}
           </Box>
-        ),
-      )}
-      <Box testID="detailed-pricing-footer-text" marginX={isMobile ? 'spacing.5' : 'spacing.0'}>
-        <Text>*Transaction Value</Text>
-        <Text>
-          #Note: Any value added services (Ex- EMI) required by the Merchant shall be charged
-          separately, as per the agreed terms. Also, devices once ordered cannot be canceled.
-        </Text>
-      </Box>
+        </Box>
+      ))}
+      {product.code !== SOUNDBOX.code ? (
+        <Box testID="detailed-pricing-footer-text" marginX={isMobile ? 'spacing.5' : 'spacing.0'}>
+          <Text>*Transaction Value</Text>
+          <Text>
+            #Note: Any value added services (Ex- EMI) required by the Merchant shall be charged
+            separately, as per the agreed terms. Also, devices once ordered cannot be canceled.
+          </Text>
+        </Box>
+      ) : null}
     </Box>
   );
 };

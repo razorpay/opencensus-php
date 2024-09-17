@@ -222,6 +222,8 @@ const ANDROID_SMART_POS: ProductDescription = {
     },
   ],
   offer: null,
+  shouldShowProductVarietyTable: true,
+  rentalDiscountPeriod: 3,
 };
 
 export default ANDROID_SMART_POS;

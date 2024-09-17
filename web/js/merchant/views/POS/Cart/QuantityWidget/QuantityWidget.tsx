@@ -13,6 +13,7 @@ type QuantityWidget = {
     productTitle: string,
   ) => void;
   productTitle?: string;
+  maxOrder?: number | null;
 };
 
 const QuantityWidget = ({
@@ -21,6 +22,7 @@ const QuantityWidget = ({
   size,
   isMinZero,
   onProductQuantityUpdate,
+  maxOrder,
 }: QuantityWidget): JSX.Element => {
   const { code, plan, quantity } = cartItem;
   const handleProductUpdate = ({ updateType }: { updateType: ProductUpdateTypes }) => {
@@ -64,6 +66,7 @@ const QuantityWidget = ({
         size="large"
         emphasis="intense"
         accessibilityLabel="increase cart quantity"
+        isDisabled={quantity === maxOrder}
         onClick={() => handleProductUpdate({ updateType: 'add' })}
       />
     </Box>

@@ -6,10 +6,14 @@ export const OfferStripContainer = styled.div(
     theme,
     type,
     isPartnerPricing,
+    isRounded,
+    size,
   }: {
     theme: Theme;
     type: 'light' | 'dark';
     isPartnerPricing: boolean;
+    isRounded: boolean;
+    size: 'small' | 'large';
   }) => {
     let backgroundColor =
       'linear-gradient(90deg, rgba(21, 102, 241, 0.18) 0.31%, rgba(21, 102, 241, 0.00) 108.4%)';
@@ -21,8 +25,10 @@ export const OfferStripContainer = styled.div(
       backgroundColor = 'linear-gradient(90deg, hsla(36, 57%, 86%, 1), hsla(219, 59%, 92%, 0.1))';
     }
     return `
-    padding: ${theme.spacing[3]}px;
-    border-radius: ${theme.border.radius.medium}px;
+    padding: ${
+      size === 'small' ? `${theme.spacing[2]}px ${theme.spacing[3]}px` : `${theme.spacing[3]}px`
+    };
+    border-radius: ${isRounded ? theme.border.radius['2xlarge'] : theme.border.radius.medium}px;
     width: fit-content;
     display: flex;
     background: ${backgroundColor};

@@ -53,7 +53,7 @@ const OrderItem = ({ orderItem, isListItem, isOrderDetails }: OrderItem): JSX.El
       <Box>
         <Box display={{ base: 'block', l: 'flex' }} alignItems="center">
           <Text size={isMobile ? 'medium' : 'large'}>{productTitle}</Text>
-          {!isMobile ? (
+          {!isMobile && PLAN_NAME_MAPPINGS[plan] ? (
             <Divider orientation="vertical" marginX="spacing.3" variant="muted" thickness="thin" />
           ) : null}
           <Text

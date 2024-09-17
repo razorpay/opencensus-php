@@ -4,6 +4,8 @@ import ThirdTileImage from 'assets/pos/main-banner/pos-tile-image-3.webp';
 import * as yup from 'yup';
 
 import PRODUCTS_TABLE from 'merchant/views/POS/constants/ProductsTable';
+import SOUNDBOX from 'merchant/views/POS/constants/Soundbox';
+import STANDEEANDSTICKER from 'merchant/views/POS/constants/StandeeAndSticker';
 import { getPincodeInfo } from 'merchant/views/POS/services';
 import {
   UpdateCartTypes,
@@ -25,6 +27,8 @@ import MOBILE_POS from './MobilePos';
 
 export const DELIVERY_AVAILABLE_TEXT = 'Delivery in 2-3 business days post KYC approval.';
 export const DELIVERY_UNAVAILABLE_TEXT = 'Pincode not serviceable! Arriving Soon.';
+export const STANDEE_SOUNDBOX_CART_ERR =
+  'Feel free to order more SoundBox Kits OR QR Standee + Sticker Kits, but not both in one cart. Please update your selection!';
 
 export const MAIN_BANNER_TILES: MainBannerTilesItem[] = [
   {
@@ -84,6 +88,8 @@ export const PRODUCT_DESCRIPTIONS = {
   [ANDROID_SMART_POS.code]: ANDROID_SMART_POS,
   [ANDROID_MINI_POS.code]: ANDROID_MINI_POS,
   [MOBILE_POS.code]: MOBILE_POS,
+  [SOUNDBOX.code]: SOUNDBOX,
+  [STANDEEANDSTICKER.code]: STANDEEANDSTICKER,
 };
 
 export const PosStoreInitialState: PosDeviceStoreState = {
@@ -371,7 +377,8 @@ export const OFFER_CARDS_STRUCT: OfferCardsStruct = {
         currentValue: 0,
         prevValue: null,
       }),
-      text: 'rental first 3 months',
+      text: (period?: number) =>
+        period ? `rental first ${period} ${period > 1 ? 'months' : 'month'}` : null, //null is added to hide the first 3 months offer line if rental_discount_period is 0 in api response
     },
     {
       pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
@@ -381,7 +388,8 @@ export const OFFER_CARDS_STRUCT: OfferCardsStruct = {
           prevValue: monthlyPricing?.prevValue ?? 0,
         };
       },
-      text: 'rental after 3 months',
+      text: (period?: number) =>
+        period ? `rental after ${period} ${period > 1 ? 'months' : 'month'}` : 'Rental pricing',
     },
     {
       pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
@@ -391,14 +399,14 @@ export const OFFER_CARDS_STRUCT: OfferCardsStruct = {
           prevValue: setupPricing?.prevValue ?? 0,
         };
       },
-      text: 'setup fee',
+      text: () => 'setup fee',
     },
     {
       pricing: (): OfferPricing => ({
         currentValue: 0,
         prevValue: null,
       }),
-      text: 'MDR upto 1L transaction',
+      text: () => 'MDR upto 1L transaction',
     },
   ],
   lifetime: [
@@ -410,14 +418,60 @@ export const OFFER_CARDS_STRUCT: OfferCardsStruct = {
           prevValue: lifetimePricing?.prevValue ?? 0,
         };
       },
-      text: 'Lifetime pricing',
+      text: () => 'Lifetime pricing',
     },
     {
       pricing: (): OfferPricing => ({
         currentValue: 0,
         prevValue: null,
       }),
-      text: 'MDR upto 1L transaction',
+      text: () => 'MDR upto 1L transaction',
+    },
+  ],
+};
+
+export const WD_10_OFFER_CARDS_STRUCT: OfferCardsStruct = {
+  monthly: [
+    {
+      pricing: (): OfferPricing => ({
+        currentValue: 0,
+        prevValue: null,
+      }),
+      text: (period?: number) =>
+        period ? `rental first ${period} ${period > 1 ? 'months' : 'month'}` : null, //null is added to hide the first 3 months offer line if rental_discount_period is 0 in api response
+    },
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const monthlyPricing = pricing.breakups.find((breakup) => breakup.key === 'monthly');
+        return {
+          currentValue: monthlyPricing?.nextValue ?? 0,
+          prevValue: monthlyPricing?.prevValue ?? 0,
+        };
+      },
+      text: (period?: number) =>
+        period ? `rental after ${period} ${period > 1 ? 'months' : 'month'}` : 'Rental pricing',
+    },
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const setupPricing = pricing.breakups.find((breakup) => breakup.key === 'setup_fee');
+        return {
+          currentValue: setupPricing?.value ?? 0,
+          prevValue: setupPricing?.prevValue ?? 0,
+        };
+      },
+      text: () => 'setup fee',
+    },
+  ],
+  lifetime: [
+    {
+      pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
+        const lifetimePricing = pricing.breakups.find((breakup) => breakup.key === 'lifetime');
+        return {
+          currentValue: lifetimePricing?.value ?? 0,
+          prevValue: lifetimePricing?.prevValue ?? 0,
+        };
+      },
+      text: () => 'Lifetime pricing',
     },
   ],
 };
@@ -429,7 +483,8 @@ export const CART_OFFER_CONTENT: OfferCardsStruct = {
         currentValue: 0,
         prevValue: null,
       }),
-      text: 'rental first 3 months',
+      text: (period?: number) =>
+        period ? `rental first ${period} ${period > 1 ? 'months' : 'month'}` : null, //null is added to hide the first 3 months offer line if rental_discount_period is 0 in api response
     },
     {
       pricing: (pricing: ProductDescriptionPricing): OfferPricing => {
@@ -439,7 +494,8 @@ export const CART_OFFER_CONTENT: OfferCardsStruct = {
           prevValue: monthlyPricing?.prevValue ?? 0,
         };
       },
-      text: 'rental after 3 months',
+      text: (period?: number) =>
+        period ? `rental after ${period} ${period > 1 ? 'months' : 'month'}` : '',
     },
   ],
   lifetime: [
@@ -451,7 +507,7 @@ export const CART_OFFER_CONTENT: OfferCardsStruct = {
           prevValue: lifetimePricing?.prevValue ?? 0,
         };
       },
-      text: '',
+      text: () => '',
     },
   ],
 };
@@ -497,11 +553,15 @@ export const ORDER_LIST_STATUS_TYPES = ['paid', 'delivered', 'rejected'];
 export { default as ANDROID_MINI_POS } from './AndroidMiniPos';
 export { default as ANDROID_SMART_POS } from './AndroidSmartPos';
 export { default as MOBILE_POS } from './MobilePos';
+export { default as SOUNDBOX } from 'merchant/views/POS/constants/Soundbox';
+export { default as STANDEEANDSTICKER } from 'merchant/views/POS/constants/StandeeAndSticker';
 
 export {
   DETAILED_PRICING,
   TERMS_AND_CONDITIONS,
   OFFER_DETAILED_PRICING,
+  WD10_DETAILED_OFFER_PRICING,
+  SOUNDBOX_OFFER_TNC,
 } from './DetailedPricingAndTnc';
 export { ORDER_STATUS_META_DATA, ORDER_STATUS_TIMELINE_ITEMS } from './OrderStatus';
 export * from './CommsBanner';

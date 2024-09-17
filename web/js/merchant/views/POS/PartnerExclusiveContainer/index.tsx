@@ -45,10 +45,7 @@ export const PartnerExclusivePriceContainer = ({
     );
   }
   return (
-    <Box
-      marginX={isMobileCard ? 'spacing.11' : 'spacing.0'}
-      width={isMobileCard ? 'auto' : 'fit-content'}
-    >
+    <Box marginX={isMobileCard ? 'spacing.11' : 'spacing.0'}>
       {isPartnerPricing ? <img src={PartnerProductExclusivePrice} alt="Partner Exclusive" /> : null}
       <PartnerExclusiveGradientContainer isPartnerPricing={isPartnerPricing}>
         <Box

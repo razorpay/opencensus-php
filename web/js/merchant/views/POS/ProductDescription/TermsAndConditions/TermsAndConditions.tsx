@@ -11,7 +11,13 @@ import {
 
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
 import OfferPriceCardContent from 'merchant/views/POS/ProductDescription/ProductPriceCards/OfferPriceCardContent';
-import { TERMS_AND_CONDITIONS } from 'merchant/views/POS/constants';
+import {
+  OFFER_CARDS_STRUCT,
+  TERMS_AND_CONDITIONS,
+  WD_10_OFFER_CARDS_STRUCT,
+  SOUNDBOX_OFFER_TNC,
+} from 'merchant/views/POS/constants';
+import SOUNDBOX from 'merchant/views/POS/constants/Soundbox';
 import { ProductDescription, TncTypes } from 'merchant/views/POS/types';
 
 type TermsAndConditionsProps = {
@@ -26,7 +32,7 @@ const TermsAndConditions = ({
   types = ['normal'],
   product,
   isShowPricing,
-}: TermsAndConditionsProps): JSX.Element => {
+}: TermsAndConditionsProps): JSX.Element | null => {
   const pricingMap = useMemo(() => {
     return isShowPricing
       ? (product?.pricing || []).reduce((acc, curr) => {
@@ -36,6 +42,18 @@ const TermsAndConditions = ({
       : {};
   }, [product, isShowPricing]);
 
+  const getTncComponent = () => {
+    if (product.code === SOUNDBOX.code) {
+      return SOUNDBOX_OFFER_TNC.filter((tnc) => {
+        return product.pricing.find((pricingPlan) => pricingPlan.type === tnc.pricingType);
+      });
+    }
+    return TERMS_AND_CONDITIONS.filter((tnc) => {
+      return product.pricing.find((pricingPlan) => pricingPlan.type === tnc.pricingType);
+    });
+  };
+
+  if (!product) return null;
   return (
     <Box width="100%" maxWidth="1200px" marginBottom="spacing.8">
       <Box marginBottom="spacing.5">
@@ -49,14 +67,8 @@ const TermsAndConditions = ({
         padding="spacing.5"
         borderRadius="medium"
       >
-        {TERMS_AND_CONDITIONS.map(({ criteria, pricingType, rows }, index) => (
-          <Box
-            key={criteria}
-            width={{ base: '100%', m: '50%' }}
-            marginBottom="spacing.5"
-            display="flex"
-            flexDirection="column"
-          >
+        {getTncComponent().map(({ criteria, pricingType, rows }, index) => (
+          <Box key={criteria} marginBottom="spacing.5" display="flex" flexDirection="column">
             <Text marginBottom="spacing.4" marginLeft="spacing.8" size="large">
               {criteria}
             </Text>
@@ -65,7 +77,7 @@ const TermsAndConditions = ({
             <Box
               borderRightWidth={{
                 base: 'none',
-                m: index !== TERMS_AND_CONDITIONS.length - 1 ? 'thin' : 'none',
+                m: index !== getTncComponent().length - 1 ? 'thin' : 'none',
               }}
               borderRightColor="surface.border.gray.muted"
               paddingX={{ base: 'spacing.0', m: 'spacing.8' }}
@@ -83,7 +95,14 @@ const TermsAndConditions = ({
                   borderRadius="medium"
                   minHeight="160px"
                 >
-                  <OfferPriceCardContent pricing={pricingMap?.[pricingType]} showHeaders={false} />
+                  <OfferPriceCardContent
+                    offers={
+                      product.code === SOUNDBOX.code ? WD_10_OFFER_CARDS_STRUCT : OFFER_CARDS_STRUCT
+                    }
+                    pricing={pricingMap?.[pricingType]}
+                    showHeaders={false}
+                    rentalDiscountPeriod={product.rentalDiscountPeriod}
+                  />
                 </Box>
               ) : null}
               <Box marginBottom="spacing.5">

@@ -1,9 +1,20 @@
 import React, { useContext } from 'react';
 import { Button, IconComponent, ShoppingCartIcon } from '@razorpay/blade/components';
+import { useStore } from 'shell/commonStore';
 
-import { ACTIONS, UPDATE_CART_ACTIONS } from 'merchant/views/POS/constants';
+import {
+  ACTIONS,
+  SOUNDBOX,
+  STANDEE_SOUNDBOX_CART_ERR,
+  STANDEEANDSTICKER,
+  UPDATE_CART_ACTIONS,
+} from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
-import { updateCart } from 'merchant/views/POS/helpers';
+import {
+  getProductFromProductDescriptions,
+  isItemPresentInCart,
+  updateCart,
+} from 'merchant/views/POS/helpers';
 import { ProductPlans } from 'merchant/views/POS/types';
 
 type AddToCartButtonProps = {
@@ -29,12 +40,28 @@ const AddToCartButton = ({
   size,
   btnText = 'Add to cart',
 }: AddToCartButtonProps): JSX.Element => {
+  const showNotification = useStore((state) => state.showNotification);
   const { state, dispatch } = useContext(PosDeviceStoreContext);
-  const { cartItems } = state;
+  const { cartItems, productDescriptions } = state;
+  const product = getProductFromProductDescriptions({ code: productCode, productDescriptions });
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
     if (!productCode) return;
+    if (productCode === STANDEEANDSTICKER.code && isItemPresentInCart(SOUNDBOX.code, cartItems)) {
+      showNotification({
+        message: STANDEE_SOUNDBOX_CART_ERR,
+        type: 'error',
+      });
+      return;
+    }
+    if (productCode === SOUNDBOX.code && isItemPresentInCart(STANDEEANDSTICKER.code, cartItems)) {
+      showNotification({
+        message: STANDEE_SOUNDBOX_CART_ERR,
+        type: 'error',
+      });
+      return;
+    }
     const newCartItems = updateCart({
       cart: cartItems,
       type: UPDATE_CART_ACTIONS.ADD_TO_CART,
@@ -42,6 +69,7 @@ const AddToCartButton = ({
         productCode,
         plan,
       },
+      maxOrder: product?.maxOrder,
     });
     dispatch({
       type: ACTIONS.UPDATE_CART,

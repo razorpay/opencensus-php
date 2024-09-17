@@ -1,5 +1,12 @@
 import React, { useContext, useRef } from 'react';
-import { Amount, ArrowRightIcon, Box, Button, Text } from '@razorpay/blade/components';
+import {
+  AlertCircleIcon,
+  Amount,
+  ArrowRightIcon,
+  Box,
+  Button,
+  Text,
+} from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
@@ -7,6 +14,7 @@ import QuantityWidget from 'merchant/views/POS/Cart/QuantityWidget';
 import { ACTIONS, UPDATE_CART_ACTIONS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import {
+  getOrderQuantityError,
   getProductFromCart,
   getProductFromProductDescriptions,
   updateCart,
@@ -47,6 +55,7 @@ const PdpActions = ({ productCode, plan, containerRef }: PdpActionsProps): JSX.E
           ? UPDATE_CART_ACTIONS.INCREASE_QUANTITY
           : UPDATE_CART_ACTIONS.DECREASE_QUANTITY,
       product,
+      maxOrder: productDescription.maxOrder,
     });
     dispatch({
       type: ACTIONS.UPDATE_CART,
@@ -62,37 +71,60 @@ const PdpActions = ({ productCode, plan, containerRef }: PdpActionsProps): JSX.E
 
   const plans = productDescription.pricing.find(({ type }) => type === plan);
   const pricingBreakups = plans?.breakups || [];
+  const orderQuantityError = getOrderQuantityError({
+    maxQuantity: productDescription.maxOrder,
+    currQuantity: cartItem?.quantity ?? 0,
+    errMsg: productDescription?.maxQuantityErrMsg?.(productDescription.maxOrder) ?? '',
+  });
 
   const renderCartActionButtons = (isFloatingWidget = false) => (
-    <Box
-      display="flex"
-      alignItems="center"
-      height="50px"
-      testID={isFloatingWidget ? 'floating-widget-actions' : 'pdp-actions'}
-    >
-      {cartItem ? (
-        <QuantityWidget
-          cartItem={cartItem}
-          onProductQuantityUpdate={onProductQuantityUpdate}
-          size="large"
-          isMinZero
-        />
-      ) : (
-        <AddToCartButton productCode={productCode} plan={plan} />
-      )}
-      <Box flexGrow={1} marginLeft="spacing.4">
-        <Button
-          size="large"
-          icon={ArrowRightIcon}
-          iconPosition="right"
-          onClick={handleProceedtoCheckoutClick}
-          isDisabled={!cartItem}
-          testID="proceed-to-checkout"
-          isFullWidth={isMobile}
-        >
-          {isMobile ? 'Proceed' : 'Proceed to Order'}
-        </Button>
+    <Box>
+      <Box
+        display="flex"
+        alignItems="center"
+        height="50px"
+        testID={isFloatingWidget ? 'floating-widget-actions' : 'pdp-actions'}
+      >
+        {cartItem ? (
+          <QuantityWidget
+            cartItem={cartItem}
+            onProductQuantityUpdate={onProductQuantityUpdate}
+            size="large"
+            isMinZero
+            maxOrder={productDescription.maxOrder}
+          />
+        ) : (
+          <AddToCartButton productCode={productCode} plan={plan} />
+        )}
+        <Box flexGrow={1} marginLeft="spacing.4">
+          <Button
+            size="large"
+            icon={ArrowRightIcon}
+            iconPosition="right"
+            onClick={handleProceedtoCheckoutClick}
+            isDisabled={!cartItem}
+            testID="proceed-to-checkout"
+            isFullWidth={isMobile}
+          >
+            {isMobile ? 'Proceed' : 'Proceed to Order'}
+          </Button>
+        </Box>
       </Box>
+      {orderQuantityError ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          gap="spacing.3"
+          width="fit-content"
+          marginTop="spacing.2"
+        >
+          <AlertCircleIcon color="feedback.icon.negative.intense" />
+          <Text variant="caption" color="feedback.text.negative.intense">
+            {orderQuantityError}
+          </Text>
+        </Box>
+      ) : null}
     </Box>
   );
 

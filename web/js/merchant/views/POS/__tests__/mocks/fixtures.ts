@@ -1,3 +1,5 @@
+import SoundboxImage from 'assets/pos/main-banner/soundbox-kit.webp';
+
 import store from 'merchant/store';
 import {
   ApiResponse,
@@ -5,7 +7,13 @@ import {
   ProductDescription,
   ProductDescriptionPricing,
   ProductFeaturesColumn,
+  PricingTypes,
+  PricingBreakupkeys,
+  ProductPlans,
+  DetailedPricingModel,
 } from 'merchant/views/POS/types';
+
+import { CtaType, PosPricingDescription, Variant } from '../../Catalog/ProductCards/PosProductCard';
 
 export const MOCK_PRODUCT: ProductDescription = {
   gallery: [
@@ -145,6 +153,7 @@ export const MOCK_PRODUCT: ProductDescription = {
     },
   ],
   offer: null,
+  rentalDiscountPeriod: 3,
 };
 
 export const MOCK_FEATURE_SCHEMA: ProductFeaturesColumn[][] = [
@@ -299,6 +308,82 @@ export const MOCK_PRICING_WITH_PRICES: ProductDescriptionPricing[] = [
         isChargeableAtCheckout: true,
         prevValue: null,
         nextValue: null,
+      },
+    ],
+  },
+];
+
+export const MOCK_PRICING_WITH_ONLY_LIFETIME_PLAN: ProductDescriptionPricing[] = [
+  {
+    name: 'Lifetime Plan',
+    type: 'lifetime',
+    subText: '*No Setup fees required. GST charges applicable.',
+    breakups: [
+      {
+        key: 'lifetime',
+        description: 'Lifetime Plan',
+        value: 12000,
+        suffix: '',
+        isExtraFee: false,
+        isChargeableAtCheckout: true,
+        prevValue: null,
+        nextValue: null,
+      },
+    ],
+  },
+];
+
+export const MOCK_DETAILED_PRICING: DetailedPricingModel[] = [
+  {
+    title: null,
+    banner: 'info',
+    rows: [
+      {
+        name: 'Particulars',
+        value: 'MDR',
+      },
+    ],
+  },
+  {
+    title: 'Credit Card (Visa/Master/Rupay)',
+    rows: [
+      {
+        name: 'Grocery Stores & Supermarkets',
+        value: '1.30%',
+        isOfferOnlyField: true,
+      },
+      {
+        name: 'Utility, Govt., Education, Fuel, Insurance',
+        value: '1.00%',
+        prevValue: '1.10%',
+        isOfferOnlyField: true,
+      },
+      {
+        name: 'Other segments',
+        value: '1.75%',
+        prevValue: '1.85%',
+      },
+      {
+        name: 'International Card/Corp cards/Amex/Diners',
+        value: '2.75%',
+        prevValue: ' 3.00%',
+      },
+    ],
+  },
+  {
+    title: 'Debit Card & BQR through Debit Card (Excl Rupay)',
+    rows: [
+      {
+        name: '<2000*',
+        value: '0.40%',
+      },
+      {
+        name: '>2000*',
+        value: '0.90%',
+      },
+      {
+        name: 'UPI/Rupay Debit Card',
+        value: '0.00%',
       },
     ],
   },
@@ -2097,4 +2182,294 @@ export const getMockModularResponse = ({
   country_code: 'IN',
   onboarding_type: 'DEFAULT_ONBOARDING',
   merchant_type: 'Curlec Payments',
+});
+
+interface GetMockPropsForPosProductCardComponent {
+  variant?: string;
+  pricingDescription?: PosPricingDescription[];
+  cta?: CtaType;
+  footer?: {
+    title: string;
+    description: string;
+  };
+  isPartnerPricing?: boolean;
+  hasOffer?: boolean;
+}
+export const getMockPropsForPosProductCardComponent = ({
+  variant = 'left',
+  pricingDescription,
+  cta,
+  footer,
+  isPartnerPricing,
+  hasOffer = true,
+}: GetMockPropsForPosProductCardComponent) => ({
+  productDescription: {
+    gallery: [
+      {
+        main: 'https://localhost:8080/public/dist/images/main-5.600ceea792570089.webp',
+        mobile: 'https://localhost:8080/public/dist/images/thumbnail-5.4e36abc249a68137.webp',
+        thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-5.4e36abc249a68137.webp',
+      },
+      {
+        main: 'https://localhost:8080/public/dist/images/main-2.bd0fbe5dcdc230fd.webp',
+        mobile: 'https://localhost:8080/public/dist/images/thumbnail-2.787af7c200cc3aae.webp',
+        thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-2.787af7c200cc3aae.webp',
+      },
+      {
+        main: 'https://localhost:8080/public/dist/images/main-3.821901066a03b60d.webp',
+        mobile: 'https://localhost:8080/public/dist/images/thumbnail-3.5f7bd97fefffad91.webp',
+        thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-3.5f7bd97fefffad91.webp',
+      },
+      {
+        main: 'https://localhost:8080/public/dist/images/main-4.f436f16d456f8b04.webp',
+        mobile: 'https://localhost:8080/public/dist/images/thumbnail-4.1234fe01013c3d4a.webp',
+        thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-4.1234fe01013c3d4a.webp',
+      },
+    ],
+    code: 'wd10',
+    name: 'android-mini-pos',
+    productTitle: 'Soundbox kit',
+    description:
+      '1x Speaker, Volume up to 100 dB | 32-bit ARM CPU | 2000mAh Li-ion Battery. 1x Standee, 2x QR Stickers.',
+    maxOrder: 0,
+    cartImage: 'https://localhost:8080/public/dist/images/cart-img.9430b8ab5a5fe199.webp',
+    pricing: [
+      {
+        name: 'Monthly Plan',
+        type: 'monthly' as PricingTypes,
+        subText: '*Subscription only starts when device gets delivered. GST charges applicable.',
+        breakups: [
+          {
+            key: 'monthly' as PricingBreakupkeys,
+            description: 'Monthly Subscription',
+            value: 217,
+            suffix: '/mo',
+            isExtraFee: false,
+            isChargeableAtCheckout: false,
+            prevValue: 499,
+            nextValue: 100,
+          },
+          {
+            key: 'setup_fee' as PricingBreakupkeys,
+            description: 'One Time Setup Fee',
+            value: 0,
+            suffix: 'setup fee',
+            isExtraFee: true,
+            isChargeableAtCheckout: true,
+            prevValue: 2000,
+            nextValue: null,
+          },
+        ],
+      },
+      {
+        name: 'Lifetime Plan',
+        type: 'lifetime' as PricingTypes,
+        subText: '*No Setup fees required. GST charges applicable.',
+        breakups: [
+          {
+            key: 'lifetime' as PricingBreakupkeys,
+            description: 'Lifetime Plan',
+            value: 999,
+            suffix: '',
+            isExtraFee: false,
+            isChargeableAtCheckout: true,
+            prevValue: 12000,
+            nextValue: 999,
+          },
+        ],
+      },
+    ],
+    isPartnerPricing: isPartnerPricing ?? false,
+    featureGallery: [
+      {
+        image: 'https://localhost:8080/public/dist/images/thumbnail-2.787af7c200cc3aae.webp',
+        title: 'Voice alerts',
+        description: 'Instant audio confirmation on successful UPI payments',
+        isImageFirst: false,
+      },
+      {
+        image: 'https://localhost:8080/public/dist/images/thumbnail-3.5f7bd97fefffad91.webp',
+        title: 'Always Connected',
+        description: 'Connect seamlessly using a SIM card',
+        isImageFirst: true,
+      },
+      {
+        image: 'https://localhost:8080/public/dist/images/thumbnail-4.1234fe01013c3d4a.webp',
+        title: 'Long-lasting battery life',
+        description: 'Powerful battery that charges via micro USB',
+        isImageFirst: false,
+      },
+    ],
+    infoBanner: {
+      image: 'https://localhost:8080/public/dist/images/info-banner.6b899853c88b2950.webp',
+      mobileImage:
+        'https://localhost:8080/public/dist/images/info-banner-mobile.adfb23e267205636.webp',
+      features: [
+        {
+          icon: 'https://localhost:8080/public/dist/images/brightness.bbb7bf4376eef61d.svg',
+          text: 'Clear QR code display',
+        },
+        {
+          icon: 'https://localhost:8080/public/dist/images/connectivity.a388f587d8b775ca.svg',
+          text: 'LED indicators to confirm connectivity',
+        },
+        {
+          icon: 'https://localhost:8080/public/dist/images/alarm.468ac42463ee8fcd.svg',
+          text: 'Sound notifications on updates and charging',
+        },
+        {
+          icon: 'https://localhost:8080/public/dist/images/transaction-history.eb2b73a748f06372.svg',
+          text: 'Transaction history available on the mPOS app',
+        },
+      ],
+    },
+    technicalSpecifications: [
+      {
+        category: 'Model',
+        value: 'WD10 (With optional dynamic QR display)',
+      },
+      {
+        category: 'Processor',
+        value: '32-bit ARM based',
+      },
+      {
+        category: 'Memory',
+        value: 'RAM: 16MB ROM:16MB',
+      },
+      {
+        category: 'Speaker',
+        value: '403W, 1105dB >( 1M)',
+      },
+      {
+        category: 'Charging',
+        value: 'DC 5V/1A, USB Type-C connector',
+      },
+      {
+        category: 'SIM',
+        value: 'Single nano SIM slot',
+      },
+      {
+        category: 'QR code size',
+        value: 'Maximum 50mm',
+      },
+      {
+        category: 'Ideal runtime',
+        value: '200broadcastsadayfor 3days',
+      },
+      {
+        category: 'Application',
+        value: 'Supermarket, Convenience Store, Restaurant, Parking lot, Beauty Salon, Hotel',
+      },
+      {
+        category: 'Language Support',
+        value: 'Hindi, English (Other languages are customizable)',
+      },
+      {
+        category: 'Operating Voltage',
+        value: '3.7V - 4.2V',
+      },
+      {
+        category: 'Standby current',
+        value: '4G: 10mA; WIFI: 40mA',
+      },
+      {
+        category: 'Data encryption mode',
+        value: 'TLS',
+      },
+      {
+        category: 'Communication Network',
+        value: '2G,4G CAT1 / GPRS; WIFI (Optional)',
+      },
+      {
+        category: 'Communication protocol',
+        value: 'MQT',
+      },
+      {
+        category: 'Frequency band',
+        value: 'TDD-LTE: B34/B38/B39/B40/B41; GSM:900MHz/1800MHz',
+      },
+      {
+        category: 'Environment',
+        value: 'Operating temperature: -10°C ~ +60°C; Storage temperature: -20°C ~+70°C',
+      },
+      {
+        category: 'Button',
+        value: '1*Power Key 1*Function Key 2*Volume Up/Down Keys',
+      },
+      {
+        category: 'Indicator Lights',
+        value: '3color LED indicator light (blue, green and red)',
+      },
+      {
+        category: 'Weight',
+        value: '330g',
+      },
+      {
+        category: 'Dimension',
+        value:
+          'Sound box size: 114mm*56mm*59mm | Panel size: Length xbreadth 114mm*155mm (Thickness:3.5mm)',
+      },
+      {
+        category: 'Battery',
+        value: '3.7V 2000mAh lithium manganate battery; Standby: ≥120H',
+      },
+    ],
+    offer: hasOffer
+      ? {
+          offerText: 'Limited Time Offer till 31st March',
+          pdpOfferText: 'Offer valid on orders placed before 31st March',
+          partnerOfferText: 'Partner Exclusive Time Offer till 31st March',
+          partnerPdpOfferText: 'Partner offer valid on orders placed before 31st March',
+        }
+      : null,
+    shouldShowProductVarietyTable: false,
+    linkedItems: [
+      {
+        image: 'https://localhost:8080/public/dist/images/thumbnail-1.c1321625c23544d7.webp',
+        title: 'QR Sticker',
+        offerLabel: 'Free with Combo Offer',
+        quantity: 2,
+      },
+      {
+        image: 'https://localhost:8080/public/dist/images/thumbnail-1.48b0d0fefc766d56.webp',
+        title: 'Standee',
+        offerLabel: 'Free with Combo Offer',
+        quantity: 1,
+      },
+    ],
+    rentalDiscountPeriod: 3,
+  },
+  title: 'Soundbox kit',
+  description: 'Sample description',
+  imageSrc: SoundboxImage,
+  tncText: 'Lifetime free',
+  plan: 'monthly' as ProductPlans,
+  variant: variant as Variant,
+  pricingDescription: pricingDescription ?? [
+    {
+      amount: {
+        lifetime: 4500,
+        monthly: 0,
+        setupFee: 99,
+        offer: {
+          nextMonthly: 100,
+          prevMonthly: 499,
+          prevLifetime: 12000,
+          prevSetupFee: 1000,
+        },
+      },
+      type: 'monthly-rental',
+    },
+  ],
+  cta: cta ?? {
+    primary: {
+      title: 'Add to cart',
+      onClick: jest.fn(),
+    },
+    secondary: {
+      title: 'Learn more',
+      onClick: jest.fn(),
+    },
+  },
+  footer,
 });

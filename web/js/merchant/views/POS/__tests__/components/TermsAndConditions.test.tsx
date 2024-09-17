@@ -24,7 +24,7 @@ describe('<TermsAndConditions/>', () => {
     expect(screen.getByText('Lifetime Pricing')).toBeVisible();
     expect(
       screen.getByText(
-        'The Merchant agrees and understands that the offer prices extended by Razopray are subject to the fulfillment of the condition enumerated under this Offer Terms and Merchant Terms & Conditions.',
+        'There will be a 1 (one) year manufacturing warranty on POS Devices. The terms of warranty shall be in accordance with OEM’s policy.',
       ),
     ).toBeVisible();
   });

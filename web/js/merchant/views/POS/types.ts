@@ -2,7 +2,7 @@ import { IconComponent } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
 
-export type PricingTypes = 'monthly' | 'lifetime';
+export type PricingTypes = 'monthly' | 'lifetime' | 'free';
 
 export type Gallery = {
   thumbnail: string;
@@ -51,6 +51,13 @@ export type TechnicalSpecification = {
   value: string;
 };
 
+export type LinkedItem = {
+  title: string;
+  offerLabel: string;
+  quantity: number;
+  image: any;
+};
+
 export type ProductDescription = {
   gallery: Gallery[];
   code: string;
@@ -60,7 +67,7 @@ export type ProductDescription = {
   cartImage: string;
   pricing: ProductDescriptionPricing[];
   isPartnerPricing: boolean;
-  maxOrder: number;
+  maxOrder: number | null;
   featureGallery: FeatureGallery[];
   infoBanner: InfoBanner;
   technicalSpecifications: TechnicalSpecification[];
@@ -70,6 +77,10 @@ export type ProductDescription = {
     partnerOfferText: string;
     partnerPdpOfferText: string;
   } | null;
+  shouldShowProductVarietyTable?: boolean;
+  linkedItems?: LinkedItem[];
+  maxQuantityErrMsg?: (quantity: number | null) => string;
+  rentalDiscountPeriod: number;
 };
 
 export type Features =
@@ -111,7 +122,7 @@ export type ProductTableList = {
   products: ProductTableProduct[];
 };
 
-export type ProductPlans = 'lifetime' | 'monthly';
+export type ProductPlans = 'lifetime' | 'monthly' | 'free';
 
 export type CartItem = {
   code: string;
@@ -366,6 +377,25 @@ export interface ApiResponse<T> {
   errors?: string[];
 }
 
+export type PlanType = {
+  one_time_charge: number;
+  plan_name: PricingTypes;
+  rental_charges: number;
+  setup_fee: number;
+};
+
+export type RateConfig = {
+  advanced_rental_periods: number;
+  rental_discount_periods: number;
+  paper_roll_charges: number;
+  plans: PlanType[];
+};
+
+export type DeviceMetaData = {
+  charge_collection_product_id: string;
+  rate_config_v2?: RateConfig | null;
+};
+
 export type ProductPricingMap = {
   name: string;
   code: string;
@@ -375,6 +405,7 @@ export type ProductPricingMap = {
     lifetime: number;
     setup_fee: number;
   };
+  metadata?: DeviceMetaData;
 }[];
 
 export type CommsStatus =
@@ -465,11 +496,12 @@ export type OfferPricing = {
 
 export type OfferCardItem = {
   pricing: (pricing: ProductDescriptionPricing) => OfferPricing;
-  text: string;
+  text: (period?: number) => string | null;
 };
 
 export type OfferCardsStruct = {
-  [key in PricingTypes]: OfferCardItem[];
+  monthly: OfferCardItem[];
+  lifetime: OfferCardItem[];
 };
 
 export type TncTypes = 'offer' | 'normal' | 'nonOffer';

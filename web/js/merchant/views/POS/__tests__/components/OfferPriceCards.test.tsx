@@ -14,7 +14,7 @@ import { render, screen, waitForElementToBeRemoved, server } from 'test-utils';
 const renderApp = () => {
   render(
     <PosDeviceStoreProvider user={MOCK_USER}>
-      <OfferPriceCardContent pricing={MOCK_PRICING_WITH_PRICES[0]} />
+      <OfferPriceCardContent rentalDiscountPeriod={3} pricing={MOCK_PRICING_WITH_PRICES[0]} />
     </PosDeviceStoreProvider>,
   );
 };

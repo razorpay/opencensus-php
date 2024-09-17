@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Box, Divider, Heading, Link, Spinner } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useParams } from 'react-router-dom';
@@ -8,6 +8,8 @@ import PosBreadcrumbs from 'merchant/views/POS/PosBreadcrumbs';
 import ProductGallery from 'merchant/views/POS/ProductDescription/ProductGallery/ProductGallery';
 import ProductGalleryCarousel from 'merchant/views/POS/ProductDescription/ProductGallery/ProductGalleryCarousel';
 import { PAGE_READ_SUCCESS_MS, PRODUCT_DESCRIPTIONS } from 'merchant/views/POS/constants';
+import { PosDeviceStoreContext } from 'merchant/views/POS/context';
+import { getInitialPlan, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints, useExecuteAfterDelay } from 'merchant/views/POS/hooks';
 import { MainContainer } from 'merchant/views/POS/styles';
 import { PricingTypes } from 'merchant/views/POS/types';
@@ -25,11 +27,24 @@ type ProductDescription = {
   productName: string;
 };
 
-const ProductDescription = (): JSX.Element => {
+const ProductDescription = (): JSX.Element | null => {
   const { productName } = useParams();
   const containerRef = useRef<HTMLElement | null>(null);
   const pricingTncRef: { current: HTMLElement | null } = useRef<HTMLElement | null>(null);
-  const [selectedPricing, setSelectedPricing] = useState<PricingTypes>('monthly');
+  const { state } = useContext(PosDeviceStoreContext);
+  const { productDescriptions } = state;
+  const [selectedPricing, setSelectedPricing] = useState<PricingTypes>(
+    getInitialPlan({
+      productDescription: getProductFromProductDescriptions({
+        code: productName as string,
+        productDescriptions,
+      }),
+    }),
+  );
+  const productDetails = getProductFromProductDescriptions({
+    code: productName as string,
+    productDescriptions,
+  });
 
   const handlePageReadSuccess = () => {
     // Trigger pageReadSuccess event for page viewed after 15 seconds
@@ -69,12 +84,20 @@ const ProductDescription = (): JSX.Element => {
       </Box>
     );
   }
-  const productDetails = PRODUCT_DESCRIPTIONS?.[productName];
+
+  if (!productDetails) return null;
 
   const handleOnPricingPlanChange = (type) => setSelectedPricing(type);
 
-  const { productTitle, description, featureGallery, infoBanner, technicalSpecifications, code } =
-    productDetails;
+  const {
+    productTitle,
+    description,
+    featureGallery,
+    infoBanner,
+    technicalSpecifications,
+    code,
+    shouldShowProductVarietyTable,
+  } = productDetails;
 
   const onViewPricingClick = () => {
     pricingTncRef.current?.scrollIntoView({
@@ -153,14 +176,16 @@ const ProductDescription = (): JSX.Element => {
               collapsibleIndex={4}
               productTitle={productTitle}
             />
-            <ProductFeatureTable
-              instrumentation={{
-                section: 'Device Comparison',
-                subSection: productTitle,
-                l1FunnelStage: 'Device Exploration',
-                l2FunnelStage: 'POS Product Description',
-              }}
-            />
+            {shouldShowProductVarietyTable ? (
+              <ProductFeatureTable
+                instrumentation={{
+                  section: 'Device Comparison',
+                  subSection: productTitle,
+                  l1FunnelStage: 'Device Exploration',
+                  l2FunnelStage: 'POS Product Description',
+                }}
+              />
+            ) : null}
           </Box>
         </Box>
       </MainContainer>

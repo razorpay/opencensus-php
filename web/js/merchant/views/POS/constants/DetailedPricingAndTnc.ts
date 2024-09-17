@@ -40,23 +40,22 @@ export const DETAILED_PRICING: DetailedPricingModel[] = [
       {
         name: 'Grocery Stores & Supermarkets',
         value: '1.30%',
-        isOfferOnlyField: true,
       },
       {
         name: 'Utility, Govt., Education, Fuel, Insurance',
-        value: '1.00%',
-        prevValue: '1.10%',
-        isOfferOnlyField: true,
+        value: '1.10%',
       },
       {
         name: 'Other segments',
-        value: '1.75%',
-        prevValue: '1.85%',
+        value: '1.85%',
       },
       {
         name: 'International Card/Corp cards/Amex/Diners',
-        value: '2.75%',
-        prevValue: ' 3.00%',
+        value: '3.00%',
+      },
+      {
+        name: 'Rupay Credit Card on UPI',
+        value: '2.00%',
       },
     ],
   },
@@ -74,6 +73,32 @@ export const DETAILED_PRICING: DetailedPricingModel[] = [
       {
         name: 'UPI/Rupay Debit Card',
         value: '0.00%',
+      },
+    ],
+  },
+];
+
+export const WD10_DETAILED_OFFER_PRICING: DetailedPricingModel[] = [
+  {
+    title: null,
+    banner: 'info',
+    rows: [
+      {
+        name: 'Particulars',
+        value: 'MDR',
+      },
+    ],
+  },
+  {
+    title: null,
+    rows: [
+      {
+        name: 'UPI',
+        value: '0.00%',
+      },
+      {
+        name: 'Rupay Credit Card on UPI',
+        value: '2.00%',
       },
     ],
   },
@@ -104,8 +129,12 @@ export const TERMS_AND_CONDITIONS: TncDictionary[] = [
       `,
       },
       {
-        tncType: 'normal',
+        tncType: 'offer',
         text: `The Merchant agrees and understands that the offer prices extended by Razopray are subject to the fulfillment of the condition enumerated under this Offer Terms and Merchant Terms & Conditions.`,
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'The above pricing is inclusive of sim card and paper roll cost.',
       },
       {
         tncType: 'normal',
@@ -126,6 +155,10 @@ export const TERMS_AND_CONDITIONS: TncDictionary[] = [
       {
         tncType: 'normal',
         text: 'Merchant shall bear all the repair / replacement charges (including inspection charges) associated with the POS Devices / accessories, in the event such POS Devices / accessories are damaged or lost or becomes inoperable, while being in Merchant’s possession.',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'EMI processing fees to be charged separately.',
       },
     ],
   },
@@ -178,6 +211,115 @@ export const TERMS_AND_CONDITIONS: TncDictionary[] = [
       {
         tncType: 'normal',
         text: 'Merchant shall bear all the repair / replacement charges (including inspection charges) associated with the POS Devices / accessories, in the event such POS Devices / accessories are damaged or lost or becomes inoperable, while being in Merchant’s possession.',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'EMI processing fees to be charged separately.',
+      },
+    ],
+  },
+];
+
+type SoundboxOfferTnc = {
+  criteria: string;
+  pricingType: PricingTypes;
+  rows: TncObject[];
+};
+
+export const SOUNDBOX_OFFER_TNC: SoundboxOfferTnc[] = [
+  {
+    criteria: 'Monthly Plan Pricing',
+    pricingType: 'monthly',
+    rows: [
+      {
+        tncType: 'offer',
+        text: 'Prices are exclusive of GST',
+      },
+      {
+        tncType: 'offer',
+        text: 'Pricing is inclusive of sim cost ',
+      },
+      {
+        tncType: 'offer',
+        text: 'Once ordered, Device is non-returnable and non-refundable.',
+      },
+      {
+        tncType: 'offer',
+        text: 'Merchant specific integration charges (if any) are separately applicable on case to case basis based on effort',
+      },
+      {
+        tncType: 'offer',
+        text: '1 year manufacturing warranty for the device',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Prices are exclusive of GST',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Pricing is inclusive of sim cost ',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Once ordered, Device is non-returnable and non-refundable.',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Merchant specific integration charges (if any) are separately applicable on case to case basis based on effort',
+      },
+      {
+        tncType: 'nonOffer',
+        text: '1 year manufacturing warranty for the device',
+      },
+    ],
+  },
+  {
+    criteria: 'Lifetime Pricing',
+    pricingType: 'lifetime',
+    rows: [
+      {
+        tncType: 'offer',
+        text: 'Prices are exclusive of GST',
+      },
+      {
+        tncType: 'offer',
+        text: 'Pricing is inclusive of sim cost ',
+      },
+      {
+        tncType: 'offer',
+        text: 'Once ordered, Device is non-returnable and non-refundable.',
+      },
+      {
+        tncType: 'offer',
+        text: 'Merchant specific integration charges (if any) are separately applicable on case to case basis based on effort.',
+      },
+      {
+        tncType: 'offer',
+        text: '1 year manufacturing warranty for the device',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Prices are exclusive of GST',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Pricing is inclusive of sim cost ',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Once ordered, Device is non-returnable and non-refundable.',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Once ordered, Device is non-returnable and non-refundable.',
+      },
+      {
+        tncType: 'nonOffer',
+        text: 'Merchant specific integration charges (if any) are separately applicable on case to case basis based on effort.',
+      },
+      {
+        tncType: 'nonOffer',
+        text: '1 year manufacturing warranty for the device',
       },
     ],
   },

@@ -46,7 +46,7 @@ const ANDROID_MINI_POS: ProductDescription = {
   productTitle: 'Android Smart Mini POS',
   description:
     'Android 8.1 or 10 Powered | Ultra slim | 4.5” HD Display | PCI PTS 5.x (Android 8.1) or 6.x (Android 10) SRED Certified | Inbuilt GPS',
-  maxOrder: 0,
+  maxOrder: null,
   cartImage: CartImage,
   pricing: [
     {
@@ -220,6 +220,8 @@ const ANDROID_MINI_POS: ProductDescription = {
     },
   ],
   offer: null,
+  shouldShowProductVarietyTable: true,
+  rentalDiscountPeriod: 3,
 };
 
 export default ANDROID_MINI_POS;
