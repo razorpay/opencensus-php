@@ -100,6 +100,7 @@ final class AsvFlows
         'workflow_config_delete' => true,
         'workflow_config_delete_admin' => true,
         'internal_merchant_activation_status' => true,
+        'worker:es_sync' => true,
     );
 
     public static function isExclusionFLow(string $flow): bool
