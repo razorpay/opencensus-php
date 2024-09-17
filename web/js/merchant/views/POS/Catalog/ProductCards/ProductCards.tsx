@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
-import { useSplitzService } from 'common/splitz';
 import PosProductCard, { Variant } from 'merchant/views/POS/Catalog/ProductCards/PosProductCard';
 import PosProductCardMobile from 'merchant/views/POS/Catalog/ProductCards/PosProductCardMobile';
 import { ProductCardsContainer } from 'merchant/views/POS/Catalog/ProductCards/styles';
@@ -16,9 +15,7 @@ const ProductCards = (): JSX.Element => {
   const { isMobile } = useBladeBreakpoints();
   const foldRef = React.useRef<HTMLDivElement>(null);
   const { state } = useContext(PosDeviceStoreContext);
-  const { productDescriptions } = state;
-  const { abExperiments } = useSplitzService();
-  const isSoundboxEnabled = abExperiments?.pos_onboarding?.variables?.soundboxEnabled === 'on';
+  const { productDescriptions, isSoundboxEnabled } = state;
   const soundboxProducts = [SOUNDBOX.code, STANDEEANDSTICKER.code];
 
   useScrollObserver(foldRef, () => {

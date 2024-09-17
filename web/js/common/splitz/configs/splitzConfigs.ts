@@ -86,6 +86,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'pos_soundbox',
+        experimentId: {
+          beta: 'Oy7dbr5GLrNFTJ',
+          production: 'Oy7XP2SJswMiP5',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'pos_onboarding',
         experimentId: {
           beta: 'MVPjQVuTnq6nHb',

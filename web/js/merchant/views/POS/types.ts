@@ -163,6 +163,7 @@ export type PosDeviceStoreState = {
   // Note: We need isRenderedFromPartnerRoute to identify if the POS feature(such as OrderList) is
   // rendered for Partners to view their submerchant's orders
   isRenderedFromPartnerRoute: boolean;
+  isSoundboxEnabled?: boolean;
 };
 
 export type RoutePattern = {

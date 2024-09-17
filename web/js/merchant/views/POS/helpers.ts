@@ -86,6 +86,10 @@ export const isPosExperimentEnabled = ({
   );
 };
 
+export const isPosSoundboxEnabled = ({ abExperiments }: { abExperiments: ExperimentInfoType }) => {
+  return abExperiments?.pos_soundbox?.variables?.result === 'on';
+};
+
 export const getProductOffers = ({
   abExperiments,
 }: {

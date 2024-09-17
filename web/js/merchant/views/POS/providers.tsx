@@ -14,6 +14,7 @@ import {
   fetchProductOffers,
   getAllDeliveryAddressFromLocalStorage,
   getCartFromLocalStorage,
+  isPosSoundboxEnabled,
   saveCartInBrowserStorage,
 } from './helpers';
 import { getProductPricingMap, getSubmerchantProductPricingMap } from './services';
@@ -92,7 +93,7 @@ export const PosDeviceStoreProvider = ({
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { abExperiments } = useSplitzService();
-  const isSoundboxEnabled = abExperiments?.pos_onboarding?.variables?.soundboxEnabled === 'on';
+  const isSoundboxEnabled = isPosSoundboxEnabled({ abExperiments });
   const offersInfo = fetchProductOffers({ abExperiments });
 
   const onFetchProductPricing = (
@@ -167,6 +168,7 @@ export const PosDeviceStoreProvider = ({
           ...state,
           isPricingPlanLoading,
           isRenderedFromPartnerRoute,
+          isSoundboxEnabled,
         },
         dispatch,
       }}
