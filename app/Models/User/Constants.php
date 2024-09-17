@@ -54,6 +54,7 @@ class Constants
     const METHOD                = 'method';
     const MEDIUM                = 'medium';
     const ACTION                = 'action';
+    const VARIANT               = 'variant';
 
     // Possible Login/Signup methods
     const PASSWORD                    = 'password';

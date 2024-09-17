@@ -974,6 +974,10 @@ return array(
 
     'get_pan_list_for_activated_merchants_experiment_id' => env('GET_PAN_LIST_FOR_ACTIVATED_MERCHANTS_EXPERIMENT_ID'),
 
+    'user_email_update_conflict' => env('USER_EMAIL_UPDATE_CONFLICT'),
+
+    'user_mobile_update_conflict' => env('USER_MOBILE_UPDATE_CONFLICT'),
+
     'invoice_card_payment_on_rearch_splitz_experiment_id' => env('INVOICE_CARD_PAYMENT_ON_REARCH_SPLITZ_EXPERIMENT_ID'),
 
     'invoice_webhooks_payment_rearch_splitz_experiment_id' => env('INVOICE_WEBHOOKS_PAYMENT_REARCH_SPLITZ_EXPERIMENT_ID'),

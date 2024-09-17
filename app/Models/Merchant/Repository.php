@@ -2703,6 +2703,21 @@ class Repository extends Base\Repository
                     ->count();
 
     }
+
+    public function fetchActivatedMids( array $mids)
+    {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
+        );
+        return $query
+            ->whereIn(Entity::ID, $mids)
+            ->where(Entity::ACTIVATED, '=', 1)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+
+    }
+
     public function fetchAllMids($offsetID,$limit)
     {
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))

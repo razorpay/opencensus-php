@@ -7705,30 +7705,30 @@ class UserTest extends TestCase
             return true;
         });
     }
-    
+
     public function testPasswordResetMailForPgMobile()
     {
         Mail::fake();
-        
+
         $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
-        
+
         $this->ba->dashboardGuestAppAuth();
-        
+
         $this->startTest();
-        
+
         Mail::assertSent(PasswordReset::class, function ($mail)
         {
             $viewData = $mail->viewData;
-            
+
             $this->assertArrayHasKey('org', $viewData);
             $this->assertEquals('dashboard.razorpay.in', $viewData['org']['hostname']);
             $this->assertEquals('org_100000razorpay', $viewData['org']['id']);
-            
+
             $this->assertEquals('emails.user.password_reset', $mail->view);
             return true;
         });
     }
-    
+
     public function testPasswordResetMailForBadEmail()
     {
         Mail::fake();
@@ -8713,6 +8713,46 @@ class UserTest extends TestCase
         }
 
         $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 1);
+    }
+
+    public function testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphan()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $userDb1 = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            $this->fixtures->merchant_detail->createAssociateMerchant([
+                'merchant_id' => $primaryMids[$i],
+                'contact_mobile' => '123456789' . $i,
+                'contact_email' => 'user'. $i. '@email.com',
+            ]);
+        }
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', UserFixture::MERCHANT_USER_ID);
+
+        $user2Attributes = [
+            'contact_mobile'            => '9123456789',
+            'contact_mobile_verified'   => true,
+        ];
+
+        $user2 = $this->fixtures->create('user', $user2Attributes);
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $merchantId2 = $merchant2->getId();
+
+        $mappingData2 = [
+            'user_id'     => $user2->getId(),
+            'merchant_id' => $merchantId2,
+            'role'        => 'owner',
+        ];
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData2);
+
+        $this->startTest();
     }
 
     public function testVerifyOtpAndUpdateContactMobileWhenOwnerUserAssociatedWithMultipleMerchants()
@@ -13748,7 +13788,44 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testUserContactMobileAlreadyTakenFailure()
+    public function testUserContactMobileAlreadyTakenOrphanUser()
+    {
+//        This test passes through the validation successfully and fails at otp validation.
+        $user1Attributes = [
+            'contact_mobile'            => '1234567890',
+            'contact_mobile_verified'   => true,
+        ];
+
+        $user1 = $this->fixtures->create('user', $user1Attributes);
+
+        $merchant1 = $this->fixtures->create('merchant');
+
+        $merchantId1 = $merchant1->getId();
+
+        $mappingData1 = [
+            'user_id'     => $user1->getId(),
+            'merchant_id' => $merchantId1,
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData1);
+
+        $user2Attributes = [
+            'contact_mobile'            => '9876543210',
+            'contact_mobile_verified'   => true,
+        ];
+
+        $user2 = $this->fixtures->create('user', $user2Attributes);
+        $this->fixtures->user->deleteAllMerchantUserMapping($user2->getID());
+
+        $this->fixtures->merchant->setRestricted(true, $merchantId1);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId1, $user1['id']);
+
+        $this->startTest();
+    }
+
+    public function testUserContactMobileAlreadyTakenFailureNonOrphanUser()
     {
         $user1Attributes = [
             'contact_mobile'            => '1234567890',
@@ -13796,6 +13873,7 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
 
     public function testAdminPurposeCodeDetailsFetch()
     {

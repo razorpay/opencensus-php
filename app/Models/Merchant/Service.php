@@ -201,6 +201,7 @@ use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\HsCode\HsCodeList;
 use RZP\Models\Merchant\Consent as Consent;
 use RZP\Models\Merchant\Analytics\DataProcessor;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
 
 class Service extends Base\Service
@@ -1847,11 +1848,11 @@ class Service extends Base\Service
 
         $status = $this->core()->getUserStatusForEmailUpdateSelfServe($input[Entity::EMAIL], $merchant, $product);
 
+        // this flow is used by owner user only : basic auth user is same as owner user
+        $ownerUser = $this->app['basicauth']->getUser();
+
         if ($status[Constants::IS_USER_EXIST] === false)
         {
-            // this flow is used by owner user only : basic auth user is same as owner user
-            $ownerUser = $this->app['basicauth']->getUser();
-
             $this->saveMerchantEmailUpdateData($ownerUser->getEmail(), $merchant->getId(), $input);
 
             $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
@@ -1859,6 +1860,40 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, []);
 
             return $status;
+        }
+
+        //  Add Check for Orphan users and users with Deactivated merchants
+        //   If not: then return error
+
+        $expResult = $this->splitzUserEmailUpdateEvaluate($merchant->getId());
+
+        if($expResult === true){
+            $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $ownerUser->getId());
+
+            $mids = array_unique($this->repo->merchant_user->fetchMerchantIdsForUserIds($existingUserIds));
+
+            if(count($mids) > 0)
+            {
+                $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
+                if (count(value: $activatedMids) > 0) {
+                    $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED, [
+                        "count" => count($activatedMids),
+                        "email" => $input[Entity::EMAIL],
+                    ]);
+                    $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED);
+                }
+                if (count($activatedMids) !== count($mids)){
+                    $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED, [
+                        "count" => count($mids) - count($activatedMids),
+                        "email" => $input[Entity::EMAIL],
+                    ]);
+                    $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED);
+                }
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
+            }else{
+                // If all users are Oprhan users
+                return $status;
+            }
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_ANOTHER_ACCOUNT);
@@ -1929,12 +1964,56 @@ class Service extends Base\Service
 
         $input = array_merge($input, $data);
 
+        $currentOwnerUser = $this->repo->user->getUserFromEmailOrFail($input[Constants::CURRENT_OWNER_EMAIL]);
+
+        //  Add Check for Orphan users and users with Deactivated merchants
+        //   Set email as null for all orphan users
+        //   Set traces and logs for activated merchants
+
+        $expResult = $this->splitzUserEmailUpdateEvaluate($merchantId);
+
+        if($expResult === true){
+            $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $currentOwnerUser->getId());
+            $orphanUserIds = array();
+            if (empty($existingUserIds) === false)
+            {
+                foreach ($existingUserIds as $userId) {
+                    $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
+                    if(count(value: $mids) === 0)
+                    {
+                        array_push($orphanUserIds, $userId);
+                        continue;
+                    }
+
+                    $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
+                    if (count($activatedMids) > 0) {
+                        $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED, [
+                            "count" => count($activatedMids),
+                            "userId" => $userId,
+                        ]);
+                        $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED);
+                    }
+                    if (count($activatedMids) !== count($mids)){
+                        $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED, [
+                            "count" => count($mids) - count($activatedMids),
+                            "userId" => $userId,
+                        ]);
+                        $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED);
+                    }
+                }
+            }
+
+            if (count($orphanUserIds) !== count($existingUserIds)){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
+            }
+            // Set email as null for Orphan user ids
+            $this->repo->user->setOrphanUserEmailNull($orphanUserIds);
+        }
+
         // using merchant_id from cache
         $input[Entity::MERCHANT_ID] = $merchantId;
 
         $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
-
-        $currentOwnerUser = $this->repo->user->getUserFromEmailOrFail($input[Constants::CURRENT_OWNER_EMAIL]);
 
         (new Validator())->validateUserIsOwnerForMerchant($currentOwnerUser->getId(), $input[Entity::MERCHANT_ID]);
 
@@ -1952,6 +2031,21 @@ class Service extends Base\Service
         $cacheKey = $this->getMerchantEmailUpdateCacheKey($merchantId);
 
         $this->app->cache->delete($cacheKey);
+    }
+
+    protected function splitzUserEmailUpdateEvaluate($id){
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id'            => $id,
+                'experiment_id' => $this->app['config']->get('app.user_email_update_conflict'),
+                'request_data'  => json_encode(
+                    [
+                        'id' => $id,
+                    ]),
+            ]
+        );
+
+        return $expResult['variant'] === Constants::VARIANT;
     }
 
     /**

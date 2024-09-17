@@ -80,6 +80,8 @@ use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Constants\Metric as ConstantMetric;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 
 class Core extends Base\Core
 {
@@ -3206,6 +3208,51 @@ class Core extends Base\Core
 
         $contact = $input[Constants::RECEIVER];
 
+        // Check users with same contact_number, set mobile as null for all orphan users
+        //  set trace for Activated merchants
+        $validContactMobileNumberFormats = (new PhoneBook($contact))->getMobileNumberFormats();
+        $existingUserIds = (new Repository())->findUserWithContactNumbersExcludingUser($user->getId(), numbers: $validContactMobileNumberFormats);
+
+        $expResult = $this->splitzExperimentEvaluatorMobileUpdate($user->getId());
+
+        if($expResult === true){
+            $orphanUserIds = array();
+            if (empty($existingUserIds) === false)
+            {
+                foreach ($existingUserIds as $userId) {
+                    $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
+                    if(count(value: $mids) === 0)
+                    {
+                        array_push($orphanUserIds, $userId);
+                        continue;
+                    }
+
+                    $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
+                    if (count($activatedMids) > 0) {
+                        $this->trace->info(TraceCode::EDIT_MOBILE_REQUEST_USER_MERCHANT_ACTIVATED, [
+                            "count" => count($activatedMids),
+                            "userId" => $userId,
+                        ]);
+                        $this->trace->count(ConstantMetric::EDIT_MOBILE_REQUEST_USER_MERCHANT_ACTIVATED);
+                    }
+                    if (count($activatedMids) !== count($mids)){
+                        $this->trace->info(TraceCode::EDIT_MOBILE_REQUEST_USER_MERCHANT_DEACTIVATED, [
+                            "count" => count($mids) - count($activatedMids),
+                            "userId" => $userId,
+                        ]);
+                        $this->trace->count(ConstantMetric::EDIT_MOBILE_REQUEST_USER_MERCHANT_DEACTIVATED);
+                    }
+                }
+            }
+
+            if (count($orphanUserIds) !== count($existingUserIds)){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
+            }
+
+            // Set email as null for Orphan user ids
+            $this->repo->user->setOrphanUserMobilelNull($orphanUserIds);
+        }
+
         if($smsOtpAuth->is2faCredentialValid($input) == false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
@@ -3295,6 +3342,22 @@ class Core extends Base\Core
             'cache_key'   => $cacheKey,
             'attempts'    => Cache::get($cacheKey)
         ]);
+    }
+
+    public function splitzExperimentEvaluatorMobileUpdate(string $id)
+    {
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id'            => $id,
+                'experiment_id' => $this->app['config']->get('app.user_mobile_update_conflict'),
+                'request_data'  => json_encode(
+                    [
+                        'id' => $id,
+                    ]),
+            ]
+        );
+
+        return $expResult['variant'] === Constants::VARIANT;
     }
 
     public function verifyUserSecondFactorAuth(Entity $user, array $input): array

@@ -157,6 +157,13 @@ class User extends Base
                     ->get();
     }
 
+    public function deleteAllMerchantUserMapping(string $userId)
+    {
+        return DB::table('merchant_users')
+            ->where('user_id', $userId)
+            ->delete();
+    }
+
     public function getMerchantOwnerUsers(string $merchantId, string $product = 'primary')
     {
         return DB::table('merchant_users')

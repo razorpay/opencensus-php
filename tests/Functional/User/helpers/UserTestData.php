@@ -4399,8 +4399,8 @@ return [
             ],
         ],
     ],
-  
-  
+
+
     'testPasswordResetMailForPgMobile'     => [
         'request'   => [
             'url'       => '/users/reset-password',
@@ -4413,7 +4413,7 @@ return [
                 'X-Org-Hostname'    => 'dashboard.razorpay.in'
             ],
         ],
-  
+
         'response' => [
             'content' => [
                 "success" => true,
@@ -5121,6 +5121,29 @@ return [
                 'contact_mobile'          => '9123456789',
                 'contact_mobile_verified' => true,
             ],
+        ],
+    ],
+
+    'testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphan' => [
+        'request' => [
+            'url'     => '/users/verify/update/new/mobile',
+            'method'  => 'POST',
+            'content' => [
+                'receiver' => '9123456789',
+                'otp'      => '000007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
         ],
     ],
 
@@ -7542,7 +7565,7 @@ return [
         ],
     ],
 
-    'testUserContactMobileAlreadyTakenFailure' => [
+    'testUserContactMobileAlreadyTakenOrphanUser' => [
         'request'   => [
             'url'     => '/users/contact/sendotp',
             'method'  => 'post',
@@ -7557,15 +7580,41 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Token passed is either invalid or expired',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
+        ],
+    ],
+
+    'testUserContactMobileAlreadyTakenFailureNonOrphanUser' => [
+        'request'   => [
+            'url'     => '/users/contact/sendotp',
+            'method'  => 'post',
+            'content' => [
+                'contact_mobile' => '+919876543210',
+                'otp_auth_token' => 'otp_auth_token',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
         ],
     ],
 

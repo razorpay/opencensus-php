@@ -6843,6 +6843,41 @@ Team Razorpay',
         });
     }
 
+    public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExist()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $user2 = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
+        $merchant2 = $this->fixtures->create('merchant');
+        $this->createMerchantUserMapping($user2->getId(), $merchant2->getId(), 'owner');
+
+        $testData = $this->testData['testMerchantEmailGetUserStatus'];
+
+        $testData['response']['content'] = [
+            'is_user_exist'  => true,
+            'is_team_member' => false,
+            'is_owner'       => false,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
+
+        $this->expectExceptionMessage(
+            'The email is already associated with user accounts linked to merchants, please give a new email');
+
+        $this->startTest();
+    }
+
     //Temporarily deprecating the API for mobile signup.
 
     //public function testMerchantEmailUpdateUserStatusForEmailUserExistInTeam()
@@ -6971,6 +7006,16 @@ Team Razorpay',
     public function testMerchantEmailUpdateCreateNewOwnerReAttachOldOwnerSetContactEmail()
     {
         $this->merchantEmailUpdateCreateNewOwner(true, true, false);
+    }
+
+    public function testMerchantEmailUpdateUserAlreadyExistingOrphan()
+    {
+        $this->merchantEmailUpdateCreateNewOwnerAlreadyExistingOrphan(true, true, false);
+    }
+
+    public function testMerchantEmailUpdateUserAlreadyExistingNonOrphan()
+    {
+        $this->merchantEmailUpdateCreateNewOwnerAlreadyExistingNonOrphan(true, true, false);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerDetachOldOwnerForMerchantAndSubmerchants()
@@ -7201,6 +7246,214 @@ Team Razorpay',
     //
     //    $this->startTest();
     //}
+
+    protected function merchantEmailUpdateCreateNewOwnerAlreadyExistingOrphan($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
+    {
+        Mail::fake();
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com']);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
+        ]);
+
+        $token = str_random(50);
+
+        $oldOwnerUser = $this->fixtures->create('user', [
+            'email' => 'oldowner@gmail.com',
+            'contact_mobile' => '8839106483',
+            'name' => 'ownername',
+            'contact_mobile_verified' => true,
+            'password_reset_token' => $token,
+            'password_reset_expiry' => Carbon::now()->timestamp + 86400,
+        ]);
+        $userDeviceDetail = [
+            'merchant_id' => $merchant['id'],
+            'user_id' => $oldOwnerUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ];
+        $this->fixtures->create('user_device_detail', $userDeviceDetail);
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        // if current owner is owner for X: create owner role for banking product
+        if ($isCurrentOwnerOnX === true) {
+            $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'banking');
+        }
+
+        $oldOwnerDuplicateUser = $this->fixtures->create('user', [
+            'email' => 'newowner@gmail.com',
+            'contact_mobile' => '8839106483',
+            'name' => 'ownernameduplicate',
+            'contact_mobile_verified' => true,
+            'password_reset_token' => $token,
+            'password_reset_expiry' => Carbon::now()->timestamp + 86400,
+        ]);
+        $this->fixtures->user->deleteAllMerchantUserMapping($oldOwnerDuplicateUser->getID());
+
+        // put data in cache
+        $cacheData = [
+            'current_owner_email' => 'oldowner@gmail.com',
+            'email' => 'newowner@gmail.com',
+            'merchant_id' => $merchant['id'],
+            'reattach_current_owner' => $reAttachCurrentOwner,
+            'set_contact_email' => $setContactEmail,
+        ];
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60 * 60 * 24);
+
+        $oldOwnerUser = $this->getDbEntityById('user', $oldOwnerUser['id']);
+
+        $testData = $this->testData['testMerchantEmailUpdateCreateNewUser'];
+
+        $testData['request']['content']['token'] = $token;
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['response']['content']['logout_sessions_for_users'] = [$oldOwnerUser->getId()];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(MerchantMail\OwnerEmailChange::class, function ($mailable) use($merchant, $token)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertEquals('emails.merchant.owner_email_change', $mailable->view);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertEquals('oldowner@gmail.com', $mailData['current_owner_email']);
+
+            $this->assertEquals('newowner@gmail.com', $mailData['email']);
+
+            $this->assertTrue($mailable->hasTo('oldowner@gmail.com'));
+
+            return true;
+        });
+
+        $newOwnerUser = $this->getLastEntity('user', true);
+
+        $this->assertOldAndNewOwnerAttributes($newOwnerUser['id'], $oldOwnerUser['id']);
+
+        $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], null);
+
+        // assert roles for PG
+        $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
+            $merchant['id'],
+            $oldOwnerUser['id'],
+            $newOwnerUser['id'],
+            $reAttachCurrentOwner,
+            'primary'
+        );
+
+        // if current owner is owner for X : assert Role for banking product
+        if ($isCurrentOwnerOnX === true)
+        {
+            $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
+                $merchant['id'],
+                $oldOwnerUser['id'],
+                $newOwnerUser['id'],
+                $reAttachCurrentOwner,
+                'banking'
+            );
+        }
+
+        $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], $setContactEmail);
+        $this->assertUserDeviceDetailUpdateForEmailUpdate($merchant['id'],$userDeviceDetail);
+    }
+
+    protected function merchantEmailUpdateCreateNewOwnerAlreadyExistingNonOrphan($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
+    {
+        Mail::fake();
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com']);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
+        ]);
+
+        $token = str_random(50);
+
+        $oldOwnerUser = $this->fixtures->create('user', [
+            'email' => 'oldowner@gmail.com',
+            'contact_mobile' => '8839106483',
+            'name' => 'ownername',
+            'contact_mobile_verified' => true,
+            'password_reset_token' => $token,
+            'password_reset_expiry' => Carbon::now()->timestamp + 86400,
+        ]);
+        $userDeviceDetail = [
+            'merchant_id' => $merchant['id'],
+            'user_id' => $oldOwnerUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ];
+        $this->fixtures->create('user_device_detail', $userDeviceDetail);
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        // if current owner is owner for X: create owner role for banking product
+        if ($isCurrentOwnerOnX === true) {
+            $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'banking');
+        }
+
+        $oldOwnerDuplicateUser = $this->fixtures->create('user', [
+            'email' => 'newowner@gmail.com',
+            'contact_mobile' => '8839106483',
+            'name' => 'ownernameduplicate',
+            'contact_mobile_verified' => true,
+            'password_reset_token' => $token,
+            'password_reset_expiry' => Carbon::now()->timestamp + 86400,
+        ]);
+        $merchant2 = $this->fixtures->create('merchant', ['email' => 'oldcontact2@gmail.com']);
+
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerDuplicateUser['id'], $merchant2['id'], 'owner', 'test', 'primary');
+
+        // put data in cache
+        $cacheData = [
+            'current_owner_email' => 'oldowner@gmail.com',
+            'email' => 'newowner@gmail.com',
+            'merchant_id' => $merchant['id'],
+            'reattach_current_owner' => $reAttachCurrentOwner,
+            'set_contact_email' => $setContactEmail,
+        ];
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60 * 60 * 24);
+
+        $oldOwnerUser = $this->getDbEntityById('user', $oldOwnerUser['id']);
+
+        $testData = $this->testData['testMerchantEmailUpdateCreateNewUser'];
+
+        $testData['request']['content']['token'] = $token;
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['response']['content']['logout_sessions_for_users'] = [$oldOwnerUser->getId()];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
+
+        $this->expectExceptionMessage(
+            'The email is already associated with user accounts linked to merchants, please give a new email');
+
+        $this->startTest();
+    }
 
     protected function merchantEmailUpdateCreateNewOwner($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
     {

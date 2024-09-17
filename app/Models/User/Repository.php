@@ -122,7 +122,9 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->whereIn(Entity::CONTACT_MOBILE, $numbers)
                     ->where(Entity::ID, '!=', $userIdToBeExcluded)
-                    ->first();
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
     }
 
     public function filterEmailNotVerifiedUserIds(int $from, int $to): array
@@ -142,6 +144,16 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::EMAIL, '=', $email)
                     ->first();
+    }
+
+    public function getUserIdsFromEmail(string $email, string $userIdToBeExcluded)
+    {
+        return $this->newQuery()
+            ->where(Entity::EMAIL, '=', $email)
+            ->where(Entity::ID, '!=', $userIdToBeExcluded)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     public function getUserFromEmailCaseInsensitive(string $email)
@@ -213,6 +225,24 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::EMAIL, $userEmails)
                     ->get()
                     ->toArray();
+    }
+
+    public function setOrphanUserEmailNull($userIds)
+    {
+        return $this->newQuery()
+                ->whereIn(Entity::ID, $userIds)
+                ->update([
+                    Entity::EMAIL  => null,
+                ]);
+    }
+
+    public function setOrphanUserMobilelNull($userIds)
+    {
+        return $this->newQuery()
+                ->whereIn(Entity::ID, $userIds)
+                ->update([
+                    Entity::CONTACT_MOBILE  => null,
+                ]);
     }
 
 }

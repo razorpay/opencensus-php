@@ -141,6 +141,16 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function fetchMerchantIdsForUserIds(array $userIds)
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->whereIn(Entity::USER_ID, $userIds)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function fetchMerchantIdForUserIdAndRole(string $userId, string $role = Role::OWNER)
     {
         return $this->newQuery()

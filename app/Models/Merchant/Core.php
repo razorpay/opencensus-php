@@ -3912,6 +3912,13 @@ class Core extends Base\Core
         return true;
     }
 
+    public function userIdsLinkedToEmail($userEmail, $userIdToBeExcluded)
+    {
+        $existingUser = $this->repo->user->getUserIdsFromEmail($userEmail, $userIdToBeExcluded);
+
+        return $existingUser;
+    }
+
     protected function isOwnerRoleExistForEmailUserAndProduct($userEmail, $product)
     {
         $existingUser = $this->repo->user->getUserFromEmail($userEmail);

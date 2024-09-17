@@ -1701,6 +1701,8 @@ class PublicErrorDescription
     const BAD_REQUEST_REDIS_KEY_THRESHOLD_EXCEEDED                                  = 'Bad request, redis key threshold exceeded.';
     const BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                   = 'This account is suspended since you have exceeded maximum attempts for incorrect OTP. Please try again later.';
     const BAD_REQUEST_EMAIL_ASSOCIATED_WITH_ANOTHER_ACCOUNT                         = 'The email is already associated with another account, please give a new email';
+    const BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS                        = 'The email is already associated with user accounts linked to merchants, please give a new email';
+    const BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS                       = 'The contact is already associated with user accounts linked to merchants, please give a new contact';
     const BAD_REQUEST_LIMIT_FOR_UPDATE_CONTACT_MOBILE_EXCEEDED                      = 'Contact number cannot be updated. Please reach out to the support team to get it updated';
     const BAD_REQUEST_USERNAME_MUST_BE_DIFFERENT                                    = 'User name must be different from existing name';
 
