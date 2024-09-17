@@ -12,6 +12,7 @@ import {
   FileStatus,
 } from 'merchant/views/AccountAndSettings/InternationalSettings/constants';
 import { render, screen, userEvent, waitFor } from 'test-utils';
+import { useSplitzService } from 'common/splitz';
 
 jest.mock(
   'merchant/views/AccountAndSettings/InternationalSettings/Tabs/FIRS/components/DownloadPopup/File',
@@ -23,12 +24,27 @@ jest.mock(
   }),
 );
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {
+      firs_messaging: {
+        variables: {
+          result: 'off',
+          message: 'dummy message',
+        },
+      },
+    },
+  })),
+}));
+
 const renderApp = (props = {}) => {
   render(<FirsFiles {...props} />);
 };
 
 describe('Tests for FirsFiles component when only bank FIRS are available', () => {
   const { month, year } = dateObject;
+
+  beforeAll(() => jest.clearAllMocks());
 
   test('When only Bank Firs are present', () => {
     const bankFirs = generateBankFirs(BANK_FILES.slice(0, 2));
@@ -105,6 +121,49 @@ describe('Tests for FirsFiles component when only bank FIRS are available', () =
     });
     //should defult back to 3 files
     expect(screen.getAllByTestId('file-row')).toHaveLength(3);
+  });
+
+  test('Should not show notice if experiment is disabled and there are no bank FIRS', () => {
+    const bankFirs = [];
+    const firsData = { [year]: { [month]: bankFirs } };
+    mockContextData({ firsData, popupData: dateObject });
+
+    renderApp();
+
+    expect(screen.queryByText('dummy message')).not.toBeInTheDocument();
+  });
+
+  test('Should show notice if experiment is enabled and there are no bank FIRS', () => {
+    const bankFirs = [];
+    const firsData = { [year]: { [month]: bankFirs } };
+    mockContextData({ firsData, popupData: dateObject });
+
+    // eslint-disable-next-line
+    // @ts-ignore
+    useSplitzService.mockImplementation(() => ({
+      abExperiments: {
+        firs_messaging: {
+          variables: {
+            result: 'on',
+            message: 'dummy message',
+          },
+        },
+      },
+    }));
+
+    renderApp();
+
+    expect(screen.getByText('dummy message')).toBeInTheDocument();
+  });
+
+  test('Should not show notice if experiment is enabled but bank FIRS are available', () => {
+    const bankFirs = generateBankFirs(BANK_FILES.slice(0, 2));
+    const firsData = { [year]: { [month]: bankFirs } };
+    mockContextData({ firsData, popupData: dateObject });
+
+    renderApp();
+
+    expect(screen.queryByText('dummy message')).not.toBeInTheDocument();
   });
 });
 

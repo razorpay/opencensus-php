@@ -7,6 +7,7 @@ import {
   Box,
   Text,
   Button,
+  Alert,
 } from '@razorpay/blade/components';
 
 import { trackRequestFirsButtonClick } from 'merchant/views/AccountAndSettings/InternationalSettings/analytics';
@@ -16,8 +17,10 @@ import {
 } from 'merchant/views/AccountAndSettings/InternationalSettings/constants';
 import useFirsContext from 'merchant/views/AccountAndSettings/InternationalSettings/hooks/useFirsContext';
 import { ActionPopupPropsT } from 'merchant/views/AccountAndSettings/InternationalSettings/typings';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
-const getModalBody = (popupType, month, year) => {
+const getModalBody = (popupType, month, year, customMessage) => {
   switch (popupType) {
     case PopupType.SUCCESS_MODAL:
       return (
@@ -44,6 +47,15 @@ const getModalBody = (popupType, month, year) => {
             Bank FIRS is/are usually available for download after the 15th of the next month. You
             can also request for statement generated on the Razorpay letterhead.
           </Text>
+          {customMessage && (
+            <Alert
+              marginTop="spacing.5"
+              color="notice"
+              isDismissible={false}
+              isFullWidth
+              description={customMessage}
+            />
+          )}
         </Box>
       );
   }
@@ -60,6 +72,12 @@ const getButtonText = (popupType) => {
 
 const ActionPopup = ({ popupType }: ActionPopupPropsT) => {
   const { popupData, setPopupData } = useFirsContext();
+  const {
+    abExperiments: { firs_messaging },
+  } = useSplitzService();
+
+  const isFirsExpEnabled = isExperimentEnabled(firs_messaging);
+  const customMessage = isFirsExpEnabled ? firs_messaging?.variables?.message : null;
   const { isOpen, type, month, year } = popupData;
 
   const isPopupOpen = isOpen && type === popupType;
@@ -84,7 +102,7 @@ const ActionPopup = ({ popupType }: ActionPopupPropsT) => {
   return (
     <Modal isOpen={isPopupOpen} onDismiss={onDismiss} size="small" zIndex={10000}>
       <ModalHeader title={PopupTitle[popupType]} />
-      <ModalBody>{getModalBody(popupType, month, year)}</ModalBody>
+      <ModalBody>{getModalBody(popupType, month, year, customMessage)}</ModalBody>
       <ModalFooter>
         <Box>
           <Button variant="primary" isFullWidth onClick={onClick}>

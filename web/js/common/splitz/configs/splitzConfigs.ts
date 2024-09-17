@@ -1554,5 +1554,30 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/international-settings/firs'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'firs_messaging',
+          experimentId: {
+            beta: 'OtTIJ3pccGg4JA',
+            production: 'OtafuXfv3oQav1',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+              {
+                key: 'message',
+                value: '',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

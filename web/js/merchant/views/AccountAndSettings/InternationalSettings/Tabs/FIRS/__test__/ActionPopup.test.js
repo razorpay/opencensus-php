@@ -6,6 +6,20 @@ import {
   PopupType,
 } from 'merchant/views/AccountAndSettings/InternationalSettings/constants';
 import { render, screen, userEvent, waitFor } from 'test-utils';
+import { useSplitzService } from 'common/splitz';
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {
+      firs_messaging: {
+        variables: {
+          result: 'off',
+          message: 'dummy message',
+        },
+      },
+    },
+  })),
+}));
 
 const renderApp = (props = {}) => {
   render(<ActionPopup {...props} />);
@@ -21,6 +35,8 @@ describe('Tests for ActionPopup component', () => {
   };
   const callBack = jest.fn();
   const setPopupData = jest.fn((anonymousFunc) => callBack(anonymousFunc?.()));
+
+  beforeAll(() => jest.clearAllMocks());
 
   test('Correct Modal info should be visible PopupType is NO_FIRS', () => {
     const popupType = PopupType.NO_FIRS;
@@ -96,5 +112,35 @@ describe('Tests for ActionPopup component', () => {
     expect(screen.getByLabelText('Close')).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Close'));
     await waitFor(() => expect(setPopupData).toHaveBeenCalled());
+  });
+
+  test('Should not show notice if experiment is enabled', () => {
+    const popupType = PopupType.NO_FIRS;
+    mockContextData({ popupData, setPopupData });
+    renderApp({ popupType });
+
+    expect(screen.queryByText('dummy message')).not.toBeInTheDocument();
+  });
+
+  test('Should show notice if experiment is enabled', () => {
+    const popupType = PopupType.NO_FIRS;
+    mockContextData({ popupData, setPopupData });
+
+    // eslint-disable-next-line
+    // @ts-ignore
+    useSplitzService.mockImplementation(() => ({
+      abExperiments: {
+        firs_messaging: {
+          variables: {
+            result: 'on',
+            message: 'dummy message',
+          },
+        },
+      },
+    }));
+
+    renderApp({ popupType });
+
+    expect(screen.getByText('dummy message')).toBeInTheDocument();
   });
 });

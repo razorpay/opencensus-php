@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Text, Link, ChevronDownIcon, ChevronUpIcon } from '@razorpay/blade/components';
+import { Box, Text, Link, Alert, ChevronDownIcon, ChevronUpIcon } from '@razorpay/blade/components';
 
+import { useSplitzService } from 'common/splitz';
 import { pluralize } from 'common/utils/rzp-utils';
 import File from 'merchant/views/AccountAndSettings/InternationalSettings/Tabs/FIRS/components/DownloadPopup/File';
 import { trackRequestFirsButtonClick } from 'merchant/views/AccountAndSettings/InternationalSettings/analytics';
@@ -8,11 +9,19 @@ import { PopupType } from 'merchant/views/AccountAndSettings/InternationalSettin
 import useFirsContext from 'merchant/views/AccountAndSettings/InternationalSettings/hooks/useFirsContext';
 import { PopupDataType } from 'merchant/views/AccountAndSettings/InternationalSettings/typings';
 import { getCategorizedFirsFiles } from 'merchant/views/AccountAndSettings/InternationalSettings/utils';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const FirsFiles = (): React.ReactElement => {
   const [shouldShowAll, setShouldShowAll] = useState(false);
 
   const { popupData, firsData, isRequestFirsEnabled, setPopupData } = useFirsContext();
+  const {
+    abExperiments: { firs_messaging },
+  } = useSplitzService();
+  const customMessage = isExperimentEnabled(firs_messaging)
+    ? firs_messaging?.variables?.message
+    : null;
+
   const { month, year } = popupData;
   const { bankFirs, internalFirs, shouldShowRequestButton, isFirsRequestFailed } =
     getCategorizedFirsFiles(firsData[year]?.[month] ?? []);
@@ -52,9 +61,20 @@ const FirsFiles = (): React.ReactElement => {
             return <File key={file.id} file={file} month={month} year={year} />;
           })}
           {bankFirs.length === 0 && (
-            <Text size="medium" weight="regular">
-              Bank FIRS is/are usually available for download after the 15th of the next month.
-            </Text>
+            <Box display="flex" flexDirection="column">
+              <Text size="medium" weight="regular" marginBottom="spacing.5">
+                Bank FIRS is/are usually available for download after the 15th of the next month.
+              </Text>
+              {customMessage && (
+                <Alert
+                  marginTop="spacing.5"
+                  color="notice"
+                  isDismissible={false}
+                  isFullWidth
+                  description={customMessage as string}
+                />
+              )}
+            </Box>
           )}
         </Box>
         {bankFirs.length > 3 && (
