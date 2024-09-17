@@ -1101,6 +1101,15 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->setRequestData($testData['request']);
 
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
+
         $this->sendRequest($testData['request']);
 
         $response = $this->runRequestResponseFlow($testData);
@@ -1123,6 +1132,15 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->mockAllSplitzTreatment();
 
         $this->setRequestData($testData['request']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
 
         $this->sendRequest($testData['request']);
 
@@ -1162,6 +1180,15 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->setRequestData($testData['request']);
 
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
+
         $this->sendRequest($testData['request']);
 
         $response = $this->runRequestResponseFlow($testData);
@@ -1184,6 +1211,15 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->mockAllSplitzTreatment();
 
         $this->setRequestData($testData['request']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
 
         $this->sendRequest($testData['request']);
 
@@ -1214,6 +1250,15 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->setRequestData($testData['request']);
 
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
+
         $this->sendRequest($testData['request']);
 
         $response = $this->runRequestResponseFlow($testData);
@@ -1242,6 +1287,15 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->mockAllSplitzTreatment();
 
         $this->setRequestData($testData['request']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
 
         $this->sendRequest($testData['request']);
 
@@ -1284,6 +1338,16 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->mockAllSplitzTreatment();
 
         $this->setRequestData($testData['request']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
+
 
         $this->sendRequest($testData['request']);
 
@@ -1347,6 +1411,15 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->setRequestData($testData['request']);
 
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
+
         $this->sendRequest($testData['request']);
 
         $response = $this->runRequestResponseFlow($testData);
@@ -1369,6 +1442,15 @@ class PaymentMarketplaceTransferTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $this->setRequestData($testData['request']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
 
         $this->sendRequest($testData['request']);
 
@@ -1426,6 +1508,15 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->setRequestData($testData['request']);
 
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
+
         $this->sendRequest($testData['request']);
 
         $accessMap = $this->getDbLastEntity('merchant_access_map');
@@ -1450,6 +1541,15 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->mockAllSplitzTreatment();
 
         $this->setRequestData($testData['request']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->fixtures->create('entity_origin', [
+            'entity_type' => 'payment',
+            'entity_id' => $paymentId,
+            'origin_type' => 'application',
+            'origin_id' => Constants::DEFAULT_PLATFORM_APP_ID,
+        ]);
 
         $this->sendRequest($testData['request']);
 
@@ -2190,6 +2290,35 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals($payment['amount'], $transfer['amount']);
         $this->assertEquals('online', $transfer['source_channel']);
         $this->assertEquals($payment['currency'], $transfer['currency']);
+    }
+
+    public function testCreatePaymentTransferForPaymentCreatedByMerchant()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->setupMarketPlace(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $this->sendRequest($testData['request']);
+
+        try
+        {
+            $response = $this->runRequestResponseFlow($testData);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals('BAD_REQUEST_VALIDATION_FAILURE',$e->getCode());
+            $this->assertEquals('This transfer is not supported');
+        }
     }
 
 }

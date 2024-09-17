@@ -33,6 +33,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\EntityOrigin;
 
 class TransferTest extends TestCase
 {
@@ -3470,5 +3471,19 @@ class TransferTest extends TestCase
             $this->assertEquals('BAD_REQUEST_VALIDATION_FAILURE',$e->getCode());
             $this->assertEquals('Transfer and Merchant\'s acceptance currency should be same, Transfer currency : INR, Merchant\'s currency MYR', $e->getMessage());
         }
+    }
+    public function testTransferWithOAuth()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['amount_transferred' => 1000]);
+
+        $entityOrigin = (new EntityOrigin\Core)->fetchEntityOriginV2($payment);
+
+        $paymentOAuth = optional($entityOrigin)->getOriginId();
+
+
+        $this->assertEquals($paymentOAuth,$this->ba->getOauthTokenEntity());
+
+        $this->createTransfer('account');
+
     }
 }

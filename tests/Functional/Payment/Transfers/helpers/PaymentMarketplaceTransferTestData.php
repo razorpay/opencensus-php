@@ -1170,4 +1170,31 @@ return [
             'content' => [],
         ],
     ],
+
+    'testCreatePaymentTransferForPaymentCreatedByMerchant' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000001',
+                        'amount'  => 100,
+                        'currency'=> 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This transfer is not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];

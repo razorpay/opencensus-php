@@ -231,6 +231,8 @@ class Core extends Base\Core
     {
         $this->validateMerchantForTransfer($merchant);
 
+        $this->validateUsingOauth($payment);
+
         $this->addAccountFromAccountCodeIfApplicable($input);
 
         $orderTransfers =new Base\PublicCollection();
@@ -1132,7 +1134,17 @@ class Core extends Base\Core
                     'This transfer is not supported');
         }
     }
+    public function validateUsingOauth(Payment\Entity $payment)
+    {
+        $entityOrigin = (new EntityOrigin\Core)->fetchEntityOriginV2($payment);
 
+        $paymentOAuth = optional($entityOrigin)->getOriginId();
+
+        if($this->oauthApplicationId !== $paymentOAuth){
+            throw new Exception\BadRequestValidationFailureException(
+                'This transfer is not supported');
+        }
+    }
     protected function validateMerchantForTransfer(Merchant\Entity $merchant)
     {
         $isOnHold = $merchant->getHoldFunds();
