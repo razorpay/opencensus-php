@@ -568,7 +568,7 @@ class Repository extends Base\Repository
         $afterDate = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->with(['balance', 'merchant'])
+                    ->with(['balance'])
                     ->whereIn($statusColumn, [Status::SCHEDULED, Status::PENDING])
                     ->where($createdAtColumn, '>=', $afterDate)
                     ->whereNotNull($scheduledAtColumn)
@@ -2452,7 +2452,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($this->getTableName() . ".*")
-            ->with(['balance', 'merchant', 'merchant.org'])
+            ->with(['balance'])
             ->WhereIn(Entity::STATUS, $statuses)
             ->where($isPayoutService, '=', 0)
             ->whereNull(Entity::FTS_TRANSFER_ID);
