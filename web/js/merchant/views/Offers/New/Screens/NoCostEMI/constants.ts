@@ -22,7 +22,7 @@ export const offerHeaders = [
   },
   {
     key: 'interest',
-    value: 'Effective Interest',
+    value: 'No Cost EMI Subvention',
   },
   {
     key: 'offer_type',
@@ -30,11 +30,11 @@ export const offerHeaders = [
   },
   {
     key: 'merchant_interest',
-    value: 'Interest % borne by merchant (you)',
+    value: 'Subvention % borne by you',
   },
   {
     key: 'customer_interest',
-    value: 'Interest % borne by your customer',
+    value: 'Subvention % borne by customer',
   },
 ];
 

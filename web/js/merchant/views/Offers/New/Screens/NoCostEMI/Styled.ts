@@ -11,6 +11,7 @@ export const StyledActionRow = styled.div`
   justify-content: space-between !important;
   align-items: flex-start;
   padding: 12px 16px;
+  width: 100%;
 
   .offer_header {
     width: 20%;

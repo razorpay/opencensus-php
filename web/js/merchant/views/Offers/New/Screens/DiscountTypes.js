@@ -195,7 +195,7 @@ export default function DiscountType({
             name="min_amount"
             placeholder="0.00"
             leadingIcon={RupeeIcon}
-            helpText="Discount worth in cash"
+            helpText=""
             validationState={touched.min_amount && errors?.min_amount ? 'error' : 'none'}
             errorText={errors?.min_amount}
             isDisabled={isFormLocked}
@@ -214,7 +214,7 @@ export default function DiscountType({
             name="max_order_amount"
             placeholder="0.00"
             leadingIcon={RupeeIcon}
-            helpText="Discount worth in cash"
+            helpText=""
             marginBottom="spacing.7"
             value={values.max_order_amount}
             onChange={({ name, value }) => {
