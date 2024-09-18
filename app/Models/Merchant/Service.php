@@ -10335,7 +10335,9 @@ class Service extends Base\Service
             // then we send promoter_pan details
             // else null
             if(empty($PANDetails) === true) {
-                if($merchant->merchantDetail->getBusinessType() === BusinessType::PROPRIETORSHIP ) {
+                if($merchant->merchantDetail->getBusinessType() === BusinessType::PROPRIETORSHIP ||
+                $merchant->merchantDetail->getBusinessType() === BusinessType::INDIVIDUAL ||
+                $merchant->merchantDetail->getBusinessType() === BusinessType::NOT_YET_REGISTERED) {
                     $PANDetails = $merchant->merchantDetail->getPromoterPan();
                 }
             }
