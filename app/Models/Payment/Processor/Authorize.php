@@ -5999,7 +5999,7 @@ trait Authorize
                     {
                     $body = [
                         'amount' => $payment->getAmount(),
-                        'base_currency' => $input['currency'],
+                        'currency' => $input['currency'],
                         'conversion_currency' => Currency\Currency::INR,
                         'entity_id' => $payment->getId(),
                         'entity_type' => Entity::PAYMENT,
