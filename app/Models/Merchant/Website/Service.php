@@ -2692,7 +2692,7 @@ class Service extends Base\Service
 
     public function isAdminWebsiteDetailPresent(MerchantEntity $merchant): bool
     {
-        $websiteDetails = $this->repo->merchant_website->findOrFailPublic($merchant->getId());
+        $websiteDetails = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
 
         $adminWebsiteDetail = $websiteDetails->getAdminWebsiteDetails();
 
