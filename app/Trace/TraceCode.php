@@ -2951,6 +2951,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_FEES_GREATER_THAN_AMOUNT                      = 'PRICING_FEES_GREATER_THAN_AMOUNT';
 
     const WEBHOOK_EVENT_JOB_RECEIVED                            = 'WEBHOOK_EVENT_JOB_RECEIVED';
+    const WEBHOOK_EVENT_DEBUG_LOG                               = 'WEBHOOK_EVENT_DEBUG_LOG';
+
     const PAYMENT_DOWNTIME_EVENT_JOB_RECEIVED                   = 'PAYMENT_DOWNTIME_EVENT_JOB_RECEIVED';
 
     const AWS_INSTANCE_DATA_RECORD_FAILURE                      = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
@@ -7023,6 +7025,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
     const STORK_PRODUCT_SET_FAILED                              = 'STORK_PRODUCT_SET_FAILED';
     const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
+    const STORK_DISPATCH_EVENT_REQUEST_DEBUG_LOG                = 'STORK_DISPATCH_EVENT_REQUEST_DEBUG_LOG';
     const STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING          = 'STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING';
     const STORK_ADMIN_REQUEST                                   = 'STORK_ADMIN_REQUEST';
     const STORK_ADMIN_RESPONSE                                  = 'STORK_ADMIN_RESPONSE';

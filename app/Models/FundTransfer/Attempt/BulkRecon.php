@@ -133,7 +133,7 @@ class BulkRecon extends Base\Core
     {
         $ftaIds = $attempts->getIds();
 
-        $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
+        $relations = ['source', 'source.transaction', 'batchFundTransfer'];
 
         $chunks = array_chunk($ftaIds, 1000);
 
@@ -151,6 +151,11 @@ class BulkRecon extends Base\Core
                     {
                         try
                         {
+                            if(empty($fta) === false && empty($fta->source) === false)
+                            {
+                                $fta->source->merchant;
+                            }
+
                             $reconDetails = (new $entityProcessor($fta))->process();
 
                             $this->allReconciledRows[] = $reconDetails;

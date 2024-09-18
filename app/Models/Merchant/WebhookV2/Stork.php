@@ -369,6 +369,9 @@ class Stork
             $processEventReq,
             self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
         );
+
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST_DEBUG_LOG, $eventTrace);
+
     }
 
     public function processEventForOwner(array $event) : void

@@ -72,6 +72,9 @@ class WebhookEvent extends Job
             $this->trace->info(TraceCode::WEBHOOK_EVENT_JOB_RECEIVED, $event->toArrayPublic());
 
             (new Merchant\WebhookV2\Stork($this->mode, $this->product))->processEvent($event, $this->ownerType);
+
+            $this->trace->info(TraceCode::WEBHOOK_EVENT_DEBUG_LOG, ["mode" => $this->mode, "product" => $this->product]);
+
         }
         catch (\Throwable $e)
         {
