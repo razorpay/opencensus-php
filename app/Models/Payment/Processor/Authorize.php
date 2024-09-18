@@ -1196,7 +1196,9 @@ trait Authorize
                     'message'       => 'Failed to fetch alt id data'
                 ]
             );
-            return $e;
+            if(app()->isEnvironmentQA() === false) {
+                return $e;
+            }
         }
 
 
