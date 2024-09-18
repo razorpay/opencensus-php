@@ -2,6 +2,7 @@
 
 namespace Unit\Models\Merchant\Document;
 
+use _PHPStan_f96c91c1c\Nette\Neon\Exception;
 use Config;
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Merchant\V1\DeleteResponse;
@@ -12,8 +13,10 @@ use Rzp\Accounts\Merchant\V1\MerchantDocumentResponseByMerchantId;
 use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Entity;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -22,6 +25,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail;
 use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
 use RZP\Models\Merchant\Document\Repository;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
@@ -253,11 +257,52 @@ class RepositoryTest extends RepositoryTestHelper
 
     }
 
+    public function testDocumentFindByIdAndMerchantOperation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $merchantId = PublicEntity::generateUniqueId();
+        $randomMerchantId = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $this->fixtures->create('merchant', ['id' => $randomMerchantId]);
+        $this->fixtures->create('merchant_document', ['id' => $id1, 'merchant_id' => $merchantId]);
+        $this->fixtures->create('merchant_document', ['id' => $id2, 'merchant_id' => $randomMerchantId]);
+
+        $repository = new MerchantRepository();
+        $merchant       = $repository->findOrFail($merchantId);
+        $nonOwnerMerchant       = $repository->findOrFail($randomMerchantId);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Repository();
+        $resultWithoutSplitzOff = $repository->findByIdAndMerchant($id1, $merchant);
+
+        // reset connection because when we query from asv laravel attaches db connection with entity ,
+        // so we manually reset the connection with entity
+        $repository->resetConnectionOnModels($resultWithoutSplitzOff);
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        $resultWithSplitzOn = $repository->findByIdAndMerchant($id1, $merchant);
+        $this->assertEquals($resultWithoutSplitzOff, $resultWithSplitzOn, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitzOff), get_class($resultWithSplitzOn));
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        try {
+            $repository->findByIdAndMerchant($id1, $nonOwnerMerchant);
+            // this should throw bad request exception if merchant is not parent
+            throw new \Exception();
+        } catch (BadRequestException $ex){
+
+        }
+    }
+
     public function testMerchantDocumentAssociation()
     {
         $entitiesData = [
             [
-                "AssociatedEntityRepo" => new \RZP\Models\Merchant\Repository(),
+                "AssociatedEntityRepo" => new MerchantRepository(),
                 "AssociatedEntityName" => "merchant",
                 "AssociatedEntityData" => $this->merchantEntityJson1,
                 "AssociatedEntityClass" => new MerchantEntity(),

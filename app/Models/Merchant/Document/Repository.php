@@ -2,22 +2,25 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use Database\Connection;
 use RZP\Base\ConnectionType;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument as MerchantDocumentSDKWrapper;
-use RZP\Models\Merchant\Acs\Traits\AsvFindEntity;
 
 class Repository extends Base\Repository
 {
@@ -141,6 +144,34 @@ class Repository extends Base\Repository
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->orderBy(Entity::ID, 'desc')
             ->get();
+    }
+
+    public function findByIdAndMerchant(string         $id,
+                                        MerchantEntity $merchant,
+                                        array          $params = [],
+                                        string         $connectionType = null): PublicEntity
+    {
+
+        if ($this->asvRouter->shouldRouteFilterToAsv('documentFindByIdAndMerchant')) {
+            $document = $this->findOrFail($id);
+
+            if ($document?->getMerchantId() === $merchant->getId()) {
+                $document->merchant()->associate($merchant);
+                return $document;
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    'model' => $this->getEntityClass(),
+                    'attributes' => $id,
+                    'operation' => 'find',
+                ],
+            );
+        } else {
+            return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+        }
     }
 
     /**
