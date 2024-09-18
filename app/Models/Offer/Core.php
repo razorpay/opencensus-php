@@ -595,6 +595,11 @@ class Core extends Base\Core
          * new offer with same issuer and any emi duration like
          * 3 will fail
          */
+        //for platform offer we are not doing any conflicting offer checks
+        if ($offer->isPlatformOffer() === true)
+        {
+            return;
+        }
 
         // Check to see if there are any offers with same values for the set of attributes
         // required to uniquely define an offer
@@ -712,7 +717,7 @@ class Core extends Base\Core
 
     protected function validateMerchant(Merchant\Entity $merchant, array &$input)
     {
-        if ($merchant->isShared() === true)
+        if ($merchant->isShared() === true || $merchant->getId() === Constants::PLATFORM_AD_PUBLISHER)
         {
             return;
         }

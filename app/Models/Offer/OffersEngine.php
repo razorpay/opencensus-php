@@ -1113,6 +1113,7 @@ class OffersEngine extends Base\Core
 
         $input = $this->getDefaultTransactionInput($payment,$offer);
 
+        $input['customer_indentifier'] = $this->getCustomerContactIdentifier($payment, $offer,Constants::STAGE_REDEEM);
 
         try
         {
@@ -1163,7 +1164,7 @@ class OffersEngine extends Base\Core
 
         $input['benefit_applied'] = $benefitApplied;
 
-        $input['customer_indentifier'] = $this->getCustomerContactIdentifier($payment,$offer);
+        $input['customer_indentifier'] = $this->getCustomerContactIdentifier($payment, $offer, Constants::STAGE_AVAIL);
 
         try
         {
@@ -1175,13 +1176,13 @@ class OffersEngine extends Base\Core
         }
     }
 
-    private function getCustomerContactIdentifier(Payment\Entity $payment, Entity $offer): array
+    private function getCustomerContactIdentifier(Payment\Entity $payment, Entity $offer, string $stage): array
     {
         $identifier = [
             Constants::MOBILE_NUMBER => $payment->getContact(),
             Constants::EMAIL => $payment->getEmail(),
         ];
-        if (empty($offer->getMaxPaymentCount()) === false)
+        if ($stage === Constants::STAGE_AVAIL && empty($offer->getMaxPaymentCount()) === false)
         {
             $par = (new Core())->getParValue($payment, false);
 

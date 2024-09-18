@@ -534,7 +534,7 @@ class Entity extends Base\PublicEntity
     }
     public function isPlatformOffer(): bool
     {
-        if ($this->getMerchantId() === '100000razorpay')
+        if ($this->getMerchantId() ===  Constants::PLATFORM_AD_PUBLISHER)
         {
             return true;
         }

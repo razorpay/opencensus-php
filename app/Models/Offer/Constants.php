@@ -215,4 +215,6 @@ final class Constants
 
     const PAYMENT_INSTRUMENT = "PaymentInstrument";
 
+    const PLATFORM_AD_PUBLISHER = '100000razorpay';
+
 }
