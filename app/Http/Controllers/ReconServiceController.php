@@ -72,6 +72,8 @@ class ReconServiceController extends Controller
             '^workflow_file_detail$',
             '^workflow_file_detail\/[[:alnum:]]{14}$',
             '^job_context$',
+            '^recon_pair$',
+            '^records_v2$'
         ],
         self::POST => [
             '^output_email$',
