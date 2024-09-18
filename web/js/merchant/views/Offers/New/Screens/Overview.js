@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Checkbox, CheckboxGroup } from '@razorpay/blade/components';
 
 import { findBy } from 'common/utils/rzp-utils';
@@ -84,6 +85,12 @@ export default function OverView(props) {
     setFieldTouched(name);
     setFieldValue(name, value);
   };
+
+  const handleTermsAndConditions = (evt) => {
+    const { name, values } = evt;
+    handleFormChange(name, values);
+  };
+
   const { isLowCostEnabled } = useLowCostOfferExperiment();
 
   const DiscountTypeHeading = `${discount_type.split('_').join(' ')} discount`;
@@ -175,7 +182,7 @@ export default function OverView(props) {
           name="creation_terms_accepted"
           value={values.creation_terms_accepted}
           onChange={({ name, values }) => {
-            handleFormChange(name, values?.[0]);
+            handleFormChange(name, values);
           }}
           validationState={
             touched.creation_terms_accepted && errors?.creation_terms_accepted ? 'error' : 'none'
@@ -214,7 +221,7 @@ export function wordWithSpace(word) {
 }
 
 function validateTermsAndConditions(val) {
-  if (!val || val == '') {
+  if (!val || !val.length) {
     return 'Please accept Terms and Conditions';
   }
   return false;

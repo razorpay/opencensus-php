@@ -714,9 +714,9 @@ class PaymentButtonCreate extends React.Component {
             </div>
           ) : (
             <React.Fragment
-              key={`${payment_button?.paymentButtonEntity?.settings?.payment_button_template_type}-${
-                this.paymentButtonId || 'new'
-              }`}
+              key={`${
+                payment_button?.paymentButtonEntity?.settings?.payment_button_template_type
+              }-${this.paymentButtonId || 'new'}`}
             >
               <SideBar
                 {...payment_button}

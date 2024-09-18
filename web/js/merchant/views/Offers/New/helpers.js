@@ -62,6 +62,7 @@ export function prepareDataForSubmit(
 
   dateFields.forEach((field) => {
     if (formData[field]) {
+      // Storing moment object
       transformedFormData[field] = formData[field].unix();
     }
   });
@@ -233,3 +234,11 @@ export const emiDurationString = (emiDurations) => {
 
   return durations.join(', ') + lastDurationString;
 };
+
+export function getEOD() {
+  let eod = new Date();
+  eod.setHours(23);
+  eod.setMinutes(59);
+
+  return eod.getTime();
+}

@@ -44,7 +44,6 @@ export default class CreateOfferWizard extends React.Component {
         .map(([key, _value]) => key);
 
       const currentTabStatus = invalidFields.length === 0;
-
       let isValidTabsUpdate = false;
       const newValidTabs = state.validTabs.map((tabStatus, idx) => {
         if (state.currentTab === idx && tabStatus !== currentTabStatus) {

@@ -8,14 +8,15 @@ import { render } from 'test-utils';
 
 import OfferValidity, {
   validateBlock,
+  validateExpiry,
   validateMaxOfferUsage,
-  validatesEndsAt,
 } from '../OfferValidity';
+import moment from 'moment';
 
 describe('OfferValidity Component', () => {
   const mockValues = {
-    starts_at: '2024-05-27T00:00:00Z',
-    ends_at: '2024-06-27T00:00:00Z',
+    starts_at: moment('2024-05-27T00:00:00Z'),
+    ends_at: moment('2024-06-27T00:00:00Z'),
     block: '0',
     max_offer_usage: '10',
     default_offer: '0',
@@ -78,22 +79,19 @@ describe('OfferValidity Component', () => {
     expect(validateMaxOfferUsage('100')).toBe(false);
   });
 
-  it('should return error message if value is not provided', () => {
-    const validator = validatesEndsAt(new Date('2024-05-27T00:00:00Z'));
-    expect(validator(undefined)).toBe('Please select a date');
+  it('should return false if no start date is passed.', () => {
+    expect(validateExpiry(undefined, moment(new Date()))).toBeFalsy();
   });
 
   it('should return error message if end date is less than start date', () => {
-    const startAt = new Date('2024-05-27T00:00:00Z');
-    const validator = validatesEndsAt(startAt);
-    const endDateBeforeStart = new Date('2024-05-26T00:00:00Z');
-    expect(validator(endDateBeforeStart)).toBe('End date cannot be less that start date.');
+    expect(
+      validateExpiry(moment(new Date('2024-10-10')), moment(new Date('2024-10-09'))),
+    ).not.toBeFalsy();
   });
 
-  it('should return undefined if end date is greater than or equal to start date', () => {
-    const startAt = new Date('2024-05-27T00:00:00Z');
-    const validator = validatesEndsAt(startAt);
-    const endDateAfterStart = new Date('2024-05-28T00:00:00Z');
-    expect(validator(endDateAfterStart)).toBeUndefined();
+  it('should return false if end date is after start date', () => {
+    expect(
+      validateExpiry(moment(new Date('2047-10-29')), moment(new Date('2047-10-30'))),
+    ).toBeFalsy();
   });
 });

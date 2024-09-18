@@ -13,6 +13,8 @@ import Input from 'common/new-ui/Input';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import DocsLink from 'merchant/components/DocsLink';
 import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
+import { getEOD } from '../helpers';
+import moment from 'moment';
 const LINK_TO_DOCS = 'https://razorpay.com/docs/payment-gateway/orders/';
 const PAYMENT_FAILURE_OPTIONS = [
   { label: '--Select Type--', name: '' },
@@ -33,24 +35,56 @@ export default class OfferValidity extends React.Component {
       });
     };
   };
+  handleEndDate = (value) => {
+    this.handleFormChange('ends_at', value);
+  };
+
+  handleStartDate = (value) => {
+    const {
+      values: { ends_at },
+    } = this.props;
+    if (!value) {
+      this.handleFormChange('starts_at', undefined);
+      return;
+    }
+    this.handleFormChange('starts_at', value);
+  };
+
+  componentDidMount() {
+    const {
+      values: { ends_at },
+    } = this.props;
+    if (!ends_at) {
+      this.handleEndDate(moment(getEOD()));
+    }
+  }
+
+  getStartAtProps() {
+    const {
+      values: { starts_at },
+    } = this.props;
+    const startAtProps = {};
+
+    if (starts_at) {
+      startAtProps.defaultValue = starts_at;
+    }
+
+    return startAtProps;
+  }
 
   handleFormChange = (name, value) => {
     this.props.setFieldTouched(name);
     this.props.setFieldValue(name, value);
   };
   render() {
-    const {
-      isFormLocked,
-      showSubscriptionOfferFields,
-      values,
-      handleChange,
+    const { isFormLocked, showSubscriptionOfferFields, values, errors, touched } = this.props;
 
-      errors,
-      touched,
-    } = this.props;
-
+    const defaultEndDate = values.ends_at || moment(getEOD());
     errors.block = validateBlock(values.block);
     errors.max_offer_usage = validateMaxOfferUsage(values.max_offer_usage);
+    errors.ends_at = validateExpiry(values.starts_at, values.ends_at);
+
+    const startAtProps = this.getStartAtProps();
     return (
       <div class="offers-duration-container">
         <Input.DateTime
@@ -59,18 +93,19 @@ export default class OfferValidity extends React.Component {
           description="Start date for offer"
           checkboxFieldLabel="Starts Immediately"
           class="Input--vTop"
-          onChange={(value) => this.handleDate('starts_at', handleChange)(value)}
+          onChange={this.handleStartDate}
           disabled={isFormLocked}
+          {...startAtProps}
         />
 
         <Input.DateTime
           isInline
           required
           label="Expires On"
+          defaultValue={defaultEndDate}
           description="Expiry date for offer"
           class="Input--vTop"
-          validator={validatesEndsAt(values.start_at)}
-          onChange={(value) => this.handleDate('ends_at', handleChange)(value)}
+          onChange={this.handleEndDate}
           disabled={isFormLocked}
         />
 
@@ -147,15 +182,9 @@ export default class OfferValidity extends React.Component {
   }
 }
 
-export function validatesEndsAt(start_at) {
-  // eslint-disable-next-line consistent-return
-  return (val) => {
-    if (!val) return 'Please select a date';
-
-    if (start_at >= val) {
-      return 'End date cannot be less that start date.';
-    }
-  };
+export function validateExpiry(startDate, endDate) {
+  if (!startDate || endDate.unix() >= startDate.unix()) return false;
+  return 'End date should be after start date.';
 }
 
 export function validateBlock(val) {
