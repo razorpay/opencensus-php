@@ -3022,28 +3022,45 @@ class Repository extends Base\Repository
 
     public function getMerchantListForWebsiteCheckerPeriodic()
     {
-        $query = $this->newQuery()
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        $merchantList = $query
             ->leftJoin(Table::MERCHANT_DETAIL, Entity::ID, Detail\Entity::MERCHANT_ID)
             ->select(Entity::ID)
             ->where(Entity::HOLD_FUNDS, '=', 0)
             ->where(Entity::ACTIVATED, '=', 1)
             ->where(Detail\Entity::BUSINESS_WEBSITE, '!=', '')
             ->whereNotNull(Detail\Entity::BUSINESS_WEBSITE)
-            ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1');
+            ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1')
+            ->get();
 
-        return $query->get();
+        $this->resetConnectionOnModels($merchantList);
+        return $merchantList ;
     }
 
     public function getMerchantListForAppCheckerPeriodic()
     {
-        $query = $this->newQuery()
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        $merchantList = $query
             ->leftJoin(Table::MERCHANT_BUSINESS_DETAIL, Table::MERCHANT . '.' . Entity::ID, BusinessDetail\Entity::MERCHANT_ID)
             ->select(Table::MERCHANT . '.' . Entity::ID)
             ->where(Entity::HOLD_FUNDS, '=', 0)
             ->where(Entity::ACTIVATED, '=', 1)
             ->whereNotNull(BusinessDetail\Entity::APP_URLS)
-            ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1');
-        return $query->get();
+            ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1')
+            ->get();
+
+        $this->resetConnectionOnModels($merchantList);
+        return $merchantList ;
     }
 
     public function getMerchantsFromMerchantIdList(array $merchantIds)
