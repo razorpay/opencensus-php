@@ -3484,8 +3484,21 @@ class Repository extends Base\Repository
 
     public function findManyOnReadReplica(array $merchantIds)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->findMany($merchantIds);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+        $merchants = $query->findMany($merchantIds);
+
+        $this->resetConnectionOnModels($merchants, $this->getSlaveConnection());
+
+        return $merchants;
+    }
+
+    public function findMany($ids, $columns = array('*'))
+    {
+        return $this->findMerchantsByIds($ids);
     }
 
     public function fetchMerchantsWithNotOnboardedOnNetworks($product, array $networks, $limit)
@@ -3780,12 +3793,12 @@ class Repository extends Base\Repository
                             "identifier" => __FUNCTION__
                         ]);
                     }
-                    return $this->findMany($ids);
+                    return parent::findMany($ids);
                 }
             }
             else
             {
-                return $this->findMany($ids);
+                return parent::findMany($ids);
             }
         }
         return new PublicCollection();

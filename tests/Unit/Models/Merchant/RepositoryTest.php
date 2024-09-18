@@ -540,6 +540,58 @@ class RepositoryTest extends RepositoryTestHelper
         $this->assertEquals(get_class($resultWithoutSplitz2), get_class($resultWithSplitz2));
     }
 
+    public function testFindManyOperation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id3]);
+        $this->fixtures->create('merchant', ['id' => $id1]);
+        $this->fixtures->create('merchant', ['id' => $id2]);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->findMany(array($id1, $id2, $id3));
+
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        $resultWithSplitz1 = $repository->findMany(array($id1, $id2, $id3));
+        $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($id3, $resultWithoutSplitz1, $id2, $id1, $repository) {
+            $resultWithSplitz1 = $repository->findMany(array($id1, $id2, $id3));
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+    }
+
+    public function testFindManyOnReadReplicaOperation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id3]);
+        $this->fixtures->create('merchant', ['id' => $id1]);
+        $this->fixtures->create('merchant', ['id' => $id2]);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Repository();
+        $resultWithoutSplitz1 = $repository->FindManyOnReadReplica(array($id1, $id2, $id3));
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        $resultWithSplitz1 = $repository->FindManyOnReadReplica(array($id1, $id2, $id3));
+        $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+    }
+
 
     public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName)
     {

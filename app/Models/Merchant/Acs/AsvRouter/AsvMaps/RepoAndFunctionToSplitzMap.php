@@ -151,7 +151,6 @@ final class RepoAndFunctionToSplitzMap
         "filterOnHoldMerchants",
         "fetchPartnerRelatedEntitiesForPRTS",
         "MerchantEsSync",
-        "findMerchantsByIds",
         "isSecondFactorAuthEnabledForUserMerchants",
         "findOrFailPublicWithRelations",
     );
