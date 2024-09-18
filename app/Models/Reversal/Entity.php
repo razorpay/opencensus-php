@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
@@ -185,6 +186,11 @@ class Entity extends Base\PublicEntity
     public function initiator()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function getInitiatorAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'initiator', 'getInitiatorId');
     }
 
     public function customerRefund()
