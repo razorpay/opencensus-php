@@ -4621,6 +4621,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     'payment_id'                => $this->getId(),
                     'dcc_mark_up_percent'       => $pgRouterPaymentMetaArray['dcc_mark_up_percent']
                 ];
+                if(isset($pgRouterPaymentMetaArray['mcc_applied']))
+                {
+                    $paymentMetaInput['mcc_applied'] = $pgRouterPaymentMetaArray['mcc_applied'];
+                }
+                if(isset($pgRouterPaymentMetaArray['mcc_forex_rate']))
+                {
+                    $paymentMetaInput['mcc_forex_rate'] = $pgRouterPaymentMetaArray['mcc_forex_rate'];
+                }
+                if(isset($pgRouterPaymentMetaArray['mcc_mark_down_percent']))
+                {
+                    $paymentMetaInput['mcc_mark_down_percent'] = $pgRouterPaymentMetaArray['mcc_mark_down_percent'];
+                }
 
                 $paymentMetaEntity = (new Payment\PaymentMeta\Entity)->forcefill($paymentMetaInput);
 

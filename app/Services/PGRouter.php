@@ -627,6 +627,40 @@ class PGRouter
 
                 $response['body']['data']['payment']['payment_meta_data'] = $pgRouterPaymentMetaData;
             }
+            if(isset($response['body']['data']['payment']['mcc_applied']))
+            {
+                if(isset($response['body']['data']['payment']['payment_meta_data']))
+                {
+                    $response['body']['data']['payment']['payment_meta_data']['mcc_applied'] = $response['body']['data']['payment']['mcc_applied'];
+                }
+                else
+                {
+                    $response['body']['data']['payment']['payment_meta_data'] = ['mcc_applied' => $response['body']['data']['payment']['mcc_applied']];
+                }
+            }
+            if(isset($response['body']['data']['payment']['mcc_forex_rate']))
+            {
+                if(isset($response['body']['data']['payment']['payment_meta_data']))
+                {
+                    $response['body']['data']['payment']['payment_meta_data']['mcc_forex_rate'] = $response['body']['data']['payment']['mcc_forex_rate'];
+                }
+                else
+                {
+                    $response['body']['data']['payment']['payment_meta_data'] = ['mcc_forex_rate' => $response['body']['data']['payment']['mcc_forex_rate']];
+                }
+            }
+            if(isset($response['body']['data']['payment']['mcc_mark_down_percent']))
+            {
+                if(isset($response['body']['data']['payment']['payment_meta_data']))
+                {
+                    $response['body']['data']['payment']['payment_meta_data']['mcc_mark_down_percent'] = $response['body']['data']['payment']['mcc_mark_down_percent'];
+                }
+                else
+                {
+                    $response['body']['data']['payment']['payment_meta_data'] = ['mcc_mark_down_percent' => $response['body']['data']['payment']['mcc_mark_down_percent']];
+                }
+            }
+
 
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
