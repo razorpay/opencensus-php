@@ -47,6 +47,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\Credits;
@@ -72,8 +73,14 @@ use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use HasBalance, AsvGetAttribute;
+    use HasBalance, AsvGetAttribute, AsvLoad;
     use NotesTrait;
+
+    // This is used in the RZP\Models\Merchant\Acs\Traits\AsvLoad trait
+    // to identify which relations are ASV relations
+    const ASV_RELATIONS = [
+        'merchant'
+    ];
 
     const ID                                    = 'id';
     const MERCHANT_ID                           = 'merchant_id';
