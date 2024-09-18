@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use Razorpay\Trace\Logger as Trace;
 use Request;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Services;
 use RZP\Models\Batch;
 use RZP\Base\ConnectionType;
@@ -339,11 +340,83 @@ class Service extends Base\Service
             return $this->core->getHostedViewTemplate($paymentLink);
         });
 
-        $this->core->addCustomAmountForPaymentHandleIfRequired($viewPayload, $route, $input);
+        $isCustomAmountAdded = $this->core->addCustomAmountForPaymentHandleIfRequired($viewPayload, $route, $input);
+
+        $shouldCreateOrder = $this->shouldCreatePaymentHandleOrderDuringPageLoad($paymentLink->getMerchantId());
+
+        if ($isCustomAmountAdded && $shouldCreateOrder) {
+            $orderId = $this->createAndGetOrderIdForPaymentHandle($viewPayload);
+
+            if (isset($orderId)) {
+                $viewPayload['data']['order_id'] = $orderId;
+            } else {
+                $this->trace->info(TraceCode::ORDER_ID_NOT_FOUND, [
+                ]);
+            }
+        }
 
         $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL, $paymentLink->getMetricDimensions());
 
         return [$view, $viewPayload];
+    }
+
+    private function createAndGetOrderIdForPaymentHandle(array &$viewPayload)
+    {
+        try {
+            $paymentLinkId = $viewPayload['data']['payment_link']['id'];
+            $paymentPageItems = $viewPayload['data']['payment_link']['payment_page_items'] ?? [];
+
+            if (isset($paymentLinkId) && !empty($paymentPageItems) && isset($paymentPageItems[0]['id'])) {
+                $paymentPageItemId = $paymentPageItems[0]['id'];
+                $paymentHandleAmount = $viewPayload['data']['payment_handle_amount'];
+
+                $createOrderInput = [
+                    'line_items' => [
+                        [
+                            'payment_page_item_id' => $paymentPageItemId,
+                            'amount' => $paymentHandleAmount,
+                        ],
+                    ],
+                ];
+
+                $data = $this->createOrder($paymentLinkId, $createOrderInput);
+                return $data['order']['id'];
+            }
+        } catch (\Exception $e) {
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_ORDER_CREATION_ERROR, [
+                'message' => 'failed create payment handle order'
+            ]);
+        }
+        return '';
+    }
+
+    private function shouldCreatePaymentHandleOrderDuringPageLoad(string $merchantId): bool
+    {
+        try {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.payment_handle_order_creation_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId, 'mode' => $this->mode]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_ORDER_CREATION_DURING_PAGE_LOAD, [
+                'merchant_id' => $merchantId,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+        } catch (\Exception $e) {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_HANDLE_ORDER_CREATION_DURING_PAGE_LOAD_ERROR
+            );
+        }
+
+        return false;
     }
 
     public function getHostedButtonDetails(string $id)

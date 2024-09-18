@@ -71,6 +71,7 @@ $is_error_view              = isset($request_params['error']['description']);
           payment_handle_amount: data.payment_handle_amount,
           is_preview: data.is_test_mode,
           keyless_header: data.keyless_header,
+            order_id: data.order_id || "",
         };
     </script>
 

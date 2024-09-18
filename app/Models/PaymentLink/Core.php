@@ -1932,7 +1932,9 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::PAYMENT_HANDLE_DECRYPTION_SUCCESSFUL, [
                 'encryptedAmount'    => $input[Entity::AMOUNT],
             ]);
+            return true;
         }
+        return false;
     }
 
     public function encryptAmountForPaymentHandle(array $input): array
