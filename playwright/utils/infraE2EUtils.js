@@ -138,6 +138,11 @@ function getDependencies(depCommits) {
         pgrouter_worker_ledger_replicas: 0,
       };
     }
+    if (depName === 'ui-config-service') {
+      dependency.chart_values = {
+        service_account_enabled: false,
+      };
+    }
 
     return dependency;
   });
