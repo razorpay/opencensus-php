@@ -4276,6 +4276,13 @@ class Entity extends Base\PublicEntity
         return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "parent", 'getParentId');
     }
 
+    public function getAccountsAttribute(): mixed
+    {
+        return (new \RZP\Models\Merchant\Acs\ImplicitJoinHelper\ImplicitJoinHelper)->getRelationAttribute(
+            $this, $this->entity, 'accounts', 'merchant', 'fetchLinkedAccountsForParentMerchantId', 'getId'
+        );
+    }
+
     /**
      * This function can be used while preparing payload to send notifications via stork (to fit 160 char limit for SMS)
      *

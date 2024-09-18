@@ -2506,6 +2506,50 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function fetchLinkedAccountsForParentMerchantId(string $parentMerchantId)
+    {
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__))
+        {
+            if ($this->repo->isTransactionActive())
+            {
+                $query = $this->newQueryWithConnection(
+                    $this->getConnectionFromType(Connection::ASV_WRITER),
+                );
+            }
+            else
+            {
+                $results        = new PublicCollection();
+                $lastMerchantId = '';
+
+                do
+                {
+                    $subset = (new Acs\AsvSdkIntegration\Merchant())->fetchLinkedAccountsFromParentId($parentMerchantId, $lastMerchantId);
+
+                    $lastMerchantId = $subset->pluck(Entity::ID)->last();
+
+                    $results->push(...$subset);
+
+                } while(sizeof($subset) == Acs\AsvSdkIntegration\Base::FETCH_SERVICE_FILTER_LIMIT);
+
+                $this->resetConnectionOnModels($results);
+
+                return $results;
+            }
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        $data = $query
+            ->where(Entity::PARENT_ID, $parentMerchantId)
+            ->get();
+
+       $this->resetConnectionOnModels($data);
+
+       return $data;
+    }
+
     /**
      * @param $merchantId
      *

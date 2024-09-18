@@ -8761,7 +8761,7 @@ class Service extends Base\Service
         if ($merchant->isMarketplace() === true && $reportType !== Reporting::PARTNER)
         {
             // linked accounts
-            $associatedAccounts = $merchant->accounts()->get()->getIds();
+            $associatedAccounts = $merchant->accounts->getIds();
 
             $this->trace->info(TraceCode::ASSOCIATED_ACCOUNTS_FOR_MARKET_PLACE_FEATURE_MERCHANT,
                 [
