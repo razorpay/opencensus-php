@@ -4323,7 +4323,11 @@ trait Authorize
             if (isset($invoice) === false) return;
 
             $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
-            if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
+
+            if (isset($existingPayment) and
+                ($existingPayment->getStatus() !== Status::FAILED &&
+                    !($existingPayment->getStatus() === Status::REFUNDED && !$existingPayment->hasBeenCaptured()))
+            )
             {
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
@@ -4524,7 +4528,10 @@ trait Authorize
 
             $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
 
-            if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
+            if (isset($existingPayment) and
+                ($existingPayment->getStatus() !== Status::FAILED &&
+                    !($existingPayment->getStatus() === Status::REFUNDED && !$existingPayment->hasBeenCaptured()))
+            )
             {
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW, [
