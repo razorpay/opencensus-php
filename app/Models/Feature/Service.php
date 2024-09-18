@@ -1209,6 +1209,36 @@ class Service extends Base\Service
     }
 
     /**
+     * Validates if the POS activation event in the input can update QR flags
+     * for the merchant by checking if the features in the input match the
+     * allowed POS activation QR features.
+     *
+     * @param array $input
+     *
+     * @return bool
+     */
+    protected function allowEntityTypeInInputForPOSActivation(array $input): bool
+    {
+        if ((empty($input['event']) === false) and
+            ($input['event'] === 'pos_activated'))
+        {
+            $featureNames = $input[Constants::NAMES];
+
+            foreach ($featureNames as $featureName)
+            {
+                if (in_array($featureName, Constants::POS_ACTIVATION_QR_FEATURES) === false)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Allow only the admins to provide the entity_type and entity_id from the input.
      * If the merchant is hitting the route directly, only allow him to update his own account features.
      * Allowing services mentioned in ALLOWED_INTERNAL_APPS_FOR_ENTITY_TYPE to add the feature:
@@ -1274,7 +1304,12 @@ class Service extends Base\Service
 
             $entityId = $entityId ?? $input[Entity::ENTITY_ID];
         }
-        else
+        elseif ($this->allowEntityTypeInInputForPOSActivation($input) === true)
+        {
+            $entityType = $input[Entity::ENTITY_TYPE];
+            $entityId   = $input[Entity::ENTITY_ID];
+        }
+         else
         {
             $entityType = Constants::MERCHANT;
 

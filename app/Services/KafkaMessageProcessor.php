@@ -27,6 +27,8 @@ class KafkaMessageProcessor
     const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
     const PGOS_STAGE_CDC_EVENTS                     = 'cdc_events_mysql_stage_pg_onboarding';
     const PGOS_PROD_CDC_EVENTS                      = 'cdc_events_mysql_prod_pg_onboarding';
+    const MERCHANT_POS_ACTIVATION_STAGE             = 'merchant_pos_activation_stage';
+    const MERCHANT_POS_ACTIVATION_PROD              = 'merchant_pos_activation_prod';
     const PARTNER_WEBHOOK_CALLBACK_EVENTS           = "partner_webhook_callback_events";
     const PARTNERSHIPS_OUTBOX_EVENTS                = "api_outbox_partnerships";
     const API_KAFKA_CONSUMER_BVS_VIDEO_KYC_EVENTS   = "api-bvs-video-kyc-result-events";
@@ -170,6 +172,9 @@ class KafkaMessageProcessor
             case self::PGOS_STAGE_CDC_EVENTS:
             case self::PGOS_PROD_CDC_EVENTS:
                 return new KafkaJobs\PgosCdcEventsJob($payload, $mode);
+            case self::MERCHANT_POS_ACTIVATION_STAGE:
+            case self::MERCHANT_POS_ACTIVATION_PROD:
+                return new KafkaJobs\PosMerchantActivationEventsJob($payload,$mode);
             case self::PARTNER_WEBHOOK_CALLBACK_EVENTS:
                 return new KafkaJobs\PartnerWebhookEventHandlerJob($payload, $mode);
             case self::ASV_MERCHANT_UPDATE_EVENTS:

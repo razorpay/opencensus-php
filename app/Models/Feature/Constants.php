@@ -4851,6 +4851,11 @@ class Constants
         self::ADMIN_LEAD_PARTNER,
     ];
 
+    public const POS_ACTIVATION_QR_FEATURES = [
+        self::QR_CODES,
+        self::QR_IMAGE_CONTENT,
+    ];
+
     // These features can be checked on app level additionally if not enabled at
     // partner level for pure platform partner
     const PARTNER_AND_APP_LEVEL_FEATURES = [

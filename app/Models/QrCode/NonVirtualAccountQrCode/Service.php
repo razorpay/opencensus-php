@@ -9,6 +9,7 @@ use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -19,6 +20,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Event as MerchantEvent;
 use RZP\Exception\BadRequestException;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -188,6 +190,37 @@ class Service extends QrCode\Service
         $this->auth->setMerchantById($input['merchant_id']);
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
         $this->mode            = Mode::LIVE;
+    }
+
+    public function addPosQrCodeFeaturesOnPosActivation($input)
+    {
+
+        if ((empty($input[Constants::POS_ACTIVATION_STATUS]) === true) or
+            ($input[Constants::POS_ACTIVATION_STATUS] !== 'activated'))
+        {
+            return false;
+        }
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $input['merchant_id'],
+            Feature\Entity::ENTITY_TYPE => ConstantEntity::MERCHANT,
+            Feature\Entity::NAMES       => [Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],
+            Feature\Entity::SHOULD_SYNC => true,
+            MerchantEvent\Entity::EVENT => 'pos_activated'
+        ];
+
+        $this->trace->info(TraceCode::POS_QR_CODE_FEATURE_ENABLE_PAYLOAD, [
+            'message' => 'Payload for pos qr code feature enable request',
+            'featureParams' =>  $featureParams,
+        ]);
+
+        $response = (new Feature\Service)->addFeatures($featureParams);
+
+        $this->trace->info(TraceCode::POS_QR_CODE_FEATURE_ENABLE_RESPONSE, [
+            'message' => 'response for pos qr code feature enable request',
+            'response' =>  $response,
+        ]);
+
+        return $response;
     }
 
     protected function getInputForPartnerSqrCreate($input)

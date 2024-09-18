@@ -106,4 +106,6 @@ class Constants
     const QR_CODE_V2_HDFC_PREFIX    = 'STQ';
 
     const QR_VPA_FONT = 'Mulish-SemiBold.ttf';
+
+    const POS_ACTIVATION_STATUS = 'pos_activation_status';
 }

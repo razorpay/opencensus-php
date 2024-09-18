@@ -3077,6 +3077,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MISC_TRACE_CODE                                       = 'MISC_TRACE_CODE';
     const QR_CODE_REQUEST_VPA_TERMINAL                          = 'QR_CODE_REQUEST_VPA_TERMINAL';
     const QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE            = 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE';
+    const POS_QR_CODE_FEATURE_ENABLE_PAYLOAD                    = 'POS_QR_CODE_FEATURE_ENABLE_PAYLOAD';
+    const POS_QR_CODE_FEATURE_ENABLE_RESPONSE                   = 'POS_QR_CODE_FEATURE_ENABLE_RESPONSE';
     const CAPTCHA_DISABLE                                       = 'CAPTCHA_DISABLE';
     const REFUND_TRANSACTION_FAILED                             = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                            = 'CREDITS_TRANSACTION_FAILED';
@@ -6404,6 +6406,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Kafka Consumer
     const KAFKA_MESSAGE_PROCESSOR_PAYLOAD                       = 'KAFKA_MESSAGE_PROCESSOR_PAYLOAD';
     const KAFKA_MESSAGE_PROCESSING_ERROR                        = 'KAFKA_MESSAGE_PROCESSING_ERROR';
+
+    //POS Merchant Activation Kafka Consumer
+    const POS_MERCHANT_ACTIVATION_PAYLOAD                      = 'POS_MERCHANT_ACTIVATION_PAYLOAD';
+    const POS_MERCHANT_ACTIVATION_WARNING                      = 'POS_MERCHANT_ACTIVATION_WARNING';
+    const POS_MERCHANT_ACTIVATION_ERROR                        = 'POS_MERCHANT_ACTIVATION_ERROR';
 
     //PGOS Dual Write Kafka Consumer
     const PGOS_DUAL_WRITE_CONSUMER_PAYLOAD                      = 'PGOS_DUAL_WRITE_CONSUMER_PAYLOAD';
@@ -12057,6 +12064,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MISC_TRACE_CODE                                       => 'Miscellaneous trace code',
         self::QR_CODE_REQUEST_VPA_TERMINAL                          => 'QR code request vpa terminal fetched',
         self::QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE            => 'QR code request vpa terminal not available',
+        self::POS_QR_CODE_FEATURE_ENABLE_PAYLOAD                    => 'POS QR Code enable payload',
+        self::POS_QR_CODE_FEATURE_ENABLE_RESPONSE                   => 'POS QR Code enable response',
         self::ES_BULK_UPDATE_FAILED                                 => 'Failed while bulk updating in ES',
         self::RECON_ALERT                                           => 'Alert raised for reconciliation',
         self::RECON_FILE_SKIP                                       => 'Skipping a reconciliation file',

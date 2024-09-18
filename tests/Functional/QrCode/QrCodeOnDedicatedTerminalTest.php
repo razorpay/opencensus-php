@@ -14,6 +14,7 @@ use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\QrStatusCheck;
 use RZP\Constants\Timezone;
@@ -33,6 +34,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status;
+use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\UsageType;
@@ -2317,4 +2319,60 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
                                               'supply_type'    => 'interstate',
                                           ], $qrCodeEntity['tax_invoice']);
     }
+
+    public function testAddPosQRCodeFlags()
+    {
+
+        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(false, $isQRCodeFeatureEnabled);
+        $payload = [
+            "merchant_id" => "LiveAccountMer",
+            "pos_activation_status" => "activated"
+        ];
+
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(true, $isQRCodeFeatureEnabled);
+    }
+
+    public function testAddPosQRCodeFlagsDuplicateCall()
+    {
+
+        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(false, $isQRCodeFeatureEnabled);
+        $payload = [
+            "merchant_id" => "LiveAccountMer",
+            "pos_activation_status" => "activated"
+        ];
+
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(true, $isQRCodeFeatureEnabled);
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(true, $isQRCodeFeatureEnabled);
+    }
+
+    public function testAddPosQRCodeFlagsWithNonActivatedStatus()
+    {
+
+        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(false, $isQRCodeFeatureEnabled);
+        $payload = [
+            "merchant_id" => "LiveAccountMer",
+            "pos_activation_status" => "kyc_qualified"
+        ];
+
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(false, $isQRCodeFeatureEnabled);
+    }
+
 }
