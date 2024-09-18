@@ -152,7 +152,8 @@ class Repository extends BaseRepository
      */
     protected function modifyQueryForIndexing(BuilderEx $query)
     {
-        $merchantSelector = function ($query)
+
+        $sourceSelector = function ($query)
                             {
                                 $fields = $this->esRepo->getMerchantFields();
 
@@ -160,7 +161,7 @@ class Repository extends BaseRepository
                             };
 
         $relations = [
-            Entity::SOURCE_MERCHANT => $merchantSelector,
+            Entity::SOURCE => $sourceSelector,
         ];
 
         $query->with($relations);

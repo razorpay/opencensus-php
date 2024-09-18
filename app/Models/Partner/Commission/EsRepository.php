@@ -37,6 +37,7 @@ class EsRepository extends Base\EsRepository
 
     protected $merchantFields = [
         Merchant\Entity::ID,
+        Entity::MERCHANT_ID,
     ];
 
     public function getMerchantFields(): array
