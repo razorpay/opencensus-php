@@ -16,8 +16,10 @@ export type ModalContainerProps = {
   };
   isOpen: ModalProps['isOpen'];
   defaultTab: number;
-  vKycStatus: typeof V_KYC_STATUS[keyof typeof V_KYC_STATUS] | null;
-  kycDocumentStatus: typeof ICProductStates[keyof typeof ICProductStates] | null;
+  /* eslint-disable prettier/prettier */
+  vKycStatus: (typeof V_KYC_STATUS)[keyof typeof V_KYC_STATUS] | null;
+  kycDocumentStatus: (typeof ICProductStates)[keyof typeof ICProductStates] | null;
+  /* eslint-enable prettier/prettier */
   onDismiss: ModalProps['onDismiss'];
   showNotification: (showNotification: { type: string; message: string }) => void;
   createVCipLink: VideoKycProps['createVCipLink'];
@@ -57,6 +59,7 @@ export type ApiDataType = {
   business_use_case?: string;
   goods_type?: string;
   existing_risk_checks?: Array<string | null>;
+  purpose_code?: string;
 };
 
 export type IntlFormDataType = {

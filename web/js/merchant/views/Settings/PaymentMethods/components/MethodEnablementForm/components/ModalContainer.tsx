@@ -80,7 +80,7 @@ const ModalContainer = ({
       }
       if (selectedTab === 1) {
         trackSubmitForVerificationClicked(user.business_type);
-        await submitAdditionalDocumentFormData(apiData as ApiDataType, values);
+        await submitAdditionalDocumentFormData(apiData as ApiDataType, values, user);
         setKycDocumentStatus(ICProductStates.UNDER_REVIEW);
         if (
           [V_KYC_STATUS.APPROVED, V_KYC_STATUS.UNDER_REVIEW].includes(
@@ -149,7 +149,7 @@ const ModalContainer = ({
         kycDocumentStatus as ICProductStates,
       )
     ) {
-      await submitAdditionalDocumentFormData(apiData, values);
+      await submitAdditionalDocumentFormData(apiData, values, user);
       setKycDocumentStatus(ICProductStates.UNDER_REVIEW);
     }
   };

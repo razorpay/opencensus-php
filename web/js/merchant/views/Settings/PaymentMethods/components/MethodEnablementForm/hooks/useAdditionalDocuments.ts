@@ -3,6 +3,10 @@ import { useFormikContext } from 'formik';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
+  trackDocumentUploadSuccess,
+  trackDocumentUploadErr,
+} from 'merchant/views/Settings/PaymentMethods/components/MethodEnablementForm/analytics';
+import {
   FormikValues,
   AdditionalDocumentsProps,
   UseAdditionalDocumentsReturn,
@@ -96,10 +100,19 @@ export const useAdditionalDocuments = ({
         formikDocuments[docType] = [...(formikDocuments[docType] ?? []), docData];
         formikProps.setFieldValue('documents', formikDocuments);
         saveFormData(formikProps);
+        trackDocumentUploadSuccess({
+          businessType: user.business_type,
+          documentType: docType,
+        });
 
         return docData;
       })
       .catch((err) => {
+        trackDocumentUploadErr({
+          businessType: user.business_type,
+          documentType: docType,
+          error: err,
+        });
         showNotification({
           type: 'error',
           message: err.errors,

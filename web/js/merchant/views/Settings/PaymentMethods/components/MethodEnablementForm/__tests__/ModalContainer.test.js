@@ -131,6 +131,7 @@ describe('Tests for ModalContainer component - MethodEnablementForm', () => {
       expect(submitAdditionalDocumentFormDataSpy).toHaveBeenCalledWith(
         { success: true },
         formikDefaultReturnValues.values,
+        user,
       ),
     );
   });
@@ -166,6 +167,7 @@ describe('Tests for ModalContainer component - MethodEnablementForm', () => {
   });
 
   test('Should call submit form api and onTabClick if button is enabled and clicked', async () => {
+    user.business_type = HUF;
     const selectedTab = 1;
     const onTabClick = jest.fn();
     mockContextData({
@@ -182,6 +184,7 @@ describe('Tests for ModalContainer component - MethodEnablementForm', () => {
       expect(submitAdditionalDocumentFormDataSpy).toHaveBeenCalledWith(
         { success: true },
         formikDefaultReturnValues.values,
+        user,
       ),
     );
     await waitFor(() => expect(onTabClick).toHaveBeenCalledWith(2));

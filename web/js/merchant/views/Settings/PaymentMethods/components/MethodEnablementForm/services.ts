@@ -1,7 +1,10 @@
 import { User } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
 
-import { trackIntlMethodEnablementFormData } from './analytics';
+import {
+  trackIntlMethodEnablementFormData,
+  trackIntlMethodEnablementFormDataErr,
+} from './analytics';
 import { ApiDataType, FormikValues } from './types';
 import { formatApiResponse, generateApiData } from './utils';
 
@@ -27,7 +30,13 @@ export const saveAdditionalDocumentFormData = async (
       method: 'post',
       data,
     });
-  } catch {
+  } catch (err) {
+    trackIntlMethodEnablementFormDataErr({
+      businessType: user?.business_type,
+      documents: apiData?.documents,
+      purposeCode: apiData?.purpose_code,
+      error: err,
+    });
     throw new Error("Data couldn't be saved because of some intermittent issue! Please try again.");
   }
 };
@@ -35,6 +44,7 @@ export const saveAdditionalDocumentFormData = async (
 export const submitAdditionalDocumentFormData = async (
   apiData: ApiDataType,
   formData: FormikValues,
+  user?: User,
 ): Promise<void> => {
   try {
     await merchantFetch({
@@ -42,7 +52,13 @@ export const submitAdditionalDocumentFormData = async (
       method: 'post',
       data: generateApiData(apiData, formData),
     });
-  } catch {
+  } catch (err) {
+    trackIntlMethodEnablementFormDataErr({
+      businessType: user?.business_type,
+      documents: apiData?.documents,
+      purposeCode: apiData?.purpose_code,
+      error: err,
+    });
     throw new Error("Data wasn't submitted because of some intermittent issue! Please try again.");
   }
 };

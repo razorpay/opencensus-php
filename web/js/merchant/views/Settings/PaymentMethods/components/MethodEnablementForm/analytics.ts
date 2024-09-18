@@ -6,6 +6,7 @@ import { formatIntlFormDataTrackingObject } from './utils';
 
 const INTL_ADDITIONAL_METHOD_ENABLEMENT = 'international additional methods enablement';
 const PREREQUISITE = `${INTL_ADDITIONAL_METHOD_ENABLEMENT} prerequisite info`;
+const ADDITIONAL_DOCUMENT = `${INTL_ADDITIONAL_METHOD_ENABLEMENT} additional document`;
 const VIDEO_KYC = `${INTL_ADDITIONAL_METHOD_ENABLEMENT} video kyc`;
 const VIDEO_KYC_RETRY = `${VIDEO_KYC} retry`;
 const UPLOAD_KYC_DOCS = `${INTL_ADDITIONAL_METHOD_ENABLEMENT} upload kyc docs`;
@@ -15,10 +16,14 @@ const actions = {
   CLICKED: 'clicked',
   RESPONSE: 'response',
   SAVED: 'saved',
+  SUCCESS: 'success',
+  ERROR: 'error',
 };
 
-const track = ({ properties = {}, ...args }): void => {
+const track = ({ objectName, actionName, properties = {}, ...args }): void => {
   analyticsTrack({
+    objectName,
+    actionName,
     screen: 'Account & Settings',
     ...args,
     properties: {
@@ -35,6 +40,30 @@ export const trackPrerequisiteClicked = (businessType: string | undefined): void
     objectName: PREREQUISITE,
     actionName: actions.CLICKED,
     properties: { business_type: businessType },
+  });
+};
+
+export const trackDocumentUploadSuccess = ({ businessType, documentType }): void => {
+  track({
+    objectName: ADDITIONAL_DOCUMENT,
+    actionName: actions.SUCCESS,
+    properties: {
+      business_type: businessType,
+      document_type: documentType,
+    },
+  });
+};
+
+export const trackDocumentUploadErr = ({ businessType, documentType, error }): void => {
+  track({
+    objectName: ADDITIONAL_DOCUMENT,
+    actionName: actions.ERROR,
+    properties: {
+      business_type: businessType,
+      document_type: documentType,
+      error_code: error?.status_code,
+      error_description: error?.errors?.[0],
+    },
   });
 };
 
@@ -72,6 +101,18 @@ export const trackIntlMethodEnablementFormData = (
     objectName: FORM_DATA,
     actionName: actions.SAVED,
     properties: { business_type: businessType, ...formatIntlFormDataTrackingObject(data) },
+  });
+};
+
+export const trackIntlMethodEnablementFormDataErr = ({ error, ...rest }): void => {
+  track({
+    objectName: FORM_DATA,
+    actionName: actions.ERROR,
+    properties: {
+      ...rest,
+      error_code: error?.status_code,
+      error_description: error?.errors?.[0],
+    },
   });
 };
 
