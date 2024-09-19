@@ -21,6 +21,10 @@ const monthsMap = [
   'Dec',
 ];
 
+export function sanitizeRaySubcategory(subcategory = '') {
+  return subcategory?.replace(/Ray Dashboard/gi, 'Dashboard') || '';
+}
+
 export function getTicketStatus(ticket, workflow = {}) {
   const STATUS = workflow?.state || (statuses[ticket.status] && statuses[ticket.status].name);
   return STATUS;

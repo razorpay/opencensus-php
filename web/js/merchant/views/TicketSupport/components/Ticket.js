@@ -6,6 +6,7 @@ import Attachment from './Attachment';
 import Message from './Message';
 import sanitizer from 'common/utils/xss-sanitizer';
 import { TICKET_STATUS_LABELS } from './data';
+import { sanitizeRaySubcategory } from '../utils';
 const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 
 @connect((state) => {
@@ -90,7 +91,7 @@ export default class Ticket extends React.Component {
                   <>
                     <p className="title-text">{category}</p>
                     {category && subCategory && <p className="separator">&#183;</p>}
-                    <p className="title-text">{subCategory}</p>
+                    <p className="title-text">{sanitizeRaySubcategory(subCategory)}</p>
                   </>
                 )}
               </div>

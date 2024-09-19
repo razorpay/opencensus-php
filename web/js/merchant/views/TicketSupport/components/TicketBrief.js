@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 import TicketStatus from './TicketStatus';
 import TicketBriefMessage from './TicketBriefMessage';
-import { STATUSES } from 'merchant/views/TicketSupport/utils';
+import { STATUSES, sanitizeRaySubcategory } from 'merchant/views/TicketSupport/utils';
 export default class TicketBriefRevamped extends React.Component {
   componentDidMount() {
     window.rzpAnalytics?.({
@@ -55,8 +55,10 @@ export default class TicketBriefRevamped extends React.Component {
                               ticket.custom_fields.cf_requester_item ? (
                                 <>
                                   <span className="ticket-detail-separator">•</span>
-                                  {ticket.custom_fields?.cf_new_requester_item ||
-                                    ticket.custom_fields.cf_requester_item}
+                                  {sanitizeRaySubcategory(
+                                    ticket.custom_fields?.cf_new_requester_item ||
+                                      ticket.custom_fields.cf_requester_item,
+                                  )}
                                 </>
                               ) : null}
                             </>
