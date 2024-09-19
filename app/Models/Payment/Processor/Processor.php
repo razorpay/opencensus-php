@@ -3811,6 +3811,32 @@ class Processor
                 ];
             }
 
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.recurring_populate_error_metadata'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $varName = $response['response']['variant']['name'] ?? '';
+
+            if ($varName === 'variant_on')
+            {
+                $metadata = $e->getData();
+
+                //Adding order id if not present in the error metadata
+                if ((isset($metadata['order_id']) === false) &&
+                    (isset($input['recurring']) === true))
+                {
+                    $metadata['order_id'] = $input['order_id'];
+
+                    $e->setData($metadata);
+                }
+            }
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, $meta, $properties);
 
