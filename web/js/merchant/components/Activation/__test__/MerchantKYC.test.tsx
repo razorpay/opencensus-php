@@ -4,6 +4,16 @@ import ActivationWizard from 'merchant/components/Activation';
 import store from 'merchant/store';
 
 describe('<ActivationWizard /> ', () => {
+  beforeEach(() => {
+    window.rzpQ = {
+      onbr: () => ({ success: jest.fn(), failed: jest.fn() }),
+      component: () => true,
+    };
+    window.rzp_user = {
+      email: 'test@gmail.com',
+    };
+  });
+
   test('Check Email Verification for Partners', () => {
     const props = {
       user: {
@@ -44,7 +54,7 @@ describe('<ActivationWizard /> ', () => {
     expect(screen.getByText('Contact Number')).toBeInTheDocument();
   });
 
-  test.skip('Validate Business Website field does not contain "razorpay" when field is present', async () => {
+  test('Validate Business Website field does not contain "razorpay" when field is present', async () => {
     const props = {
       user: {
         partner_type: 'aggregator',
@@ -52,7 +62,7 @@ describe('<ActivationWizard /> ', () => {
         user: { settings: '' },
       },
       store,
-      data: { has_url: '1', app_website_url: '1', business_website: '' },
+      data: { has_url: '1', app_website_url: '1' },
       categories: {},
       clarificationReasons: '',
       saveFile: () => {},
@@ -67,15 +77,7 @@ describe('<ActivationWizard /> ', () => {
     const businessOverviewTab = screen.getByText('Business Overview');
     await userEvent.click(businessOverviewTab);
 
-    expect(screen.getByText('On my website/app')).toBeInTheDocument();
-    const radioOption = screen.getByText('On my website/app');
-    await userEvent.click(radioOption);
-
-    // expect(screen.getByRole('textbox', { name: 'playstore_url' })).toBeInTheDocument();
-    const checkbox = screen.getByText('Accept payments on Website');
-    await userEvent.click(checkbox);
-
-    const websiteField = screen.getByPlaceholderText('Enter URL');
+    const websiteField = screen.getByTestId('business_webiste_url_ip');
     expect(websiteField).toBeInTheDocument();
 
     fireEvent.change(websiteField, { target: { value: 'https://razorpay.com' } });
@@ -85,7 +87,7 @@ describe('<ActivationWizard /> ', () => {
     expect(validationError).toBeInTheDocument();
   });
 
-  test.skip('Validate Playstore URL field with an invalid and valid URL', async () => {
+  test('Validate Playstore URL field with an invalid and valid URL', async () => {
     const props = {
       user: {
         partner_type: 'aggregator',
@@ -93,7 +95,7 @@ describe('<ActivationWizard /> ', () => {
         user: { settings: '' },
       },
       store,
-      data: { has_url: '1', app_website_url: '1', business_website: '' },
+      data: { has_url: '1', app_website_url: '1', app_url: '1', business_website: '' },
       categories: {},
       clarificationReasons: '',
       saveFile: () => {},
@@ -108,15 +110,7 @@ describe('<ActivationWizard /> ', () => {
     const businessOverviewTab = screen.getByText('Business Overview');
     await userEvent.click(businessOverviewTab);
 
-    expect(screen.getByText('On my website/app')).toBeInTheDocument();
-    const radioOption = screen.getByText('On my website/app');
-    await userEvent.click(radioOption);
-
-    expect(screen.getByText('Accept payments on Website')).toBeInTheDocument();
-    const checkbox = screen.getByText('Accept payments on app');
-    await userEvent?.click(checkbox);
-
-    const playstoreField = screen.getByRole('textbox', { name: 'playstore_url' });
+    const playstoreField = screen.getByTestId('playstore_url');
     expect(playstoreField).toBeInTheDocument();
 
     fireEvent.change(playstoreField, { target: { value: 'https://invalid-url.com' } });

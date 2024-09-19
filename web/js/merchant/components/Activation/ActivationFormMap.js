@@ -15,9 +15,9 @@ import {
   validatePersonalPAN,
   validateCompanyPAN,
   validateCompanyAB,
-  isUrlLenient,
   isValidName,
   isAppLinkValid,
+  isValidWebsite,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -525,6 +525,7 @@ const businessModel = [
       },
       name: 'business_website',
       placeholder: 'Enter URL',
+      'data-testid': 'business_webiste_url_ip',
       type: 'url',
       className: 'Input--Website-Url',
       onBlur: function onBlur(e, error) {
@@ -537,18 +538,12 @@ const businessModel = [
         this.sendErrorMessageToSegment(e, error);
       },
       validator: (value) => {
-        if (!isUrlLenient(value)) {
-          return 'Please enter a valid url';
+        if (
+          !isValidWebsite({ url: value, isRazorpayDomainAllowed: false, allowHttpProtocol: true })
+        ) {
+          return 'Invalid website URL';
         }
-        if (value?.includes('razorpay')) {
-          const user = window.rzp_user;
-          const merchantEmail = user?.merchants?.[user?.current]?.email;
-          if ((merchantEmail ?? '').endsWith('razorpay.com')) {
-            return false;
-          } else {
-            return 'Invalid website URL';
-          }
-        }
+        return false;
       },
       info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: (activation) =>
@@ -581,6 +576,7 @@ const businessModel = [
       },
       name: 'playstore_url',
       placeholder: 'Enter App Link',
+      'data-testid': 'playstore_url',
       type: 'url',
       className: 'Input--App-Url',
       onBlur: function onBlur(e, error) {

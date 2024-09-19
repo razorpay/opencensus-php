@@ -24,29 +24,21 @@ export const isUrlLenient = (url) => {
   return urlRegExp.test(url);
 };
 
-export const isWebsiteUrlValid = (url, userEmail = '') => {
-  if (!isUrlLenient(url)) {
-    return false;
-  }
-  if (url?.includes('razorpay')) {
-    if ((userEmail ?? '').endsWith('razorpay.com')) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-  return true;
-};
-
 export const isAppLinkValid = (appLink) => {
   return PLAY_STORE_URL_REGEX.test(appLink) || APP_STORE_URL_REGEX.test(appLink);
 };
 
-// one function need to be removed later
-export const isValidWebsite = (url = '', isRazorpayDomainAllowed = false) => {
-  const urlRegExp =
+export const isValidWebsite = ({
+  url = '',
+  isRazorpayDomainAllowed = false,
+  allowHttpProtocol = false,
+}) => {
+  const onlyHttpsUrlRegExp =
     /^(https:\/\/)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/;
+  const allowHttpUrlRegExp =
+    /^(https?:\/\/)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/;
 
+  const urlRegExp = allowHttpProtocol ? allowHttpUrlRegExp : onlyHttpsUrlRegExp;
   /**
    * Rzp email users (e.g., test@razorpay.com) can add URLs containing "razorpay" for internal use and specific prod account within rzp.
    * Non-Rzp email users (e.g., test@gmail.com) cannot add URLs with "razorpay."

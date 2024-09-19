@@ -2,7 +2,7 @@ import Input from 'common/new-ui/Input';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import { validatePersonalPAN, isUrlLenient } from 'common/utils/validators';
+import { validatePersonalPAN, isValidWebsite } from 'common/utils/validators';
 
 import AddressFields from './AddressFieldsMap';
 
@@ -30,7 +30,7 @@ export const BUSINESS_TYPE_OPTIONS = [
   { label: 'Private Limited', name: PRIVATE },
   { label: 'Proprietorship', name: PROPRIETORSHIP },
   { label: 'Partnership', name: PARTNERSHIP },
-  { label: 'Individual', name: INDIVIDUAL },
+  { label: 'Individual', name: NOT_REGISTERED },
   { label: 'Public Limited', name: PUBLIC },
   { label: 'LLP', name: LLP },
   { label: 'Trust', name: TRUST },
@@ -197,9 +197,12 @@ export default [
       placeholder: 'Enter URL',
       type: 'url',
       validator: (value) => {
-        if (!isUrlLenient(value)) {
-          return 'Please enter a valid url';
+        if (
+          !isValidWebsite({ url: value, isRazorpayDomainAllowed: false, allowHttpProtocol: true })
+        ) {
+          return 'Invalid website URL';
         }
+        return false;
       },
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
       _when: (activation) => activation.state.has_url === '0',

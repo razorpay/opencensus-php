@@ -49,7 +49,17 @@ const BusinessTypeSelection = ({
       .then((res) => {
         if (res.status_code === 200 && res.success) {
           setRegistered(res?.data?.registered);
-          setUnregistered(res?.data?.unregistered);
+          // remove the individual business type from the api response, as we only need business type 11 for RBI compliance.
+          const filterOutIndividualBusinessType = res?.data?.unregistered?.filter(
+            (item) => item?.id !== '2',
+          );
+
+          // change the label for businessType '11' to 'Individual'
+          const unregisteredBusinessTypes =
+            filterOutIndividualBusinessType?.map((item) => {
+              return item?.id === '11' ? { ...item, label: 'Individual' } : item;
+            }) ?? [];
+          setUnregistered(unregisteredBusinessTypes);
         }
       })
       .finally(() => {

@@ -551,7 +551,7 @@ function UpdateWebsiteDetails(props) {
   };
 
   const validateWebsiteNAppLink = (input) => {
-    const value = isValidWebsite(input);
+    const value = isValidWebsite({ url: input });
     if (!value) {
       const errorMessage = 'Please enter valid url';
       setisLinkValid(false);
@@ -585,7 +585,7 @@ function UpdateWebsiteDetails(props) {
   };
 
   const validateMetaUrls = (fieldName, input) => {
-    const value = isValidWebsite(input, true);
+    const value = isValidWebsite({ url: input, isRazorpayDomainAllowed: true });
     if (!value) {
       const errorMessage = 'Please enter valid url';
       const _obj = { ...areMetaUrlsValid };

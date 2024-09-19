@@ -69,8 +69,8 @@ import {
   validateCompanyAB,
   validateCompanyPAN,
   validateCIN,
-  isWebsiteUrlValid,
   isAppLinkValid,
+  isValidWebsite,
 } from 'common/utils/validators';
 
 import L1FormFieldNames from './L1FormFieldNames';
@@ -1291,7 +1291,9 @@ class ActivationWizard extends React.Component {
     const user = this.props?.user;
     const merchantEmail = user?.merchants?.[user?.current]?.email;
 
-    const isValidWebsiteUrl = websiteUrl ? isWebsiteUrlValid(websiteUrl, merchantEmail) : true;
+    const isValidWebsiteUrl = websiteUrl
+      ? isValidWebsite({ url: websiteUrl, isRazorpayDomainAllowed: false, allowHttpProtocol: true })
+      : true;
     const isValidAppLink = appLink ? isAppLinkValid(appLink) : true;
 
     return isValidWebsiteUrl && isValidAppLink;

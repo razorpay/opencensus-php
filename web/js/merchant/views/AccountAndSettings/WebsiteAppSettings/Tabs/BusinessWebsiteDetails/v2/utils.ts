@@ -163,7 +163,7 @@ export const defaultValue = {
 
 export const validators = {
   platform: (value): boolean => [Platform.WEBSITE, Platform.APP].includes(value),
-  url: (value): boolean => isValidWebsite(value),
+  url: (value): boolean => isValidWebsite({ url: value }),
   requireCreds: (value): boolean => [RequireCredsValues.YES, RequireCredsValues.NO].includes(value),
   credsUsername: (value, formState): boolean =>
     formState.requireCreds.value === RequireCredsValues.YES ? !!value : true,

@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import Input from 'common/new-ui/Input';
-import { isUrlLenient } from 'common/utils/validators';
+import { isValidWebsite } from 'common/utils/validators';
 import * as EventActions from 'merchant/reducers/trackEvents';
 
 const CustomPaymentsCahnnel = ({
@@ -161,9 +161,23 @@ const CustomPaymentsCahnnel = ({
                 type="url"
                 className="Input--small website-input"
                 onChange={onWebsiteInputChange}
-                validator={(value) => (!isUrlLenient(value) ? 'Please enter a valid url' : '')}
+                validator={(value) =>
+                  !isValidWebsite({
+                    url: value,
+                    isRazorpayDomainAllowed: false,
+                    allowHttpProtocol: true,
+                  })
+                    ? 'Invalid website URL'
+                    : ''
+                }
                 onBlur={(e) => {
-                  const error = !isUrlLenient(businessWebsite) ? 'Please enter a valid url' : '';
+                  const error = !isValidWebsite({
+                    url: value,
+                    isRazorpayDomainAllowed: false,
+                    allowHttpProtocol: true,
+                  })
+                    ? 'Invalid website URL'
+                    : '';
                   sendErrorMessageToSegment(e, error);
                   trackEvents({
                     objectName: 'Form Details',

@@ -31,6 +31,7 @@ import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { isAppLinkValid, isValidWebsite } from 'common/utils/validators';
 
 interface IBusinessOverviewProps {
   isFormLocked?: boolean;
@@ -209,21 +210,32 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
           business_website: Yup.lazy(() => {
             if (hasWebsiteOrApp) {
               return Yup.string()
-                .matches(
-                  /^(https?:\/\/)?[\w.-]+(?:\.[\w\\.-]+)+[\w\-\\._~:/?#[\]@!\\$&'\\(\\)\\*\\+,;=.]+$/,
-                  {
-                    message: 'Please enter a valid url',
-                    excludeEmptyString: true,
-                  },
-                )
                 .required('Please provide website')
-                .nullable();
+                .nullable()
+                .test('not_contains_razorpay_validation', 'Invalid website URL', (value) => {
+                  if (value) {
+                    return isValidWebsite({
+                      url: value,
+                      isRazorpayDomainAllowed: false,
+                      allowHttpProtocol: true,
+                    });
+                  }
+                  return true;
+                });
             }
             return Yup.string().nullable();
           }),
           playstore_url: Yup.lazy(() => {
             if (hasWebsiteOrApp) {
-              return Yup.string().required('Please provide app store link').nullable();
+              return Yup.string()
+                .required('Please provide app store link')
+                .nullable()
+                .test('app_link_validation', 'Invalid app store link', (value) => {
+                  if (value) {
+                    return isAppLinkValid(value);
+                  }
+                  return true;
+                });
             }
             return Yup.string().nullable();
           }),
