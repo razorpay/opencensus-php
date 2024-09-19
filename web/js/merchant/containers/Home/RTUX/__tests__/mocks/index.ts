@@ -1133,3 +1133,796 @@ export const HOMEPAGE_RTUX_LAYOUT_MOCK = {
     },
   ],
 };
+
+export const D2C_WIDGET_MOCK_RESPONSE = {
+  id: '14',
+  type: 'd2c_widget',
+  title: 'Optimise your funnel performance',
+  description: "with Razorpay's product suite",
+  actions: [],
+  inputs: [],
+  components: [
+    {
+      id: '141',
+      type: 'd2c_acquire_customers',
+      title: 'Acquire Customers',
+      description: '1 suggestion',
+      actions: [],
+      inputs: [],
+      components: [
+        {
+          id: '1411',
+          type: 'd2c_product_pitching',
+          title: '',
+          background_img:
+            'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/negative_background.svg',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14111',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_negative_decrease',
+                  labels: ['last month', 'Current'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Acquisition Rate',
+                      points: [
+                        {
+                          x: '-30%',
+                          y: '0',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14112',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: [],
+                  text_content: {
+                    display: '30% drop',
+                    display_color: '#D92D20',
+                    above_display_heading: 'Notice a',
+                    below_display_heading: 'in acquisition last month',
+                    caption: '',
+                    caption_list: [],
+                  },
+                  brand_images: [],
+                  text_body: "Fix it by boosting your brand's visibility with Razorpay",
+                  actions: {
+                    title: 'See how to improve',
+                    action: '1412',
+                    type: 'component_switch',
+                    icon: '',
+                    icon_position: '',
+                    action_params: {},
+                  },
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+        {
+          id: '1412',
+          type: 'd2c_solution_pitching',
+          title: '',
+          background_img: 'TODO: Url for solution pitching slide',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14121',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_positive_increase',
+                  labels: ['Current', 'Expected'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Acquisition Rate',
+                      points: [
+                        {
+                          x: '+30%',
+                          y: '0',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14122',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: ['Recommended for you', 'Easy to use'],
+                  text_content: {
+                    display: 'Upto 30% growth',
+                    display_color: '#008743',
+                    above_display_heading: '',
+                    below_display_heading:
+                      'in acquisition by creating visibility for your \n brand',
+                    caption_list: [
+                      "Generate and distribute your brand's Gift Cards at ease",
+                      'Acquire new customers at lower cost',
+                    ],
+                  },
+                  brand_images: [
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/berrylush.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/blue_tokai.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/borosil.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/bose.png',
+                  ],
+                  text_body: 'Be a part of 20,00,000+ D2C brands driving sales',
+                  actions: {
+                    title: 'Get in touch for Gift Cards',
+                    action: 'https://razorpay.typeform.com/to/WS1dWIQ3',
+                    type: 'url_redirection',
+                    icon: '',
+                    icon_position: '',
+                    action_params: {},
+                  },
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+      ],
+      data: {
+        value: "Customer's Acquisition",
+        sub_text: 'Better',
+        change_type: 'selected',
+        one_nav_data: [],
+        cross_sell_widget_data: {
+          badges: [],
+          brand_images: [],
+          cross_sell_widget_product_data: {
+            product_name: 'gift_card',
+            product_pitching_type: 'pre_post_trend',
+          },
+        },
+      },
+      analytics: {
+        enabled: true,
+      },
+    },
+    {
+      id: '142',
+      type: 'improve_customer_intention_to_purchase',
+      title: "Improve Customers's Intention To Purchase",
+      description: '1 suggestion',
+      actions: [],
+      inputs: [],
+      components: [
+        {
+          id: '1423',
+          type: 'd2c_cooling_period',
+          title: '',
+          background_img:
+            'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/positive_background.svg',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14231',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_positive_increase',
+                  labels: ['Past', 'Current'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Average Order Value',
+                      points: [],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14232',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: [],
+                  text_content: {
+                    display: 'optimized',
+                    display_color: '#008743',
+                    above_display_heading: 'Great News! \n This part of the funnel is already',
+                    below_display_heading: '',
+                    caption: "with Razorpay's ",
+                    caption_list: [],
+                  },
+                  brand_images: [],
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+      ],
+      data: {
+        value: "Customer's Intention To Purchase",
+        sub_text: 'Improved',
+        change_type: 'not_selected',
+        one_nav_data: [],
+        cross_sell_widget_data: {
+          badges: [],
+          brand_images: [],
+          cross_sell_widget_product_data: {
+            product_name: 'no_product',
+            product_pitching_type: 'no_type',
+          },
+        },
+      },
+      analytics: {
+        enabled: true,
+      },
+    },
+    {
+      id: '143',
+      type: 'easy_checkout_and_payment',
+      title: 'Easy Checkout And Payment',
+      description: '1 suggestion',
+      actions: [],
+      inputs: [],
+      components: [
+        {
+          id: '1431',
+          type: 'd2c_product_pitching',
+          title: '',
+          background_img:
+            'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/negative_background.svg',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14311',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_negative_decrease',
+                  labels: ['last month', 'Current'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Conversion Rate',
+                      points: [
+                        {
+                          x: '-50%',
+                          y: '0',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14312',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: [],
+                  text_content: {
+                    display: 'dropped by 50%',
+                    display_color: '#D92D20',
+                    above_display_heading: 'Your checkout conversion has',
+                    below_display_heading: 'in last 30 days - Fix it today',
+                    caption: '',
+                    caption_list: [],
+                  },
+                  brand_images: [],
+                  text_body: 'Enable a smooth, effortless with ease checkout \n with Razorpay',
+                  actions: {
+                    title: 'See how to improve',
+                    action: '1432',
+                    type: 'component_switch',
+                    icon: '',
+                    icon_position: '',
+                    action_params: {},
+                  },
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+        {
+          id: '1432',
+          type: 'd2c_solution_pitching',
+          title: '',
+          background_img:
+            'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/positive_background.svg',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14321',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_positive_increase',
+                  labels: ['Current', 'Expected'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Conversion Rate',
+                      points: [
+                        {
+                          x: '+30%',
+                          y: '0',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14322',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: ['Recommended for you', 'Easy to use'],
+                  text_content: {
+                    display: 'Upto 30% growth',
+                    display_color: '#008743',
+                    above_display_heading: '',
+                    below_display_heading:
+                      'in conversion by enabling a smoother checkout \n experience',
+                    caption_list: [
+                      'Pre-fill address and contact details',
+                      'Reduce drop offs by auto applying eligible offers and coupons',
+                    ],
+                  },
+                  brand_images: [
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/berrylush.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/blue_tokai.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/borosil.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/bose.png',
+                  ],
+                  text_body: 'Be a part of 20,00,000+ D2C brands driving sales',
+                  actions: {
+                    title: 'Check Magic Checkout',
+                    action: 'https://razorpay.com/magic/',
+                    type: 'url_redirection',
+                    icon: '',
+                    icon_position: '',
+                    action_params: {},
+                  },
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+      ],
+      data: {
+        value: 'Checkout and Payment Experience',
+        sub_text: 'Easier',
+        change_type: 'not_selected',
+        one_nav_data: [],
+        cross_sell_widget_data: {
+          badges: [],
+          brand_images: [],
+          cross_sell_widget_product_data: {
+            product_name: 'magic_checkout',
+            product_pitching_type: 'pre_post_trend',
+          },
+        },
+      },
+      analytics: {
+        enabled: true,
+      },
+    },
+    {
+      id: '144',
+      type: 'optimise_return_orders',
+      title: 'Optimise Return Orders',
+      description: '1 suggestion',
+      actions: [],
+      inputs: [],
+      components: [
+        {
+          id: '1443',
+          type: 'd2c_cooling_period',
+          title: '',
+          background_img:
+            'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/positive_background.svg',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14431',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_positive_increase',
+                  labels: ['Past', 'Current'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Return Orders',
+                      points: [],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14432',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: [],
+                  text_content: {
+                    display: 'optimized',
+                    display_color: '#008743',
+                    above_display_heading: 'Great News! \n This part of the funnel is already',
+                    below_display_heading: '',
+                    caption: "with Razorpay's ",
+                    caption_list: [],
+                  },
+                  brand_images: [],
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+      ],
+      data: {
+        value: 'Return Orders',
+        sub_text: 'Optimised',
+        change_type: 'not_selected',
+        one_nav_data: [],
+        cross_sell_widget_data: {
+          badges: [],
+          brand_images: [],
+          cross_sell_widget_product_data: {
+            product_name: 'no_product',
+            product_pitching_type: 'no_type',
+          },
+        },
+      },
+      analytics: {
+        enabled: true,
+      },
+    },
+    {
+      id: '145',
+      type: 'boost_repeat_purchase',
+      title: 'Boost Repeat Purchase',
+      description: '1 suggestion',
+      actions: [],
+      inputs: [],
+      components: [
+        {
+          id: '1451',
+          type: 'd2c_product_pitching',
+          title: '',
+          background_img:
+            'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/negative_background.svg',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14511',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_negative_decrease',
+                  labels: ['last month', 'Current'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Repeat Orders',
+                      points: [
+                        {
+                          x: '-39%',
+                          y: '0',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14512',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: [],
+                  text_content: {
+                    display: 'dropped by 39%',
+                    display_color: '#D92D20',
+                    above_display_heading: 'Repeat users purchases',
+                    below_display_heading: 'last month',
+                    caption: '',
+                    caption_list: [],
+                  },
+                  brand_images: [],
+                  text_body:
+                    'Increase customer lifetime value, boost brand loyalty \n with Razorpay',
+                  actions: {
+                    title: 'See how to improve',
+                    action: '1452',
+                    type: 'component_switch',
+                    icon: '',
+                    icon_position: '',
+                    action_params: {},
+                  },
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+        {
+          id: '1452',
+          type: 'd2c_solution_pitching',
+          title: '',
+          background_img:
+            'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/positive_background.svg',
+          actions: [],
+          inputs: [],
+          components: [
+            {
+              id: '14521',
+              type: 'd2c_visuals',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                value: '',
+                value_type: 'chart',
+                chart_data: {
+                  type: 'neutral_positive_increase',
+                  labels: ['Current', 'Expected'],
+                  schema: null,
+                  data: [
+                    {
+                      label: 'Repeat Orders',
+                      points: [
+                        {
+                          x: '+30%',
+                          y: '0',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                one_nav_data: [],
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+            {
+              id: '14522',
+              type: 'd2c_card_widget',
+              title: '',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                one_nav_data: [],
+                cross_sell_widget_data: {
+                  badges: ['Recommended for you', 'Easy to use'],
+                  text_content: {
+                    display: 'Upto 30% growth',
+                    display_color: '#008743',
+                    above_display_heading: '',
+                    below_display_heading:
+                      'in repeat orders by building customer\n loyalty to your brand',
+                    caption_list: [
+                      'Enable customers to pay via Wallet in a single click',
+                      'Customers using brand Wallet are 5x likely to stay retained',
+                    ],
+                  },
+                  brand_images: [
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/berrylush.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/blue_tokai.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/borosil.png',
+                    'https://cdn.razorpay.com/static/assets/merchant-dash/cross_sell_widget/logo/bose.png',
+                  ],
+                  text_body: 'Be a part of 20,00,000+ D2C brands driving sales',
+                  actions: {
+                    title: 'Get in touch for Wallet',
+                    action: 'https://razorpay.typeform.com/to/lFcyo61y',
+                    type: 'url_redirection',
+                    icon: '',
+                    icon_position: '',
+                    action_params: {},
+                  },
+                },
+              },
+              analytics: {
+                enabled: true,
+              },
+            },
+          ],
+          analytics: {
+            enabled: true,
+          },
+        },
+      ],
+      data: {
+        value: 'Repeat Purchases',
+        sub_text: 'Boosted',
+        change_type: 'not_selected',
+        one_nav_data: [],
+        cross_sell_widget_data: {
+          badges: [],
+          brand_images: [],
+          cross_sell_widget_product_data: {
+            product_name: 'wallet',
+            product_pitching_type: 'pre_post_trend',
+          },
+        },
+      },
+      analytics: {
+        enabled: true,
+      },
+    },
+  ],
+  analytics: {
+    enabled: true,
+  },
+} as const;

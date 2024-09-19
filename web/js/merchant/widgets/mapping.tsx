@@ -28,6 +28,12 @@ const TabbedCharts = lazy(() =>
   })),
 );
 
+const SteppedSplitPane = lazy(() =>
+  import('merchant/widgets/SteppedSplitPane').then((module) => ({
+    default: module.default,
+  })),
+);
+
 const withWidgetErrorBoundary = (Component) => (props) =>
   (
     <ErrorBoundary
@@ -45,6 +51,7 @@ const widgetKeyToComponentMapping = {
   carousal_card: Carousel,
   hero_card: MerchantOverview,
   tabbed_chart: TabbedCharts,
+  d2c_widget: SteppedSplitPane,
 };
 
 Object.keys(widgetKeyToComponentMapping).forEach((key) => {
