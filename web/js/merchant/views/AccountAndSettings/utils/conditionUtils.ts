@@ -112,15 +112,18 @@ export const isSettlementsAllowed = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('settlements.settlement');
 
 export const shouldShowFIRCSection = (user: User, extraConfig: ExtraConfig): boolean => {
+  if (extraConfig.isConfigTagEnabled('settings.international')) {
+    return false;
+  }
+
   /**
    * Show FIRC section either when user is international enabled or when opgsp_import_flow feature flag is enabled.
    */
   if (user.international) {
     return true;
   }
-  return (
-    user.findTag('opgsp_import_flow') && !extraConfig.isConfigTagEnabled('settings.international')
-  );
+
+  return user.findTag('opgsp_import_flow');
 };
 
 export const isExporterRewardsEnabled = (user: User): boolean => {

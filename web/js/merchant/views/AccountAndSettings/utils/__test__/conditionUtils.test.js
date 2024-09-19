@@ -370,8 +370,19 @@ describe('Condition Utils', () => {
 
   describe('shouldShowFIRCSection', () => {
     const extraConfig = { isConfigTagEnabled: jest.fn() };
+    const user = {
+      international: false,
+      findTag: jest.fn(),
+    };
 
-    test('should "return true" when user.international is true', () => {
+    test('should "return false" when isConfigTagEnabled for "settings.international" returns true', () => {
+      extraConfig.isConfigTagEnabled.mockReturnValue(true);
+      const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection(user, extraConfig);
+      expect(shouldShowFIRCSection).toBe(false);
+    });
+
+    test('should "return true" when user.international is true and isConfigTagEnabled for "settings.international" returns false', () => {
+      extraConfig.isConfigTagEnabled.mockReturnValue(false);
       const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection(
         {
           ...user,
@@ -382,19 +393,16 @@ describe('Condition Utils', () => {
       expect(shouldShowFIRCSection).toBe(true);
     });
 
-    test('should return "true" when isConfigTagEnabled is return false', () => {
+    test('should return "true" when isConfigTagEnabled for "settings.international" returns false and findTag returns true', () => {
       extraConfig.isConfigTagEnabled.mockReturnValue(false);
-
       user.findTag.mockReturnValue(true);
-
       const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection(user, extraConfig);
       expect(shouldShowFIRCSection).toBe(true);
     });
 
-    test('should return "false" when isConfigTagEnabled is true', () => {
-      extraConfig.isConfigTagEnabled.mockReturnValue(true);
-
-      user.findTag.mockReturnValue(true);
+    test('should return "false" when isConfigTagEnabled for "settings.international" returns false and findTag returns false', () => {
+      extraConfig.isConfigTagEnabled.mockReturnValue(false);
+      user.findTag.mockReturnValue(false);
       const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection(user, extraConfig);
       expect(shouldShowFIRCSection).toBe(false);
     });
