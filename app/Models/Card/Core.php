@@ -759,19 +759,7 @@ class Core extends Base\Core
 
             $cardVault = (new Card\CardVault);
 
-            try{
-                $response = $cardVault->fetchAltIdData($fetchAltIdRequest);
-            } catch (\Throwable $e) {
-                $this->trace->error(
-                    TraceCode::ALT_ID_FETCH_ERROR,
-                    [
-                        'message'       => 'Failed to fetch alt id data'
-                    ]
-                );
-                if(app()->isEnvironmentQA() === false) {
-                    return $e;
-                }
-            }
+            $response = $cardVault->fetchAltIdData($fetchAltIdRequest);
 
 
 
