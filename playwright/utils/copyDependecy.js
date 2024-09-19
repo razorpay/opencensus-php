@@ -31,6 +31,8 @@ const WhiteListedPackages = [
   'husky',
   '@reportportal/agent-js-playwright',
   '@razorpay/i18nify-js',
+  'msw',
+  'playwright-msw',
 ];
 
 const getPackageDependecies = (packageJson, type) =>
