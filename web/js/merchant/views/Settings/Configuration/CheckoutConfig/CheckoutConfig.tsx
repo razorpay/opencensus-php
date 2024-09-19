@@ -19,7 +19,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import BrandColor from './BrandColor';
 import BrandLogo from './BrandLogo';
-import { CheckoutDemo } from './CheckoutDemo';
 import ConfigControls from './ConfigControls';
 import ConfigFooter from './ConfigFooter';
 import CustomMessageSettings from './CustomMessageSettings';
@@ -31,6 +30,7 @@ import {
   CheckoutConfigProviderProps,
 } from './context';
 import { AccountConfig, AccountLocale, MerchantCheckoutConfig } from './context/types';
+import { CheckoutDemo } from 'merchant/views/Settings/Configuration/CheckoutDemo';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
