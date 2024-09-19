@@ -28,7 +28,7 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_ORDER_ITEMS_SUMMARY_FIELD = 'device_order_items_summary_field',
   DEVICE_ORDER_SUMMARY_FIELD = 'device_order_summary_field',
   DEVICE_CUSTOM_PRICING_DOCS = 'device_custom_pricing_documents_field',
-  DEVICE_QR_CODE_COMPONENT = 'qrcode_component',
+  DEVICE_QR_CODE_COMPONENT = 'qr_code_component',
   DEVICE_QR_IMAGE_CONTENT_FIELD = 'qr_image_content_field',
   DEVICE_PAYMENT_AMOUNT_FIELD = 'qr_payment_amount_field',
   DEVICE_DELIVERY_ADDRESS_COMPONENT = 'device_delivery_address_component',

@@ -1039,7 +1039,7 @@ export const SUCCESS_MODULAR_RESPONSE = {
                   },
                   progress: 12.5,
                   status: 'processing',
-                  name: 'qrcode_component',
+                  name: 'qr_code_component',
                 },
               ],
             },
@@ -1745,7 +1745,7 @@ export const SUCCESS_MODULAR_RESPONSE = {
     onboardingState: {
       milestones: ['sales_milestone'],
       modularComponents: [
-        'qrcode_component',
+        'qr_code_component',
         'acquisition_model_component',
         'agreement_component',
         'consent_component',
