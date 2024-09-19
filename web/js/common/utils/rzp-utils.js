@@ -83,6 +83,7 @@ export function titleCase(sentence) {
 }
 
 export function humanize(sentence) {
+  if (!sentence || typeof sentence !== 'string') return '';
   return titleCase(sentence.split('_').join(' '));
 }
 

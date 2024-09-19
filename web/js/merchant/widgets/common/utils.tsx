@@ -112,10 +112,10 @@ export function formatXAxis(
 export function formatYAxis(point: PointType['y'], schema: ChartSchemaType['y']) {
   const pointNumber = convertToNumber(point);
   switch (schema.type) {
-    case 'amount':
-      return convertToMajorUnit(pointNumber, {
-        currency: schema.unit as CurrencyCodeType,
-      });
+    case 'amount': {
+      const currency = (schema.unit || 'INR') as CurrencyCodeType;
+      return convertToMajorUnit(pointNumber, { currency });
+    }
     case 'number':
       return pointNumber;
     default:

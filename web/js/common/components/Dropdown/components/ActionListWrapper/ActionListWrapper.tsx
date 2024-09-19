@@ -21,7 +21,8 @@ const ActionListWrapper = ({
               {sectionOptions.map((sectionOption) => {
                 const { title, value: optionValue } = sectionOption;
                 const isSelected = _selectedOptions.some(
-                  ({ value: selectedValue }) => optionValue === selectedValue,
+                  // handling the case where the option is falsy
+                  (option) => optionValue === option?.value,
                 );
                 return (
                   <ActionListItem

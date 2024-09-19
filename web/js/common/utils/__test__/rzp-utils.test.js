@@ -20,6 +20,7 @@ import {
   getDialCodeFromCountryCode,
   getCountryCodes,
   autoPrefixUrls,
+  humanize,
 } from 'common/utils/rzp-utils';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
@@ -850,5 +851,18 @@ describe('testing autoPrefixUrls util', () => {
 
     url = autoPrefixUrls('http://test.com', true);
     expect(url).toBe('http://test.com');
+  });
+});
+
+describe('Tests humanize function', () => {
+  test('should return the humanized string', () => {
+    expect(humanize('')).toBe('');
+    expect(humanize('hello_world')).toBe('Hello World');
+
+    // handles falsy values
+    expect(humanize(undefined)).toBe('');
+    expect(humanize(null)).toBe('');
+    expect(humanize(0)).toBe('');
+    expect(humanize(false)).toBe('');
   });
 });
