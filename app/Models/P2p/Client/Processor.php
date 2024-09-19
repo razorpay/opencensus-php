@@ -22,6 +22,7 @@ class Processor extends Base\Processor
         $this->initialize(Action::GET_GATEWAY_CONFIG, $input, true);
 
         $this->gatewayInput->put(DeviceEntity::CONTACT, $input[DeviceEntity::CONTACT]);
+        $this->gatewayInput->put(DeviceEntity::CUSTOMER_ID, $input[DeviceEntity::CUSTOMER_ID]);
 
         return $this->callGateway();
     }

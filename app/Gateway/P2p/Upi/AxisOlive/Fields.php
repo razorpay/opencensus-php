@@ -35,7 +35,7 @@ class Fields
     const MCC_CODE                          = 'mcc_code';
     const MERCHANT_CHANNEL_ID               = 'merchant_channel_id';
     const SUB_MERCHANT_ID                   = 'sub_merchant_id';
-    const UNIQUE_CUSTOMER_ID                = 'unique_customer_id';
+    const CUSTOMER_ID                       = 'customer_id';
     const MOBILE_NUMBER                     = 'mobile_number';
     const UNIQUE_TRANSACTION_ID             = 'unique_transaction_id';
     const TIMESTAMP                         = 'timestamp';

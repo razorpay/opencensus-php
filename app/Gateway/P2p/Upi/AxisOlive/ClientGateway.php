@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\P2p\Upi\AxisOlive;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\ContextMap;
 use RZP\Models\P2p\Client\Entity;
 use RZP\Models\Customer\Entity as CustomerEntity;
@@ -42,6 +44,16 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
             }
         }
 
+        if($route == Fields::AXIS_3P) {
+            if(!isset($this->input[CustomerEntity::CONTACT]) || empty($this->input[CustomerEntity::CONTACT]))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_D2C_MANDATORY_FIELD_MISSING,
+                    CustomerEntity::CONTACT,
+                    null);
+            }
+        }
+
         $merch_id = $this->getMerchantId();
         if($route == Fields::AXIS_2P) {
             $merch_id = $this->app['basicauth']->getMerchantId();
@@ -53,9 +65,20 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
                 Fields::SUB_MERCHANT_ID          => $this->getSubMerchantId(),
                 Fields::MCC_CODE                 => $this->getMerchantCategoryCode(),
                 Fields::TIMESTAMP                => $this->getTimeStamp(),
-                Fields::MOBILE_NUMBER            => '91' . substr($this->input[CustomerEntity::CONTACT] , -10),
-                Fields::ROUTE                    => $route
+                Fields::ROUTE                    => $route,
         ]);
+
+        if(isset($this->input[CustomerEntity::CONTACT]) && !empty($this->input[CustomerEntity::CONTACT])) {
+            $request->merge([
+                Fields::MOBILE_NUMBER => '91' . substr($this->input[CustomerEntity::CONTACT] , -10)
+            ]);
+        }
+
+        if(isset($this->input[Fields::CUSTOMER_ID]) && !empty($this->input[Fields::CUSTOMER_ID])) {
+            $request->merge([
+                Fields::CUSTOMER_ID              => $this->input[Fields::CUSTOMER_ID]
+            ]);
+        }
 
         $gatewayResponse = $this->sendGatewayRequestAndParseResponse($request);
 
