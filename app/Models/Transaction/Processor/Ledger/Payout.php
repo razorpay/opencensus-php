@@ -628,16 +628,6 @@ class Payout extends Base
         $transactionDate = $payload[self::TRANSACTION_DATE];
         $merchantId = $payload[self::MERCHANT_ID];
 
-        $useCustomLogic = $this->app['razorx']->getTreatment($merchantId,
-            RazorxTreatment::PAYOUTS_LEDGER_IDEM_KEY,
-            $this->mode,
-            3);
-
-        if ($useCustomLogic != 'on')
-        {
-            return null;
-        }
-
         if (!array_key_exists($transactorEvent, self::TRANSACTOR_EVENT_TO_ENUM))
         {
             throw new LogicException(

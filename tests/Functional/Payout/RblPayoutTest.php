@@ -1663,8 +1663,6 @@ class RblPayoutTest extends TestCase
 
     public function testPartnerBankOnHoldPayoutForDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
-
         $this->ba->privateAuth();
 
         $testDataDowntime = [
@@ -1695,7 +1693,6 @@ class RblPayoutTest extends TestCase
 
     public function testPartnerBankOnHoldPayoutForDirectAccountWithExcludeMerchant()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
         $this->ba->privateAuth();
 
         $testDataDowntime = [
@@ -1722,36 +1719,8 @@ class RblPayoutTest extends TestCase
         $this->setDowntimeInformationForOnHold($testDataDowntime);
     }
 
-    public function testPartnerBankOnHoldPayoutForDirectAccountWithRazorxOff()
-    {
-        $this->ba->privateAuth();
-        $testDataDowntime = [
-            "payload" => [
-                "mode" => "IMPS",
-                "account_type"=>"direct",
-                "channel" => "RBL",
-                "status" => "downtime",
-                "include_merchants"=> ["ALL"],
-                "exclude_merchants" => [],
-            ]
-        ];
-        $this->setDowntimeInformationForOnHold($testDataDowntime);
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->assertNotEquals('on_hold', $payout['status']);
-        $this->assertNotEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout['queued_reason']);
-
-        // tear down
-        $testDataDowntime['payload']['status'] = 'uptime';
-        $this->setDowntimeInformationForOnHold($testDataDowntime);
-    }
-
     public function testProcessPartnerBankOnHoldPayoutForDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
         $this->ba->privateAuth();
 
         $testDataDowntime = [
@@ -1836,7 +1805,6 @@ class RblPayoutTest extends TestCase
 
     public function testFailOnHoldPayoutsWhenSlaBreachedForDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
         $this->ba->privateAuth();
 
         $testDataDowntime = [
@@ -1923,7 +1891,6 @@ class RblPayoutTest extends TestCase
 
     public function testProcessPartnerBankOnHoldPayoutAndMoveToBeneBankDowntime()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
         $this->ba->privateAuth();
 
         $testDataDowntime = [
@@ -2008,8 +1975,6 @@ class RblPayoutTest extends TestCase
 
     public function testDashboardSummaryWithPartnerBankOnHoldPayout()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
-
         $this->ba->privateAuth();
 
         $testDataDowntime = [

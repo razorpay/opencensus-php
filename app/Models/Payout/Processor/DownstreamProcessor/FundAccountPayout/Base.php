@@ -155,13 +155,6 @@ class Base extends DSBase
 
     protected function holdPayoutIfPartnerBankDown(Entity $payout): bool
     {
-        $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
-            RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT, Constants\Mode::LIVE);
-
-        if ($variant != 'on') {
-            return false;
-        }
-
         $this->trace->info(
             TraceCode::PARTNER_BANK_ON_HOLD_WHITELISTED_MERCHANT,
             [

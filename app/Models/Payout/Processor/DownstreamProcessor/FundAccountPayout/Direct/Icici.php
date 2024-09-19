@@ -21,7 +21,7 @@ class Icici extends Base
 
         $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
-        $holdPayout = $this->holdPayoutIfPartnerBankDownICICI($payout) || $this->holdPayoutIfApplicableAndBeneBankDown($payout);
+        $holdPayout = $this->holdPayoutIfApplicableAndBeneBankDown($payout);
 
         if ($holdPayout === true)
         {
@@ -82,20 +82,5 @@ class Icici extends Base
         $this->assignFreePayoutIfApplicable($payout);
 
         $this->setFeeAndTaxForPayout($payout);
-    }
-
-    /*
-     * This function is just for ramp up. Once ramp up is completed we will call the base func
-     */
-    private function holdPayoutIfPartnerBankDownICICI(Entity $payout): bool
-    {
-        $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
-            RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT_ICICI, Constants\Mode::LIVE);
-
-        if ($variant != 'on') {
-            return false;
-        }
-
-        return $this->holdPayoutIfPartnerBankDown($payout);
     }
 }

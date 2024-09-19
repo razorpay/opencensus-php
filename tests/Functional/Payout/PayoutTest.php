@@ -31373,17 +31373,13 @@ class PayoutTest extends OAuthTestCase
 
         $payoutId = $payout->getId();
 
-        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
-
-        $this->app->instance('ledger', $mockLedger);
-
         $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
         $this->app->instance('ledger', $ledgerMock);
 
         $ledgerMock->shouldReceive('createJournal')
             ->withArgs(function($payload, $headers, $throwExOnFailure) use ($payout) {
-                $this->assertNotEquals($payout->getPublicId() . $payload['transaction_date'] .  "_" . "2",$headers["idempotency-key"]);
+                $this->assertEquals($payout->getPublicId() . $payload['transaction_date'] .  "_" . "2",$headers["idempotency-key"]);
 
                 return true;
             })
@@ -31408,8 +31404,6 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
         $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::PAYOUTS_LEDGER_IDEM_KEY => 'on']);
 
         /** @var PayoutEntity $payout */
         $payout = $this->getDbLastEntity('payout');
