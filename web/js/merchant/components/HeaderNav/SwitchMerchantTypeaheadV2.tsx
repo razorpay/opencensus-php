@@ -24,12 +24,11 @@ const SwitchMerchantTypeaheadV2: React.FC<{
     const searchValueInLowerCase = searchValue.toLowerCase();
 
     const merchants = merchantList.filter((item) => {
-      const name = user.merchants[item].name?.toLowerCase();
-      const display_name = user.merchants[item]?.display_name?.toLowerCase();
+      const { name = '', display_name = '' } = user.merchants[item] || {};
       const merchantId = item.toLowerCase();
       return (
-        name.indexOf(searchValueInLowerCase) >= 0 ||
-        display_name.indexOf(searchValueInLowerCase) >= 0 ||
+        name?.toLowerCase().indexOf(searchValueInLowerCase) >= 0 ||
+        display_name?.toLowerCase().indexOf(searchValueInLowerCase) >= 0 ||
         merchantId.indexOf(searchValueInLowerCase) >= 0
       );
     });
