@@ -10032,6 +10032,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MUTEX_REDIS_TIME_TAKEN_TO_RELEASE                         = 'MUTEX_REDIS_TIME_TAKEN_TO_RELEASE';
     const NESTED_MUTEX_ACQUIRE                                      = 'NESTED_MUTEX_ACQUIRE';
     const NESTED_MUTEX_RELEASE                                      = 'NESTED_MUTEX_RELEASE';
+    const MUTEX_ALREADY_ACQUIRED                                    = 'MUTEX_ALREADY_ACQUIRED';
 
     const EXCEL_CONSTRUCT_INIT                                      = 'EXCEL_CONSTRUCT_INIT';
 

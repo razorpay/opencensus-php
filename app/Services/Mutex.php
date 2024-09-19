@@ -120,6 +120,8 @@ class Mutex
         {
             $resourceRedisValue = $this->redis->get($resource);
 
+            $routeName = optional(app('api.route'))->getCurrentRouteName();
+
             $requestId = $this->getRequestIdWithoutCount($resourceRedisValue);
 
             if ($requestId === $this->requestId)
@@ -130,7 +132,7 @@ class Mutex
                     'resource'   => $resource,
                     'requestId'  => $requestId,
                     'ttl'        => $ttl,
-                    'route_name' => optional(app('api.route'))->getCurrentRouteName()
+                    'route_name' => $routeName,
                 ]);
 
                 $response = $this->redis->set($resource, $requestId, 'ex', $ttl, 'xx');
@@ -138,6 +140,19 @@ class Mutex
             else
             {
                 $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+            }
+
+            // todo: this is a temporary change to debug and identify the flow due to which the
+            // merchant_submit_internal route is not able to acquire lock on merchant_id. after
+            // identification, the changes would be removed.
+            if ($routeName === 'merchant_submit_internal' && $response === null)
+            {
+                $this->trace->info(TraceCode::MUTEX_ALREADY_ACQUIRED, [
+                    'resource'                                  => $resource,
+                    'request_id_of_already_acquired_request'    => $requestId,
+                    'ttl'                                       => $ttl,
+                    'route_name'                                => $routeName,
+                ]);
             }
         }
         catch (PredisException $e)
