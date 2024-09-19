@@ -127,16 +127,4 @@ describe('Nested vertical tabs component', () => {
     await waitFor(() => expect(screen.queryByText('RTO Settings')).toBeInTheDocument());
     await waitFor(() => expect(screen.queryByText('Shipping Settings')).toBeInTheDocument());
   });
-
-  test('should display Coupon Settings if rcod is enabled', async () => {
-    const customState = {
-      magicCheckout: {
-        rcod: true,
-      },
-    };
-    render(<NestedVerticalTabs />, {
-      state: customState,
-    });
-    await waitFor(() => expect(screen.queryByText('Coupon Settings')).toBeInTheDocument());
-  });
 });

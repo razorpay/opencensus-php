@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import moment from 'moment';
 
 // ui imports
-import { ShopifySyncModalWrapper } from 'merchant/views/MagicCheckout/CouponEngine/pages/EnableCouponTab/EnableCouponTabStyles';
+import { ShopifySyncModalWrapper } from 'merchant/views/MagicCheckout/CouponEngine/pages/EnableCouponTab/styled';
 import {
   CancelButton,
   ActionButton,

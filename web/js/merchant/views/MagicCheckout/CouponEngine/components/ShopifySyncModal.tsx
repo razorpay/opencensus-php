@@ -6,7 +6,7 @@ import moment from 'moment';
 // ui imports
 import { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
-import { ShopifySyncModalWrapper } from 'merchant/views/MagicCheckout/CouponEngine/pages/EnableCouponTab/EnableCouponTabStyles';
+import { ShopifySyncModalWrapper } from 'merchant/views/MagicCheckout/CouponEngine/pages/EnableCouponTab/styled';
 
 // helpers
 import { closeModal } from 'merchant_common/reducers/modals';

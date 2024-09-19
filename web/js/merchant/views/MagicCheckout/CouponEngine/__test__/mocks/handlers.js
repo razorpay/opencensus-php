@@ -42,3 +42,19 @@ export const magicCouponEngineHandler = [
     );
   }),
 ];
+
+export const magicCEConfigHandlers = {
+  success: rest.post('*/merchant/api/:mode/1cc/merchant/configs', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: [],
+      }),
+    );
+  }),
+  badRequest: rest.post('*/merchant/api/:mode/1cc/merchant/configs', (req, res, ctx) => {
+    return res(ctx.status(400));
+  }),
+};

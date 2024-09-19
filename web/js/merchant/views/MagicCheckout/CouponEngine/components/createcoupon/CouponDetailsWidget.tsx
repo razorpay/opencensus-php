@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
+import type { GenericRecord } from 'merchant/views/MagicCheckout/types';
+
 // ui imports
 import Input from 'common/new-ui/Input';
 import {
@@ -24,14 +26,18 @@ interface CouponDetailsProps {
   couponName: string;
   flow: string;
   isRcodEnabled: boolean;
+  magicSettings: GenericRecord;
 }
 
 const CouponDetails: React.FC<CouponDetailsProps> = ({
   couponName,
   flow = 'created',
   isRcodEnabled,
+  magicSettings,
 }) => {
   const { widgetsData, setWidgetsData, errorStates, setErrorStates } = useContext(ModalContext);
+  const isAutoApplyCouponsEnabled =
+    magicSettings.one_cc_coupon_engine && magicSettings.one_cc_auto_apply_coupons;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
     const { type, checked: isChecked } = e.target;
@@ -150,17 +156,18 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({
                 <span>Enable this coupon code only for Prepaid Payment methods</span>
               </CheckboxGroup>
             )}
-            {/* Intentionally commented out, will uncomment in coupon engine v2 */}
-            {/* <CheckboxGroup>
-              <Input.Check
-                defaultValue={widgetsData.couponDetails.autoapply}
-                type="checkbox"
-                name="auto_apply"
-                onChange={(e) => handleInputChange(e, 'autoapply')}
-                autoRender
-              />
-              <span>Automatically apply this coupon for eligible users</span>
-            </CheckboxGroup> */}
+            {isAutoApplyCouponsEnabled && (
+              <CheckboxGroup>
+                <Input.Check
+                  checked={widgetsData.couponDetails.autoapply}
+                  type="checkbox"
+                  name="autoapply"
+                  onChange={(e) => handleInputChange(e, 'autoapply')}
+                  autoRender
+                />
+                <span>Automatically apply this coupon for eligible users</span>
+              </CheckboxGroup>
+            )}
           </div>
         </FormGroup>
       </Card>
@@ -169,6 +176,7 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({
 };
 
 const mapStateToProps = (state) => ({
+  magicSettings: state.magic_settings,
   isRcodEnabled: state.magicCheckout.rcod,
 });
 

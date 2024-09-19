@@ -109,14 +109,6 @@ export const TABS = {
     },
     {
       className: 'magic-checkout-settings',
-      path: '/magic/settings/coupons',
-      label: 'Coupon Settings',
-      Component: CouponEngineSettingsTab,
-      condition: (user) => user.isMagicCouponEngineEnabled,
-      onRCOD: true,
-    },
-    {
-      className: 'magic-checkout-settings',
       path: '/magic/settings/magicx-store-settings',
       label: 'Store Settings',
       Component: MagicXStoreSettings,
@@ -435,19 +427,6 @@ export const ROUTES = {
       Component: RTOReductionSetupV2,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
-    },
-    {
-      className: 'magic-checkout-settings',
-      label: 'Coupon Setup',
-      path: '/magic/setup-settings/coupon-setup',
-      onRCOD: true,
-      Component: () => (
-        <CardCTA
-          redirectUrl="/magic/coupons"
-          heading="You can setup Coupons under 'Coupons' tab."
-        />
-      ),
-      condition: (user) => user.isMagicCouponEngineEnabled,
     },
     {
       className: 'analytics-settings',

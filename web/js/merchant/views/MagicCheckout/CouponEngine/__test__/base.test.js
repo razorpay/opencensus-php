@@ -56,7 +56,7 @@ jest.mock(
   () => () => {
     return (
       <div>
-        <h1>Create and sync coupons on Magic checkout</h1>
+        <h1>Coupon Settings</h1>
       </div>
     );
   },
@@ -73,6 +73,6 @@ test('should render coupon engine tab', async () => {
 
   await waitFor(() => {
     expect(screen.getByText('Announcement Banner')).toBeInTheDocument();
-    expect(screen.getByText('Create and sync coupons on Magic checkout')).toBeInTheDocument();
+    expect(screen.getByText('Coupon Settings')).toBeInTheDocument();
   });
 });
