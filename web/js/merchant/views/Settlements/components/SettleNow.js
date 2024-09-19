@@ -10,7 +10,7 @@ import {
   getIsGlobalLimitBreached,
   getIsMerchantLimitBreached,
 } from 'merchant/views/Settlements/InstantSettlements/utils/common';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
+import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import {
   trackOndemand,
@@ -83,7 +83,7 @@ const SettleNow = (props) => {
     trackOndemand.trackSettleNow('Settlements');
     openModal({
       component: (
-        <OndemandModal
+        <OnDemandModalEntry
           animatedSettlemnetBtn={!settlementExists && esOndemandSettlementEnabled}
           settlableAmount={settlableAmount}
           currentBalance={balance}
@@ -93,6 +93,7 @@ const SettleNow = (props) => {
           checkIfFirstEverSettlement={checkIfFirstEverSettlement}
         />
       ),
+      isNew: true,
       size: 'small',
       disableClose: true,
     });

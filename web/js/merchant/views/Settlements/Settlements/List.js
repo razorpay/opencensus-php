@@ -29,7 +29,7 @@ import {
   fetchSchedule as fnFetchSchedule,
   fetchHolidayList as fnFetchHolidayList,
 } from 'merchant/reducers/settlements/details';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
+import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 import { handleAnalytics } from './analytics';
@@ -297,7 +297,7 @@ class SettlementsListContainer extends ListContainer {
 
     openModal({
       component: (
-        <OndemandModal
+        <OnDemandModalEntry
           animatedSettlemnetBtn={!settlementExists && esOndemandSettlementEnabled}
           settlableAmount={settlableAmount}
           currentBalance={balance}
@@ -307,6 +307,7 @@ class SettlementsListContainer extends ListContainer {
           checkIfFirstEverSettlement={checkIfFirstEverSettlement}
         />
       ),
+      isNew: true,
       size: 'small',
       disableClose: true,
     });

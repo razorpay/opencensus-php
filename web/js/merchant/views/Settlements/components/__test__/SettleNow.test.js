@@ -132,7 +132,9 @@ describe('SettleNow', () => {
           },
         },
       };
+      server.use(apiHandlers.odsConfigNoBreachHandler);
       render(<App initialState={initialState} checkIfFirstEverSettlement={() => {}} />);
+      await waitForODSConfigLoading();
       userEvent.click(screen.getByText('Settle Now'));
       await waitFor(() => {
         expect(gaEventSpy).toHaveBeenCalledTimes(1);
@@ -170,6 +172,9 @@ describe('SettleNow', () => {
   });
 
   describe('Restriction Message', () => {
+    beforeEach(() => {
+      server.use(apiHandlers.odsConfigNoBreachHandler);
+    });
     const restriction = {
       home: {
         ...state.home,
@@ -244,6 +249,7 @@ describe('SettleNow', () => {
         },
         ...restriction,
       };
+
       render(<App initialState={initialState} isNodalAccountLowBalanceBlocked={true} />);
       await waitForODSConfigLoading();
       expect(

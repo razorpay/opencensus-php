@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import styled, { css } from 'styled-components';
+import { Box, Heading, InfoIcon, Text, Button, ArrowRightIcon } from '@razorpay/blade/components';
+import { makeBorderSize } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
+import styled from 'styled-components';
 
-import { AsyncBtn } from 'common/new-ui/Button';
 import User from 'merchant/models/User';
 import { updateSession as fnUpdateSession } from 'merchant/reducers/session';
-import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
-import {
-  closeModal as fnCloseModal,
-  openModal as fnOpenModal,
-} from 'merchant_common/reducers/modals';
-
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
-
+import {
+  trackCrossSellBannerRendered,
+  trackKnowMoreClicked,
+  trackEnableNowClicked,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
+import {
+  DEFAULT_PRICING_RATE,
+  SAMEDAY_MODAL_LOCATIONS,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import {
   enableAutomaticSettlements,
   getDiscountPercentage,
@@ -21,155 +24,27 @@ import {
   setEnableEsPartialAutomaticDate,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 import {
-  DEFAULT_PRICING_RATE,
-  SAMEDAY_MODAL_LOCATIONS,
-} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
-import {
-  trackCrossSellBannerRendered,
-  trackKnowMoreClicked,
-  trackEnableNowClicked,
-} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
+  closeModal as fnCloseModal,
+  openModal as fnOpenModal,
+} from 'merchant_common/reducers/modals';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 
 const BIG_UPSELLING_BG = '/dist/css/assets/settlements/bigupselling-bg.svg';
 const SMALL_UPSELLING_BG = '/dist/css/assets/settlements/upselling-bg.svg';
 
 const Container = styled.div`
-  width: 100%;
-  background: ${({ showDiscount }) =>
-    showDiscount ? `url(${BIG_UPSELLING_BG})` : `url(${SMALL_UPSELLING_BG})`};
-  background-repeat: no-repeat;
-  background-size: cover;
-  border-radius: 6px;
-  padding: 16px;
+  background-color: ${(props) => props.theme.colors.interactive.background.staticWhite.faded};
+  overflow: hidden;
+  border-radius: ${(props) => makeBorderSize(props.theme.border.radius.medium)};
 `;
 
-const DidYouKnowContainer = styled.div`
+const ContainerDiscount = styled.div`
+  background-color: ${(props) => props.theme.colors.interactive.background.staticWhite.highlighted};
+  overflow: hidden;
+  border-radius: ${(props) => makeBorderSize(props.theme.border.radius.medium)};
   display: flex;
   align-items: center;
-  gap: 6.67px;
-  margin-bottom: 10px;
-  i {
-    color: #ffffff;
-    font-size: 18px;
-  }
-`;
-
-const DidYouKnow = styled.span`
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 20px;
-  color: #ffffff;
-`;
-
-const Detail = styled.div`
-  font-size: 14px;
-  line-height: 20px;
-  color: #dfe3e9;
-  margin-bottom: 12px;
-  span {
-    font-weight: 800;
-  }
-`;
-
-const DiscountContainer = styled.div`
-  padding: 16px 10px 12px;
-  width: 100%;
-  background-color: rgba(248, 249, 251, 0.16);
-  border-radius: 3px;
-  margin-bottom: 8px;
-`;
-
-const BigDiscount = styled.div`
-  font-weight: 800;
-  font-size: 32px;
-  line-height: 40px;
-  color: #f1ffed;
-  text-align: center;
-`;
-
-const BigDiscountLabel = styled.div`
-  font-size: 13px;
-  line-height: 16px;
-  text-align: center;
-  color: #f0ffff;
-  margin: 4px 0 8px;
-`;
-
-const InstantSettlementsFeeContainer = styled.div`
-  display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 3px 0;
-  background: #ebf6f9;
-  border: 1px solid rgba(0, 140, 177, 0.32);
-  border-radius: 3px;
-  > .i-arrow-forward {
-    color: #5d6d86;
-    margin: 0 13px;
-  }
-`;
-
-const InstantSettlementsCurrentFeeContainer = styled.div`
-  position: relative;
-`;
-
-const InstantSettlementsCurrentFee = styled.div`
-  font-size: 14px;
-  line-height: 22px;
-  color: #5d6d86;
-`;
-
-const StrikeThrough = styled.span`
-  width: 35px;
-  height: 1px;
-  background-color: #435775;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-`;
-
-const InstantSettlementsOfferFee = styled.span`
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 22px;
-  color: #324664;
-`;
-
-const InstantSettlementsOfferFeeLabel = styled.span`
-  font-size: 12px;
-  line-height: 22px;
-  opacity: 0.87;
-  margin-left: 4px;
-  color: #324664;
-`;
-
-const Buttons = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 9px;
-`;
-
-const Button = styled(AsyncBtn)`
-  flex: 1;
-  text-align: center;
-  padding: 10px 0 !important;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: capitalize;
-  margin: 0 !important;
-  ${({ outline }) =>
-    outline
-      ? css`
-          border: 1px solid rgba(255, 255, 255, 0.4) !important;
-          background: transparent !important;
-          color: #fff !important;
-        `
-      : css`
-          background: #ffffff !important;
-          color: #2a86f3 !important;
-        `}
 `;
 
 const getScreenForTrackEvent = (from) => {
@@ -180,6 +55,12 @@ const getScreenForTrackEvent = (from) => {
       return isScreenSettlements
         ? 'Settlements Page || Settle Now Modal || Settlement Successful'
         : 'PG Dashboard Home || Settle Now Modal || Settlement Successful';
+    }
+
+    case SAMEDAY_MODAL_LOCATIONS.ONDEMAND_V2: {
+      return isScreenSettlements
+        ? 'Settlements Page || Settle Now V2 Modal || Settlement Successful'
+        : 'PG Dashboard Home || Settle Now V2 Modal || Settlement Successful';
     }
 
     case SAMEDAY_MODAL_LOCATIONS.SETTLEMENTS_DETAILS: {
@@ -226,6 +107,7 @@ function Upselling({
       component: <ScheduledModal from={from} />,
       size: 'small',
       disableClose: true,
+      isNew: false,
     });
 
     trackKnowMore({ screen });
@@ -239,6 +121,7 @@ function Upselling({
     trackEnableNowClicked({
       screen,
     });
+    setLoading(true);
     return new Promise((resolve) => {
       enableAutomaticSettlements()
         .then(() => {
@@ -253,8 +136,8 @@ function Upselling({
                 ),
                 size: 'small',
                 disableClose: true,
+                isNew: false,
               });
-              setLoading(false);
               resolve();
             })
             .catch(() => {
@@ -276,54 +159,106 @@ function Upselling({
             type: 'error',
             message: error,
           });
-          setLoading(false);
           resolve();
         });
+    }).finally(() => {
+      setLoading(false);
     });
   };
 
   if (!user.isOrgRZP) return null;
 
   return (
-    <Container showDiscount={showDiscount}>
-      <DidYouKnowContainer>
-        <i className="i i-info-outline" />
-        <DidYouKnow>Did you know?</DidYouKnow>
-      </DidYouKnowContainer>
-      <Detail>
-        You can get your daily revenue automatically at <span>09:00 AM</span> and{' '}
-        <span>05:00 PM</span> on all working days with Same-day Settlements
-      </Detail>
+    <Box
+      padding="spacing.6"
+      borderRadius="large"
+      backgroundColor="surface.background.primary.intense"
+      width="100%"
+      backgroundSize="cover"
+      backgroundRepeat="no-repeat"
+      backgroundImage={showDiscount ? `url(${BIG_UPSELLING_BG})` : `url(${SMALL_UPSELLING_BG})`}
+    >
+      <Heading marginBottom="spacing.3" color="surface.text.staticWhite.normal" size="small">
+        <InfoIcon
+          marginBottom="-2px"
+          size="large"
+          color="surface.icon.staticWhite.normal"
+          marginRight="spacing.3"
+        />
+        Did you know?
+      </Heading>
+      <Text
+        display="block"
+        marginBottom="spacing.7"
+        color="surface.text.staticWhite.subtle"
+        size="large"
+      >
+        You can get your daily revenue automatically at{' '}
+        <Text size="large" as="span" weight="semibold" color="currentColor">
+          09:00 AM
+        </Text>{' '}
+        and{' '}
+        <Text size="large" weight="semibold" as="span" color="currentColor">
+          05:00 PM
+        </Text>{' '}
+        on all working days with Same-day Settlements
+      </Text>
 
       {isPricingValid && (
-        <DiscountContainer>
-          <BigDiscount>{getDiscountPercentage(pricingRate)}%</BigDiscount>
-          <BigDiscountLabel>discount on your Instant Settlements fee, forever!</BigDiscountLabel>
-          <InstantSettlementsFeeContainer>
-            <InstantSettlementsCurrentFeeContainer>
-              <InstantSettlementsCurrentFee>
+        <Container>
+          <Box textAlign="center" paddingY="spacing.6" paddingX="spacing.6">
+            <Heading size="2xlarge" color="surface.text.staticWhite.normal">
+              {getDiscountPercentage(pricingRate)}%
+            </Heading>
+            <Text
+              display="block"
+              marginTop="spacing.4"
+              marginBottom="spacing.6"
+              color="surface.text.staticWhite.subtle"
+            >
+              Discount on your Instant Settlements fee, forever!
+            </Text>
+            <ContainerDiscount>
+              <Text
+                display="block"
+                color="surface.text.gray.subtle"
+                marginX="spacing.3"
+                marginY="spacing.3"
+                textDecorationLine="line-through"
+              >
                 {(pricingRate / 100).toFixed(2)}%
-              </InstantSettlementsCurrentFee>
-              <StrikeThrough />
-            </InstantSettlementsCurrentFeeContainer>
-            <i className="i i-arrow-forward" />
-            <InstantSettlementsOfferFee>0.15%</InstantSettlementsOfferFee>
-            <InstantSettlementsOfferFeeLabel>/ settlement</InstantSettlementsOfferFeeLabel>
-          </InstantSettlementsFeeContainer>
-        </DiscountContainer>
+              </Text>
+              <ArrowRightIcon marginX="spacing.5" />
+              <Text weight="semibold" as="span" textDecorationLine="none">
+                0.15% / settlement
+              </Text>
+            </ContainerDiscount>
+          </Box>
+        </Container>
       )}
 
-      <Buttons>
-        <Button outline={showDiscount} onClick={handleKnowMoreClick} disabled={isLoading}>
-          Know more
-        </Button>
-        {showDiscount && (
-          <Button onClick={handleEnableNowClick} disabled={isLoading}>
-            Enable now
+      <Box display="flex" gap="spacing.5" marginTop="spacing.7">
+        <Box whiteSpace="nowrap" flexGrow="1">
+          <Button
+            variant="tertiary"
+            color="white"
+            isFullWidth
+            onClick={handleKnowMoreClick}
+            isDisabled={isLoading}
+          >
+            Know More
           </Button>
+        </Box>
+
+        {showDiscount && (
+          <Box whiteSpace="nowrap" flexGrow="1">
+            <Button color="white" isFullWidth isLoading={isLoading} onClick={handleEnableNowClick}>
+              Enable Now
+            </Button>
+          </Box>
         )}
-      </Buttons>
-    </Container>
+      </Box>
+    </Box>
   );
 }
 

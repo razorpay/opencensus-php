@@ -11,7 +11,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import Pager from 'common/ui/Pager';
 import InstantSettlementsList from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/List';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
+import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Alert from 'common/ui/Forms/Alert';
 import EmptySettleNow from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/EmptySettleNow';
@@ -154,7 +154,7 @@ class InstantSettlements extends ListContainer {
 
     openModal({
       component: (
-        <OndemandModal
+        <OnDemandModalEntry
           animatedSettlemnetBtn={!settlementExists && esOndemandSettlementEnabled}
           currentBalance={balance}
           settlableAmount={settlableAmount}
@@ -164,6 +164,7 @@ class InstantSettlements extends ListContainer {
           checkIfFirstEverSettlement={checkIfFirstEverSettlement}
         />
       ),
+      isNew: true,
       size: 'small',
       disableClose: true,
       queryParams: {

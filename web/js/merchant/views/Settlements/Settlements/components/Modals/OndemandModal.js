@@ -58,6 +58,10 @@ import { NUDGE_TYPES, POST_ENABLE_TYPES } from './ScheduledModal/constants';
 import { setEsNudgeSeen } from './ScheduledModal/utils';
 import SettlementSuccessView from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/SettlementSuccessView';
 
+/**
+ * Important
+ * TODO: Delete this component/integration and related modules & tests once OnDemandV2 is rolled out to everyone.
+ */
 class OndemandModal extends Component {
   constructor(props) {
     super(props);

@@ -5,6 +5,7 @@ import {
   ExternalLinkIcon,
   ClockIcon,
 } from '@razorpay/blade/components';
+import { useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -24,6 +25,14 @@ import {
   fetchSettlementConfig as fnFetchSettlementConfig,
   fetchPreviousSettlements as fnPreviousFetchSettlements,
 } from 'merchant/reducers/settlements/details';
+import { OdsBanners } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners';
+import { QUERY_KEY as LINKED_ACC_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useLinkedAccountBalance';
+import {
+  useODSConfig,
+  QUERY_KEY as ODS_CONFIG_QUERY_KEY,
+} from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import { QUERY_KEY as ODS_RES_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
+import { QUERY_KEY as PG_BAL_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePGBalance';
 import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
 import BalanceCard from 'merchant/views/Settlements/components/BalanceCard';
 import PreviousSettlementCard from 'merchant/views/Settlements/components/PreviousSettlementCard';
@@ -35,8 +44,6 @@ import {
   openModal as fnOpenModal,
   closeModal as fnCloseModal,
 } from 'merchant_common/reducers/modals';
-import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
-import { OdsBanners } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners';
 
 import {
   SummaryHeader,
@@ -63,7 +70,7 @@ const SettlementsHeaderV2 = ({
   openModal,
   settlementExists,
   checkIfFirstEverSettlement,
-  esOndemandSettlementEnabled,
+  isPartialOndemandSettlementEnabled,
   fetchCurrentBalance,
   fetchPreviousSettlements,
   fetchSettlementAmount,
@@ -71,6 +78,7 @@ const SettlementsHeaderV2 = ({
   fetchBankAccountChangeStatus,
   current_balance,
   org,
+  isOndemandSettlementEnabled,
 }) => {
   const prevSettlementParams = {
     count: 25,
@@ -80,7 +88,8 @@ const SettlementsHeaderV2 = ({
   const [fetchedAt, setFetchedAt] = useState(moment());
   const [timeDiff, setTimeDiff] = useState(0);
 
-  const odsQuery = useODSConfig();
+  const odsQuery = useODSConfig({ enabled: isOndemandSettlementEnabled });
+  const queryClient = useQueryClient();
 
   const isNodalAccountBalanceLowBlocked = odsQuery.data?.blocked;
   const {
@@ -150,9 +159,14 @@ const SettlementsHeaderV2 = ({
     fetchSettlementAmount();
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user?.id);
-    odsQuery.refetch();
     setFetchedAt(moment());
     setTimeDiff(0);
+    if (isOndemandSettlementEnabled) {
+      queryClient.removeQueries({ queryKey: ODS_CONFIG_QUERY_KEY, exact: true });
+      queryClient.removeQueries({ queryKey: PG_BAL_QUERY_KEY, exact: true });
+      queryClient.removeQueries({ queryKey: ODS_RES_QUERY_KEY, exact: true });
+      queryClient.removeQueries({ queryKey: LINKED_ACC_QUERY_KEY, exact: true });
+    }
 
     // instrumentation
     analyticsTrackWithUserInfo({
@@ -249,7 +263,7 @@ const SettlementsHeaderV2 = ({
             isSettlementOnHold={isSettlementOnHold}
             user={user}
             settlementExists={settlementExists}
-            esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+            esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
             checkIfFirstEverSettlement={checkIfFirstEverSettlement}
             isNodalAccountLowBalanceBlocked={isNodalAccountBalanceLowBlocked}
             balanceCurrency={balanceCurrency}

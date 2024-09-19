@@ -88,7 +88,7 @@ import {
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
+import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
@@ -315,7 +315,7 @@ class AnalyticsDesktop extends Component {
 
     this.props.openModal({
       component: (
-        <OndemandModal
+        <OnDemandModalEntry
           animatedSettlemnetBtn={!this.state.settlementExists && esOndemandSettlementEnabled}
           currentBalance={balance}
           settlableAmount={settlableAmount}
@@ -325,6 +325,7 @@ class AnalyticsDesktop extends Component {
           goBackToInitialModalView={this.showOndemandSettlementForm}
         />
       ),
+      isNew: true,
       size: 'small',
       disableClose: true,
     });

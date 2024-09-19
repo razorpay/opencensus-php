@@ -299,6 +299,12 @@ const getScreenForTrackEvent = (from) => {
         : 'PG Dashboard Home || Settle Now Modal || Settlement Successful || Same-day Settlements Modal';
     }
 
+    case SAMEDAY_MODAL_LOCATIONS.ONDEMAND_V2: {
+      return isScreenSettlements
+        ? 'Settlements Page || Settle Now V2 Modal || Settlement Successful || Same-day Settlements Modal'
+        : 'PG Dashboard Home || Settle Now V2 Modal || Settlement Successful || Same-day Settlements Modal';
+    }
+
     case SAMEDAY_MODAL_LOCATIONS.SETTLEMENTS_DETAILS: {
       return isScreenSettlements
         ? 'Settlements Page || Settlement Details Modal || Same-day Settlements Modal'

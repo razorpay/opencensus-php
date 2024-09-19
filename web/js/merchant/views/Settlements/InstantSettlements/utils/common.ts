@@ -17,3 +17,15 @@ export const getIsMerchantLimitBreached = (odsConfig?: ODSConfig) => {
 export const getIsGlobalLimitBreached = (odsConfig?: ODSConfig) => {
   return !!odsConfig?.disable && !getIsMerchantLimitBreached(odsConfig);
 };
+
+export const getIsPartialOndemandSettlementEnabled = (user: any) => {
+  return user.isOndemandSettlementEnabled && user.isOndemandSettlementsRestricted;
+};
+
+export const getIsRouteOndemandSettlementEnabled = (user: any) => {
+  return user.isOndemandRouteSettlementsEnabled;
+};
+
+export const getIsSamedaySettlementEnabled = (user: any) => {
+  return user.isAutomaticSettlementEnabled || user.isAutomaticSettlementRestricted;
+};

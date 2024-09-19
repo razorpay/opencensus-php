@@ -1571,6 +1571,32 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: [
+        '/dashboard/*',
+        '/settlements/*',
+        '/instantsettlements/*',
+        '/routeinstantsettlements/*',
+      ],
+      abExperiments: [
+        {
+          uniqueHashKey: 'capital_is_settle_now_v2',
+          experimentId: {
+            beta: 'OxgkBGIXu2gCQw',
+            production: 'Oxgfp6a0pE4I1f',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/international-settings/firs'],
       abExperiments: [
         {

@@ -24,7 +24,7 @@ import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
 import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
-import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
+import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
 import { openModal } from 'merchant_common/reducers/modals';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
@@ -155,7 +155,7 @@ class AnalyticsMobile extends Component {
 
     this.props.openModal({
       component: (
-        <OndemandModal
+        <OnDemandModalEntry
           animatedSettlemnetBtn={!this.state.settlementExists && esOndemandSettlementEnabled}
           currentBalance={balance}
           settlableAmount={settlableAmount}
@@ -165,6 +165,7 @@ class AnalyticsMobile extends Component {
           goBackToInitialModalView={this.showOndemandSettlementForm}
         />
       ),
+      isNew: true,
       size: 'small',
       disableClose: true,
     });

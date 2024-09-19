@@ -24,15 +24,6 @@ jest.mock(
     OdsBanners: () => <p>ODS Banners Placeholder</p>,
   }),
 );
-const mockOdsFnc = jest.fn();
-/** This hooks is being tested separately - capital integration test cases */
-jest.mock('merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig', () => ({
-  __esModule: true,
-  ...jest.requireActual('merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig'),
-  useODSConfig: () => ({
-    refetch: mockOdsFnc,
-  }),
-}));
 
 window.session_id = `12345`;
 
@@ -157,7 +148,6 @@ describe('SettlementsHeaderV2', () => {
       expect(fetchSettlementConfigSpy).toHaveBeenCalledTimes(1);
       expect(fetchBankAccountChangeStatusSpy).toHaveBeenCalledWith('testing123');
     });
-    expect(mockOdsFnc).toHaveBeenCalledTimes(1);
   });
 
   test('documentation link for curlec orgs', async () => {

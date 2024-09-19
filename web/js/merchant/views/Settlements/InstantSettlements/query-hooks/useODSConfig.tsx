@@ -12,15 +12,16 @@ export type ODSConfig = {
 };
 
 /** TODO: After react-query v5 migration, use queryoptions function from react-query */
-const QUERY_KEY = ['ods-config'];
+export const QUERY_KEY = ['ods-config'];
 
-export const useODSConfig = () => {
+export const useODSConfig = ({ enabled }: { enabled?: boolean } | undefined = {}) => {
   return useQuery({
     queryKey: QUERY_KEY,
     queryFn: (): Promise<ODSConfig> => fetch({ url: 'settlements/ondemand/merchant/config' }),
     refetchOnWindowFocus: false,
     staleTime: 10000,
-    retry: false,
+    retry: 1,
+    enabled,
   });
 };
 

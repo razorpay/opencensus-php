@@ -17,6 +17,7 @@ export const CLOSE_OPTIONS = [
   },
   {
     label: 'Other reasons',
+    /** Dont update "value" - dependency for others */
     value: 'other',
   },
 ];

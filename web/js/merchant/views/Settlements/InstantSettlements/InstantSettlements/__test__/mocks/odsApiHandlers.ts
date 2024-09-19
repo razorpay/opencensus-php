@@ -1,4 +1,12 @@
-import { getOdsConfigHandler } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/handlers';
+import {
+  getOdsConfigHandler,
+  getPgBalanceHandler,
+  getPricingBreakupHandler,
+  getOdsValidateHandler,
+  getPostODSHandler,
+  getLinkedAccountBalanceHandler,
+  getPostRouteODSHandler,
+} from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/handlers';
 
 export const odsConfigGlobalLimitBreachedHandler = getOdsConfigHandler({
   disable: true,
@@ -32,3 +40,18 @@ export const odsConfigNoBreachWithLimitHandler = getOdsConfigHandler({
 });
 
 export const odsConfigErrorHandler = getOdsConfigHandler(null, false);
+
+export const pgBalanceHandler = getPgBalanceHandler();
+
+export const pricingBreakupHandler = getPricingBreakupHandler();
+
+export const odsRestrictedConfigHandler = getOdsValidateHandler({
+  attempts_left: 1000,
+  settlable_amount: 50000,
+  max_amount_limit: 500000,
+});
+
+export const postODSHandler = getPostODSHandler();
+
+export const routeBalanceHandler = getLinkedAccountBalanceHandler();
+export const postRouteODSHandler = getPostRouteODSHandler();

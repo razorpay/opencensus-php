@@ -235,7 +235,8 @@ const Settlements = ({
       {user?.isSettlementDashboardVisibilityEnabled ? (
         <SettlementsHeaderV2
           settlementExists={settlementExists}
-          esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
+          isPartialOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
+          isOndemandSettlementEnabled={isOndemandSettlementEnabled}
           checkIfFirstEverSettlement={checkIfFirstEverSettlement}
         />
       ) : (
