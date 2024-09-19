@@ -8,7 +8,8 @@ import {
   fetchMerchantWebsiteDetails,
   fetchEligibilityForPolicyWizardV2,
 } from 'merchant/reducers/websitecompliance';
-import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
+import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
+import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
 import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
 import {
   formatStatus,
@@ -26,6 +27,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useSplitzService } from 'common/splitz';
+import WebsiteSubmitModal from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/WebsiteSubmitModal';
 
 function WebsiteAppDetails({
   activationData,
@@ -45,6 +47,7 @@ function WebsiteAppDetails({
   const from = params.from; // modal, banner, email, sms, whatsapp, nc & merchant dashboard
 
   const splitz = useSplitzService();
+  const [showSubmitWebsiteModal, setShowSubmitWebsiteModal] = React.useState(false);
 
   const isExpEnabled = isPolicyWizardV2Enabled({
     splitz,
@@ -190,7 +193,18 @@ function WebsiteAppDetails({
     if (!shouldEnableForNoCode && isUrlFieldEmpty(activationData.data)) {
       openModal({
         size: 'small',
-        component: <EditWebsiteDetailsModal onClose={closeModal} onWebsiteAdd={onWebsiteAdd} />,
+        component: (
+          <InitiateWebsiteChange
+            user={user}
+            openModal={openModal}
+            closeModal={closeModal}
+            flowType={FLOWS.BUSINESS_WEBSITE}
+            openNewModal={() => {
+              closeModal();
+              setShowSubmitWebsiteModal(true);
+            }}
+          />
+        ),
       });
     } else {
       window.open(
@@ -268,6 +282,12 @@ function WebsiteAppDetails({
             <button onClick={onButtonClick}>Add website or app</button>
           </div>
         </div>
+
+        <WebsiteSubmitModal
+          isOpen={showSubmitWebsiteModal}
+          onDismiss={() => setShowSubmitWebsiteModal(false)}
+          refetchData={onWebsiteAdd}
+        />
       </div>
     );
   }

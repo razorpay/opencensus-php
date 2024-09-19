@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useMobile } from 'common/hooks/useMobile';
+import { noop } from 'common/utils/rzp-utils';
 import { Environments, ShowNotificationType, User as UserType } from 'common/typings';
 import User from 'merchant/models/User';
 import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
@@ -52,6 +53,7 @@ interface WebsiteSubmitModalProps {
   updateSession: (args: { user: UserType; mode?: string }) => void;
   user: UserType;
   mode: Environments;
+  refetchData: VoidFunction;
 }
 
 const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
@@ -61,6 +63,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   updateSession,
   user,
   mode,
+  refetchData = noop,
 }) => {
   const isMobile = useMobile();
   const saveWebsiteUpdate = useSaveWebsiteUpdate();
@@ -71,6 +74,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   async function submitAppForActivated(formState) {
     try {
       await handleAppSubmitForActivated(formState);
+      refetchData();
       showNotification({
         type: 'success',
         message: 'Thank you for providing app.',
@@ -97,6 +101,8 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
         user: newUser as unknown as UserType,
         mode,
       });
+
+      refetchData();
 
       showNotification({
         type: 'success',
