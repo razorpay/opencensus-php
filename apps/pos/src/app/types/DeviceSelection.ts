@@ -7,11 +7,9 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_SETUP_FEE_TYPE = 'device_item_setup_fee_type_field',
   DEVICE_RENTAL_TYPE = 'device_item_rental_charges_type_field',
   DEVICE_ADVANCE_RENTAL_FEE = 'device_item_advanced_rental_field',
-  DEVICE_PAPER_ROLL_FIELD = 'device_item_purchase_paper_rolls_field',
   DEVICE_SETUP_CUSTOM_FEE_AMOUNT = 'device_item_custom_setup_fee_field',
   DEVICE_RENTAL_CUSTOM_AMOUNT = 'device_item_custom_rental_charges_field',
   DEVICE_ADVANCE_RENTAL_PERIOD_FIELD = 'device_item_advanced_rental_periods_field',
-  DEVICE_PAPER_ROLL_QUANTITY_FIELD = 'device_item_purchase_paper_rolls_quantity_field',
   DEVICE_ADD_TO_CART_FIELD = 'device_add_to_cart_field',
   DEVICE_CONFIRM_DEVICE_FIELD = 'device_selection_completion_field',
   DEVICE_ID = 'device_item_id_field',
@@ -45,9 +43,7 @@ export enum QuantityActions {
 }
 
 export type AvailableDevicePlans = 'monthly' | 'halfyearly' | 'quarterly' | 'yearly' | 'lifetime';
-export type DeviceExtraFeatures =
-  | MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
-  | MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD;
+export type DeviceExtraFeatures = MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE;
 
 export interface DeviceFee {
   title: string | ((selectedPlan: string) => string);
@@ -60,12 +56,8 @@ export interface DeviceFee {
 
 export interface DeviceOptionalFeature {
   title: string;
-  field:
-    | MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE
-    | MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD;
-  customInputField?:
-    | MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD
-    | MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD;
+  field: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE;
+  customInputField?: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD;
 }
 
 export interface AddDeviceToCartForm {
@@ -78,8 +70,6 @@ export interface AddDeviceToCartForm {
   [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT]: string;
   [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD]: string;
   [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE]: boolean;
-  [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD]: boolean;
-  [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD]: string;
 }
 
 export interface DevicePlanCharge {

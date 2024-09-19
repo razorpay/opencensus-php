@@ -29,11 +29,6 @@ export const DeviceOptionalFeatures: DeviceOptionalFeature[] = [
     field: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE,
     customInputField: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD,
   },
-  {
-    title: 'Purchase Paper Rolls',
-    field: MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD,
-    customInputField: MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD,
-  },
 ];
 
 export const DevicePlanAvailableCharges: DevicePlanCharge[] = [

@@ -70,7 +70,6 @@ describe('deviceSelection utils', () => {
             defaultValues: {
               device_item_advanced_rental_field: false,
               device_item_plan_field: 'monthly',
-              device_item_purchase_paper_rolls_field: false,
               device_item_quantity_field: 1,
               device_item_rental_charges_type_field: 'standard',
               device_item_setup_fee_type_field: 'standard',
@@ -163,8 +162,6 @@ describe('deviceSelection utils', () => {
         device_item_id_field: 'test-device',
         device_item_name_field: 'Test Device',
         device_item_plan_field: 'monthly',
-        device_item_purchase_paper_rolls_field: true,
-        device_item_purchase_paper_rolls_quantity_field: '1',
         device_item_quantity_field: 1,
         device_item_rental_charges_type_field: 'standard',
         device_item_setup_fee_type_field: 'standard',

@@ -169,12 +169,8 @@ export const getDeviceChargesFromModularConfig = ({
     [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT]: String(
       orderSummaryItem?.rentalCharge ?? '',
     ),
-    [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_QUANTITY_FIELD]: String(
-      orderSummaryItem?.paperRollQuantity ?? '',
-    ),
     [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE]:
       (orderSummaryItem?.totalAdvanceRentalCharge || 0) > 0,
-    [MODULAR_DEVICE_FIELDS.DEVICE_PAPER_ROLL_FIELD]: (orderSummaryItem?.paperRollQuantity || 0) > 0,
   };
 };
 
