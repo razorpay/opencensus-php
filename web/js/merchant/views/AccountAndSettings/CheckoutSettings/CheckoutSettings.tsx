@@ -17,6 +17,7 @@ import {
 } from 'merchant/views/AccountAndSettings/styled';
 import { connect } from 'react-redux';
 import {
+  isCheckoutV2SettingsAllowed,
   isConfigurationViewAllowed,
   isFlashCheckoutAllowed,
   isSkipMandatorySummaryPageAllowed,
@@ -71,8 +72,21 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
             },
           ]}
         />
+
         <StyledHeader className="scrollable-tab-header">
-          <ShowWhen additionalCondition={isConfigurationViewAllowed}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              isConfigurationViewAllowed(user) && isCheckoutV2SettingsAllowed(extraConfig)
+            }
+          >
+            <NavLink to={ROUTES_INFO.CHECKOUT_STYLING}>Checkout styling</NavLink>
+            <NavLink to={ROUTES_INFO.CHECKOUT_FEATURES}>Checkout features</NavLink>
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={(user) =>
+              isConfigurationViewAllowed(user) && !isCheckoutV2SettingsAllowed(extraConfig)
+            }
+          >
             <NavLink to={ROUTES_INFO.BRANDING}>Branding</NavLink>
             <ShowWhen additionalCondition={(user) => isFlashCheckoutAllowed(user, extraConfig)}>
               <NavLink to={ROUTES_INFO.FLASH_CHECKOUT}>Flash Checkout</NavLink>
@@ -90,7 +104,11 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           <Suspense fallback={<Loader />}>
             <StyledDivider>
               <StyledTabContentContainer className="content">
-                <ShowWhen additionalCondition={isConfigurationViewAllowed}>
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    isConfigurationViewAllowed(user) && !isCheckoutV2SettingsAllowed(extraConfig)
+                  }
+                >
                   <Routes>
                     <Route
                       path={getRefRoute(ROUTES_INFO.BRANDING)}
@@ -113,6 +131,30 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                       element={
                         <RouteGuard>
                           <StyledConfiguration showSkipMandatorySummaryPage />
+                        </RouteGuard>
+                      }
+                    />
+                  </Routes>
+                </ShowWhen>
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    isConfigurationViewAllowed(user) && isCheckoutV2SettingsAllowed(extraConfig)
+                  }
+                >
+                  <Routes>
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.CHECKOUT_STYLING)}
+                      element={
+                        <RouteGuard>
+                          <StyledConfiguration showStyling />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.CHECKOUT_FEATURES)}
+                      element={
+                        <RouteGuard>
+                          <StyledConfiguration showFeatures />
                         </RouteGuard>
                       }
                     />

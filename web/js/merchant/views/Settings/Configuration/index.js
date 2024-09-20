@@ -30,6 +30,8 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import { CheckoutConfigExperiment } from './CheckoutConfig';
+import { CheckoutFeatureExperiment } from './CheckoutFeatures';
+import { CheckoutStylingExperiment } from './CheckoutStyling';
 import DefaultRefundSpeed from './DefaultRefundSpeed';
 import EmailNotifications from './EmailNotifications';
 import FeeBearerSelfserver from './FeeBearerSelfserve';
@@ -370,6 +372,8 @@ class CongfigurationContainer extends Component {
       configState: { config, loading: isConfigLoading, paypal_terminals },
       org,
       showBranding,
+      showStyling,
+      showFeatures,
       showMissedOrderPaymentLink,
       showFlashCheckout,
       showPaymentSettings,
@@ -428,12 +432,21 @@ class CongfigurationContainer extends Component {
                 />
               </IntoView>
             )}
+            {showStyling && (
+              <IntoView hashedWith={ACCOUNT_SETTINGS}>
+                <CheckoutStylingExperiment />
+              </IntoView>
+            )}
+            {showFeatures && (
+              <IntoView hashedWith={ACCOUNT_SETTINGS}>
+                <CheckoutFeatureExperiment extraConfig={extraConfig} />
+              </IntoView>
+            )}
             {showMissedOrderPaymentLink && remarketerEnabled && (
               <IntoView hashedWith={MISSED_ORDER_PAYMENT_LINK}>
                 <MissedOrderPaymentLink />
               </IntoView>
             )}
-
             <ShowWhen
               additionalCondition={(user) =>
                 showFlashCheckout && isFlashCheckoutAllowed(user, extraConfig)

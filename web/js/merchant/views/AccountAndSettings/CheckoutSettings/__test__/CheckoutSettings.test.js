@@ -13,6 +13,7 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isFlashCheckoutAllowed: jest.fn(),
   isSkipMandatorySummaryPageAllowed: jest.fn(),
   isTrustedBadgeAllowed: jest.fn(),
+  isCheckoutV2SettingsAllowed: jest.fn(),
 }));
 
 jest.mock('merchant/views/AccountAndSettings/styled', () => ({
@@ -67,6 +68,7 @@ describe('Checkout Settings', () => {
   describe('Conditional links', () => {
     beforeAll(() => {
       conditionalUtils.isConfigurationViewAllowed.mockReturnValue(true);
+      conditionalUtils.isCheckoutV2SettingsAllowed.mockReturnValue(false);
     });
 
     afterAll(() => {

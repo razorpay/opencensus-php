@@ -1508,7 +1508,7 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: ['/checkout-settings/branding'],
+      routesToMatch: ['/checkout-settings/*'],
       abExperiments: [
         {
           uniqueHashKey: 'enableCheckoutV2Configuration',
@@ -1550,7 +1550,7 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: ['/checkout-settings/branding'],
+      routesToMatch: ['/checkout-settings/*', '/account-settings'],
       abExperiments: [
         {
           uniqueHashKey: 'checkout_editor_v2_preview',

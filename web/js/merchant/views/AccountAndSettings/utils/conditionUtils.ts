@@ -1,5 +1,6 @@
 import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { isExperimentActive } from 'common/utils/rzp-utils';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import User, { isOrgFeatureExist } from 'merchant/models/User';
@@ -17,6 +18,10 @@ export const isFlashCheckoutAllowed = (user: User, extraConfig: ExtraConfig): bo
 
 export const isSkipMandatorySummaryPageAllowed = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('account.mandate_summary');
+
+export const isCheckoutV2SettingsAllowed = (extraConfig: ExtraConfig): boolean => {
+  return isExperimentActive(extraConfig.abExperiments.checkout_editor_v2_preview);
+};
 
 export const isSmsNotificationEnabled = (user: User): boolean => !!user.contact_mobile;
 

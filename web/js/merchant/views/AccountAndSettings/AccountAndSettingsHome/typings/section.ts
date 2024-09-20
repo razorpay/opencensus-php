@@ -6,6 +6,7 @@ export enum SectionCardDataFields {
   BANK_ACCOUNTS_SETTLEMENTS = 'bank_accounts_settlements',
   NOTIFICATION_SETTINGS = 'notification_settings',
   CHECKOUT_SETTINGS = 'checkout_settings',
+  CHECKOUT_V2_SETTINGS = 'checkout_v2_settings',
   PRICING = 'pricing',
   STREAKS_REWARD = 'streaks_reward',
   INTERNATIONAL_SETTINGS = 'international_settings',
@@ -63,6 +64,12 @@ export enum CheckoutSettingsFields {
   BRANDING = 'branding',
   FLASH_CHECKOUT = 'flash_checkout',
   SKIP_MANDATE_SUMMARY_PAGE = 'skip_mandate_summary_page',
+  TRUSTED_BADGE = 'trusted_badge',
+}
+
+export enum Checkout_V2_SettingsFields {
+  CHECKOUT_STYLING = 'checkout_styling',
+  FEATURES = 'features',
   TRUSTED_BADGE = 'trusted_badge',
 }
 
@@ -144,6 +151,12 @@ export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {
   [CheckoutSettingsFields.TRUSTED_BADGE]: 'Trusted badge',
 };
 
+export const Checkout_V2_SettingTitles: Record<Checkout_V2_SettingsFields, string> = {
+  [Checkout_V2_SettingsFields.CHECKOUT_STYLING]: 'Checkout styling',
+  [Checkout_V2_SettingsFields.FEATURES]: 'Features',
+  [Checkout_V2_SettingsFields.TRUSTED_BADGE]: 'Trusted badge',
+};
+
 export const PricingTitles: Record<PricingFields, string> = {
   [PricingFields.PRICING_PLANS]: 'Pricing Plans',
 };
@@ -162,6 +175,7 @@ type ACCOUNT_N_SETTINGS_TITLES =
   | BankAccountSettlementFields
   | NotificationSettingsFields
   | CheckoutSettingsFields
+  | Checkout_V2_SettingsFields
   | PricingFields
   | InternationalSettingsFields;
 
@@ -173,6 +187,7 @@ export const ACCOUNT_N_SETTINGS_TITLES: Record<ACCOUNT_N_SETTINGS_TITLES, string
   ...BankAccountSettlementTitles,
   ...NotificationSettingsTitles,
   ...CheckoutSettingsTitles,
+  ...Checkout_V2_SettingTitles,
   ...PricingTitles,
   ...InternationalSettingsTitles,
 };

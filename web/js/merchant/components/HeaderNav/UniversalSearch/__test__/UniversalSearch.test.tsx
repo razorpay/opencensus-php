@@ -13,6 +13,16 @@ import React from 'react';
 import { render, screen, server, userEvent, waitFor } from 'test-utils';
 import UniversalSearch from 'merchant/components/HeaderNav/UniversalSearch';
 
+const variantOff = { variables: { result: 'off' } };
+
+const mockAbExperiments = {
+  checkout_editor_v2_preview: variantOff,
+};
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
+
 describe('Universal Search', () => {
   const fetchConnectedApplicationsSpy = jest.spyOn(
     applicationsReducers,

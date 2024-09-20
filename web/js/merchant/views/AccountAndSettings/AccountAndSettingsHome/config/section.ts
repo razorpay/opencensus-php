@@ -16,6 +16,8 @@ import {
   CheckoutSettingsTitles,
   InternationalSettingsFields,
   InternationalSettingsTitles,
+  Checkout_V2_SettingsFields,
+  Checkout_V2_SettingTitles,
   NotificationSettingsFields,
   NotificationSettingsTitles,
   PaymentMethodsFields,
@@ -60,6 +62,7 @@ import {
   isWhatsAppAccountSetupEnabled,
   isCustomerSupportDetailsEnabled,
   isExporterRewardsEnabled,
+  isCheckoutV2SettingsAllowed,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -507,7 +510,8 @@ export const Sections: SectionCardInterface[] = [
     additionalCondition:
       ({ extraConfig }: AdditionalContextInterface) =>
       (user: User): boolean =>
-        isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig),
+        !isCheckoutV2SettingsAllowed(extraConfig) &&
+        (isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig)),
     subSections: [
       {
         id: CheckoutSettingsFields.BRANDING,
@@ -539,6 +543,46 @@ export const Sections: SectionCardInterface[] = [
       {
         id: CheckoutSettingsFields.TRUSTED_BADGE,
         title: CheckoutSettingsTitles[CheckoutSettingsFields.TRUSTED_BADGE],
+        href: ROUTES_INFO.TRUSTED_BADGE,
+        additionalCondition:
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (user: User): boolean =>
+            isTrustedBadgeAllowed(user, extraConfig),
+      },
+    ],
+  },
+  {
+    id: SectionCardDataFields.CHECKOUT_V2_SETTINGS,
+    title: 'Checkout settings',
+    icon: AccountNSettingsIcons.checkout_settings,
+    iconBackground: 'linear-gradient(155.9deg, #EC9B26 10.71%, #BD7A03 59.94%)',
+    additionalCondition:
+      ({ extraConfig }: AdditionalContextInterface) =>
+      (user: User): boolean =>
+        isCheckoutV2SettingsAllowed(extraConfig) &&
+        (isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig)),
+    subSections: [
+      {
+        id: Checkout_V2_SettingsFields.CHECKOUT_STYLING,
+        title: Checkout_V2_SettingTitles[Checkout_V2_SettingsFields.CHECKOUT_STYLING],
+        href: ROUTES_INFO.CHECKOUT_STYLING,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isConfigurationViewAllowed(user),
+      },
+      {
+        id: Checkout_V2_SettingsFields.FEATURES,
+        title: Checkout_V2_SettingTitles[Checkout_V2_SettingsFields.FEATURES],
+        href: ROUTES_INFO.CHECKOUT_FEATURES,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isConfigurationViewAllowed(user),
+      },
+      {
+        id: Checkout_V2_SettingsFields.TRUSTED_BADGE,
+        title: CheckoutSettingsTitles[Checkout_V2_SettingsFields.TRUSTED_BADGE],
         href: ROUTES_INFO.TRUSTED_BADGE,
         additionalCondition:
           ({ extraConfig }: AdditionalContextInterface) =>

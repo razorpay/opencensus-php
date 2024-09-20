@@ -17,6 +17,7 @@ import {
   isApiKeyEnabled,
   isBalancesEnabled,
   isBankAccountDetailsAllowed,
+  isCheckoutV2SettingsAllowed,
   isConfigurationViewAllowed,
   isCreditsEnabled,
   isEmailNotificationEnabled,
@@ -824,8 +825,18 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     tags: [{ value: 'Theme' }, { value: 'Color' }, { value: 'Logo' }, { value: 'brand name' }],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isConfigurationViewAllowed(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      !isCheckoutV2SettingsAllowed(extraConfig) && isConfigurationViewAllowed(user),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.checkout_styling,
+    url: SEARCH_PRODUCTS_URL.CHECKOUT_STYLING,
+    tags: [{ value: 'Theme' }, { value: 'Color' }, { value: 'Logo' }, { value: 'brand name' }],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.checkout_settings,
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isCheckoutV2SettingsAllowed(extraConfig) && isConfigurationViewAllowed(user),
     apiCondition: false,
   },
   {
@@ -835,7 +846,21 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      isConfigurationViewAllowed(user) && isFlashCheckoutAllowed(user, extraConfig),
+      !isCheckoutV2SettingsAllowed(extraConfig) &&
+      isConfigurationViewAllowed(user) &&
+      isFlashCheckoutAllowed(user, extraConfig),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.flash_checkout,
+    url: SEARCH_PRODUCTS_URL.CHECKOUT_FEATURES,
+    tags: [{ value: 'Enable flash checkout' }, { value: 'Flash checkout' }, { value: 'checkout' }],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.checkout_settings,
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isCheckoutV2SettingsAllowed(extraConfig) &&
+      isConfigurationViewAllowed(user) &&
+      isFlashCheckoutAllowed(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -845,7 +870,21 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      isConfigurationViewAllowed(user) && isSkipMandatorySummaryPageAllowed(extraConfig),
+      !isCheckoutV2SettingsAllowed(extraConfig) &&
+      isConfigurationViewAllowed(user) &&
+      isSkipMandatorySummaryPageAllowed(extraConfig),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.skip_mandate_summary_page,
+    url: SEARCH_PRODUCTS_URL.CHECKOUT_FEATURES,
+    tags: [{ value: 'Mandate summary page' }, { value: 'skip' }],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.checkout_settings,
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isCheckoutV2SettingsAllowed(extraConfig) &&
+      isConfigurationViewAllowed(user) &&
+      isSkipMandatorySummaryPageAllowed(extraConfig),
     apiCondition: false,
   },
   {
@@ -855,7 +894,17 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
-      isTrustedBadgeAllowed(user, extraConfig),
+      !isCheckoutV2SettingsAllowed(extraConfig) && isTrustedBadgeAllowed(user, extraConfig),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.trusted_badge,
+    url: SEARCH_PRODUCTS_URL.CHECKOUT_FEATURES,
+    tags: [{ value: 'Add trusted badge' }, { value: 'Razorpay trusted badge' }],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.checkout_settings,
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isCheckoutV2SettingsAllowed(extraConfig) && isTrustedBadgeAllowed(user, extraConfig),
     apiCondition: false,
   },
   {

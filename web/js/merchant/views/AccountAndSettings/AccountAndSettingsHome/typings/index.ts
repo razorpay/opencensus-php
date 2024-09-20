@@ -5,6 +5,7 @@ import {
   BusinessSettingsFields,
   CheckoutSettingsFields,
   InternationalSettingsFields,
+  Checkout_V2_SettingsFields,
   NotificationSettingsFields,
   PaymentMethodsFields,
   PaymentRefundsFields,
@@ -128,6 +129,7 @@ export interface SubSection {
     | PaymentRefundsFields
     | NotificationSettingsFields
     | CheckoutSettingsFields
+    | Checkout_V2_SettingsFields
     | BankAccountSettlementFields
     | PricingFields
     | RewardGrowth

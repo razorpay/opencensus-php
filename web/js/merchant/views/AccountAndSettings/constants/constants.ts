@@ -1,11 +1,13 @@
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import {
   PaymentMethodsTitles,
   PaymentRefundsTitles,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
 export const ROUTE_MAP = {
   [ROUTES_INFO.BRANDING]: 'Branding',
+  [ROUTES_INFO.CHECKOUT_STYLING]: 'Checkout Styling',
+  [ROUTES_INFO.CHECKOUT_FEATURES]: 'Features',
   [ROUTES_INFO.FLASH_CHECKOUT]: 'Flash checkout',
   [ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE]: 'Mandate summary page',
   [ROUTES_INFO.TRUSTED_BADGE]: 'Trusted badge',
