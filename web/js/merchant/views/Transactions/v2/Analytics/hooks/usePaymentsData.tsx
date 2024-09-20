@@ -12,12 +12,13 @@ import {
   TxnStatus,
 } from 'merchant/views/Transactions/v2/Analytics/types';
 import { Duration } from 'merchant/views/Transactions/v2/common/types';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 import { accumalateCountAmount, getAnalyticsRequestPayload } from './utils';
 
 export default function usePaymentData({
   isRefundPendingEnabled,
+  currency = 'INR',
 }: PaymentDataHookParams): PaymentDataHookResponse {
   const [paymentsData, setPaymentsData] = useState<PaymentResponse>({
     paymentCapturedCount: 0,
@@ -120,7 +121,7 @@ export default function usePaymentData({
           .sort((a, b) => b.value - a.value)
           .map((item) => ({
             label: item.method,
-            value: paiseToRupees(item.value),
+            value: i18nifyConvertToMajorUnit(item.value, currency),
           }));
         splitByPaymentMethod.push(...sortedPaymentMethod.slice(0, 3));
         if (sortedPaymentMethod.length > 4) {

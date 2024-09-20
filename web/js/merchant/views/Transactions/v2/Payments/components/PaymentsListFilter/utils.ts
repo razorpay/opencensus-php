@@ -25,6 +25,8 @@ import {
   DefaultStatusAndOptions,
   DefaultValuesAndOptions,
 } from './types';
+import { getUser } from 'merchant/store';
+import { getDialCodeByCountryCode } from '@razorpay/i18nify-js/phoneNumber';
 
 const getDefaultStatusAndOption = (): DefaultStatusAndOptions => {
   const { status } = qs.parse(location.search);
@@ -45,8 +47,9 @@ const getDefaultMethodAndOption = (): DefaultMethodAndOption => {
 };
 
 export const getDefaultCountryCodeValue = (): string => {
+  const user = getUser();
   const { country_code } = qs.parse(location.search);
-  let defaultCountryCodeValue = '+91';
+  let defaultCountryCodeValue = getDialCodeByCountryCode(user.merchant.country_code);
   if (country_code) {
     defaultCountryCodeValue = `+${(country_code as string).trim()}`;
   }

@@ -1,9 +1,10 @@
 import { Dispatch, SetStateAction } from 'react';
+import { CurrencyCodeType } from '@razorpay/i18nify-js/currency';
+
+import { Option } from 'common/components/Dropdown/types';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { Environments, OpenModalType, Store } from 'common/typings';
 import { Duration } from 'merchant/views/Transactions/v2/common/types';
-import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
-import { Option } from 'common/components/Dropdown/types';
 
 export enum TxnStatus {
   CAPTURED = 'captured',
@@ -54,6 +55,7 @@ export type PaymentResponse = {
 
 export type PaymentDataHookParams = {
   isRefundPendingEnabled: boolean;
+  currency: CurrencyCodeType;
 };
 
 export type PaymentDataHookResponse = {
@@ -131,7 +133,7 @@ export interface TopOverviewContainerProps {
   paymentCapturedCount: number;
   paymentByMethod: Array<SplitPaymentMethod>;
   isMobile: boolean;
-  currency: Currency;
+  currency: CurrencyCodeType;
   shouldShowSrBanner: boolean;
   successRateData: number;
   durationOption: Option;
@@ -142,7 +144,7 @@ export interface CapturedPaymentCardProps {
   paymentCapturedAmount: number;
   paymentCapturedCount: number;
   isMobile: boolean;
-  currency: Currency;
+  currency: CurrencyCodeType;
   durationOption: Option;
 }
 
@@ -195,7 +197,7 @@ interface BottomOverviewData {
 }
 export interface BottomOverviewProps {
   mode: Environments;
-  currency: Currency;
+  currency: CurrencyCodeType;
   data: BottomOverviewData;
   durationOption: Option;
 }
@@ -221,7 +223,7 @@ export interface BottomOverviewCardData {
 }
 
 export interface BottomOverviewCardProps extends RouteComponentProps {
-  currency: Currency;
+  currency: CurrencyCodeType;
   data: BottomOverviewCardData;
   footerValues: BottomOverviewCardFooterProps;
   durationOption: Option;
@@ -326,7 +328,7 @@ export interface CardInfoProps {
   subtitle: string;
   toolTipText: string;
   isLoading: boolean;
-  currency: Currency;
+  currency: CurrencyCodeType;
 }
 
 export interface AnalyticsBoilerPlateTile {

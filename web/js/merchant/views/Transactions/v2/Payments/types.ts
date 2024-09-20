@@ -1,3 +1,5 @@
+import { CurrencyCodeType } from '@razorpay/i18nify-js/currency';
+
 import { Collection } from 'merchant/views/Transactions/v2/common/types';
 
 export type Payments = Collection<Item>;
@@ -6,7 +8,7 @@ export interface Item {
   id: string;
   entity: 'payment';
   amount: number;
-  currency: Currency;
+  currency: CurrencyCodeType;
   base_amount: number;
   status: Status;
   order_id: null | string;

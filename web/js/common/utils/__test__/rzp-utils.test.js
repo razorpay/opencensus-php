@@ -1,3 +1,5 @@
+import { useI18nContext, I18nProvider } from '@razorpay/i18nify-react';
+import { renderHook, act } from '@testing-library/react-hooks';
 import FileSaver from 'file-saver';
 import xlsx from 'xlsx';
 import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
@@ -15,6 +17,7 @@ import {
   mergeCurrencyFormatting,
   openTicketModal,
   stringTemplate,
+  createI18nifyCurrencyFormattedString,
   getAmountFieldPlaceholder,
   isConfigTagAPISupported,
   getDialCodeFromCountryCode,
@@ -380,6 +383,85 @@ describe('Test for convertToLocale function', () => {
       expect(result).toBe(formattedAmount);
     });
   }
+});
+
+describe('createI18nifyCurrencyFormattedString', () => {
+  const { result } = renderHook(() => useI18nContext(), { wrapper: I18nProvider });
+  const originalLocale = result.current.i18nState?.locale;
+
+  const testCases = [
+    {
+      amount: 123456,
+      locale: 'en-US',
+      currency: 'USD',
+      expected: '$1,234.56',
+      description: 'should format USD currency correctly',
+    },
+    {
+      amount: 123456,
+      locale: 'en-IN',
+      currency: 'INR',
+      expected: '₹1,234.56',
+      description: 'should format INR currency correctly',
+    },
+    {
+      amount: 123456,
+      currency: 'SGD',
+      locale: 'en-SG',
+      expected: 'S$1,234.56',
+      description: 'should format Singapore Dollar currency correctly',
+    },
+    {
+      amount: 123456,
+      currency: 'MYR',
+      locale: 'en-MY',
+      expected: `RM${String.fromCharCode(160)}1,234.56`,
+      description: 'should format Malaysian Ringgit currency correctly',
+    },
+    {
+      amount: 123456,
+      currency: 'JPY',
+      locale: 'en-JP',
+      expected: '¥123,456',
+      description: 'should format JPY currency correctly (no minor units)',
+    },
+    {
+      amount: -123456,
+      currency: 'USD',
+      locale: 'en-US',
+      expected: '-$1,234.56',
+      description: 'should handle negative amounts correctly',
+    },
+    {
+      amount: 123456,
+      locale: 'en-BH',
+      currency: 'BHD',
+      expected: `BHD${String.fromCharCode(160)}123.456`,
+      description: 'should format Bahraini Dinar (3 decimal places) correctly',
+    },
+  ];
+
+  test.each(testCases)('$description', ({ amount, locale, currency, expected }) => {
+    act(() => {
+      result.current.setI18nState({ locale });
+    });
+
+    const currencyString = createI18nifyCurrencyFormattedString(amount, currency);
+
+    expect(currencyString).toBe(expected);
+
+    act(() => {
+      result.current.setI18nState({ locale: originalLocale });
+    });
+  });
+
+  it('should use currency code for unsupported currencies', () => {
+    const positiveAmount = 123456;
+    const negativeAmount = -123456;
+    const currency = 'XYZ'; // Unsupported currency code
+    expect(createI18nifyCurrencyFormattedString(positiveAmount, currency)).toEqual('XYZ 1234.56');
+    expect(createI18nifyCurrencyFormattedString(negativeAmount, currency)).toEqual('-XYZ 1234.56');
+  });
 });
 
 describe('Test getAmountFieldPlaceholder', () => {

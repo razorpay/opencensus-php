@@ -255,7 +255,6 @@ export const i18nifyConvertToMajorUnit = (
     majorAmt = convertToMajorUnit(value, { currency });
   } catch (error) {
     majorAmt = Number((value / 100).toFixed(2));
-
     analyticsTrack({
       objectName: ANALYTICS.OBJECT.I18N,
       actionName: ANALYTICS.ACTION.CURRENCY,

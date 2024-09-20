@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { usePaymentsData } from 'merchant/views/Transactions/v2/Analytics/hooks';
 import { render } from 'test-utils';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+
+import { usePaymentsData } from 'merchant/views/Transactions/v2/Analytics/hooks';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 const App = ({ dataCallback, isRefundPendingEnabled }) => {
   const { paymentsData, fetchPaymentData, loading, failed } = usePaymentsData({
@@ -247,10 +248,10 @@ export const expectedHookResponse = {
       refundCount: 7,
       refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: paiseToRupees(6794974) },
-        { label: 'netbanking', value: paiseToRupees(386774) },
-        { label: 'upi', value: paiseToRupees(354387) },
-        { label: 'Others', value: paiseToRupees(149500) },
+        { label: 'cod', value: i18nifyConvertToMajorUnit(6794974, 'INR') },
+        { label: 'netbanking', value: i18nifyConvertToMajorUnit(386774, 'INR') },
+        { label: 'upi', value: i18nifyConvertToMajorUnit(354387, 'INR') },
+        { label: 'Others', value: i18nifyConvertToMajorUnit(149500, 'INR') },
       ],
     },
   },
@@ -261,10 +262,10 @@ export const expectedHookResponse = {
       refundCount: 7,
       refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: paiseToRupees(6794974) },
-        { label: 'netbanking', value: paiseToRupees(386774) },
-        { label: 'upi', value: paiseToRupees(354387) },
-        { label: 'Others', value: paiseToRupees(149500) },
+        { label: 'cod', value: i18nifyConvertToMajorUnit(6794974, 'INR') },
+        { label: 'netbanking', value: i18nifyConvertToMajorUnit(386774, 'INR') },
+        { label: 'upi', value: i18nifyConvertToMajorUnit(354387, 'INR') },
+        { label: 'Others', value: i18nifyConvertToMajorUnit(149500, 'INR') },
       ],
     },
   },
@@ -275,10 +276,10 @@ export const expectedHookResponse = {
       refundCount: 7,
       refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: paiseToRupees(6794974) },
-        { label: 'upi', value: paiseToRupees(354387) },
-        { label: 'card', value: paiseToRupees(136500) },
-        { label: 'wallet', value: paiseToRupees(13000) },
+        { label: 'cod', value: i18nifyConvertToMajorUnit(6794974, 'INR') },
+        { label: 'upi', value: i18nifyConvertToMajorUnit(354387, 'INR') },
+        { label: 'card', value: i18nifyConvertToMajorUnit(136500, 'INR') },
+        { label: 'wallet', value: i18nifyConvertToMajorUnit(13000, 'INR') },
       ],
     },
   },
@@ -289,9 +290,9 @@ export const expectedHookResponse = {
       refundCount: 7,
       refundAmount: 304200,
       paymentByMethod: [
-        { label: 'upi', value: paiseToRupees(354387) },
-        { label: 'card', value: paiseToRupees(136500) },
-        { label: 'wallet', value: paiseToRupees(13000) },
+        { label: 'upi', value: i18nifyConvertToMajorUnit(354387, 'INR') },
+        { label: 'card', value: i18nifyConvertToMajorUnit(136500, 'INR') },
+        { label: 'wallet', value: i18nifyConvertToMajorUnit(13000, 'INR') },
       ],
     },
   },
@@ -311,10 +312,10 @@ export const expectedHookResponse = {
       refundCount: 7,
       refundAmount: 304200,
       paymentByMethod: [
-        { label: 'cod', value: paiseToRupees(6794974) },
-        { label: 'netbanking', value: paiseToRupees(386774) },
-        { label: 'upi', value: paiseToRupees(354387) },
-        { label: 'Others', value: paiseToRupees(149500) },
+        { label: 'cod', value: i18nifyConvertToMajorUnit(6794974, 'INR') },
+        { label: 'netbanking', value: i18nifyConvertToMajorUnit(386774, 'INR') },
+        { label: 'upi', value: i18nifyConvertToMajorUnit(354387, 'INR') },
+        { label: 'Others', value: i18nifyConvertToMajorUnit(149500, 'INR') },
       ],
     },
   },

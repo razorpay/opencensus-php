@@ -61,6 +61,7 @@ interface IPaymentDetailsOverview extends RouteComponentProps {
   fetchSchedule: () => Promise<Record<string, string>>;
   fetchSettlementConfig: () => Promise<Record<string, string>>;
   openModal: (args) => void;
+  user: Record<string, any>;
 }
 
 const BadgeStatusIcon = ({ type, ...props }): JSX.Element => {
@@ -144,6 +145,7 @@ function PaymentDetailsOverview({
   fetchSchedule,
   fetchSettlementConfig,
   history,
+  user,
 }: IPaymentDetailsOverview) {
   const { currency, amount, created_at, status } = paymentDetails;
   const settlementId = paymentDetails?.transaction?.settlement_id;
@@ -182,7 +184,7 @@ function PaymentDetailsOverview({
           <Box display="flex" gap="spacing.5">
             {!isMobile && (
               <Box height="60px" width="60px">
-                <OverviewIcon status={status} />
+                <OverviewIcon status={status} isCountryIndia={user.isCountryIndia} />
               </Box>
             )}
             {isMobile ? (

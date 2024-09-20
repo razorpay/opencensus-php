@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Amount,
   Box,
@@ -7,12 +8,12 @@ import {
   TooltipInteractiveWrapper,
   Heading,
 } from '@razorpay/blade/components';
-import React from 'react';
+
 import { CardInfoShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
+import { StyledAmount } from 'merchant/views/Transactions/v2/Analytics/styled';
 import { CardInfoProps } from 'merchant/views/Transactions/v2/Analytics/types';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
-import { paiseToRupees } from 'common/utils/rzp-utils';
-import { StyledAmount } from 'merchant/views/Transactions/v2/Analytics/styled';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 const CardInfo = ({
   title,
@@ -48,7 +49,7 @@ const CardInfo = ({
               isMobile && isLeader ? (
                 <StyledAmount>
                   <Amount
-                    value={paiseToRupees(value)}
+                    value={i18nifyConvertToMajorUnit(value, currency)}
                     isAffixSubtle={false}
                     suffix="decimals"
                     currency={currency}
@@ -58,7 +59,7 @@ const CardInfo = ({
                 </StyledAmount>
               ) : (
                 <Amount
-                  value={paiseToRupees(value)}
+                  value={i18nifyConvertToMajorUnit(value, currency)}
                   isAffixSubtle={true}
                   suffix="decimals"
                   currency={currency}

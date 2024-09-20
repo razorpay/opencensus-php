@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Amount,
   Box,
@@ -13,10 +14,8 @@ import {
 } from '@razorpay/blade/components';
 import { formatNumber } from '@razorpay/i18nify-js/currency';
 import noop from 'lodash/noop';
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { paiseToRupees } from 'common/utils/rzp-utils';
 import { CardShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
 import {
   BottomCardWrapper,
@@ -29,6 +28,7 @@ import {
 } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 import CardFooter from './CardFooter';
 import CardIcon from './CardIcon';
@@ -42,6 +42,7 @@ const BottomOverviewCard = ({
   const [isHover, setIsHover] = useState(false);
   const navigate = useNavigate();
   const { name, loading: isLoading, value, isAmount, failed: isFailed } = data;
+
   const goToEntityPage = () => {
     track({
       objectName: `${name} Tab`,
@@ -53,6 +54,7 @@ const BottomOverviewCard = ({
   if (isLoading) {
     return <CardShimmer />;
   }
+
   return (
     <BottomCardWrapper onClick={goToEntityPage}>
       <Box onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
@@ -107,7 +109,7 @@ const BottomOverviewCard = ({
                       isAffixSubtle={true}
                       suffix="decimals"
                       currency={currency}
-                      value={paiseToRupees(value)}
+                      value={i18nifyConvertToMajorUnit(value, currency)}
                       type="heading"
                       size="large"
                     />

@@ -43,6 +43,11 @@ import {
 import { searchByOptionsMap as refundsSearchByOptionsMap } from 'merchant/views/Transactions/v2/Refunds/components/RefundsListFilter/constants';
 import moment from 'moment';
 
+// Mock the analyticsTrack function
+jest.mock('common/utils/analytics', () => ({
+  analyticsTrack: jest.fn(),
+}));
+
 describe('utils', () => {
   describe('generateOptions', () => {
     test('should generate options with correct structure', () => {

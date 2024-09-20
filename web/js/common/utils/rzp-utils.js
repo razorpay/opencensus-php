@@ -21,6 +21,7 @@ import {
   convertToMajorUnit,
   getCurrencyList,
   getCurrencySymbol,
+  formatNumber,
 } from '@razorpay/i18nify-js/currency';
 import { getDialCodeByCountryCode } from '@razorpay/i18nify-js/phoneNumber';
 import axios from 'axios';
@@ -401,19 +402,85 @@ export const getFormattedAmountByParts = (amount, currency = 'INR') => {
       },
     });
   } catch (error) {
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${amount}, currency: ${currency}`,
+        error: `${error}`,
+      },
+    });
     updatedAmount = (amount / 100).toFixed(2);
     integer = updatedAmount.split('.')[0] || '';
     fraction = updatedAmount.split('.')[1] || '';
 
-    byParts = {
-      integer,
+    const formattedObj = {
+      integer: Math.abs(integer),
       decimal: '.',
       fraction,
+      currency,
       isPrefixSymbol: true,
+      minusSign: Number(integer) < 0 ? '-' : '',
     };
+
+    byParts = {
+      ...formattedObj,
+      rawParts: [
+        { type: 'currency', value: formattedObj.currency },
+        { type: 'literal', value: ' ' },
+        { type: 'integer', value: formattedObj.integer },
+        { type: 'decimal', value: formattedObj.decimal },
+        { type: 'fraction', value: formattedObj.fraction },
+      ],
+    };
+
+    if (formattedObj.minusSign === '-')
+      byParts.rawParts = [
+        { type: 'minusSign', value: formattedObj.minusSign },
+        ...byParts.rawParts,
+      ];
   }
 
   return byParts;
+};
+
+/**
+ * Formats a monetary amount with its corresponding currency symbol.
+ * The result is a human-readable monetary string.
+ */
+export const createI18nifyCurrencyFormattedString = (amount, currency = 'INR') => {
+  // Retrieve formatted components of the amount.
+
+  let updatedAmount, integer, fraction, formattedAmount;
+  try {
+    updatedAmount = convertToMajorUnit(amount, { currency }).toString();
+    formattedAmount = formatNumber(updatedAmount, {
+      currency,
+      intlOptions: {
+        style: 'currency',
+      },
+    });
+  } catch (error) {
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${amount}, currency: ${currency}`,
+        error: `${error}`,
+      },
+    });
+    updatedAmount = (amount / 100).toFixed(2);
+    integer = updatedAmount.split('.')[0] || '';
+    fraction = updatedAmount.split('.')[1] || '';
+
+    formattedAmount = `${Number(integer) < 0 ? '-' : ''}${currency} ${Math.abs(
+      integer,
+    )}.${fraction}`;
+  }
+
+  return formattedAmount.trim();
 };
 
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
@@ -446,7 +513,15 @@ export const formatAmount = (amt, showCurrency, currency) => {
     const byParts = formatNumberByParts(amt, options);
     return byParts.rawParts.reduce((acc, curr) => `${acc}${curr.value}`, '');
   } catch (e) {
-    console.error(e);
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${amt}, currency: ${currency}`,
+        error: `${e}`,
+      },
+    });
     return showCurrency ? `${currency} ${amt}` : amt;
   }
 };
@@ -456,6 +531,15 @@ export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') =>
   try {
     adjustedAmount = convertToMajorUnit(amount, { currency }).toString();
   } catch (error) {
+    analyticsTrack({
+      objectName: ANALYTICS.OBJECT.I18N,
+      actionName: ANALYTICS.ACTION.CURRENCY,
+      screen: ANALYTICS.SCREEN.DASHBOARD,
+      properties: {
+        input: `amount: ${amount}, currency: ${currency}`,
+        error: `${error}`,
+      },
+    });
     adjustedAmount = (amount / 100).toFixed(2);
   }
 

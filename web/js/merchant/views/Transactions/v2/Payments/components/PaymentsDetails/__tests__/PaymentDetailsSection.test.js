@@ -1,13 +1,13 @@
 import React from 'react';
-import { formatPhoneNumber } from '@razorpay/i18nify-js';
+import { formatPhoneNumber } from '@razorpay/i18nify-js/phoneNumber';
 
 import '@testing-library/jest-dom/extend-expect';
 import { useMobile } from 'common/hooks/useMobile';
 import store from 'merchant/store';
+import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import PaymentDetailsSection from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsSection';
 import { happyFlowProps } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsSection';
 import { render, screen, fireEvent, waitFor } from 'test-utils';
-import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 
 jest.mock('common/hooks/useMobile', () => ({
   ...jest.requireActual('common/hooks/useMobile'),

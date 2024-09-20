@@ -15,7 +15,7 @@ import Lottie from 'react-lottie';
 import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import copyToClipboard from 'common/utils/copyToClipboard';
-import { titleCase, getFormattedAmountWithSymbol } from 'common/utils/rzp-utils';
+import { titleCase, createI18nifyCurrencyFormattedString } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 import { SettlementStatus } from 'merchant/views/Settlements/v3/typings';
@@ -427,9 +427,10 @@ export const getRefundsOverviewDetails = (paymentRefundDetails) => {
   if (paymentRefundDetails.length === 1) {
     const refund = paymentRefundDetails[0];
     const createdAt = getTime(refund.created_at).join(', ');
+
     return (
       <Text color="surface.text.gray.normal" weight="semibold" size="small">
-        Refund of {getFormattedAmountWithSymbol(refund.amount, refund.currency)} issued on{' '}
+        Refund of {createI18nifyCurrencyFormattedString(refund.amount, refund.currency)} issued on{' '}
         {createdAt}
       </Text>
     );
@@ -450,38 +451,38 @@ export const getDisputesOverviewDetails = (paymentDetails, viewDisputeCallback) 
   if (disputes.length === 1) {
     const dispute = disputes[0];
     const createdAt = getTime(dispute.created_at).join(', ');
-    let info = `Refund of ${getFormattedAmountWithSymbol(
+    let info = `Refund of ${createI18nifyCurrencyFormattedString(
       dispute.amount,
       dispute.currency,
     )} issued on ${createdAt}`;
 
     switch (dispute.status) {
       case 'open':
-        info = `Dispute of ${getFormattedAmountWithSymbol(
+        info = `Dispute of ${createI18nifyCurrencyFormattedString(
           dispute.amount,
           dispute.currency,
         )} initiated by the issusing bank.`;
         break;
       case 'closed':
-        info = `Dispute of ${getFormattedAmountWithSymbol(
+        info = `Dispute of ${createI18nifyCurrencyFormattedString(
           dispute.amount,
           dispute.currency,
         )} has been closed`;
         break;
       case 'won':
-        info = `You've won the chargeback for contesting dispute of ${getFormattedAmountWithSymbol(
+        info = `You've won the chargeback for contesting dispute of ${createI18nifyCurrencyFormattedString(
           dispute.amount,
           dispute.currency,
         )}.`;
         break;
       case 'lost':
-        info = `You've lost the chargeback for contesting dispute of ${getFormattedAmountWithSymbol(
+        info = `You've lost the chargeback for contesting dispute of ${createI18nifyCurrencyFormattedString(
           dispute.amount,
           dispute.currency,
         )}. The amount is being refunded to the customer`;
         break;
       case 'under_review':
-        info = `Your documents are under review for contesting dispute of ${getFormattedAmountWithSymbol(
+        info = `Your documents are under review for contesting dispute of ${createI18nifyCurrencyFormattedString(
           dispute.amount,
           dispute.currency,
         )}.`;

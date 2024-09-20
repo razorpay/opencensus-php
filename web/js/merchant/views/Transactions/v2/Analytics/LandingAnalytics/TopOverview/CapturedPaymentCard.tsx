@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Amount,
   Box,
@@ -9,17 +10,17 @@ import {
   Tooltip,
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
-import React from 'react';
-import { LandingPageAnalyticsToolTip } from 'merchant/views/Transactions/v2/Analytics/utils';
-import { CapturedPaymentCardProps } from 'merchant/views/Transactions/v2/Analytics/types';
-import { BoxWithWordBreak, StyledAmount } from 'merchant/views/Transactions/v2/Analytics/styled';
-import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
 import SettlementCycle from 'merchant/views/Settlements/components/SettlementScheduleV2';
+import { BoxWithWordBreak, StyledAmount } from 'merchant/views/Transactions/v2/Analytics/styled';
+import { CapturedPaymentCardProps } from 'merchant/views/Transactions/v2/Analytics/types';
+import { LandingPageAnalyticsToolTip } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 
 const CapturedPaymentCard = ({
   openModal,
@@ -79,7 +80,7 @@ const CapturedPaymentCard = ({
               <Amount
                 suffix="decimals"
                 currency={currency}
-                value={paiseToRupees(paymentCapturedAmount)}
+                value={i18nifyConvertToMajorUnit(paymentCapturedAmount, currency)}
                 isAffixSubtle={false}
                 type="heading"
                 size="xlarge"

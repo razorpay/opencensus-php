@@ -1,8 +1,30 @@
-import { Box, Button, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
-import { bindActionCreators, compose } from 'redux';
-import { connect } from 'react-redux';
 import React from 'react';
-import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
+import { Box, Button, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
+import { useBreakpoint } from '@razorpay/blade/utils';
+import { CurrencyCodeType } from '@razorpay/i18nify-js/currency';
+import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
+import styled from 'styled-components';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import { useSplitzService } from 'common/splitz';
+import Amount from 'common/ui/Amount';
+import { deepClone } from 'common/utils/rzp-utils';
+import * as PaymentActions from 'merchant/reducers/payments/details';
+import {
+  fetchInstantRefundFeeFn,
+  fetchTransfersFn,
+  refundPaymentFn,
+} from 'merchant/views/Transactions/model';
+import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
+import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
+import RefundMiniTimeline from 'merchant/views/Transactions/v2/Refunds/components/RefundMiniTimeline';
+import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
+import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import * as ModalActions from 'merchant_common/reducers/modals';
+
+import Tooltip from './Tooltip';
+import { REFUND_ELIBILITY_TEXT } from './constants';
 import {
   BoxContainer,
   CardWrapper,
@@ -29,27 +51,8 @@ import {
   onCopy,
   getTime as useTime,
 } from './utils';
-import {
-  fetchInstantRefundFeeFn,
-  fetchTransfersFn,
-  refundPaymentFn,
-} from 'merchant/views/Transactions/model';
-import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
-import { deepClone } from 'common/utils/rzp-utils';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as PaymentActions from 'merchant/reducers/payments/details';
-import Tooltip from './Tooltip';
-import Amount from 'common/ui/Amount';
-import RefundMiniTimeline from 'merchant/views/Transactions/v2/Refunds/components/RefundMiniTimeline';
-import { withRouter } from 'common/deprecated/withRouter';
+
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
-import styled from 'styled-components';
-import { useBreakpoint } from '@razorpay/blade/utils';
-import { REFUND_ELIBILITY_TEXT } from './constants';
-import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
-import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
-import { useSplitzService } from 'common/splitz';
 
 interface IPaymentRefundDetails {
   paymentDetails: IPaymentDetails | null;
@@ -66,7 +69,7 @@ interface PaymentRefundContentType {
   enableBorderBottomRadius?: boolean;
   showFooter: boolean;
   refund: IPaymentIdRefundDetail;
-  currency: Currency;
+  currency: CurrencyCodeType;
   transactionIDActual: string;
 }
 

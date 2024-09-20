@@ -1,4 +1,5 @@
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import '@testing-library/jest-dom/extend-expect';
 import { useBreakpoint } from '@razorpay/blade/utils';
 
@@ -100,7 +101,10 @@ describe('Timeline component', () => {
 
       const showTimelineCTA = screen.getByText('Show timeline');
       expect(showTimelineCTA).toBeInTheDocument();
-      await userEvent.click(showTimelineCTA);
+      await act(async () => {
+        await userEvent.click(showTimelineCTA);
+      });
+
       await waitFor(() => {
         expect(screen.getByText('Collapse timeline')).toBeInTheDocument();
       });

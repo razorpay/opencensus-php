@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, Box } from '@razorpay/blade/components';
-
 import GreyDotIcon from 'assets/transactions/grey-dot.svg';
+
 import {
   BottomOverviewCardFooterProps,
   PaymentTypes,
@@ -17,7 +17,7 @@ const CardFooter = ({
   const { refundCount, openDisputesCount, underReviewDisputesCount } = values;
   switch (name) {
     case PaymentTypes.Refunds:
-      return <Text color="surface.text.gray.subtle">{refundCount}processed</Text>;
+      return <Text color="surface.text.gray.subtle">{refundCount} processed</Text>;
     case PaymentTypes.Disputes:
       return (
         <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.3">

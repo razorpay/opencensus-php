@@ -1,3 +1,5 @@
+import { act } from '@testing-library/react';
+
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import ExtraFiltersModal from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/ExtraFiltersModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -62,22 +64,32 @@ describe('ExtraFiltersModal', () => {
     renderExtraFiltersModal();
     const dropdownTrigger = screen.getByPlaceholderText('Select Payment Method');
     expect(dropdownTrigger).toBeInTheDocument();
-    await userEvent.click(dropdownTrigger);
+    await act(async () => {
+      await userEvent.click(dropdownTrigger);
+    });
 
     const cardOption = screen.getByRole('option', { name: 'Card' });
     expect(cardOption).toBeInTheDocument();
-    await userEvent.click(cardOption);
+    await act(async () => {
+      await userEvent.click(cardOption);
+    });
 
     const paymentSourceChannel = screen.getByPlaceholderText('Select Source Channel');
-    await userEvent.click(paymentSourceChannel);
+    await act(async () => {
+      await userEvent.click(paymentSourceChannel);
+    });
 
     const inPersonOption = screen.getByRole('option', { name: 'In Person' });
     expect(inPersonOption).toBeInTheDocument();
-    await userEvent.click(inPersonOption);
+    await act(async () => {
+      await userEvent.click(inPersonOption);
+    });
 
     const applyButton = screen.getByRole('button', { name: 'Apply' });
     expect(applyButton).toBeInTheDocument();
-    await userEvent.click(applyButton);
+    await act(async () => {
+      await userEvent.click(applyButton);
+    });
 
     expect(mockHandleSearch).toHaveBeenCalledWith({
       method: 'card',

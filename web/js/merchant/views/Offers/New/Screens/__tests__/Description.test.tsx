@@ -1,6 +1,7 @@
 import 'react-dates/initialize';
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+
 import { render } from 'test-utils';
 
 import Description, { validateDisplayText, validateName, validateTerms } from '../Description';

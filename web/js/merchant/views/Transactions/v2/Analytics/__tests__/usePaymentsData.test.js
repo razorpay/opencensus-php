@@ -1,4 +1,7 @@
+import { act } from 'react-dom/test-utils';
+
 import { screen, waitFor, userEvent } from 'test-utils';
+
 import {
   renderApp,
   expectedHookResponse,
@@ -23,7 +26,9 @@ describe('usePaymentsData', () => {
       isRefundPendingEnabled: true,
     });
     const fetch = screen.getByText('Fetch');
-    await userEvent.click(fetch);
+    await act(async () => {
+      await userEvent.click(fetch);
+    });
     await expectLoadingToBeVisible();
     await waitFor(() => {
       expect(dataCallback).toHaveBeenCalledWith(
@@ -43,7 +48,9 @@ describe('usePaymentsData', () => {
       isRefundPendingEnabled: false,
     });
     const fetch = screen.getByText('Fetch');
-    await userEvent.click(fetch);
+    await act(async () => {
+      await userEvent.click(fetch);
+    });
     await expectLoadingToBeVisible();
 
     await waitFor(() => {
@@ -61,7 +68,9 @@ describe('usePaymentsData', () => {
     renderApp();
     const fetch = screen.getByText('Fetch');
     await expectFailedToBeHidden();
-    await userEvent.click(fetch);
+    await act(async () => {
+      await userEvent.click(fetch);
+    });
     await expectLoadingToBeVisible();
 
     await expectFailedToBeVisible();
@@ -76,7 +85,9 @@ describe('usePaymentsData', () => {
       isRefundPendingEnabled: false,
     });
     const fetch = screen.getByText('Fetch');
-    await userEvent.click(fetch);
+    await act(async () => {
+      await userEvent.click(fetch);
+    });
     await expectLoadingToBeVisible();
     await waitFor(() => {
       expect(dataCallback).toHaveBeenCalledWith(expectedHookResponse.no_capture_data);
@@ -92,7 +103,9 @@ describe('usePaymentsData', () => {
       isRefundPendingEnabled: false,
     });
     const fetch = screen.getByText('Fetch');
-    await userEvent.click(fetch);
+    await act(async () => {
+      await userEvent.click(fetch);
+    });
     await expectLoadingToBeVisible();
     await waitFor(() => {
       expect(dataCallback).toHaveBeenCalledWith(expectedHookResponse.top_4_methods);
@@ -108,7 +121,9 @@ describe('usePaymentsData', () => {
       isRefundPendingEnabled: false,
     });
     const fetch = screen.getByText('Fetch');
-    await userEvent.click(fetch);
+    await act(async () => {
+      await userEvent.click(fetch);
+    });
     await expectLoadingToBeVisible();
     await waitFor(() => {
       expect(dataCallback).toHaveBeenCalledWith(expectedHookResponse.zero_value_methods);
@@ -124,7 +139,10 @@ describe('usePaymentsData', () => {
       isRefundPendingEnabled: false,
     });
     const fetch = screen.getByText('Fetch');
-    await userEvent.click(fetch);
+    await act(async () => {
+      await userEvent.click(fetch);
+    });
+
     await expectLoadingToBeVisible();
     await waitFor(() => {
       expect(dataCallback).toHaveBeenCalledWith(expectedHookResponse.no_data);

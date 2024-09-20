@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Link, RefreshIcon, Text } from '@razorpay/blade/components';
+import { CurrencyCodeType } from '@razorpay/i18nify-js/currency';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
@@ -28,7 +29,6 @@ import {
   TopOverviewContainerProps,
 } from 'merchant/views/Transactions/v2/Analytics/types';
 import { getOptions, isSrEnabledForUser } from 'merchant/views/Transactions/v2/Analytics/utils';
-import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { trackOverviewDuration } from 'merchant/views/Transactions/v2/common/tracking';
 import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
@@ -46,6 +46,7 @@ const LandingAnalytics = ({
   fetchHolidayList,
 }: LandingAnalyticsProps): JSX.Element => {
   const isRefundPendingEnabled = user.isRefundPendingStatusEnabled;
+  const currency = user.merchant?.currency as CurrencyCodeType;
   const {
     fetchPaymentData,
     paymentsData: {
@@ -57,7 +58,7 @@ const LandingAnalytics = ({
     },
     loading: isPaymentsDataLoading,
     failed: isPaymentsDataFailed,
-  } = usePaymentsData({ isRefundPendingEnabled });
+  } = usePaymentsData({ isRefundPendingEnabled, currency });
   const {
     fetchDisputesData,
     disputeData: {
@@ -83,7 +84,6 @@ const LandingAnalytics = ({
     user,
   });
   const isMobile = useMobile(mobileBreakoints);
-  const currency = user.merchant?.currency as Currency;
   const { defaultDate, defaultDuration, durationOptions } = getOptions(isMobile);
   const [duration, setDateDuration] = useState<Duration>(defaultDate);
   const [durationOption, setDurationOption] = useState<Option>(defaultDuration);

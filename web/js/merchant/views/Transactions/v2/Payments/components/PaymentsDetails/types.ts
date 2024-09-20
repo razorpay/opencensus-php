@@ -1,6 +1,7 @@
 import React from 'react';
+import { CurrencyCodeType } from '@razorpay/i18nify-js/currency';
+
 import { Store } from 'common/typings';
-import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
 
 export enum PaymentStatus {
   CREATED = 'created',
@@ -31,7 +32,7 @@ interface IDispute {
   id: string;
   amount: number;
   phase: string;
-  currency: Currency;
+  currency: CurrencyCodeType;
   respond_by: number;
   status: DisputeStatus;
 }
@@ -109,7 +110,7 @@ export interface IQuestionDetails {
 export interface IPaymentDetails {
   id: string;
   amount: number;
-  currency: Currency;
+  currency: CurrencyCodeType;
   base_amount: number;
   status:
     | PaymentStatus.CREATED
@@ -187,7 +188,7 @@ export interface IPaymentIdRefundDetail {
   amount: number;
   batch_id: null;
   created_at: number;
-  currency: Currency;
+  currency: CurrencyCodeType;
   entity: string;
   id: string;
   notes: {
