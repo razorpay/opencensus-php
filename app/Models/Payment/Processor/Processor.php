@@ -7555,10 +7555,20 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        $orgFeatureFlag = $this->merchant->org->isFeatureEnabled(Feature::VAS_NB_CORP_ORG);
+
+        $merchantFeatureFlag = $this->merchant->isFeatureEnabled(Feature::VAS_NB_CORP_MER);
+
         if(($payment->getMethod() === Method::NETBANKING) and
             ($payment->getBank() === Payment\Processor\Netbanking::HDFC_C) and
-            ($this->checkNetbankingCorporateSplitzExperiment() === true))
+            (($this->checkNetbankingCorporateSplitzExperiment() === true) OR
+            ($merchantFeatureFlag === true) OR ($orgFeatureFlag === true)))
         {
+            $this->trace->info(TraceCode::CORPORATE_NETBANKING_PAYMENT_FEATURE_FLAG, [
+                'vas_nb_corp_org' => $orgFeatureFlag,
+                'vas_nb_corp_mer' => $merchantFeatureFlag,
+            ]);
+
             return $this->getCorporateNetbankingPaymentStatus();
         }
 

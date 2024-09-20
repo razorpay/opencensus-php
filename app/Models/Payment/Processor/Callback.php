@@ -1086,6 +1086,10 @@ trait Callback
 
         $previousExceptionData = $e->getData() ?? [];
 
+        $merchantFeatureFlag = $this->merchant->isFeatureEnabled(Feature\Constants::VAS_NB_CORP_MER);
+
+        $orgFeatureFlag = $this->merchant->org->isFeatureEnabled(Feature\Constants::VAS_NB_CORP_ORG);
+
         if (($internalErrorCode === ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED) and
             ($this->payment->isInAppUPI() === true))
         {
@@ -1112,9 +1116,15 @@ trait Callback
         }
         else if(($this->payment->getMethod() === Payment\Method::NETBANKING) and
             ($this->payment->getBank() === Payment\Processor\Netbanking::HDFC_C) and
-            ($this->checkNetbankingCorporateSplitzExperiment() === true) and
+            (($this->checkNetbankingCorporateSplitzExperiment() === true) OR
+            ($merchantFeatureFlag === true) OR ($orgFeatureFlag === true)) and
             ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION))
         {
+            $this->trace->info(TraceCode::CORPORATE_NETBANKING_PAYMENT_FEATURE_FLAG, [
+                'vas_nb_corp_org' => $orgFeatureFlag,
+                'vas_nb_corp_mer' => $merchantFeatureFlag,
+            ]);
+
             $error = [
                 'metadata' => [
                     'netbanking_corporate_action' => 'pending'
