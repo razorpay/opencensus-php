@@ -16,13 +16,15 @@ export const Wrapper = styled.div`
   max-width: 615px;
   height: 100%;
   gap: 20px;
+  position: relative;
 `;
 
 export const FrameContainer = styled.div<{ isDesktopPreview: boolean }>`
   display: flex;
-  height: 500px;
+  height: 530px;
   justify-content: center;
   align-items: center;
+  margin-top: 45px;
   width: ${(props) => (props.isDesktopPreview ? '1000px' : '500px')};
 `;
 
@@ -31,7 +33,7 @@ export const CheckoutFrame = styled.iframe<{
   isDesktopPreview: boolean;
   shouldScaleToFit: boolean;
 }>`
-  width: ${(props) => (props.isDesktopPreview ? '1000px' : '300px')};
+  width: ${(props) => (props.isDesktopPreview ? '1000px' : '260px')};
   height: 100%;
   pointer-events: none;
   border: 0;
@@ -67,5 +69,21 @@ export const PreviewButton = styled.div(
   display: flex;
   justify-content: center;
   cursor: ${isActive ? 'not-allowed' : 'pointer'};
+  `,
+);
+
+export const MobileBackground = styled.div(
+  ({ backgroundImg }: { backgroundImg: string }) => `
+  pointer-events: none;
+  position: absolute;
+  z-index: 50;
+  display: flex;
+  width: 280px;
+  height: 580px;
+  top: 108px;
+  left: 165px;
+  align-items: center;
+  background-size: cover;
+  background-image: url(${backgroundImg})
   `,
 );

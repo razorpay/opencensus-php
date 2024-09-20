@@ -4,7 +4,12 @@ import { Badge } from '@razorpay/blade/components';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentActive } from 'common/utils/rzp-utils';
 import { CheckoutPreviewButtons } from 'merchant/views/Settings/Configuration/CheckoutDemo/CheckoutPreviewButtons';
-import { Wrapper, FrameContainer } from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
+import {
+  Wrapper,
+  FrameContainer,
+  MobileBackground,
+} from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
+import mobileBg from 'assets/mobile.png';
 
 import CheckoutV2 from './CheckoutV2';
 import { CheckoutPreviewContext } from './context/createContext';
@@ -27,6 +32,7 @@ const CheckoutDemo = (): JSX.Element => {
         <Badge color="information" size="medium">
           Live Preview
         </Badge>
+        {!isDesktopPreview ? <MobileBackground backgroundImg={mobileBg} /> : null}
         <FrameContainer
           isDesktopPreview={isCheckoutEditorV2PreviewEnabled ? isDesktopPreview : true}
         >
