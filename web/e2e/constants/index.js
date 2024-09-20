@@ -100,6 +100,7 @@ const routes = {
   ASSISTED_FINANCING: '/app/assisted-financing',
   SMART_COLLECT: '/app/smartcollect/virtualaccounts',
   NAW_REGISTRATION_LINKS: '/app/registration_links/new',
+  OFFERS_HOME: '/app/offers/',
 };
 
 module.exports = {

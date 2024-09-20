@@ -178,7 +178,7 @@ jobs:
             APP_NAME=${{env.APP_NAME}}
             AFFFECTED_PROJECTS=${{ steps.set-affected-output.outputs.affected }}
             #  TODO: Add project level INCLUDE_GROUPS and EXCLUDE_GROUPS as key value pairs and extract them to pass in playwright getproject config
-            INCLUDE_GROUPS=@project=payments|@project=partner-dashboard|@project=no-code-stable
+            INCLUDE_GROUPS=@project=payments|@project=partner-dashboard|@project=no-code-stable|@project=offers
             EXCLUDE_GROUPS=@project=payment-links
             CI=true
 
