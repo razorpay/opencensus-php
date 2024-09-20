@@ -362,6 +362,14 @@ class PublicController extends Controller
 
             return View::make('public.embedded', $data);
         } else {
+            $key = $params['checkout']['key'];
+            $requestOptions     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
+
+            $app['trace']->info(TraceCode::RENDER_HOSTED_CHECKOUT, [
+                'key' => $key,
+                'requestOptions' => $requestOptions
+            ]);
+
             $checkout    = $this->getCheckoutCommon();
             $checkoutUrl = $checkout['checkout'] . '/v1/checkout.js';
             $data = [
