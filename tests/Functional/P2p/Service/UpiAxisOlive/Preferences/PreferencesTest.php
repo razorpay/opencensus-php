@@ -42,6 +42,20 @@ class PreferencesTest extends TestCase
         $this->assertArraySelectiveEquals(Constants::getStaticPopularBanksList(), $response['popular_banks']);
     }
 
+    public function testGetGatewayPreferencesWithInvalidCustomerResp()
+    {
+        $helper = $this->getPreferencesHelper();
+
+        $helper->withSchemaValidated();
+
+        $payload = [
+            'customer_id' => 'random_invalid_customer_id',
+        ];
+        $response = $helper->getGatewayPreferences($this->gateway, $payload);
+
+        $this->assertArrayNotHasKey('customer', $response);
+    }
+
     public function testGetGatewayPreferences()
     {
         $helper = $this->getPreferencesHelper();
@@ -216,7 +230,7 @@ class PreferencesTest extends TestCase
         $this->assertArrayHasKey('account_number', $response["tpv"]["bank_accounts"][1]);
     }
 
-    public function testGetGatewayPreferencesWithInvalidCustomerId()
+    public function testGetGatewayPreferencesWithInvalidCustomerIdOnTPVMerchant()
     {
         $helper = $this->getPreferencesHelper();
 
@@ -224,13 +238,17 @@ class PreferencesTest extends TestCase
 
         $this->expectException(BadRequestValidationFailureException::class);
 
+        $this->fixtures->enableFeatures("tpv");
+
+        $helper = $this->getPreferencesHelper();
+
         $content = [
             'customer_id' => $this->fixtures->customer->getPublicId()."xyz",
         ];
 
         $response = $helper->getGatewayPreferences($this->gateway, $content);
 
-        $this->expectExceptionMessage($this->fixtures->customer->getPublicId()."xyz is not a valid id");
+        $this->expectExceptionMessage($this->fixtures->customer->getPublicId()."xyz is not a customer id.");
     }
 
     public function setPopularBankListInRedis()

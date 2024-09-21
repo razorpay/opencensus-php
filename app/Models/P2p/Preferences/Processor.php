@@ -51,9 +51,25 @@ class Processor extends Base\Processor
 
             if (isset($input[Entity::CUSTOMER_ID]) === true)
             {
-                $customer = (new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
+                // In Preferences, For number less verification flow,
+                // we may receive merchant's customer id in the customer id field
+                try {
+                    $customer = (new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
+                    $preferencesResponse = array_merge($this->getCustomerData($customer), $preferencesResponse);
+                }
+                catch(\Throwable $t)
+                {
+                    $this->trace()->warning(TraceCode::CUSTOMER_NOT_FOUND,
+                        ['customer_id' => $input[Entity::CUSTOMER_ID], '$customer' => $customer]);
+                }
 
-                $preferencesResponse = array_merge($this->getCustomerData($customer), $preferencesResponse);
+                // In TPV, the merchant should pass the valid customer id
+                if($this->context()->getMerchant()->isTPVRequired() && !isset($customer))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'The ' . $input[Entity::CUSTOMER_ID] . ' is not a valid customer id.'
+                    );
+                }
             }
 
             $this->setMerchantInfoInResponse($preferencesResponse);
@@ -68,11 +84,6 @@ class Processor extends Base\Processor
             if ((isset($input[Entity::ORDER_ID]) === false) and (isset($input[Entity::CUSTOMER_ID]) === false))
             {
                 return $this->postProcess($preferencesResponse);
-            }
-
-            if (isset($input[Entity::CUSTOMER_ID]) === true)
-            {
-                CustomerEntity::verifyIdAndSilentlyStripSign($input[Entity::CUSTOMER_ID]);
             }
 
             // If TPV is enabled for the merchant
