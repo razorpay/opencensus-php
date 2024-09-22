@@ -363,6 +363,12 @@ export const workflowDataMock = {
                 validations: null,
                 deviceConfig: null,
                 metaUi: null,
+                acquirerPreferenceOptions: [
+                  {
+                    label: 'SBI',
+                    value: 'sbi',
+                  },
+                ],
               },
               progress: 7.5,
               status: 'processing',

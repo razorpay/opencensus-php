@@ -95,19 +95,41 @@ export const getAdditionalDetailFields = ({
   modularConfig,
   omcValue,
 }: AdditionalDetailsFieldsProps) => {
-  if (!modularConfig) return [];
+  let additionalDetailsFields: ModularOnboardingField[] = [];
+
+  if (!modularConfig) return additionalDetailsFields;
   const additionalDetailsComponent = getComponentFromStep({
     modularConfig,
     step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
     component: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_COMPONENT,
   });
 
+  additionalDetailsFields = additionalDetailsComponent?.fields ?? [];
+
   if (!omcValue) {
     const filteredFields = additionalDetailsComponent?.fields.filter(
       (field) => field.name !== MODULAR_ADDITIONAL_DETAILS_FIELDS.SAP_CODE_FIELD,
     );
-    return filteredFields;
+    additionalDetailsFields = filteredFields ?? [];
   }
 
-  return additionalDetailsComponent?.fields;
+  // Get acquirer preference options from meta instead of component meta [this needs to be handled separately]
+  const processedFields = additionalDetailsFields.map((field) => {
+    if (field.name === MODULAR_ADDITIONAL_DETAILS_FIELDS.ACQUIRER_PREFERENCE_FIELD) {
+      const actualAcquirerPreferenceOptions =
+        additionalDetailsComponent?.meta.acquirerPreferenceOptions ?? [];
+
+      return {
+        ...field,
+        meta: {
+          ...field.meta,
+          options: actualAcquirerPreferenceOptions,
+        },
+      } as ModularOnboardingField;
+    }
+
+    return field;
+  });
+
+  return processedFields;
 };

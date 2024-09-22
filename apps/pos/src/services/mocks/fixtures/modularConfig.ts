@@ -1731,6 +1731,12 @@ export const SUCCESS_MODULAR_RESPONSE = {
                     validations: null,
                     deviceConfig: null,
                     metaUi: null,
+                    acquirerPreferenceOptions: [
+                      {
+                        label: 'SBI',
+                        value: 'sbi',
+                      },
+                    ],
                   },
                   progress: 0,
                   status: 'pending',

@@ -190,6 +190,10 @@ export const MODULAR_CONFIG = gql`
                         value
                       }
                     }
+                    acquirerPreferenceOptions {
+                      label
+                      value
+                    }
                   }
                   progress
                   status
@@ -397,6 +401,10 @@ export const UPDATE_MODULAR_CONFIG = gql`
                         name
                         value
                       }
+                    }
+                    acquirerPreferenceOptions {
+                      label
+                      value
                     }
                   }
                   progress

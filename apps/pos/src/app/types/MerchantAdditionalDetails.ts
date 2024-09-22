@@ -5,6 +5,7 @@ export enum MODULAR_ADDITIONAL_DETAILS_FIELDS {
   SAP_CODE_FIELD = 'additional_details_sap_code_field',
   ADDITIONAL_DETAILS_STEP = 'additional_details_step',
   PHONE_NUMBER_FIELD = 'additional_details_cashier_mobile_number_field',
+  ACQUIRER_PREFERENCE_FIELD = 'additional_details_acquirer_preference_field',
 }
 
 export type FieldRules = {

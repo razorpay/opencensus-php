@@ -134,6 +134,7 @@ export interface ModularComponentMeta {
   isConfirmationComponent?: boolean;
   ruleEngine?: JSONObject;
   defaultValues?: Record<string, number>;
+  acquirerPreferenceOptions?: ModularOnboardingOption[];
 }
 
 // Content Meta
