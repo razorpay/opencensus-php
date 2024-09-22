@@ -747,6 +747,7 @@ class AdminFetch
                         'recurring_charge_bulk',
                         's2p_groups_onboarding',
                         's2p_users_onboarding',
+                        'cancel_dormant_mandates'
                     ],
                 ],
             ],
