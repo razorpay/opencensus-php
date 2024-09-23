@@ -42,6 +42,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\BusinessDetail;
+use Illuminate\Contracts\Support\Arrayable;
 use RZP\Models\State\Entity as ActionState;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -3542,7 +3543,17 @@ class Repository extends Base\Repository
 
     public function findMany($ids, $columns = array('*'))
     {
-        return $this->findMerchantsByIds($ids);
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $ids = $ids instanceof Arrayable ? $ids->toArray() : $ids;
+
+            if (empty($ids)) {
+                return new PublicCollection();
+            }
+
+            return $this->findMerchantsByIds($ids);
+        } else {
+            return parent::findMany($ids, $columns);
+        }
     }
 
     public function fetchMerchantsWithNotOnboardedOnNetworks($product, array $networks, $limit)

@@ -4,6 +4,7 @@ namespace Unit\Models\Merchant;
 
 use Config;
 use RZP\Exception\DbQueryException;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional;
@@ -556,19 +557,29 @@ class RepositoryTest extends RepositoryTestHelper
 
         $repository->resetConnectionOnModels($resultWithoutSplitz1);
 
-        $this->setSplitzWithOutput("true", 1);
+        $this->setSplitzWithOutput("true", 2);
         $repository = new Repository();
         $resultWithSplitz1 = $repository->findMany(array($id1, $id2, $id3));
         $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
         $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
 
-        $this->setSplitzWithOutput("true", 1);
+        $this->setSplitzWithOutput("true", 2);
         $repository = new Repository();
         $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($id3, $resultWithoutSplitz1, $id2, $id1, $repository) {
             $resultWithSplitz1 = $repository->findMany(array($id1, $id2, $id3));
             $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
             $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
         });
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        $results = $repository->findMany(null);
+        $this->assertEquals(new PublicCollection(), $results);
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Repository();
+        $results = $repository->findMany(null);
+        $this->assertEquals(new PublicCollection(), $results);
     }
 
     public function testFindManyOnReadReplicaOperation()
