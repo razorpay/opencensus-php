@@ -313,6 +313,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'paypal_onboard_redirect',
+        experimentId: {
+          beta: 'OzPQ6DNFTJlbQi',
+          production: 'OzPUk1WTGjY093',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'ray_ai',
         experimentId: {
           beta: 'NgMk9aLHhP79nc',

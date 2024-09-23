@@ -68,6 +68,7 @@ class PaypalOnboardingButton extends Component {
             this.is_redirected = true;
             window.focus();
             win.close();
+            closeModal();
           }
         });
         if (win && win.window) {
