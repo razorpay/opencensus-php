@@ -25,6 +25,7 @@ class Method
     const INTL_BANK_TRANSFER    = 'intl_bank_transfer';
     const FPX                   = 'fpx';
     const RAZORPAY_ACCOUNT      = 'razorpay_account';
+    const OBW                   = 'obw';
 
     protected static $methods = [
         self::CARD                  => 'Card',
@@ -45,6 +46,7 @@ class Method
         self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer',
         self::FPX                   => 'Financial Process Exchange',
         self::RAZORPAY_ACCOUNT      => 'Razorpay Account',
+        self::OBW                   => 'Online Banking/Wallet'
     ];
 
     protected static $nonEsAutomaticMethods = [
@@ -67,6 +69,7 @@ class Method
         self::EMANDATE,
         self::UPI,
         self::FPX,
+        self::OBW
     ];
 
     public static $cpsEnabledMethods = [

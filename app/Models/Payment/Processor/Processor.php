@@ -2999,10 +2999,10 @@ class Processor
         return false;
     }
 
-    private function canRouteFpxThroughRearchFlow($input): bool
+    private function canRouteFpxAndObwThroughRearchFlow($input): bool
     {
         // fpx always through nbplus rearch except test mode in production
-        if ($input[Payment\Entity::METHOD] === Payment\METHOD::FPX)
+        if ($input[Payment\Entity::METHOD] === Payment\METHOD::FPX || $input[Payment\Entity::METHOD] === Payment\METHOD::OBW)
         {
             if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST))
             {
@@ -3653,7 +3653,7 @@ class Processor
                 ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteThroughUpsRearchFlow($input, $isUpiDfb) === true) or
-                ($this->canRouteFpxThroughRearchFlow($input) === true) or
+                ($this->canRouteFpxAndObwThroughRearchFlow($input) === true) or
                 ($this->canRouteEmandateThroughRearchFlow($input) === true)))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
