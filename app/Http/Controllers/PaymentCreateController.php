@@ -2685,6 +2685,8 @@ class PaymentCreateController extends Controller
         foreach ($gateways as $gateway) {
             if ($gateway !== 'razorpay') {
                 $paymentInput['gateway'] = $gateway;
+            } else {
+                unset($paymentInput['gateway']);
             }
             $data[$gateway] = $this->createFeeBearerCustomerPayment($paymentInput);
         }

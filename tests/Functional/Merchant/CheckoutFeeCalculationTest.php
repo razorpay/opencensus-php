@@ -787,6 +787,15 @@ class CheckoutFeeCalculationTest extends TestCase
         $this->startTest();
     }
 
+    public function testOptimizerConvenienceFeeWithGatewayFilterForCardWithProcurerPricing()
+    {
+        $this->setUpForOptiConvenienceFeeWithGatewayFilter('card', true);
+
+        $this->ba->optimizerInternalAppAuth();
+
+        $this->startTest();
+    }
+
     public function testOptimizerConvenienceFeeWithGatewayFilterForUPI()
     {
         $this->setUpForOptiConvenienceFeeWithGatewayFilter('upi');
@@ -911,7 +920,7 @@ class CheckoutFeeCalculationTest extends TestCase
         $this->fixtures->edit('methods', '10000000000000', $methods);
     }
 
-    private function setUpForOptiConvenienceFeeWithGatewayFilter(string $paymentMethod)
+    private function setUpForOptiConvenienceFeeWithGatewayFilter(string $paymentMethod, bool $addProcurerPricing = false)
     {
         $plans = [
             [
@@ -950,6 +959,20 @@ class CheckoutFeeCalculationTest extends TestCase
             ],
         ];
 
+        if ($addProcurerPricing)
+        {
+            $plans[] =  [
+                'plan_id'             => 'optifee1234567',
+                'plan_name'           => 'OptiConvenienceFeePlan',
+                'feature'             => 'payment',
+                'payment_method'      => $paymentMethod,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+                'fee_bearer'          => FeeBearer::CUSTOMER,
+                'procurer' => 'merchant',
+            ];
+        }
         foreach ($plans as $plan)
         {
             $this->fixtures->create('pricing', $plan);

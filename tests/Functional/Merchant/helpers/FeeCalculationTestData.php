@@ -594,6 +594,68 @@ return [
             ],
         ],
     ],
+
+    'testOptimizerConvenienceFeeWithGatewayFilterForCardWithProcurerPricing' => [
+        'request'  => [
+            'url'     => '/payments/gateways/fees',
+            'method'  => 'POST',
+            'content' => [
+                'gateways' => ['payu', 'paytm'],
+                'merchant_id' => '10000000000000',
+                'payment' => [
+                    'amount'   => 10000,
+                    'currency' => 'INR',
+                    'method'   => 'card',
+                    'email'    => 'qa.testing@razorpay.com',
+                    'contact'  => '+918888888888',
+                    'card'     => ['number' => '4111111111111111', 'cvv' => 123, 'name' => 'QARazorpay', 'expiry_month' => 11, 'expiry_year' => 30],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'payu' => [
+                    'fee_split' => [
+                        [
+                            'name' => 'payment',
+                            'amount' => 0,
+                        ],
+                        [
+                            'name' => 'optimizer_convenience_fee',
+                            'amount' => 200,
+                        ],
+                        [
+                            'name' => 'tax',
+                            'amount' => 0,
+                        ]
+                    ],
+                    'fees' => 200,
+                    'tax' => 0,
+                    'currency' => 'INR'
+                ],
+                'paytm' => [
+                    'fee_split' => [
+                        [
+                            'name' => 'payment',
+                            'amount' => 0,
+                        ],
+                        [
+                            'name' => 'optimizer_convenience_fee',
+                            'amount' => 300,
+                        ],
+                        [
+                            'name' => 'tax',
+                            'amount' => 0,
+                        ]
+                    ],
+                    'fees' => 300,
+                    'tax' => 0,
+                    'currency' => 'INR'
+                ]
+            ],
+        ],
+    ],
+
     'testOptimizerConvenienceFeeWithGatewayFilterForUPI' => [
         'request'  => [
             'url'     => '/payments/gateways/fees',

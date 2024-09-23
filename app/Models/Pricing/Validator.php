@@ -1116,7 +1116,8 @@ class Validator extends Base\Validator
                 ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
                 ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
-                ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]))
+                ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]) and
+                ($rule[Entity::GATEWAY] === $newRule[Entity::GATEWAY]))
             {
                 app('trace')->info(
                     TraceCode::PRICING_RULE_ALREADY_EXISTS,
@@ -1144,6 +1145,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
                 ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
                 ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]) and
+                ($rule[Entity::GATEWAY] === $newRule[Entity::GATEWAY]) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
@@ -1166,6 +1168,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::AUTH_TYPE] === $newRule[Entity::AUTH_TYPE]) and
                 ($rule[Entity::PAYOUTS_FILTER] === $newRule[Entity::PAYOUTS_FILTER]) and
                 ($rule[Entity::APP_NAME] === $newRule[Entity::APP_NAME]) and
+                ($rule[Entity::GATEWAY] === $newRule[Entity::GATEWAY]) and
                 (empty($newRule[Entity::AMOUNT_RANGE_ACTIVE]) !== empty($rule[Entity::AMOUNT_RANGE_ACTIVE])))
             {
                 throw new Exception\BadRequestException(

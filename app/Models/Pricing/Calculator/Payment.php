@@ -327,15 +327,29 @@ class Payment extends Base
         {
             return $rules;
         }
+
+        $procurer = 'razorpay';
+
+        $isOptimizerCFBFlow = $payment->merchant->isAtLeastOneFeatureEnabled(Feature\Constants::OPTIMIZER_CFB_FEATURES);
         // this is done to prevent null terminals entity check.
         // ref : https://razorpay.slack.com/archives/C04BDR5TEGL/p1700459478960999
         if (($payment->hasTerminal() === false) or
             ($payment->terminal === null))
         {
-            return $rules;
+            if ($isOptimizerCFBFlow == false )
+            {
+                return $rules;
+            }
+            // for optimizer cfb merchants we need to do set merchant as procurer
+            // even if terminal is not present but gateway is present
+            if ($payment->getGateway() != null)
+            {
+                $procurer = "merchant";
+            }
         }
-
-        $procurer = $payment->terminal->getProcurer();
+        else {
+            $procurer = $payment->terminal->getProcurer();
+        }
 
         $filters = [
             [Pricing\Entity::PROCURER, $procurer, true, null]
