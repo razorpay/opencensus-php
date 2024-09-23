@@ -892,6 +892,15 @@ abstract class Base extends BaseCore
 
         $this->merchantBalance->subtractFeeCredits($fee);
 
+        $this->trace->info(TraceCode::MERCHANT_FEE_CREDITS_DATA,
+            [
+                'txn_id'      => $this->txn->getId(),
+                'merchant_id' => $this->txn->getMerchantId(),
+                'new_credits' => $feeCredits-$fee,
+                'old_credits' => $feeCredits,
+                'method'      => 'updateFeeCredits',
+            ]);
+
         //create a credit transaction for the same
         $this->createCreditTransaction($fee, Credits\Type::FEE);
 
@@ -1008,6 +1017,15 @@ abstract class Base extends BaseCore
         $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
 
         $newCredits = $this->merchantBalance->getRefundCredits();
+
+        $this->trace->info(TraceCode::MERCHANT_REFUND_CREDITS_DATA,
+            [
+                'txn_id'      => $this->txn->getId(),
+                'merchant_id' => $this->txn->getMerchantId(),
+                'new_credits' => $newCredits,
+                'old_credits' => $refundCredits,
+                'method'      => 'updateRefundCredits',
+            ]);
 
         (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
                                                         $this->merchantBalance->merchant,

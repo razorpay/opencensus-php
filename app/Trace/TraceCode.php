@@ -9898,6 +9898,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const INVALID_DATE_EXTRACTED_FROM_BANK                      = 'INVALID_DATE_EXTRACTED_FROM_BANK';
     const MERCHANT_BALANCE_DATA                                 = 'MERCHANT_BALANCE_DATA';
+    const MERCHANT_REFUND_CREDITS_DATA                          = 'MERCHANT_REFUND_CREDITS_DATA';
+    const MERCHANT_FEE_CREDITS_DATA                             = 'MERCHANT_FEE_CREDITS_DATA';
 
     const GET_MERCHANT_RISK_DATA_DRUID_ERROR                    = 'GET_MERCHANT_RISK_DATA_DRUID_ERROR';
 
