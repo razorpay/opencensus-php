@@ -80,8 +80,8 @@ type Getters = {
   isRazorxAnnouncementEnabled: boolean;
   isActivated: boolean;
   isHideMonthlyInvoiceEnabled: boolean;
-  isINCountry: boolean;
-  isSGCountry: boolean;
+  isCountryIndia: boolean;
+  isCountrySingapore: boolean;
   isVasTestingMerchant: boolean;
   isMultiCouponsEnabled: boolean;
   isAdminOrOwner: boolean;

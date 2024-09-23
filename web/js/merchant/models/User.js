@@ -441,7 +441,7 @@ export default class User {
 
   get isMagicKonnectEnabled() {
     const accessRoles = [rolesList.OWNER, rolesList.ADMIN, rolesList.MANAGER, rolesList.PARTNER];
-    return this.isOrgRZP && accessRoles.indexOf(this.userRole) > -1 && this.isINCountry;
+    return this.isOrgRZP && accessRoles.indexOf(this.userRole) > -1 && this.isCountryIndia;
   }
 
   get isMerchantExpiryPPEnabled() {
@@ -869,12 +869,12 @@ export default class User {
     return this.isFeatureEnabled('invoice_receipt_mandatory');
   }
 
-  get isSGCountry() {
+  get isCountrySingapore() {
     // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
     return this.merchant.country_code === 'SG';
   }
 
-  get isINCountry() {
+  get isCountryIndia() {
     // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
     return this.merchant.country_code === 'IN';
   }
@@ -1011,7 +1011,7 @@ export default class User {
   }
 
   get isOptimizerOnboardingEnabled() {
-    return this.isOrgRZP && this.isINCountry;
+    return this.isOrgRZP && this.isCountryIndia;
   }
 
   get isSodexoInstrumentEnabled() {
@@ -1963,7 +1963,7 @@ export default class User {
     return (
       getSplitzExperimentVariant('universal_search_enabled')?.variables?.result === 'on' &&
       this.isOrgRZP &&
-      this.isINCountry
+      this.isCountryIndia
     );
   }
 

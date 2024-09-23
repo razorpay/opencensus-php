@@ -21,7 +21,7 @@ describe('HelpSection Component', () => {
         history={{ location: { pathname: '/' } }}
         isHelpWidgetVisible={true}
         user={{
-          isINCountry: false,
+          isCountryIndia: false,
         }}
       />,
     );

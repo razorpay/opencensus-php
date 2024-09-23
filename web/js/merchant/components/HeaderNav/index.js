@@ -1,10 +1,11 @@
 /* eslint-disable react/no-unsafe */
-import { Box, Button, MenuIcon, RefreshIcon, Spinner, Text } from '@razorpay/blade/components';
 import React, { Component } from 'react';
+import { Box, Button, MenuIcon, RefreshIcon, Spinner, Text } from '@razorpay/blade/components';
+import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
-import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -16,10 +17,12 @@ import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCredi
 import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
 import { getItem, setItem } from 'common/utils/localStorage';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { classList } from 'common/utils/rzp-utils';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import {
   fetchModalConfigDetails,
@@ -29,14 +32,13 @@ import { toggleMobileMenu } from 'merchant/reducers/app';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
 import AppSwitcher from './AppSwitcher';
 import NavFragment from './NavFragment';
 import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
-import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
-import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -322,7 +324,7 @@ class HeaderNav extends Component {
                         </GrowthAssetEB>
                       </li>
                     </ShowWhen>
-                    {user?.isOrgRZP && user?.isInternalStatusPageEnabled && user.isINCountry && (
+                    {user?.isOrgRZP && user?.isInternalStatusPageEnabled && user.isCountryIndia && (
                       <li id="status-details" data-testid="header-status-details">
                         {user.isEcosystemDowntimeEnabled ? (
                           <EcosystemDowntimes

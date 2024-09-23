@@ -7,8 +7,10 @@ export const getIsPayrollWidgetEnabled = (currentUser = {}) => {
 };
 
 export const getIsShowAffordabilityWidget = (currentUser = {}) => {
-  return currentUser.isShowAffordabilityWidget && currentUser.isOrgRZP && currentUser.isINCountry;
+  return (
+    currentUser.isShowAffordabilityWidget && currentUser.isOrgRZP && currentUser.isCountryIndia
+  );
 };
 
 export const getIsCheckoutPaymentMetricsEnabled = (currentUser = {}) =>
-  currentUser.isCheckoutAnalyticsEnabled && currentUser.isOrgRZP && currentUser.isINCountry;
+  currentUser.isCheckoutAnalyticsEnabled && currentUser.isOrgRZP && currentUser.isCountryIndia;

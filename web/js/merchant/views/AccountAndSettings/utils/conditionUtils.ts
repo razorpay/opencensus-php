@@ -43,7 +43,7 @@ export const isTrustedBadgeAllowed = (user: User, extraConfig: ExtraConfig): boo
   !extraConfig.isConfigTagEnabled('account.trusted_badge');
 
 export const isPaymentMethodEnabled = (user: User, mode: string): boolean =>
-  ((user.isOrgRZP === true && user.isINCountry && user.isInstrumentRequestAllowed()) ||
+  ((user.isOrgRZP === true && user.isCountryIndia && user.isInstrumentRequestAllowed()) ||
     user.isInstrumentRequestHidden) &&
   mode !== 'test';
 
@@ -158,7 +158,7 @@ export const isWhatsAppAccountSetupEnabled = (
   { abExperiments }: Pick<SpiltzContextState, 'abExperiments'> = { abExperiments: {} },
   roleCheckEnable?: boolean,
 ): boolean => {
-  if (user.isSGCountry) return false;
+  if (user.isCountrySingapore) return false;
 
   if (!abExperiments?.whatsAppPLEnabled) {
     return false;

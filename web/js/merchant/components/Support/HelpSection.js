@@ -102,7 +102,7 @@ const HelpSection = ({
   }, []);
 
   // Don't show support for non indian
-  if (!user.isINCountry) {
+  if (!user.isCountryIndia) {
     return null;
   }
 

@@ -122,8 +122,8 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: {
       isCheckoutAnalyticsEnabled: boolean;
       isOrgRZP: boolean;
-      isINCountry: boolean;
-    }) => user.isCheckoutAnalyticsEnabled && user.isOrgRZP && user.isINCountry,
+      isCountryIndia: boolean;
+    }) => user.isCheckoutAnalyticsEnabled && user.isOrgRZP && user.isCountryIndia,
   },
   qr_codes: {
     icon: 'i-qr-code',
@@ -133,7 +133,7 @@ export const PRODUCTS_DATA = {
   affordability: {
     icon: 'i-affordability',
     additionalCondition: (user: any) => {
-      return user.isShowAffordabilityWidget && user.isOrgRZP && user.isINCountry;
+      return user.isShowAffordabilityWidget && user.isOrgRZP && user.isCountryIndia;
     },
   },
   subscriptions: {
@@ -146,12 +146,12 @@ export const PRODUCTS_DATA = {
   x_payroll: {
     icon: 'i-razorpayx',
     additionalCondition: (user: any): boolean =>
-      user.isShowPayrollWidgetEnabled && user.isOrgRZP && user.isINCountry,
+      user.isShowPayrollWidgetEnabled && user.isOrgRZP && user.isCountryIndia,
   },
   x_banking: {
     icon: 'i-razorpayx',
     additionalCondition: (user: any): boolean =>
-      user.isShowRazorpayXWidgetEnabled && user.isOrgRZP && user.isINCountry,
+      user.isShowRazorpayXWidgetEnabled && user.isOrgRZP && user.isCountryIndia,
   },
   route: {
     icon: 'i-route',

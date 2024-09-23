@@ -812,7 +812,7 @@ const isEligibleForFtux = ({ user = {}, abExperiments = {}, isAdmin = false } = 
 
   let isFtuxEnabled =
     user.isOrgRZP &&
-    user.isINCountry &&
+    user.isCountryIndia &&
     user.isFtuxEnabled &&
     !user.isSubMerchant &&
     !user.isPartner() &&

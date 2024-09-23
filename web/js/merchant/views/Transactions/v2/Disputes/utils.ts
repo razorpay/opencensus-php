@@ -39,7 +39,7 @@ export const isDisputesRevampV2Enabled = (splitz: SpiltzContextState, user: User
 
   return (
     isExperimentEnabled(abExperiments.Disputes_Revamp_V2) &&
-    Boolean(user.isINCountry) &&
+    Boolean(user.isCountryIndia) &&
     user.isOrgRZP
   );
 };

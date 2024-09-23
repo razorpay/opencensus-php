@@ -20,7 +20,7 @@ const getUser = () => ({
   activation_status: undefined,
   user: {
     contact_mobile: undefined,
-    isINCountry: true,
+    isCountryIndia: true,
   },
   isOrgAxis: undefined,
   isOrgRZP: undefined,
@@ -165,14 +165,14 @@ describe('Condition Utils', () => {
     beforeEach(() => {
       user = {
         isOrgRZP: false,
-        isINCountry: false,
+        isCountryIndia: false,
         isInstrumentRequestAllowed: jest.fn().mockReturnValue(false),
         isInstrumentRequestHidden: false,
       };
     });
 
     test.each([
-      // Expected result, isOrgRZP, isINCountry, isInstrumentRequestAllowed, isInstrumentRequestHidden, mode
+      // Expected result, isOrgRZP, isCountryIndia, isInstrumentRequestAllowed, isInstrumentRequestHidden, mode
       [false, false, false, false, false, 'test'],
       [false, false, true, false, false, 'live'],
       [false, true, true, true, false, 'test'],
@@ -182,17 +182,17 @@ describe('Condition Utils', () => {
       [true, false, true, true, true, 'live'],
       [false, true, false, true, false, 'test'],
     ])(
-      'should return %s when isOrgRZP is %s, isINCountry is %s, isInstrumentRequestAllowed returns %s, isInstrumentRequestHidden is %s, and mode is %s',
+      'should return %s when isOrgRZP is %s, isCountryIndia is %s, isInstrumentRequestAllowed returns %s, isInstrumentRequestHidden is %s, and mode is %s',
       (
         expectedResult,
         isOrgRZP,
-        isINCountry,
+        isCountryIndia,
         isInstrumentRequestAllowedOutput,
         isInstrumentRequestHiddenOutput,
         mode,
       ) => {
         user.isOrgRZP = isOrgRZP;
-        user.isINCountry = isINCountry;
+        user.isCountryIndia = isCountryIndia;
         user.isInstrumentRequestAllowed.mockReturnValueOnce(isInstrumentRequestAllowedOutput);
         user.isInstrumentRequestHidden = isInstrumentRequestHiddenOutput;
 
@@ -521,7 +521,7 @@ describe('Condition Utils', () => {
         conditionalUtils.isEmailNotificationEnabled({
           user: {
             ...user,
-            isSGCountry: true,
+            isCountrySingapore: true,
           },
         }),
       ).toBeFalsy();

@@ -255,7 +255,7 @@ function PaymentDetailsTimeline({
             <Box display="flex" flexDirection="row" padding="12px" marginLeft="-16px" width="100%">
               <Box marginTop="spacing.1">
                 <IconBackground status="captured">
-                  {user.isINCountry ? (
+                  {user.isCountryIndia ? (
                     <img
                       src={RefundIcon}
                       alt="refund-icon"

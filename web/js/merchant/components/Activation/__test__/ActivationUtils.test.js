@@ -1,10 +1,10 @@
 import { isEligibleForFtux } from '../ActivationUtils';
 
 describe('isEligibleForFtux', () => {
-  it('returns true when user is belongs to isINCountry is true and isOrgRZP is true', () => {
+  it('returns true when user is belongs to isCountryIndia is true and isOrgRZP is true', () => {
     const user = {
       isOrgRZP: true,
-      isINCountry: true,
+      isCountryIndia: true,
       isFtuxEnabled: true,
       activation_form_milestone: 'L2',
       activation_status: 'active',
@@ -14,10 +14,10 @@ describe('isEligibleForFtux', () => {
     expect(isEligibleForFtux({ user, abExperiments })).toBe(true);
   });
 
-  it('returns false when user is belongs to isINCountry is false and isOrgRZP is true', () => {
+  it('returns false when user is belongs to isCountryIndia is false and isOrgRZP is true', () => {
     const user = {
       isOrgRZP: true,
-      isINCountry: false,
+      isCountryIndia: false,
       isFtuxEnabled: true,
       activation_form_milestone: 'L2',
       activation_status: 'active',

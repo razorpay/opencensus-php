@@ -70,13 +70,13 @@ describe('test for ProfileDropdown component', () => {
     expect(screen.queryByText(text)).not.toBeInTheDocument();
   });
 
-  test('should hide Partnership link if user.isSGCountry is enabled', () => {
+  test('should hide Partnership link if user.isCountrySingapore is enabled', () => {
     const props = { ...defaultProps };
     const updatedState = updateStore(
       {
         user: {
           name: 'test',
-          isSGCountry: true,
+          isCountrySingapore: true,
         },
         merchant: {
           country_code: 'SG',

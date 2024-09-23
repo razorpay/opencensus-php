@@ -10,7 +10,7 @@ import User from 'common/typings/User';
 const CardIcon = ({ name, user }: { name: PaymentTypes; user: User }): JSX.Element | null => {
   switch (name) {
     case PaymentTypes.Refunds:
-      return user.isINCountry ? (
+      return user.isCountryIndia ? (
         <img src={RefundsCardIcon} alt="refund details" />
       ) : (
         <RotateCounterClockWiseIcon

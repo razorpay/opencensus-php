@@ -47,7 +47,10 @@ export default ({ totalFee = 0, rzpFee = 0, tax = 0, currency = 'INR' }) => {
           <FeeTable
             rows={[
               ['Razorpay Fee', <Amount value={rzpFee} currency={currency} />],
-              [user.isINCountry ? 'GST(18%)' : 'Tax', <Amount value={tax} currency={currency} />],
+              [
+                user.isCountryIndia ? 'GST(18%)' : 'Tax',
+                <Amount value={tax} currency={currency} />,
+              ],
             ]}
           />
         </Blockquote>

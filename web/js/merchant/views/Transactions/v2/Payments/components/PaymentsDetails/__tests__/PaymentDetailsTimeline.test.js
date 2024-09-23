@@ -136,7 +136,7 @@ describe('Payment Timeline parent component', () => {
         initialState: {
           ...initialState,
           session: {
-            user: { ...initialState.session.user, isINCountry: true },
+            user: { ...initialState.session.user, isCountryIndia: true },
           },
         },
       });
@@ -154,7 +154,7 @@ describe('Payment Timeline parent component', () => {
         initialState: {
           ...initialState,
           session: {
-            user: { ...initialState.session.user, isINCountry: false },
+            user: { ...initialState.session.user, isCountryIndia: false },
           },
         },
       });

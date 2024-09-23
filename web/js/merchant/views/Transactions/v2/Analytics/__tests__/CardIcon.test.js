@@ -7,7 +7,7 @@ describe('CardIcon Component', () => {
     render(<CardIcon name={PaymentTypes.Refunds} />, {
       initialState: {
         session: {
-          user: { isINCountry: true },
+          user: { isCountryIndia: true },
         },
       },
     });
@@ -18,7 +18,7 @@ describe('CardIcon Component', () => {
     render(<CardIcon name={PaymentTypes.Refunds} />, {
       initialState: {
         session: {
-          user: { isINCountry: false },
+          user: { isCountryIndia: false },
         },
       },
     });

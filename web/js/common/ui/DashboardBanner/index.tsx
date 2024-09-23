@@ -23,7 +23,7 @@ const DashboardBanner = ({
     fetchBanners({ fromWhere: location.pathname });
   }, [location.pathname]);
 
-  if (!user.isINCountry) {
+  if (!user.isCountryIndia) {
     return null;
   }
 

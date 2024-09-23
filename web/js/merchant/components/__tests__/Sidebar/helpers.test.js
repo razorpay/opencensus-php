@@ -9,7 +9,7 @@ describe('Helpers', () => {
       const currentUser = {
         isShowAffordabilityWidget: true,
         isOrgRZP: true,
-        isINCountry: true,
+        isCountryIndia: true,
       };
       expect(getIsShowAffordabilityWidget(currentUser)).toBe(true);
     });
@@ -18,17 +18,17 @@ describe('Helpers', () => {
       const currentUser1 = {
         isShowAffordabilityWidget: false,
         isOrgRZP: true,
-        isINCountry: true,
+        isCountryIndia: true,
       };
       const currentUser2 = {
         isShowAffordabilityWidget: true,
         isOrgRZP: false,
-        isINCountry: true,
+        isCountryIndia: true,
       };
       const currentUser3 = {
         isShowAffordabilityWidget: true,
         isOrgRZP: true,
-        isINCountry: false,
+        isCountryIndia: false,
       };
       expect(getIsShowAffordabilityWidget(currentUser1)).toBe(false);
       expect(getIsShowAffordabilityWidget(currentUser2)).toBe(false);
@@ -41,7 +41,7 @@ describe('Helpers', () => {
       const currentUser = {
         isCheckoutAnalyticsEnabled: true,
         isOrgRZP: true,
-        isINCountry: true,
+        isCountryIndia: true,
       };
       expect(getIsCheckoutPaymentMetricsEnabled(currentUser)).toBe(true);
     });
@@ -50,17 +50,17 @@ describe('Helpers', () => {
       const currentUser1 = {
         isCheckoutAnalyticsEnabled: false,
         isOrgRZP: true,
-        isINCountry: true,
+        isCountryIndia: true,
       };
       const currentUser2 = {
         isCheckoutAnalyticsEnabled: true,
         isOrgRZP: false,
-        isINCountry: true,
+        isCountryIndia: true,
       };
       const currentUser3 = {
         isCheckoutAnalyticsEnabled: true,
         isOrgRZP: true,
-        isINCountry: false,
+        isCountryIndia: false,
       };
       expect(getIsCheckoutPaymentMetricsEnabled(currentUser1)).toBe(false);
       expect(getIsCheckoutPaymentMetricsEnabled(currentUser2)).toBe(false);

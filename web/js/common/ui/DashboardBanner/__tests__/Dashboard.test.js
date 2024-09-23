@@ -12,7 +12,7 @@ describe('DashboardBanner Component', () => {
       },
       session: {
         user: {
-          isINCountry: false,
+          isCountryIndia: false,
         },
       },
     };

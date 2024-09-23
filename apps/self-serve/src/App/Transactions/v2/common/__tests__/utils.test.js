@@ -422,7 +422,7 @@ describe('utils', () => {
       const user = {
         isOrgCurlec: false,
         isOrgRZP: true,
-        isINCountry: true,
+        isCountryIndia: true,
         isFeatureEnabled: jest.fn(() => false),
       };
       const result = isTransactionsV2Enabled(splitz, user);
@@ -436,7 +436,7 @@ describe('utils', () => {
       const user = {
         isOrgCurlec: false,
         isOrgRZP: true,
-        isINCountry: true,
+        isCountryIndia: true,
         isFeatureEnabled: jest.fn(() => true),
       };
       const result = isTransactionsV2Enabled(splitz, user);
