@@ -31,6 +31,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Base\ConnectionType;
 use RZP\Constants\AdminFetch;
 use RZP\Models\Payment\Method;
+use RZP\Constants\Entity as E;
 use RZP\Jobs\SFMerchantPocUpdate;
 use RZP\Jobs\SFMerchantPocAsync;
 use RZP\Models\User\Core as UserCore;
@@ -41,6 +42,7 @@ use RZP\Models\Admin\Admin as AdminModel;
 use RZP\Models\User\Service as UserService;
 use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
@@ -620,6 +622,9 @@ class Service extends Base\Service
         else if ($entity === Entity::BANKING_ACCOUNT_STATEMENT_POOL_ICICI or $entity === Entity::BANKING_ACCOUNT_STATEMENT_POOL_RBL)
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::RX_ACCOUNT_STATEMENTS);
+        }
+        else if (in_array($entity, E::ACS_SYNCED_ENTITIES) === true && (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
         else
         {
