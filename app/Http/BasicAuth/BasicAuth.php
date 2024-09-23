@@ -3279,6 +3279,19 @@ class BasicAuth
 
                 $hasEditPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_EDIT);
 
+                // If product is banking and admin has read only permission, then set the role to banking read only for login as support feature
+                if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false && $this->isProductBanking()===true){
+                    $this->userRole = Role::BANKING_READONLY;
+                    $this->trace->info(
+                        TraceCode::LOGIN_AS_ADMIN_MERCHANT_X,
+                        [
+                            'merchant_id' => $this->getMerchantId(),
+                            'role' => $this->userRole
+                        ]
+                    );
+                    return;
+                }
+
                 if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false)
                 {
                     $this->userRole = Role::ADMIN_READONLY;
@@ -3290,7 +3303,7 @@ class BasicAuth
                             'userRole'              => $this->userRole,
                             'adminId'               => $adminId,
                             'hasReadPerm'           => $hasReadPerm,
-                            'hasEditPerm'          => $hasEditPerm,
+                            'hasEditPerm'           => $hasEditPerm,
                         ]
                     );
 
@@ -3313,7 +3326,6 @@ class BasicAuth
                     ]
                 );
             }
-
         }
 
         // Fetching MID from authcreds because X-Razorpay-Account will be set as ba merchant
