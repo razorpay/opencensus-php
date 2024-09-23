@@ -380,6 +380,7 @@ return [
     'cardvault_migration' => [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
+
      ],
     'pushprovisioning' => [
         'test'       => env('AWS_PUSH_PROVISIONING_QUEUE'),

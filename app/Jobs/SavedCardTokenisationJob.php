@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Base\RuntimeManager;
 use RZP\Diag\EventCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Card\Entity as CardEntity;
@@ -65,11 +66,20 @@ class SavedCardTokenisationJob extends Job
         $this->callbackData = $callbackData;
     }
 
+
+
     public function init(): void
     {
         parent::init();
 
         $this->tokenCore = new Token\Core();
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('4096M');
+
+        RuntimeManager::setTimeLimit(300);
     }
 
     /**
@@ -81,6 +91,13 @@ class SavedCardTokenisationJob extends Job
 
         try
         {
+
+            RuntimeManager::setMemoryLimit('4096M');
+
+            RuntimeManager::setTimeLimit(7200);
+
+            RuntimeManager::setMaxExecTime(7200);
+
             /** @var Token\Entity $token */
             $token = $this->repoManager->token->findOrFailPublic($this->tokenId);
 
@@ -90,7 +107,7 @@ class SavedCardTokenisationJob extends Job
 
             $card = $token->card;
 
-            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
+           $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
 
             $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
                 'tokenId'                   => $this->tokenId,
@@ -131,8 +148,12 @@ class SavedCardTokenisationJob extends Job
             }
 
             $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
+            // Log memory after tokenization
+//            $this->trace->info('After tokenization', [
+//                'memory_usage' => memory_get_usage(true),
+//            ]);
 
-            // Notify to mandateHQ for successful tokenisation
+//            // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)
             {
                 try
@@ -159,9 +180,21 @@ class SavedCardTokenisationJob extends Job
                 'asyncTokenisationJobId'    => $this->asyncTokenisationJobId,
             ]);
 
-            if ($this->asyncTokenisationJobId === "paymentmigrate" || $this->asyncTokenisationJobId === 'pushtokenmigrate') {
 
-                $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
+
+            if ($this->asyncTokenisationJobId === "paymentmigrate" || $this->asyncTokenisationJobId === 'pushtokenmigrate') {
+                try {
+                    $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
+                } catch(Throwable $e) {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::SAVED_CARD_FETCH_TOKEN_ERROR
+                    );
+                    return;
+                }
+
+
 
                 unset($token['card']['iin']);
                 unset($token['card']['expiry_month']);
@@ -173,25 +206,45 @@ class SavedCardTokenisationJob extends Job
                     ApiEventSubscriber::WITH => $serviceProviderTokens,
                 ];
 
-                $this->trace->info(TraceCode::RESPONSE,
-                    [
-                        "eventpayload" => $eventPayload
-                    ]
-                );
+//                $this->trace->info(TraceCode::RESPONSE,
+//                    [
+//                        "eventpayload" => $eventPayload
+//                    ]
+//                );
 
-                app('events')->dispatch('api.token.service_provider.activated', $eventPayload);
+                //Stork event
+//                try {
+
+//                    app('events')->dispatch('api.token.service_provider.activated', $eventPayload);
+//                } catch(Throwable $e) {
+//                    $this->trace->traceException(
+//                        $e,
+//                        Trace::ERROR,
+//                        TraceCode::STORK_DISPATCH_ERROR
+//                    );
+//                }
+
 
             }
 
-            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
+           $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
+            // Log memory at the end of the process
+//            $this->trace->info('Final memory usage', [
+//                'memory_usage' => memory_get_usage(true),
+//            ]);
             $this->delete();
-            (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
+       //     (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
             return;
         }
         catch (Throwable $e)
         {
-            $this->trackFailedTokenCreationEvent($e, $card ?? new CardEntity());
+            // Log memory usage in the exception
+//            $this->trace->info('Memory usage in catch block', [
+//                'memory_usage' => memory_get_usage(true),
+//                'memory_limit' => ini_get('memory_limit'),
+//            ]);
+           $this->trackFailedTokenCreationEvent($e, $card ?? new CardEntity());
 
             $this->trace->traceException(
                 $e,
@@ -208,15 +261,15 @@ class SavedCardTokenisationJob extends Job
 
             $this->checkRetry($e);
 
-            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+            $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
                 'checking if we are going till the function or failing before that in catch'
             ]);
 
-            (new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
+           //(new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
 
-            $this->trace->info(TraceCode::DEBUG_LOGGING, [
-                'checking if after the function call it is failing or it is going beyond this call as well in catch'
-            ]);
+//            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+//                'checking if after the function call it is failing or it is going beyond this call as well in catch'
+//            ]);
         }
     }
 

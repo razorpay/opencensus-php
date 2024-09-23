@@ -19,6 +19,7 @@ use RZP\Models\Payment;
 use RZP\Gateway\Base\Metric;
 use RZP\Models\Customer\Token;
 
+
 class CardVault
 {
     const TOKEN             = 'token';
@@ -457,7 +458,7 @@ class CardVault
 
             list($action, $event) = $this->fetchActionAndEvent($isTokenisationRoute, $tokenizationUrl);
 
-            (new Token\Event())->pushEvents($request['content'], $event, "_REQUEST_SENT");
+          //  (new Token\Event())->pushEvents($request['content'], $event, "_REQUEST_SENT");
         }
 
         $response = $this->sendCardVaultRequest($request);
@@ -549,6 +550,7 @@ class CardVault
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
     }
 
+    //
     protected function sendCardVaultRequest($request)
     {
         $method = $request['method'];
@@ -610,7 +612,7 @@ class CardVault
 
         if ($response->status_code >= 500)
         {
-            $this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
+            //$this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
 
             throw new Exception\RuntimeException(
                 'Vault request failed', [Error\Error::DATA => $responseBody]);
@@ -620,7 +622,7 @@ class CardVault
         {
             $error = $responseBody[self::ERROR];
 
-            $this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
+            //$this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
 
             // case where validate token return success false because of invalid token
             // error will be empty
@@ -634,7 +636,7 @@ class CardVault
             }
         }
 
-        $this->pushVaultDimensions($request, Metric::SUCCESS, $response->status_code, $action);
+       // $this->pushVaultDimensions($request, Metric::SUCCESS, $response->status_code, $action);
 
     }
 
@@ -832,24 +834,27 @@ class CardVault
 
             $this->checkForErrors($response, $errorClass);
 
-            $this->pushDimensions($request, Metric::SUCCESS, $statusCode, $action);
+            //$this->pushDimensions($request, Metric::SUCCESS, $statusCode, $action);
 
-            (new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response);
+            //(new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response);
         }
 
-        catch(Exception\BaseException $e) {
-            $error = $e->getError();
-            $this->pushDimensions($request, Metric::FAILED, $statusCode, $action, $e, $errorClass);
+        catch(Throwable $e) {
+            if ($e instanceof Exception\BaseException) {
+                $error = $e->getError();
+                $this->pushDimensions($request, Metric::FAILED, $statusCode, $action, $e, $errorClass);
 
-            (new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response, $e);
+                //(new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response, $e);
 
-            $internalErrorCode = $error->getInternalErrorCode();
+                $internalErrorCode = $error->getInternalErrorCode();
+                $this->trace->info(TraceCode::INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE, ['internal_eroor_code' => $internalErrorCode]);
 
-            $error->setDetailedError($internalErrorCode, Payment\Method::CARD, $network);
-
-            $error->setPaymentMethod(Payment\Method::CARD);
-
-            throw $e;
+                $error->setDetailedError($internalErrorCode, Payment\Method::CARD, $network);
+                $error->setPaymentMethod(Payment\Method::CARD);
+            }
+            else {
+                $this->trace->info(TraceCode::INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE, ['base throwable' => 'throwable exception from base']);
+            }
         }
     }
 

@@ -8850,6 +8850,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SAVED_CARD_TOKENISATION_JOB_TOKEN_NOT_APPLICABLE = 'SAVED_CARD_TOKENISATION_JOB_TOKEN_NOT_APPLICABLE';
     const SAVED_CARD_TOKENISATION_JOB_ERROR                = 'SAVED_CARD_TOKENISATION_JOB_ERROR';
     const SAVED_CARD_TOKENISATION_JOB_FAILED               = 'SAVED_CARD_TOKENISATION_JOB_FAILED';
+    const SAVED_CARD_FETCH_TOKEN_ERROR               = 'SAVED_CARD_FETCH_TOKEN_ERROR';
+    const STORK_DISPATCH_ERROR               = 'STORK_DISPATCH_ERROR';
 
     // par async tokenisation job
     const PAR_ASYNC_TOKENISATION_JOB_REQUEST              = 'PAR_ASYNC_TOKENISATION_JOB_REQUEST';
@@ -11990,6 +11992,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STOREFRONT_CARD_PAYMENT_VIA_REARCH                    = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH';
 
     const STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR       = 'STOREFRONT_CARD_PAYMENT_VIA_REARCH_SPLITZ_ERROR';
+    const INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE = "INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE";
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
