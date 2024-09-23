@@ -48,7 +48,7 @@ export const isValidWebsite = ({
   if (
     !isRazorpayDomainAllowed &&
     url.includes('razorpay') &&
-    !window.rzp_user.email.endsWith('razorpay.com')
+    !window.rzp_user?.email?.endsWith('razorpay.com')
   ) {
     return false;
   }
