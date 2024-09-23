@@ -229,6 +229,8 @@ use Razorpay\Trace\Logger as Trace;
  *
  * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
  * @property Models\Roles\Repository                                         $roles
+ * @property Models\RoleAccessPolicyMap\Repository                           $role_access_policy_map
+ * @property Models\AccessPolicyAuthzRolesMap\Repository                     $access_policy_authz_roles_map
  * @property Models\Merchant\InternationalIntegration\Repository             $merchant_international_integrations
  * @property Models\Merchant\OwnerDetail\Repository                          $merchant_owner_details
  * @property Models\PartnerBankHealth\Repository                             $partner_bank_health

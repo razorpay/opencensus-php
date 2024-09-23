@@ -7,6 +7,7 @@ use Request;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\RoleAccessPolicyMap\Service as RoleAccessPolicyMapService;
 
 class RolesController extends Controller
 {
@@ -90,12 +91,24 @@ class RolesController extends Controller
         $response = [];
 
         $response["role_id"] = $id;
-        $response["authz_roles"] = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($id);
+        $response["authz_roles"] = (new RoleAccessPolicyMapService())->getAuthzRolesForRoleId($id);
 
         if (empty($response['authz_roles']) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND);
         }
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function fixRoleAccessPolicyMap()
+    {
+        $input = Request::all();
+
+        $response = (new RoleAccessPolicyMapService())->fixRoleAccessPolicyMap($input);
+
         return ApiResponse::json($response);
     }
 }

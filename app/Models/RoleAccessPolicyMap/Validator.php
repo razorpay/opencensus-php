@@ -23,4 +23,9 @@ class Validator extends Base\Validator
         Entity::AUTHZ_ROLES             => 'required|array',
         Entity::ACCESS_POLICY_IDS       => 'required|array',
     ];
+
+    protected static $fixRoleAccessPolicyMapRules = [
+        Entity::ROLE_ID => 'required|string',
+        'dry_run'       => 'sometimes|boolean',
+    ];
 }

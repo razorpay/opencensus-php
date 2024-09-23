@@ -38,4 +38,11 @@ class Service extends Base\Service
         }
         return [];
     }
+
+    public function fixRoleAccessPolicyMap(array $input): array
+    {
+        (new Validator())->setStrictFalse()->validateInput('fix_role_access_policy_map', $input);
+
+        return $this->core->fixRoleAccessPolicyMap($input);
+    }
 }
