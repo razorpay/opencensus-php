@@ -532,7 +532,8 @@ class Route
         'merchant_actions'                         => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
         'merchant_fetch_referrals'                 => ['get',      'referrals',                                      'MerchantController@getReferredMerchants'                           ],
         'merchant_get_tags'                        => ['get',      'merchants/{id}/tags',                            'MerchantController@getTags'                                        ],
-        'merchant_get_capital_tags'                => ['get',      'merchants/tags/capital',                         'MerchantController@getCapitalTags'                                        ],
+        'internal_merchant_get_tags'               => ['get',      'internal/merchants/{id}/tags',                   'MerchantController@getTagsInternal'                                        ],
+        'merchant_get_capital_tags'                => ['get',      'merchants/tags/capital',                         'MerchantController@getCapitalTags'                                 ],
         'merchant_tag_add'                         => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
         'merchant_tag_delete'                      => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
         'merchant_update_key_access'               => ['put',      'merchants/{id}/update_key_access',               'MerchantController@updateKeyAccess'                                ],
@@ -5726,6 +5727,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_merchant_get_tags',
         'rupay_push_token',
         'pricing_fetch_plan_internal',
         'internal_fetch_merchant_users',
@@ -17318,6 +17320,7 @@ class Route
             'merchant_razorx_bulk_evaluate',
             'internal_workflow_create',
             'internal_post_website_update',
+            'internal_merchant_get_tags',
         ],
 
         'mandate_hq' => [
