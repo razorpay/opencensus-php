@@ -9,6 +9,7 @@ use Razorpay\Edge\Passport\Passport;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Payout;
+use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -18,6 +19,7 @@ use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
 
 class Create extends Base
@@ -29,6 +31,8 @@ class Create extends Base
     const PAYOUT_SERVICE_CREATE = 'payout_service_create';
 
     const CREATE_RZP_FEES_PAYOUT_URI                 = '/payouts/rzp_fees_payout';
+
+    const SET_PRICING_RULE_INFO_URI                  = '/payouts/set_pricing_rule_info';
 
     /**
      * @param array $input
@@ -71,6 +75,23 @@ class Create extends Base
         $headers = $this->getHeadersWithJwt();
 
         $this->addIdempotencyKeyToHeaders($headers, $merchantId);
+
+        $SetPricingRuleInfoInPayoutServiceRedisStartTime = millitime();
+
+        $this->sendPricingRuleInformationToPayoutService($headers, $merchantId, $extraInfo );
+
+        $SetPricingRuleInfoInPayoutServiceRedisEndTime = millitime();
+
+        $this->trace->histogram(
+            Payout\Metric::SET_PRICING_RULE_INFO_IN_PAYOUT_SERVICE_REDIS_DURATION,
+            $SetPricingRuleInfoInPayoutServiceRedisEndTime - $SetPricingRuleInfoInPayoutServiceRedisStartTime);
+
+        if (($SetPricingRuleInfoInPayoutServiceRedisEndTime - $SetPricingRuleInfoInPayoutServiceRedisStartTime) >= 50)
+        {
+            $this->trace->info(TraceCode::SET_PRICING_RULE_INFO_IN_PAYOUT_SERVICE_REDIS_DURATION, [
+                'time' => ($SetPricingRuleInfoInPayoutServiceRedisEndTime - $SetPricingRuleInfoInPayoutServiceRedisStartTime)
+            ]);
+        }
 
         $response = $this->makeRequestAndGetContent(
             $request,
@@ -322,4 +343,57 @@ class Create extends Base
             ]
         ];
     }
+
+    public function sendPricingRuleInformationToPayoutService(array $headers, string $merchantId, array $extraInfo = [])
+    {
+        try{
+            $pricingRuleInfo = array_pull($extraInfo, Payout\Entity::PRICING_RULE_INFO);
+
+            if (empty($pricingRuleInfo[Payout\Entity::FETCH_PRICING_INFO_SUCCESS]) === true ||
+                $pricingRuleInfo[Payout\Entity::FETCH_PRICING_INFO_SUCCESS] !== true)
+            {
+                return;
+            }
+
+            $variant = $this->app['razorx']->getTreatment($merchantId,
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+
+            if ($variant != 'on') {
+                return;
+            }
+
+            $request = [
+                Payout\Entity::PRICING_RULE_ID => $pricingRuleInfo[Payout\Entity::PRICING_RULE_ID],
+                Payout\Entity::FEES => $pricingRuleInfo[Payout\Entity::FEES],
+                Payout\Entity::TAX => $pricingRuleInfo[Payout\Entity::TAX]
+            ];
+
+            $uri = self::SET_PRICING_RULE_INFO_URI;
+
+            $response = $this->makeRequestAndGetContent(
+                $request,
+                $uri,
+                Requests::POST,
+                $headers
+            );
+
+            $this->trace->info(TraceCode::PRICING_RULE_INFO_REDIS_SET_PAYOUT_SERVICE_RESPONSE,
+                [
+                    'response' => $response,
+                ]);
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException(
+                $throwable,
+                Trace::ERROR,
+                TraceCode::PRICING_INFO_FETCH_FOR_PAYOUT_SERVICE_EXCEPTION,
+                [
+                    'merchantId' => $merchantId,
+                    'error' => $throwable
+                ]);
+        }
+
+    }
+
 }

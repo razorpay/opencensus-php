@@ -30,6 +30,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Settings;
+use RZP\Models\Settlement;
 use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
 use RZP\Models\BankAccount;
@@ -48,6 +49,7 @@ use RZP\Models\Merchant\Credits;
 use RZP\Models\Internal\Service;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payout\Notifications;
 use RZP\Models\Payout\CounterHelper;
@@ -75,6 +77,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
+use RZP\Services\PayoutService\Base as PaymentServiceBase;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Shield as PayoutServiceShieldEvaluate;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
@@ -4477,6 +4480,8 @@ class Base extends BaseCore
                 $this->fetchVaToVaInfoForPayoutServiceProcessing($input[Payout\Entity::FUND_ACCOUNT_ID],
                     $fundAccount);
 
+            [$FetchPricingInfoSuccess,$pricingRuleId, $fees, $tax] = $this->fetchPricingInfo($input, $fundAccount);
+
             $extraInfo = [
                 Payout\Entity::FUND_ACCOUNT_INFO => [
                     Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS => $fetchFundAccountInfoSuccess,
@@ -4491,6 +4496,12 @@ class Base extends BaseCore
                         $beneficiaryFundAccountMerchantId,
                     Payout\Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT =>
                         $isBeneficiaryVpaFundAccountVirtualAccount
+                ],
+                Payout\Entity::PRICING_RULE_INFO =>[
+                    Payout\Entity::FETCH_PRICING_INFO_SUCCESS => $FetchPricingInfoSuccess,
+                    Entity::PRICING_RULE_ID => $pricingRuleId,
+                    Entity::FEES => $fees,
+                    Entity::TAX => $tax
                 ],
             ];
 
@@ -4864,5 +4875,118 @@ class Base extends BaseCore
 
         return $requestBody;
 
+    }
+
+    protected function fetchPricingInfo(array $input, $fundAccount = null): array
+    {
+        try
+        {
+            $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+
+            if ($variant != 'on')
+            {
+                return [false, null, null, null];
+            }
+
+            $bankingAccount = (new BankingAccount\Service())->fetchBankingAccountForAccountNumber($input[Entity::ACCOUNT_NUMBER],
+                $this->merchant->getId());
+
+            $channel = $bankingAccount[Entity::CHANNEL];
+
+            if (strtolower($input[Entity::MODE]) == Entity::CARD)
+            {
+                $channel = Settlement\Channel::M2P;
+            }
+
+            if (empty($fundAccount) === true)
+            {
+                $fundAccount = (new FundAccount\Repository)->findByPublicIdAndMerchant($input[Entity::FUND_ACCOUNT_ID], $this->merchant);
+            }
+
+            $fundAccountType = $fundAccount->getAccountType();
+            $method = Payout\Method::FUND_TRANSFER;
+
+            if ($fundAccountType === FundAccount\Entity::VPA)
+            {
+                $method = Payout\Method::UPI;
+            }
+
+            $userId   = null;
+
+            $app = App::getFacadeRoot();
+
+            /** @var BasicAuth $ba */
+            $ba = $app['basicauth'];
+
+            if ($ba->isPrivilegeAuth() === true)
+            {
+                $passport = $ba->getPassport();
+
+                if (array_key_exists( PaymentServiceBase::CONSUMER, $passport) === true)
+                {
+                    if ($passport[PaymentServiceBase::CONSUMER][PaymentServiceBase::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
+                    {
+
+                        $userId = $ba->getUser()->getId();
+
+                        $this->trace->info(
+                            TraceCode::FETCH_PRICING_INFO_FOR_PAYOUT_SERVICE_USER_ID,
+                            [
+                                'user_id' => $userId
+                            ]);
+                    }
+                }
+            }
+
+            $params = [
+                Entity::AMOUNT => $input[Entity::AMOUNT],
+                Entity::BALANCE_ID => $input[Entity::BALANCE_ID],
+                Entity::PURPOSE => $input[Entity::PURPOSE],
+                Entity::MODE => $input[Entity::MODE],
+                Entity::MERCHANT_ID => $this->merchant->getId(),
+                Entity::CHANNEL => $channel,
+                Entity::METHOD => $method,
+                Entity::FEE_TYPE => $input[Entity::FEE_TYPE] ?? null,
+                Entity::PAYOUT_ID => '',
+                Entity::USER_ID => $userId?? null,
+            ];
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_FETCH_PRICING_INFO_REQUEST,
+                [
+                    'params' => $params
+                ]);
+
+            $pricingInfo = $this->fetchPricingInfoForPayoutService($params);
+
+            $this->trace->info(TraceCode::FETCH_PRICING_INFO_FOR_PAYOUT_SERVICE_INPUT_PAYLOAD,
+                [
+                    'input' => $input,
+                    'pricing_info' => $pricingInfo
+
+                ]);
+
+            if (isset($pricingInfo[Entity::ERROR]) === true)
+            {
+                return [false, null, null, null];
+            }
+
+            return [true, $pricingInfo[Entity::PRICING_RULE_ID], $pricingInfo[Entity::FEES], $pricingInfo[Entity::TAX]];
+
+        }
+        catch (\Throwable $throwable)
+        {
+
+            $this->trace->traceException(
+                $throwable,
+                Trace::ERROR,
+                TraceCode::PRICING_INFO_FETCH_FOR_PAYOUT_SERVICE_EXCEPTION,
+                [
+                    'input' => $input,
+                    'error' => $throwable
+                ]);
+
+            return [false, null, null, null];
+        }
     }
 }

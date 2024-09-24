@@ -55,6 +55,7 @@ class Base
     const MERCHANT_IP   = 'Merchant-IP';
 
     const TYPE     = 'type';
+    const ID       = 'id';
     const CONSUMER = 'consumer';
     const PASSPORT = 'passport';
 

@@ -228,7 +228,6 @@ class Processor
                 ]
             );
 
-            throw $e;
         }
     }
 

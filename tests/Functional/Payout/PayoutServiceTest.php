@@ -148,7 +148,8 @@ class PayoutServiceTest extends TestCase
                                             &$assertionBody = [],
                                             &$actualPayload = [],
                                             $isShieldError = false,
-                                            $isRzpFees = false)
+                                            $isRzpFees = false,
+                                            &$assertionBodyForPricing = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -161,7 +162,7 @@ class PayoutServiceTest extends TestCase
 
         $payoutServiceCreateMock->shouldReceive('sendRequest')
                                 ->withArgs(
-                                    function($arg) use ($request, $status, &$assertionBody, &$actualPayload) {
+                                    function($arg) use ($request, $status, &$assertionBody, &$actualPayload,&$assertionBodyForPricing) {
                                         try
                                         {
                                             // json decoding the content so that we can assert the keys of content.
@@ -196,6 +197,15 @@ class PayoutServiceTest extends TestCase
                                                 $assertionBody = array_merge($assertionBody, [
                                                     "va_to_va_info" => $arg['content']['extra_info']['va_to_va_info'],
                                                 ]);
+                                            }
+
+                                            if (empty($arg['content']['pricing_rule_id']) === false)
+                                            {
+                                                $assertionBodyForPricing = [
+                                                    "pricing_rule_id" => $arg['content']['pricing_rule_id'],
+                                                    "fees"=> $arg['content']['fees'],
+                                                    "tax"=> $arg['content']['tax'],
+                                                ];
                                             }
 
                                             return true;
@@ -3688,6 +3698,329 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($expectedVaToVaInfo, $vaToVaInfo);
 
         $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+    public function testCreatePayoutForBankAccountViaMicroserviceAndPreCalculatePricingInfoToUpdatePayoutServiceRedis()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balance->getId(),
+            [
+                'account_type' => 'direct',
+                'channel'      => 'rbl',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+
+        $assertionBody = [];
+        $actualPayload = [];
+
+        $assertionBodyForPricing = [];
+
+        $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody,$actualPayload,false,false,$assertionBodyForPricing);
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
+                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on',
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+            ]
+        );
+
+
+        $fundAccountObject = $this->getDbEntities('fund_account',
+            [
+                'id' => '100000000000fa',
+            ],
+            'live')[0];
+
+        $contactObject = $this->getDbEntities('contact',
+            [
+                'id' => $fundAccountObject->source->getId(),
+            ],
+            'live')[0];
+
+        $bankAccountObject = $this->getDbEntities('bank_account',
+            [
+                'id' => $fundAccountObject->account->getId(),
+            ],
+            'live')[0];
+
+        $bankAccountObject = $this->fixtures->on('live')->edit(
+            'bank_account',
+            $bankAccountObject['id'],
+            [
+                'ifsc_code' => 'RATN0VAAPIS',
+            ])->toArray();
+
+        $expectedFundAccountExtraInfo = [
+            'id'           => 'fa_' . $fundAccountObject['id'],
+            'entity'       => 'fund_account',
+            'contact_id'   => 'cont_' . $fundAccountObject['source_id'],
+            'account_type' => $fundAccountObject['account_type'],
+            'active'       => $fundAccountObject['active'],
+            'batch_id'     => $fundAccountObject['batch_id'],
+            'created_at'   => $fundAccountObject['created_at'],
+            'bank_account' => [
+                'id'             => 'ba_' . $bankAccountObject['id'],
+                'name'           => $bankAccountObject['name'],
+                'ifsc'           => $bankAccountObject['ifsc'],
+                'account_number' => $bankAccountObject['account_number'],
+                'bank_name'      => $bankAccountObject['bank_name'],
+            ],
+            'contact'      => [
+                'id'           => 'cont_' . $contactObject['id'],
+                'entity'       => 'contact',
+                'name'         => $contactObject['name'],
+                'contact'      => $contactObject['contact'],
+                'email'        => $contactObject['email'],
+                'type'         => $contactObject['type'],
+                'reference_id' => $contactObject['reference_id'],
+                'batch_id'     => $contactObject['batch_id'],
+                'active'       => $contactObject['active'],
+                'created_at'   => $contactObject['created_at'],
+            ],
+        ];
+
+        $expectedPricingRuleInfo = [
+            'pricing_rule_id'           => 'Bbg7cl6t6I3XA6',
+            'fees'       => 590,
+            'tax'   => 90,
+        ];
+
+        $this->fixtures->on('live')->create('merchant',
+            [
+                'id'               => '10000000000001',
+                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                'business_banking' => 1,
+                'activated'        => 1,
+            ]);
+
+        $vaBankAccount = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000001',
+                'entity_id'      => '100000000001va',
+                'type'           => 'virtual_account',
+                'account_number' => $bankAccountObject['account_number'],
+                'ifsc_code'      => $bankAccountObject['ifsc_code'],
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => '100000000001va',
+                'merchant_id'     => '10000000000001',
+                'status'          => 'active',
+                'bank_account_id' => $vaBankAccount->getId(),
+                'balance_id'      => '10000000000001',
+            ]);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutViaMicroserviceAndPassFundAccountInfo'];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $this->assertTrue(isset($assertionBody['va_to_va_info']));
+
+        $expectedVaToVaInfo = [
+            Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT => false,
+            Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            => '10000000000001',
+        ];
+
+        $vaToVaInfo = $assertionBody['va_to_va_info'];
+
+        $this->assertEquals($expectedVaToVaInfo, $vaToVaInfo);
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertEquals($expectedPricingRuleInfo, $assertionBodyForPricing);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutForBankAccountViaMicroserviceAndFailedAttemptToPreCalculatePricingInfoToUpdatePayoutServiceRedis()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+        // Setting channel to random to fail the attempt to pre-calculate pricing info
+        // This will result in the pricing info being calculated in the payout service
+        // We filter Pricing Rules on channel too , soo this will result in no pricing rule found
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balance->getId(),
+            [
+                'account_type' => 'direct',
+                'channel'      => 'random',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+
+        $assertionBody = [];
+        $actualPayload = [];
+
+        $assertionBodyForPricing = [];
+
+        $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody,$actualPayload,false,false,$assertionBodyForPricing);
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
+                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on',
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+            ]
+        );
+
+
+        $fundAccountObject = $this->getDbEntities('fund_account',
+            [
+                'id' => '100000000000fa',
+            ],
+            'live')[0];
+
+        $contactObject = $this->getDbEntities('contact',
+            [
+                'id' => $fundAccountObject->source->getId(),
+            ],
+            'live')[0];
+
+        $bankAccountObject = $this->getDbEntities('bank_account',
+            [
+                'id' => $fundAccountObject->account->getId(),
+            ],
+            'live')[0];
+
+        $bankAccountObject = $this->fixtures->on('live')->edit(
+            'bank_account',
+            $bankAccountObject['id'],
+            [
+                'ifsc_code' => 'RATN0VAAPIS',
+            ])->toArray();
+
+        $expectedFundAccountExtraInfo = [
+            'id'           => 'fa_' . $fundAccountObject['id'],
+            'entity'       => 'fund_account',
+            'contact_id'   => 'cont_' . $fundAccountObject['source_id'],
+            'account_type' => $fundAccountObject['account_type'],
+            'active'       => $fundAccountObject['active'],
+            'batch_id'     => $fundAccountObject['batch_id'],
+            'created_at'   => $fundAccountObject['created_at'],
+            'bank_account' => [
+                'id'             => 'ba_' . $bankAccountObject['id'],
+                'name'           => $bankAccountObject['name'],
+                'ifsc'           => $bankAccountObject['ifsc'],
+                'account_number' => $bankAccountObject['account_number'],
+                'bank_name'      => $bankAccountObject['bank_name'],
+            ],
+            'contact'      => [
+                'id'           => 'cont_' . $contactObject['id'],
+                'entity'       => 'contact',
+                'name'         => $contactObject['name'],
+                'contact'      => $contactObject['contact'],
+                'email'        => $contactObject['email'],
+                'type'         => $contactObject['type'],
+                'reference_id' => $contactObject['reference_id'],
+                'batch_id'     => $contactObject['batch_id'],
+                'active'       => $contactObject['active'],
+                'created_at'   => $contactObject['created_at'],
+            ],
+        ];
+
+        $expectedPricingRuleInfo = [
+            'pricing_rule_id'           => 'Bbg7cl6t6I3XA6',
+            'fees'       => 590,
+            'tax'   => 90,
+        ];
+
+        $this->fixtures->on('live')->create('merchant',
+            [
+                'id'               => '10000000000001',
+                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                'business_banking' => 1,
+                'activated'        => 1,
+            ]);
+
+        $vaBankAccount = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000001',
+                'entity_id'      => '100000000001va',
+                'type'           => 'virtual_account',
+                'account_number' => $bankAccountObject['account_number'],
+                'ifsc_code'      => $bankAccountObject['ifsc_code'],
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => '100000000001va',
+                'merchant_id'     => '10000000000001',
+                'status'          => 'active',
+                'bank_account_id' => $vaBankAccount->getId(),
+                'balance_id'      => '10000000000001',
+            ]);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutViaMicroserviceAndPassFundAccountInfo'];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $this->assertTrue(isset($assertionBody['va_to_va_info']));
+
+        $expectedVaToVaInfo = [
+            Entity::IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT => false,
+            Entity::BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            => '10000000000001',
+        ];
+
+        $vaToVaInfo = $assertionBody['va_to_va_info'];
+
+        $this->assertEquals($expectedVaToVaInfo, $vaToVaInfo);
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertNotEquals($expectedPricingRuleInfo, $assertionBodyForPricing);
 
         $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
     }

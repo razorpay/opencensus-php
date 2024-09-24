@@ -186,8 +186,10 @@ class Entity extends Base\PublicEntity
 
     const FETCH_FUND_ACCOUNT_INFO_SUCCESS = 'fetch_fund_account_info_success';
     const FUND_ACCOUNT_INFO               = 'fund_account_info';
+    const FETCH_PRICING_INFO_SUCCESS      = 'fetch_pricing_info_success';
 
     const VA_TO_VA_INFO                                   = 'va_to_va_info';
+    const PRICING_RULE_INFO                               = 'pricing_rule_info';
     const BENEFICIARY_FUND_ACCOUNT_MERCHANT_ID            = 'beneficiary_fund_account_merchant_id';
     const IS_BENEFICIARY_VPA_FUND_ACCOUNT_VIRTUAL_ACCOUNT = 'is_beneficiary_vpa_fund_account_virtual_account';
 
