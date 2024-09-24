@@ -994,6 +994,8 @@ return array(
 
     'restricted_scheduled_es_migration_experiment_id' => env('RESTRICTED_SCHEDULED_ES_MIGRATION_EXP_ID'),
 
+    'api_stork_banking_mail_reset_password_id' => env('STORK_BANKING_MAIL_RESET_PASSWORD_EXPERIMENT_ID'),
+  
     'ups_unexpected_payment_experiment_id' => env('UPS_UNEXPECTED_PAYMENT_EXPERIMENT_ID'),
 
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),

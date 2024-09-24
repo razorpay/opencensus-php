@@ -11,11 +11,13 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Traits\MocksSplitz;
 
 class BankingUserTest extends TestCase
 {
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+    use MocksSplitz;
 
     protected $coreMock;
 
@@ -52,8 +54,7 @@ class BankingUserTest extends TestCase
     {
         Mail::fake();
 
-        $razorxFeature = RazorxTreatment::API_STORK_BANKING_EMAIL .'_reset_password';
-        $this->setMockRazorxTreatment([$razorxFeature => 'on']);
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
 
         $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
         $this->ba->dashboardGuestAppAuth();
@@ -91,8 +92,7 @@ class BankingUserTest extends TestCase
     {
         Mail::fake();
 
-        $razorxFeature = RazorxTreatment::API_STORK_BANKING_EMAIL .'_reset_password';
-        $this->setMockRazorxTreatment([$razorxFeature => 'on']);
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
 
         $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
         $this->ba->dashboardGuestAppAuth();

@@ -5,8 +5,8 @@ namespace RZP\Mail\User;
 use RZP\Mail\Base;
 use RZP\Models\User;
 use RZP\Constants\Product;
+use RZP\Mail\Base\EmailHelper;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Mode;
 use RZP\Models\Merchant\RazorxTreatment;
 
 class PasswordReset extends Base\Mailable
@@ -100,29 +100,26 @@ class PasswordReset extends Base\Mailable
         try
         {
             $app = \App::getFacadeRoot();
-            $mode = $app['rzp.mode'] ?? Mode::LIVE;
             $userID = $user['id'];
             $orgID = $org['id'];
-            $razorxFeature = RazorxTreatment::API_STORK_BANKING_EMAIL .'_reset_password';
             $traceCode = TraceCode::API_STORK_BANKING_EMAIL;
 
-            // check the experiment
-            $userVariant = $app['razorx']->getTreatment($userID,
-            $razorxFeature, $mode);
+            $experimentName = 'app.'.RazorxTreatment::API_STORK_BANKING_EMAIL . '_reset_password_id';;
+    
+            $splitzUserResult = (new EmailHelper())->getSplitzResponse($userID,$experimentName);
 
-            $orgVariant = $app['razorx']->getTreatment($orgID,
-            $razorxFeature, $mode);
+            $splitzOrgResult = (new EmailHelper())->getSplitzResponse($orgID,$experimentName);
+
 
             $app['trace']->info($traceCode, [
-                'mode' => $mode,
+                'experimentName' => $experimentName,
                 'userID' => $userID,
                 'orgID' => $orgID,
-                'userVariant' => $userVariant,
-                'orgVariant' => $orgVariant
+                'splitzUserResult' => $splitzUserResult,
+                'splitzOrgResult' => $splitzOrgResult,
             ]);
 
-
-            if (strtolower($userVariant) === 'on' or strtolower($orgVariant) === 'on')
+            if (strtolower($splitzUserResult) === 'enable' or strtolower($splitzOrgResult) === 'enable')
             {
                 return true;
             }

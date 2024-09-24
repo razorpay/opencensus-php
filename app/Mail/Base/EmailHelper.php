@@ -54,4 +54,31 @@ class EmailHelper
 
         return false;
     }
+
+    public function getSplitzResponse(string $id, string $experimentName)
+    {
+
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            $experimentId = $app->config->get($experimentName);
+
+            $response = $app['splitzService']->evaluateRequest([
+                'id'            => $id,
+                'experiment_id' => $experimentId,
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $app->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $id,
+                'experiment_id' => $app->config->get($experimentName) ?? null,
+                'experiment_name' => $experimentName
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
 }
