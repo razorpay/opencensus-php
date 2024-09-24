@@ -1,5 +1,6 @@
 import React from 'react';
 import ListFilter from 'merchant/components/ListFilter';
+import { getUser } from 'merchant/store';
 import { Field } from 'redux-form';
 
 export default ({
@@ -11,7 +12,8 @@ export default ({
   ...otherProps
 }) => {
   const isTypeLink = type === 'link';
-  let label = isTypeLink ? 'Payment Link' : 'Invoice';
+  const label = isTypeLink ? 'Payment Link' : 'Invoice';
+  const user = getUser();
 
   function _onSubmit(params) {
     let trackLabel;
@@ -94,7 +96,7 @@ export default ({
         />
       </div>
 
-      {isInttCurrenciesEnabled && (
+      {isInttCurrenciesEnabled && user.isINCountry && (
         <div class="form-group list-filter-item">
           <label>Currency Type</label>
           <Field name="international" component="select" class="form-control input-sm">

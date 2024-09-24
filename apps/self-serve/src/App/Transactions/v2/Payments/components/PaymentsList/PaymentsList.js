@@ -5,6 +5,14 @@ import { withZustand } from 'shell/commonStore';
 import { compose } from 'redux';
 
 import { ListContainer } from '@dashboard/shared-ui/containers';
+import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
+import { fetchMerchantColumnPreferences, fetchPaymentNotesKeys } from './model';
+import {
+  ERROR_MESSAGES,
+  FIXED_COLUMNS_TRANSACTIONS_V2,
+  OPTIONAL_COLUMNS_TRANSACTIONS_V2,
+} from './constants';
+import { PaymentsEditColumnsModal } from './PaymentsEditColumnsModal';
 import { fetchPayments as fetchAll } from 'apps/self-serve/src/bootstrap/Store/reducers/paymentsReducer';
 import PaymentsListFilter from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter';
 import PaymentsTable from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable';
@@ -15,14 +23,6 @@ import {
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { onPaginate, onSearch } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
 import { paymentStatusVariantMap } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable/constants';
-import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
-import { fetchMerchantColumnPreferences, fetchPaymentNotesKeys } from './model';
-import {
-  ERROR_MESSAGES,
-  FIXED_COLUMNS_TRANSACTIONS_V2,
-  OPTIONAL_COLUMNS_TRANSACTIONS_V2,
-} from './constants';
-import { PaymentsEditColumnsModal } from './PaymentsEditColumnsModal';
 
 class PaymentsList extends ListContainer {
   state = {

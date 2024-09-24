@@ -3,6 +3,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { BladeProvider } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import { Provider } from 'react-redux';
+import { act } from 'react-dom/test-utils';
 
 import { render, screen, userEvent, waitFor } from 'common/services/test/test-utils';
 import { storeWithInitialState } from 'merchant/store';
@@ -102,7 +103,9 @@ describe('Zone Modal', () => {
     const ZoneModal = await screen.findByTestId('zone-modal');
     expect(ZoneModal).toBeInTheDocument();
     const searchInput = screen.getByRole('textbox', { name: 'Select country, city, state' });
-    await userEvent.type(searchInput, 'Andhra');
+    await act(async () => {
+      await userEvent.type(searchInput, 'Andhra');
+    });
 
     await waitFor(
       () => {
@@ -111,7 +114,9 @@ describe('Zone Modal', () => {
       },
       { timeout: 2000 },
     );
-    await userEvent.clear(searchInput);
+    await act(async () => {
+      await userEvent.clear(searchInput);
+    });
     await waitFor(
       () => {
         expect(screen.queryByRole('checkbox', { name: 'Afghanistan' })).toBeInTheDocument();

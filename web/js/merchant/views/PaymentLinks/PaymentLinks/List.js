@@ -62,7 +62,7 @@ const isOutsideRange = (day) => {
 const getExtraFields = (user, tracking, onDatesChange) => {
   const fields = [];
 
-  if (user.isPaymentLinkCreationV2Enabled) {
+  if (user.isPaymentLinkCreationV2Enabled && user.isINCountry) {
     fields.push(
       <div key="upi_link" class="form-group list-filter-item">
         <label>Payment Link Type</label>
@@ -374,6 +374,7 @@ class PaymentLinksContainer extends ListContainer {
               trackSearchFilterForInternational={trackSearchFilterForInternational}
               isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
               extraFields={getExtraFields(users, this.props.tracking, this.onDatesChange)}
+              user={users}
             />
 
             <Alert

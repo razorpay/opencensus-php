@@ -30,13 +30,6 @@ import RefundModal from 'apps/self-serve/src/App/Transactions/v1/Payments/compon
 import * as ModalActions from '@dashboard/shared-utils/reducers/modals';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import { useStore } from 'shell/commonStore';
-import { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import {
-  trackDetailsClick,
-  trackDetailsPageLoad,
-} from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import ErrorLoadingImage from 'apps/self-serve/src/assets/error-loading.svg';
-import GoBack from 'apps/self-serve/src/App/Transactions/v2/common/components/GoBack';
 import { isIssueRefundDisabled } from './utils';
 import { ErrorWrapper, StyledGoBackBtn } from './styled';
 import {
@@ -49,6 +42,13 @@ import PaymentRefundDetails from './PaymentRefundDetails';
 import PaymentDetailsSection from './PaymentDetailsSection';
 import PaymentDetailsTimeline from './PaymentDetailsTimeline';
 import PaymentDetailsOverview from './PaymentDetailsOverview';
+import GoBack from 'apps/self-serve/src/App/Transactions/v2/common/components/GoBack';
+import ErrorLoadingImage from 'apps/self-serve/src/assets/error-loading.svg';
+import {
+  trackDetailsClick,
+  trackDetailsPageLoad,
+} from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 
 const flexDirectionSettings: any = { base: 'column', xl: 'row', l: 'row' };
 
