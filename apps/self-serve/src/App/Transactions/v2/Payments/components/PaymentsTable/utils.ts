@@ -37,6 +37,8 @@ export const getPaymentMethod = ({ method, card, wallet }: Item): string => {
       return 'Cardless EMI';
     case 'nach':
       return 'eNach';
+    case 'paynow':
+      return 'Paynow';
     case 'unselected':
     default:
       return '--';

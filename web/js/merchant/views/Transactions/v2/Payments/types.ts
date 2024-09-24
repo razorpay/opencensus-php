@@ -78,7 +78,8 @@ export type PaymentMethod =
   | 'cardless_emi'
   | 'nach'
   | 'card'
-  | 'wallet';
+  | 'wallet'
+  | 'paynow';
 
 export type Issuer = 'HDFC' | 'UTIB';
 

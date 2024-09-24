@@ -42,6 +42,7 @@ export const paymentMethodOptionsMap: Record<string, string> = {
   transfer: 'Route transfer',
   cardless_emi: 'Cardless EMI',
   nach: 'eNach',
+  paynow: 'Paynow',
 };
 export const paymentMethodSectionOptions = generateOptions(paymentMethodOptionsMap);
 export const paymentMethodSectionName = 'Payment method';

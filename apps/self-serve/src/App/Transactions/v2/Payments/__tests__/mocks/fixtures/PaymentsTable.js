@@ -69,6 +69,7 @@ const paymentMethods = [
   'transfer',
   'cardless_emi',
   'nach',
+  'paynow',
   'unselected',
 ];
 export const mockFetchPaymentItems = (n = 25) => {

@@ -23,6 +23,7 @@ export const PAYMENT_METHODS_IN_ORDER: Array<SubmerchantPaymentMethod> = [
   'upi',
   'vpa',
   'wallet',
+  'paynow',
 ];
 export const PAYMENT_METHODS_MAP: Partial<Record<SubmerchantPaymentMethod, string>> = {
   account: 'Transfer: Account (Marketplace)',
@@ -47,4 +48,5 @@ export const PAYMENT_METHODS_MAP: Partial<Record<SubmerchantPaymentMethod, strin
   upi: 'UPI',
   vpa: 'VPA (Fund Account Validation)',
   wallet: 'Wallet',
+  paynow: 'Paynow',
 };

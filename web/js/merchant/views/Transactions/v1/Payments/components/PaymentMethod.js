@@ -30,6 +30,7 @@ const methodKeyMap = {
   cardless_emi: 'cardless_emi',
   paylater: 'paylater',
   fpx: 'bank',
+  paynow: 'paynow',
 };
 
 const subTypeMap = {
