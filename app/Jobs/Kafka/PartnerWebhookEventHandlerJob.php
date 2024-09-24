@@ -67,6 +67,11 @@ class PartnerWebhookEventHandlerJob extends Job
         {
             $partnerId = $this->getPartnerIdFromAppId($input[EntityOriginConstants::APPLICATION_ID]);
 
+            if (empty($partnerId))
+            {
+                return;
+            }
+
             $isExpEnabled = $this->isTransactionIsolationExpEnabledForPartnerApp($partnerId, $this->getEventNameFromPayload($input));
 
             if ($isExpEnabled)
@@ -150,6 +155,16 @@ class PartnerWebhookEventHandlerJob extends Job
     private function getPartnerIdFromAppId(string $applicationId) : string
     {
         $application = $this->repoManager->merchant_application->fetchMerchantApplication($applicationId, MerchantConstants::APPLICATION_ID);
+
+        // For omni, merchant_id is sent as application_id. Needs change in stork to skip sending these messages
+        if (empty($application) || empty($application->get(0)))
+        {
+            $this->trace->info(TraceCode::PARTNER_WEBHOOK_CALLBACK_APP_NOT_FOUND, ['application_id' => $applicationId]);
+
+            $this->trace->count(Metric::PARTNER_CALLBACK_EVENTS_APP_NOT_FOUND_FAILURE_TOTAL);
+
+            return "";
+        }
 
         return $application->get(0)->getMerchantId();
     }

@@ -105,6 +105,9 @@ final class Metric
 
     const PARTNER_CALLBACK_EVENTS_RECEIVED_TOTAL = 'partner_callback_events_received_total';
     const PARTNER_CALLBACK_EVENTS_RECEIVED_FAILURE_TOTAL = 'partner_callback_events_received_failure_total';
+
+    const PARTNER_CALLBACK_EVENTS_APP_NOT_FOUND_FAILURE_TOTAL = 'partner_callback_events_app_not_found_failure_total';
+
     const TRANSACTION_ISOLATION_SPLITZ_FAILURE = 'transaction_isolation_splitz_failure';
     const REVERSE_SHADOW_COMMISSION_CREATE_LAG   = 'reverse_shadow_commission_create_lag';
     const REVERSE_SHADOW_COMMISSION_INVOICE_CREATE_LAG = 'reverse_shadow_commission_INVOICE_create_lag';
