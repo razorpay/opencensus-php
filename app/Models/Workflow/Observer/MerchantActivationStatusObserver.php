@@ -98,7 +98,37 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
     public function onClose(array $observerData)
     {
+            if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT) {
 
+                $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
+
+                $caseType = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+                    ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
+                    : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
+
+                $cmmaCaseEventData = [
+                    Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME => $this->permissionName,
+                    Constants::STATUS => Status::REJECTED,
+                    Constants::AGENT_Id => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                    DifferEntity::ENTITY_ID => $this->entityId,
+                    DifferEntity::ENTITY_NAME => Constants::MERCHANT,
+                    Constants::EVENT_TYPE => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE => $caseType,
+                ];
+
+                $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
+
+                $this->app['trace']->info(TraceCode::POS_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                        'data' => $cmmaCaseEventData,
+                        'topic' => $cmmaCaseEventTopic,
+                        'merchant_id' => $this->entityId,
+                    ]
+                );
+
+                (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+            }
     }
 
     public function onReject(array $observerData)

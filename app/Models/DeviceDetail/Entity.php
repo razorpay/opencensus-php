@@ -97,7 +97,7 @@ class Entity extends Base\PublicEntity
 
     public function isAssistedOnboardedMerchant(): bool
     {
-        if ($this->getSignupCampaign() === Constants::ASSISTED_ONBOARDING)
+        if ($this->getSignupCampaign() === Constants::ASSISTED_ONBOARDING || $this->getSignupCampaign() === Constants::PARTNER_ASSISTED_ONBOARDING)
         {
             return true;
         }

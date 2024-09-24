@@ -710,4 +710,105 @@ class WorkflowActionTest extends TestCase
         $kafkaProducerMock->shouldNotHaveReceived('produce');
     }
 
+    public function testOnCloseActionWhenCaseTypeIsActivationPosV2()
+    {
+        $kafkaProducerMock = \Mockery::mock('overload:RZP\Services\KafkaProducer'); // 'overload' allows Mockery to mock the instantiation.
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->andReturn(true);
+
+        $observerData = [
+            'action_id' => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            'agent_id' => 'Adrii8leYwh4sm',
+            'agent_name'=> 'test_agent',
+        ];
+
+        $merchantId = 'No72z8gsJTcHKu';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'],['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],"owner");
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ]);
+
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $merchantActivationStatusObserver = new MerchantActivationStatusObserver(
+            [
+                Action\Differ\Entity::ENTITY_ID => $merchantId,
+                Action\Differ\Entity::PERMISSION => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            ]
+        );
+
+        $merchantActivationStatusObserver->onClose($observerData);
+
+    }
+
+    public function testOnCloseActionWhenCaseTypeIsActivationPosV1()
+    {
+        $kafkaProducerMock = \Mockery::mock('overload:RZP\Services\KafkaProducer'); // 'overload' allows Mockery to mock the instantiation.
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->andReturn(true);
+
+        $observerData = [
+            'action_id' => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            'agent_id' => 'Adrii8leYwh4sm',
+            'agent_name'=> 'test_agent',
+        ];
+
+        $merchantId = 'No72z8gsJTcHKu';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'],['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],"owner");
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ]);
+
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $merchantActivationStatusObserver = new MerchantActivationStatusObserver(
+            [
+                Action\Differ\Entity::ENTITY_ID => $merchantId,
+                Action\Differ\Entity::PERMISSION => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            ]
+        );
+
+        $merchantActivationStatusObserver->onClose($observerData);
+
+    }
+
+
 }

@@ -1450,6 +1450,20 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testFormUnlockedWhenMakerRaiseRequestForNC' => [
+        'request'  => [
+            'content' => [
+                'pos_activation_status' => 'needs_clarification',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                "locked" => false,
+            ],
+        ],
+    ],
     'testSaveGroupCommentsMerchantClarificationReasons' => [
         'request' => [
             'url'       => '/merchant/activation/clarifications',

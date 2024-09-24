@@ -647,6 +647,19 @@ class Core extends Base\Core
         {
             $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW],$merchant);
 
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+
+            // Locking the activation form for Assisted Merchants when the merchants pos activation status moves to under review state
+
+            if($userDeviceDetail->isAssistedOnboardedMerchant()){
+
+                unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+
+                $merchantDetails->setLocked(true);
+
+                $this->repo->saveOrFail($merchantDetails);
+            }
+
             $this->publishKakfaEventForPOSNeedsClarificationResponded($merchantDetails->getMerchantId());
         }
 
@@ -4846,7 +4859,6 @@ class Core extends Base\Core
                 $triggerWorkflow
             ) {
                 $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $merchantPosActivationStatus;
-                $merchantDetails[DEConstants::POS_ACTIVATION_STATUS]    = $input[DEConstants::POS_ACTIVATION_STATUS];
 
                 switch ($input[DEConstants::POS_ACTIVATION_STATUS])
                 {
@@ -4855,6 +4867,8 @@ class Core extends Base\Core
                         {
                             try
                             {
+                                $merchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
+
                                 // if there is already a open workflow on same entity with same permission this will throw BadRequestException
                                 // Handle with return without error when the workflow is being executed or approved
                                 // Handle will throw EarlyWorkflowResponse error when workflow is succesfully created
@@ -4898,6 +4912,10 @@ class Core extends Base\Core
                                 // If there is a workflow already open
                                 return $merchantDetails;
                             }
+                            finally
+                            {
+                                unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+                            }
 
                         }
 
@@ -4924,6 +4942,8 @@ class Core extends Base\Core
                                 $merchantDetails[DetailConstants::REJECTION_CATEGORY_REASONS] = $rejectionReasonDescriptions;
 
                                 $merchantDetails[DetailConstants::REJECTION_OPTION] = $rejectionOption;
+
+                                $merchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
 
                                 $this->app['workflow']
                                     ->setEntity($merchantDetails->getEntity())
@@ -4966,6 +4986,10 @@ class Core extends Base\Core
                                 // If there is a workflow already open
                                 return $merchantDetails;
                             }
+                            finally
+                            {
+                                unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+                            }
                         }
 
                         $this->sendRejectionEmail($merchant);
@@ -4982,6 +5006,18 @@ class Core extends Base\Core
                                 'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
                                 'pos_activation_status'      => $merchantDetails->getActivationStatus()
                             ]);
+
+                            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+
+                            // Unlocking the activation form for Assisted Merchants when the merchants pos activation status moves to needs_clarification review state
+
+                            if($userDeviceDetail->isAssistedOnboardedMerchant()) {
+
+                                unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+
+                                $merchantDetails->setLocked(false);
+                                $this->repo->saveOrFail($merchantDetails);
+                            }
 
                             if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
                                 (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
@@ -5095,24 +5131,31 @@ class Core extends Base\Core
             $triggerWorkflow
         ) {
             $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $merchantPosActivationStatus;
-            $merchantDetails[DEConstants::POS_ACTIVATION_STATUS]    = $input[DEConstants::POS_ACTIVATION_STATUS];
 
             switch ($input[DEConstants::POS_ACTIVATION_STATUS])
             {
                 case Status::KYC_QUALIFIED_STB:
                     if ($triggerWorkflow === true)
                     {
-                        // if there is already a open workflow on same entity with same permission this will throw BadRequestException
-                        // Handle with return without error when the workflow is being executed or approved
-                        // Handle will throw EarlyWorkflowResponse error when workflow is succesfully created
-                        $this->app['workflow']
-                            ->setEntity($merchantDetails->getEntity())
-                            ->setOriginal($oldMerchantDetails)
-                            ->setDirty($merchantDetails)
-                            ->setWorkflowMaker($maker)
-                            ->setWorkflowMakerType(MakerType::ADMIN)
-                            ->handle();
+                        try {
 
+                            $merchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
+
+                            // if there is already a open workflow on same entity with same permission this will throw BadRequestException
+                            // Handle with return without error when the workflow is being executed or approved
+                            // Handle will throw EarlyWorkflowResponse error when workflow is succesfully created
+                            $this->app['workflow']
+                                ->setEntity($merchantDetails->getEntity())
+                                ->setOriginal($oldMerchantDetails)
+                                ->setDirty($merchantDetails)
+                                ->setWorkflowMaker($maker)
+                                ->setWorkflowMakerType(MakerType::ADMIN)
+                                ->handle();
+                        }
+                        finally {
+                            // This will always run, whether an exception was thrown or not
+                            unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+                        }
 
                     }
 
@@ -5121,31 +5164,37 @@ class Core extends Base\Core
                 case Status::REJECTED:
                     if ($triggerWorkflow === true)
                     {
-                        $rejectionReasonDescriptions = [];
+                        try {
+                            $rejectionReasonDescriptions = [];
 
-                        foreach ($rejectionReasons as $rejectionReason)
-                        {
-                            $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
+                            foreach ($rejectionReasons as $rejectionReason) {
+                                $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
 
-                            $rejectionReasonDescriptions[] = ($rejectionReason[Reason\Entity::REASON_CATEGORY] ?? 'None')
-                                                             . ' - ' .
-                                                             RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
+                                $rejectionReasonDescriptions[] = ($rejectionReason[Reason\Entity::REASON_CATEGORY] ?? 'None')
+                                    . ' - ' .
+                                    RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
 
-                            $rejectionReasonCategory[] = $rejectionReason[Reason\Entity::REASON_CATEGORY];
+                                $rejectionReasonCategory[] = $rejectionReason[Reason\Entity::REASON_CATEGORY];
+                            }
+
+                            $merchantDetails[DetailConstants::REJECTION_CATEGORY_REASONS] = $rejectionReasonDescriptions;
+
+                            $merchantDetails[DetailConstants::REJECTION_OPTION] = $rejectionOption;
+
+                            $merchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
+
+                            $this->app['workflow']
+                                ->setEntity($merchantDetails->getEntity())
+                                ->setOriginal($oldMerchantDetails)
+                                ->setDirty($merchantDetails)
+                                ->setWorkflowMaker($maker)
+                                ->setWorkflowMakerType(MakerType::ADMIN)
+                                ->handle();
                         }
-
-                        $merchantDetails[DetailConstants::REJECTION_CATEGORY_REASONS] = $rejectionReasonDescriptions;
-
-                        $merchantDetails[DetailConstants::REJECTION_OPTION] = $rejectionOption;
-
-                        $this->app['workflow']
-                            ->setEntity($merchantDetails->getEntity())
-                            ->setOriginal($oldMerchantDetails)
-                            ->setDirty($merchantDetails)
-                            ->setWorkflowMaker($maker)
-                            ->setWorkflowMakerType(MakerType::ADMIN)
-                            ->handle();
-
+                        finally {
+                            // This will always run, whether an exception was thrown or not
+                            unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+                        }
                     }
 
                     $this->sendRejectionEmail($merchant);
@@ -5162,6 +5211,18 @@ class Core extends Base\Core
                             'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
                             'pos_activation_status'      => $merchantDetails->getActivationStatus()
                         ]);
+
+                        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+
+                        // Unlocking the activation form for Assisted Merchants when the merchants pos activation status moves to needs_clarification review state
+
+                        if($userDeviceDetail->isAssistedOnboardedMerchant()) {
+
+                            unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+
+                            $merchantDetails->setLocked(false);
+                            $this->repo->saveOrFail($merchantDetails);
+                        }
 
                         if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
                             (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
@@ -5280,6 +5341,13 @@ class Core extends Base\Core
 
             //pos submission
             $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
+
+            unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
+
+            // Locking the activation form when the assisted merchants finally submit Sales Assisted Activation Form
+            $merchantDetails->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetails);
 
             $this->pushKafkaEventOnPOSActivationFormSubmit($merchant, DEConstants::POS_V2_ACTIVATION_FORM_SUBMISSION_KAFKA);
         }
@@ -13772,5 +13840,6 @@ class Core extends Base\Core
 
         return [$type, $format];
     }
+
 }
 
