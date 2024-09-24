@@ -968,10 +968,8 @@ class Service extends Base\Service
 
             $keywordCheckInput = [
                 'line_items' => $input['line_items'] ?? [],
-                'terms' => $input['terms'] ?? '',
                 'description' => $input['description'] ?? '',
                 'comment' => $input['comment'] ?? '',
-                'notes' => $input['notes'] ?? [],
                 'reference_id' => $input['reference_id'] ?? '',
             ];
 
