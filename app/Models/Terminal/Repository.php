@@ -1938,7 +1938,7 @@ class Repository extends Base\Repository
 
     }
 
-    public function getUpiRecurringTerminalsByMid($mid)
+    public function getUpiRecurringTerminalsByMid($merchantIds)
     {
         $metricData = [
             'route' => $this->fetchRouteName(),
@@ -1947,25 +1947,24 @@ class Repository extends Base\Repository
 
         if($this->isTestEnv())
         {
-
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
-        $query = $this->newQuery()
-                      ->whereIn(Entity::GATEWAY, Payment\Gateway::$upiRecurringGateways)
-                      ->type([Terminal\Type::RECURRING_3DS])
-                      ->enabled();
+            $query = $this->newQuery()
+                          ->whereIn(Entity::GATEWAY, Payment\Gateway::$upiRecurringGateways)
+                          ->type([Terminal\Type::RECURRING_3DS])
+                          ->enabled();
 
-        $this->addMerchantWhereCondition($query, [$mid, Account::SHARED_ACCOUNT]);
+            $this->addMerchantWhereCondition($query, $merchantIds);
 
-        $terminal = $query->first();
+            $terminal = $query->first();
 
-        return $terminal;
+            return $terminal;
 
         }
 
         if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
-            $data = ["function" => "getUpiRecurringTerminalsByMid", "mid" => $mid];
+            $data = ["function" => "getUpiRecurringTerminalsByMid", "mid" => $merchantIds];
 
 //            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -1977,7 +1976,7 @@ class Repository extends Base\Repository
 
                 $input = [
                     'gateways' => Payment\Gateway::$upiRecurringGateways,
-                    'merchant_ids' => [$mid, Account::SHARED_ACCOUNT],
+                    'merchant_ids' => $merchantIds,
                     'api_type' => [Terminal\Type::RECURRING_3DS],
                     'enabled' => true,
                 ];
@@ -2008,7 +2007,6 @@ class Repository extends Base\Repository
                 }
             }
         }
-
     }
 
     public function getSharedTerminalForGateway($gateway)

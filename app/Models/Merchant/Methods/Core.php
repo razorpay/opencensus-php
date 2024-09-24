@@ -634,7 +634,15 @@ class Core extends Base\Core
             ];
         }
 
-        $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchant->getId());
+        $merchantIds = [$merchant->getId()];
+
+        $upiMethodExperiment = $this->evaluateSplitzExperimentforUpiAutopayMethod();
+
+        // If experiment is not enable then it will find shared terminals using shared merchant id
+        if($upiMethodExperiment === false) {
+            array_push($merchantIds, Merchant\Account::SHARED_ACCOUNT);
+        }
+        $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchantIds);
 
         if (empty($recurringUpiTerminals) === false)
         {
@@ -644,6 +652,38 @@ class Core extends Base\Core
                 UpiType::INTENT => $recurringUpiTerminals->isPay(),
             ];
         }
+    }
+
+    private function evaluateSplitzExperimentforUpiAutopayMethod()
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.show_upi_autopay_method_on_dashboard')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::UPI_AUTOPAY_SPLITZ_METHOD_FAILURE,
+                [
+                    'error' => $ex->getMessage(),
+                ]
+            );
+        }
+
+        return false;
     }
 
     public function getMethodsForSubscriptionSettings(Merchant\Entity $merchant, $method): array
@@ -682,7 +722,16 @@ class Core extends Base\Core
                 $data[$method][self::METHOD_ENABLED] = 1;
             }
 
-            $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchant->getId());
+
+            $upiMethodExperiment = $this->evaluateSplitzExperimentforUpiAutopayMethod();
+
+            $merchantIds = [$merchant->getId()];
+
+            if($upiMethodExperiment === false) {
+                array_push($merchantIds, Merchant\Account::SHARED_ACCOUNT);
+            }
+
+            $recurringUpiTerminals = $this->repo->terminal->getUpiRecurringTerminalsByMid($merchantIds);
 
             if (empty($recurringUpiTerminals) === false)
             {

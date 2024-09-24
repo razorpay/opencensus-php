@@ -395,6 +395,86 @@ class MethodsTest extends TestCase
         $this->assertArrayNotHasKey('netbanking', $content['recurring']);
     }
 
+    public function testUpiAutopayOnChargeAtWillSuccess()
+    {
+        $this->ba->publicTestAuth();
+
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
+
+        $this->fixtures->merchant->enableUpi();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_icici',
+            'card'                      => 0,
+            'upi'                       => 1,
+            'netbanking'                => 0,
+            'emandate'                  => 0,
+            'gateway_merchant_id'       => 'razorpay billdesk',
+            'gateway_terminal_id'       => 'nodal account billdesk',
+            'gateway_terminal_password' => 'razorpay_password',
+            'type'                      => [
+                Terminal\Type::RECURRING_3DS => '1',
+                Terminal\Type::RECURRING_NON_3DS => '1',
+                Terminal\Type::PAY              => '1',
+                Terminal\Type::COLLECT          => '1'
+            ],
+            'enabled'                   => 1,
+            'deleted_at'                => null,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $testData = $this->testData['testUpiAutopayOnChargeAtWillSuccess'];
+
+        $content = $this->startTest($testData);
+
+        $this->assertArrayHasKey('upi_autopay', $content['recurring']);
+        $this->assertArrayHasKey('collect', $content['recurring']['upi_autopay']);
+        $this->assertArrayHasKey('intent', $content['recurring']['upi_autopay']);
+    }
+
+    public function testUpiAutopayOnChargeAtWillFailure()
+    {
+        $this->ba->publicTestAuth();
+
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
+
+        $this->fixtures->merchant->enableUpi();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_icici',
+            'card'                      => 0,
+            'upi'                       => 1,
+            'netbanking'                => 0,
+            'emandate'                  => 0,
+            'gateway_merchant_id'       => 'razorpay billdesk',
+            'gateway_terminal_id'       => 'nodal account billdesk',
+            'gateway_terminal_password' => 'razorpay_password',
+            'type'                      => [
+                Terminal\Type::RECURRING_3DS => '1',
+                Terminal\Type::RECURRING_NON_3DS => '1',
+                Terminal\Type::PAY              => '1',
+                Terminal\Type::COLLECT          => '1'
+            ],
+            'enabled'                   => 0,
+            'deleted_at'                => null,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $testData = $this->testData['testUpiAutopayOnChargeAtWillFailure'];
+
+        $content = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('upi_autopay', $content['recurring']);
+    }
+
     public function testRecurringCardsOnSubscriptions()
     {
         $this->ba->publicTestAuth();

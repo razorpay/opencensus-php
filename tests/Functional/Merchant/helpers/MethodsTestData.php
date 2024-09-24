@@ -345,6 +345,39 @@ return [
         ],
     ],
 
+    'testUpiAutopayOnChargeAtWillSuccess' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'upi' => true,
+                'recurring' => [
+                    'upi_autopay' => [
+                        'intent'  => true,
+                        'collect' => true,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testUpiAutopayOnChargeAtWillFailure' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'upi' => true,
+                'recurring' => [],
+            ],
+        ],
+    ],
+
     'testFetchMethods' => [
         'request' => [
             'url' => '/merchant/methods',
