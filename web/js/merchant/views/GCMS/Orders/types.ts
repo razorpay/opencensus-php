@@ -120,3 +120,10 @@ export interface OrderItemDenomination extends OrderItem {
   id?: string;
   type?: string;
 }
+
+export interface GiftCard {
+  voucher_code: string;
+  voucher_pin: string;
+  voucher_value: number;
+  voucher_expiry: string;
+}

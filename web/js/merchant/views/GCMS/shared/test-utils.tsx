@@ -41,6 +41,7 @@ export const GCMSTestPageRenderer = ({ children }) => {
       user: {
         current: 'NDnRD3epJ6P60L',
       },
+      showNotification: jest.fn(),
     },
   };
 

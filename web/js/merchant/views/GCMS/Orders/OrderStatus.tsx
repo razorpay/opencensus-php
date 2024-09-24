@@ -1,5 +1,15 @@
 import React from 'react';
-import { Box, CheckIcon, CloseIcon, InfoIcon, ProgressBar, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  CheckIcon,
+  CloseIcon,
+  DownloadIcon,
+  Link,
+  LoaderIcon,
+  ProgressBar,
+  Spinner,
+  Text,
+} from '@razorpay/blade/components';
 
 import { convertUnixToDate } from 'common/utils/rzp-utils';
 import { Order, OrderDeliveryStatusEnum, OrderStatusEnum } from 'merchant/views/GCMS/Orders/types';
@@ -7,7 +17,17 @@ import { Order, OrderDeliveryStatusEnum, OrderStatusEnum } from 'merchant/views/
 import OrderDetailsDelivery from './OrderDetailsDelivery';
 import { CustomDivider, IconContainer } from './styled';
 
-const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoading: boolean }) => {
+const OrderStatus = ({
+  orderDetails,
+  isLoading,
+  onGiftcardDownloadClick,
+  isGiftCardDownloading, //will be used to show loading, expecting design for this
+}: {
+  orderDetails?: Order;
+  isLoading: boolean;
+  onGiftcardDownloadClick: () => void;
+  isGiftCardDownloading: boolean;
+}) => {
   const isOrderDraft = orderDetails?.status === OrderStatusEnum.DRAFT;
   const isOrderProcessed = orderDetails?.total_quantity === orderDetails?.processed_quantity;
   const isOrderCancelled = orderDetails?.status === OrderStatusEnum.CANCELLED;
@@ -139,32 +159,23 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                   backgroundColor="surface.background.gray.moderate"
                   marginBottom="spacing.7"
                 >
-                  <Box display="flex" flexDirection="row" justifyContent="space-between">
-                    <Text
-                      size="medium"
-                      weight="semibold"
-                      color="surface.text.gray.normal"
-                      marginBottom="spacing.4"
-                    >
-                      {isOrderProcessed ? 'Order Processed' : 'Order Processing'}
-                    </Text>
-                    {isOrderProcessed || isOrderCancelled ? null : (
-                      <Box alignSelf="center" display="flex" flexDirection="row">
-                        <Text
-                          size="medium"
-                          color="interactive.text.primary.subtle"
-                          marginBottom="13px"
-                        >
-                          In-progress
-                        </Text>
-                        <InfoIcon
-                          color="interactive.icon.gray.normal"
-                          marginLeft="spacing.1"
-                          marginTop="spacing.2"
-                          size="medium"
-                        />
-                      </Box>
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    justifyContent="flex-start"
+                    marginBottom="spacing.3"
+                    alignItems="center"
+                  >
+                    {isOrderProcessed ? null : (
+                      <LoaderIcon
+                        color="surface.icon.gray.normal"
+                        size="medium"
+                        marginRight="spacing.2"
+                      />
                     )}
+                    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+                      {isOrderProcessed ? 'Order Processed' : 'Generating gift cards'}
+                    </Text>
                   </Box>
                   {isOrderProcessed ? (
                     <Box display="flex" flexDirection="row">
@@ -208,7 +219,7 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                         </Text>
                         <Text size="medium" color="surface.text.gray.normal" weight="regular">
                           {(orderDetails?.total_quantity || 0) -
-                            (orderDetails?.processed_quantity || 0)}
+                            (orderDetails?.issued_quantity || 0)}{' '}
                         </Text>
                       </Box>
                     </Box>
@@ -224,10 +235,10 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
                         max={100}
                         size="medium"
                         marginBottom="spacing.5"
+                        showPercentage={false}
                       />
                       <Text size="medium" color="surface.text.gray.muted" weight="regular">
-                        Please wait as we process the order. This may take few minutes. Logs will be
-                        once processing is complete.
+                        This might take a few minutes...
                       </Text>
                     </>
                   )}
@@ -238,31 +249,57 @@ const OrderStatus = ({ orderDetails, isLoading }: { orderDetails?: Order; isLoad
 
           {/* Delivery Status Section */}
           {isOrderCancelled ? null : (
-            <Box>
-              <Box display="flex" flexDirection="row" alignItems="center">
-                <IconContainer
-                  isOrderProcessed={isOrderDeliveryCompleted}
-                  withNoPadding={isOrderDeliveryCompleted}
-                >
-                  {isOrderDeliveryCompleted ? (
-                    <CheckIcon color="surface.icon.gray.normal" size="small" margin="spacing.1" />
-                  ) : (
-                    <Box
-                      backgroundColor="surface.background.primary.intense"
-                      height="spacing.3"
-                      width="spacing.3"
-                      borderRadius="round"
-                    />
-                  )}
-                </IconContainer>
-                <Box>
+            <Box width="100%">
+              <Box width="100%" display="flex" flexDirection="row" alignItems="center">
+                <Box display="flex" flexDirection="column">
+                  <IconContainer
+                    isOrderProcessed={isOrderDeliveryCompleted}
+                    withNoPadding={isOrderDeliveryCompleted}
+                  >
+                    {isOrderDeliveryCompleted ? (
+                      <CheckIcon color="surface.icon.gray.normal" size="small" />
+                    ) : (
+                      <Box
+                        backgroundColor="surface.background.primary.intense"
+                        height="spacing.3"
+                        width="spacing.3"
+                        borderRadius="round"
+                      />
+                    )}
+                  </IconContainer>
+                  <Box flexGrow={1} marginRight="spacing.6" marginLeft="spacing.3" />
+                </Box>
+                <Box display="flex" width="100%" justifyContent="space-between">
                   <Text size="medium" weight="semibold" color="surface.text.gray.normal">
                     Delivery
                   </Text>
+                  {isOrderProcessed ? (
+                    <>
+                      {isGiftCardDownloading ? (
+                        <Box display="flex">
+                          <Text color="surface.text.gray.normal">Downloading...</Text>
+                          <Spinner
+                            size="medium"
+                            marginLeft="spacing.3"
+                            accessibilityLabel="downloading"
+                          />
+                        </Box>
+                      ) : (
+                        <Link
+                          icon={DownloadIcon}
+                          iconPosition="right"
+                          variant="button"
+                          onClick={onGiftcardDownloadClick}
+                        >
+                          Download Gift Cards
+                        </Link>
+                      )}
+                    </>
+                  ) : null}
                 </Box>
               </Box>
               <Box paddingLeft="28px">
-                <OrderDetailsDelivery />
+                <OrderDetailsDelivery isOrderProcessed={isOrderProcessed} />
               </Box>
             </Box>
           )}

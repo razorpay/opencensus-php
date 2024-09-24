@@ -166,7 +166,7 @@ export const FALLBACK_PRODUCTS = [
     max_default_options: 3,
   },
   {
-    section_name: 'GCMS',
+    section_name: 'GIFT CARDS',
     section_id: 'engageHQ',
     product_options: [
       {

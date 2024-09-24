@@ -3,6 +3,7 @@ export const resellerId = 'N91osUDdN9WdO9';
 export const resellerDetailId = 'NMmha9Rr43kHaD';
 export const itemId = 'NPhkMfua3qnQgn';
 export const orderId = 'NMmhaRfFheRmhA';
+export const processedOrderId = 'NVFqTLplfIXKbK';
 export const merchantResellersResponse = {
   status_code: 200,
   success: true,
@@ -57,6 +58,27 @@ export const orderResponse = {
     status: 'processed',
     issued_quantity: 0,
     processed_quantity: 0,
+    delivery_status: 'completed',
+    reseller_detail_id: 'NMmha9Rr43kHaD',
+    is_multiple_delivery: false,
+    created_at: 1704862386,
+    updated_at: 1706437661,
+  },
+};
+
+export const processedOrderResponse = {
+  status_code: 200,
+  success: true,
+  data: {
+    id: 'NVFqTLplfIXKbK',
+    merchant_id: 'NDnRD3epJ6P60L',
+    reseller_id: 'N91osUDdN9WdO9',
+    total_quantity: 10,
+    total_amount: 5901,
+    net_amount: 5896,
+    status: 'processed',
+    issued_quantity: 0,
+    processed_quantity: 10,
     delivery_status: 'completed',
     reseller_detail_id: 'NMmha9Rr43kHaD',
     is_multiple_delivery: false,

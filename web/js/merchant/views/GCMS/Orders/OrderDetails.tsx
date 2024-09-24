@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Amount,
   Badge,
@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import * as XLSX from 'xlsx';
 
 import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
@@ -22,11 +23,12 @@ import {
 } from 'merchant/views/GCMS/Resellers/queries';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import { ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import OrderStatus from './OrderStatus';
 import TransactionDetailsSection from './TransactionDetailsSection';
 import { trackOrdersDetailsPageLoadSuccess } from './events';
-import { fetchOrderDetails, fetchOrderItems } from './queries';
+import { fetchOrderDetails, fetchGiftcardsFromOrder, fetchOrderItems } from './queries';
 import { getFormattedAmountNewDenom } from '../shared/utils';
 
 export const OrderCardItemContainer = styled.div(
@@ -41,7 +43,15 @@ export const OrderCardItemContainer = styled.div(
 `,
 );
 
-const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) => {
+const OrderDetails = ({
+  mode,
+  merchantId,
+  showNotification,
+}: {
+  mode: ModeT;
+  merchantId: string;
+  showNotification: ({ type, message }: { type: string; message: string }) => void;
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { orderId } = useParams<{ orderId: string }>();
@@ -50,6 +60,12 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
     queryKey: ['gcms:order', merchantId, orderId, mode],
     queryFn: () => fetchOrderDetails({ mode, orderId }),
     enabled: !!orderId,
+    refetchInterval: (data) => {
+      if (data?.status === ORDERS_STATUS.processed.value) {
+        return false;
+      }
+      return 3000;
+    },
   });
 
   const { data: orderItems, isLoading: isOrderItemsLoading } = useQuery({
@@ -70,6 +86,29 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
     queryFn: () =>
       fetchProgramsForReseller({ resellerId: orderDetails?.reseller_id, mode, count: 100 }),
     enabled: !!orderDetails?.reseller_id,
+  });
+
+  const { isFetching: isGiftCardFetching, refetch } = useQuery({
+    queryKey: ['gcms:orders:giftcard', orderId, mode],
+    queryFn: () => fetchGiftcardsFromOrder({ orderId, mode }),
+    enabled: false,
+    onSuccess(data) {
+      if (data?.items?.length > 0) {
+        const giftcards = data.items;
+        createXlsxFromArray(giftcards);
+      } else {
+        showNotification({
+          type: 'error',
+          message: 'No Gift Cards found',
+        });
+      }
+    },
+    onError(err) {
+      showNotification({
+        type: 'error',
+        message: 'Error fetching Gift Cards',
+      });
+    },
   });
 
   const handleGoBack = () => {
@@ -98,6 +137,43 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
   const orderItemsByPrograms = Array.isArray(orderItems)
     ? groupBy(orderItems, 'program_id')
     : undefined;
+
+  function createXlsxFromArray(data) {
+    // Define the column headers
+    const headers = ['Voucher Code', 'Voucher Pin', 'Voucher Value', 'Voucher Expiry'];
+
+    // Map the data array into rows with the corresponding values
+    const rows = data.map((item) => [
+      item.voucher_code,
+      item.voucher_pin,
+      item.voucher_value,
+      item.voucher_expiry,
+    ]);
+
+    // Add the headers as the first row
+    rows.unshift(headers);
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Convert rows to a worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, `giftcards_${Date.now()}`);
+
+    // Write the workbook to a file (for Node.js environment)
+    XLSX.writeFile(workbook, `giftcards_${Date.now()}.xlsx`);
+
+    showNotification({
+      type: 'success',
+      message: 'Gift Cards downloaded successfully',
+    });
+  }
+
+  const handleGiftcardDownload = () => {
+    refetch();
+  };
 
   return (
     <div className="tabbed-container">
@@ -287,7 +363,12 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
                 : null}
             </Box>
           </Box>
-          <OrderStatus isLoading={isOrderDetailsLoading} orderDetails={orderDetails} />
+          <OrderStatus
+            isLoading={isOrderDetailsLoading}
+            orderDetails={orderDetails}
+            onGiftcardDownloadClick={handleGiftcardDownload}
+            isGiftCardDownloading={isGiftCardFetching}
+          />
         </Box>
       )}
     </div>
@@ -297,6 +378,7 @@ const OrderDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string })
 const mapStateToProps = (state) => ({
   mode: state.session.mode,
   merchantId: state.session.user.current,
+  showNotification,
 });
 
 export default connect(mapStateToProps)(OrderDetails);

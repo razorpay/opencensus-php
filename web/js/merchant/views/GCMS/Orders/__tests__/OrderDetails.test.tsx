@@ -8,7 +8,7 @@ import { GCMSTestPageRenderer } from 'merchant/views/GCMS/shared/test-utils';
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
   useLocation: () => ({
-    pathname: '/gcms/orders/NMmhaRfFheRmhA',
+    pathname: `/gcms/orders/${jest.requireActual('./mocks/fixtures').orderId}`,
     search: '',
     hash: '',
     state: {},
@@ -51,6 +51,31 @@ describe('GCMS: Order Details', () => {
       expect(screen.getByText('4')).toBeInTheDocument();
       expect(screen.getByText('Failed')).toBeInTheDocument();
       expect(screen.getByText('6')).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /download gift cards/i }),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it('should show download button if all the gift cards are processed', async () => {
+    jest.spyOn(require('react-router-dom'), 'useLocation').mockReturnValue({
+      pathname: `/gcms/orders/${jest.requireActual('./mocks/fixtures').processedOrderId}`,
+      search: '',
+      hash: '',
+      state: {},
+      key: '',
+    });
+
+    jest.spyOn(require('react-router-dom'), 'useParams').mockReturnValue({
+      orderId: jest.requireActual('./mocks/fixtures').processedOrderId,
+    });
+
+    renderOrderDetails();
+
+    await waitFor(() => {
+      const downloadButton = screen.getByRole('button', { name: /download gift cards/i });
+
+      expect(downloadButton).toBeInTheDocument();
     });
   });
 });

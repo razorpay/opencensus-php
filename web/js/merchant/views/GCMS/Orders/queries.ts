@@ -16,6 +16,7 @@ import {
   OrderUpdateParams,
   OrderDeliveryStatus,
   OrderDeliveryBatch,
+  GiftCard,
 } from 'merchant/views/GCMS/Orders/types';
 import { getGCMSBasePath, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import { ListApiParams, ListApiResponse, MerchantReseller } from 'merchant/views/GCMS/shared/types';
@@ -460,5 +461,24 @@ export const fetchOrderEmailDeliveryBatchDetails = async ({ batchId }: { batchId
       rank: Ranks.P2,
     });
     throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchGiftcardsFromOrder = async ({ orderId, mode }) => {
+  try {
+    const res = await fetch<ListApiResponse<GiftCard>>({
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/giftcards`,
+      method: 'get',
+      mode,
+    });
+    return res;
+  } catch (error: any) {
+    errorService.captureError(error, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
+    throw new Error(error?.response?.errors?.[0]);
   }
 };

@@ -39,12 +39,14 @@ const OrderDetailsDelivery = ({
   merchantId,
   showNotification,
   batchDownload,
+  isOrderProcessed,
 }: {
   mode: ModeT;
   merchantId: string;
   openModal: (args: OpenModalArgs) => void;
   showNotification: ({ type, message }: { type: string; message: string }) => void;
   batchDownload: (batchId: string) => void;
+  isOrderProcessed: Boolean;
 }) => {
   const { orderId } = useParams<{ orderId: string }>();
 
@@ -336,6 +338,7 @@ const OrderDetailsDelivery = ({
             variant="primary"
             onClick={handleOrderDelivery}
             isLoading={isLoadingOrder || isLoadingOrderEmailDeliveryStatus}
+            isDisabled={!isOrderProcessed}
           >
             Deliver
           </Button>

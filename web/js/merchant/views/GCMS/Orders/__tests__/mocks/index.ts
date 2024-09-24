@@ -10,11 +10,13 @@ import {
   merchantId,
   resellerId,
   orderId,
+  processedOrderId,
   orderItemsResponse,
   resellerDetailId,
   itemId,
   ordersListResponse,
   orderEmailDeliveryStatusResponse,
+  processedOrderResponse,
 } from './fixtures';
 
 export default [
@@ -26,6 +28,9 @@ export default [
   ),
   rest.get(`*${getGCMSBasePath()}/orders/${orderId}`, (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(orderResponse), ctx.delay(100));
+  }),
+  rest.get(`*${getGCMSBasePath()}/orders/${processedOrderId}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(processedOrderResponse), ctx.delay(100));
   }),
   rest.patch(`*${getGCMSBasePath()}/orders/${orderId}`, (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(orderResponse), ctx.delay(100));

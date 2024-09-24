@@ -3,7 +3,7 @@ export const BATCH_TYPES = {
 };
 
 export const BATCH_UPLOAD_INFO_MESSAGES = [
-  'Order ID and Program ID can be obtained from the GCMS orders page on the dashboard.',
+  'Order ID and Program ID can be obtained from the orders page on the dashboard.',
   'Email should be unique for each gift card.',
   'Denominations should be in paisa.',
   'Make sure the emails passed in the file are equal to the number of processed gift cards.',
