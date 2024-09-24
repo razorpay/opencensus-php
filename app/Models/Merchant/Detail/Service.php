@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use RZP\Constants\Environment;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\VerificationDetail as MVD;
@@ -125,6 +126,7 @@ use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Referral\Entity as ReferralEntity;
 use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 
 class Service extends Base\Service
 {
@@ -157,6 +159,8 @@ class Service extends Base\Service
 
     protected $mutex;
 
+    protected $dedupeCore;
+
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
         parent::__construct();
@@ -172,6 +176,8 @@ class Service extends Base\Service
         $this->pgosProxyController = new MerchantOnboardingProxyController();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->dedupeCore = new DeDupe\Core();
 
     }
 
@@ -226,12 +232,56 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMerchantDetailsWithFilterQueryParam(string $filter, $merchantId): array
+    {
+        // more cases for query param filter can occur in future
+        switch($filter) {
+            case DetailConstants::ONBOARDING_META:
+                $activationStatus = $this->merchant->merchantDetail->getActivationStatus();
+                $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
+                $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+                $workflowDetails = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
+                $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
+                $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($this->merchant);
+                $dedupe = [
+                    DetailConstants::DEDUPE_IS_MATCH => $isDedupeMatched,
+                    DetailConstants::DEDUPE_IS_UNDER_REVIEW => !$isDedupeBlocked,
+                ];
+                $isFormLocked = $this->merchant->merchantDetail->isLocked();
+                $activationFormMilestone = $this->merchant->merchantDetail->getActivationFormMilestone();
+                $isFormSubmitted = $this->merchant->merchantDetail->isSubmitted();
+
+                return [
+                    MerchantDetailEntity::ACTIVATION_STATUS => $activationStatus,
+                    DeviceDetailConstants::WORKFLOW_TYPE    => $workflowType,
+                    DeviceDetailConstants::WORKFLOW_DETAILS => $workflowDetails,
+                    DetailConstants::DEDUPE                 => $dedupe,
+                    DetailConstants::IS_FORM_LOCKED         => $isFormLocked,
+                    Constants::MILESTONE                    => $activationFormMilestone,
+                    DetailConstants::IS_FORM_SUBMITTED      => $isFormSubmitted
+                ];
+        }
+
+        return [];
+    }
+
     public function fetchMerchantDetails($isActivationDetailsFlow = false, $input = null)
     {
         $merchantId = $this->merchant->getId();
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $this->merchant->getCountry());
         $isPGOSExpEnabled     = false;
         $isActivated          = $this->merchant->isActivated();
+
+        if (isset($input[DetailConstants::QUERY_PARAM_FILTER]) === true && is_string($input[DetailConstants::QUERY_PARAM_FILTER]) === true && strlen($input[DetailConstants::QUERY_PARAM_FILTER]) > 1)
+        {
+            $filter = $input[DetailConstants::QUERY_PARAM_FILTER];
+            $response = $this->fetchMerchantDetailsWithFilterQueryParam($filter, $merchantId);
+
+            if(empty($response) === false)
+            {
+                return $response;
+            }
+        }
 
         if ($shouldMerchantOnboardViaPGOS === true and $isActivated === false and $isActivationDetailsFlow === true)
         {

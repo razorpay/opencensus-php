@@ -886,5 +886,11 @@ class Constants
     const ENCRYPT_DATA_FORMAT_APP       = "app";
     const USERNAME                      = "username";
     const PASSWORD                      = "password";
+    const ONBOARDING_META               = "onboarding_meta";
+    const QUERY_PARAM_FILTER            = "filter";
+    const DEDUPE_IS_MATCH               = "is_match";
+    const DEDUPE_IS_UNDER_REVIEW        = "is_under_review";
+    const IS_FORM_LOCKED                = "is_form_locked";
+    const IS_FORM_SUBMITTED             = "is_form_submitted";
 }
 
