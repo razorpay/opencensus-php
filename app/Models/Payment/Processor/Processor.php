@@ -1648,6 +1648,10 @@ class Processor
                 return false;
             }
 
+            if($input[Payment\Entity::METHOD] == Payment\METHOD::CARD &&
+                $this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === true) {
+                return true;
+            }
 
             if ((($iin->isAmex() === false) and
                     IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true))
