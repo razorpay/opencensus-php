@@ -396,9 +396,9 @@ class Core extends Base\Core
         return $this->getCryptogramResponse($vaultToken, $merchant);
     }
 
-    public function fetchToken($card, $internalServiceRequest)
+    public function fetchToken($card, $merchant, $internalServiceRequest)
     {
-        return $this->getTokenResponseFromVault($card, $internalServiceRequest);
+        return $this->getTokenResponseFromVault($card, $merchant, $internalServiceRequest);
     }
 
     public function deleteToken($card)
@@ -1589,13 +1589,13 @@ class Core extends Base\Core
         return $cardVault->fetchCryptogramFromVaultToken($vaultToken, $merchant);
     }
 
-    protected function getTokenResponseFromVault($card, $internalServiceRequest)
+    protected function getTokenResponseFromVault($card, $merchant, $internalServiceRequest)
     {
         $cardVault = (new Card\CardVault);
 
         $cardVaultToken = $card->getVaultToken();
 
-        return $cardVault->fetchToken($cardVaultToken, $internalServiceRequest);
+        return $cardVault->fetchToken($cardVaultToken, $merchant, $internalServiceRequest);
     }
 
     protected function deleteTokenResponseFromVault($card)

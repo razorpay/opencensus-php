@@ -736,6 +736,8 @@ final class RazorxTreatment
 
     public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
 
+    public const FETCH_TOKEN_STATUS_FROM_NETWORK = 'fetch_token_status_from_network';
+
     public const DELETE_CARD_METADATA_AFTER_RECONCILIATION = 'delete_card_metadata_after_reconciliation';
 
     public const DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM = 'delete_card_metadata_after_reconciliation_for_paysecure_and_fulcrum';

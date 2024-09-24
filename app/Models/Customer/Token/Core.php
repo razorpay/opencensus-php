@@ -2458,7 +2458,7 @@ class Core extends Base\Core
 
     public function fetchToken($token, $internalServiceRequest)
     {
-        $response = (new Card\Core)->fetchToken($token->card, $internalServiceRequest);
+        $response = (new Card\Core)->fetchToken($token->card, $this->merchant, $internalServiceRequest);
 
         return $response[Entity::SERVICE_PROVIDER_TOKENS];
     }

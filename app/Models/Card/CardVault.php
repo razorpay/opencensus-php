@@ -701,12 +701,18 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->fetchParValue($input);
     }
 
-    public function fetchToken($cardVaultToken, $internalServiceRequest)
+    public function fetchToken($cardVaultToken, $merchant, $internalServiceRequest)
     {
         $input = [
             'token'                    => $cardVaultToken,
             'internal_service_request' => $internalServiceRequest,
         ];
+
+        if ($merchant !== null) {
+            $input['merchant'] = [
+                'id' => $merchant->getId(),
+            ];
+        }
 
         return $this->app['card.cardVault']->fetchToken($input);
     }
