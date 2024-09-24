@@ -1892,6 +1892,7 @@ class Service extends Base\Service
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
             }else{
                 // If all users are Oprhan users
+                $status[Constants::IS_USER_EXIST] = false;
                 return $status;
             }
         }
@@ -2012,7 +2013,6 @@ class Service extends Base\Service
 
         // using merchant_id from cache
         $input[Entity::MERCHANT_ID] = $merchantId;
-
         $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
         (new Validator())->validateUserIsOwnerForMerchant($currentOwnerUser->getId(), $input[Entity::MERCHANT_ID]);
