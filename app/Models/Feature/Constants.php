@@ -2298,6 +2298,11 @@ class Constants
      */
     const VAS_NB_CORP_MER = 'vas_nb_corp_mer';
 
+    /**
+     * Feature flag will be enabled for disabling message banner
+     */
+    const MESSAGE_BANNER_DISABLED = 'message_banner_disabled';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3195,6 +3200,7 @@ class Constants
         self::CUSTOM_TERMINAL_PROC                   => true,
         self::VAS_NB_CORP_ORG                        => true,
         self::VAS_NB_CORP_MER                        => true,
+        self::MESSAGE_BANNER_DISABLED                => true,
     ];
 
     // Entity type constants
@@ -4622,7 +4628,12 @@ class Constants
             'feature' => self::VAS_ORG_IDENTIFIER,
             'display_name' => "VAS ORG IDENTIFIER",
             'documentation' => "Feature flag for determining if the organization is a VAS/Banking Program Org",
-        ]
+        ],
+        self::MESSAGE_BANNER_DISABLED => [
+            'feature'       => self::MESSAGE_BANNER_DISABLED,
+            'display_name'  => 'disable display message banners on merchant checkout',
+            'documentation' => ''
+        ],
     ];
 
     /**
