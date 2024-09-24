@@ -11,7 +11,7 @@ jobs:
       matrix:
         release_branch:
           - singapore_release
-            # Add more special branches as needed
+            # Add additional special branches as needed.
 
       fail-fast: false
 
@@ -63,6 +63,9 @@ jobs:
         id: merge
         if: steps.check_branch.outputs.branch_exists == 'true'
         run: |
+          author=$(git log -1 --format="%an <%ae>" origin/${GITHUB_REF#refs/heads/})
+          echo "author=$author" >> $GITHUB_OUTPUT
+
           # Fetch the latest changes
           git fetch origin ${{ github.ref }}
 
@@ -71,13 +74,24 @@ jobs:
             echo "merge_status=up_to_date" >> $GITHUB_OUTPUT
             echo "::notice title=Merge Status::${{ matrix.release_branch }} is already up to date with ${{ github.ref }}. No merge needed."
           else
-            if git merge --no-commit --no-ff --allow-unrelated-histories ${{ github.ref }}; then
+            set +o errexit
+            merge_output=$(git merge --no-commit --no-ff --allow-unrelated-histories ${{ github.ref }} 2>&1)
+            merge_exit_code=$?
+            set -o errexit
+
+            if [ $merge_exit_code -eq 0 ]; then
               echo "merge_status=success" >> $GITHUB_OUTPUT
               echo "::notice title=Merge Status::Merge ${{ github.ref }} into ${{ matrix.release_branch }} is possible. No conflicts detected."
               git merge --abort  # Clean up the working directory
             else
               echo "merge_status=conflict" >> $GITHUB_OUTPUT
               echo "::warning title=Merge Conflict::Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required."
+
+              # Capture and output of conflicts summary
+              echo "conflict_summary<<EOF" >> $GITHUB_OUTPUT
+              echo "$merge_output" | grep "CONFLICT" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+
               git merge --abort  # Clean up the working directory
             fi
           fi
@@ -115,13 +129,43 @@ jobs:
             exit 1
           fi
 
+      - name: Find commit author in Slack
+        if: always() && steps.merge.outputs.merge_status == 'conflict'
+        id: find_commit_author_in_slack
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.BRANCH_AUTO_MERGER_SLACK_APP_BOT_TOKEN }}
+        run: |
+          incoming_commit_author=$(echo "${{ steps.merge.outputs.author }}" | sed 's/.*<\(.*\)>/\1/')
+          commit_author_slack_handle=$(curl -s -X POST \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "email=$incoming_commit_author" \
+            https://slack.com/api/users.lookupByEmail | \
+            jq -r 'if .ok == true then .user.id else "Unknown (\(.error))" end')
+
+          if [[ $commit_author_slack_handle == "Unknown"* ]]; then
+            echo "Warning: Could not fetch Slack handle for $incoming_commit_author. Using email instead."
+            commit_author_slack_handle=$incoming_commit_author
+          fi
+          echo "commit_author_slack_handle=$commit_author_slack_handle" >> $GITHUB_OUTPUT
+
       - name: Send Slack notification on conflict
         if: always() && steps.merge.outputs.merge_status == 'conflict'
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.BRANCH_AUTO_MERGER_SLACK_APP_WEBHOOK }}
           SLACK_COLOR: ${{ job.status }}
-          SLACK_MESSAGE: 'Merge conflict detected in ${{ matrix.release_branch }}. Manual intervention required. Please visit the Actions URL for more details.'
+          SLACK_FOOTER: "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Triggered on this workflow run> | <${{ github.server_url }}/${{ github.repository }}|In ${{ github.repository }} repository>"
+          SLACK_LINK_NAMES: true
+          SLACKIFY_MARKDOWN: true
+          SLACK_MESSAGE: |
+            Merge conflict detected in `${{ matrix.release_branch }}` branch. Manual intervention required. Please visit the Actions URL for more details.
+            Author: ${{ contains(steps.find_commit_author_in_slack.outputs.commit_author_slack_handle, '@') && steps.find_commit_author_in_slack.outputs.commit_author_slack_handle || format('<@{0}>', steps.find_commit_author_in_slack.outputs.commit_author_slack_handle) }} (${{ steps.merge.outputs.author }})
+
+            ### Conflict details
+            ```
+            ${{ steps.merge.outputs.conflict_summary }}
+            ```
           SLACK_TITLE: Message
           MSG_MINIMAL: ref,actions url,commit
 
