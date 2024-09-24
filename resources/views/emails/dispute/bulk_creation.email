@@ -121,6 +121,7 @@
                                 We request you to update us within the deadline.
                                 <br><br>
                                 Note: If the documents are rejected in Pre-Arbitration as well and Arbitration Chargeback is received, the complete liability of the payment/transaction and Arbitration fee that may be imposed by the card networks (Visa/Mastercard) will be passed on to you and an immediate debit will be made to your account.
+                                Click <a href="https://docs.google.com/document/d/1EAC4TYGXpIDz_5iU2nV1uXARU1_GnKrK/edit#heading=h.gjdgxs">here</a> for the detailed pre-arbitration and arbitration fee breakdown.
                             @break
                             @case('arbitration')
                                 We have received arbitration chargeback(s) for the above mentioned payments, that is, the cardholder has disputed the transaction for the third time under the same chargeback reason.
@@ -128,6 +129,7 @@
                                 Arbitration chargeback requests are exceptions/chargeable & decided by the card network’s committee. We recommend you to accept the chargeback on the same email thread as additional fees will be levied to represent Arbitration Chargebacks.
                                 <br><br>
                                 Note: Kindly reply to this email within the mentioned deadline failing which the corresponding amount will be debited from your account.
+                                Click <a href="https://docs.google.com/document/d/1EAC4TYGXpIDz_5iU2nV1uXARU1_GnKrK/edit#heading=h.gjdgxs">here</a> for the detailed pre-arbitration and arbitration fee breakdown.
                             @break
                             @case('fraud')
                                 We have received fraud chargeback(s) for the payment(s) mentioned above. These payments have been reported as never authorised / fraud by the cardholder.

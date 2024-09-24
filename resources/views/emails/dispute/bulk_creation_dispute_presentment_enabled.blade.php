@@ -122,6 +122,7 @@
                             <li>Customer email confirmation in case when customer has agreed to withdraw the Pre-Arbitration. [along with their identity proof]</li>
                             <li>Cancellation, Refund & Return Policy of your business that addresses the grievance.</li>
                         </ol>
+                            Click <a href="https://docs.google.com/document/d/1EAC4TYGXpIDz_5iU2nV1uXARU1_GnKrK/edit#heading=h.gjdgxs">here</a> for the detailed pre-arbitration and arbitration fee breakdown.
                         @break
                         @case('arbitration')
                         We have received an arbitration chargeback(s) for the above mentioned <b> {{ $totalPayments }} </b> payments. This essentially means that the cardholder has re-contested  the same transaction(s) for the third time. Arbitration chargeback requests are exceptions/chargeable & decided by dedicated committee of the card network (i.e. Visa, Mastercard, Rupay, as applicable) .
@@ -132,6 +133,7 @@
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         Note: This case(s) will be deemed accepted in the absence of a response.
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                            Click <a href="https://docs.google.com/document/d/1EAC4TYGXpIDz_5iU2nV1uXARU1_GnKrK/edit#heading=h.gjdgxs">here</a> for the detailed pre-arbitration and arbitration fee breakdown.
                         @break
                         @case('fraud')
                         We have received fraud chargeback(s) for the payment(s) mentioned above. These payments have been reported as never authorised / fraud by the cardholder.
