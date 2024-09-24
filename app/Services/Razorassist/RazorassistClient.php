@@ -59,7 +59,7 @@ class RazorassistClient
     }
 
 
-    public function generateAzureBotDirectLinkToken($merchant, $user)
+    public function generateAzureBotDirectLinkToken($merchant, $user, $input)
     {
         $response  = null;
 
@@ -69,13 +69,20 @@ class RazorassistClient
 
         $user_contact_number = $user_array['contact_mobile'] ?? "";
 
+        $support_session_id = $input["support_session_id"] ?? "";
+
+        $support_linked_id = $input["support_linked_id"] ?? "";
+
         // Construct the query parameters array
+
         $query_params = [
             'merchant_id' => $merchant->id,
             'use_case' => 'ray_dashboard_sop',
             'user_name' => $user->name,
             'user_id' => $user->id,
             'user_role' => $merchant->role,
+            'support_session_id' => $support_session_id,
+            'support_linked_id' => $support_linked_id,
         ];
 
         // Add email and contact_mobile only if they are not empty

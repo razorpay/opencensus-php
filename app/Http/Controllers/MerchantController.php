@@ -110,7 +110,9 @@ class MerchantController extends Controller
     public function generateChatBotToken()
     {
 
-        list($error, $data) = (new Merchant\Service)->generateChatBotToken();
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)->generateChatBotToken($input);
 
         return AppResponse::jsonResponse($error, $data);
     }

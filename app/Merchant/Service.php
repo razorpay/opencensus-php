@@ -184,7 +184,8 @@ class Service extends Base\Service
             'cf_dashboard_link' => sprintf(Constants::MERCHANT_DETAIL_ADMIN_PAGE, $currentMerchant->id,),
             'cf_is_contexual' => true,
             'cf_support_session_id' => $support_session_id,
-            'cf_support_linked_id' => $support_linked_id
+            'cf_support_linked_id' => $support_linked_id,
+            'cf_user_id'=> $currentUser->id,
         ];
 
         $jwt = JWT::encode($payload, $privateKey, 'RS256');
@@ -388,7 +389,7 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function generateChatBotToken()
+    public function generateChatBotToken($input)
     {
 
         $currentUser = Auth::guard('user')->user();
@@ -404,7 +405,7 @@ class Service extends Base\Service
                 400);
         }
 
-        list($error, $data) = (new RazorassistClient())->generateAzureBotDirectLinkToken($merchant, $currentUser);
+        list($error, $data) = (new RazorassistClient())->generateAzureBotDirectLinkToken($merchant, $currentUser, $input);
 
         return [$error, $data];
     }
