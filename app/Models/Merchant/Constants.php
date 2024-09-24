@@ -68,6 +68,8 @@ final class Constants
     const LEVEL                                   = 'level';
     const WORKFLOW                                = 'workflow';
     const ID                                      = 'id';
+    const IS_ATTACHMENT                          = 'isAttachment';
+    const MSG_TYPE                                = 'msg_type';
     // Used for pagination in submerchant listing for partners
     const TO                                      = 'to';
     const FROM                                    = 'from';
@@ -76,6 +78,7 @@ final class Constants
     const IS_USED                                 = 'is_used';
     const DATA                                    = 'data';
     const PARENT_NAME                             = 'parent_name';
+    const FRAUD_ENTITY                            = 'fraud_entity';
 
     // Partner constants
     const BANK_CA_ONBOARDING_PARTNER              = 'bank_ca_onboarding_partner';

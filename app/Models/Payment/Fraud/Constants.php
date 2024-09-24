@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Fraud;
 
 class Constants
 {
+    const ID            = 'id';
     const PAYMENT_ID    = 'payment_id';
     const CODE          = 'code';
     const REASON        = 'reason';
@@ -144,4 +145,23 @@ class Constants
             self::REASON    =>  FraudReasons::UNKNOWN,
         ],
     ];
+    const FRAUD_NOTIFY        = 'CYBER_HELPDESK';
+    const CYBERCELL_SOURCES     = ['CyberSafe', 'CyberCell'];
+    const BANK_SOURCES          = ['Visa', 'MasterCard', 'Issuer', 'Network'];
+    const CARD_NETWORK_SOURCES  = ['Visa', 'MasterCard'];
+    const SOURCE_BANK           = 'Bank';
+    const SOURCE_CYBERCELL      = 'CyberCell';
+    const MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION = 'source_of_notification';
+
+    const DATE_FORMAT                      = 'd/m/Y h:i A';
+
+    const MIME                                  = 'application/pdf';
+
+    const DISPLAY_NAME                             = 'display_name';
+
+    const EXTENSION                                = 'extension';
+    const MESSAGE_TYPE                             = 'msg_type';
+    const MERCHANT                                 = 'merchant';
+
+
 }

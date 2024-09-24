@@ -134,6 +134,7 @@ class Constants
     const FOH_NC_NOTIFICATION           = 'needs_clarification';
     const FOH_CONFIRMATION_NOTIFICATION = 'confirmation';
 
+    const FOH_APPROVED_NOTIFICATION = 'approved';
     // ras trigger reason
     const RAS_TRIGGER_REASON_KEY = 'ras_trigger_reason';
 

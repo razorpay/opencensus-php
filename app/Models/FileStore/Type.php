@@ -221,6 +221,7 @@ class Type
     const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
     const BULK_RAW_ADDRESS_FILE             = 'bulk_raw_address_file';
 
+    const CYBER_HELPDESK_FRAUD_ALERTING     = 'cyber_helpdesk_fraud_alerting';
     const BATCH_INPUT                           = 'batch_input';
     const BATCH_OUTPUT                          = 'batch_output';
     const BATCH_VALIDATED                       = 'batch_validated';

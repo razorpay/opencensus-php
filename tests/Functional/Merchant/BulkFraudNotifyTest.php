@@ -201,6 +201,50 @@ class BulkFraudNotifyTest extends TestCase
         $this->assertArraySelectiveEquals($expectedSNSPayload, $snsPayloadArray[0]);
     }
 
+    public function testNotifyFraudVIAWhatsAPP()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'email' => 'testing101@gmail.com',
+            'merchantDetail' => [
+                'contact_mobile' => '1234567890',
+            ]
+        ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchant->getId(),
+            'amount' => 10000,
+            'base_amount' => 10000,
+            'currency' => 'INR',
+            'method' => 'card',
+            'created_at' => now()
+        ]);
+
+        $fraudEntity = $this->fixtures->create('fraud_entity', [
+            'payment_id' => $payment->getId(),
+            'amount' => 10000,
+            'base_amount' => 10000,
+            'currency' => 'INR',
+            'reported_to_razorpay_at' => now(),
+        ]);
+
+        $type = 'single';
+
+        $mockFraudCore = \Mockery::mock('RZP\Models\Payment\Fraud\Core');
+        $mockFraudCore->shouldReceive('generatePDFAndSendWhatsapp')
+            ->with($merchant, $fraudEntity, '1234567890', $type)
+            ->once();
+
+        $this->app->instance('RZP\Models\Payment\Fraud\Core', $mockFraudCore);
+
+        $this->startTest(['request' => ['content' => []]]);
+
+        $fraudCore = $this->app->make('RZP\Models\Payment\Fraud\Core');
+        $fraudCore->notifyFraudVIAWhatsAPP($fraudEntity, $merchant->getId(), $type);
+
+        $mockFraudCore->shouldHaveReceived('generatePDFAndSendWhatsapp')->once();
+    }
+
+
     protected function mockLumberjackSns($count, &$snsPayloadArray = [])
     {
         $sns = \Mockery::mock('RZP\Services\Aws\Sns');

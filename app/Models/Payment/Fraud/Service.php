@@ -5,7 +5,9 @@ namespace RZP\Models\Payment\Fraud;
 use RZP\Models\Base;
 use RZP\Models\Card\Network;
 use RZP\Models\Currency;
+use RZP\Models\Merchant;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -70,8 +72,17 @@ class Service extends Base\Service
         if ((int) $skipMerchantEmail === 0)
         {
             (new Core())->notifyFraud($fraudEntity);
-        }
 
+            $merchantId = $payment->getMerchantId();
+
+            $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantId,
+                Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
+
+            if ($isWhatsappEnabled)
+            {
+                (new Core())->notifyFraudVIAWhatsAPP($fraudEntity, $merchantId, $type = 'single');
+            }
+        }
         return $fraudEntity;
     }
 }

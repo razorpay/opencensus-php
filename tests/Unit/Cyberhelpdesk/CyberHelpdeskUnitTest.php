@@ -2,8 +2,10 @@
 
 namespace Unit\Cyberhelpdesk;
 
+use RZP\Notifications\Dashboard\Constants as DashboardConstants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\CyberCrimeHelpDesk\Service;
+use RZP\Models\CyberCrimeHelpDesk\Constants;
 
 class CyberHelpdeskUnitTest extends TestCase
 {
@@ -86,9 +88,7 @@ class CyberHelpdeskUnitTest extends TestCase
             }
 
         }
-
     }
-
     public function invokeMethod(&$object, $methodName, array $parameters = array())
     {
         $reflection = new \ReflectionClass(get_class($object));
@@ -97,4 +97,101 @@ class CyberHelpdeskUnitTest extends TestCase
 
         return $method->invokeArgs($object, $parameters);
     }
+    public function testSendWhatsAppNotificationForMerchant()
+    {
+        $cyberHelpdeskService = new Service();
+
+        $testCases = [
+            [
+                'request' => [
+                    'whatsappTemplateName'  => Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_NAME,
+                    'whatsappTemplate'      => Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_TEXT,
+                    'params'                => ['order_id' => '12345'],
+                    'attachmentData'        => [
+                        DashboardConstants::PUBLIC_FILE_URL       => '',
+                        DashboardConstants::DISPLAY_NAME          => Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_HEADER,
+                        DashboardConstants::EXTENSION             => Constants::PDF,
+                        DashboardConstants::MSG_TYPE              => Constants::DOCUMENT,
+                        DashboardConstants::IS_CTA_TEMPLATE       => true,
+                        DashboardConstants::BUTTON_URL_PARAM      => '',
+                    ],
+                    'receiver'              => '1234567890',
+                ],
+                'response' => [
+                    'status'  => 'success',
+                    'message' => 'Message sent successfully',
+                ],
+            ],
+            [
+                'request' => [
+                    'whatsappTemplateName' => 'error_notification',
+                    'whatsappTemplate'     => null,
+                    'params'               => [],
+                    'attachmentData'       => [
+                        DashboardConstants::PUBLIC_FILE_URL       => '',
+                        DashboardConstants::DISPLAY_NAME          => Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_HEADER,
+                        DashboardConstants::EXTENSION             => Constants::PDF,
+                        DashboardConstants::MSG_TYPE              => Constants::DOCUMENT,
+                        DashboardConstants::IS_CTA_TEMPLATE       => true,
+                        DashboardConstants::BUTTON_URL_PARAM      => '',
+                    ],
+                    'receiver'             => '1234567890',
+                ],
+                'response' => [
+                    'status'  => 'error',
+                    'message' => 'Message content cannot be empty',
+                ],
+            ],
+            [
+                'request' => [
+                    'whatsappTemplateName' => 'order_update',
+                    'whatsappTemplate'     => 'Your order has been shipped.',
+                    'params'               => [],
+                    'attachmentData'       => [
+                        DashboardConstants::PUBLIC_FILE_URL       => '',
+                        DashboardConstants::DISPLAY_NAME          => Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_HEADER,
+                        DashboardConstants::EXTENSION             => Constants::PDF,
+                        DashboardConstants::MSG_TYPE              => Constants::DOCUMENT,
+                        DashboardConstants::IS_CTA_TEMPLATE       => true,
+                        DashboardConstants::BUTTON_URL_PARAM      => '',
+                    ],
+                    'receiver'             => '1234567890',
+                ],
+                'response' => [
+                    'status'  => 'error',
+                    'message' => 'Merchant ID is required',
+                ],
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $merchant = $this->fixtures->merchant->create();
+            $dataForPDF = [
+                $merchant = $merchant->getName(),
+            ];
+            if (!empty($testCase['request']['merchant_id'])) {
+                $merchant = $this->fixtures->merchant->create($testCase['request']['merchant_id']);
+            }
+
+            $response = $this->invokeMethod(
+                $whatsappService,
+                'sendWhatsappMessageWithPDF',
+                [
+                    $merchant,
+                    $testCase['request']['whatsappTemplateName'],
+                    $testCase['request']['whatsappTemplate'],
+                    $dataForPDF,
+                    $testCase['request']['params'],
+                    $testCase['request']['attachmentData'],
+                    $testCase['request']['receiver'],
+                ]
+            );
+
+            $this->assertEquals($testCase['response']['status'], $response['status']);
+            $this->assertEquals($testCase['response']['message'], $response['message']);
+        }
+    }
+
+
 }

@@ -3,8 +3,11 @@
 namespace RZP\Models\Merchant\Fraud\BulkNotification;
 
 use Carbon\Carbon;
+use http\Exception;
 use Monolog\Logger;
 use RZP\Models\Base;
+use RZP\Models\CyberCrimeHelpDesk\Constants as CyberHelpdeskConstants;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Services\Stork;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -49,7 +52,6 @@ class Freshdesk extends Base\Core
                     'batch_id'    => $this->batchId,
                     'merchant_id' => $merchantId,
                 ]);
-
                 continue;
             }
             try
@@ -170,9 +172,15 @@ class Freshdesk extends Base\Core
                 'response'  => $response,
             ]);
 
+            $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantId,
+                Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
+
+            if ($isWhatsappEnabled){
+                (new \RZP\Models\Payment\Fraud\Core())->notifyFraudVIAWhatsAPP($merchantData, $merchantId, $type = "bulk");
+            }
+
             $fdTicketId = $response['id'] ?? null;
         }
-
 
         $this->cache->set($redisKey, $notifyCount + 1, Constants::REDIS_KEY_TTL);
 

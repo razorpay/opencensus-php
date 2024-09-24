@@ -2,13 +2,25 @@
 
 namespace RZP\Models\CyberCrimeHelpDesk;
 
+use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
+use RZP\Models\CyberCrimeHelpDesk\Constants;
+use RZP\Models\CyberCrimeHelpDesk\Constants as CyberHelpdeskConstants;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Settlement\Merchant;
+use RZP\Notifications\Dashboard\Constants as DashboardConstants;
+use RZP\Models\PaperMandate\FileUploader as FileUploader;
+use RZP\Models\Dispute\Constants as DisputeConstants;
+use RZP\Models\VirtualAccount\Receiver;
+use RZP\Services\Stork;
+use RZP\Tests\Functional\Payment\ConstantsStub;
 use View;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Models\Payment;
+use RZP\Models\Merchant as MecrchantRZP;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -30,6 +42,10 @@ use RZP\Models\Payment\Fraud\Constants as PaymentFraudConstants;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FdConstants;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FreshDeskService;
 use RZP\Models\Merchant\Fraud\BulkNotification\Freshdesk as FreshdeskNotification;
+
+use mikehaertl\wkhtmlto\Pdf;
+use mikehaertl\tmp\File;
+use RZP\Models\FileStore;
 
 
 class Service extends Base\Service
@@ -168,6 +184,8 @@ class Service extends Base\Service
         $this->shareFetchedDetailsWithLEA($ticketDetails);
 
         $this->notifyMerchantViaFreshdeskOutboundMail($ticketDetails);
+
+        $this->notifyMerchantViaWhatsAppMessage($ticketDetails);
 
         $this->putSettlementOnHoldIfRequired($ticketDetails);
 
@@ -506,6 +524,191 @@ class Service extends Base\Service
                 'freshdesk_request'  => $fdOutboundEmailRequest,
                 'freshdesk_response' => $response,
             ]);
+    }
+
+    public function notifyMerchantViaWhatsAppMessage($ticketDetails)
+    {
+        $data = $ticketDetails[Constants::TICKET_DATA][Constants::TICKET];
+
+        $this->app['trace']->info(TraceCode::CYBER_HELPDESK_MERCHANT_NOTIFICATION_SENDING_START,[
+            MerchantConstants::DATA => $data
+        ]);
+        $merchantId = $data[0][Constants::DETAILS][Constants::MERCHANT_DETAILS][Constants::MERCHANT_ID];
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $contact = $merchant->merchantDetail->getContactMobile();
+
+        $isWhatsappEnabled = (new MecrchantRZP\Core())->isRazorxExperimentEnable($merchantId,
+            MecrchantRZP\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
+
+        if ($isWhatsappEnabled){
+            $this->notifyEnabledMerchant($merchant, $ticketDetails, $contact);
+        }
+    }
+
+    public function notifyEnabledMerchant($merchant, $ticketDetails, $contact)
+    {
+        $this->app['trace']->info(TraceCode::CYBER_HELPDESK_MERCHANT_NOTIFICATION_SENDING_START,
+            [
+                MerchantConstants::CONTACT          => $contact,
+                MerchantConstants::MERCHANT         => $merchant,
+                MerchantConstants::MESSAGE          => 'Starting the message sending process.'
+            ]);
+        try
+        {
+            if (isset($contact)===true)
+            {
+                $this->generatePDFAndSendWhatsapp($merchant, $ticketDetails, $contact);
+            }
+            else
+            {
+                $this->app['trace']->info(
+                    TraceCode::CYBER_HELPDESK_WHATSAPP_NOTIFICATION_NOT_SENT,
+                    [
+                        MerchantConstants::MESSAGE              => 'Contact details does not exists.',
+                        MerchantConstants::MERCHANT_DETAILS     => $merchant->merchantDetail,
+                    ]);
+            }
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['trace']->info(
+                TraceCode::CYBER_HELPDESK_MERCHANT_WHATSAPP_NOTIFICATION_ERROR,
+                [
+                    MerchantConstants::MESSAGE  => 'Exception Occured while process Whatsapp Notification'." ".$e->getMessage(),
+                ]);
+        }
+        $this->app['trace']->info(TraceCode::CYBER_HELPDESK_MERCHANT_NOTIFICATION_SENDING_COMPLETE);
+    }
+
+    public function generatePDFAndSendWhatsapp($merchant, $ticketDetails, $receiver)
+    {
+        $data = $ticketDetails[Constants::TICKET_DATA][Constants::TICKET];
+
+        $options = [
+            'print-media-type',
+            'header-html' => new File(Constants::HEADER_FILE_NAME, '.html'),
+            'header-spacing' => '-18',
+            'footer-font-size' => '6',
+            'footer-right' => 'Page [page] of [topage]',
+            'footer-left' => 'Date and Time: ' . Carbon::createFromTimestamp(Carbon::now()->getTimestamp(),
+                    Timezone::IST)
+                    ->format(Constants::DATE_FORMAT),
+            'dpi' => 290,
+            'zoom' => 1,
+            'ignoreWarnings' => false,
+            'encoding' => 'UTF-8',
+        ];
+
+        $viewTemplate = Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE;
+
+        $html = View::make($viewTemplate, $ticketDetails)->with('paymentsDataTable', $this->createPaymentsDataTable($data))->render();
+
+        $this->createdPDFAndSendWhatsApp($options, $html, $merchant, $receiver);
+    }
+
+    public function createdPDFAndSendWhatsApp($options, $html, $merchant, $receiver){
+
+        $pdf = new Pdf($options);
+
+        $pdf->addPage($html);
+
+        $pdfContent = $pdf->toString();
+
+        $signedFileUrl = $this->fileUploadAndGetUrl($pdfContent);
+
+        $dataForPDF = [
+            'merchantName' => $merchant->getName(),
+        ];
+
+        $attachmentData = [
+            DashboardConstants::PUBLIC_FILE_URL       => $signedFileUrl,
+            DashboardConstants::DISPLAY_NAME          => Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_HEADER,
+            DashboardConstants::EXTENSION             => Constants::PDF,
+            DashboardConstants::MSG_TYPE              => Constants::DOCUMENT,
+            DashboardConstants::IS_CTA_TEMPLATE       => true,
+            DashboardConstants::BUTTON_URL_PARAM      => '',
+        ];
+
+        $templateName = Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_NAME;
+        $template = Constants::CYBER_HELPDESK_WHATSAPP_TEMPLATE_TEXT;
+
+        $this->sendWhatsappMessageWithPDF($merchant, $templateName, $template, $dataForPDF, $attachmentData, $receiver);
+}
+
+    public function fileUploadAndGetUrl($pdfContent)
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->name(CONSTANTS::CYBER_HELPDESK)
+            ->content($pdfContent)
+            ->extension(FileStore\Format::PDF)
+            ->mime(FileUploader::PDF_MIME)
+            ->store(FileStore\Store::S3)
+            ->type(FileStore\Type::BULK_FRAUD_NOTIFICATION)
+            ->save()
+            ->getFileInstance();
+
+        $signedFileUrl = $creator->getSignedUrl();
+
+        return $signedFileUrl['url'];
+    }
+
+    public function createPaymentsDataTable($paymentsDetails){
+        $tableData = [];
+        foreach ($paymentsDetails as $details) {
+            $payment = $details['details']['payment'];
+
+            $tableRow = array();
+            $tableRow[Constants::PAYMENT_ID]        = $payment[Constants::ID];
+            $tableRow[Constants::METHOD]            = $payment[Constants::METHOD];
+            $tableRow[Constants::BASE_AMOUNT]       = $payment[Constants::BASE_AMOUNT];
+            $tableRow[Constants::SOURCE]            = Constants::CYBER_HELPDESK;
+            $tableRow[Constants::CREATED_DATE]      = date('Y-m-d H:i:s', $payment[Constants::CREATED_DATE]); // Convert Unix timestamp to readable format
+            $tableRow[Constants::RESPOND_BY]        = 'Within 24 hrs.';
+            // Add formatted payment to the list
+            $tableData[] = $tableRow;
+        }
+
+        return $tableData;
+    }
+
+    public function sendWhatsappMessageWithPDF($merchant, $whatsappTemplateName, $whatsappTemplate, $params, $attachmentData = [], $receiver)
+    {
+        if (count($attachmentData) > 0)
+        {
+            $whatsAppPayload = [
+                MerchantConstants::OWNER_ID                 => $merchant->getId(),
+                MerchantConstants::OWNER_TYPE               => MerchantConstants::MERCHANT,
+                MerchantConstants::TEMPLATE_NAME            => $whatsappTemplateName,
+                MerchantConstants::PARAMS                   => $params,
+                MerchantConstants::IS_ATTACHMENT            => true,
+                DashboardConstants::PUBLIC_FILE_URL         => $attachmentData[DashboardConstants::PUBLIC_FILE_URL],
+                DashboardConstants::DISPLAY_NAME            => $attachmentData[DashboardConstants::DISPLAY_NAME],
+                DashboardConstants::EXTENSION               => $attachmentData[DashboardConstants::EXTENSION],
+                MerchantConstants::MSG_TYPE                 => $attachmentData[MerchantConstants::MSG_TYPE],
+                MerchantConstants::IS_CTA_TEMPLATE          => $attachmentData[DashboardConstants::IS_CTA_TEMPLATE],
+                MerchantConstants::BUTTON_URL_PARAM         => $attachmentData[DashboardConstants::BUTTON_URL_PARAM]
+            ];
+
+        }
+        else
+        {
+            $whatsAppPayload = [
+                MerchantConstants::OWNER_ID             => $merchant->getId(),
+                MerchantConstants::OWNER_TYPE           => MerchantConstants::MERCHANT,
+                MerchantConstants::TEMPLATE_NAME        => $whatsappTemplateName,
+                MerchantConstants::PARAMS               => $params,
+            ];
+        }
+
+        (new Stork)->sendWhatsappMessage(
+            $this->mode,
+            $whatsappTemplate,
+            $receiver,
+            $whatsAppPayload
+        );
     }
 
     protected function shareFetchedDetailsWithLEA($ticketDetails)

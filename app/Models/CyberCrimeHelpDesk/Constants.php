@@ -11,7 +11,6 @@ class Constants
     const LEA_ACKNOWLEDGEMENT_MAIL_SUBJECT_WITH_CASE_ID = 'Case ID: %s | Razorpay Acknowledgement to LEA: %s';
 
     const LEA_ACKNOWLEDGEMENT_MAIL_TEMPLATE = 'emails.cyber_helpdesk.lea_acknowledgement';
-
     const NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_SUBJECT = 'Razorpay | Unauthorized transaction Alert - %s %s | %s';
 
     const NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_TEMPLATE = 'emails.cyber_helpdesk.notify_merchant';
@@ -90,6 +89,41 @@ class Constants
     const SEGMENT_EVENT_CYBER_CRIME_FETCHED_PAYMENTS = 'cyber_crime_fetched_payments';
 
     const SEGMENT_EVENT_CYBER_CRIME_FRAUD_PAYMENTS = 'cyber_crime_fraud_payments';
-
     const COMPLAINT_ID = 'complaint_id';
+
+    const REPORTED_BY = 'reported_by';
+    const SOURCE_OF_NOTIFICATION = 'source_of_notification';
+    const HEADER_FILE_NAME                 = 'resources/views/whatsapp/fraud/header';
+
+    const DATE_FORMAT                      = 'd/m/Y h:i A';
+
+    const MIME                                  = 'application/pdf';
+    const CYBER_HELPDESK                        = 'CYBER_HELPDESK';
+    const CYBER_HELPDESK_WHATSAPP_TEMPLATE_NAME = 'payments_risk_fraud_whatsapp_notification_template';
+    const CYBER_HELPDESK_WHATSAPP_TEMPLATE      = 'emails.cyber_helpdesk.fraud_alerting_via_whatsapp_pdf';
+    const CYBER_HELPDESK_WHATSAPP_TEMPLATE_TEXT = '*Fraud Alert*
+
+Dear Merchant Partner,
+
+A fraud alert has been notified to us from a regulated entity for the following transaction(s) accepted by your business regarding the payment(s) mentioned below.
+
+Request you to stop the services and issue a refund. Please refer to the email containing the payment ID for further details. If we do not receive a response, the hold amount will be refunded back to the source.
+
+Required the below confirmation on our mail immediately,
+1. Services are utilized or refund is possible.
+2. Invoice & proof of delivery to share on utilized services
+3. Action taken against the reported fraud.
+
+Regards,
+Fraud & Risk team, Razorpay';
+    const CYBER_HELPDESK_WHATSAPP_TEMPLATE_HEADER  = "Fraud Alert";
+
+    const PDF                                       = 'pdf';
+    const DOCUMENT                                  = 'DOCUMENT';
+    const METHOD                                    = 'method';
+    const BASE_AMOUNT                               = 'base_amount';
+    const EMAIL                                     = 'email';
+    const CREATED_DATE                                = 'created_at';
+    const SOURCE                                      = 'source';
+    const AMOUNT                                      = 'amount';
 }

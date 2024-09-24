@@ -10,8 +10,6 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant\RiskMobileSignupHelper;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Models\Payment\Analytics\Entity as PaymentAnalyticsEntity;
-
-
 class FraudNotificationTest extends TestCase
 {
     use MocksSplitz;
