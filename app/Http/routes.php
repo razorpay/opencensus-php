@@ -180,6 +180,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/insightx/generate_superset_token', 'MerchantController@generateSupersetToken')
             ->name('generate_superset_token');
 
+            
         Route::get('/cards/token', 'GenerateTokenController@generateToken')
             ->name('card_token');
 
@@ -245,6 +246,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/user/verify_contact', 'UserController@verifyContact')->name('post_user_verify_contact');
 
         Route::get('/support_chat/jwt_token', 'MerchantController@getSupportChatJwtToken')->name('get_support_chat_token');
+
+        Route::any('/v1/report/bounce-memo', 'GenericController@bounceMemo')->name('post_bounce_memo');
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access', 'set_x_frame', 'set_csp_header']], function()

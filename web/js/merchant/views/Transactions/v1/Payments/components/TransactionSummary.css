@@ -1,0 +1,110 @@
+/* Base Styles */
+body {
+    font-family: 'Times New Roman', Times, serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    color: #333;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 2px solid black;
+    padding: 1px;
+    text-align: left;
+    font-family: 'Times New Roman', Times, serif;
+    width: 50%;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.container {
+    width: 210mm; /* A4 width */
+    min-height: 297mm; /* A4 height */
+    margin: 10mm auto; /* Center the content with margins */
+    padding: 10mm;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+}
+
+.header {
+    text-align: center;
+    font-size: 12pt;
+    margin-bottom: 10mm;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.header-content img {
+    max-height: 44px; /* Adjust based on your image */
+    vertical-align: middle;
+}
+
+.address {
+    text-align: right;
+    color: #092654;
+    margin-bottom: 10px;
+}
+
+.content {
+    font-size: 12pt;
+    margin: 0 0 10mm;
+}
+
+.highlight {
+    background-color: yellow;
+}
+
+.footer-note {
+    font-size: 7.5pt;
+    text-align: justify;
+    color: black;
+}
+
+.logo {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.blueLine {
+    width: 50px;
+    height: 10px;
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 20mm;
+    }
+
+    .no-print {
+        display: none;
+    }
+}
+
+.animated-image {
+    position: absolute;
+    width: 100px; /* Adjust size as needed */
+    height: auto;
+    transform: translateY(-50%);
+}
+
+@keyframes slide {
+    from {
+        left: -100px; /* Start position (adjust based on image width) */
+    }
+    to {
+        left: 100vw; /* End position (100% of viewport width) */
+    }
+}

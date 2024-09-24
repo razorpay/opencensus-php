@@ -61,6 +61,13 @@ describe('PaymentDetails', () => {
     expect(useQuery().refetch).toHaveBeenCalled();
   });
 
+  describe('Bounce memo Details', () => {
+    test('should render bounce memo button', () => {
+      const { container } = render(<App payment={defaultProps.emandatePayment} />);
+      expect(container.querySelector('.if-condition')).not.toBeInTheDocument();
+    });
+  });
+
   describe('Payment error', () => {
     test('should render payment error code and its description', () => {
       render(<App />);

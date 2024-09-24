@@ -296,3 +296,9 @@ export const isRefundRevampEnabled = (splitz: SpiltzContextState): boolean => {
   if (!abExperiments?.refund_revamp) return false;
   return isExperimentEnabled(abExperiments.refund_revamp);
 };
+
+export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || { abExperiments: { bounce_memo: undefined } };
+  if (!abExperiments?.bounce_memo) return false;
+  return isExperimentEnabled(abExperiments.bounce_memo);
+};

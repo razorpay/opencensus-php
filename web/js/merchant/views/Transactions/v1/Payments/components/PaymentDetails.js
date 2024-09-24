@@ -1,3 +1,4 @@
+/* eslint-disable no-relative-import-paths/no-relative-import-paths */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -34,9 +35,13 @@ import PaymentTransfers from 'merchant/views/Transactions/v1/Payments/components
 import {
   REFUND_STATUSES,
   FETCH_EZETAP_KEY_NAME,
+  ERRORCODETOCHECK,
 } from 'merchant/views/Transactions/v1/Payments/constants';
 import track from 'merchant/views/Transactions/v1/Payments/track';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isBounceMemoEnabled,
+  isTransactionsV2Enabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 
 import PaymentDisputes from './PaymentDisputes';
 import PaymentPageDetails from './PaymentPageDetails';
@@ -45,6 +50,9 @@ import PaymentSplitInItems from './PaymentSplitInItems';
 import SettlementOverview from './SettlementOverview';
 import './Payments.styl';
 
+import { DownloadIcon } from '@razorpay/blade/components';
+import { openModal } from 'merchant_common/reducers/modals';
+import BounceMemoPopup from '../BounceMemoPopup';
 const INIT_POINT = 'payment-details';
 
 function PaymentDetails(props) {
@@ -81,6 +89,7 @@ function PaymentDetails(props) {
   const paymentId = payment?.id;
   const bankTransferDetails = bankTransfer?.details;
   const bankReference = bankTransferDetails?.bank_reference;
+  const paymentMethodtoCheck = ['nach', 'emandate'];
   const isAccountClosed = bankTransferDetails?.virtual_account?.status === 'closed';
   const bankReferenceLoading = bankTransfer?.loading;
   const qrPaymentDescription = payment?.description === 'QRv2 Payment';
@@ -279,6 +288,9 @@ function PaymentDetails(props) {
 
   const blockTransfer =
     user?.isOptimizerEnabled && !!payment?.optimizer_provider && payment.settled_by !== 'Razorpay';
+
+  //BounceMemosplitz experiment - only for enabled merchant bounce memo will be released based splitz experiment
+  const isBounceModalMemoEnabled = isBounceMemoEnabled(splitz);
 
   return (
     <div
@@ -642,7 +654,30 @@ function PaymentDetails(props) {
                       )
                     : '--'}
                 </EntityDetailRow>
-
+                <ShowWhen
+                  className="if-condition"
+                  additionalCondition={() =>
+                    ERRORCODETOCHECK.includes(payment.error_code) &&
+                    isBounceModalMemoEnabled &&
+                    paymentMethodtoCheck.includes(payment.method)
+                  }
+                >
+                  <EntityDetailRow label="Failed Trasaction Memo">
+                    <div>
+                      <button
+                        data-testid="failed-trasaction-memo"
+                        onClick={() => {
+                          openModal({
+                            size: 'med-large',
+                            component: <BounceMemoPopup paymentID={paymentId} />,
+                          });
+                        }}
+                      >
+                        <DownloadIcon /> Download
+                      </button>
+                    </div>
+                  </EntityDetailRow>
+                </ShowWhen>
                 {user.isPaymentPageReceiptsEnabled && (
                   <PaymentReceipt payment={payment} onUpdateReferenceId={onUpdateReferenceId} />
                 )}

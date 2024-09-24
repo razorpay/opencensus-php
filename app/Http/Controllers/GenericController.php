@@ -8,8 +8,8 @@ use Auth;
 use Route;
 use Input;
 use Config;
-use Request;
 use App\Admin;
+use Request;
 
 use App\User;
 use App\Generic;
@@ -91,6 +91,8 @@ class GenericController extends Controller
     const SUSPEND                    = 'suspend';
 
     const UNSUSPEND                  = 'unsuspend';
+
+    const EMANDATE_SERVICE = 'emandate/report/bounce-memo';
 
     public function handleAny($mode, $path = null)
     {
@@ -228,6 +230,24 @@ class GenericController extends Controller
         $headers = $this->getMobileOauthHeaders($data);
 
         return AppResponse::jsonResponse($error, $data, $httpCode, $headers);
+    }
+
+
+    public function bounceMemo()
+    {
+
+        $request = new App\Admin\ApiRequestAny([]);
+
+        $method = 'post';
+
+        try{
+            list($error, $data, $httpCode) = $request->send(self::EMANDATE_SERVICE, $method);
+        }
+        catch (\Throwable $e){
+            $app['trace']->info(TraceCode::BOUNCE_MEMO_REQUEST_FAILED, ['path' => self::EMANDATE_SERVICE, 'method' => $method]);
+        }
+        return AppResponse::jsonResponse($error, $data, $httpCode, $headers);
+
     }
 
     protected function checkAndDeleteUserSessions($path, $data, $httpCode)

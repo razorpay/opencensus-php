@@ -101,7 +101,8 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz",
     "xss": "1.0.11",
     "yup": "0.29.3",
-    "zustand": "3.1.2"
+    "zustand": "3.1.2",
+    "jspdf-autotable": "3.8.2"
   },
   "scripts": {
     "unit-tests": "NODE_PATH=./js mocha 'test/**/*.js' --full-trace --require @babel/register",

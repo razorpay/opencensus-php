@@ -440,6 +440,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'bounce_memo',
+        experimentId: {
+          beta: 'OxoBVeBzsXPKDk',
+          production: 'OxpakNuYuZTl3z',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

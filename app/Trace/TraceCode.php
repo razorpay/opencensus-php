@@ -319,13 +319,15 @@ class TraceCode
     const MES_CALL_FAILED       = 'MES_CALL_FAILED';
     const MES_CALL_SUCCESSFUL   = 'MES_CALL_SUCCESSFUL';
 
+    const BOUNCE_MEMO_REQUEST_FAILED = 'BOUNCE_MEMO_REQUEST_FAILED';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
         self::SLACK_QUERY_RESPONSE                  => 'Slack Query Response Log'
     );
 
-    //pg3.0 tracing 
+    //pg3.0 tracing
     const PG3_REDIRECTION = 'PG3_REDIRECTION';
 
     /**
