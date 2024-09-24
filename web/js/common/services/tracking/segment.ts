@@ -1,11 +1,12 @@
-import { v4 as uuid } from 'uuid';
-import store from 'merchant/store';
-import { getMode } from 'common/services/mode';
-import getMobileDetect from 'common/utils/mobileDetect';
-import axios from 'axios';
 import errorService from '@razorpay/universe-utils/errorService';
+import axios from 'axios';
+import { v4 as uuid } from 'uuid';
+
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { getMode } from 'common/services/mode';
 import { getCookie, setCookie } from 'common/utils/cookies';
+import getMobileDetect from 'common/utils/mobileDetect';
+import store from 'merchant/store';
 
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {
@@ -103,6 +104,7 @@ const getCommonProperties = ({ screen, properties, user }) => {
       window.razorpayAnalytics?.utils?.getCookie('auth_source') === 'website'
         ? 'Signup_experiment_1'
         : 'none',
+    sessionId: window?.session_id ? window.session_id : undefined,
     ...browser_details,
     ...properties,
     ...commonUserProperties,

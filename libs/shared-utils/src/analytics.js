@@ -210,6 +210,7 @@ export const analyticsTrack = ({
     window.analytics.track(
       eventName,
       {
+        sessionId: window?.session_id ? window.session_id : undefined,
         ...screenResolutions,
         ...properties,
         screen,
@@ -234,6 +235,7 @@ export const analyticsTrack = ({
     sendToLumberjack({
       eventName,
       properties: {
+        sessionId: window?.session_id ? window.session_id : undefined,
         ...properties,
         screen,
         eventTimestamp,
