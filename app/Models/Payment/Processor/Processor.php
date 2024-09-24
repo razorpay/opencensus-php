@@ -731,9 +731,9 @@ class Processor
         $this->merchant = $merchant;
         $this->methods = $merchant->getMethods();
 
-        $this->checkMerchantPermissions();
-
         $this->paymentRepo = $this->repo->payment;
+
+        $this->checkMerchantPermissions();
 
         $this->orderRepo = $this->repo->order;
 
@@ -6930,8 +6930,22 @@ class Processor
 
         $route = $this->app['request.ctx']->getRoute();
 
-        if ($mode === Mode::TEST)
+        $offlineRefundSkipRoutes = ['scrooge_entities_fetch','refund_scrooge_payment_update','refund_fetch_discount','refund_verify_call','refund_gateway_call','refund_update_status'];
+
+        $offlineCardSkipRoutes = ['payment_notify'];
+
+        //Temporary change to skip activation flag for offline refunds
+        if ($route === 'payment_refund' && $merchant->isOmniEnabled() === true)
         {
+            $paymentId = $this->app['request.ctx']->getRequest()->route('id');
+            $payment = $this->paymentRepo->findByPublicId($paymentId);
+            if ($payment->getSourceChannel() === Payment\Constant::IN_PERSON)
+            {
+                return;
+            }
+        }
+
+        if ((in_array($route, $offlineRefundSkipRoutes) || in_array($route, $offlineCardSkipRoutes)) && $merchant->isOmniEnabled() === true) {
             return;
         }
 
@@ -6939,12 +6953,29 @@ class Processor
         if ($merchant->isActivated())
         {
             return;
+        } else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true) {
+            //This is fix is for skipping permissions on pricing route only for omni enabled offline payments
+            $request = $this->app['request.ctx']->getRequest();
+            $entityId = $request->route('entityId');
+            $entityType = $request->route('entityType');
+            $this->trace->info(TraceCode::PCP_PRICING_FLOW_DEBUG_LOG, ['entityType' => $entityType, 'entityId' => $entityId]);
+            if ($entityType === 'payment') {
+                $payment = $this->paymentRepo->findByPublicId($entityId);
+                if ($payment->getSourceChannel() === Payment\Constant::IN_PERSON) {
+                    return;
+                }
+            }
         }
         else if (((\RZP\Http\Route::isBankingVirtualAccountCreationRoute($route))) ||
                  (($this->app['worker.ctx']->getJobName() === 'worker:fa_vpa_validation') &&
                   (new MerchantCore())->isXVaActivated($merchant)))
         {
             // TODO: remove this condition once PG onboarding & VA-activation are resumed.
+            return;
+        }
+
+        if ($mode === Mode::TEST)
+        {
             return;
         }
 

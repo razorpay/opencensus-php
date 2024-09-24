@@ -40,6 +40,10 @@ class Constant
 
     const PAYMENT_ID              = 'payment_id';
 
+    const INTERNAL_PRICING = 'internal_pricing';
+
+    const IN_PERSON = 'in_person';
+
     const S0101 = 'S0101';
     const S0102 = 'S0102';
 
