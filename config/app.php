@@ -709,10 +709,6 @@ return array(
 
     'cross_border_s2s_dcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_REARCH_EXPERIMENT_ID'),
 
-    'cross_border_mcc_rearch_experiment_id' => env('CROSS_BORDER_MCC_REARCH_EXPERIMENT_ID'),
-
-    'cross_border_s2s_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_MCC_REARCH_EXPERIMENT_ID'),
-
     'cross_border_mcc_parity_check_experiment_id' => env('CROSS_BORDER_MCC_PARITY_CHECK_EXPERIMENT_ID'),
 
     'fetch_flows_api_forex_rates_from_rearch_experiment_id' => env('FETCH_FLOWS_API_FOREX_RATES_FROM_REARCH_EXPERIMENT_ID'),

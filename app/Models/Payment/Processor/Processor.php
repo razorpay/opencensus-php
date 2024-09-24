@@ -869,9 +869,13 @@ class Processor
         return true;
     }
 
-    private function canRouteInternationalPaymentsViaRearchFlow($input, $merchant, $iin)
+    private function canRouteInternationalPaymentsViaRearchFlow($input, $merchant)
     {
         $result = false;
+
+        if($input['currency'] !== Currency\Currency::INR){
+            return false;
+        }
 
         if($merchant->isAddressRequiredEnabled() && !empty($input['billing_address'])){
             return false;
@@ -892,101 +896,16 @@ class Processor
             Payment\Analytics\Metadata::HOSTED
         ];
 
-        if($input['currency'] !== Currency\Currency::INR){
-            if(in_array($library,$internationalSupportedLibraries,true) and
-                (isset($input['dcc_currency']) == false or $input['dcc_currency'] == $input['currency'])
-            ){
-                $result = $this->evaluateSplitzExperimentforCrossBorderRearchMCCCheckoutJS($merchant);
-            }
-            else if($library == Payment\Analytics\Metadata::S2S
-                    and ((new Payment\Service)->isDccEnabledIIN($iin, $merchant) === false or
-                    $merchant->isFeatureEnabled(Feature::DISABLE_NATIVE_CURRENCY) or
-                    $input['currency'] == Currency\Currency::getCurrencyForCountry($iin->getCountry()))
-            ){
-                $result = $this->evaluateSplitzExperimentforCrossBorderRearchMCCS2S($merchant);
-            }
-        } else {
-            if(in_array($library,$internationalSupportedLibraries,true)) {
-                $result = $this->evaluateSplitzExperimentforCrossBorderRearchCheckoutJS($merchant);
-            }
-            else if($library == Payment\Analytics\Metadata::S2S) {
-                $result = $this->evaluateSplitzExperimentforCrossBorderRearchS2S($merchant);
-            }
+        if(in_array($library,$internationalSupportedLibraries,true)) {
+            $result = $this->evaluateSplitzExperimentforCrossBorderRearchCheckoutJS($merchant);
         }
+
+        if($library == Payment\Analytics\Metadata::S2S) {
+            $result = $this->evaluateSplitzExperimentforCrossBorderRearchS2S($merchant);
+        }
+
         return ($result == true);
     }
-
-    private function evaluateSplitzExperimentforCrossBorderRearchMCCCheckoutJS($merchant){
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.cross_border_mcc_rearch_experiment_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchant->getId(),
-                    ]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
-
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
-            );
-        }
-
-        return false;
-    }
-
-    private function evaluateSplitzExperimentforCrossBorderRearchMCCS2S($merchant)
-    {
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.cross_border_s2s_mcc_rearch_experiment_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchant->getId(),
-                    ]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
-
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
-            );
-        }
-
-        return false;
-    }
-
 
     private function evaluateSplitzExperimentforCrossBorderRearchCheckoutJs($merchant)
     {
@@ -1450,6 +1369,17 @@ class Processor
                 return true;
             }
 
+            if ((empty($input['currency']) === false) and
+                ($input['currency'] !== Currency\Currency::INR) and
+                $this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === false)
+            {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "non_inr_currency",
+                    'merchant_id' => $merchant->getId(),
+                ]);
+                return false;
+            }
+
             //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from CPS re-arch traffic
             $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_CPS, $this->mode);
             if ($result === 'on') {
@@ -1718,11 +1648,11 @@ class Processor
                 return false;
             }
 
-            if (($iin->isAmex() === false) and
-                (IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true) and
-                ($this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === false))
+
+            if ((($iin->isAmex() === false) and
+                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true))
             {
-                $result = $this->canRouteInternationalPaymentsViaRearchFlow($input,$merchant,$iin);
+                $result = $this->canRouteInternationalPaymentsViaRearchFlow($input,$merchant);
 
                 $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
                     'canRouteThroughCrossBorderRearchFlow'      =>  $result,
