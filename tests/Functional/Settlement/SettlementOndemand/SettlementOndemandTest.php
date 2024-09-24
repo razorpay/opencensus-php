@@ -1888,7 +1888,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotNull($secondMerchantFeature);
 
-        Mail::assertQueued(FullES::class, 2);
+        Mail::assertQueued(FullES::class, 0);
 
     }
 
@@ -2018,7 +2018,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($secondMerchantEsAutomaticFeature);
 
-        Mail::assertQueued(FullES::class, 2);
+        Mail::assertQueued(FullES::class, 0);
 
     }
 
@@ -2131,7 +2131,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotNull($secondMerchantFeature);
 
-        Mail::assertQueued(PartialES::class, 2);
+        Mail::assertQueued(PartialES::class, 0);
     }
 
     public function testEnableEsOnDemandRestrictedAccessFromBatchRoute()
@@ -2221,7 +2221,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotNull($secondMerchantOndemandFeature);
 
-        Mail::assertQueued(PartialES::class, 2);
+        Mail::assertQueued(PartialES::class, 0);
     }
 
     public function testEarlySettlementFeaturePeriodCreateFullAccess()
@@ -2971,7 +2971,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotNull($secondMerchantOndemandFeature);
 
-        Mail::assertQueued(PartialES::class, 2);
+        Mail::assertQueued(PartialES::class, 0);
     }
 
     public function testEnableFullOndemandViaCron()
@@ -3247,7 +3247,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($secondMerchantOndemandRestrictedFeature);
 
-        Mail::assertQueued(FullES::class);
+        Mail::assertQueued(FullES::class, 0);
 
     }
 
@@ -3369,7 +3369,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($secondMerchantOndemandRestrictedFeature);
 
-        Mail::assertQueued(FullES::class, 2);
+        Mail::assertQueued(FullES::class, 0);
 
     }
 
@@ -3432,7 +3432,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotNull($firstMerchantOndemandRestrictedFeature);
 
-        Mail::assertQueued(PartialES::class, 1);
+        Mail::assertQueued(PartialES::class, 0);
     }
 
     public function testOndemandCreationWithLimitExceededError()

@@ -524,32 +524,6 @@ class Core extends Base\Core
                     Entity::NEW_FEATURE       => $feature,
                 ]);
         }
-
-        else if(($feature->getName() === Constants::ES_ON_DEMAND) and
-                (in_array(Constants::ES_AUTOMATIC, $merchant->getEnabledFeatures()) === false) and
-                (in_array(Constants::ES_ON_DEMAND_RESTRICTED, $merchant->getEnabledFeatures()) === false) and
-                ($isLiveMode === true) and
-                $this->app['basicauth']->isAdminAuth() === true)
-        {
-            $merchantEmail = $merchant->getEmail();
-
-            $data['contact_name']  = $merchant->getName();
-            $data['contact_email'] = $merchantEmail;
-
-            $esEligibleEmail = new FullES($data);
-
-            Mail::queue($esEligibleEmail);
-
-            $this->trace->info(
-                TraceCode::ES_ELIGIBLE_MERCHANT_NOTIFIED,
-                [
-                    PublicEntity::MERCHANT_ID => $entityId,
-                    Entity::SHOULD_SYNC       => $shouldSync,
-                    Mode::LIVE                => $isLiveMode,
-                    Entity::NEW_FEATURE       => $feature,
-                    Merchant\Entity::EMAIL    => $merchantEmail
-                ]);
-        }
         else
         {
             $this->trace->info(

@@ -981,7 +981,7 @@ class FeaturesTest extends OAuthTestCase
 
         $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
 
-        Mail::assertQueued(FullESMail::class);
+        Mail::assertQueued(FullESMail::class, 0);
     }
 
     public function testEsEligibleEmailShouldNotNotify()

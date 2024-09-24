@@ -338,10 +338,11 @@ class Service extends Base\Service
             $mail = new PartialES($data);
         }
 
-        Mail::queue($mail);
+        // Disabling merchant mail on request of PM. JIRA: LOCIS-2169
+        //Mail::queue($mail);
 
         $this->trace->info(
-            TraceCode::ES_ONDEMAND_ENABLED_MERCHANT_NOTIFIED,
+            TraceCode::ES_ONDEMAND_ENABLED_MERCHANT_NOT_NOTIFIED,
             [
                 'merchant_id' => $merchant->getId(),
                 'full_access' => $fullAccess

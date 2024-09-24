@@ -5926,7 +5926,8 @@ class Service extends Base\Service
 
             $esNotifyMerchantEmail = new EsEnabledNotify($merchantMailerData);
 
-            Mail::queue($esNotifyMerchantEmail);
+            // Disabling merchant mail on request of PM. JIRA: LOCIS-2169
+            //Mail::queue($esNotifyMerchantEmail);
         }
     }
 
