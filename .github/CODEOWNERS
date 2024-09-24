@@ -61,7 +61,7 @@ app/Models/Merchant/AccessMap/MigrateKongTarget.php           @razorpay/spine-ed
 app/Models/Merchant/AccessMap/MigrateSource.php               @razorpay/spine-edge
 app/Models/OAuthApplication/                                  @razorpay/spine-edge
 app/Models/OAuthToken/                                        @razorpay/spine-edge
-app/Models/FeeRecovery/                                       @razorpay/x-acquisition-be
+app/Models/FeeRecovery/                                       @razorpay/Payouts-core
 app/Models/BankingAccount/                                    @razorpay/x-acquisition-be
 app/Models/BankingAccountService/                             @razorpay/x-acquisition-be
 #
@@ -99,7 +99,7 @@ tests/Functional/Transfer/                             @razorpay/enterprise-apps
 tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
 tests/Functional/Edge/                                 @razorpay/spine-edge
-tests/Functional/FeeRecovery/                          @razorpay/x-acquisition-be
+tests/Functional/FeeRecovery/                          @razorpay/Payouts-core
 tests/Functional/BankingAccount/                       @razorpay/x-acquisition-be
 tests/Functional/BankingAccountService/                @razorpay/x-acquisition-be
 tests/Functional/Merchant/MerchantBankingInvoiceTest.php   @razorpay/x-acquisition-be
@@ -115,7 +115,7 @@ app/Jobs/BulkMigrateAggregatorToResellerJob.php        @razorpay/spine-edge
 app/Jobs/BulkMigrateResellerToAggregatorJob.php        @razorpay/spine-edge
 app/Jobs/TriggerAcsFullSync.php                        @razorpay/spine-edge @razorpay/identity-core
 app/Jobs/TriggerAcsSync.php                            @razorpay/spine-edge @razorpay/identity-core
-app/Jobs/FeeRecovery.php                               @razorpay/x-acquisition-be
+app/Jobs/FeeRecovery.php                               @razorpay/Payouts-core
 app/Jobs/BankingAccount/                               @razorpay/x-acquisition-be
 #
 # Mails
@@ -321,7 +321,7 @@ app/Jobs/ProductConfig                                     @razorpay/partnership
 #
 # X Acquisition BE
 #
-app/Http/Controllers/FeeRecoveryController.php             @razorpay/x-acquisition-be
+app/Http/Controllers/FeeRecoveryController.php             @razorpay/Payouts-core
 resources/views/emails/banking_account/                    @razorpay/x-acquisition-be
 resources/views/merchant/invoice/invoice.blade.php         @razorpay/x-acquisition-be
 

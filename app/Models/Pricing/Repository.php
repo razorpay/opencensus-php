@@ -721,6 +721,56 @@ class Repository extends Base\Repository
         }
     }
 
+    // Fetches the default pricing rules for Fee Recovery payout
+    public function getBankingAccountRzpFeesDefaultPricingRules(string $feature,
+                                                                         Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->getOrgId();
+
+        $cacheTags = Entity::getCacheTagsForAccountType($this->entity, $orgId, Fee::DEFAULT_BANKING_PLAN_ID, $feature, '', Payout\Purpose::RZP_FEES);
+
+        try
+        {
+            $query = $this->newQuery()
+                ->product(Product::BANKING)
+                ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                ->where(Pricing\Entity::ACCOUNT_TYPE,'=',AccountType::DIRECT)
+                ->where(Pricing\Entity::FEATURE, '=', $feature)
+                ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Purpose::RZP_FEES)
+                ->remember($this->getCacheTtl())
+                ->cacheTags($cacheTags);
+
+            // see comment in config/pricing.php
+            if (self::shouldDistributeQueryCacheLoad($merchant) === true)
+            {
+                $prefix = self::getQueryCachePrefixForDistributingLoad();
+
+                $query = $query->prefix($prefix);
+            }
+
+            return $query->get();
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PRICING_QUERY_CACHE_ERROR);
+
+            return $this->newQuery()
+                ->product(Product::BANKING)
+                ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                ->where(Pricing\Entity::ACCOUNT_TYPE,'=',AccountType::DIRECT)
+                ->where(Pricing\Entity::FEATURE, '=', $feature)
+                ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Purpose::RZP_FEES)
+                ->get();
+        }
+    }
+
     /**
      * @param string $feature
      * @param Merchant\Entity $merchant

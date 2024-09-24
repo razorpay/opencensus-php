@@ -509,6 +509,23 @@ class Plan extends PublicCollection
         return false;
     }
 
+    //This method will check if there is already a pricing rule related to RZP_FEES, if yes then return true
+    public function hasBankingAccountRzpFeesRule(): bool
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if (($rule->isBankingProduct() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->getPayoutsFilter() === Payout\Purpose::RZP_FEES))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function hasAppPayoutPricingRule(): bool
     {
         /** @var Entity $rule */

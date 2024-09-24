@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Jobs\FeeRecoveryLowBalance;
 use RZP\Mail\FeeRecovery\LowBalanceAlert;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -504,6 +505,25 @@ class FeeRecoveryTest extends TestCase
         ];
 
         $this->ba->adminAuth();
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'on',
+        ], 'control');
+
+        $this->fixtures->create('pricing', [
+            'id'             => 'custompricing1',
+            'plan_id'        => 'BTo98voDY05ueB',
+            'plan_name'      => 'testFeeRecoveryZeroPricing',
+            'org_id'         => '100000razorpay',
+            'product'        => 'banking',
+            'feature'        => 'payout',
+            'type'           => 'pricing',
+            'payment_method' => 'fund_transfer',
+            'account_type'   => 'direct',
+            'payouts_filter' => Payout\Purpose::RZP_FEES,
+            'fixed_rate'     => 0,
+            'percent_rate'   => 0,
+        ]);
 
         $this->startTest();
 
@@ -3426,6 +3446,159 @@ class FeeRecoveryTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($data);
+    }
+
+    public function testFeeRecoveryZeroPricingFees()
+    {
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+
+        Carbon::setTestNow($oldTime);
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
+
+        // Create first payout
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $oldTimeStamp]);
+
+        $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
+
+        $balanceId = $this->balance->getId();
+
+        $startTime = Carbon::create(2020, 1, 1, null, null, null)->getTimestamp();
+        $endTime   = Carbon::create(2020, 1, 8, null, null, null)->getTimestamp();
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $balanceId,
+            'from'          => $startTime,
+            'to'            => $endTime,
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'on',
+        ], 'control');
+
+        $this->fixtures->create('pricing', [
+            'id'             => 'custompricing1',
+            'plan_id'        => 'BTo98voDY05ueB',
+            'plan_name'      => 'testFeeRecoveryZeroPricing',
+            'org_id'         => '100000razorpay',
+            'product'        => 'banking',
+            'feature'        => 'payout',
+            'type'           => 'pricing',
+            'payment_method' => 'fund_transfer',
+            'account_type'   => 'direct',
+            'payouts_filter' => Payout\Purpose::RZP_FEES,
+            'fixed_rate'     => 0,
+            'percent_rate'   => 0,
+        ]);
+
+        $this->startTest();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        // Moving this payout to initiated
+        $feeRecoveryPayout->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryPayout->saveOrFail();
+
+        // Fee Recovery entity for initial payout
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $payout['id']])->toArray();
+
+        $this->assertEquals($payout['id'], $feeRecovery1['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery1['status']);
+        $this->assertEquals($feeRecovery1['type'], FeeRecovery\Type::DEBIT);
+        $this->assertEquals(1, $feeRecovery1['attempt_number']);
+        $this->assertEquals($feeRecovery1['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        //assert that fees for fee recovery payout is 0
+        $this->assertEquals(0, $feeRecoveryPayout->getAttribute('fees'));
+        $this->assertEquals('custompricing1', $feeRecoveryPayout->getAttribute('pricing_rule_id'));
+    }
+
+    public function testFeeRecoveryZeroPricingFeesExperimentDisabled()
+    {
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+
+        Carbon::setTestNow($oldTime);
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
+
+        // Create first payout
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $oldTimeStamp]);
+
+        $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
+
+        $balanceId = $this->balance->getId();
+
+        $startTime = Carbon::create(2020, 1, 1, null, null, null)->getTimestamp();
+        $endTime   = Carbon::create(2020, 1, 8, null, null, null)->getTimestamp();
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $balanceId,
+            'from'          => $startTime,
+            'to'            => $endTime,
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->setMockRazorxTreatment([
+            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'off',
+        ], 'control');
+
+        $this->fixtures->create('pricing', [
+            'id'             => 'custompricing1',
+            'plan_id'        => 'BTo98voDY05ueB',
+            'plan_name'      => 'testFeeRecoveryZeroPricing',
+            'org_id'         => '100000razorpay',
+            'product'        => 'banking',
+            'feature'        => 'payout',
+            'type'           => 'pricing',
+            'payment_method' => 'fund_transfer',
+            'account_type'   => 'direct',
+            'payouts_filter' => Payout\Purpose::RZP_FEES,
+            'fixed_rate'     => 0,
+            'percent_rate'   => 0,
+        ]);
+
+        $this->startTest();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        // Moving this payout to initiated
+        $feeRecoveryPayout->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryPayout->saveOrFail();
+
+        // Fee Recovery entity for initial payout
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $payout['id']])->toArray();
+
+        $this->assertEquals($payout['id'], $feeRecovery1['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery1['status']);
+        $this->assertEquals($feeRecovery1['type'], FeeRecovery\Type::DEBIT);
+        $this->assertEquals(1, $feeRecovery1['attempt_number']);
+        $this->assertEquals($feeRecovery1['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        $this->assertNotNull($feeRecoveryPayout->getAttribute('pricing_rule_id'));
+        $this->assertNotEquals('custompricing1', $feeRecoveryPayout->getAttribute('pricing_rule_id'));
     }
 
     public function testCreateFeeRecoveryPayoutJobViaAdminAction()

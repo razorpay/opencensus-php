@@ -558,6 +558,23 @@ class Fee extends Base\Core
 //            $pricingPlan = $pricingPlan->merge($rules);
 //        }
 
+        $variantFlag = $this->app['razorx']->getTreatment(
+            $merchant->getId(),
+            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT,
+            Mode::LIVE);
+
+        //We are adding Zero Pricing Fee Recovery rule if there is no rules for RZP_FEES
+        if ($variantFlag === 'on')
+        {
+            $this->app['request']->merge(['zeroPricingForFeeRecoveryFlag' => true]);
+
+            if ($pricingPlan->hasBankingAccountRzpFeesRule() === false)
+            {
+                $rules = $this->repo->getBankingAccountRzpFeesDefaultPricingRules(Feature::PAYOUT, $merchant);
+                $pricingPlan = $pricingPlan->merge($rules);
+            }
+        }
+
         return $pricingPlan;
     }
 
@@ -689,4 +706,5 @@ class Fee extends Base\Core
 
         return $pricingPlan;
     }
+
 }

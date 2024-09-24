@@ -78,11 +78,8 @@ class Payout extends Base
         $accountType   = $balance->getAccountType();
         $channel       = $balance->getChannel();
         $authType      = $this->getAuthForPayout();
-        $payoutsFilter = $this->getChargeCollectionPayoutsFilter();
-        if ($payoutsFilter === null)
-        {
-            $payoutsFilter = $this->getFreePayoutsFilter();
-        }
+        $payoutsFilter = $this->getPayoutsFilter();
+
 
         $payoutSourceDetails = $this->entity->getSourceDetailsAttribute();
         $payoutSourceDetails = $payoutSourceDetails->toArray();
@@ -169,9 +166,32 @@ class Payout extends Base
                                                 PayoutModel\Entity::FREE_PAYOUT : null;
     }
 
-    protected function getChargeCollectionPayoutsFilter()
+    // Sets Payout Filter based on the purpose of the payout
+    protected function getPayoutsFilter()
     {
-        return ($this->entity->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) ?
-            Purpose::RZP_CHARGE_COLLECTIONS : null;
+        $purpose = $this->entity->getPurpose();
+        $payoutsFilter = null;
+
+        if ($purpose === Purpose::RZP_CHARGE_COLLECTIONS)
+        {
+            $payoutsFilter = $purpose;
+        }
+
+        if ($purpose === Purpose::RZP_FEES)
+        {
+            $isZeroPricingEnabledForFeeRecovery = $this->app['request']->input('zeroPricingForFeeRecoveryFlag', false);
+
+            if ($isZeroPricingEnabledForFeeRecovery === true)
+            {
+                $payoutsFilter = $purpose;
+            }
+        }
+
+        if ($payoutsFilter === null)
+        {
+            $payoutsFilter = $this->getFreePayoutsFilter();
+        }
+
+        return $payoutsFilter;
     }
 }

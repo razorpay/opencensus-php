@@ -222,6 +222,20 @@ class Base extends FundAccountPayout\Base
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
         }
 
+        // Zero Pricing for Fee Recovery Payout.
+        if (($payout->getPurpose() === Purpose::RZP_FEES) and
+            (($fees != 0) or ($tax != 0)))
+        {
+            $this->trace->info(
+                TraceCode::FEES_NON_ZERO_FOR_RZP_FEES_PAYOUT,
+                [
+                    'payout_id'     => $payout->getId(),
+                    'fees'          => $fees,
+                    'tax'           => $tax,
+                    'pricing_rule'  => $pricingRuleId,
+                ]);
+        }
+
         // Zero pricing for charge collections payout.
         if (($payout->getPurpose() === Purpose::RZP_CHARGE_COLLECTIONS) and
             (($fees !== 0) or ($tax !== 0)))
