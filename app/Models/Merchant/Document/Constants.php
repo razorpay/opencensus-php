@@ -25,6 +25,7 @@ class Constants
     const ENTITY      = 'entity';
     const MERCHANT    = 'merchant';
     const URL         = 'url';
+    const SIZE        = 'size';
 
     const PROCESSED          = 'processed';
 

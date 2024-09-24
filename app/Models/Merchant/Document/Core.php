@@ -201,6 +201,9 @@ class Core extends Base\Core
     public function uploadActivationFile(
         Merchant\Entity $merchant, array $input, bool $validateLock = true, $rule = 'uploadDocument', Base\PublicEntity $entity = null)
     {
+        $size = $input[Constants::SIZE];
+        unset($input[Constants::SIZE]);
+
         (new Validator())->validateDocumentTypeAndFileType($rule, $input);
 
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
@@ -248,6 +251,7 @@ class Core extends Base\Core
                     "file_store_id"      => $fileAttributes[$documentType]['file_id'],
                     "merchant_id"        => $merchantId,
                     "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
+                    "size"               => $size ? (int)($size): 0,
                 ];
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
