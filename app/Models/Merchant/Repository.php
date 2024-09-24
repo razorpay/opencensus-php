@@ -1614,10 +1614,12 @@ class Repository extends Base\Repository
 
         $this->buildQueryWithParams($query, $params);
 
-        $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
-              ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc');
+        $submerchant = $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
+              ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc')
+            ->firstOrFailPublic();
 
-        return $query->firstOrFailPublic();
+        $this->resetConnectionOnModels($submerchant);
+        return $submerchant;
 
     }
 
@@ -1756,6 +1758,8 @@ class Repository extends Base\Repository
 
         $submerchants = $query->get();
 
+        $this->resetConnectionOnModels($submerchants);
+
         return $submerchants;
     }
 
@@ -1832,7 +1836,17 @@ class Repository extends Base\Repository
         // merchantDetail is not fetched as a relation below because
         // a filter has to be added for merchantDetail.activation_status in the query
         //
-        $query = $this->newQuery()
+
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__))
+        {
+            $queryWithConnection = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        }
+        else
+        {
+            $queryWithConnection = $this->newQuery();
+        }
+
+        $query = $queryWithConnection
                       ->with($relations)
                       ->select($attributes)
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
@@ -2110,9 +2124,18 @@ class Repository extends Base\Repository
 
         $aggregateResults = new Base\PublicCollection;
 
+        if($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__))
+        {
+            $queryWithConnection = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        }
+        else
+        {
+            $queryWithConnection = $this->newQuery();
+        }
+
         foreach ($chunkedIdsList as $chunkedIds)
         {
-            $appConfig = $this->newQuery()
+            $appConfig = $queryWithConnection
                               ->select($attributes)
                               ->join(
                                   Table::MERCHANT_ACCESS_MAP,
@@ -2143,6 +2166,8 @@ class Repository extends Base\Repository
 
             $aggregateResults = $aggregateResults->concat($results);
         }
+
+        $this->resetConnectionOnModels($aggregateResults);
 
         return $aggregateResults;
     }
