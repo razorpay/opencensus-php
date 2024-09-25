@@ -2578,7 +2578,7 @@ class Service extends Base\Service
         }
 
         $input[Constants::OAUTH_SOURCE] = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
-        $input[Constants::OAUTH_PROVIDER] = json_encode(array($input[Constants::OAUTH_PROVIDER]));
+        $input[Constants::OAUTH_PROVIDER] = json_encode(array(array_get($input, Constants::OAUTH_PROVIDER,'')));
 
         $request = new ApiRequestAny();
 
