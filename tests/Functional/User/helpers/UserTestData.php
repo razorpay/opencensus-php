@@ -795,6 +795,80 @@ return [
         ],
     ],
 
+    'testEmailAndPasswordLoginWithEmptyDefaultMerchantId' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'merchants'               => [
+                    [
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testEmailAndPasswordLoginWithValidDefaultMerchantId' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'merchants'               => [
+                    [
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testEmailAndPasswordLoginWithInValidDefaultMerchantId' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'merchants'               => [
+                    [
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testLoginWithDefaultMerchantIdFound' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testLoginWithDCSCaptchaTrue' => [
         'request' => [
             'url'     => '/users/login',
@@ -1582,6 +1656,42 @@ return [
                     ]
                 ]
             ],
+        ],
+    ],
+
+    'testMobileAndOtpLoginWithEmptyDefaultMerchantId' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testMobileAndOtpLoginWithValidDefaultMerchantId' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testMobileAndOtpLoginWithInvalidDefaultMerchantId' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 
@@ -2517,6 +2627,45 @@ return [
                         'role'         => 'owner'
                     ]
                 ]
+            ],
+        ],
+    ],
+
+    'testOAuthLoginWithEmptyDefaultMerchantId' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testOAuthLoginWithValidDefaultMerchantId' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testOAuthLoginWithInvalidDefaultMerchantId' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],

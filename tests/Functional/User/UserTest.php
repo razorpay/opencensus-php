@@ -1495,6 +1495,334 @@ class UserTest extends TestCase
         $this->assertFalse(isset($response['merchants'][0]['methods']));
     }
 
+    public function testEmailAndPasswordLoginWithEmptyDefaultMerchantId()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' =>  'hello123']);
+
+        $firstMerchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->first();
+
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'razorpay_sales',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // The first owner merchant is the first merchant
+        $this->assertEquals($response['merchants'][0]['id'], $firstMerchantUser->merchant_id);
+    }
+
+    public function testEmailAndPasswordLoginWithValidDefaultMerchantId()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' =>  'hello123']);
+
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'owner',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7'],
+            'default_merchant_id'   => $secondMerchant['id']
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // Only the default merchant is returned
+        $this->assertEquals($response['merchants'][0]['id'], $secondMerchant['id']);
+        $this->assertEquals(count($response['merchants']), 1);
+    }
+
+    public function testEmailAndPasswordLoginWithInValidDefaultMerchantId()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' =>  'hello123']);
+
+        $firstMerchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->first();
+
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'owner',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7'],
+            'default_merchant_id'   => 'invalidmid0001'
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // The first owner merchant is the first merchant since the default merchant id is invalid
+        $this->assertEquals($response['merchants'][0]['id'], $firstMerchantUser->merchant_id);
+    }
+
+    public function testMobileAndOtpLoginWithEmptyDefaultMerchantId()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9087654322', 'contact_mobile_verified' => true]);
+
+        $firstMerchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->first();
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'razorpay_sales',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'otp'            => '0007',
+            'token'          => 'Gvt61zZ3Iwzcqy',
+            'contact_mobile' => $user['contact_mobile'],
+            'captcha'        => 'faked'
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // The first owner merchant is the first merchant
+        $this->assertEquals($response['merchants'][0]['id'], $firstMerchantUser->merchant_id);
+    }
+
+    public function testMobileAndOtpLoginWithValidDefaultMerchantId()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9087654322', 'contact_mobile_verified' => true]);
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'razorpay_sales',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'otp'            => '0007',
+            'token'          => 'Gvt61zZ3Iwzcqy',
+            'contact_mobile' => $user['contact_mobile'],
+            'captcha'        => 'faked',
+            'default_merchant_id'   => $secondMerchant['id'],
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // Only the default merchant is returned
+        $this->assertEquals($response['merchants'][0]['id'], $secondMerchant['id']);
+        $this->assertEquals(count($response['merchants']), 1);
+    }
+
+    public function testMobileAndOtpLoginWithInvalidDefaultMerchantId()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9087654322', 'contact_mobile_verified' => true]);
+
+        $firstMerchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->first();
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'owner',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'otp'            => '0007',
+            'token'          => 'Gvt61zZ3Iwzcqy',
+            'contact_mobile' => $user['contact_mobile'],
+            'captcha'        => 'faked',
+            'default_merchant_id'   => 'invalidmid0001'
+        ];
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // The first owner merchant is the first merchant since the default merchant id is invalid
+        $this->assertEquals($response['merchants'][0]['id'], $firstMerchantUser->merchant_id);
+    }
+
+    public function testOAuthLoginWithEmptyDefaultMerchantId()
+     {
+         // user already exists with confirmed password
+         $user = $this->fixtures->create('user', [
+             'email' => 'oauth_login_with_empty_default_mid@gmail.com',
+             'oauth_provider' => "[\"google\"]",
+         ]);
+
+         $firstMerchantUser = DB::table('merchant_users')
+             ->where('user_id', '=', $user['id'])
+             ->first();
+         $secondMerchant = $this->fixtures->create('merchant');
+
+         $this->fixtures->create('merchant_user', [
+             'merchant_id'   => $secondMerchant['id'],
+             'user_id'       => $user['id'],
+             'role'          => 'razorpay_sales',
+             'product'       => 'primary'
+         ]);
+
+         $testData = & $this->testData[__FUNCTION__];
+
+         $content = [
+             'email' => $user['email'],
+             'oauth_provider' => $user['oauth_provider'],
+             'id_token'       => 'valid id token'
+         ];
+
+         $testData['request']['content'] = $content;
+
+         $this->ba->dashboardGuestAppAuth();
+
+         $response = $this->startTest();
+
+         // The first owner merchant is the first merchant
+         $this->assertEquals($response['merchants'][0]['id'], $firstMerchantUser->merchant_id);
+     }
+
+    public function testOAuthLoginWithValidDefaultMerchantId()
+    {
+        // user already exists with confirmed password
+        $user = $this->fixtures->create('user', [
+            'email' => 'oauth_login_with_valid_default_mid@gmail.com',
+            'oauth_provider' => "[\"google\"]",
+        ]);
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'razorpay_sales',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email' => $user['email'],
+            'oauth_provider' => $user['oauth_provider'],
+            'id_token'       => 'valid id token',
+            'default_merchant_id'   => $secondMerchant['id'],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // Only the default merchant is returned
+        $this->assertEquals($response['merchants'][0]['id'], $secondMerchant['id']);
+        $this->assertEquals(count($response['merchants']), 1);
+    }
+
+    public function testOAuthLoginWithInvalidDefaultMerchantId()
+    {
+        // user already exists with confirmed password
+        $user = $this->fixtures->create('user', [
+            'email' => 'oauth_login_with_invalid_default_mid@gmail.com',
+            'oauth_provider' => "[\"google\"]",
+        ]);
+        $firstMerchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->first();
+        $secondMerchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $secondMerchant['id'],
+            'user_id'       => $user['id'],
+            'role'          => 'owner',
+            'product'       => 'primary'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email' => $user['email'],
+            'oauth_provider' => $user['oauth_provider'],
+            'id_token'       => 'valid id token',
+            'default_merchant_id'   => 'invalidmid0001',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // The first owner merchant is the first merchant since the default merchant id is invalid
+        $this->assertEquals($response['merchants'][0]['id'], $firstMerchantUser->merchant_id);
+    }
     public function testLoginWithDCSCaptchaTrue()
     {
         $dcsConfigServiceMock = $this->getMockBuilder( DcsConfigService::class)

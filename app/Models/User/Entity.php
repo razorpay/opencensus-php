@@ -135,6 +135,9 @@ class Entity extends Base\PublicEntity
     const SKIP_SMS_REQUEST    = 'skip_sms_request';
     const XPERIENCE = 'xperience';
 
+    // Constant for segregating user and merchant login / signup
+    const DEFAULT_MERCHANT_ID = 'default_merchant_id';
+
     protected $fillable = [
         self::ID,
         self::NAME,
@@ -287,9 +290,28 @@ class Entity extends Base\PublicEntity
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 
-    public function getNonSuspendedMerchants($limit)
+    public function getNonSuspendedMerchants($limit, $defaultMerchantId = null)
     {
-        $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRole($this->getAttribute(self::ID), $limit);
+        $merchantUsers = [];
+
+        if ($defaultMerchantId !== null) {
+            $merchantUsers = (new MerchantUser\Repository)->returnMerchantUserForUserIdMerchantIdOrderByRole($this->getAttribute(self::ID), $defaultMerchantId)->where(Entity::PRODUCT, '!=', Product::BILLING);
+
+            if (count($merchantUsers) === 0) {
+                app('trace')->warning(TraceCode::USER_DEFAULT_MERCHANT_NOT_FOUND, [
+                    'defaultMerchantId' => $defaultMerchantId,
+                ]);
+            } else {
+                app('trace')->info(TraceCode::USER_DEFAULT_MERCHANT_FOUND, [
+                    'defaultMerchantId' => $defaultMerchantId,
+                ]);
+            }
+        }
+
+        if (count($merchantUsers) === 0) {
+            $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRole($this->getAttribute(self::ID), $limit);
+        }
+
         $merchantIds    = [];
 
         foreach ($merchantUsers as $merchantUser) {
@@ -297,6 +319,7 @@ class Entity extends Base\PublicEntity
         }
 
         $uniqueMerchantIds = array_values(array_unique($merchantIds));
+
         $merchants =  (new Merchant\Repository)->getNonSuspendedMerchantsFromIds($uniqueMerchantIds);
 
         $merchantsWithPivot = $this->addPivot($merchantUsers, $merchants);

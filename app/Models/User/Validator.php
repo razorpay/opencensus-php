@@ -235,6 +235,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE   => 'sometimes|string',
         Entity::APP               => 'sometimes|string',
         MDEntity::REFERRAL_CODE   => 'filled|string',
+        Entity::DEFAULT_MERCHANT_ID => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $loginMobileRules = [
@@ -264,11 +265,13 @@ class Validator extends Base\Validator
         MDEntity::REFERRAL_CODE           => 'filled|string',
         Entity::SKIP_SMS_REQUEST          => 'sometimes|boolean',
         PartnerConstants::CLIENT_ID            => 'sometimes|string',
-        PartnerConstants::ONBOARDING_SIGNATURE => 'sometimes|string'
+        PartnerConstants::ONBOARDING_SIGNATURE => 'sometimes|string',
+        Entity::DEFAULT_MERCHANT_ID       => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $loginOtp2faPasswordRules = [
-        Entity::PASSWORD        => 'required|between:6,50'
+        Entity::PASSWORD        => 'required|between:6,50',
+        Entity::DEFAULT_MERCHANT_ID => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $loginOauthRules = [
@@ -278,6 +281,7 @@ class Validator extends Base\Validator
         Constants::OAUTH_SOURCE   => 'sometimes|string',
         Entity::APP               => 'sometimes|string',
         MDEntity::REFERRAL_CODE   => 'filled|string',
+        Entity::DEFAULT_MERCHANT_ID => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $sendVerificationOtpRules = [
@@ -298,6 +302,7 @@ class Validator extends Base\Validator
 
     protected static $verifyUserSecondFactorRules = [
         Entity::OTP                   => 'required|string|between:4,6',
+        Entity::DEFAULT_MERCHANT_ID   => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $setup2faMobileRules = [

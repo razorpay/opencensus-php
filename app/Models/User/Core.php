@@ -1531,7 +1531,7 @@ class Core extends Base\Core
             $this->app['x-segment']->sendEventToSegment(SegmentEvent::USER_LOGIN, $merchant);
         }
 
-        return $this->get($user, true);
+        return $this->get($user, true, $input);
     }
 
     /**
@@ -2591,7 +2591,7 @@ class Core extends Base\Core
 
         $this->updateUserContactMobileVerified($user, $onboardingSignatureSet);
 
-        return $this->get($user);
+        return $this->get($user, false, $input);
     }
 
     /**
@@ -2663,7 +2663,7 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::LOGIN_2FA_CORRECT_PASSWORD);
 
-        return $this->get($user);
+        return $this->get($user, false, $input);
     }
 
     /** Send an otp to an email to verify it.
@@ -3192,7 +3192,7 @@ class Core extends Base\Core
             $this->app['x-segment']->sendEventToSegment(SegmentEvent::USER_LOGIN, $merchant);
         }
 
-        $response = array_merge($response, $this->get($user, true));
+        $response = array_merge($response, $this->get($user, true, $input));
 
         return $response;
     }
@@ -3477,7 +3477,7 @@ class Core extends Base\Core
 
             $this->resetUserWrong2faAttempts($user);
 
-            return $this->get($user);
+            return $this->get($user, false, $input);
         }
         else
         {
@@ -4108,9 +4108,10 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function get(Entity $user, bool $optimize = false): array
+    public function get(Entity $user, bool $optimize = false, $input = []): array
     {
         $response = $user->toArrayPublic();
+        $defaultMerchantId = $input[Entity::DEFAULT_MERCHANT_ID] ?? null;
 
         //$merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
         // Refer to SBB-1061.
@@ -4154,9 +4155,27 @@ class Core extends Base\Core
         ]);
 
         if ((new AsvRouter())->shouldRouteFilterToAsv('UserCoreGet')) {
-            $merchantEntities = $user->getNonSuspendedMerchants($limit);
+            $merchantEntities = $user->getNonSuspendedMerchants($limit, $defaultMerchantId);
         } else {
-            $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take($limit)->get();
+            $merchantEntities = [];
+
+            if ($defaultMerchantId !== null) {
+                $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->where(Merchant\Entity::MERCHANT_ID, $defaultMerchantId)->get();
+
+                if (count($merchantEntities) === 0) {
+                    $this->trace->warning(TraceCode::USER_DEFAULT_MERCHANT_NOT_FOUND, [
+                        'defaultMerchantId' => $defaultMerchantId,
+                    ]);
+                } else {
+                    $this->trace->info(TraceCode::USER_DEFAULT_MERCHANT_FOUND, [
+                        'defaultMerchantId' => $defaultMerchantId,
+                    ]);
+                }
+            }
+
+            if (count($merchantEntities) === 0) {
+                $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take($limit)->get();
+            }
         }
 
         $merchantIdsWithCrossOrgFeature = $this->app['dcs']->fetchEntityIdsByFeatureName(DcsConstants::CrossOrgLogin, Type::MERCHANT, $this->mode);
