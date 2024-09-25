@@ -6,6 +6,8 @@ use Mail;
 
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Account\Entity as AccountEntity;
+use RZP\Models\Merchant\Account\Repository as AccountRepo;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Dcs\Features\Service;
@@ -15,7 +17,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
-
+use \Illuminate\Database\Query\Builder as QueryBuilder;
 class AccountTest extends TestCase
 {
     use RequestResponseFlowTrait;
@@ -35,6 +37,29 @@ class AccountTest extends TestCase
 
         $this->mockApachePinot();
 
+    }
+
+    public function testForAddQueryParamId()
+    {
+
+        $queryMock = $this->createMock(QueryBuilder::class);
+
+        $params = [AccountEntity::ID => 'acc_123456'];
+
+        $queryMock->expects($this->once())
+            ->method('where')
+            ->with($this->equalTo(AccountEntity::ID), $this->equalTo('='), $this->equalTo('123456'));
+
+
+        $repo = new AccountRepo();
+
+        // Use Reflection to access the protected method
+        $reflection = new \ReflectionClass($repo);
+        $method = $reflection->getMethod('addQueryParamId');
+        $method->setAccessible(true);
+
+        // Invoke the protected method with the mock and parameters
+        $method->invoke($repo, $queryMock, $params);
     }
 
     private function mockApachePinot()

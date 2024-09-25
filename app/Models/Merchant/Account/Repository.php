@@ -6,7 +6,6 @@ use RZP\Base\Fetch;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Entity;
 
 class Repository extends Merchant\Repository
 {
