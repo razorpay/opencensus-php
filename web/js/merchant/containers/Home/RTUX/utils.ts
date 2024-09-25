@@ -1,7 +1,7 @@
 import { useStore } from 'shell/commonStore';
 
 import { useSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
+import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { User } from 'common/typings';
 
@@ -11,6 +11,9 @@ interface RTUXHomepageEnabled {
 }
 
 export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabled): boolean => {
+  const isInternalTesting = isInternalTestingEnabled(abExperiments);
+  if (isInternalTesting) return true;
+
   const isActivated = user?.isAccepted;
   // enabled for activated user and rzp org and non-partner accounts
 

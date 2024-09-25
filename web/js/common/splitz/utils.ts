@@ -71,3 +71,8 @@ export const getSplitzRequestData = (experiment: VariantConfigArgs) => {
       }
     : defaultRequestData;
 };
+
+export const isInternalTestingEnabled = (experiment): boolean => {
+  const isRazorpayMerchant = window.rzp_user?.email?.endsWith('@razorpay.com');
+  return isRazorpayMerchant && isExperimentEnabled(experiment?.internal_testing_whitelisting);
+};

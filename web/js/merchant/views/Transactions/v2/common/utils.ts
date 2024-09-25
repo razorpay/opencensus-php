@@ -10,7 +10,7 @@ import { Option } from 'common/components/Dropdown/types';
 import { ANALYTICS } from 'common/constant';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { SpiltzContextState } from 'common/splitz/types';
-import { isExperimentEnabled } from 'common/splitz/utils';
+import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getDateFormat } from 'common/utils/date-utils';
@@ -211,6 +211,9 @@ export const getCreatedOnTime = ({ created_at }: { created_at: number }): string
 
 export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User): boolean => {
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
+
+  const isInternalTesting = isInternalTestingEnabled(abExperiments);
+  if (isInternalTesting) return true;
 
   if (!abExperiments?.Transactions_Revamp) return false;
 

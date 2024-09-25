@@ -1,7 +1,7 @@
 import moment from 'moment';
 
 import { SpiltzContextState } from 'common/splitz/types';
-import { isExperimentEnabled } from 'common/splitz/utils';
+import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
 import { SettlementsCollectionReducerState, User } from 'common/typings';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { DateInfo, ERROR_TYPE, SettlementListFilters } from 'merchant/views/Settlements/v3/typings';
@@ -90,6 +90,9 @@ export const isSettlementsV3detailsRevamp = (splitz: SpiltzContextState, user: U
   const { abExperiments } = splitz || {
     abExperiments: { settlementsV3_details_revamp: undefined },
   };
+
+  const isInternalTesting = isInternalTestingEnabled(abExperiments);
+  if (isInternalTesting) return true;
 
   if (!abExperiments?.settlementsV3_details_revamp) return false;
   if (user.isOrgCurlec) {

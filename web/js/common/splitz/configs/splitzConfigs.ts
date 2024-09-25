@@ -297,6 +297,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'internal_testing_whitelisting',
+        experimentId: {
+          beta: 'OzGYt2mDFeu00i',
+          production: 'P0gtYnUusnH70C',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'switch_merchant_modal_revamp',
         experimentId: {
           beta: 'OtU1plzdsGGh92',
