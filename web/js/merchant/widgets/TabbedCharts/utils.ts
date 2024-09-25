@@ -103,7 +103,7 @@ function getSuggestedMax(chartData) {
     });
     // 20% buffer - Chartjs automatically rounds off the max value to a nice number
     const newMax = max * (1 + buffer / 100);
-    return newMax;
+    return newMax || 1000;
   }
   return undefined;
 }

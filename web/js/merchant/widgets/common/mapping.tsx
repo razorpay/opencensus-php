@@ -6,10 +6,17 @@ const Link = lazy(() =>
   })),
 );
 
+const Button = lazy(() =>
+  import('merchant/widgets/common/Button').then((module) => ({
+    default: module.ButtonWidget,
+  })),
+);
+
 const Select = lazy(() => import('./Select'));
 
 export const commonWidgetKeyToComponentMapping = {
   link: (props): JSX.Element => <Link {...props} />,
+  button: (props): JSX.Element => <Button {...props} />,
 };
 
 export const inputKeyToComponentMapping = {

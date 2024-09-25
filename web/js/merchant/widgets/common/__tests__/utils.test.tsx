@@ -1,5 +1,5 @@
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { formatXAxis, getLinkWidgetIcon, makeLink } from 'merchant/widgets/common/utils';
+import { formatXAxis, getActionWidgetIcon, makeLink } from 'merchant/widgets/common/utils';
 
 describe('Widget->common->utils->makeLink', () => {
   test('should return correct url for additional_website', () => {
@@ -64,9 +64,9 @@ describe('Widget->common->utils->makeLink', () => {
   });
 });
 
-describe('Widget->common->utils->getLinkWidgetIcon', () => {
+describe('Widget->common->utils->getActionWidgetIcon', () => {
   test('should return undefined for invalid type', () => {
-    const icon = getLinkWidgetIcon('invalid');
+    const icon = getActionWidgetIcon('invalid');
     expect(icon).toBe(undefined);
   });
 });

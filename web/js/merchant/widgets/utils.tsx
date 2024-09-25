@@ -33,6 +33,7 @@ const backgroundImageMap = {
   payrollBackground: 'payroll.jpg',
   currentAccountBackground: 'current-account.jpg',
   rizeBackground: 'rize.jpg',
+  incorporateBackground: 'incorporate.jpg',
 };
 
 export const getBackgroundImage = (imageIdentifier) => {
@@ -42,8 +43,9 @@ export const getBackgroundImage = (imageIdentifier) => {
   return `url(/img/rtux/${backgroundImageMap[imageIdentifier]})`;
 };
 
-export const getBaseWidget = ({ widget, isLoading, queryKey }: renderWidgetProps) =>
-  renderWidget({ widget, isLoading, queryKey, widgetMapping: widgetKeyToComponentMapping });
+export const getBaseWidget = ({ widget, isLoading, queryKey }: renderWidgetProps) => {
+  return renderWidget({ widget, isLoading, queryKey, widgetMapping: widgetKeyToComponentMapping });
+};
 
 export const ErrorBoundaryFallBackComponent = (props: BoxProps) => (
   <ErrorState

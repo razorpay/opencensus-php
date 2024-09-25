@@ -5,12 +5,12 @@ import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { DateRangeValues } from 'merchant/widgets/common/Select/types';
 import { renderInput } from 'merchant/widgets/common/utils';
 import { useRetryWidget } from 'merchant/widgets/hooks';
+import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
 
 import LoadingSkeleton from './LoadingSkeleton';
 import Tab from './Tab';
 import TabsWrapper from './TabsWrapper';
 import { TabbedChartsProps } from './types';
-import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
 
 export const TabbedCharts: React.FC<TabbedChartsProps> = ({
   isLoading = false,
@@ -65,11 +65,13 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
     <Box
       key={`widget-${id}`}
       testID={`widget-${title}`}
+      minWidth="spacing.0"
+      marginX={{ base: 'spacing.0', m: 'spacing.6' }}
+      flexGrow="1"
       display="flex"
       flexDirection="column"
       gap="spacing.5"
       padding={['spacing.6', 'spacing.0', 'spacing.6', 'spacing.0']}
-      marginX={{ base: 'spacing.0', m: 'spacing.6' }}
       backgroundColor="surface.background.gray.intense"
       borderRadius="large"
       elevation="lowRaised"

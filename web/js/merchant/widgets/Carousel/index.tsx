@@ -9,11 +9,13 @@ import { CarouselWidgetLoader } from 'merchant/widgets/Carousel/Loader';
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { getSubWidget } from 'merchant/widgets/Carousel/utils';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
+import { getWidgetStyles } from '../common/utils';
 
 export const CarouselWidget: React.FC<CarouselWidgetProps & CommonWidgetProps> = ({
   title,
   components,
   background_img,
+  styles,
   isLoading,
   error,
   id,
@@ -43,22 +45,22 @@ export const CarouselWidget: React.FC<CarouselWidgetProps & CommonWidgetProps> =
   }, [error, isLoading, isRetrying]);
 
   if (isLoading || isRetrying)
-    return (
-      <CarouselWidgetLoader title={title} components={components} background_img={background_img} />
-    );
+    return <CarouselWidgetLoader title={title} components={components} styles={styles} />;
 
   if (components.length === 0) return null;
 
   return (
-    <CarouselWidgetWrapper background_img={background_img}>
-      <Box display="flex" gap="spacing.2" marginBottom="spacing.6">
-        <Heading
-          color={background_img ? 'surface.text.staticWhite.normal' : undefined}
-          size="medium"
-        >
-          {title}
-        </Heading>
-      </Box>
+    <CarouselWidgetWrapper width={styles?.width} backgroundImage={background_img} hide={!title}>
+      {title ? (
+        <Box display="flex" gap="spacing.2" marginBottom="spacing.6">
+          <Heading
+            color={background_img ? 'surface.text.staticWhite.normal' : undefined}
+            size="medium"
+          >
+            {title}
+          </Heading>
+        </Box>
+      ) : null}
       {error ? (
         <ErrorState
           backgroundColor="surface.background.gray.intense"
@@ -73,17 +75,24 @@ export const CarouselWidget: React.FC<CarouselWidgetProps & CommonWidgetProps> =
           }}
         />
       ) : (
-        <Carousel carouselItemWidth="284px" visibleItems="autofit" navigationButtonPosition="side">
+        <Carousel
+          carouselItemWidth={styles?.inherited_styles?.carousel_product_card?.width ?? '284px'}
+          visibleItems="autofit"
+          navigationButtonPosition="side"
+        >
           {components.map((componentData) => (
             <CarouselItem key={componentData.id}>
               {getSubWidget({
-                widget: componentData,
+                widget: {
+                  ...componentData,
+                  styles: getWidgetStyles(
+                    styles?.inherited_styles?.[componentData.type],
+                    componentData.styles,
+                  ),
+                },
                 isLoading,
                 queryKey,
-                analyticsProperties: {
-                  widgetId,
-                  screen,
-                },
+                analyticsProperties: { widgetId, screen },
               })}
             </CarouselItem>
           ))}

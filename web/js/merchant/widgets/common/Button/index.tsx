@@ -1,13 +1,13 @@
 import React from 'react';
-import { Link } from '@razorpay/blade/components';
+import { Button } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 
 import { titleCase } from 'common/utils/rzp-utils';
-import { LinkWidgetProps } from 'merchant/widgets/common/Link/types';
+import { ButtonWidgetProps } from 'merchant/widgets/common/Button/types';
 import { getActionWidgetIcon, makeLink } from 'merchant/widgets/common/utils';
 import { track } from 'merchant/widgets/utils';
 
-export const LinkWidget: React.FC<LinkWidgetProps> = ({
+export const ButtonWidget: React.FC<ButtonWidgetProps> = ({
   title,
   action,
   icon,
@@ -28,7 +28,7 @@ export const LinkWidget: React.FC<LinkWidgetProps> = ({
     e.stopPropagation();
     if (isAbsoluteUrl || navigationLink) {
       track({
-        objectName: 'link',
+        objectName: 'button',
         actionName: 'clicked',
         screen,
         properties: { ...rest, action, actionLabel: title },
@@ -42,13 +42,13 @@ export const LinkWidget: React.FC<LinkWidgetProps> = ({
   };
 
   return (
-    <Link
-      variant={properties?.variant ?? 'anchor'}
+    <Button
+      variant={properties?.variant ?? 'primary'}
       icon={getActionWidgetIcon(icon)}
       iconPosition={iconPosition}
       onClick={handleLinkClick}
     >
       {titleCase(title)}
-    </Link>
+    </Button>
   );
 };

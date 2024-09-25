@@ -21,9 +21,9 @@ const TabSkeleton = ({ isActive = false }: { isActive?: boolean }): JSX.Element 
       }
       testID="tab-skeleton"
     >
-      <Skeleton width="160px" height="15px" borderRadius="large" />
-      <Skeleton width="110px" height="32px" borderRadius="max" marginTop="spacing.4" />
-      <Skeleton width="110px" height="16px" borderRadius="large" marginTop="spacing.5" />
+      <Skeleton maxWidth="160px" height="15px" borderRadius="large" />
+      <Skeleton maxWidth="110px" height="32px" borderRadius="max" marginTop="spacing.4" />
+      <Skeleton maxWidth="110px" height="16px" borderRadius="large" marginTop="spacing.5" />
     </Box>
   );
 };
@@ -37,7 +37,7 @@ const LoadingSkeleton = ({ count }: { count: number | undefined }): JSX.Element 
         ))}
       </Box>
       <Skeleton
-        height="220px"
+        height="318px"
         borderRadius="large"
         margin={['spacing.5', 'spacing.7', 'spacing.0', 'spacing.7']}
       />

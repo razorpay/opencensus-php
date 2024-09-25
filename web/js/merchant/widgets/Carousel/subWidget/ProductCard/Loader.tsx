@@ -1,37 +1,42 @@
 import React from 'react';
 import { Box, Skeleton } from '@razorpay/blade/components';
 
-export const ProductCardWidgetLoader = () => (
-  <Box
-    width="284px"
-    height="416px"
-    display="flex"
-    flexDirection="column"
-    testID="product-card-loader"
-    borderColor="surface.border.gray.muted"
-    borderWidth="thinner"
-    borderRadius="medium"
-  >
+import { ProductCardWidgetLoaderProps } from './types';
+
+export const ProductCardWidgetLoader = ({ styles }: ProductCardWidgetLoaderProps) => {
+  const isShownOnHover = styles?.show_on_hover ?? true;
+  const isToggleResponsive = styles?.toggle_responsive ?? false;
+
+  return (
     <Box
-      height="300px"
-      backgroundColor="surface.background.gray.moderate"
-      borderTopLeftRadius="medium"
-      borderTopRightRadius="medium"
-    />
-    <Box
-      backgroundColor="surface.background.gray.intense"
-      height="116px"
+      width={styles?.width ?? '284px'}
+      height={styles?.height ?? '416px'}
       display="flex"
-      flexDirection="column"
-      gap="spacing.4"
-      padding="spacing.5"
-      borderTopColor="surface.border.gray.muted"
-      borderBottomLeftRadius="medium"
-      borderBottomRightRadius="medium"
+      flexDirection={isToggleResponsive ? { base: 'column', s: 'row', xl: 'column' } : 'column'}
+      testID="product-card-loader"
+      borderColor="surface.border.gray.muted"
+      borderWidth="thinner"
+      borderRadius={styles?.border_radius ?? 'medium'}
+      overflow="hidden"
     >
-      <Skeleton width="156px" height="32px" borderRadius="max" />
-      <Skeleton width="110px" height="20px" borderRadius="max" />
-      <Skeleton width="110px" height="20px" borderRadius="max" />
+      <Box
+        height={isToggleResponsive ? { base: '65%', s: 'auto', xl: '75%' } : '300px'}
+        width={isToggleResponsive ? { base: '100%', s: '200px', xl: '100%' } : undefined}
+        backgroundColor="surface.background.gray.moderate"
+      />
+      <Box
+        width="100%"
+        backgroundColor="surface.background.gray.intense"
+        display="flex"
+        flexDirection="column"
+        gap="spacing.4"
+        padding="spacing.5"
+      >
+        <Skeleton width="50%" height="32px" borderRadius="max" />
+        <Skeleton width="100%" height="20px" borderRadius="max" />
+        <Skeleton width="20%" height="20px" borderRadius="max" />
+        {!isShownOnHover && <Skeleton width="136px" height="32px" borderRadius="max" />}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};

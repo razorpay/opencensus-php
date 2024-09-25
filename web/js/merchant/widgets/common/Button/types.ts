@@ -1,14 +1,14 @@
-import { LinkProps } from '@razorpay/blade/components';
+import { ButtonProps } from '@razorpay/blade/components';
 
 import { TrackParameters } from 'merchant/widgets/types';
 
-export interface LinkWidgetProps {
+export interface ButtonWidgetProps {
   title: string;
   action?: string;
   icon: string;
   icon_position: 'right' | 'left';
   properties?: {
-    variant?: LinkProps['variant'];
+    variant?: ButtonProps['variant'];
   };
   action_params?: Record<string, any>;
   analyticsProperties?: TrackParameters;

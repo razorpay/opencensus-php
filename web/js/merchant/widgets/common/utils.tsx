@@ -1,4 +1,4 @@
-import { ArrowRightIcon, LinkProps } from '@razorpay/blade/components';
+import { ArrowRightIcon, IconComponent } from '@razorpay/blade/components';
 import { CurrencyCodeType, convertToMajorUnit } from '@razorpay/i18nify-js';
 import moment from 'moment';
 
@@ -15,7 +15,7 @@ import { renderWidget } from 'merchant/widgets/utils';
 import { DateRangeValues } from './Select/types';
 import { ChartDataType, ChartSchemaType, PointType, Dataset } from './types';
 
-export const getLinkWidgetIcon = (type: string): LinkProps['icon'] => {
+export const getActionWidgetIcon = (type: string): IconComponent | undefined => {
   if (type === 'arrow_right') {
     return ArrowRightIcon;
   }
@@ -179,3 +179,11 @@ function getTimestampFormat(unit?: DateRangeValues) {
       return 'MMM DD';
   }
 }
+
+export const getWidgetStyles = (
+  ...args: Array<Record<string, any> | undefined>
+): Record<string, any> => {
+  return args.reduce((parent, child) => {
+    return { ...parent, ...(child ?? {}) };
+  }, {}) as Record<string, any>;
+};
