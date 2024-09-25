@@ -31,6 +31,7 @@ use RZP\Models\Address;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement;
 use RZP\Models\Payment;
 use RZP\Models\QrPayment;
 use RZP\Models\BankAccount;
@@ -109,6 +110,8 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
 
         $this->smartCollectService = $this->app['smartCollect'];
+
+        $this->settlementService = new Settlement\Service();
     }
 
     public function processPendingBankTransfer(array $input)
@@ -1233,6 +1236,8 @@ class Service extends Base\Service
             );
         }
 
+
+
         // IEC code required for some purpose codes
         // https://razorpay.slack.com/archives/C024U3B04LD/p1689314331594219?thread_ts=1688468005.859769&cid=C024U3B04LD
         if ((in_array($this->merchant->getPurposeCode(), PurposeCodeList::IEC_REQUIRED) === true) and
@@ -1365,8 +1370,48 @@ class Service extends Base\Service
             'merchant_id' => $merchantId
         ];
         CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
-
+        try {
+            $this->updateIntlBankTransferSettlementSchedule($merchantId);
+        } catch (\Exception $e) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPDATE_SCHEDULE_FAILED, null, [
+                'merchant_id' => $merchantId,
+                'error_desc' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ]);
+        }
         return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId, Constants\Entity::CURRENCY_CLOUD);
+    }
+
+    public function updateIntlBankTransferSettlementSchedule($merchantId) {
+
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true )
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+        $mode = $app['rzp.mode'];
+        $scheduleId = $app['config']->get('applications.b2b_export_schedule.'.$mode);
+        $data = [
+            'merchant_id' => $merchantId,
+            'schedules' => [
+                'payment' => [
+                    "international:intl_bank_transfer"=> $scheduleId
+                ]
+            ]
+        ];
+        try {
+            $this->settlementService->updateSchedule($data);
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, null, TraceCode::B2B_SETTLEMENT_SCHEDULE_UPDATE_FAILED, [
+                'merchant_id' => $merchantId,
+                'error_desc' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ]);
+            return;
+        }
     }
 
     public function updateBankAccountDetailsByVACurrency($merchantId, $merchantInternationalIntegrations, $va_currency)

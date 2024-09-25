@@ -2010,6 +2010,11 @@ return [
         'ie_needs_clarification'        => env('INTERNATIONAL_PAYMENT_IE_NEEDS_CLARIFICATION_URL'),
     ],
 
+    'b2b_export_schedule' => [
+        'live'    => env('PAYMENTS_CROSS_BORDER_LIVE_SCHEDULE_ID'),
+        'test'    => env('PAYMENTS_CROSS_BORDER_TEST_SCHEDULE_ID'),
+    ],
+
     'key_management_service' => [
         'mock'      => env('KEY_MANAGEMENT_SERVICE_MOCK', false),
         'username'  => env('KEY_MANAGEMENT_SERVICE_KEY', 'api_user'),

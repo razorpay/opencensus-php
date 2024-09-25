@@ -2053,6 +2053,11 @@ class Service extends Base\Service
         return app('settlements_api')->triggerFileGeneration($input);
     }
 
+    public function updateSchedule(array $input) : array
+    {
+        return app('settlements_api')->updateSchedule($input);
+    }
+
     public function migrateConfigurations(array $input)
     {
         if(isset($input['migrate_bank_account']) === true)

@@ -62,6 +62,8 @@ class Base
 
     const FILE_GENERATION_TRIGGER  = '/twirp/rzp.settlements.file_generation.v1.FileGenerationService/TriggerFileGeneration';
 
+    const UPDATE_SCHDEULE  = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateSchedule';
+
     protected $trace;
 
     protected $config;
