@@ -18,6 +18,7 @@ import {
   getStorefrontLineItems,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 type Item = {
   id: string;
@@ -91,10 +92,16 @@ function PaymentSplitItems({ order_id }: IPaymentSplitItems): React.ReactElement
                 <TableRow key={index} item={tableItem}>
                   <TableCell>{tableItem.name}</TableCell>
                   <TableCell>
-                    <Amount value={tableItem.net_amount} currency={tableItem.currency} />
+                    <Amount
+                      value={i18nifyConvertToMajorUnit(tableItem.net_amount, tableItem.currency)}
+                      currency={tableItem.currency}
+                    />
                   </TableCell>
                   <TableCell>
-                    <Amount value={tableItem.amount} currency={tableItem.currency} />
+                    <Amount
+                      value={i18nifyConvertToMajorUnit(tableItem.amount, tableItem.currency)}
+                      currency={tableItem.currency}
+                    />
                   </TableCell>
                   <TableCell>{tableItem.quantity || '--'}</TableCell>
                 </TableRow>
