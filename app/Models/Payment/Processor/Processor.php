@@ -6490,9 +6490,14 @@ class Processor
 
         $experiments = $core->bulkCalltoSplitz($payment->getMerchantId());
 
-        $this->setOfferForPaymentFromOrderOrInput($payment, $input, $experiments);
+        $valid = $this->setOfferForPaymentFromOrderOrInput($payment, $input, $experiments);
 
-        if (($this->offer !== null) and
+        if ($valid === false)
+        {
+            $this->offer = null;
+        }
+
+        if ($valid and ($this->offer !== null) and
             ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
             $orderAmount = $this->order->getAmount();
@@ -6545,8 +6550,10 @@ class Processor
         }
     }
 
-    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input, array $experiments)
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input, array $experiments): bool
     {
+        $valid = false;
+
         $order = $payment->order;
 
         $offer = null;
@@ -6568,15 +6575,17 @@ class Processor
 
         if ($offer === null)
         {
-            return;
+            return $valid;
         }
 
         $this->offer = $offer;
 
         if (!$this->validateOffersViaOffersEngine($payment, $offer, $experiments))
         {
-             return;
+             return $valid;
         }
+
+        $valid = true;
 
         $payment->associateOffer($this->offer);
 
@@ -6589,6 +6598,7 @@ class Processor
             'payment_id' => $payment->getPublicId(),
             'order_id'   => $order_id ?? null,
         ]);
+        return $valid;
 
     }
 
