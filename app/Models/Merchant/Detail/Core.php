@@ -5033,7 +5033,7 @@ class Core extends Base\Core
                         break;
                 }
 
-                $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
+                $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
                 //send mail
                 try
@@ -5244,7 +5244,7 @@ class Core extends Base\Core
 
             (new ClarificationDetailService())->updateClarificationDetails($merchant->getId(), $input[DEConstants::POS_ACTIVATION_STATUS]);
 
-            $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
+            $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
             //send mail
             try
@@ -13327,7 +13327,7 @@ class Core extends Base\Core
         return null;
     }
 
-    public function updateMerchantPosActivationStatus(Entity $merchantDetails, string $posActivationStatus)
+    public function updateMerchantPosActivationStatus(Entity $merchantDetails, string $posActivationStatus, mixed $rejectionReasons, string $rejectionOption)
     {
 
         $merchantId = $merchantDetails->getMerchantId();
@@ -13339,6 +13339,21 @@ class Core extends Base\Core
                 "merchant_id"           => $merchantId,
                 "pos_activation_status" => $posActivationStatus
             ];
+
+            $payload[Entity::REJECTION_REASONS] = [];
+            foreach ($rejectionReasons as $rejectionReason) {
+                $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
+
+                $payloadRecord = [
+                    Reason\Entity::REASON_CODE => $rejectionReasonCode,
+                    Reason\Entity::REASON_CATEGORY => $rejectionReason[Reason\Entity::REASON_CATEGORY],
+                    Reason\Entity::REASON_DESCRIPTION => RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode),
+                    Reason\Entity::REASON_TYPE => $rejectionReason[Reason\Entity::REASON_TYPE]
+                ];
+                array_push($payload [Entity::REJECTION_REASONS], $payloadRecord);
+
+            }
+            $payload[Entity::REJECTION_OPTION] = $rejectionOption;
 
             $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_REQUEST, [
                 '$payload' => $payload,
