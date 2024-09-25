@@ -2591,6 +2591,10 @@ class Service extends Base\Service
             Constants::OAUTH_SOURCE   => $input[Constants::OAUTH_SOURCE],
         ];
 
+        if (isset($input[Constants::DEFAULT_MERCHANT_ID])) {
+            $credentials[Constants::DEFAULT_MERCHANT_ID] = $input[Constants::DEFAULT_MERCHANT_ID];
+        }
+
         if(empty($input[Constants::REFERRAL_CODE]) === false)
         {
             $credentials[Constants::REFERRAL_CODE] = $input[Constants::REFERRAL_CODE];

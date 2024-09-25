@@ -71,6 +71,8 @@ class Constants
 
     const CURLEC_DEV = 'dashboard-curlec.dev.razorpay.in';
 
+    const DEFAULT_MERCHANT_ID = 'default_merchant_id';
+
 
     /**
      * determines the 2fa verification state of user in session
