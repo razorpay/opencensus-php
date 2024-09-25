@@ -195,7 +195,7 @@ class EmailNotificationService extends BaseNotificationService
         $business_website=empty($merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE))?null:$merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE);
 
         $isCustomOnboardingEmail = $org->isFeatureEnabled(FeatureConstant::CUSTOM_ONBOARDING_EMAILS);
-        $isStorkSupported = (new EmailHelper)->isStorkSupported($merchant['id'], $org['id'], '_activated_mcc_pending_success') ?? false;
+        $isStorkSupported = (new EmailHelper)->isStorkSupportedCheckViaSplitz($merchant['id'], $org['id'], 'activated_mcc_pending_success') ?? false;
 
         $data = [
             DEConstants::MERCHANT => [

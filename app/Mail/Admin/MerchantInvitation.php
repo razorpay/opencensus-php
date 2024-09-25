@@ -118,7 +118,7 @@ class MerchantInvitation extends Base\Mailable
 
     public function shouldSendEmailViaStork(): bool
     {
-        return  (new EmailHelper)->isStorkSupported($this->admin['id'], $this->org['id'], '_invite_merchant') ?? false;
+        return  (new EmailHelper)->isStorkSupportedCheckViaSplitz($this->admin['id'], $this->org['id'], 'invite_merchant') ?? false;
     }
 
     public function getParamsForStork(): array

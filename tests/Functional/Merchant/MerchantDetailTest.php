@@ -2884,8 +2884,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
-        $razorxFeature = RazorxTreatment::API_STORK_BANKING_EMAIL .'_rejection_notification';
-        $this->setMockRazorxTreatment([$razorxFeature => 'on']);
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
         $this->startTest();
 

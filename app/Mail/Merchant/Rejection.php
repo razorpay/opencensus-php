@@ -79,7 +79,7 @@ class Rejection extends Mailable
 
     public function shouldSendEmailViaStork(): bool
     {
-        return  (new EmailHelper)->isStorkSupported($this->data['id'], $this->org['id'], '_rejection_notification') ?? false;
+        return  (new EmailHelper)->isStorkSupportedCheckViaSplitz($this->data['id'], $this->org['id'], 'rejection_notification') ?? false;
     }
 
     public function getParamsForStork(): array

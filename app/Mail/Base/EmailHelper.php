@@ -54,6 +54,49 @@ class EmailHelper
 
         return false;
     }
+    
+    //    check wether certain template is migrated to stork using splitz
+    //    to get id of experiment will be prefixed with banking_mail_ and suffixed with _exp_id
+    //    example : $experiment = test
+    //    banking_mail_test_exp_id
+    public function isStorkSupportedCheckViaSplitz($userID, $orgID, $experiment)
+    {
+        try
+        {
+            $app = \App::getFacadeRoot();
+            $traceCode = TraceCode::API_STORK_BANKING_EMAIL;
+
+            $experimentName = 'app.banking_mail_' . $experiment . '_exp_id';
+
+            $userVariant = $this->getSplitzResponse($userID,$experimentName);
+
+            $orgVariant = $this->getSplitzResponse($orgID,$experimentName);
+
+            $app['trace']->info($traceCode, [
+                'userID' => $userID,
+                'orgID' => $orgID,
+                'userVariant' => $userVariant,
+                'orgVariant' => $orgVariant,
+                'experimentName' => $experimentName
+            ]);
+
+
+            if (strtolower($userVariant) === 'enable' or strtolower($orgVariant) === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                $traceCode,
+            );
+        }
+
+        return false;
+    }
 
     public function getSplitzResponse(string $id, string $experimentName)
     {

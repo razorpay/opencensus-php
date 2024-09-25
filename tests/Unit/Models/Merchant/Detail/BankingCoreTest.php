@@ -316,8 +316,7 @@ class BankingCoreTest extends TestCase
             'business_Website'=> null
         ]);
 
-        $razorxFeature = RazorxTreatment::API_STORK_BANKING_EMAIL .'_activated_mcc_pending_success';
-        $this->setMockRazorxTreatment([$razorxFeature => 'on']);
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
         $activationStatusData = [

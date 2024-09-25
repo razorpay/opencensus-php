@@ -11,11 +11,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Traits\MocksSplitz;
+
 
 class BankingAdminLeadTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use HeimdallTrait;
+    use MocksSplitz;
 
     /**
      * @var array|mixed
@@ -160,8 +163,7 @@ class BankingAdminLeadTest extends TestCase
 
         $this->mockOrgCreation(OrgEntity::RAZORPAY_ORG_ID);
 
-        $razorxFeature = RazorxTreatment::API_STORK_BANKING_EMAIL .'_invite_merchant';
-        $this->setMockRazorxTreatment([$razorxFeature => 'on']);
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
         $this->startTest();
 
