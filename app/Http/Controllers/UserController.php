@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use Exception;
 use Input;
 use Cookie;
 use Request;
@@ -67,7 +68,6 @@ class UserController extends Controller
 
     const SALES_ASSISTED_ONBOARDING_SOURCE = 'sales_assisted_onboarding';
 
-    
     const SPLITZ_EXPERIMENTS = 'splitz.experiments';
 
     const PG_V3_REDIRECT_URL = '/pg3/onboarding';
@@ -194,10 +194,18 @@ class UserController extends Controller
 
     public function appendAllQueryParams($queryParams, $redirectURL): string
     {
-        foreach ($queryParams as $queryParamKey => $queryParamValue) {
-            $redirectURL = $redirectURL . '&' . $queryParamKey . '=' . $queryParamValue;
+        try {
+            foreach ($queryParams as $queryParamKey => $queryParamValue) {
+                $redirectURL = $redirectURL . '&' . $queryParamKey . '=' . $queryParamValue;
+            }
+            return $redirectURL;
+        } catch (Exception $e) {
+            throw new BadRequestError(
+                'Invalid query params',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400);
         }
-        return $redirectURL;
+
     }
 
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
@@ -537,8 +545,9 @@ class UserController extends Controller
         try {
 
             // Get merchant with role as partner agent from list of merchants
+
             $partnerAgentMerchant = current(array_filter($details['merchants'], function ($merchant) {
-                return $merchant['role'] ===  self::PARTNER_AGENT_ROLE;
+                return array_get($merchant, "role") ===  self::PARTNER_AGENT_ROLE;
             }));
 
             if ($partnerAgentMerchant["id"]) {
@@ -903,7 +912,7 @@ class UserController extends Controller
         $this->trace->info(TraceCode::PG3_REDIRECTION, [
             'INFO' => 'PG_V3_Redirection_START'
         ]);
-        
+
         $merchantId = $details['current'];
 
         $experimentID = config(self::SPLITZ_EXPERIMENTS)[self::PG3_V1_ENABLED];
@@ -2184,7 +2193,7 @@ class UserController extends Controller
                 return false;
             }
 
-            if($details['activation_status'] !== 'activated' and $details['activation_status'] !== 'activated_mcc_pending')
+            if(array_get($details,'activation_status') !== 'activated' and array_get($details, 'activation_status') !== 'activated_mcc_pending')
             {
                 return true;
             }
