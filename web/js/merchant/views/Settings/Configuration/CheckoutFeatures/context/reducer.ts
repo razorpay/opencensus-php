@@ -41,11 +41,6 @@ export const checkoutFeatureReducer = (
         ...state,
         isValueModified: action.payload,
       };
-    case ACTIONS.SET_EMAIL_REQUIRED_MODAL_OPEN:
-      return {
-        ...state,
-        isEmailRequiredModalOpen: action.payload,
-      };
     default: {
       return state;
     }

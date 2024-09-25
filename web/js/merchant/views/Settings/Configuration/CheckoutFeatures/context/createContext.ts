@@ -9,19 +9,19 @@ export const checkoutFeatureContext = createContext<
   CheckoutFeatureContext<typeof CONTEXT_INITIAL_STATE.values>
 >({
   ...CONTEXT_INITIAL_STATE,
-
   handleSave: noop,
-  handleEmailChange: noop,
   handleLocaleChange: noop,
   handleDiscardAllChanges: noop,
   handleCustomMessageToggle: noop,
-  handleConfirmEmailRequired: noop,
   handleCustomMessageTextChange: noop,
-  handleCloseEmailRequiredModal: noop,
   handleCustomMessageTextColorChange: noop,
   handleCustomMessageBackgroundColorChange: noop,
   handlePreviewChange: noop,
   handleFlashCheckoutToggle: noop,
+  handleEmailValueChange: noop,
+  handleEmailToggle: noop,
+  handleMandatorySummaryPageToggle: noop,
+  handleShowFinalPriceToggle: noop,
 });
 
 export const useCheckoutFeatures = () => {

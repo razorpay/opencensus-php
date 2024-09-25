@@ -4,24 +4,38 @@ import isEmpty from 'lodash/isEmpty';
 import { AccountConfig } from 'merchant/views/Settings/Configuration/CheckoutConfig/context/types';
 
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
-import {
-  trackFlashCheckoutFailure,
-  trackFlashCheckoutInitiate,
-  trackFlashCheckoutSuccess,
-} from 'merchant/views/Settings/Configuration/CheckoutFeatures/utils/flashCheckout';
-import { flashCheckoutProps } from 'merchant/views/Settings/Configuration/settings-config-constants';
 
 import {
   ACTIONS,
   INITIAL_STATE,
   CHECKOUT_FEATURE_FIELDS,
   CUSTOM_MESSAGE_BANNER_SCREEN_LABELS,
-} from './constants';
-import { checkoutFeatureContext } from './createContext';
-import { createPayloadToSaveConfig, hasValuesChanged } from './helpers';
-import { checkoutFeatureReducer } from './reducer';
-import { AccountLocale, ConfigFeatures, MerchantCheckoutConfig } from './types';
+} from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/constants';
+import { checkoutFeatureContext } from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/createContext';
+import {
+  createPayloadToSaveConfig,
+  hasValuesChanged,
+} from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/helpers';
+import { checkoutFeatureReducer } from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/reducer';
+import {
+  AccountLocale,
+  ConfigFeatures,
+  MerchantCheckoutConfig,
+} from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/types';
+import {
+  flashCheckoutProps,
+  skipCardMandateSummaryProps,
+} from 'merchant/views/Settings/Configuration/settings-config-constants';
+import {
+  trackFlashCheckoutFailure,
+  trackFlashCheckoutInitiate,
+  trackFlashCheckoutSuccess,
+} from 'merchant/views/Settings/Configuration/CheckoutFeatures/utils/flashCheckout';
+import {
+  trackMandateSummaryPageFailure,
+  trackMandateSummaryPageInitiate,
+  trackMandateSummaryPageSuccess,
+} from 'merchant/views/Settings/Configuration/CheckoutFeatures/utils/mandateSummaryPage';
 
 export type CheckoutConfigProviderProps = {
   children: React.ReactNode;
@@ -69,23 +83,6 @@ const CheckoutConfigProvider = ({
     });
   };
 
-  const handleEmailChange = (value: string) => {
-    if (value === EmailLessCheckoutConfigOptions.REQUIRED) {
-      dispatch({ type: ACTIONS.SET_EMAIL_REQUIRED_MODAL_OPEN, payload: true });
-    } else {
-      setValue(CHECKOUT_FEATURE_FIELDS.EMAIL, value);
-    }
-  };
-
-  const handleCloseEmailRequiredModal = () => {
-    dispatch({ type: ACTIONS.SET_EMAIL_REQUIRED_MODAL_OPEN, payload: false });
-  };
-
-  const handleConfirmEmailRequired = () => {
-    setValue(CHECKOUT_FEATURE_FIELDS.EMAIL, EmailLessCheckoutConfigOptions.REQUIRED);
-    handleCloseEmailRequiredModal();
-  };
-
   const handleCustomMessageTextChange = (index: number, value) => {
     const currentConfigs = cloneDeep(state.values.customMessage);
 
@@ -125,6 +122,14 @@ const CheckoutConfigProvider = ({
     setValue(CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT, isEnabled);
   };
 
+  const handleMandatorySummaryPageToggle = (isEnabled: boolean) => {
+    setValue(CHECKOUT_FEATURE_FIELDS.MANDATORY_SUMMARY_PAGE, isEnabled);
+  };
+
+  const handleShowFinalPriceToggle = (isEnabled: boolean) => {
+    setValue(CHECKOUT_FEATURE_FIELDS.SHOW_FINAL_PRICE, isEnabled);
+  };
+
   const setAccountConfigToState = useCallback(() => {
     const getFeatureFlag = (features: ConfigFeatures | undefined, featureAPIKey: string) => {
       const featureObj = features?.find((feature) => feature.feature === featureAPIKey);
@@ -134,12 +139,19 @@ const CheckoutConfigProvider = ({
       const isFeatureFlagSet = getFeatureFlag(features, flashCheckoutProps.featureAPIKey);
       return flashCheckoutProps.isFeatureAPIKeyReversed ? !isFeatureFlagSet : isFeatureFlagSet;
     };
+    const getMandatorySummaryPageValue = (features: AccountConfig['features']) => {
+      const isFeatureFlagSet = getFeatureFlag(features, skipCardMandateSummaryProps.featureAPIKey);
+      return isFeatureFlagSet;
+    };
     if (accountConfig) {
       dispatch({
         type: ACTIONS.SET_VALUES,
         payload: {
           [CHECKOUT_FEATURE_FIELDS.EMAIL]: accountConfig.emailConfig,
           [CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT]: !!getFlashCheckoutValue(accountConfig.features),
+          [CHECKOUT_FEATURE_FIELDS.MANDATORY_SUMMARY_PAGE]: !!!!getMandatorySummaryPageValue(
+            accountConfig?.features,
+          ),
         },
       });
 
@@ -273,6 +285,25 @@ const CheckoutConfigProvider = ({
           throw new Error(message);
         }
       }
+      if (payload.mandatorySummaryPage) {
+        const isMandatorySummaryPageEnabled =
+          !!payload.mandatorySummaryPage.isMandatorySummaryPageEnabled;
+        const data = {
+          features: {
+            [skipCardMandateSummaryProps.featureAPIKey]: isMandatorySummaryPageEnabled,
+          },
+          should_sync: 0,
+        };
+        trackMandateSummaryPageInitiate(isMandatorySummaryPageEnabled);
+        try {
+          await updateFeatures(data);
+          trackMandateSummaryPageSuccess(isMandatorySummaryPageEnabled);
+        } catch (error) {
+          const { errors, message } = error as { errors: string[]; message: string };
+          trackMandateSummaryPageFailure(isMandatorySummaryPageEnabled, errors?.[0] || '');
+          throw new Error(message);
+        }
+      }
       showNotification({ type: 'success', message: 'Settings saved successfully' });
     } catch (error) {
       const { errors, message } = error as { errors: string[]; message: string };
@@ -284,6 +315,20 @@ const CheckoutConfigProvider = ({
 
   const handlePreviewChange = (value: boolean) => {
     setValue(CHECKOUT_FEATURE_FIELDS.IS_DESKTOP_PREVIEW, value);
+  };
+
+  const handleEmailToggle = (isEnabled: boolean) => {
+    setValue(CHECKOUT_FEATURE_FIELDS.EMAIL, {
+      ...state.values[CHECKOUT_FEATURE_FIELDS.EMAIL],
+      isEnabled,
+    });
+  };
+
+  const handleEmailValueChange = (value: string) => {
+    setValue(CHECKOUT_FEATURE_FIELDS.EMAIL, {
+      ...state.values[CHECKOUT_FEATURE_FIELDS.EMAIL],
+      value,
+    });
   };
 
   useEffect(() => {
@@ -306,19 +351,19 @@ const CheckoutConfigProvider = ({
         isValueModified,
         isSaving: state.isSaving,
         isLoading: state.isLoading,
-        isEmailRequiredModalOpen: state.isEmailRequiredModalOpen,
         handleSave,
-        handleEmailChange,
         handleLocaleChange,
         handleDiscardAllChanges,
         handleCustomMessageToggle,
-        handleConfirmEmailRequired,
-        handleCloseEmailRequiredModal,
         handleCustomMessageTextChange,
         handleCustomMessageTextColorChange,
         handleCustomMessageBackgroundColorChange,
         handlePreviewChange,
         handleFlashCheckoutToggle,
+        handleEmailValueChange,
+        handleEmailToggle,
+        handleMandatorySummaryPageToggle,
+        handleShowFinalPriceToggle,
       }}
     >
       {children}

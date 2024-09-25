@@ -512,6 +512,7 @@ export const EmailLessCheckoutConfigOptions = {
   NO: 'no',
   OPTIONAL: 'optional',
   REQUIRED: 'required',
+  MANDATORY: 'mandatory', // In V2 the option is like optional and mandatory so adding a new property and also keeping old property as well.
 };
 
 export const CHECKOUT_EMAIL_FEATURE_FLAG = {

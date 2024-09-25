@@ -1,93 +1,54 @@
 import React from 'react';
-import {
-  Box,
-  Text,
-  Button,
-  Dropdown,
-  DropdownOverlay,
-  SelectInput,
-  ActionList,
-  ActionListItem,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from '@razorpay/blade/components';
 
-import { COMMON_Z_INDEX } from 'common/constant';
-import IntoView from 'common/ui/IntoView';
-import TextHighlighter from 'common/ui/TextHighlighter';
+import { RadioGroup, Radio, Box } from '@razorpay/blade/components';
+import FeatureToggle from 'merchant/views/Settings/Configuration/components/Configuration/FeatureToggle';
+
+import { useCheckoutFeatures } from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/index';
+
 import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
-import { useCheckoutConfig } from 'merchant/views/Settings/Configuration/CheckoutConfig/context';
-import { CHECKOUT_EMAIL_SETTINGS } from 'merchant/views/Settings/Configuration/deeplink-constants';
+import { CHECKOUT_FEATURE_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/constants';
+import { EMAIL_SETTINGS_DEFAULT_VALUE } from 'merchant/views/Settings/Configuration/CheckoutFeatures/constants/DefaultValue';
 
-const CHECKOUT_EMAIL_CONFIG_OPTIONS = [
-  {
-    name: 'No (Default)',
-    code: EmailLessCheckoutConfigOptions.NO,
-  },
-  {
-    name: 'As an optional field',
-    code: EmailLessCheckoutConfigOptions.OPTIONAL,
-  },
-  {
-    name: 'As a mandatory field',
-    code: EmailLessCheckoutConfigOptions.REQUIRED,
-  },
-];
+const ExtraItems = ({ isChecked, selectedValue, handleEmailValueChange }): React.ReactElement => {
+  return (
+    <>
+      {isChecked && (
+        <RadioGroup
+          name="checkout-config-email"
+          onChange={({ value }) => handleEmailValueChange(value)}
+          value={selectedValue}
+        >
+          <Box display="flex" gap="8px">
+            <Radio testID="aggregator-model" value={EmailLessCheckoutConfigOptions.OPTIONAL}>
+              Optional
+            </Radio>
+            <Radio testID="direct-model" value={EmailLessCheckoutConfigOptions.MANDATORY}>
+              Mandatory
+            </Radio>
+          </Box>
+        </RadioGroup>
+      )}
+    </>
+  );
+};
 
 const EmailSettings = () => {
-  const {
-    values,
-    isEmailRequiredModalOpen,
-    handleEmailChange,
-    handleCloseEmailRequiredModal,
-    handleConfirmEmailRequired,
-  } = useCheckoutConfig();
-
-  const handleSelectChange = (evt: { values: string[] }) => {
-    handleEmailChange(evt.values[0]);
-  };
-
+  const { values, handleEmailToggle, handleEmailValueChange } = useCheckoutFeatures();
   return (
-    <IntoView hashedWith={CHECKOUT_EMAIL_SETTINGS}>
-      <Box display="flex" flexDirection="column" gap="spacing.2">
-        <Box>
-          <Text weight="semibold" color="surface.text.gray.subtle">
-            <TextHighlighter hashedWith={CHECKOUT_EMAIL_SETTINGS}>
-              Collect email address from users on Checkout page
-            </TextHighlighter>
-          </Text>
-        </Box>
-        <Dropdown>
-          <SelectInput label="" placeholder="" value={values.email} onChange={handleSelectChange} />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
-            <ActionList>
-              {CHECKOUT_EMAIL_CONFIG_OPTIONS.map((config) => (
-                <ActionListItem key={config.code} title={config.name} value={config.code} />
-              ))}
-            </ActionList>
-          </DropdownOverlay>
-        </Dropdown>
-      </Box>
-      <Modal isOpen={isEmailRequiredModalOpen} onDismiss={handleCloseEmailRequiredModal}>
-        <ModalHeader title="Are you sure you want to collect the customer's e-mail address on checkout?" />
-        <ModalBody>
-          <Text color="surface.text.gray.subtle">
-            Collecting additional information from the user that is not necessary might result in
-            increased drop-off on checkout
-          </Text>
-        </ModalBody>
-        <ModalFooter>
-          <Box display="flex" gap="spacing.5" justifyContent="flex-end" width="100%">
-            <Button onClick={handleCloseEmailRequiredModal} variant="tertiary">
-              No, don&apos;t collect
-            </Button>
-            <Button onClick={handleConfirmEmailRequired}>Yes, collect email</Button>
-          </Box>
-        </ModalFooter>
-      </Modal>
-    </IntoView>
+    <FeatureToggle
+      isChecked={values[CHECKOUT_FEATURE_FIELDS.EMAIL].isEnabled}
+      feature={CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT}
+      title={EMAIL_SETTINGS_DEFAULT_VALUE.title}
+      subTitle={EMAIL_SETTINGS_DEFAULT_VALUE.subTitle}
+      toggleHandler={(isChecked) => handleEmailToggle(isChecked)}
+      extraItems={
+        <ExtraItems
+          isChecked={values.email.isEnabled}
+          selectedValue={values.email.value}
+          handleEmailValueChange={handleEmailValueChange}
+        />
+      }
+    />
   );
 };
 

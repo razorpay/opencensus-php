@@ -21,9 +21,9 @@ export const ColorInputWrapper = styled.div`
 
 export const ColorInputBox = styled.input`
   appearance: none;
-  width: ${({ theme }: { theme: Theme }) => theme.spacing[6]}px !important;
-  height: ${({ theme }: { theme: Theme }) => theme.spacing[6]}px !important;
-  border-radius: ${({ theme }: { theme: Theme }) => theme.border.radius.small}px;
+  width: ${({ theme }: { theme: Theme }) => theme.spacing[5]}px !important;
+  height: ${({ theme }: { theme: Theme }) => theme.spacing[5]}px !important;
+  border-radius: ${({ theme }: { theme: Theme }) => theme.border.radius.round};
   border: 0;
   background: transparent;
   padding: 0;
@@ -32,9 +32,7 @@ export const ColorInputBox = styled.input`
   position: static !important;
 
   &::-webkit-color-swatch {
-    border: 1px solid
-      ${({ theme }: { theme: Theme }) => theme.colors.interactive.border.gray.default};
-    border-radius: ${({ theme }: { theme: Theme }) => theme.border.radius.small}px;
+    border-radius: ${({ theme }: { theme: Theme }) => theme.border.radius.round};
   }
 
   &::-webkit-color-swatch-wrapper {
@@ -43,7 +41,7 @@ export const ColorInputBox = styled.input`
 
   &::-moz-color-swatch {
     border: 0;
-    border-radius: ${({ theme }: { theme: Theme }) => theme.border.radius.small}px;
+    border-radius: ${({ theme }: { theme: Theme }) => theme.border.radius.round};
   }
 
   &::-moz-color-swatch-wrapper {

@@ -1,22 +1,22 @@
 export type CheckoutFeatureContext<Values> = {
   values: Values;
   isValueModified: boolean;
-  isEmailRequiredModalOpen: boolean;
   isSaving: boolean;
   isLoading: boolean;
 
   handleSave: () => void;
-  handleEmailChange: (value: string) => void;
   handleLocaleChange: (value: string) => void;
   handleDiscardAllChanges: () => void;
   handleCustomMessageToggle: (isEnabled: boolean) => void;
-  handleConfirmEmailRequired: () => void;
   handleCustomMessageTextChange: (index: number, value: string) => void;
-  handleCloseEmailRequiredModal: () => void;
   handleCustomMessageTextColorChange: (index: number, value: string) => void;
   handleCustomMessageBackgroundColorChange: (index: number, value: string) => void;
   handlePreviewChange: (value: boolean) => void;
   handleFlashCheckoutToggle: (isEnabled: boolean) => void;
+  handleEmailValueChange: (value: string) => void;
+  handleEmailToggle: (isEnabled: boolean) => void;
+  handleMandatorySummaryPageToggle: (isEnabled: boolean) => void;
+  handleShowFinalPriceToggle: (isEnabled: boolean) => void;
 };
 
 export type AccountLocale = {
@@ -89,5 +89,8 @@ export type CheckoutFeaturePayload = {
   } | null;
   flashCheckout?: {
     isFlashCheckoutEnabled?: boolean;
+  };
+  mandatorySummaryPage?: {
+    isMandatorySummaryPageEnabled?: boolean;
   };
 };

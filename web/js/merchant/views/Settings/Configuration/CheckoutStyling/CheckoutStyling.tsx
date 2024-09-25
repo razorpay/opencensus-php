@@ -14,9 +14,8 @@ import {
 import { BrandName } from 'merchant/views/Account/Profile/components/BrandName';
 import { CheckoutDemo } from 'merchant/views/Settings/Configuration/CheckoutDemo';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
-import BrandColor from './BrandColor';
 import BrandLogo from './BrandLogo';
+import BrandColor from './BrandColor';
 import ConfigControls from './ConfigControls';
 import ConfigFooter from './ConfigFooter';
 import {
@@ -24,7 +23,12 @@ import {
   CheckoutConfigProvider,
   CheckoutConfigProviderProps,
 } from './context';
-import { AccountConfig, AccountLocale, MerchantCheckoutConfig } from './context/types';
+import {
+  AccountConfig,
+  AccountLocale,
+  MerchantCheckoutConfig,
+} from 'merchant/views/Settings/Configuration/CheckoutStyling/context/types';
+import { mapCheckoutEmailConfig } from 'merchant/views/Settings/Configuration/CheckoutStyling/context/helpers';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
@@ -86,7 +90,7 @@ const CheckoutConfig = ({
           flex="2"
           display="flex"
           flexDirection="column"
-          gap="spacing.8"
+          gap="spacing.4"
           backgroundColor="surface.background.gray.intense"
           padding="spacing.3"
           maxWidth="600px"
@@ -117,14 +121,16 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
   );
 };
 
-export default connect(
-  (state) => ({
+export default connect((state) => {
+  const updated_email_config = mapCheckoutEmailConfig(state.config?.email_config);
+  return {
     user: state.session.user,
     accountConfig: {
       ...state.config?.config,
-      emailConfig: state.config?.email_config,
+      emailConfig: updated_email_config,
       features: state.config?.features,
     },
-  }),
-  mapActionsToProps,
-)(CheckoutConfig);
+    accountLocale: state.config?.locale,
+    merchantCheckoutConfig: state.config?.checkoutConfig?.data?.checkout_configuration,
+  };
+}, mapActionsToProps)(CheckoutConfig);

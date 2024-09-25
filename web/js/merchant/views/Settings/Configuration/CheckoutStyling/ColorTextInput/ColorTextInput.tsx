@@ -1,15 +1,14 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
+
 import { Text } from '@razorpay/blade/components';
+import {
+  ColorInputLabel,
+  ColorInputWrapper,
+  ColorInputBox,
+  ColorInputText,
+} from 'merchant/views/Settings/Configuration/CheckoutStyling/ColorTextInput/styles';
 
-import { ColorInputLabel, ColorInputWrapper, ColorInputBox, ColorInputText } from './styles';
-
-type ColorTextInputProps = {
-  label?: string;
-  value?: string;
-  onChange?: (event: ChangeEvent) => void;
-  helpText?: React.ReactNode | string;
-  name: string;
-};
+import { ColorTextInputProps } from 'merchant/views/Settings/Configuration/CheckoutStyling/context/types';
 
 const ColorTextInput = ({
   label,

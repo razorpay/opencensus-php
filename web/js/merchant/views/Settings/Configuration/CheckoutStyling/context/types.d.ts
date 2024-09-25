@@ -1,23 +1,14 @@
 export type CheckoutConfigContext<Values> = {
   values: Values;
   isValueModified: boolean;
-  isEmailRequiredModalOpen: boolean;
   isSaving: boolean;
   isLoading: boolean;
 
   handleSave: () => void;
   handleLogoChange: (file: File | null) => void;
-  handleEmailChange: (value: string) => void;
   handleRectLogoChange: (file: File | null) => void;
-  handleLocaleChange: (value: string) => void;
   handleBrandColorChange: (evt?: React.ChangeEvent) => void;
   handleDiscardAllChanges: () => void;
-  handleCustomMessageToggle: (isEnabled: boolean) => void;
-  handleConfirmEmailRequired: () => void;
-  handleCustomMessageTextChange: (index: number, value: string) => void;
-  handleCloseEmailRequiredModal: () => void;
-  handleCustomMessageTextColorChange: (index: number, value: string) => void;
-  handleCustomMessageBackgroundColorChange: (index: number, value: string) => void;
   handlePreviewChange: (value: boolean) => void;
 };
 
@@ -40,8 +31,6 @@ export type AccountConfig = {
   display_name?: string;
   logo_url?: string;
   logo_large_size_url?: string;
-  emailConfig?: string;
-  features?: ConfigFeatures;
   rect_logo_url?: string;
 };
 
@@ -124,4 +113,12 @@ export type CheckoutConfigPayload = {
     isEmailShown: boolean;
     isEmailOptional: boolean;
   } | null;
+};
+
+export type ColorTextInputProps = {
+  label?: string;
+  value?: string;
+  onChange?: (event: ChangeEvent) => void;
+  helpText?: React.ReactNode | string;
+  name: string;
 };

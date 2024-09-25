@@ -6,7 +6,10 @@ import {
   EmailLessCheckoutConfigOptions,
   getEmailConfigFlags,
 } from 'merchant/reducers/config';
-import { flashCheckoutProps } from 'merchant/views/Settings/Configuration/settings-config-constants';
+import {
+  flashCheckoutProps,
+  skipCardMandateSummaryProps,
+} from 'merchant/views/Settings/Configuration/settings-config-constants';
 
 import { CHECKOUT_FEATURE_FIELDS, CHECKOUT_FEATURE_INITIAL_VALUES } from './constants';
 import { CheckoutFeatureState, CheckoutFeaturePayload, ConfigFeatures } from './types';
@@ -92,6 +95,11 @@ const getFlashCheckoutValue = (features: AccountConfig['features']) => {
   return flashCheckoutProps.isFeatureAPIKeyReversed ? !isFeatureFlagSet : isFeatureFlagSet;
 };
 
+const getMandatorySummaryPageValue = (features: AccountConfig['features']) => {
+  const isFeatureFlagSet = getFeatureFlag(features, skipCardMandateSummaryProps.featureAPIKey);
+  return isFeatureFlagSet;
+};
+
 /**
  * Checks if the values have changed compared to the original values.
  * @param values - The new values to compare.
@@ -131,6 +139,13 @@ export const hasValuesChanged = (
     return true;
   }
 
+  if (
+    !!getMandatorySummaryPageValue(accountConfig?.features) !==
+    values[CHECKOUT_FEATURE_FIELDS.MANDATORY_SUMMARY_PAGE]
+  ) {
+    return true;
+  }
+
   return false;
 };
 
@@ -149,10 +164,19 @@ const createEmailConfigPayload = (
   let isEmailOptional = false;
   let isEmailShown = false;
 
-  if (emailConfig === EmailLessCheckoutConfigOptions.OPTIONAL) {
+  if (!emailConfig.isEnabled) {
+    isEmailOptional = false;
+    isEmailShown = false;
+  } else if (
+    emailConfig.isEnabled &&
+    emailConfig.value === EmailLessCheckoutConfigOptions.OPTIONAL
+  ) {
     isEmailOptional = true;
     isEmailShown = true;
-  } else if (emailConfig === EmailLessCheckoutConfigOptions.REQUIRED) {
+  } else if (
+    emailConfig.isEnabled &&
+    emailConfig.value === EmailLessCheckoutConfigOptions.MANDATORY
+  ) {
     isEmailOptional = false;
     isEmailShown = true;
   }
@@ -217,8 +241,10 @@ export const createPayloadToSaveConfig = (
         : 'patch',
     };
   }
-
-  payload.emailConfig = createEmailConfigPayload(values.email, originalValues);
+  const emailConfigPayload = createEmailConfigPayload(values.email, originalValues);
+  if (emailConfigPayload) {
+    payload.emailConfig = emailConfigPayload;
+  }
 
   if (
     !!getFlashCheckoutValue(accountConfig?.features) !==
@@ -229,5 +255,13 @@ export const createPayloadToSaveConfig = (
     };
   }
 
+  if (
+    !!getMandatorySummaryPageValue(accountConfig?.features) !==
+    values[CHECKOUT_FEATURE_FIELDS.MANDATORY_SUMMARY_PAGE]
+  ) {
+    payload.mandatorySummaryPage = {
+      isMandatorySummaryPageEnabled: values[CHECKOUT_FEATURE_FIELDS.MANDATORY_SUMMARY_PAGE],
+    };
+  }
   return payload;
 };

@@ -15,6 +15,7 @@ import {
   updateConfig,
 } from 'merchant/reducers/config';
 import { BrandName } from 'merchant/views/Account/Profile/components/BrandName';
+import { CheckoutDemo } from 'merchant/views/Settings/Configuration/CheckoutConfig/CheckoutDemo';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import BrandColor from './BrandColor';
@@ -30,7 +31,6 @@ import {
   CheckoutConfigProviderProps,
 } from './context';
 import { AccountConfig, AccountLocale, MerchantCheckoutConfig } from './context/types';
-import { CheckoutDemo } from 'merchant/views/Settings/Configuration/CheckoutDemo';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;

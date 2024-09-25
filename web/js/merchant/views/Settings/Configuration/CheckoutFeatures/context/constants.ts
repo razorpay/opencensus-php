@@ -1,5 +1,4 @@
 import { AccountConfig } from 'merchant/views/Settings/Configuration/CheckoutConfig/context/types';
-
 import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
 
 import { AccountLocale } from './types';
@@ -22,6 +21,8 @@ export const CHECKOUT_FEATURE_FIELDS = {
   CUSTOM_MESSAGE: 'customMessage',
   IS_DESKTOP_PREVIEW: 'isDesktopPreview',
   FLASH_CHECKOUT: 'flashCheckout',
+  MANDATORY_SUMMARY_PAGE: 'mandatorySummaryPage',
+  SHOW_FINAL_PRICE: 'showFinalPrice',
 } as const;
 
 export const CUSTOM_MESSAGE_BANNER_SCREENS = {
@@ -54,9 +55,10 @@ export const CHECKOUT_FEATURE_INITIAL_VALUES: {
     id: string;
     languageCode: string;
   };
-  [CHECKOUT_FEATURE_FIELDS.EMAIL_OPTIONAL_CHECKOUT]: string;
-  [CHECKOUT_FEATURE_FIELDS.SHOW_EMAIL_ON_CHECKOUT]: string;
-  [CHECKOUT_FEATURE_FIELDS.EMAIL]: string;
+  [CHECKOUT_FEATURE_FIELDS.EMAIL]: {
+    isEnabled: boolean;
+    value: string;
+  };
   [CHECKOUT_FEATURE_FIELDS.IS_DESKTOP_PREVIEW]: boolean;
   [CHECKOUT_FEATURE_FIELDS.CUSTOM_MESSAGE]: {
     isEnabled: boolean;
@@ -70,20 +72,25 @@ export const CHECKOUT_FEATURE_INITIAL_VALUES: {
     }[];
   };
   [CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT]: boolean;
+  [CHECKOUT_FEATURE_FIELDS.MANDATORY_SUMMARY_PAGE]: boolean;
+  [CHECKOUT_FEATURE_FIELDS.SHOW_FINAL_PRICE]: boolean;
 } = {
   [CHECKOUT_FEATURE_FIELDS.LOCALE]: {
     id: '',
     languageCode: 'en',
   },
-  [CHECKOUT_FEATURE_FIELDS.EMAIL_OPTIONAL_CHECKOUT]: '',
-  [CHECKOUT_FEATURE_FIELDS.SHOW_EMAIL_ON_CHECKOUT]: '',
-  [CHECKOUT_FEATURE_FIELDS.EMAIL]: EmailLessCheckoutConfigOptions.NO,
+  [CHECKOUT_FEATURE_FIELDS.EMAIL]: {
+    isEnabled: false,
+    value: EmailLessCheckoutConfigOptions.OPTIONAL,
+  },
   [CHECKOUT_FEATURE_FIELDS.CUSTOM_MESSAGE]: {
     isEnabled: false,
     configs: CUSTOM_MESSAGE_INITIAL_CONFIG,
   },
   [CHECKOUT_FEATURE_FIELDS.IS_DESKTOP_PREVIEW]: true,
   [CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT]: false,
+  [CHECKOUT_FEATURE_FIELDS.MANDATORY_SUMMARY_PAGE]: false,
+  [CHECKOUT_FEATURE_FIELDS.SHOW_FINAL_PRICE]: false,
 };
 
 const CONFIG_INITIAL_STATE: { accountConfig: AccountConfig; locale: AccountLocale } = {
@@ -95,7 +102,6 @@ export const INITIAL_STATE = {
   config: CONFIG_INITIAL_STATE,
   values: CHECKOUT_FEATURE_INITIAL_VALUES,
   isValueModified: false,
-  isEmailRequiredModalOpen: false,
   isSaving: false,
   isLoading: false,
 };
@@ -103,7 +109,6 @@ export const INITIAL_STATE = {
 export const CONTEXT_INITIAL_STATE = {
   values: INITIAL_STATE.values,
   isValueModified: INITIAL_STATE.isValueModified,
-  isEmailRequiredModalOpen: INITIAL_STATE.isEmailRequiredModalOpen,
   isSaving: INITIAL_STATE.isSaving,
   isLoading: INITIAL_STATE.isLoading,
 };

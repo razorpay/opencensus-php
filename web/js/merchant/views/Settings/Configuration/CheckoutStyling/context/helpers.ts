@@ -1,79 +1,6 @@
-import isEmpty from 'lodash/isEmpty';
-
+import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
 import { CHECKOUT_CONFIG_INITIAL_VALUES } from './constants';
 import { CheckoutConfigState, CheckoutConfigPayload } from './types';
-
-/**
- * Creates a payload for custom message configuration.
- * @param customMessage - The custom message configuration.
- * @param originalConfig - The original checkout configuration state.
- * @returns The payload for custom message configuration, or null if no changes were made.
- */
-export const createCustomMessageConfigPayload = (
-  customMessage: typeof CHECKOUT_CONFIG_INITIAL_VALUES.customMessage,
-  originalConfig: CheckoutConfigState,
-) => {
-  const { merchantCheckoutConfig } = originalConfig ?? {};
-  const { checkout_message_banner } = merchantCheckoutConfig ?? {};
-
-  let hasChanged = false;
-
-  if (!merchantCheckoutConfig) {
-    return null;
-  }
-
-  if (Boolean(checkout_message_banner?.hide_message_banner) === customMessage.isEnabled) {
-    hasChanged = true;
-  }
-
-  if (checkout_message_banner && !isEmpty(checkout_message_banner.banner_config)) {
-    // check difference in both the arrays
-    const messageBannerConfig = Object.keys(checkout_message_banner.banner_config);
-
-    hasChanged =
-      hasChanged ||
-      messageBannerConfig.some((key) => {
-        const originalConfig = checkout_message_banner.banner_config[key];
-        const newConfig = customMessage.configs.find((config) => config.name === key);
-
-        if (!newConfig) {
-          return true;
-        }
-
-        return (
-          originalConfig.text !== newConfig.bannerMessageText ||
-          originalConfig.text_color !== newConfig.bannerTextColor ||
-          originalConfig.background_color !== newConfig.bannerBackgroundColor
-        );
-      });
-  } else if (customMessage.configs.length && customMessage.isEnabled) {
-    // Initial state of custom message, when no custom message is set
-    hasChanged = true;
-  }
-
-  if (hasChanged) {
-    return {
-      checkout_configuration: {
-        checkout_message_banner: {
-          ...checkout_message_banner,
-          hide_message_banner: !customMessage.isEnabled,
-          banner_config: customMessage.configs.reduce((acc, config) => {
-            acc[config.name] = {
-              text: config.bannerMessageText,
-              text_color: config.bannerTextColor,
-              background_color: config.bannerBackgroundColor,
-              hidden: config.bannerMessageText ? config.hidden : true,
-            };
-
-            return acc;
-          }, {}),
-        },
-      },
-    };
-  }
-
-  return null;
-};
 
 /**
  * Checks if the values have changed compared to the original values.
@@ -141,4 +68,28 @@ export const createPayloadToSaveConfig = (
   }
 
   return payload;
+};
+
+export const mapCheckoutEmailConfig = (
+  email_config: string,
+): {
+  isEnabled: boolean;
+  value: string;
+} => {
+  if (email_config === EmailLessCheckoutConfigOptions.NO) {
+    return {
+      isEnabled: false,
+      value: EmailLessCheckoutConfigOptions.NO,
+    };
+  }
+  if (email_config === EmailLessCheckoutConfigOptions.OPTIONAL) {
+    return {
+      isEnabled: true,
+      value: EmailLessCheckoutConfigOptions.OPTIONAL,
+    };
+  }
+  return {
+    isEnabled: true,
+    value: EmailLessCheckoutConfigOptions.MANDATORY,
+  };
 };

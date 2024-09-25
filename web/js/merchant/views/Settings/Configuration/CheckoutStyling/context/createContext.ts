@@ -12,17 +12,9 @@ export const checkoutConfigContext = createContext<
 
   handleSave: noop,
   handleLogoChange: noop,
-  handleEmailChange: noop,
-  handleLocaleChange: noop,
   handleRectLogoChange: noop,
   handleBrandColorChange: noop,
   handleDiscardAllChanges: noop,
-  handleCustomMessageToggle: noop,
-  handleConfirmEmailRequired: noop,
-  handleCustomMessageTextChange: noop,
-  handleCloseEmailRequiredModal: noop,
-  handleCustomMessageTextColorChange: noop,
-  handleCustomMessageBackgroundColorChange: noop,
   handlePreviewChange: noop,
 });
 

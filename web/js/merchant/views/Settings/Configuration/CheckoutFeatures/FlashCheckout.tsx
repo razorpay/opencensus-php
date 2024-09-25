@@ -1,34 +1,22 @@
 import React from 'react';
-import { Box, Text, Switch } from '@razorpay/blade/components';
 
-import TextHighlighter from 'common/ui/TextHighlighter';
-import { FLASH_CHECKOUT } from 'merchant/views/Settings/Configuration/deeplink-constants';
-import { flashCheckoutProps } from 'merchant/views/Settings/Configuration/settings-config-constants';
+import FeatureToggle from 'merchant/views/Settings/Configuration/components/Configuration/FeatureToggle';
 
-import { CHECKOUT_FEATURE_FIELDS } from './context/constants';
-import { useCheckoutFeatures } from './context/createContext';
+import { useCheckoutFeatures } from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/createContext';
+
+import { CHECKOUT_FEATURE_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutFeatures/context/constants';
+import { FLASH_CHECKOUT_DEFAULT_VALUE } from 'merchant/views/Settings/Configuration/CheckoutFeatures/constants/DefaultValue';
 
 const FlashCheckout = () => {
   const { values, handleFlashCheckoutToggle } = useCheckoutFeatures();
-
-  const handleSwitchChange = ({ isChecked }: { isChecked: boolean }) => {
-    handleFlashCheckoutToggle(isChecked);
-  };
-
   return (
-    <Box display="flex" gap="spacing.5">
-      <Box flex="1">
-        <Text weight="semibold" color="surface.text.gray.subtle">
-          <TextHighlighter hashedWith={FLASH_CHECKOUT}>{flashCheckoutProps.title}</TextHighlighter>
-        </Text>
-        <Text color="surface.text.gray.muted">{flashCheckoutProps.desc}</Text>
-      </Box>
-      <Switch
-        accessibilityLabel="enable flash checkout"
-        isChecked={values[CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT]}
-        onChange={handleSwitchChange}
-      />
-    </Box>
+    <FeatureToggle
+      isChecked={values[CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT]}
+      feature={CHECKOUT_FEATURE_FIELDS.FLASH_CHECKOUT}
+      title={FLASH_CHECKOUT_DEFAULT_VALUE.title}
+      subTitle={FLASH_CHECKOUT_DEFAULT_VALUE.subTitle}
+      toggleHandler={(isChecked) => handleFlashCheckoutToggle(isChecked)}
+    />
   );
 };
 

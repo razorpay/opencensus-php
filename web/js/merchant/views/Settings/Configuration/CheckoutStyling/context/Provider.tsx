@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useReducer } from 'react';
-import cloneDeep from 'lodash/cloneDeep';
 
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
 
 import { ACTIONS, INITIAL_STATE, CHECKOUT_CONFIG_FIELDS } from './constants';
 import { checkoutConfigContext } from './createContext';
@@ -45,19 +43,16 @@ const CheckoutConfigProvider = ({
     dispatch({ type: ACTIONS.SET_IS_SAVING, payload: isSaving });
   };
 
-  const handleBrandColorChange = (evt?: React.ChangeEvent) => {
+  const handleBrandColorChange = (evt?: React.ChangeEvent, defaultValue?: string) => {
+    if (defaultValue) {
+      setValue(CHECKOUT_CONFIG_FIELDS.COLOR, defaultValue);
+      return;
+    }
+
     if (evt) {
       const { value } = evt.target as HTMLInputElement;
-
       setValue(CHECKOUT_CONFIG_FIELDS.COLOR, value);
     }
-  };
-
-  const handleLocaleChange = (value: string) => {
-    setValue(CHECKOUT_CONFIG_FIELDS.LOCALE, {
-      id: state.values[CHECKOUT_CONFIG_FIELDS.LOCALE].id,
-      languageCode: value,
-    });
   };
 
   const handleLogoChange = (value: File | null) => {
@@ -76,58 +71,6 @@ const CheckoutConfigProvider = ({
     }
   };
 
-  const handleEmailChange = (value: string) => {
-    if (value === EmailLessCheckoutConfigOptions.REQUIRED) {
-      dispatch({ type: ACTIONS.SET_EMAIL_REQUIRED_MODAL_OPEN, payload: true });
-    } else {
-      setValue(CHECKOUT_CONFIG_FIELDS.EMAIL, value);
-    }
-  };
-
-  const handleCloseEmailRequiredModal = () => {
-    dispatch({ type: ACTIONS.SET_EMAIL_REQUIRED_MODAL_OPEN, payload: false });
-  };
-
-  const handleConfirmEmailRequired = () => {
-    setValue(CHECKOUT_CONFIG_FIELDS.EMAIL, EmailLessCheckoutConfigOptions.REQUIRED);
-    handleCloseEmailRequiredModal();
-  };
-
-  const handleCustomMessageTextChange = (index: number, value) => {
-    const currentConfigs = cloneDeep(state.values.customMessage);
-
-    currentConfigs.configs[index] = { ...currentConfigs.configs[index], bannerMessageText: value };
-
-    setValue(CHECKOUT_CONFIG_FIELDS.CUSTOM_MESSAGE, currentConfigs);
-  };
-
-  const handleCustomMessageBackgroundColorChange = (index: number, value: string) => {
-    const currentConfigs = cloneDeep(state.values.customMessage);
-
-    currentConfigs.configs[index] = {
-      ...currentConfigs.configs[index],
-      bannerBackgroundColor: value,
-    };
-
-    setValue(CHECKOUT_CONFIG_FIELDS.CUSTOM_MESSAGE, currentConfigs);
-  };
-
-  const handleCustomMessageTextColorChange = (index: number, value: string) => {
-    const currentConfigs = cloneDeep(state.values.customMessage);
-
-    currentConfigs.configs[index] = { ...currentConfigs.configs[index], bannerTextColor: value };
-
-    setValue(CHECKOUT_CONFIG_FIELDS.CUSTOM_MESSAGE, currentConfigs);
-  };
-
-  const handleCustomMessageToggle = (isEnabled: boolean) => {
-    const currentConfigs = cloneDeep(state.values.customMessage);
-
-    currentConfigs.isEnabled = isEnabled;
-
-    setValue(CHECKOUT_CONFIG_FIELDS.CUSTOM_MESSAGE, currentConfigs);
-  };
-
   const setAccountConfigToState = useCallback(() => {
     if (accountConfig) {
       dispatch({
@@ -138,7 +81,6 @@ const CheckoutConfigProvider = ({
           [CHECKOUT_CONFIG_FIELDS.LOGO_RAW]: null,
           [CHECKOUT_CONFIG_FIELDS.LOGO_RECT]: accountConfig.rect_logo_url,
           [CHECKOUT_CONFIG_FIELDS.LOGO_RECT_RAW]: null,
-          [CHECKOUT_CONFIG_FIELDS.EMAIL]: accountConfig.emailConfig,
           [CHECKOUT_CONFIG_FIELDS.BRAND_NAME]: accountConfig.name,
         },
       });
@@ -211,20 +153,11 @@ const CheckoutConfigProvider = ({
         isValueModified,
         isSaving: state.isSaving,
         isLoading: state.isLoading,
-        isEmailRequiredModalOpen: state.isEmailRequiredModalOpen,
         handleSave,
         handleLogoChange,
-        handleEmailChange,
-        handleLocaleChange,
         handleRectLogoChange,
         handleBrandColorChange,
         handleDiscardAllChanges,
-        handleCustomMessageToggle,
-        handleConfirmEmailRequired,
-        handleCloseEmailRequiredModal,
-        handleCustomMessageTextChange,
-        handleCustomMessageTextColorChange,
-        handleCustomMessageBackgroundColorChange,
         handlePreviewChange,
       }}
     >

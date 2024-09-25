@@ -15,22 +15,27 @@ import {
   updateFeatures,
 } from 'merchant/reducers/config';
 import { BrandName } from 'merchant/views/Account/Profile/components/BrandName';
-import { isFlashCheckoutAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import {
+  isFlashCheckoutAllowed,
+  isSkipMandatorySummaryPageAllowed,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { CheckoutDemo } from 'merchant/views/Settings/Configuration/CheckoutDemo';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import ConfigControls from './ConfigControls';
 import ConfigFooter from './ConfigFooter';
-import CustomMessageSettings from './CustomMessageSettings';
 import EmailSettings from './EmailSettings';
 import FlashCheckout from './FlashCheckout';
-import LocaleSettings from './LocaleSettings';
 import {
   CUSTOM_MESSAGE_FEATURE_FLAG,
   CheckoutConfigProvider,
   CheckoutConfigProviderProps,
 } from './context';
 import { AccountLocale, MerchantCheckoutConfig } from './context/types';
+import CustomMessageSettings from './CustomMessageSettings/CustomMessageSettings';
+import LanguageSettings from './LanguageSettings/LanguageSettings';
+import MandatorySummaryPage from './MandatorySummaryPage';
+import { mapCheckoutEmailConfig } from 'merchant/views/Settings/Configuration/CheckoutStyling/context/helpers';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
@@ -98,18 +103,21 @@ const CheckoutFeatures = ({
           flex="2"
           display="flex"
           flexDirection="column"
-          gap="spacing.8"
+          gap="spacing.4"
           backgroundColor="surface.background.gray.intense"
           padding="spacing.3"
           maxWidth="600px"
         >
           {user.isAccountAndSettingsRevampEnabled && <BrandName />}
-          <LocaleSettings />
+          <LanguageSettings />
           <EmailSettings />
           <ShowWhen additionalCondition={(user) => isFlashCheckoutAllowed(user, extraConfig)}>
             <FlashCheckout />
           </ShowWhen>
           {isCustomMessageFeatureEnabled && <CustomMessageSettings />}
+          <ShowWhen additionalCondition={() => isSkipMandatorySummaryPageAllowed(extraConfig)}>
+            <MandatorySummaryPage />
+          </ShowWhen>
           <ConfigControls />
           <ConfigFooter />
         </Box>
@@ -135,12 +143,13 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
 };
 
 export default connect((state) => {
+  const updated_email_config = mapCheckoutEmailConfig(state.config?.email_config);
   return {
     user: state.session.user,
     org: state.session.org,
     accountConfig: {
       ...state.config?.config,
-      emailConfig: state.config?.email_config,
+      emailConfig: updated_email_config,
       features: state.config?.features,
     },
     accountLocale: state.config?.locale,
