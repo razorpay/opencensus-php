@@ -1739,6 +1739,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS                       = 'Set Default Methods is in progress for the merchant';
 
+    const BAD_REQUEST_PRODUCT_CONFIG_ALREADY_IN_PROGRESS                            = 'Product configuration create is in progress for the merchant';
+
     const BAD_REQUEST_FILE_HASH_MISSING_FOR_ATTACHMENT                              = 'file_hash missing for attachment';
     const BAD_REQUEST_INVALID_FILE_HASH_FOR_ATTACHMENT                              = 'Invalid file_hash for attachment';
 

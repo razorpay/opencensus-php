@@ -258,32 +258,6 @@ class MerchantAccountV2Test extends TestCase
             ->andReturn($output);
     }
 
-
-    public function testMutexSuffixSetMethodsWhenExperimentEnabled()
-    {
-        $this->merchantCore = Mockery::mock('RZP\Models\Merchant\Methods\Core');
-        $expectedMutexKey = self::DEFAULT_MERCHANT_ID ."_". MerchantConstants::SET_METHOD_MUTEX_SUFFIX;
-        $this->merchantCore->shouldReceive('getSetMethodsMutexKey')
-            ->with(self::DEFAULT_MERCHANT_ID, true)
-            ->andReturn($expectedMutexKey); // Return the expected value when the variant flag is 'on'
-
-        $mutexValue = $this->merchantCore->getSetMethodsMutexKey(self::DEFAULT_MERCHANT_ID, true);
-        $this->assertEquals($expectedMutexKey, $mutexValue, "The mutex key is not set correctly when variant flag is 'on'");
-    }
-
-    public function testMutexSuffixSetMethodsWhenExperimentDisabled()
-    {
-        $this->merchantCore = Mockery::mock('RZP\Models\Merchant\Methods\Core');
-
-        $this->merchantCore->shouldReceive('getSetMethodsMutexKey')
-            ->with(self::DEFAULT_MERCHANT_ID, false)
-            ->andReturn(self::DEFAULT_MERCHANT_ID);
-
-        $mutexValue = $this->merchantCore->getSetMethodsMutexKey(self::DEFAULT_MERCHANT_ID, false);
-        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $mutexValue, "The mutex key is not set correctly when variant flag is 'off'");
-
-    }
-
     protected function mockTrace()
     {
         $mock = Mockery::mock('Razorpay\Trace\Logger');

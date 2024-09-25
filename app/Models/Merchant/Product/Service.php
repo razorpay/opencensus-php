@@ -91,8 +91,8 @@ class Service extends Base\Service
         });
     }
 
-    public function createConfig(string $merchantId, array $payload): array
-    {
+    public function createConfig(string $merchantId, array $payload): array{
+
         list($merchant, $partner) = $this->validateAndSetMerchantContext($merchantId);
 
         (new Validator())->validateCreateProductRequest($payload);
@@ -102,6 +102,25 @@ class Service extends Base\Service
         $productName = $merchantProductInput[Entity::PRODUCT_NAME];
 
         (new PartnerValidator())->validateOnboardingApisAccess($partner->getId() ?? $merchant->getId(), $productName);
+
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $mutexKey = $merchantId."_".$productName."_product_config_create_v2";
+
+        return $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($merchantId, $payload, $merchant, $partner, $merchantProductInput)
+            {
+               return $this->createProductConfig($merchantId, $payload, $merchant, $partner, $merchantProductInput);
+            },
+            8,
+            ErrorCode::BAD_REQUEST_PRODUCT_CONFIG_ALREADY_IN_PROGRESS,
+            0);
+    }
+
+    protected function createProductConfig(string $merchantId, array $payload, $merchant, $partner, array $merchantProductInput) :array
+    {
+        $productName = $merchantProductInput[Entity::PRODUCT_NAME];
 
         $payload = Tracer::inspan(['name' => HyperTrace::ACCEPT_PRODUCT_TNC], function () use ($payload, $productName, $merchant) {
 
@@ -129,11 +148,11 @@ class Service extends Base\Service
         if (empty($merchantProduct) === false)
         {
             $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALREADY_EXISTS,
-                               [
-                                   'merchant_id'         => $merchant->getId(),
-                                   'merchant_product'    => $merchantProduct->getProduct(),
-                                   'merchant_product_id' => $merchantProduct->getId()
-                               ]);
+                [
+                    'merchant_id'         => $merchant->getId(),
+                    'merchant_product'    => $merchantProduct->getProduct(),
+                    'merchant_product_id' => $merchantProduct->getId()
+                ]);
 
             $response = Tracer::inspan(['name' => HyperTrace::GET_PRODUCT_CONFIG], function () use ($merchantId, $merchantProduct) {
 
@@ -194,6 +213,7 @@ class Service extends Base\Service
 
         return $response;
     }
+
 
     /**
      * This function would return the input as is if input is not empty. If input is empty, fetches the default configuration for the product specified
