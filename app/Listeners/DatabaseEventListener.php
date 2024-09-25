@@ -97,7 +97,8 @@ class DatabaseEventListener
                     'connection' => $event->connectionName,
                     'query'      => $event->sql,
                     'bindings'   => $event->bindings,
-                    'time'       => $event->time
+                    'time'       => $event->time,
+                    'table_name'  => $tableName,
                 ]);
         }
         catch (\Throwable $e)

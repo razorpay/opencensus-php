@@ -7271,6 +7271,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KEY_SAVED_EXCEPTION                                   = 'KEY_SAVED_EXCEPTION';
 
 
+    const PRICING_EVENT_EXCEPTION                               = 'PRICING_EVENT_EXCEPTION';
+    const PRICING_CACHE_ACCESS                                  = 'PRICING_CACHE_ACCESS';
+    const PRICING_ENTITY_EVENT                                  = 'PRICING_ENTITY_EVENT';
+
+
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const BANKING_ACCOUNT_STATEMENT_ROW_SAVED                   = 'BANKING_ACCOUNT_STATEMENT_ROW_SAVED';
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT                  = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT';

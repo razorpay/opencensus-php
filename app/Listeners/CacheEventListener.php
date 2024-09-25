@@ -59,7 +59,20 @@ class CacheEventListener
 
         $dimensions[Metric::LABEL_TYPE] = $cacheEventType;
 
+        try {
+            //Add route for pricing entities metrics and log
+            if($dimensions['entity'] == 'pricing') {
+                $dimensions['route'] = app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName();
+                $sampleRate = app('config')->get('cache.pricing_log_sample_rate') ?? 25;
+                if (rand(1, 2500) <= $sampleRate) {
+                    $this->logData($dimensions);
+                }
+            }
+        } catch(\Throwable $e) {
+        }
+
         $this->trace->count($this->getMetricName(), $dimensions);
+
     }
 
     protected function getCacheEventType()
@@ -110,6 +123,7 @@ class CacheEventListener
         }
     }
 
+
     protected function getQueryCacheDimensions()
     {
         if (preg_match('/^rememberable:(?<version>[^:]*):(?<entity>[^:]*).*$/', $this->event->key, $matches) === 1)
@@ -124,5 +138,40 @@ class CacheEventListener
         {
             return self::DEFAULT_DIMENSIONS;
         }
+    }
+
+    public function getLogData()
+    {
+        $runningInQueue = app()->runningInQueue();
+        $logData        = ['route' => 'none', 'async_job_name' => 'none'];
+        if ($runningInQueue === true) {
+            $logData['async_job_name'] = app('worker.ctx')->getJobName();
+            $logData['mode']           = app('worker.ctx')->getMode();
+        } else {
+            $logData['route']             = app('request.ctx')->getRoute();
+            $logData['internal_app_name'] = app('request.ctx')->getInternalAppName();
+            $logData['mode']              = app('request.ctx')->getMode();
+        }
+        $logData['is_transaction_active'] = app('repo')->isTransactionActive();
+        $logData['trace'] = $this->getTrace();
+
+        return $logData;
+    }
+
+    protected function getTrace()
+    {
+        $backTrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 30);
+        foreach ($backTrace as $index => $trace) {
+            if (isset($trace['class']) && $trace['class'] === 'RZP\Models\Pricing\Repository') {
+                return array_slice($backTrace, $index, 5);
+            }
+        }
+        return $backTrace;
+    }
+
+    protected function logData($metricDimensions)
+    {
+        $logData = array_merge($metricDimensions, $this->getLogData());
+        $this->trace->info(TraceCode::PRICING_CACHE_ACCESS, $logData);
     }
 }

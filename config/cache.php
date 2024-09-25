@@ -94,6 +94,8 @@ return [
         ],
     ],
 
+    'pricing_log_sample_rate' => env('PRICING_CACHE_LOG_SAMPLE_RATE', 25),
+
     /*
     |--------------------------------------------------------------------------
     | Cache Key Prefix
@@ -106,5 +108,4 @@ return [
     */
 
     'prefix' => 'laravel',
-
 ];

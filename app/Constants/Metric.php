@@ -205,6 +205,9 @@ class Metric
     const SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND             = 'server_error_multiple_pricing_rules_found';
     const MERCHANT_ON_DEMAND_PRICING_FETCH_PLAN_MISMATCH        = 'merchant_on_demand_pricing_fetch_plan_mismatch';
 
+    const PRICING_WRITE_REQUEST      = 'pricing_write_request_result';
+    const PRICING_DELETE_REQUEST     = 'pricing_delete_request_result';
+
     //ChargeCollections
     const CC_REQUEST_NOT_ROUTED                                 = 'cc_request_not_routed';
     const CC_REQUEST_ROUTED                                     = 'cc_request_routed';
