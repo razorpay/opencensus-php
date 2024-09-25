@@ -4368,19 +4368,6 @@ trait Authorize
                 ]);
         }
 
-        // validate if jpmc supported recurring methods
-        if (($payment->isRecurring() === true) and
-            (in_array($payment->getMethod(), Method::JPMC_IMPORT_FLOW_SUPPORTED_RECURRING_METHODS) === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED,
-                [
-                    'merchant_id' => $payment->merchant->getId(),
-                    'payment_id'  => $payment->getId(),
-                    'method'      => $payment->getMethod(),
-                ]);
-        }
-
         if ($payment->merchant->isInternational() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
