@@ -709,6 +709,12 @@ return array(
 
     'cross_border_s2s_dcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_REARCH_EXPERIMENT_ID'),
 
+    'cross_border_mcc_payment_via_rearch_experiment_id' => env('CROSS_BORDER_MCC_PAYMENT_VIA_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_mcc_rearch_experiment_id' => env('CROSS_BORDER_MCC_REARCH_EXPERIMENT_ID'),
+
+    'cross_border_s2s_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_MCC_REARCH_EXPERIMENT_ID'),
+
     'cross_border_mcc_parity_check_experiment_id' => env('CROSS_BORDER_MCC_PARITY_CHECK_EXPERIMENT_ID'),
 
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
@@ -1003,7 +1009,7 @@ return array(
     'banking_mail_activated_mcc_pending_success_exp_id' => env('BANKING_MAIL_ACTIVATED_MCC_PENDING_SUCCESS_EXP_ID'),
 
     'api_stork_banking_mail_reset_password_id' => env('STORK_BANKING_MAIL_RESET_PASSWORD_EXPERIMENT_ID'),
-  
+
     'ups_unexpected_payment_experiment_id' => env('UPS_UNEXPECTED_PAYMENT_EXPERIMENT_ID'),
 
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA')
