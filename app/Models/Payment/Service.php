@@ -6794,8 +6794,16 @@ class Service extends Base\Service
 
         if (($input['meta']['force_auth_payment'] === true) and
             ($this->isForceAuthAllowed($gateway) ===true) and
-            ($payment->isUpiRecurring() === false))
+            ($this->isUpiAutopayForceAuthAllowed($payment) === true))
         {
+            if($payment->isUpiRecurring() === true)
+            {
+                // skipping verify call and doing force authorization for recon
+                // need to add some details as we are skipping verify call and some flow
+                $input['upi']['internal_status'] = UpiMetadata\InternalStatus::AUTHORIZED;
+                $input['upi_mandate'] = [];
+            }
+
             $resource = $this->getNewProcessor($payment->merchant)->getCallbackMutexResource($payment);
 
             return $this->mutex->acquireAndRelease($resource,
@@ -6810,6 +6818,43 @@ class Service extends Base\Service
             return $this->verifyAuthorizeFailedPayment($payment, $input);
         }
 
+    }
+
+    private function isUpiAutopayForceAuthAllowed($payment)
+    {
+        if($payment['recurring'] === false)
+        {
+            return true;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.enable_force_auth_on_upi_autopay')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::UPI_AUTOPAY_SPLITZ_FAILURE,
+                [
+                    'error' => $ex->getMessage(),
+                    'experiment' => "enable_force_auth_on_upi_autopay"
+                ]
+            );
+        }
+
+        return false;
     }
 
     public function getPaymentIdFromInput($input)

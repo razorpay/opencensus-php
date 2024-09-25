@@ -2304,15 +2304,31 @@ class Gateway extends Base\Gateway
         // If it's already authorized on gateway side, there's nothing to do here. We just return back.
         if ((($gatewayPayment[Entity::STATUS_CODE] === Status::SUCCESS) or
             ($gatewayPayment[Entity::STATUS_CODE] === '00')) and
-            ($gatewayPayment[Entity::RECEIVED] === true))
+            ($gatewayPayment[Entity::RECEIVED] === true) and
+            ($input['payment']['recurring'] !== true))
+
         {
             return true;
         }
 
-        $attributes = [
-            Base\Entity::STATUS_CODE        => Status::SUCCESS,
-            Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
-        ];
+        $attributes = [];
+        if ((empty($input['gateway']['meta']['version']) === false) and
+            ($input['gateway']['meta']['version'] === 'api_v2'))
+        {
+            $attributes = [
+                Entity::NPCI_REFERENCE_ID => $input['gateway']['upi']['npci_reference_id'],
+                Entity::VPA               => $input['gateway']['upi'][Entity::VPA],
+                Entity::GATEWAY_PAYMENT_ID => $input['gateway']['upi']['npci_reference_id'],
+            ];
+        }
+        else
+        {
+            $attributes = [
+                Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
+            ];
+        }
+
+        $attr[Entity::STATUS_CODE] =  Status::SUCCESS;
 
         $gatewayPayment->fill($attributes);
 

@@ -1500,7 +1500,7 @@ class Gateway extends Base\Gateway
         {
             $merchantReference = $this->upiPaymentIdFromServerCallback($response);
 
-            if ($this->hasCustomPrefixForIntent($merchantReference) === true) 
+            if ($this->hasCustomPrefixForIntent($merchantReference) === true)
             {
                 $merchantReference = substr($merchantReference, strlen(self::ICICI_MERCHANT_REFERENCE_PREFIX));
             }
@@ -2181,7 +2181,8 @@ class Gateway extends Base\Gateway
          * use success as status code to make sure we do not force auth already auth txns.
          */
         if (($gatewayPayment[Entity::STATUS_CODE] === Status::SUCCESS) and
-            ($gatewayPayment[Entity::RECEIVED]) === true)
+            ($gatewayPayment[Entity::RECEIVED] === true) and
+            ($input['payment']['recurring'] !== true))
         {
             return true;
         }
