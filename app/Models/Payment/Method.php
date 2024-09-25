@@ -24,6 +24,7 @@ class Method
     const UNSELECTED            = 'unselected';
     const INTL_BANK_TRANSFER    = 'intl_bank_transfer';
     const FPX                   = 'fpx';
+    const OBW                   = 'obw';
     const RAZORPAY_ACCOUNT      = 'razorpay_account';
 
     protected static $methods = [
@@ -45,6 +46,7 @@ class Method
         self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer',
         self::FPX                   => 'Financial Process Exchange',
         self::RAZORPAY_ACCOUNT      => 'Razorpay Account',
+        self::OBW                   => 'Online Banking/Wallet'
     ];
 
     protected static $nonEsAutomaticMethods = [

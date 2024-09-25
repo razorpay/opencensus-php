@@ -4571,6 +4571,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PACB_BANK_TRANSFER_EMPTY_ORDER_META                   = 'PACB_BANK_TRANSFER_EMPTY_ORDER_META';
     const ES_FEATURE_FLAG_DISABLED                              = 'ES_FEATURE_FLAG_DISABLED';
     const FPX_EMAIL_SUPPRESS                                    = 'FPX_EMAIL_SUPPRESS';
+
+    const OBW_EMAIL_SUPPRESS                                    = 'OBW_EMAIL_SUPPRESS';
     const WALLET_EMAIL_SUPPRESS                                 = 'WALLET_EMAIL_SUPPRESS';
     const PACB_SUB_MERCHANT_FLOW                                = 'PACB_SUB_MERCHANT_FLOW';
     const INTL_BANK_TRANSFER_CURRENCY_NOT_SUPPORTED             = 'INTL_BANK_TRANSFER_CURRENCY_NOT_SUPPORTED';

@@ -422,6 +422,7 @@ class Core extends Base\Core
 //            Entity::CREDIT_EMI_PROVIDERS         => [],
             Payment\Method::INTL_BANK_TRANSFER  => [],
             Payment\Method::FPX                 => [],
+            Payment\Method::OBW                 => false,
         ];
 
         $methods = $this->getMethods($merchant);
@@ -443,6 +444,7 @@ class Core extends Base\Core
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
         $fpxEnabled = $methods->isFpxEnabled();
         $data[Entity::INTL_BANK_TRANSFER] = $this->getInternationalBankTransferMethods($methods);
+        $data[Payment\Method::OBW] = $methods->isObwEnabled();
 
         if ($netbankingEnabled === true)
         {
@@ -1203,6 +1205,12 @@ class Core extends Base\Core
                     $addonMethods[Entity::CARD][Entity::SODEXO] = $value;
                     $methods->setAttribute(Entity::ADDON_METHODS, $addonMethods);
                     break;
+
+                case $key === Entity::OBW:
+                    $addonMethods = $methods->getAttribute(Entity::ADDON_METHODS);
+                    $addonMethods[Entity::OBW][Entity::OBW] = $value;
+                    $methods->setAttribute(Entity::ADDON_METHODS, $addonMethods);
+
 
                 default:
                     $methods->setAttribute($key, $value);
