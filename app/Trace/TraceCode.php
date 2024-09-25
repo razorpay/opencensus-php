@@ -3975,6 +3975,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS';
     const GOOGLE_OAUTH_INVALID_ID_TOKEN                         = 'GOOGLE_OAUTH_INVALID_ID_TOKEN';
     const DOMAIN_URL_PARSE_FAILURE                              = 'DOMAIN_URL_PARSE_FAILURE';
+    const USER_CREATED_MERCHANT                                 = 'USER_CREATED_MERCHANT';
 
     const USER_DEFAULT_MERCHANT_FOUND                           = 'USER_DEFAULT_MERCHANT_FOUND';
     const USER_DEFAULT_MERCHANT_NOT_FOUND                       = 'USER_DEFAULT_MERCHANT_NOT_FOUND';

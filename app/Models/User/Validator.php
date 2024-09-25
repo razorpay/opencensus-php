@@ -346,6 +346,16 @@ class Validator extends Base\Validator
         Entity::ROLE        => 'sometimes|string',
     ];
 
+    protected static $createMerchantRules = [
+        Merchant\Entity::COUNTRY_CODE           => 'required|string|max:2|in:IN,MY,SG',
+        Merchant\Entity::NAME                   => 'sometimes|string',
+        DeviceDetail\Entity::SIGNUP_CAMPAIGN    => 'sometimes|string',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+        DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
+        DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
+        DeviceDetail\Entity::SIGNUP_SOURCE      => 'sometimes|string',
+    ];
+
     protected static $changePasswordTokenRules = [
         Entity::CONTACT_MOBILE        => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL                 => 'required_without:contact_mobile|email',

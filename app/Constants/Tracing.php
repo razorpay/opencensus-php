@@ -259,6 +259,7 @@ class Tracing
             'verify_user_otp_login',
             'user_oauth_login',
             'user_register',
+            'user_create_merchant',
             'user_otp_register',
             'verify_user_otp_register',
             'user_oauth_register',

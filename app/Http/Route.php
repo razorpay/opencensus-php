@@ -2721,6 +2721,7 @@ class Route
 
         // Fetch user via OAuth (Private Auth)
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
+        'user_create_merchant'                     => ['post',     'users/merchants',                           'UserController@createMerchant'                                     ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
         // this route is a replica of the above 2 routes except that auth is done via app auth on edge
         'fetch_users_internal'                     => ['get',      'users/internal/{id}',                            'UserController@getUser'                                            ],
@@ -6080,6 +6081,7 @@ class Route
         'user_confirm_by_data',
         'user_access',
         'user_fetch',
+        'user_create_merchant',
         'user_login',
         'check_user_exists',
         'send_email_otp',
@@ -6859,6 +6861,7 @@ class Route
         'user_patch_password',
         'user_access',
         'user_fetch',
+        'user_create_merchant',
         'user_change_password',
         'user_change_password_with_otp_verification',
         'user_merchant_upgrade',
@@ -16800,6 +16803,7 @@ class Route
             'user_change_password_with_otp_verification',
             'user_access',
             'user_fetch',
+            'user_create_merchant',
             'invitation_action',
             'invitation_fetch_by_token',
             'user_resend_verification',

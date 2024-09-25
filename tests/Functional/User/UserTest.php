@@ -934,6 +934,126 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantForExistingUserWithEmail()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        var_dump('response', $response);
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // One created previously
+        $this->assertEquals(2, $merchantUsers->count());
+
+        $secondMerchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->where('merchant_id', '!=', $firstMerchant->merchant_id)->first();
+        $secondMerchant = DB::table('merchants')->where('id', '=', $secondMerchantUserEntry->merchant_id)->first();
+
+        // If user already has a merchant we don't use the user's email to create a merchant
+        $this->assertEmpty($secondMerchant->email);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $secondMerchantUserEntry->merchant_id);
+    }
+
+    public function testCreateMerchantForExistingUserWithMobile()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9000000001', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        var_dump('response', $response);
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // One created previously
+        $this->assertEquals(2, $merchantUsers->count());
+
+        $secondMerchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->where('merchant_id', '!=', $firstMerchant->merchant_id)->first();
+        $secondMerchant = DB::table('merchant_details')->where('merchant_id', '=', $secondMerchantUserEntry->merchant_id)->first();
+
+        // If user already has a merchant we don't use the user's contact mobile to create a merchant
+        $this->assertEmpty($secondMerchant->contact_mobile);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $secondMerchantUserEntry->merchant_id);
+    }
+
+    public function testCreateMerchantForNewUserWithEmail()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+        $this->assertEquals($user['email'], $merchant->email);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+    }
+
+    public function testCreateMerchantForNewUserWithMobileNumber()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919000000002', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+        $this->assertEquals($user['contact_mobile'], $merchant->contact_mobile);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+    }
+
     public function testGetInXWhenUserOnPg()
     {
         $user = $this->fixtures->create('user');

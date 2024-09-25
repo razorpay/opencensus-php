@@ -377,6 +377,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createMerchantForUser($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getActorInfo(string $id)
     {
         $data = $this->service()->getActorInfo($id);

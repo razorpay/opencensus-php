@@ -769,8 +769,18 @@ class Entity extends Base\PublicEntity
     }
 
 
-    public function getMerchantEntity()
+    public function getMerchantEntity($merchantId = '')
     {
+        if (empty($merchantId) === false) {
+            $merchantIds = (new MerchantUser\Repository)->returnMerchantUserForUserIdMerchantIdOrderByRole($this->getAttribute(self::ID), $merchantId)->pluck(Entity::MERCHANT_ID);
+
+            if (count($merchantIds) === 1) {
+                return (new Merchant\Repository)->getMerchant($merchantId);
+            }
+
+            return null;
+        }
+
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);
 
         if (count($merchantIds) !== 1)

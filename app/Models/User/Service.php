@@ -450,7 +450,7 @@ class Service extends Base\Service
 
     }
 
-    protected function signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput=null)
+    protected function signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput=null, $merchantId = '')
     {
         if (empty($m2mReferralInput))
         {
@@ -463,7 +463,9 @@ class Service extends Base\Service
 
         $visitorId = $this->fetchVisitorIdFromCookie();
 
-        $merchant = $this->repo->user->findOrFailPublic($user[Entity::ID])->getMerchantEntity();
+        $merchant = $this->repo->user->findOrFailPublic($user[Entity::ID])->getMerchantEntity($merchantId);
+
+        if (empty($merchant) === true) return;
 
         $customProperties = [
             Entity::EMAIL                          => $user[Entity::EMAIL] ?? null,
@@ -2232,6 +2234,113 @@ class Service extends Base\Service
         $response = $this->addOauthTokenIfApplicable($response, $response[Entity::ID]);
 
         return $this->setOtpAuthTokenForBankingRequest($response, $user->getId());
+    }
+
+    /**
+     * Creates a new merchant for a user
+     *
+     * @param array $input {
+     *     The input array containing payload data
+     *
+     *     @type string $country_code The country code based on user selection
+     * }
+     *
+     * @return array
+     */
+    public function createMerchantForUser(array $input): array
+    {
+        $this->validator->validateInput('createMerchant', $input);
+
+        $countryCode = $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN';
+        $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
+        $businessName = $input[Merchant\Entity::NAME] ?? '';
+        $signupSource = $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
+            $this->auth->getRequestOriginProduct();
+
+        $user = $this->auth->getUser();
+        $merchants = $user->merchants()->take(1)->get();
+
+        if ($merchants->count() > 0) {
+            // User already has a merchant so we don't need user's details here
+            $merchantData = [
+                Merchant\Entity::NAME           => $input[Merchant\Entity::NAME] ?? '',
+                Merchant\Entity::COUNTRY_CODE   => $countryCode,
+                Merchant\Entity::SIGNUP_SOURCE  => $signupSource,
+                Merchant\Entity::ORG_ID         => $this->auth->getOrgId(),
+            ];
+
+            $data = $this->createMerchantFromUser($merchantData, $user->toArray());
+        } else {
+            // User doesn't have a merchant and is signing up so we can use the user's email or mobile details
+            $merchantInputData = [
+                Merchant\Entity::SIGNUP_SOURCE  => $signupSource,
+            ];
+
+            $data = $this->createMerchant($user->toArray(), '', $businessName, $countryCode, false, $merchantInputData, null, false);
+        }
+
+        $this->trace->info(TraceCode::USER_CREATED_MERCHANT,
+            [
+                'userId'        => $user[Entity::ID],
+                'merchantId'    => $data['id'],
+            ]);
+
+        $merchantId = $data['id'];
+
+        if (empty($signupCampaign) === false)
+        {
+            $ddInput = [
+                DeviceDetail\Entity::MERCHANT_ID        => $merchantId,
+                DeviceDetail\Entity::USER_ID            => $user['id'],
+                DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
+            ];
+
+            (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+        }
+
+        // Start the onboarding of merchant via PGOS
+        if ($user[Entity::SIGNUP_VIA_EMAIL] === 1) {
+            $input[Entity::EMAIL] = $user[Entity::EMAIL];
+
+            try {
+                if (empty($signupCampaign) === false)
+                {
+                    $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                    $this->handlePGOSOnboardingForOAuthMerchants($merchant, $signupCampaign, $input, $user);
+                }
+            } catch (\Throwable $exception) {
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'message'       => "Error in handlePGOSOnboardingForOAuthMerchants()",
+                    'merchant_id'   => $merchantId,
+                    'error_message' => $exception->getMessage()
+                ]);
+            }
+
+            $signupMethod = Constants::PASSWORD;
+            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
+        } else if (empty($user[Entity::OAUTH_PROVIDER]) === true) {
+            $input[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
+
+            if ($signupCampaign != DeviceDetail\Constants::ASSISTED_ONBOARDING) {
+                try {
+                    $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                    $this->handlePGOSOnboarding($merchant, $signupCampaign, $countryCode, $input, $user);
+                } catch (\Throwable $exception) {
+                    $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                        'message' => "Error in handlePGOSOnboarding()",
+                        'merchant_id' => $merchant->getId(),
+                        'error_message' => $exception->getMessage()
+                    ]);
+                }
+            }
+
+            $signupMethod = Constants::OTP;
+            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
+        }
+
+        return $data;
     }
 
     public function get(string $id, array $input = []): array
