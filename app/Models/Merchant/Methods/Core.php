@@ -422,7 +422,6 @@ class Core extends Base\Core
 //            Entity::CREDIT_EMI_PROVIDERS         => [],
             Payment\Method::INTL_BANK_TRANSFER  => [],
             Payment\Method::FPX                 => [],
-            Payment\Method::OBW                 => false,
         ];
 
         $methods = $this->getMethods($merchant);
@@ -443,7 +442,6 @@ class Core extends Base\Core
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
         $fpxEnabled = $methods->isFpxEnabled();
-        $data[Payment\Method::OBW] = $methods->isObwEnabled();
         $data[Entity::INTL_BANK_TRANSFER] = $this->getInternationalBankTransferMethods($methods);
 
         if ($netbankingEnabled === true)

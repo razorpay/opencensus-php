@@ -101,18 +101,6 @@ class MethodsTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
-    public function testGetPaymentMethodsRouteWithObwFalse()
-    {
-        $this->ba->publicAuth();
-
-        $this->fixtures->merchant->disableObw('10000000000000');
-
-        $content = $this->startTest();
-
-        $count = count($content['obw']);
-        $this->assertEquals(0, $count);
-    }
-
     public function testNumOfBanksInTestMode()
     {
         $this->ba->publicTestAuth();
@@ -133,18 +121,6 @@ class MethodsTest extends TestCase
         $content = $this->getPaymentMethods();
 
         $count = count($content['fpx']);
-
-        $this->assertEquals(41, $count);
-    }
-
-    public function testNumOfObwBanksInTestMode()
-    {
-        $this->ba->publicTestAuth();
-        $this->fixtures->merchant->enableObw('10000000000000');
-
-        $content = $this->getPaymentMethods();
-
-        $count = count($content['obw']);
 
         $this->assertEquals(41, $count);
     }

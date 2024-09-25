@@ -2837,11 +2837,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::FPX);
     }
 
-    public function isObw()
-    {
-        return ($this->getAttribute(self::METHOD) === Payment\Method::OBW);
-    }
-
     public function isEmandate()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);

@@ -71,7 +71,6 @@ class Entity extends Base\PublicEntity
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
     const COD               = 'cod';
     const FPX               = 'fpx';
-    const OBW               = 'obw';
     const BAJAJPAY          = 'bajajpay';
     const GRABPAY           = 'grabpay';
     const TOUCHNGO          = 'touchngo';
@@ -162,7 +161,6 @@ class Entity extends Base\PublicEntity
         self::MCASH,
         self::GRABPAY,
         self::TOUCHNGO,
-        self::OBW,
     ];
 
     protected $visible = [
@@ -226,7 +224,6 @@ class Entity extends Base\PublicEntity
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
-        self::OBW,
     ];
 
     protected $public = [
@@ -291,7 +288,6 @@ class Entity extends Base\PublicEntity
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
-        self::OBW,
     ];
 
     protected $appends = [
@@ -365,7 +361,6 @@ class Entity extends Base\PublicEntity
         self::OFFLINE        => false,
         self::FPX            => false,
         self::ADDON_METHODS  => [],
-        self::OBW            => false,
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -405,7 +400,6 @@ class Entity extends Base\PublicEntity
         self::OFFLINE        => false,
         self::FPX            => false,
         self::ADDON_METHODS  => [],
-        self::OBW            => false,
     );
 
     protected $wallets = array(
@@ -556,7 +550,6 @@ class Entity extends Base\PublicEntity
         self::COD,
         self::OFFLINE,
         self::FPX,
-        self::OBW
     ];
 
     // Casts the attributes to native types
@@ -594,7 +587,6 @@ class Entity extends Base\PublicEntity
         self::OFFLINE       => 'bool',
         self::FPX           => 'bool',
         self::BAJAJPAY      => 'bool',
-        self::OBW           => 'bool',
     ];
 
     public function merchant()
@@ -637,11 +629,6 @@ class Entity extends Base\PublicEntity
     public function isFpxEnabled()
     {
         return $this->getAttribute(self::FPX);
-    }
-
-    public function isObwEnabled()
-    {
-        return $this->getAttribute(self::OBW);
     }
 
     public function isUpiEnabled()
