@@ -1013,49 +1013,6 @@ class ApiRequestAny
             Constants::LABEL_API_BASE_URL                                   => ApiUrl::getApiHost(),
         ];
 
-        $app = \App::getFacadeRoot();
-
-        try {
-            // Attach more details to capture admin and merchant details
-            if (Auth::guard('api')->check() === true) {
-                $adminUser = Auth::guard('api')->user();
-                $adminEmail = $adminUser->email ?? null;
-
-                // Add more details in dimentions
-                if ($this->clientType === 'admin') {
-                    $adminEmail = $adminUser->email ?? null;
-                    $adminId = $adminUser->id ?? null;
-
-                    $dimensions = array_merge($dimensions, [
-                        Constants::LABEL_HTTP_REQUESTS_API_ADMIN_EMAIL => $adminEmail,
-                        Constants::LABEL_HTTP_REQUESTS_API_ADMIN_ID => $adminId,
-                        Constants::LABEL_HTTP_REQUESTS_API_RESPONSE_BODY_SIZE => $responseBodySize,
-                    ]);
-                }
-                else if ($this->clientType === 'merchant') {
-
-                    $user = Auth::guard('user')->user();
-                    $currentMerchant = $user->currentMerchant();
-                    $merchantId = $currentMerchant->id ?? null;
-
-                    $dimensions = array_merge($dimensions, [
-                        Constants::LABEL_HTTP_REQUESTS_API_ADMIN_EMAIL => $adminEmail,
-                        Constants::LABEL_HTTP_REQUESTS_API_RESPONSE_BODY_SIZE => $responseBodySize,
-                        Constants::LABEL_HTTP_REQUESTS_API_MERCHANT_ID => $merchantId,
-                    ]);
-                }
-            }
-        }
-        catch (\Throwable $t)
-        {
-            $app['trace']->warning(TraceCode::PUSH_METRICS_FAILED, [
-                'message' => $t->getMessage() ?? 'unknown_message',
-                'location' => 'getApiMetricDimensions handler'
-            ]);
-        }
-
-        $app['trace']->info(TraceCode::API_RESPONSE_METRIC, $dimensions + [Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken]);
-
         return $dimensions;
     }
 
