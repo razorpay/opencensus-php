@@ -5367,6 +5367,22 @@ class Service extends Base\Service
                         'overall_duration'            => (microtime(true) - $startTime) * 1000,
                     ]);
                 }
+
+                if(isset($input[DetailConstants::MODULAR_MERCHANT_ACTIVATION]) === true and $input[DetailConstants::MODULAR_MERCHANT_ACTIVATION] === true)
+                {
+                    $this->trace->info(TraceCode::VKYC_ACTIVATION_STATUS_UPDATE_FLOW, [
+                        'activation_status'    => $input[Entity::ACTIVATION_STATUS],
+                        'merchant_id'          => $merchantId
+                    ]);
+
+                    unset($input[DetailConstants::MODULAR_MERCHANT_ACTIVATION]);
+
+                    if (empty($this->app['basicauth']->getMerchant()) === true)
+                    {
+                        $this->app['basicauth']->setMerchant($merchant);
+                    }
+                }
+
                 return $this->core->updateActivationStatus($merchant, $input, $merchant);
             case 'UPDATE_MERCHANT_ENTITY':
                 $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST_PGOS, [

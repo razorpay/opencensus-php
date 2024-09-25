@@ -32,6 +32,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Upload as DetailUpload;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\Detail\BusinessType as BusinessType;
@@ -1252,6 +1253,13 @@ class Validator extends Base\Validator
         $validActivationStatuses = ($this->checkIfKQUStateExperimentEnabled($this->entity->merchant->getId()) === true) ?
             array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU) : array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING);
 
+        $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
+
+        if ($merchantOnboardingProxyController->isIndiaPgModularMerchant($this->entity->merchant) === true)
+        {
+            $validActivationStatuses =  array_keys((new Core())->getActivationStatusMappingForModularMerchants());
+        }
+
         if (in_array($input[Entity::ACTIVATION_STATUS], $validActivationStatuses, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_MESSAGE);
@@ -1306,7 +1314,17 @@ class Validator extends Base\Validator
             return Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_LINKED_ACCOUNT[$currentStatus];
         }
 
-        return ($this->checkIfKQUStateExperimentEnabled($this->entity->merchant->getId()) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU[$currentStatus] : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus];
+        $allowedNextActivationStatus = ($this->checkIfKQUStateExperimentEnabled($this->entity->merchant->getId()) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU[$currentStatus] : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus];
+
+        $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
+
+        if ($merchantOnboardingProxyController->isIndiaPgModularMerchant($this->entity->merchant) === true)
+        {
+            $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
+            $allowedNextActivationStatus = $allowedNextActivationStatusMap[$currentStatus];
+        }
+
+        return $allowedNextActivationStatus;
     }
 
     public function validateActivationFormMilestone($attribute, $value)

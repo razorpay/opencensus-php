@@ -41,6 +41,10 @@ class Constants
 
     const PRODUCT  = "product";
 
+    const FIELD_DATA  = "field_data";
+
+    const START_VKYC  = "start_vkyc";
+
     const PLATFORM = "platform";
     const SALESEMAILID = "sales_email_id";
 

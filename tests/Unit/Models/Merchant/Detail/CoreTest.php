@@ -8881,6 +8881,71 @@ class CoreTest extends TestCase
         $this->assertEquals('system', $statusChangedBy);
     }
 
+    public function testUpdateActivationStatusFromEDDPendingToActivated()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'edd_pending',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantUser = $this->fixtures->connection('live')->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->connection('live')->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+                "workflow_details" => [
+                    "pg_onboarding_workflow_type" =>"MODULAR_ONBOARDING"
+                ]
+            ]
+        ]);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
     public function testUpdateActivationStatusFromKQUToActivatedByAdmin()
     {
         Mail::fake();

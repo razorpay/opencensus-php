@@ -37,6 +37,8 @@ use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\PaymentLink;
 use Neves\Events\TransactionalClosureEvent;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\ClarificationDetail\Constants as ClarificationConstants;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\BusinessDetail;
@@ -4413,6 +4415,35 @@ class Core extends Base\Core
                 }
             }
 
+            if (($input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING) and
+                ($merchant->isLinkedAccount() === false))
+            {
+                $this->app['workflow']
+                    ->setEntity($merchantDetails->getEntity())
+                    ->setOriginal($oldMerchantDetails)
+                    ->setDirty($newMerchantDetails)
+                    ->handle();
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+                    $this->triggerRequestToBvs($merchant, Status::EDD_PENDING);
+
+                    $pgosPayload = [
+                        Entity::MERCHANT_ID                 => $merchant->getId(),
+                        DeviceDetailConstants::PRODUCT      =>  DeviceDetailConstants::PRODUCT_PG_ONBOARDING,
+                        DeviceDetailConstants::ORG_ID       =>  $merchant->getOrgId(),
+                        DeviceDetailConstants::PLATFORM     =>  DeviceDetailConstants::PLATFORM_PG,
+                        MerchantEntity::COUNTRY_CODE        =>  DetailConstants::INDIA_COUNTRY_CODE,
+                        ClarificationConstants::SUBMIT      => true,
+                        DeviceDetailConstants::FIELD_DATA => [
+                            DeviceDetailConstants::START_VKYC => true
+                        ]
+                    ];
+
+                    $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ONBOARDING_SAVE, $pgosPayload, $merchant, true);
+
+                }));
+            }
+
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING) and
                 ($merchant->isLinkedAccount() === false))
             {
@@ -4779,6 +4810,18 @@ class Core extends Base\Core
 
        return false;
 
+    }
+
+    public function getActivationStatusMappingForModularMerchants(): array
+    {
+        $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_EDD_PENDING;
+
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $allowedNextActivationStatusMap[Status::EDD_PENDING] = [];
+        }
+
+        return $allowedNextActivationStatusMap;
     }
 
     public function shouldTriggerActivatedWebhook(string $merchantId, string $newStatus = null) : bool
