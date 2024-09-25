@@ -369,7 +369,6 @@ class UserController extends Controller
 
                 return redirect($redirectPath);
             }
-
             if ($currentRouteName === 'signup')
             {
                 if ($this->redirectionApplicableForGuest($org) === true)
@@ -817,6 +816,14 @@ class UserController extends Controller
         $data = (new SplitzService())->getVariantBulk($uuid, [$referralExpId], [], "splitz/bulkEvaluate", $requestData);
 
         $isReferralExpEnabled = ($data[$referralExpId]['variables']['result'] ?? null) === 'on';
+        if ($isReferralExpEnabled ===false) {
+            $this->trace->info(TraceCode::OLD_DASHBOARD_REDIRECT, [
+                'referral_code' => $requestData['referral_code'],
+                'org' => $requestData['org'],
+            ]);
+
+            $this->metrics->count(MetricConstants::OLD_DASHBOARD_REDIRECT_COUNT,EVENT_TRIGGER_COUNT);
+        }
 
         if ($this->matchExclusionsToRedirect($isReferralExpEnabled))
         {

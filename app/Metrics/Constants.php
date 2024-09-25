@@ -83,6 +83,7 @@ class Constants
   const SPLITZ_EXPERIMENT_DASHBOARD_CACHE_MISS          = 'splitz_experiment_dashboard_cache_miss';
   const RAZORX_EXPERIMENT_DASHBOARD_CACHE_HIT           = 'razorx_experiment_dashboard_cache_hit';
   const RAZORX_EXPERIMENT_DASHBOARD_CACHE_MISS          = 'razorx_experiment_dashboard_cache_miss';
+  const OLD_DASHBOARD_REDIRECT_COUNT                    = 'old_dashboard_redirect_count';  
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';
   const LOGIN_ACTION                = 'login_action';
