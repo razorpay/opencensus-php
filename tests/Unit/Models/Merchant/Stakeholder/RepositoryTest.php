@@ -5,16 +5,11 @@ namespace Unit\Models\Merchant\Stakeholder;
 use Config;
 use Google\Protobuf\StringValue;
 use Razorpay\Asv\Error\GrpcError;
-use Rzp\Accounts\Account\V1\MerchantStakeholder;
-use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
-use Rzp\Accounts\Merchant\V1\MerchantDetailSaveRequest;
-use Rzp\Accounts\Merchant\V1\SaveRequest;
-use Rzp\Accounts\Merchant\V1\SaveResponse;
 use Rzp\Accounts\Merchant\V1\Stakeholder;
 use Rzp\Accounts\Merchant\V1\StakeholderResponse;
 use Rzp\Accounts\Merchant\V1\StakeholderResponseByMerchantId;
-use Rzp\Accounts\Merchant\V1\StakeholderSaveRequest;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
@@ -381,6 +376,45 @@ class RepositoryTest extends RepositoryTestHelper
         $repo = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('shouldRouteFindToAccountService', 2, false, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCallsForFind($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
+    }
+
+    public function testStakeholderFindByIdAndMerchantId(){
+
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $merchantId = PublicEntity::generateUniqueId();
+        $randomMerchantId = PublicEntity::generateUniqueId();
+
+        $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $this->fixtures->create('merchant', ['id' => $randomMerchantId]);
+        $this->fixtures->create('stakeholder', ['id' => $id1, 'merchant_id' => $merchantId]);
+        $this->fixtures->create('stakeholder', ['id' => $id2, 'merchant_id' => $randomMerchantId]);
+
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Repository();
+        $resultWithoutSplitzOff = $repository->findByIdAndMerchantId($id1, $merchantId);
+
+        // reset connection because when we query from asv laravel attaches db connection with entity ,
+        // so we manually reset the connection with entity
+        $repository->resetConnectionOnModels($resultWithoutSplitzOff);
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        $resultWithSplitzOn = $repository->findByIdAndMerchantId($id1, $merchantId);
+        $this->assertEquals($resultWithoutSplitzOff, $resultWithSplitzOn, "response with and without splitz are not same");
+        $this->assertEquals(get_class($resultWithoutSplitzOff), get_class($resultWithSplitzOn));
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Repository();
+        try {
+            $repository->findByIdAndMerchantId($id1, $randomMerchantId);
+            // this should throw bad request exception if merchant id does not belong to stakeholder
+            throw new \Exception();
+        } catch (BadRequestException $ex){
+
+        }
     }
 
     public function testStakeholderAssociation()

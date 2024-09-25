@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Stakeholder;
 
 use Database\Connection;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
@@ -54,6 +56,28 @@ class Repository extends Base\Repository
 
         $this->resetConnectionOnModels($result);
         return $result;
+    }
+
+    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
+    {
+        if ($this->asvRouter->shouldRouteFilterToAsv("stakeholderFindByIdAndMerchantId")) {
+            $stakeholder = $this->findOrFail($id);
+
+            if ($stakeholder?->getMerchantId() === $merchantId) {
+                return $stakeholder;
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    'model' => $this->getEntityClass(),
+                    'attributes' => $id,
+                    'operation' => 'find',
+                ],
+            );
+        }
+        return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
     }
 
     public function getStakeholderForMerchantIdForImplicitJoin(string $merchantId, string $entity)
