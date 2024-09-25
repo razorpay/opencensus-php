@@ -30,6 +30,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\PaperMandate\FileUploader;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntity;
 use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity;
 use RZP\Models\Customer;
@@ -47,6 +48,14 @@ use RZP\Models\Base\Traits\ExternalOwner;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner;
+
+    use AsvLoad;
+
+    // This is used in the RZP\Models\Merchant\Acs\Traits\AsvLoad trait
+    // to identify which relations are ASV relations
+    const ASV_RELATIONS = [
+        'merchant'
+    ];
 
     const MERCHANT_ID               = 'merchant_id';
     const CUSTOMER_ID               = 'customer_id';
