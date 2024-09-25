@@ -1266,7 +1266,8 @@ class Service extends Base\Service
             and (new Merchant\Core)->isRegularMerchant($merchant) === true
                 and $countryCode === 'IN') ||
             ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
-             $signupCampaign === DeviceDetailConstants::ASSISTED_ONBOARDING))
+             $signupCampaign === DeviceDetailConstants::ASSISTED_ONBOARDING ||
+            $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION))
 
         {
             $shouldOnboardViaPGOS = true;
