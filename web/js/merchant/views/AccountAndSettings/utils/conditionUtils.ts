@@ -117,7 +117,11 @@ export const isSettlementsAllowed = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('settlements.settlement');
 
 export const shouldShowFIRCSection = (user: User, extraConfig: ExtraConfig): boolean => {
-  if (extraConfig.isConfigTagEnabled('settings.international')) {
+  if (
+    user.isAccountAndSettingsRevampEnabled
+      ? extraConfig?.isConfigTagEnabled('settings.international')
+      : (extraConfig as any)?.i18?.isConfigTagEnabled('settings.international')
+  ) {
     return false;
   }
 
