@@ -165,6 +165,149 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testUserOnlyAsTrueInRegister()
+    {
+        Mail::fake();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $user = \DB::table('users')
+            ->where('email', '=', $testData['request']['content']['email'])
+            ->first();
+
+        $merchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user->id)->get();
+
+        $this->assertEmpty($merchantUser);
+    }
+
+    public function testUserOnlyAsEmptyInRegister()
+    {
+        Mail::fake();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $user = \DB::table('users')
+            ->where('email', '=', $testData['request']['content']['email'])
+            ->first();
+
+        $merchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user->id)->first();
+
+        $this->assertNotEmpty($merchantUser);
+
+        $merchant = DB::table('merchants')
+            ->where('id', '=', $merchantUser->merchant_id)->first();
+
+        $this->assertNotEmpty($merchant);
+    }
+
+     public function testUserOnlyAsTrueInOauthCreate()
+     {
+         Mail::fake();
+
+         $this->ba->dashboardGuestAppAuth();
+
+         $this->mockHubSpotClient('trackSignupEvent');
+
+         $testData = &$this->testData[__FUNCTION__];
+
+         $this->startTest();
+
+         $user = \DB::table('users')
+             ->where('email', '=', $testData['request']['content']['email'])
+             ->first();
+
+         $merchantUser = DB::table('merchant_users')
+             ->where('user_id', '=', $user->id)->get();
+
+         $this->assertEmpty($merchantUser);
+     }
+
+    public function testUserOnlyAsEmptyInOauthCreate()
+    {
+        Mail::fake();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $user = \DB::table('users')
+            ->where('email', '=', $testData['request']['content']['email'])
+            ->first();
+
+        $merchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user->id)->first();
+
+        $this->assertNotEmpty($merchantUser);
+
+        $merchant = DB::table('merchants')
+            ->where('id', '=', $merchantUser->merchant_id)->first();
+
+        $this->assertNotEmpty($merchant);
+    }
+
+     public function testUserOnlyAsTrueInRegisterVerifySignupOtpSms()
+     {
+         Mail::fake();
+
+         $this->ba->dashboardGuestAppAuth();
+
+         $testData = &$this->testData[__FUNCTION__];
+
+         $this->startTest();
+
+         $user = \DB::table('users')
+             ->where('contact_mobile', '=', $testData['request']['content']['contact_mobile'])
+             ->first();
+
+         $merchantUser = DB::table('merchant_users')
+             ->where('user_id', '=', $user->id)->get();
+
+         $this->assertEmpty($merchantUser);
+     }
+
+    public function testUserOnlyAsEmptyInRegisterVerifySignupOtpSms()
+    {
+        Mail::fake();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $user = \DB::table('users')
+            ->where('contact_mobile', '=', $testData['request']['content']['contact_mobile'])
+            ->first();
+
+        $merchantUser = DB::table('merchant_users')
+            ->where('user_id', '=', $user->id)->first();
+
+        $this->assertNotEmpty($merchantUser);
+
+        $merchant = DB::table('merchants')
+            ->where('id', '=', $merchantUser->merchant_id)->first();
+
+        $this->assertNotEmpty($merchant);
+    }
+
     public function testRegisterRegularTestPartner()
     {
         Mail::fake();

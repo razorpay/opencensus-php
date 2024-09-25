@@ -344,6 +344,43 @@ return [
         ],
     ],
 
+    'testUserOnlyAsTrueInRegister'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'user_only_email@abc.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'user_only'             => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                 => 'user_only_email@abc.com',
+            ],
+        ],
+    ],
+
+    'testUserOnlyAsEmptyInRegister'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'user_only_empty_email@abc.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                 => 'user_only_empty_email@abc.com',
+            ],
+        ],
+    ],
+
     'testRegisterRegularTestPartner'  => [
         'request'  => [
             'url'     => '/users/register',
@@ -3189,6 +3226,41 @@ return [
         'response' => [
             'content' => [
                 'email' => 'hello123@gmail.com',
+            ],
+        ],
+    ],
+
+    'testUserOnlyAsTrueInOauthCreate' => [
+        'request'  => [
+            'url'     => '/users/oauth-register',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'user_only_true_oauth@abc.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
+                'user_only'      => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'user_only_true_oauth@abc.com',
+            ],
+        ],
+    ],
+
+    'testUserOnlyAsEmptyInOauthCreate' => [
+        'request'  => [
+            'url'     => '/users/oauth-register',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'user_only_empty_oauth@abc.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'user_only_empty_oauth@abc.com',
             ],
         ],
     ],
@@ -7342,6 +7414,43 @@ return [
                 "email_verified"            => false,
                 "contact_mobile_verified"   => true,
                 "email"                     => null
+            ]
+        ]
+    ],
+
+    'testUserOnlyAsTrueInRegisterVerifySignupOtpSms' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile'        => '9244466667',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'user_only'             => true,
+            ],
+        ],
+        'response' => [
+            "content" => [
+                'contact_mobile'        => '9244466667',
+            ]
+        ]
+    ],
+
+    'testUserOnlyAsEmptyInRegisterVerifySignupOtpSms' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile'        => '9244466668',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+            ],
+        ],
+        'response' => [
+            "content" => [
+                'contact_mobile'        => '9244466668',
             ]
         ]
     ],

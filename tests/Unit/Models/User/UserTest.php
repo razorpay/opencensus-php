@@ -219,7 +219,7 @@ class UserTest extends TestCase
 
         $this->assertEquals($content['userData']['email'], $response['email']);
     }
-
+    
     public function testCreate()
     {
         $content = [

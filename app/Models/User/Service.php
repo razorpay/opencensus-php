@@ -125,6 +125,34 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function isUserOrgAllowedSegregatedLoginSignup(): bool
+    {
+        // Org ids will be added as they adopt USL
+        $allowedOrgIds = [Org\Entity::RAZORPAY_ORG_ID];
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === true)
+        {
+            $orgId = Org\Entity::RAZORPAY_ORG_ID;
+        }
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        if (in_array($orgId, $allowedOrgIds)) {
+            $this->trace->info(TraceCode::USER_ORG_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP, [
+                "orgId"          => $orgId,
+            ]);
+
+            return true;
+        }
+
+        $this->trace->info(TraceCode::USER_ORG_NOT_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP, [
+            "orgId"          => $orgId,
+        ]);
+
+        return false;
+    }
 
     public function register(array $input, string $operation = 'create', bool $sendConfirmation = true): array
     {
@@ -137,6 +165,8 @@ class Service extends Base\Service
         $referrer = $input['ref'] ?? '';
 
         $businessName = $input['business_name'] ?? '';
+        $userOnly = $input[Entity::USER_ONLY] ?? false;
+        $shouldCreateOnlyUser = $userOnly && $this->isUserOrgAllowedSegregatedLoginSignup();
 
         $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
 
@@ -232,6 +262,18 @@ class Service extends Base\Service
         {
             $this->acceptInvite($user, $invitation, $source);
             $data = ['login'=>true];
+        }
+        else if ($shouldCreateOnlyUser)
+        {
+            $this->trace->info(
+                TraceCode::USER_ONLY_REGISTRATION,
+                [
+                    'userId'          => $user[Entity::ID],
+                ]);
+
+            $userEntity = $this->repo->user->findOrFailPublic($user[Entity::ID]);
+
+            return $this->sendConfirmationMailIfApplicable($userEntity, null, true);
         }
         else
         {
@@ -467,17 +509,19 @@ class Service extends Base\Service
 
         if (empty($merchant) === true) return;
 
-        $customProperties = [
-            Entity::EMAIL                          => $user[Entity::EMAIL] ?? null,
-            Entity::VISITOR_ID                     => $visitorId,
-            Merchant\Constants::PARTNER_INTENT     => $partnerIntent,
-            'is_m2m_referral'                      => $isM2MReferral,
-            'phone'                                => $user[Entity::CONTACT_MOBILE] ?? "",
-            'easyOnboarding'                       => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true,
-            Merchant\Constants::PHANTOM_ONBOARDING => optional($merchant)->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING) === true,
-            Merchant\Constants::I18N_MY_ONBOARDING    => optional($merchant)->isSignupCampaign(DDConstants::I18N_MY_SIGNUP) === true,
-            DeviceDetail\Constants::SINGAPORE_SIGNUP  => optional($merchant)->isSignupCampaign(DeviceDetail\Constants::SINGAPORE_SIGNUP) === true
-        ];
+        if (empty($merchant) === false) {
+            $customProperties = [
+                Entity::EMAIL                          => $user[Entity::EMAIL] ?? null,
+                Entity::VISITOR_ID                     => $visitorId,
+                Merchant\Constants::PARTNER_INTENT     => $partnerIntent,
+                'is_m2m_referral'                      => $isM2MReferral,
+                'phone'                                => $user[Entity::CONTACT_MOBILE] ?? "",
+                'easyOnboarding'                       => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true,
+                Merchant\Constants::PHANTOM_ONBOARDING => optional($merchant)->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING) === true,
+                Merchant\Constants::I18N_MY_ONBOARDING    => optional($merchant)->isSignupCampaign(DDConstants::I18N_MY_SIGNUP) === true,
+                DeviceDetail\Constants::SINGAPORE_SIGNUP  => optional($merchant)->isSignupCampaign(DeviceDetail\Constants::SINGAPORE_SIGNUP) === true
+            ];
+        }
 
         if ($user[Entity::SIGNUP_VIA_EMAIL] == 0)
         {
@@ -498,9 +542,11 @@ class Service extends Base\Service
 
         $merchant = $this->pushSegmentSignupEvent($user[Entity::ID], $customProperties);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $merchant, null, $customProperties);
+        if (empty($merchant) === false) {
+            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $merchant, null, $customProperties);
 
-        $this->notifyRasOnSignup($merchant, $customProperties, $user);
+            $this->notifyRasOnSignup($merchant, $customProperties, $user);
+        }
     }
 
     protected function notifyRasOnSignup($merchant, $customProperties, $user)
@@ -758,7 +804,8 @@ class Service extends Base\Service
 
             if ($verifySuccess === true)
             {
-
+                $userOnly = $input[Entity::USER_ONLY] ?? false;
+                $shouldCreateOnlyUser = $userOnly && $this->isUserOrgAllowedSegregatedLoginSignup() && $signupCampaign !== DeviceDetail\Constants::ASSISTED_ONBOARDING;
                 $merchant = null;
 
                 $referrer = $input['ref'] ?? '';
@@ -808,48 +855,59 @@ class Service extends Base\Service
 
                 $this->core->setContactMobileOrEmailVerify($input, $userEntity);
 
-                $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
-
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
-
-                if (empty($signupCampaign) === false)
-                {
-                    $deviceDetailInput = [
-                        DeviceDetail\Entity::MERCHANT_ID => $merchantData['id'],
-                        DeviceDetail\Entity::USER_ID => $user['id'],
-                        DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
-                        DeviceDetail\Entity::METADATA => [
-                            DeviceDetailConstants::SERVICE => ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING?DeviceDetailConstants::SERVICE_PGOS:DeviceDetailConstants::SERVICE_API)
-                        ]
-                    ];
-
-                    (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
+                if ($shouldCreateOnlyUser === true) {
+                    $this->trace->info(
+                        TraceCode::USER_ONLY_REGISTRATION,
+                        [
+                            'userId'          => $user[Entity::ID],
+                        ]);
                 }
-
-                if ($this->shouldUpdateUserMerchantMapping($signupCampaign))
+                else
                 {
-                    $userMerchantMappingInputData = [
-                        'action' => 'attach',
-                        'role' => Role::RAZORPAY_SALES,
-                        'merchant_id' => $merchantData['id'],
-                    ];
-                    $loggedInUser = $this->app['basicauth']->getUser();
-                    $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
+                    $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
+
+                    $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
+
+                    if (empty($signupCampaign) === false)
+                    {
+                        $deviceDetailInput = [
+                            DeviceDetail\Entity::MERCHANT_ID => $merchantData['id'],
+                            DeviceDetail\Entity::USER_ID => $user['id'],
+                            DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
+                            DeviceDetail\Entity::METADATA => [
+                                DeviceDetailConstants::SERVICE => ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING?DeviceDetailConstants::SERVICE_PGOS:DeviceDetailConstants::SERVICE_API)
+                            ]
+                        ];
+
+                        (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
+                    }
+
+                    if ($this->shouldUpdateUserMerchantMapping($signupCampaign))
+                    {
+                        $userMerchantMappingInputData = [
+                            'action' => 'attach',
+                            'role' => Role::RAZORPAY_SALES,
+                            'merchant_id' => $merchantData['id'],
+                        ];
+                        $loggedInUser = $this->app['basicauth']->getUser();
+                        $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
+                    }
+
+                    if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false)
+                    {
+                        (new Merchant\BusinessDetail\Service)->saveBusinessDetailsForMerchant($merchantData['id'], $businessDetailsInput);
+                    }
+
+                    $signupMethod = Constants::OTP;
+                    $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput);
+                    $this->processReferralCode($merchantData['id'], $partnerReferralCode);
+                    $this->linkSubMerchantToPlatformPartnerWithRetry($merchantData['id'], $sourceAppId, $isOauthReferral);
+                    $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId, $merchantData['id']);
                 }
 
                 $data = $this->get($user['id']);
-
-                if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false)
-                {
-                    (new Merchant\BusinessDetail\Service)->saveBusinessDetailsForMerchant($merchantData['id'], $businessDetailsInput);
-                }
-
-                $signupMethod = Constants::OTP;
-                $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput);
-                $this->processReferralCode($merchantData['id'], $partnerReferralCode);
-                $this->linkSubMerchantToPlatformPartnerWithRetry($merchantData['id'], $sourceAppId, $isOauthReferral);
-                $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId, $merchantData['id']);
                 $response = $data;
+
 
                 return array($merchant, $countryCode, $user);
             }
@@ -1620,7 +1678,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    protected function sendConfirmationMailIfApplicable(Entity $user, Merchant\Entity $merchant, bool $sendOtpEmail = false, array $inputData = [])
+    protected function sendConfirmationMailIfApplicable(Entity $user, Merchant\Entity $merchant = null, bool $sendOtpEmail = false, array $inputData = [])
     {
         $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
@@ -1641,12 +1699,13 @@ class Service extends Base\Service
               $sendOtpEmail and
              ($user->getConfirmedAttribute() === false))
         {
-            $data = $this->sendOtpEmailVerification($merchant, $user, [], $inputData);
+            $data = $this->sendOtpEmailVerification($user, $merchant, [], $inputData);
 
             $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_OTP_SUCCESS, $merchant, null, $customProperties);
 
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                $merchant, $customProperties, SegmentEvent::SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS);
+            if (empty($merchant) === false) {
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $customProperties, SegmentEvent::SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS);
+            }
 
             // Add the response of token from Raven Service
             $response['token'] = $data['token'];
@@ -1659,15 +1718,15 @@ class Service extends Base\Service
             $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $merchant, null, $customProperties);
         }
 
-        $response['id']      = $merchant->getId();
-        $response['name']    = $merchant->getName();
+        $response['id']      = $merchant?->getId();
+        $response['name']    = $merchant?->getName();
         $response['email']   = $user->getEmail();
         $response['user_id'] = $user->getId();
 
         return $response;
     }
 
-    public function sendOtpEmailVerification(Merchant\Entity $merchant, Entity $user, array $merchantData = [], array $inputData = [])
+    public function sendOtpEmailVerification(Entity $user, Merchant\Entity $merchant = null, array $merchantData = [], array $inputData = [])
     {
         $merchantData['medium'] = 'email';
 
@@ -1680,7 +1739,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::USER_EMAIL_OTP_SEND,
             [
-                'merchantId'      => $merchant->getId(),
+                'merchantId'      => $merchant?->getId(),
+                'userId'          => $user->getId(),
             ]);
 
         return $this->core()->sendOtp($merchantData, $merchant, $user);
@@ -2702,7 +2762,7 @@ class Service extends Base\Service
 
             $inputData = ["isRequestFromXVerifyEmail" => $isProductBanking];
 
-            $data = $this->sendOtpEmailVerification($merchant, $user, $merchantData, $inputData);
+            $data = $this->sendOtpEmailVerification($user, $merchant, $merchantData, $inputData);
         }
         else
         {

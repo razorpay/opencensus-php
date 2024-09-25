@@ -73,6 +73,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::METADATA                        => 'sometimes|array',
+        Entity::USER_ONLY                       => 'sometimes|boolean',
     ];
 
     protected static $createWithoutCaptchaRules = self::CREATE_COMMON_RULES;
@@ -97,6 +98,7 @@ class Validator extends Base\Validator
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
         DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
         DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
+        Entity::USER_ONLY                       => 'sometimes|boolean',
     ];
 
     protected static $createSubmerchantSignupRules = [
@@ -160,6 +162,7 @@ class Validator extends Base\Validator
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
         DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
         DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
+        Entity::USER_ONLY                       => 'sometimes|boolean',
     ];
 
     protected static $createOauthRules = [
@@ -175,6 +178,7 @@ class Validator extends Base\Validator
         DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
         DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
         DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
+        Entity::USER_ONLY                       => 'sometimes|boolean',
     ];
 
     protected static $editRules = [

@@ -136,6 +136,7 @@ class Entity extends Base\PublicEntity
     const XPERIENCE = 'xperience';
 
     // Constant for segregating user and merchant login / signup
+    const USER_ONLY = 'user_only';
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';
 
     protected $fillable = [

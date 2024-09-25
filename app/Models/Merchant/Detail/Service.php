@@ -637,7 +637,7 @@ class Service extends Base\Service
 
         $inputData = ["isRequestFromXVerifyEmail" => $isProductBanking];
 
-        return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input, $inputData);
+        return (new User\Service())->sendOtpEmailVerification($this->user, $this->merchant, $input, $inputData);
     }
 
     public function isMerchantConsentV2ExperimentEnabled($merchantId): bool

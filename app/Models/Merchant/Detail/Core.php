@@ -726,7 +726,7 @@ class Core extends Base\Core
 
         $inputData = ["isRequestFromXVerifyEmail" => false];
 
-        return (new User\Service())->sendOtpEmailVerification($merchant, $user, $input, $inputData);
+        return (new User\Service())->sendOtpEmailVerification($user, $merchant, $input, $inputData);
 
     }
 
