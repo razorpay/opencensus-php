@@ -39,10 +39,12 @@ class CCRouter
     private const ROUTE_MAP = array(
         'pricing_fetch_plan' => true,
         'pricing_create_plan' => true,
+        'pricing_update_plan_rule' => true,
         );
 
     private const FUNCTION_MAP = array(
         'RZP\\Models\\Pricing\\Service\\createPlan' => true,
+        'RZP\\Models\\Pricing\\Service\\updatePlanRule' => true,
     );
 
     public function __construct(bool $writes = false)
@@ -121,9 +123,18 @@ class CCRouter
             $routeName = app('request.ctx')->getRoute() ?? null;
             $methodName = Utils::extractMethodFromFunction($fqcn);
 
+            if ($methodName == 'createPlan' || $methodName == 'updatePlanRule'){
+                $this->trace->count(Metric::CC_REQUEST_ROUTED, [
+                    'route' => $routeName,
+                    'function' => $fqcn,
+                ]);
+            }
+
             if ($methodName == 'createPlan'){
                 $response = $this->app->charge_collections->createPricingPlan($input);
-            }else{
+            }else if ($methodName == 'updatePlanRule'){
+                $response = $this->app->charge_collections->updatePricingPlanRule($input);
+            } else{
                 $this->trace->info(TraceCode::CC_ROUTER_EXCEPTION,
                     [
                         'Endpoint not found for method' => $methodName,
@@ -133,11 +144,6 @@ class CCRouter
                 $this->monitorChargeCollectionsRequestNotRouted($routeName,$fqcn, self::TRANSFORMATION_NOT_FOUND);
                 return null;
             }
-
-            $this->trace->count(Metric::CC_REQUEST_ROUTED, [
-                'route' => $routeName,
-                'function' => $fqcn,
-            ]);
 
             return $response;
         }catch (\Exception $e){
@@ -169,7 +175,8 @@ class CCRouter
                 return self::DISABLE;
             }
 
-            if ($this->isTransactionActive()) {
+            // skip transaction active check for workflow checker route
+            if ($this->isTransactionActive() && $routeName != 'action_checker_create') {
                 $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::REPO_TRANSACTION_ACTIVE);
 
                 return self::DISABLE;

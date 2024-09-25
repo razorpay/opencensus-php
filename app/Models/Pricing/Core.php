@@ -118,7 +118,11 @@ class Core extends Base\Core
 
         $newRule->edit($input, 'editPlanRule');
 
-        $newRule = $newRule->generateId();
+        if (empty($input[Entity::ID])) {
+            $newRule = $newRule->generateId();
+        }else{
+            $newRule->setId($input[Entity::ID]);
+        }
 
         $newRule->getValidator()->validateRuleDoesNotMatch($planWithoutOldRule);
 

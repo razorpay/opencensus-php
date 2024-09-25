@@ -836,6 +836,38 @@ class Service extends Base\Service
 
     public function updatePlanRule($planId, $ruleId, $input, $isBuyPricingRule = false)
     {
+        $sourceInput = $input;
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $planAndRuleIds = Pricing\ChargeCollections\Utils::generatePlanAndRuleIds(1);
+        $ccRequest = $this->transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds);
+
+        $legacyCallable = function () use ($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds) {
+            return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds);
+        };
+
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds) {
+        $input[Entity::ID] = $planAndRuleIds['ruleIds'][0] ?? '';
+        $input[Entity::PLAN_ID] = $planId;
+        $input['rule_id'] = $ruleId;
+
+        $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
+            [
+                'method' => 'updatePlanRule',
+                'request' => $input,
+            ]);
+        return $input;
+    }
+
+    public function updatePlanRuleLegacy($planId, $ruleId, $input, $isBuyPricingRule = false, $planAndRuleIds = null)
+    {
+        $newRuleIds = $planAndRuleIds['ruleIds'] ?? [];
+        if (!empty($newRuleIds[0])) {
+            $input[Entity::ID] = $newRuleIds[0];
+        }
+
         if ($isBuyPricingRule === true)
         {
             $this->repo->pricing->onlyBuyPricing();

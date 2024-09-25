@@ -72,6 +72,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editPlanRuleRules = [
+        Entity::ID                  => 'sometimes|string',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:100000000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:2500000',
         Entity::MIN_FEE             => 'sometimes|integer|max:10000000',

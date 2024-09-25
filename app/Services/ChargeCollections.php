@@ -61,6 +61,7 @@ class ChargeCollections
     const GetReceiptForInvoiceURL = 'v1/subscription/getReceiptForInvoice';
     const GetPricingPlanURL = 'v1/mdr/pricing/plans/';
     const CreatePricingPlanURL = 'v1/mdr/pricing';
+    const UpdatePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}';
     const OrgPricingURL = 'v1/org_pricing';
     const FetchOrgPricingURL = 'v1/org_pricing/fetch_multiple';
     const FetchOrgPricingAccessControl = 'v1/org_pricing_access_control/fetch_multiple';
@@ -451,6 +452,18 @@ class ChargeCollections
     public function createPricingPlan(array $input, $requestHeaders = [])
     {
         return $this->sendRequest(self::CreatePricingPlanURL, Requests::POST, $input, $requestHeaders);
+    }
+
+    public function updatePricingPlanRule(array $input, $requestHeaders = [])
+    {
+        $planId = $input['plan_id'];
+        $ruleId = $input['rule_id'];
+
+        $endpoint = str_replace(['{plan_id}', '{rule_id}'], [$planId, $ruleId], self::UpdatePricingPlanRuleURL);
+
+        unset($input['plan_id'], $input['rule_id']);
+
+        return $this->sendRequest($endpoint, Requests::PATCH, $input, $requestHeaders);
     }
 
 }
