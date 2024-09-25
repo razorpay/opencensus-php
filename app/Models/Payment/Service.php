@@ -3557,100 +3557,96 @@ class Service extends Base\Service
          * Rejecting all the disputed payments
          * as the query only depends on refund_at column
          */
-        try
+
+        $payments = $payments->reject(function ($payment) use ($input, &$updatedRefundAt)
         {
-            $payments = $payments->reject(function ($payment) use ($input, &$updatedRefundAt)
+            /**
+             * @var $payment Payment\Entity
+             */
+            if ($payment->isDisputed() === true)
             {
-                /**
-                 * @var $payment Payment\Entity
-                 */
-                if ($payment->isDisputed() === true)
+                return true;
+            }
+
+            if (isset($input['block_order_mismatch']) === true){
+
+                $orderMismatch =  $input['block_order_mismatch'];
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG,
+                    [
+                        'payment_id'             => $payment->getId(),
+                        'cron_request'           => $orderMismatch,
+                        'payment_has_Order'      => $payment->hasOrder(),
+                    ]);
+
+                if ($orderMismatch === true and $payment->hasOrder() === true)
                 {
-                    return true;
-                }
-
-                if (isset($input['block_order_mismatch']) === true){
-
-                    $orderMismatch =  $input['block_order_mismatch'];
+                    $order = $payment->order;
 
                     $this->trace->info(
-                        TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG,
+                        TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG_STATUS_MISMATCH,
                         [
-                            'payment_id'             => $payment->getId(),
-                            'cron_request'           => $orderMismatch,
-                            'payment_has_Order'      => $payment->hasOrder(),
+                            'payment_id'                => $payment->getId(),
+                            'order_status'              => $order->getStatus(),
+                            'order_attempt'             => $order->getAttempts(),
+                            'payment_authorized'        => $payment->isAuthorized(),
                         ]);
 
-                    if ($orderMismatch === true and $payment->hasOrder() === true)
+                    if (($order->getStatus() === Order\Status::PAID) and
+                        ($order->getAttempts() === 1) and ($payment->isAuthorized() === true))
                     {
-                        $order = $payment->order;
-
                         $this->trace->info(
-                            TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG_STATUS_MISMATCH,
+                            TraceCode::ORDER_STATUS_MISMATCHED,
                             [
-                                'payment_id'                => $payment->getId(),
-                                'order_status'              => $order->getStatus(),
-                                'order_attempt'             => $order->getAttempts(),
-                                'payment_authorized'        => $payment->isAuthorized(),
+                                'payment_id'         => $payment->getId(),
+                                'order_id'           => $order->getId(),
                             ]);
 
-                        if (($order->getStatus() === Order\Status::PAID) and
-                            ($order->getAttempts() === 1) and ($payment->isAuthorized() === true))
-                        {
-                            $this->trace->info(
-                                TraceCode::ORDER_STATUS_MISMATCHED,
-                                [
-                                    'payment_id'         => $payment->getId(),
-                                    'order_id'           => $order->getId(),
-                                ]);
-
-                            return true;
-                        }
+                        return true;
                     }
-
                 }
 
-                $isRefundRequired = $this->isRefundRequiredForPayment($payment);
+            }
 
-                if ($payment->merchant->isFeatureEnabled(Features::DISABLE_AUTO_REFUNDS))
-                {
-                    return true;
-                }
+            $isRefundRequired = $this->isRefundRequiredForPayment($payment);
 
-                /**
-                 * Check that if the refund is not required , then unset the refund_at
-                 * for the payment.
-                 * Ideally, This should not happen.But there are old payments which have refund_at
-                 * set and have a failed or refunded state. This will eventually clean all
-                 * payments where refund_at shouldn't be set.
-                 */
-                if ($isRefundRequired === false)
-                {
-                    $previousRefundAt = $payment->getRefundAt();
+            if ($payment->merchant->isFeatureEnabled(Features::DISABLE_AUTO_REFUNDS))
+            {
+                return true;
+            }
 
-                    $this->core->updateRefundAt($payment->getPublicId(), null);
+            /**
+             * Check that if the refund is not required , then unset the refund_at
+             * for the payment.
+             * Ideally, This should not happen.But there are old payments which have refund_at
+             * set and have a failed or refunded state. This will eventually clean all
+             * payments where refund_at shouldn't be set.
+             */
+            if ($isRefundRequired === false)
+            {
+                $previousRefundAt = $payment->getRefundAt();
 
-                    $this->trace->info(
-                        TraceCode::PAYMENTS_UPDATE_REFUND_AT,
-                        [
-                            'payment_id'         => $payment->getId(),
-                            'payment_status'     => $payment->getStatus(),
-                            'previous_refund_at' => $previousRefundAt,
-                            'current_refund_at'  => null,
-                        ]);
+                $this->core->updateRefundAt($payment->getPublicId(), null);
 
-                    $updatedRefundAt++;
+                $this->trace->info(
+                    TraceCode::PAYMENTS_UPDATE_REFUND_AT,
+                    [
+                        'payment_id'         => $payment->getId(),
+                        'payment_status'     => $payment->getStatus(),
+                        'previous_refund_at' => $previousRefundAt,
+                        'current_refund_at'  => null,
+                    ]);
 
-                    return true;
-                }
+                $updatedRefundAt++;
 
-                return false;
-            });
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION, ["message" => "mutex lock not acquired"]);
-        }
+                return true;
+            }
+
+            return false;
+        });
+
+
 
         $authorized = $payments->count();
         $refunded = 0;
