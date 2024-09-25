@@ -183,10 +183,12 @@ class Metadata
 
     const LRS_SUPPORTED_LIBRARIES = [
         self::CHECKOUTJS,
+        self::HOSTED,
     ];
 
     const LRS_TRAVEL_CITI_SUPPORTED_LIBRARIES = [
         self::CHECKOUTJS,
+        self::HOSTED,
     ];
 
     const ADDRESS_COLLECTION_VIA_REDIRECT_LIBS = [

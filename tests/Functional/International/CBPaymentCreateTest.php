@@ -1221,6 +1221,37 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($lastPayment['notes']['invoice_number'], $paymentInvoice['receipt']);
         $this->assertNull($paymentInvoice['ref_num']);
     }
+
+    public function testCitiTravelLrsPaymentPositiveWithHostedCheckout()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $order = $this->createOrder([
+            'amount' => $payment['amount'],
+            'currency' => $payment['currency'],
+        ]);
+        $payment['_']['library'] = 'hosted';
+        $payment['order_id'] = $order['id'];
+        $payment['bank'] = 'ICIC';
+        $payment['notes'] = [
+            'invoice_number' => '1234567890qwertyuiop'
+        ];
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertEquals($payment['notes']['invoice_number'], $lastPayment['notes']['invoice_number']);
+
+        // validate payment invoice updated
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals($lastPayment['id'], 'pay_'. $paymentInvoice['entity_id']);
+        $this->assertEquals('citi_invoice', $paymentInvoice['type']);
+        $this->assertEquals($lastPayment['notes']['invoice_number'], $paymentInvoice['receipt']);
+        $this->assertNull($paymentInvoice['ref_num']);
+    }
     public function setMockForPCBClient()
     {
         $mockResponseGetLRSQuote =[
