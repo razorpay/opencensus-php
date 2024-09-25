@@ -33,7 +33,10 @@ class Repository extends Base\Repository
             }
             else
             {
+                $params[self::COUNT] = count($params[Constants::TICKET_ID]);
+
                 $params[Constants::TICKET_ID] = array_map('strval', $params[Constants::TICKET_ID]);
+
             }
         }
 

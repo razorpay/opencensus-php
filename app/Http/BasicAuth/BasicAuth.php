@@ -151,7 +151,7 @@ class BasicAuth
     const HTTP_CONTENT_TYPE                          = 'content_type';
 
     // All dashboard applications
-    const DASHBOARD_APPS                             = ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest', 'frontend_graphql',];
+    const DASHBOARD_APPS                             = ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest', 'frontend_graphql', 'razorassist'];
 
     const X_DASHBOARD_APPS                           = ['merchant_dashboard', 'dashboard'];
 
