@@ -352,7 +352,6 @@ class Stork
         }
 
         $eventTrace = $processEventReq;
-        unset($eventTrace['event']['payload']);
 
         if ((isset($event->payload) === true) and
             (isset($event->payload['payment']) === true) and

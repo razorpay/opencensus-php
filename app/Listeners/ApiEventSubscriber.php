@@ -2167,7 +2167,39 @@ class ApiEventSubscriber extends Base\Core
         return $merchant;
     }
 
+    public function getMerchantFromEntityPublic(Base\PublicEntity $entity): Merchant\Entity
+    {
+        $merchant = $this->getListeningMerchant($entity);
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant = $merchant->parent;
+        }
+
+        return $merchant;
+    }
+
     protected function getListeningMerchant(Base\PublicEntity $entity): Merchant\Entity
+    {
+        if ($this->listeningMerchant !== null)
+        {
+            return $this->listeningMerchant;
+        }
+
+        if ((($entity instanceof Merchant\Account\Entity) === true) or
+            (($entity instanceof Merchant\Entity) === true))
+        {
+            $merchant = $entity;
+        }
+        else
+        {
+            $merchant = $entity->merchant;
+        }
+
+        return $merchant;
+    }
+
+    public function getMerchantPublic(Base\PublicEntity $entity): Merchant\Entity
     {
         if ($this->listeningMerchant !== null)
         {

@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Constants;
 use RZP\Base\RuntimeManager;
 use RZP\Diag\EventCode;
 use RZP\Listeners\ApiEventSubscriber;
@@ -10,7 +11,10 @@ use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Modules\Base;
+use RZP\Models\Event;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Throwable;
@@ -24,9 +28,13 @@ class SavedCardTokenisationJob extends Job
 
     protected $queueConfigKey = 'cardvault_migration';
 
+    protected $storkProduct = 'primary';
+
     public $timeout = 300;
 
     protected $tokenId;
+
+    protected $mainEntity;
 
     protected $paymentId;
 
@@ -53,6 +61,7 @@ class SavedCardTokenisationJob extends Job
     protected $tokenCore;
 
     protected $callbackData;
+    private string $event;
 
     public function __construct(string $mode, string $tokenId, string $asyncTokenisationJobId, $paymentId = null, $callbackData = null)
     {
@@ -147,11 +156,13 @@ class SavedCardTokenisationJob extends Job
                 $cardInput['via_push_provisioning'] = true;
             }
 
-            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
-            // Log memory after tokenization
-//            $this->trace->info('After tokenization', [
-//                'memory_usage' => memory_get_usage(true),
-//            ]);
+            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens] = $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
+
+            $tokenIIN = null;
+            if(isset($tokenNumber)) {
+                $tokenIIN = substr($tokenNumber,0,9);
+            }
+
 
 //            // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)
@@ -201,49 +212,42 @@ class SavedCardTokenisationJob extends Job
                 unset($token['card']['expiry_year']);
                 unset($token['card']['name']);
 
+
+                $tokenArray = $token->attributesToArray();
+
+                $tokenEntity = new Token\Entity();
+
+                $tokenEntity->forceFill($tokenArray);
+
                 $eventPayload = [
-                    ApiEventSubscriber::MAIN => $token,
+                    ApiEventSubscriber::MAIN => $tokenEntity,
                     ApiEventSubscriber::WITH => $serviceProviderTokens,
+                    'card' => $card,
+                    'tokenIIN' => $tokenIIN
                 ];
 
-//                $this->trace->info(TraceCode::RESPONSE,
-//                    [
-//                        "eventpayload" => $eventPayload
-//                    ]
-//                );
-
-                //Stork event
-//                try {
-
-//                    app('events')->dispatch('api.token.service_provider.activated', $eventPayload);
-//                } catch(Throwable $e) {
-//                    $this->trace->traceException(
-//                        $e,
-//                        Trace::ERROR,
-//                        TraceCode::STORK_DISPATCH_ERROR
-//                    );
-//                }
-
-
+                try {
+                    // New Stork Request
+                    $this->dispatchWebhookToStork('api.token.service_provider.activated', $eventPayload);
+                    // Old Stork event
+                    // app('events')->dispatchNow('api.token.service_provider.activated', $eventPayload);
+                } catch(Throwable $e) {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::STORK_DISPATCH_ERROR
+                    );
+                }
             }
 
-           $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
-            // Log memory at the end of the process
-//            $this->trace->info('Final memory usage', [
-//                'memory_usage' => memory_get_usage(true),
-//            ]);
             $this->delete();
        //     (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
             return;
         }
         catch (Throwable $e)
         {
-            // Log memory usage in the exception
-//            $this->trace->info('Memory usage in catch block', [
-//                'memory_usage' => memory_get_usage(true),
-//                'memory_limit' => ini_get('memory_limit'),
-//            ]);
            $this->trackFailedTokenCreationEvent($e, $card ?? new CardEntity());
 
             $this->trace->traceException(
@@ -261,15 +265,7 @@ class SavedCardTokenisationJob extends Job
 
             $this->checkRetry($e);
 
-            $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
-                'checking if we are going till the function or failing before that in catch'
-            ]);
-
            //(new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
-
-//            $this->trace->info(TraceCode::DEBUG_LOGGING, [
-//                'checking if after the function call it is failing or it is going beyond this call as well in catch'
-//            ]);
         }
     }
 
@@ -375,5 +371,108 @@ class SavedCardTokenisationJob extends Job
         $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
 
         (new CardMandate\Core)->updateTokenisedCardTokenInMandate($token->cardMandate, $tokenInput);
+    }
+
+
+    protected function dispatchWebhookToStork($event, $payload)
+    {
+        try{
+            $event = substr($event, 4);
+
+            $this->event = $event;
+
+            $this->mainEntity  = $payload[ApiEventSubscriber::MAIN];
+            $payload = $this->getTokenServiceProviderPayload($payload);
+
+            $this->dispatchEventToStorkManual($payload);
+        } catch (Throwable $e){
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::DEBUG_ERROR,
+                [
+                    'message' => 'Error',
+                ]
+            );
+        }
+
+    }
+
+
+    public function dispatchEventToStorkManual(array $payload, string $ownerType = Constants\Entity::MERCHANT)
+    {
+        $event = $this->createEventEntity($payload);
+        (new Stork($this->getMode(), $this->storkProduct))->processEventSafe($event, $ownerType);
+    }
+
+    protected function createEventEntity(array $payload): Event\Entity
+    {
+        $eventFired = $this->event;
+        $entity     = $this->mainEntity;
+        $merchant   = (new ApiEventSubscriber())->getMerchantFromEntityPublic($entity);
+        //
+        // Send the signed account id of the merchant associated with the entity, along with the payload
+        // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
+        //
+        $listeningMerchant = (new ApiEventSubscriber())->getMerchantPublic($entity);
+        $signedAccountId = Merchant\Account\Entity::getSignedId($listeningMerchant->getId());
+
+        $attributes = array(
+            Event\Entity::EVENT      => $eventFired,
+            Event\Entity::CONTEXT    => [],
+            //
+            // The same event may or may not contain some entities, based on the state.
+            // For example, if subscription.pending is fired on an auth failure,
+            // the payload will contain only subscription entity not contain `payment` entity.
+            // If it's fired on capture failure, it'll contain both subscription and payment
+            // entity. For this reason, we cannot have a static list of contains array.
+            //
+            Event\Entity::ACCOUNT_ID => $signedAccountId,
+            Event\Entity::CONTAINS   => array_keys($payload),
+            Event\Entity::CREATED_AT => $entity->getUpdatedAt(),
+        );
+
+        $event = new Event\Entity($attributes);
+        $event->generateId();
+
+        $event->setPayload($payload);
+
+        $event->merchant()->associate($merchant);
+        return $event;
+    }
+
+    protected function getTokenServiceProviderPayload($payload): array
+    {
+        $token = $payload[ApiEventSubscriber::MAIN];
+        $serviceProviderTokens = $payload[ApiEventSubscriber::WITH];
+        $card = $payload['card'];
+        $tokenIIN = $payload['tokenIIN'];
+
+        $publicToken = $token->toArrayPublicTokenizedCardManualDisapatch($token, $serviceProviderTokens, $card, $tokenIIN);
+
+
+        $customerId = $token->getCustomerId();
+
+        $customer = $this->repoManager->customer->findById($customerId);
+
+        $partialPayload['token'] = [
+            'entity' => $publicToken,
+        ];
+
+        $partialPayload['service_provider_token'] = [
+            'entity' => $serviceProviderTokens,
+        ];
+
+        if($token->getSource() === Token\Constants::ISSUER && isset($customer) === true)
+        {
+            $partialPayload['customer'] = [
+                'entity' => [
+                    'id'  => $customer->getId(),
+                    'email'   => $customer->getEmail(),
+                    'contact' => $customer->getContact()
+                ],
+            ];
+        }
+
+        return $partialPayload;
     }
 }
