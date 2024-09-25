@@ -8,10 +8,12 @@ use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 use RZP\Models\Merchant\Acs\Traits\AsvReload;
+use RZP\Models\Merchant\Acs\Traits\AsvUpdateTimeStamp;
 
 class Entity extends Base\PublicEntity
 {
     use HardDeletes, AsvGetAttribute, AsvReload;
+    use AsvUpdateTimeStamp;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const TYPE     = 'type';
