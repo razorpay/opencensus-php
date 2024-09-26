@@ -18407,7 +18407,8 @@ class Route
         ],
 
         'route' => [
-            'payment_transfer'
+            'payment_transfer',
+            'transfer_transaction_create',
         ]
     ];
 

@@ -248,6 +248,7 @@ use Razorpay\Trace\Logger as Trace;
  * @property Models\Transfer\Payment\Repository                              $transfer_payment
  * @property Gateway\Upi\Base\Repository                                     $upi
  * @property Models\Admin\AdminsMeta\Repository                              $admins_meta
+ * @property Models\Payment\Transfer\Repository                              $payment_method_transfer
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

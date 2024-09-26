@@ -45,10 +45,10 @@ trait Reversal
         bool $rearchRefund = false)
     {
         $transferPayment = $this->repo
-                                ->payment
+                                ->payment_method_transfer
                                 ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
-        $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+        $transferPayment = $this->repo->payment_method_transfer->findOrFail($transferPayment->getId());
 
         //
         // If amount is not sent in input,

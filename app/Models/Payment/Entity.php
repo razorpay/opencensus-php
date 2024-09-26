@@ -70,6 +70,7 @@ use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Fpx;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\QrPayment\Constants as QRConstant;
 use RZP\Models\Payment\Processor\App as AppMethod;
@@ -2753,6 +2754,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
         catch (\Throwable $e) {}
+
+        if ($this->entity === EntityConstants::PAYMENT && $this->hasTransfer())
+        {
+            return $this->fetchExternalTransferTypePaymentById($this->getId());
+        }
 
         return $this->fetchExternalEntity($this->{$this->primaryKey}, '', []);
     }
@@ -7953,5 +7959,44 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return (($this->isWalletRecurring() === true) and
             ($this->isSecondRecurring() === true));
+    }
+
+    public function fetchExternalTransferTypePaymentById(string $id): Payment\Entity
+    {
+        $class = EntityConstants::getExternalRepoSingleton('transfer');
+
+        try
+        {
+            $entity = $class->fetchPaymentById($id);
+
+            if (empty($entity) === false)
+            {
+                $entity->setExternal(true);
+
+                return $entity;
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data' => $e->getMessage()
+                ]);
+        }
+
+        $data = [
+            'model' => $this->entityName,
+            'attributes' => [
+                'id'       => $id,
+            ],
+            'operation' => 'find'
+        ];
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 }

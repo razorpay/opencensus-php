@@ -2876,6 +2876,9 @@ class ErrorCode
 
     const SERVER_ERROR_USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED               = 'SERVER_ERROR_USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED';
 
+    // Route mircroservice error codes
+    const SERVER_ERROR_ROUTE_SERVICE_FAILURE                                        = 'SERVER_ERROR_ROUTE_SERVICE_FAILURE';
+
     const SERVER_ERROR_OTP_ELF_INVALID_ARGUMENT                                     = 'SERVER_ERROR_OTP_ELF_INVALID_ARGUMENT';
     const GATEWAY_ERROR_OTP_RESEND_FAILED                                           = 'GATEWAY_ERROR_OTP_RESEND_FAILED';
     const SERVER_ERROR_OTPELF_FAILURE                                               = 'SERVER_ERROR_OTPELF_FAILURE';

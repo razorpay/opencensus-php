@@ -1578,7 +1578,7 @@ class Core extends Base\Core
 
         foreach ($transferIds as $transferId)
         {
-            $transfer = $this->repo->transfer->find($transferId);
+            $transfer = $this->repo->transfer->findOrFail($transferId);
 
             $totalTransfersAmount += $transfer->getAmount();
 
@@ -2401,13 +2401,53 @@ class Core extends Base\Core
 
         $transfer = $this->repo->transfer->findOrFailPublic($transferId);
 
-        $input = [
-            LedgerConstants::DEBIT_TRANSACTION_ID  => $transferJournalId,
-            LedgerConstants::CREDIT_TRANSACTION_ID => $paymentJournalId,
-            LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
-        ];
+        [$creditJournal, ] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getToId());
 
-        $this->createTransferTransactionsInReverseShadow(null, $input);
+        [, $debitJournal] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getId());
+
+        $this->repo->transaction(
+            function () use ($transfer, $debitJournal, $creditJournal, $transferJournalId, $paymentJournalId) {
+                $transferPayment = $this->repo->payment->findByTransferIdAndMerchant(
+                    $transfer->getId(), $transfer->getToId());
+
+                $reverseShadowCore = new ReverseShadowTransfersCore();
+
+                $transferTxn = $reverseShadowCore->createTransferTransactionFromLedgerJournal(
+                    $debitJournal, $transfer, false);
+
+                $transferPaymentTxn = $reverseShadowCore->createTransferPaymentTransactionFromLedgerJournal(
+                    $creditJournal, $transferPayment, false);
+
+                if ($transferJournalId !== $transferTxn->getId())
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Debit journal ID does not match');
+                }
+
+                if ($paymentJournalId !== $transferPaymentTxn->getId())
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Credit journal ID does not match');
+                }
+
+                if ($this->isNssStreamingViaRouteMicroserviceEnabled($transfer->getMerchantId(), $this->mode))
+                {
+                    $txnCore = (new Transaction\Core());
+
+                    $txnCore->dispatchForSettlementBucketing($transferTxn);
+
+                    $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
+                }
+
+                (new Transfer\Core())->dispatchForAsyncBalanceUpdate($transfer);
+            }
+        );
+
+        $this->trace->info(TraceCode::TRANSFER_TXN_API_WRITE_SUCCESS, [
+            'transfer_id'     => $transferId,
+            'transfer_txn_id' => $transferJournalId,
+            'payment_txn_id'  => $paymentJournalId,
+        ]);
 
         return true;
     }
@@ -3099,5 +3139,34 @@ class Core extends Base\Core
                 'transfer_id'         => $transfer->getId(),
                 'merchant_id'         => $transfer->getMerchantId(),
             ]);
+    }
+
+    public function isNssStreamingViaRouteMicroserviceEnabled($merchantId, $mode): bool
+    {
+        $experimentId = $this->app['config']->get('app.route_linked_account_2fa_exp_id');
+
+        $properties = [
+            'id' => $merchantId,
+            'experiment_id' => $this->app['config']->get($experimentId),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        $experimentEnabled = false;
+
+        if ($variant === 'variant_on') {
+            $experimentEnabled = true;
+        }
+
+        $this->trace->info(TraceCode::ROUTE_MICROSERVICE_NSS_STREAMING_EXP_CHECK, [
+            'merchant_id' => $merchantId,
+            'experiment_id' => $experimentId,
+            'mode' => $mode,
+            'enabled' => $experimentEnabled,
+        ]);
+
+        return $experimentEnabled;
     }
 }

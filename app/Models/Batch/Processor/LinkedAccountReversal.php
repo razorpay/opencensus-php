@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Batch;
 use RZP\Models\Reversal;
+use RZP\Models\Transfer;
 
 class LinkedAccountReversal extends Base
 {
@@ -11,7 +13,17 @@ class LinkedAccountReversal extends Base
     {
         $transferId = trim($entry[Batch\Header::TRANSFER_ID]);
 
-        $transfer = $this->repo->transfer->fetchByPublicIdAndLinkedAccountMerchant($transferId, $this->merchant);
+        $parentMerchant = $this->merchant->getParentId();
+
+        if ((new Transfer\Service)->isRouteRearchExpEnabled($parentMerchant, $this->mode))
+        {
+            $transfer = $this->repo->transfer->fetchByPublicIdAndLinkedAccountMerchant(
+                $transferId, $this->merchant, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+        else
+        {
+            $transfer = $this->repo->transfer->fetchByPublicIdAndLinkedAccountMerchant($transferId, $this->merchant);
+        }
 
         $input = [
             Reversal\Entity::AMOUNT             => (string) $entry[Batch\Header::AMOUNT_IN_PAISE],

@@ -2094,6 +2094,15 @@ return [
     ],
 
     'route' => [
+        'mock'   => env('ROUTE_MOCK', false),
+        'url'    => [
+            env('ROUTE_URL'),
+        ],
+
+        // Username, password used API to call Route microservice
+        'username'  => env('ROUTE_SERVICE_USERNAME'),
+        'password'  => env('ROUTE_SERVICE_PASSWORD'),
+
         // Secret used by Route microservice to call API
         'secret' => env('ROUTE_API_SECRET'),
     ],

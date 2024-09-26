@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Settlement;
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
 {
     use LinkedAccountNotesTrait, AsvGetAttribute;
     use NotesTrait;
+    use ExternalOwner;
 
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';

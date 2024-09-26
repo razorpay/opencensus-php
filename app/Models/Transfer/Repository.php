@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -13,9 +14,12 @@ use RZP\Constants\Timezone;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Models\Transaction\Entity as TxnEntity;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
+    use Base\Traits\ExternalTransferRepo;
+
     protected $entity = 'transfer';
 
     protected $expands = [];
@@ -61,18 +65,27 @@ class Repository extends Base\Repository
      * @param string          $transferId
      * @param string          $paymentId
      * @param Merchant\Entity $merchant
+     * @param string          $connectionType
      */
-    public function fetchByPublicIdAndLinkedAccountMerchant(string $id, Merchant\Entity $merchant)
+    public function fetchByPublicIdAndLinkedAccountMerchant(string $id, Merchant\Entity $merchant, string $connectionType=null)
     {
         $entity = $this->getEntityClass();
 
         $entity::verifyIdAndStripSign($id);
 
-        return $this->newQuery()
-                    ->where(Entity::TO_ID, $merchant->getId())
-                    ->where(Entity::TO_TYPE, E::MERCHANT)
-                    ->merchantId($merchant->parent->getId())
-                    ->findOrFailPublic($id);
+        if ($connectionType !== null)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query->where(Entity::TO_ID, $merchant->getId())
+                     ->where(Entity::TO_TYPE, E::MERCHANT)
+                     ->merchantId($merchant->parent->getId())
+                     ->findOrFailPublic($id);
     }
 
     protected function addQueryParamSource($query, $params)
@@ -359,15 +372,23 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function getTransfersByPayments(string $sourceId, string $merchantId)
+    public function getTransfersByPayments(string $sourceId, string $merchantId, string $connectionType=null)
     {
         $relations = ['recipientSettlement'];
 
-        return $this->newQuery()
-                    ->where(Entity::SOURCE_ID, $sourceId)
-                    ->where(Entity::TO_ID,$merchantId)
-                    ->with($relations)
-                    ->get();
+        if ($connectionType !== null)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query->where(Entity::SOURCE_ID, $sourceId)
+                     ->where(Entity::TO_ID,$merchantId)
+                     ->with($relations)
+                     ->get();
     }
 
     /**
@@ -380,9 +401,18 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function getTransfersByPaymentsAndTransId(string $sourceId, string $merchantId, string $transId)
+    public function getTransfersByPaymentsAndTransId(string $sourceId, string $merchantId, string $transId, string $connectionType=null)
     {
         $relations = ['recipientSettlement'];
+
+        if ($connectionType !== null)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
 
         return $this->newQuery()
                     ->where(Entity::ID,$transId)
@@ -410,7 +440,32 @@ class Repository extends Base\Repository
     {
         $orderSource = $this->stripOrderSourceRelationIfApplicable($transfer);
 
-        parent::saveOrFail($transfer, $options);
+        if ($transfer->isExternal())
+        {
+            try
+            {
+                $params = $this->getUpdatableTransfersFields($transfer);
+
+                $this->saveTransferViaRouteService($params);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
+                    [
+                        'exception_message' => $ex->getMessage(),
+                        'function_name'     => __FUNCTION__
+                    ]);
+
+                throw $ex;
+            }
+        }
+        else
+        {
+            parent::saveOrFail($transfer, $options);
+        }
 
         $this->associateOrderSourceIfApplicable($transfer, $orderSource);
     }

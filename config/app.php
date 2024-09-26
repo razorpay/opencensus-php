@@ -864,6 +864,8 @@ return array(
 
     'route_linked_account_2fa_exp_id' => env('ROUTE_LINKED_ACCOUNT_2FA_EXP_ID'),
 
+    'route_microservice_nss_txn_streaming' => env('ROUTE_MICROSERVICE_NSS_TXN_STREAMING_EXP_ID'),
+
     'transaction_isolation_fallback_query_experiment_id' => env('TRANSACTION_ISOLATION_FALLBACK_QUERY_EXP_ID'),
 
     'es_search_on_created_at_then_on_score_experiment_id' => env('ES_SEARCH_ON_CREATED_AT_THEN_ON_SCORE_EXPERIMENT_ID'),
@@ -1009,6 +1011,8 @@ return array(
     'api_stork_banking_mail_reset_password_id' => env('STORK_BANKING_MAIL_RESET_PASSWORD_EXPERIMENT_ID'),
 
     'ups_unexpected_payment_experiment_id' => env('UPS_UNEXPECTED_PAYMENT_EXPERIMENT_ID'),
+
+    'route_rearch_exp_id' => env('ROUTE_REARCH_EXP_ID'),
 
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA')
 );

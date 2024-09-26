@@ -48,6 +48,7 @@ use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Options;
 use RZP\Models\Payment;
+use RZP\Services\Route;
 use RZP\Services\Wallet;
 use RZP\Models\External;
 use RZP\Models\Customer;
@@ -906,6 +907,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerSlackClient();
 
         $this->registerTokens();
+
+        $this->registerRouteService();
     }
 
     protected function registerCacheManager()
@@ -2835,6 +2838,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                 return new Mock\Tokens($app);
             }
             return new Tokens($app);
+        });
+    }
+
+    protected function registerRouteService()
+    {
+        $this->app->singleton('route', function($app)
+        {
+            if ($app['config']->get('applications.route.mock') === true)
+            {
+                return new Mock\Route($app);
+            }
+            return new Route\Api($app);
         });
     }
 }

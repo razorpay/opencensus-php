@@ -618,7 +618,7 @@ class Core extends Base\Core
             ]);
     }
 
-    public function createTransferTransactionFromLedgerJournal($journal, $transfer)
+    public function createTransferTransactionFromLedgerJournal($journal, $transfer, $saveTransfer = true)
     {
         $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
 
@@ -686,7 +686,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        $this->repo->saveOrFail($transfer);
+        if ($saveTransfer === true)
+        {
+            $this->repo->saveOrFail($transfer);
+        }
 
         $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
             [
@@ -699,7 +702,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createTransferPaymentTransactionFromLedgerJournal($journal, $transferPayment)
+    public function createTransferPaymentTransactionFromLedgerJournal($journal, $transferPayment, $savePayment = true)
     {
         $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
 
@@ -771,7 +774,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        $this->repo->saveOrFail($transferPayment);
+        if ($savePayment === true)
+        {
+            $this->repo->saveOrFail($transferPayment);
+        }
 
         $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
             [

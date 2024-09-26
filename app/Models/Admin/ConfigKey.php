@@ -124,6 +124,7 @@ class ConfigKey
 
     const ROUTE_TRANSFER_QUEUE_CONFIG = self::PREFIX . 'route_transfer_queue_config';
 
+    CONST ROUTE_SERVICE_ENABLED       = self::PREFIX . 'route_service_enabled';
     const ROUTE_ASYNC_BALANCE_UPDATE_QUEUE_CONFIG = self::PREFIX . 'route_async_balance_update_queue_config';
 
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
@@ -665,7 +666,8 @@ class ConfigKey
         self::ODS_CAPPING_CHECK_REQUIRED,
         self::ODS_GLOBAL_LIMIT,
         self::ODS_CAPPING_SCALE_FACTOR,
-        self::ODS_CAPPED_MID_LIST
+        self::ODS_CAPPED_MID_LIST,
+        self::ROUTE_SERVICE_ENABLED,
     ];
 
     const REDIS_CONFIG_MAP = [

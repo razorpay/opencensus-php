@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Transfer;
 
+use App;
 use Mail;
 use Mailgun\Exception;
 use Mockery;
@@ -10,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Adjustment\Status;
 use RZP\Models\Transfer;
+use RZP\Models\Admin;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
@@ -3485,5 +3487,101 @@ class TransferTest extends TestCase
 
         $this->createTransfer('account');
 
+    }
+
+    public function testTransferFetchViaRouteMicroservice()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $transferId = 'abcdefg1234567';
+
+        $data = $this->testData['testFetchTransferProxyAuth'];
+
+        $data['request']['url'] = '/transfers/' . 'abcdefg1234567' . '?expand[]=transaction.settlement';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest($data);
+
+        $expected = [
+            'id'            => 'trf_abcdefg1234567',
+            'amount'        => 1000,
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $response);
+    }
+
+    public function testExternalRepoPaymentMethodTransferFetch()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $payment = $repo->payment_method_transfer->findByTransferIdAndMerchant('abcdefg1234567', '10000000000001');
+
+        $this->assertEquals('dummypayment001', $payment->getId());
+
+        $this->assertEquals('abcdefg1234567', $payment->getTransferId());
+    }
+
+    public function testExternalRepoPaymentMethodTransferSave()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $payment = (new Payment());
+
+        $payment->setMethod('transfer');
+
+        $payment->setAttribute('transfer_id', 'P1aV1cjfsJuNf9');
+
+        $payment->setStatus('captured');
+
+        $payment->setAmount(1000);
+
+        $payment->setExternal(true);
+
+        $repo->payment->saveOrFail($payment);
+
+        $this->assertTrue(true);
+    }
+
+    public function testExternalRepoTransferSave()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $transfer = (new \RZP\Models\Transfer\Entity());
+
+        $transfer->setAmount('1000');
+
+        $transfer->setId('P1aV1cjfsJuNf9');
+
+        $transfer->setStatus('processed');
+
+        $transfer->setExternal(true);
+
+        $repo->transfer->saveOrFail($transfer);
+
+        $this->assertTrue(true);
+    }
+
+    public function testDirectTransferViaMicroservice()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'enabled',
+                ]
+             ]
+        ]);
+
+        $transfer = $this->createTransfer('account');
+
+        $this->assertEquals('trf_P1aV1cjfsJuNf9', $transfer['id']);
     }
 }
