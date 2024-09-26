@@ -12,7 +12,7 @@ const resellerAccountsColumns = [
   },
   {
     label: 'Reseller ID',
-    value: (item: ResellersBalance): JSX.Element => idItem(item.id),
+    value: (item: ResellersBalance): JSX.Element => idItem(item.merchant_id),
   },
   {
     label: 'Total Available Fund',

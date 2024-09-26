@@ -22,7 +22,7 @@ test.describe('GCMS Funds Reseller Accounts @flow=funds @project=payments', () =
     await expect(await page.getByText('Reseller ID').first()).toBeVisible();
     await page.getByPlaceholder(/search reseller name/i).fill('Ibaco');
     await page.getByRole('button', { name: /search/i }).click();
-    await expect(await page.getByText('ODQKaJ2Fssjugd').first()).toBeVisible();
+    await expect(await page.getByText('N91osUDdN9WdO9').first()).toBeVisible();
   });
 
   // test('should be able to fetch next batch of reseller accounts', async ({ page }) => {
