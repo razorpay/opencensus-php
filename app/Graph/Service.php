@@ -16,6 +16,7 @@ class Service extends Base\Service
         $user = Auth::guard('user')->user();
 
         if (($merchantIdInHeader !== null) and
+            ($merchantIdInHeader !== 'null') and
             ($user !== null))
         {
             $merchantInSession = $user

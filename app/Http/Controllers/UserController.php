@@ -1478,6 +1478,26 @@ class UserController extends Controller
     }
 
     /**
+     * Handle merchant creation after the user is logged in
+     *
+     * @return Response
+     */
+    public function createMerchant()
+    {
+        $timeStarted = microtime(true);
+
+        $input = Input::all();
+
+        list($error, $data, $httpCode) = (new User\Service)->createMerchant($input);
+
+        $timeTaken = microtime(true) - $timeStarted;
+
+        $this->traceDuration($timeTaken, TraceCode::USER_CREATE_MERCHANT);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
+
+    /**
      * Handle the request to verify the user and send OTP.
      *
      * @return Response

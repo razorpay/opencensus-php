@@ -150,6 +150,7 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::post('/coupons/validate', 'MerchantController@validateCoupon')->name('user_coupons_validate');
         Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn')->name('user_whatsapp/opt_in');
+        Route::post('/merchants', 'UserController@createMerchant')->name('user_create_merchant');
     });
 
     Route::group(['middleware' => ['auth:user', 'tnc_popup']] , function()

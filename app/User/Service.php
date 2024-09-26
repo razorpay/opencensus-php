@@ -658,6 +658,15 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function createMerchant(array $input)
+    {
+        $options = [
+            'client_type' => 'user'
+        ];
+
+       return $this->requestAPI($input, 'users/merchants', 'POST', $options);
+    }
+
     /**
      * @param  array  $input [description]
      *
