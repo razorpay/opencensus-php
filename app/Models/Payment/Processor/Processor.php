@@ -1125,6 +1125,15 @@ class Processor
         return $this->merchant->isJpmcImportFlowEnabled();
     }
 
+    private function isOptimizerCFBInternalFlow(): bool
+    {
+        $isOptimizerCFBFlow = $this->merchant->isAtLeastOneFeatureEnabled(Features::OPTIMIZER_CFB_FEATURES);
+        $isInternalFlow = $this->ba->isAppAuth();
+        $isPaymentCreateAjaxRoute = $this->route->getCurrentRouteName() === 'payment_create_ajax';
+
+        return $isOptimizerCFBFlow && $isInternalFlow && $isPaymentCreateAjaxRoute;
+    }
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -3721,6 +3730,7 @@ class Processor
                 ($isPaCbPartnerPayment === false) and
                 ($this->isLRSTravelCitiMerchant() === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and
+                ($this->isOptimizerCFBInternalFlow() === false ) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or

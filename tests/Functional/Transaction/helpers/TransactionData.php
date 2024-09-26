@@ -765,6 +765,61 @@ return [
             'method' => 'POST'
         ],
     ],
+
+    'testOptimizerCFBPaymentCapturedTransactionsCreateInternal' => [
+        'request' => [
+            'content' => [
+                'payment' => [
+                    'id' =>  "GiahjFtNg85OjA",
+                    'amount' =>  50000,
+                    'base_amount' => 50000,
+                    'currency' => "INR",
+                    'status' => "captured",
+                    'international' => FALSE,
+                    'method' => "upi",
+                    'amount_refunded' =>  0,
+                    'captured' => TRUE,
+                    'description' =>  "random description",
+                    'bank' => NULL,
+                    'vpa' => NULL,
+                    'email' => "a@b.com",
+                    'contact' =>  "+919918899029",
+                    'notes' =>  [
+                        'merchant_order_id' =>  "random order id",
+                    ],
+                    'fee' =>  0,
+                    'tax' =>  0,
+                    'created_at' =>  1614864014,
+                    'captured_at' =>  1614874014,
+                    'merchant_id' => "10000000000000"
+                ]
+            ],
+            'url'    => '/internal/transactions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => 'pay_GiahjFtNg85OjA',
+                'type' => 'payment',
+                'debit' =>  1534,
+                'credit' =>  0,
+                'amount' =>  50000,
+                'currency' => "INR",
+                'fee' =>  1534,
+                'tax' =>  234,
+                'settled' =>  FALSE,
+                'credit_type' => "default",
+                'description' =>  "random description",
+                'payment_id' => NULL,
+                'settlement_utr' => NULL,
+                'order_id' => NULL,
+                'order_receipt' => NULL,
+                'method' => "upi",
+                'dispute_id' => NULL,
+            ],
+        ],
+    ],
+
     'testPaymentCaptureTransactionsCreateInternalWithPCPAuth' => [
         'request' => [
             'content' => [

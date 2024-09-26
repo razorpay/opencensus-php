@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
+use RZP\Models\Terminal\Type as TerminalType;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Balance\Type;
@@ -1749,6 +1750,64 @@ class TransactionTest extends TestCase
         $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
 
         // create transaction with authorized payment payload and response should be same as for captured payment
+        $this->startTest();
+    }
+
+    public function testOptimizerCFBPaymentCapturedTransactionsCreateInternal()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'optimizer_cfb_custom']);
+
+        $optiPricingPlan =[
+            [
+                'id'                    => '1nvpOptiConFee',
+                'plan_id'               => '1hDYlICobzOCYt',
+                'plan_name'             => 'optiConvenience',
+                'product'               => 'primary',
+                'feature'               => 'optimizer_convenience_fee',
+                'payment_method'        => 'upi',
+                'percent_rate'          => 200,
+                'fixed_rate'            => 0,
+                'international'         => 0,
+                'min_fee'               => 0,
+                'max_fee'               => 10000,
+            ],
+            [
+                'id'                    => '1nvpOptimizFee',
+                'plan_id'               => '1hDYlICobzOCYt',
+                'plan_name'             => 'optiConvenience',
+                'product'               => 'primary',
+                'feature'               => 'optimizer',
+                'payment_method'        => 'upi',
+                'percent_rate'          => 10,
+                'fixed_rate'            => 0,
+                'international'         => 0,
+                'min_fee'               => 0,
+                'max_fee'               => 10000,
+            ]
+        ];
+        $this->fixtures->pricing->addPricingRulesToDb($optiPricingPlan);
+
+        $terminal = $this->fixtures->create('terminal:upi_paytm_terminal', [
+            'type'                      => [
+                TerminalType::NON_RECURRING => '1',
+                TerminalType::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                TerminalType::OPTIMIZER => '1',
+            ],
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
+
+        $attr = $testData['request']['content']['payment'];
+
+        unset($attr['captured']);
+
+        $this->fixtures->payment->create($attr);
+
+        // create transaction with captured payment payload
         $this->startTest();
     }
 

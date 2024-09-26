@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Processor;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Models\Payment\Constant;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -356,6 +357,27 @@ class Payment extends Base
 
     }
 
+    public function setMerchantFeeDefaults()
+    {
+       parent::setMerchantFeeDefaults();
+
+       // If optimizer convenience fee is enabled, then we need to adjust the fee and tax
+       // Optimizer convenience fee is a part of the fee and tax that is paid by the customer
+       // but we should not deduct it from the fee and tax that is paid by the merchant
+       // as these fee are collected from downstream gateways from the merchant
+       if($this->source->merchant->isAtLeastOneFeatureEnabled(Feature\Constants::OPTIMIZER_CFB_FEATURES) && empty($this->feesSplit) == false)
+       {
+            $fee = $this->fees - $this->tax;
+            $tax = $this->tax;
+            if (in_array(PricingFeature::OPTIMIZER_CONVENIENCE_FEE, array_column($this->feesSplit->toArray(), 'name')))
+            {
+                $optimizerConvenienceFee =  optional($this->feesSplit->where('name',PricingFeature::OPTIMIZER_CONVENIENCE_FEE)->first())->amount;
+                $optimizerConvenienceTax = (int) round(($optimizerConvenienceFee/$fee) * $tax);
+                $this->tax = $tax - $optimizerConvenienceTax;
+                $this->fees = $fee + $this->tax - $optimizerConvenienceFee ;
+            }
+       }
+    }
     public function shouldDisableAmountCredits():bool
     {
         $payment = $this->source;

@@ -4953,6 +4953,28 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createNetbankingOptimizerTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectOptiTn',
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'type'                      => [
+                Type::OPTIMIZER                        => '1',
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createDirectSettlementAxisMigsTerminal(array $attributes = [])
     {
         $defaultValues = [

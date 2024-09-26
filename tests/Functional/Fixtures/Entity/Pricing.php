@@ -1190,6 +1190,33 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createPricingPlanWithOptimizerConvenienceFee($pricingPlanId)
+    {
+        $this->createPricingPlanForFeeSplit($pricingPlanId);
+        $rows = [
+            [
+                'id'                    => '1nvpOptiConFee',
+                'plan_id'               => $pricingPlanId,
+                'plan_name'             => 'optiConvenience',
+                'product'               => 'primary',
+                'feature'               => 'optimizer_convenience_fee',
+                'payment_method'        => 'netbanking',
+                'payment_method_type'   => '',
+                'payment_network'       => null,
+                'payment_issuer'        => null,
+                'amount_range_active'   => false,
+                'amount_range_min'      => 0,
+                'amount_range_max'      => 0,
+                'percent_rate'          => 600,
+                'fixed_rate'            => 0,
+                'international'         => 0,
+                'min_fee'               => 0,
+                'max_fee'               => 10000,
+            ]
+        ];
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createStandardPricingPlanForFeeBearer($feeBearer)
     {
         $pricingPlanId = '3R0Ssm31kRSKSS';
