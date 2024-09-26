@@ -44,7 +44,7 @@ const Loader = (
 );
 
 function FeeBearerSelfserve(props) {
-  const currentUser = props.user;
+  const { user: currentUser, mode } = props;
   const [feeBearer, setfeeBearer] = useState(currentUser.merchant.fee_bearer);
   const [showLoader, setshowLoader] = useState(false);
 
@@ -123,7 +123,8 @@ function FeeBearerSelfserve(props) {
 
   const defaultRefundSpeedValue = currentUser.merchant.default_refund_speed;
   const isRefundSpeedOptimum = defaultRefundSpeedValue === 'optimum';
-
+  const isTestMode = mode === 'test';
+  const isToggleDisabled = isRefundSpeedOptimum || isTestMode;
   /**
    * Customer fee bearer is not supported in case user has QR/SC or Route enabled
    * Details : https://docs.google.com/document/d/1D1-mK0N3V6ft6BSufN-imGFXSWqPy3j6CyYD5vQFuR0/edit#
@@ -157,7 +158,7 @@ function FeeBearerSelfserve(props) {
     if (showLoader && isPlatformFeeBearer) {
       return Loader;
     }
-    if (isRefundSpeedOptimum) {
+    if (isToggleDisabled) {
       return <i className="i i-outline-lock" />;
     }
     if (isCustomerFeeNotSupported) {
@@ -218,7 +219,7 @@ function FeeBearerSelfserve(props) {
           <div className="col-sm-6 p5">
             <div
               className={`fee-bearer-panel-col${isCustomerFeeBearer ? ' active' : ''}${
-                isRefundSpeedOptimum ? ' disabled' : ''
+                isToggleDisabled ? ' disabled' : ''
               }`}
             >
               <div className="fee-bearer-container">
@@ -250,9 +251,11 @@ function FeeBearerSelfserve(props) {
                 </NotSupportedFooter>
               )}
             </div>
-            {isRefundSpeedOptimum && (
+            {isToggleDisabled && (
               <span className="customer-fee-bearer-disabled">
-                Locked when instant refunds is active
+                {isTestMode
+                  ? 'Switch to Live Mode to Perform this action'
+                  : 'Locked when instant refunds is active'}
               </span>
             )}
           </div>
@@ -264,6 +267,7 @@ function FeeBearerSelfserve(props) {
 export default connect(
   (state) => ({
     user: state.session.user,
+    mode: state.session.mode,
   }),
   (dispatch) =>
     bindActionCreators({ showNotification, updateMerchant: updateMerchantReducer }, dispatch),
