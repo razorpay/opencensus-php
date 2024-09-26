@@ -16,6 +16,7 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Admin\Service;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Services\RazorXClient;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
@@ -5838,4 +5839,313 @@ class BankTransferRxTest extends TestCase
 
         Mail::assertQueued(FundLoadingFailed::class, 0);
     }
+    public function testBankTransferProcessWebhookFiredWhenMerchantNotInReverseShadowLatestTxnBalanceExperiment()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+        $this->enableRazorXTreatment([RazorxTreatment::RX_TRANSACTION_LOAD_FROM_LEDGER, RazorxTreatment::RX_TRANSACTION_LOAD_AND_RETURN_FROM_LEDGER]);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+        $mockLedger->shouldReceive('createJournal')->andReturn([
+            'id' => "jour_123",
+            'created_at' => "16754323",
+            'updated_at' => "16754323",
+            'amount' => 100000,
+            'base_amount' => 100000,
+            'currency' => "INR",
+            'tenant' => 'X',
+            'transactor_id' => "trf_OXASD12345",
+            'transactor_event' => "Fund Loading",
+            'transaction_date' => "16789909",
+            'ledger_entry' => [
+                [
+                    'id' => "U12345",
+                    'created_at' => "16754323",
+                    'updated_at' => "16754323",
+                    'merchant_id' => '10000000000000',
+                    'journal_id' => "jour_123",
+                    'account_id' => "2224440041626905",
+                    'amount' => 100000,
+                    'base_amount' => 100000,
+                    'type' => 'credit',
+                    'currency' => "INR",
+                    'balance' => 10000,
+                    'account_entities' => [
+                    ],
+                ]
+            ]
+        ]);
+
+        $transaction = [
+            'id' => "P1RAkL8FKwWGKg",
+            'entity_id' => "P1RAk9VXfqAkNM",
+            'type' => "bank_transfer",
+            'merchant_id' => "10000000000000",
+            'amount' => 5000000,
+            'fee' => 0,
+            'mdr' => null,
+            'tax' => 0,
+            'pricing_rule_id' => null,
+            'debit' => 0,
+            'credit' => 5000000,
+            'currency' => "INR",
+            'balance' => 5000000,
+            'gateway_amount' => null,
+            'gateway_fee' => null,
+            'gateway_service_tax' => null,
+            'api_fee' => null,
+            'gratis' => 0,
+            'fee_credits' => 0,
+            'escrow_balance' => null,
+            'channel' => "yesbank",
+            'fee_bearer' => -1,
+            'fee_model' => -1,
+            'credit_type' => "default",
+            'on_hold' => 0,
+            'settled' => 0,
+            'settled_at' => null,
+            'gateway_settled_at' => null,
+            'settlement_id' => null,
+            'reconciled_at' => null,
+            'reconciled_type' => null,
+            'balance_id' => "10000000000000",
+            'reference3' => null,
+            'reference4' => null,
+            'balance_updated' => null,
+            'reference6' => null,
+            'reference7' => null,
+            'reference8' => null,
+            'reference9' => null,
+            'posted_at' => 1727275597,
+            'created_at' => 1727275598,
+            'updated_at' => 1727275598
+        ];
+
+        $txn = new TransactionEntity();
+
+        $txn->forceFill($transaction);
+        $mockLedger->shouldReceive('fetchTransactionFromLedger')
+            ->andReturn($txn);
+
+        $this->ba->yesbankAuth('live');
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type' => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id' => 'ABCde1234ABCde',
+            'account_number' => '2224440041626905',
+            'balance_id' => $balance1['id'],
+            'account_type' => 'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id' => '10000000000000',
+                'entity_id' => 'ShrdVirtualAcc',
+                'type' => 'virtual_account',
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id' => 'ShrdVirtualAcc',
+                'merchant_id' => '10000000000000',
+                'status' => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id' => $balance1->getId(),
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferProcessWithFieldsOnLiveMode'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->expectWebhookEventOneTime('transaction.created');
+        $this->startTest();
+        $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
+
+
+        // assert bankTransfer
+        $this->assertEquals('processed', $bankTransfersCreated['status']);
+        $this->assertEquals(5000000, $bankTransfersCreated['amount']);
+    }
+
+
+    public function testBankTransferProcessWebhookNotFiredWhenMerchantNotInReverseShadowLatestTxnBalanceExperiment(){
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+        $this->enableRazorXTreatment([RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE]);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+        $mockLedger->shouldReceive('createJournal')->andReturn([
+            'id' => "jour_123",
+            'created_at' => "16754323",
+            'updated_at' => "16754323",
+            'amount' => 100000,
+            'base_amount' => 100000,
+            'currency' => "INR",
+            'tenant' => 'X',
+            'transactor_id' => "trf_OXASD12345",
+            'transactor_event' => "Fund Loading",
+            'transaction_date' => "16789909",
+            'ledger_entry' => [
+                [
+                    'id' => "U12345",
+                    'created_at' => "16754323",
+                    'updated_at' => "16754323",
+                    'merchant_id' => '10000000000000',
+                    'journal_id' => "jour_123",
+                    'account_id' => "2224440041626905",
+                    'amount' => 100000,
+                    'base_amount' => 100000,
+                    'type' => 'credit',
+                    'currency' => "INR",
+                    'balance' => 10000,
+                    'account_entities' => [
+                    ],
+                ]
+            ]
+        ]);
+
+        $transaction =  [
+            'id' => "P1RAkL8FKwWGKg",
+            'entity_id' => "P1RAk9VXfqAkNM",
+            'type' => "bank_transfer",
+            'merchant_id' => "10000000000000",
+            'amount' => 5000000,
+            'fee' => 0,
+            'mdr' => null,
+            'tax' => 0,
+            'pricing_rule_id' => null,
+            'debit' => 0,
+            'credit' => 5000000,
+            'currency' => "INR",
+            'balance' => 5000000,
+            'gateway_amount' => null,
+            'gateway_fee' => null,
+            'gateway_service_tax' => null,
+            'api_fee' => null,
+            'gratis' => 0,
+            'fee_credits' => 0,
+            'escrow_balance' => null,
+            'channel' => "yesbank",
+            'fee_bearer' => -1,
+            'fee_model' => -1,
+            'credit_type' => "default",
+            'on_hold' => 0,
+            'settled' => 0,
+            'settled_at' => null,
+            'gateway_settled_at' => null,
+            'settlement_id' => null,
+            'reconciled_at' => null,
+            'reconciled_type' => null,
+            'balance_id' => "10000000000000",
+            'reference3' => null,
+            'reference4' => null,
+            'balance_updated' => null,
+            'reference6' => null,
+            'reference7' => null,
+            'reference8' => null,
+            'reference9' => null,
+            'posted_at' => 1727275597,
+            'created_at' => 1727275598,
+            'updated_at' => 1727275598
+        ];
+
+        $txn = new TransactionEntity();
+
+        $txn->forceFill($transaction);
+        $mockLedger->shouldReceive('fetchTransactionFromLedger')
+            ->andReturn($txn);
+
+        $this->ba->yesbankAuth('live');
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance1['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => 'ShrdVirtualAcc',
+                'type'           => 'virtual_account',
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => 'ShrdVirtualAcc',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferProcessWithFieldsOnLiveMode'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->dontExpectAnyWebhookEvent();
+        $this->startTest();
+        $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
+        $bankTransfersTxn = $this->getDbLastEntity('transaction', 'live');
+
+        // assert bankTransfer
+        $this->assertEquals('processed', $bankTransfersCreated['status']);
+        $this->assertEquals(5000000, $bankTransfersCreated['amount']);
+    }
+    protected function enableRazorXTreatment($whiteListFeatures)
+    {
+
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) use ($whiteListFeatures) {
+                    if (in_array($feature,$whiteListFeatures))
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                }));
+    }
+
 }
