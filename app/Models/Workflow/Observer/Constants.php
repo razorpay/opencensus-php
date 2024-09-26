@@ -31,6 +31,8 @@ class Constants
     const MERCHANT_ACTIVATION_SAVE              = 'merchant_activation_save';
 
     const PARTNER_ACTIVATION_STATUS             = 'partner_activation_status';
+    
+    const PARTNER_ACTIVATION_SAVE               = 'partner_activation_save';
 
     const MERCHANT_BANK_ACCOUNT_UPDATE          = 'merchant_bank_account_update';
 
