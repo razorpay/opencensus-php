@@ -302,6 +302,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlow()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -415,6 +417,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlowForStaticQr()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -700,6 +704,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlowWithAmountMismatch()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -910,6 +916,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlowForOldGateways()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -1119,6 +1127,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testQrStatusCheckViaRefactorFlow()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $count = 0;
 
         $this->mozartMock = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
@@ -1252,6 +1262,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlowForUpiRzpApb()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -1381,6 +1393,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlowForUpiRzpApbWithOffer()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -1513,6 +1527,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlowForUpiRzpApbWithEmi()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -1645,6 +1661,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrPaymentViaRefactorFlowForUpiRzpApbWithFailedStatus()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
 
@@ -1747,6 +1765,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testQrStatusCheckViaRefactorFlowForFailedStatus()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $count = 0;
 
         $this->mozartMock = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
@@ -1854,6 +1874,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testQrStatusCheckViaRefactorFlowForFailedStatusThroughIntegrationError()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $count = 0;
 
         $this->mozartMock = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
@@ -1983,6 +2005,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testQrStatusCheckViaRefactorFlowForUpiRzpapb()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+        
         $count = 0;
 
         $this->fixtures->create(
@@ -2221,6 +2245,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testQrPaymentReconForUpiRzpapbWhenPaymentDoesNotExist()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->fixtures->create(
             'terminal:dedicated_upi_rzpapb_offline_terminal',
             [
@@ -2387,6 +2413,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrCreateViaRefactorFlowForUpiRzpApbWithPaymentContextNotes()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
         $isPaymentContext = false;
@@ -2477,6 +2505,8 @@ class QrCodeRefactorTest extends TestCase
 
     public function testCreateQrCreateViaRefactorFlowForUpiRzpApbWithoutNotes()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         // These are used during assertions at the end of the test
         $count = 0;
         $isPaymentContext = false;

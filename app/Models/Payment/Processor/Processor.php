@@ -129,6 +129,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Services\ThirdWatchService;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
+use RZP\Models\QrPayment\Constants as QrConstants;
 
 
 class Processor
@@ -669,6 +670,8 @@ class Processor
     /** @var RequestContextV2 */
     protected $requestContext;
 
+    protected $paymentInput = null;
+
     /**
      * Array of error codes upon which paypal maybe suggested as a backup option
      */
@@ -721,7 +724,7 @@ class Processor
         "enach_npci_netbanking_icici"         => "npci_icici",
     ];
 
-    public function __construct(Merchant\Entity $merchant)
+    public function __construct(Merchant\Entity $merchant, $paymentInput = null)
     {
         $this->app  = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
@@ -732,6 +735,8 @@ class Processor
         $this->methods = $merchant->getMethods();
 
         $this->paymentRepo = $this->repo->payment;
+
+        $this->paymentInput = $paymentInput;
 
         $this->checkMerchantPermissions();
 
@@ -7078,6 +7083,42 @@ class Processor
 
         $route = $this->app['request.ctx']->getRoute();
 
+        $routeName = $this->app['api.route']?->getCurrentRouteName();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PERMISSIONS_CHECK_IN_PERSON_PAYMENT,
+            [
+                'merchant_id'                   => $merchant->getId(),
+                'route_name'                    => $routeName,
+                'omni_enabled feature enabled'  => $merchant->isOmniEnabled(),
+                'payment_input'                 => $this->paymentInput
+            ]
+        );
+
+        //Temporary change to skip activation flag check for in person payments and pos_activated merchants
+        if ((empty($this->paymentInput) === false) and
+            ($this->paymentInput[Payment\Entity::SOURCE_CHANNEL] === QrConstants::PAYMENT_TYPE_IN_PERSON))
+        {
+            if ($merchant->isOmniEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_ACTIVATION_CHECK_SKIPPED,
+                    [
+                        'merchant_id'     => $merchant->getId(),
+                    ]
+                );
+
+                return;
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, null,
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+            }
+        }
+
+       
         $offlineRefundSkipRoutes = ['scrooge_entities_fetch','refund_scrooge_payment_update','refund_fetch_discount','refund_verify_call','refund_gateway_call','refund_update_status'];
 
         $offlineCardSkipRoutes = ['payment_notify'];
@@ -7096,6 +7137,7 @@ class Processor
         if ((in_array($route, $offlineRefundSkipRoutes) || in_array($route, $offlineCardSkipRoutes)) && $merchant->isOmniEnabled() === true) {
             return;
         }
+
 
         // early return on basic checks to avoid complex computations
         if ($merchant->isActivated())

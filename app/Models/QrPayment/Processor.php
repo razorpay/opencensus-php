@@ -139,8 +139,6 @@ class Processor extends Base\Core
 
     protected function processPayment(Entity $qrPayment)
     {
-        $paymentProcessor = $this->getPaymentProcessor();
-
         $isUpiQrV1Hdfc = $this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC);
 
         $payment = null;
@@ -183,6 +181,8 @@ class Processor extends Base\Core
 
             $orderMutex =  'callback_order_id_' . $orderId;
         }
+
+        $paymentProcessor = $this->getPaymentProcessor(false, $paymentInput);
 
         $mutex = App::getFacadeRoot()['api.mutex'];
 
@@ -319,7 +319,7 @@ class Processor extends Base\Core
     {
         try
         {
-            $this->getPaymentProcessor()->process($input, $gatewayData);
+            $this->getPaymentProcessor(false, $input)->process($input, $gatewayData);
         }
         catch (\Exception $e)
         {
@@ -504,12 +504,12 @@ class Processor extends Base\Core
         ];
     }
 
-    protected function getPaymentProcessor(bool $forceCreate = false): PaymentProcessor
+    protected function getPaymentProcessor(bool $forceCreate = false, $paymentInput = null): PaymentProcessor
     {
         if ((isset($this->paymentProcessor) === false) or
             ($forceCreate === true))
         {
-            $this->paymentProcessor = new PaymentProcessor($this->merchant);
+            $this->paymentProcessor = new PaymentProcessor($this->merchant, $paymentInput);
         }
 
         return $this->paymentProcessor;

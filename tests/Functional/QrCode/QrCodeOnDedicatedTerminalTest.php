@@ -1168,6 +1168,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testCloseQrCodeWithOnDemandFeatureFlagDisabled()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
         $this->enableRazorXTreatmentForQrOnDemandClose();
 
         $this->expectException(BadRequestException::class);
@@ -1183,6 +1185,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testCloseQrCodeWithOnDemandFeatureFlagEnabled()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
         $this->enableRazorXTreatmentForQrOnDemandClose();
 
         $this->fixtures->merchant->addFeatures(['close_qr_on_demand']);
@@ -1201,6 +1205,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testCloseQrCodeWithQRNotCreatedUsingICICITerminal()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
         $this->enableRazorXTreatmentForQrOnDemandClose();
 
         $this->expectException(BadRequestException::class);
@@ -1385,6 +1391,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testBharatQRWithNoDedicatedTerminal()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
         $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
@@ -1893,6 +1901,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testProcessReconViaInternalRouteWhenExceptionIsReceivedFromScrooge()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
         $this->createPricingForOffline();
         $this->ba->scroogeAuth();
         $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
@@ -1922,6 +1931,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     }
     public function testDelayedCallbackOnSingleUseQrCodeForPosQr()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+        
         $posQRPricingPlan = [
             'plan_id'             => '1hDYlICobzOCYt',
             'plan_name'           => 'TestMerchantPosUPIPricingPlan1',

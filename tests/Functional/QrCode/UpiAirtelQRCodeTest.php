@@ -284,6 +284,8 @@ class UpiAirtelQRCodeTest extends TestCase
     }
     public function testCloseAPBQrWithCloseQrOnDemandFlagEnabledPos(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $qrCode = $this->createQrCode(
                     [
@@ -351,6 +353,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCreateDynamicAPBQrCodeWithOfflineTerminal(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->createQrCode(
             [
@@ -370,6 +374,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCreateAPBQrWithExpiryAndOfflineTerminal(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         //If close_by is passed in request, QR should be created via APB terminal
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $days = 3;
@@ -392,6 +398,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCreateAPBQrWithCloseQrOnDemandFlagEnabledAndOfflineTerminal(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         //If CLOSE_QR_ON_DEMAND is enabled for merchant, QR should be created via APB terminal
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
@@ -582,6 +590,8 @@ class UpiAirtelQRCodeTest extends TestCase
     }
     public function testPaymentOnClosedQr(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $posQRPricingPlan = [
             'plan_id'             => '1hDYlICobzOCYt',
@@ -693,6 +703,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testOfflineStaticQrWithRandomMerchantReference(): void
     {
+
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',
@@ -826,6 +838,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testCreateAPBStaticOfflineQr(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->createQrCode(
             [
@@ -845,6 +859,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testStaticQRPaymentsForOfflineWithQRIdAsMerchantReference(): void
     {
+
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',
@@ -881,6 +897,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testOfflineStaticQRPaymentsWithUnrecognisedPaymentProcessExperimentsDisabled(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $terminal =  $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',
@@ -1117,6 +1134,8 @@ class UpiAirtelQRCodeTest extends TestCase
     public function testProcessAirtelQrReconInternalWithoutPaymentForStaticQR(): void
     {
 
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',
             [
@@ -1160,6 +1179,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testProcessAirtelQrReconInternalSQRDuplicate(): void
     {
+
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',
@@ -1209,6 +1230,7 @@ class UpiAirtelQRCodeTest extends TestCase
     // so create a payment against dummy qr code and refund it
     public function testProcessAirtelQrReconInternalStaticQRWithUnrecognisedPaymentProcessExperimentsDisabled(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
 
         $terminal = $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->setMockRazorxTreatment(
@@ -1287,6 +1309,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testPaymentCreationViaReconForAPBStaticQr()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->setMockRazorxTreatment(
             [
                 RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
@@ -1346,6 +1370,8 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testPaymentCreationViaReconForAPBStaticQrDuplicateCall()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->expectException(BadRequestException::class,);
 
         $this->expectExceptionMessage('Duplicate Unexpected payment with same amount');
@@ -1412,6 +1438,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
     public function testDQRUnexpectedPaymentsForOffline(): void
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
 
         $this->fixtures->create(
             'terminal:dedicated_upi_airtel_offline_terminal',

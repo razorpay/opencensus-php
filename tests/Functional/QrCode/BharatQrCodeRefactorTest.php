@@ -43,7 +43,7 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->fixtures->merchant->createAccount('LiveAccountMer');
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['activated' => true, 'live' => true]);
         $this->fixtures->on('live')->merchant->enableMethod('LiveAccountMer', Method::UPI);
-        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes', 'bharat_qr_v2', 'bharat_qr'], 'LiveAccountMer');
+        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes', 'bharat_qr_v2', 'bharat_qr', 'omni_enabled'], 'LiveAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
         $this->fixtures->on('live')->create('merchant_detail:sane', ['merchant_id' => 'LiveAccountMer']);
@@ -843,7 +843,6 @@ class BharatQrCodeRefactorTest extends TestCase
 
     public function testCreateBQrPaymentViaRefactorFlowForHdfcMindgateSingleUse()
     {
-
         $terminal = $this->fixtures->on('live')->create('terminal:dedicated_upi_mindgate_terminal');
 
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate', RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'off',RazorxTreatment::QR_PAYMENT_REFACTOR_EXISTING_GATEWAY => 'off']);

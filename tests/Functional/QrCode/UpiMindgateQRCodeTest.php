@@ -705,6 +705,8 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testSingleUseQrCodeWithCloseByForEzetap()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $days =1;
         $this->setMockRazorxTreatment(
             [

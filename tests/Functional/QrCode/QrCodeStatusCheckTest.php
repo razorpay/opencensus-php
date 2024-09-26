@@ -1492,6 +1492,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testStatusCheckApiVerifySuccessResponseForUpiMindgate()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->config['gateway.mock_upi_mozart'] = true;
 
         $this->setMockRazorxTreatment(
@@ -1609,6 +1611,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiMindgateWithEzetapSource()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->setMockRazorxTreatment(
             [
                 RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
@@ -1758,6 +1762,7 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgateWithEzetapRequestSource()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
 
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_mindgate_terminal',
@@ -2182,6 +2187,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testStatusCheckApiVerifySuccessResponseForUpiAirtel()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->config['gateway.mock_upi_mozart'] = true;
 
         $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
@@ -2271,6 +2278,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testStatusCheckDispatchBeforeThresholdTimeForUpiAirtelPosQr()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->fixtures->create('pricing', $this->getPosPricingPlan());
         $remindersCallCount = 0;
@@ -2383,6 +2392,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtelPosQr()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->fixtures->create('pricing', $this->getPosPricingPlan());
 
@@ -2480,6 +2491,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testStatusCheckApiSuccessResponseForUpiAirtelOfflineQR()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->config['gateway.mock_upi_mozart'] = true;
         $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->fixtures->create('pricing', $this->getPosPricingPlan());
@@ -2581,6 +2594,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testStatusCheckApiPendingResponseForUpiAirtelPosQr()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->config['gateway.mock_upi_mozart'] = true;
         $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->fixtures->create('pricing', $this->getPosPricingPlan());
@@ -2681,6 +2696,8 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testStatusCheckApiFailedResponseForUpiAirtelPosQR()
     {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
         $this->config['gateway.mock_upi_mozart'] = true;
         $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
         $this->fixtures->create('pricing', $this->getPosPricingPlan());
