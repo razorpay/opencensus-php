@@ -6,7 +6,7 @@ on:
       - dark
 
 jobs:
-  check_jira_issue_status:
+  dark-branch-jira:
     name: Dark branch jira check
     runs-on:
       - api-public
