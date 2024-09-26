@@ -497,7 +497,8 @@ class GatewayController extends Controller
                         $data = (new QrPayment\Service())
                             ->processQrPaymentCallbackThroughNewGatewayAdapterForExistingGateways(
                                 $gatewayDriver,
-                                $input['data']
+                                $input['data'],
+                                $input['success']
                             );
                     }
                     else

@@ -401,6 +401,28 @@ trait NonVirtualAccountQrCodeTrait
         $this->makeRequestAndGetContent($request);
     }
 
+    private function makeUpiRzpapbPaymentForFailedStatus($qrCodeEntity)
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/callback/upi_rzpapb',
+            'method' => 'POST',
+            'raw' => json_encode(
+                [
+                    'id' => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                    'amount' => 100,
+                    'description' => 'payment_failed',
+                    'gateway' => 'upi_rzpapb',
+                    'terminal_id' => 'RzpApbOffTrmnl',
+                    'vpa' => 'payervpa@upi',
+                ]
+            ),
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     private function makeUpiRzpapbPaymentWithOffer($qrCodeEntity)
     {
         $this->ba->directAuth();
