@@ -1,5 +1,5 @@
 #!/bin/bash
-run_jira_status()
+run_light_jira_status()
 {
 
 if [ "${JIRA_ISSUE_ID}" = "" ]
@@ -21,4 +21,4 @@ else
   fi
 fi
 }
-run_jira_status
+run_light_jira_status

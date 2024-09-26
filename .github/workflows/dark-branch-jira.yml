@@ -7,7 +7,7 @@ on:
 
 jobs:
   check_jira_issue_status:
-    name: Jira Issue Status
+    name: Dark branch jira check
     runs-on:
       - api-public
       - X64
