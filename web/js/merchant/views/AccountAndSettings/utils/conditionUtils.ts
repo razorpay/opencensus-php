@@ -117,11 +117,19 @@ export const isSettlementsAllowed = (extraConfig: ExtraConfig): boolean =>
   !extraConfig.isConfigTagEnabled('settlements.settlement');
 
 export const shouldShowFIRCSection = (user: User, extraConfig: ExtraConfig): boolean => {
-  if (
-    user.isAccountAndSettingsRevampEnabled
-      ? extraConfig?.isConfigTagEnabled('settings.international')
-      : (extraConfig as any)?.i18?.isConfigTagEnabled('settings.international')
-  ) {
+  const isInternationalTagEnabled = (extraConfig: ExtraConfig): boolean => {
+    const configTagEnabled = extraConfig?.isConfigTagEnabled?.('settings.international');
+    const i18ConfigTagEnabled = (extraConfig as any)?.i18?.isConfigTagEnabled?.(
+      'settings.international',
+    );
+
+    return (
+      (typeof extraConfig?.isConfigTagEnabled === 'function' && configTagEnabled) ||
+      (typeof (extraConfig as any)?.i18?.isConfigTagEnabled === 'function' && i18ConfigTagEnabled)
+    );
+  };
+
+  if (extraConfig && isInternationalTagEnabled(extraConfig)) {
     return false;
   }
 
