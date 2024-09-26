@@ -566,7 +566,15 @@ trait Callback
 
                         $input['card']['number'] =  (new Card\CardVault)->getCardNumber($payment->card->GetVaultToken(), $payment->card->toArray(), $payment->getGateway());
 
-                        $this->fetchAltIdData($input, $gatewayInput, $payment, $input);
+                         try {
+                             $this->fetchAltIdData($input, $gatewayInput, $payment, $input);
+                         } catch (\Throwable $e) {
+                             $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, [
+                                 'message' => 'Gateway error while fetching Alt ID',
+                                 'exception' => $e
+                             ]);
+                             throw $e;
+                         }
 
 
                          // Storing alt id data in cache

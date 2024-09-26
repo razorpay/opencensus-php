@@ -220,12 +220,13 @@ class CardVault extends Base\Core
         {
             return $this->cardVault->fetchAltIdData($fetchAltIdRequest);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->error(
                 TraceCode::CARD_VAULT_REQUEST,
                 [
-                    'message'       => 'Failed to fetch alt id data'
+                    'message'       => 'Failed to fetch alt id data',
+                    'error' => $e,
                 ]
             );
 

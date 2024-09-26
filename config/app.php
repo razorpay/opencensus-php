@@ -1011,6 +1011,8 @@ return array(
     'api_stork_banking_mail_reset_password_id' => env('STORK_BANKING_MAIL_RESET_PASSWORD_EXPERIMENT_ID'),
 
     'ups_unexpected_payment_experiment_id' => env('UPS_UNEXPECTED_PAYMENT_EXPERIMENT_ID'),
+  
+    'alt_id-fallback_api' => env('ALT_ID_FALLBACK_API'),
 
     'route_rearch_exp_id' => env('ROUTE_REARCH_EXP_ID'),
 

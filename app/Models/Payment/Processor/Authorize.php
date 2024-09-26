@@ -12,6 +12,7 @@ use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Constants\Country;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Http\Edge\PassportUtil;
@@ -131,6 +132,7 @@ use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\Payment\Processor\App as PaymentApp;
 use RZP\Models\Card\TokenisedIIN;
+use RZP\Models\Card\Core as APPCardCore;
 trait Authorize
 {
     /**
@@ -574,6 +576,17 @@ trait Authorize
             $requestData['card'] = $input['card'];
             $requestData['card']['expiry_month'] =  strval($payment->card->getExpiryMonth());
             $requestData['card']['expiry_year']  =  strval($payment->card->getExpiryYear());
+
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'merchant_id' => $payment->merchant->getId(),
+                'payment_id' => $payment->getId(),
+                'gateway '=> $gatewayInput,
+                'payment_card_expiryMonth '=> strlen(strval($payment->card->getExpiryMonth())),
+                'payment_card_expiryYear '=> strlen(strval($payment->card->getExpiryYear())),
+                'payment_card_length '=> strval($payment->card->getLength()),
+                'input_card_number_length '=> strlen($input['card']['number']),
+                'trimmed_card_number_length ' => strlen(str_replace(' ', '', $input['card']['number']))
+            ]);
         }
 
        $requestData['iin']['iin'] = $payment->card->getIin();
@@ -834,8 +847,15 @@ trait Authorize
                             }
                             else if ($payment->getGateway() !== GATEWAY::PAYSECURE)
                             {
-                                $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
-
+                                try {
+                                    $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
+                                } catch (\Throwable $e) {
+                                    $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, [
+                                        'message' => 'Gateway error while fetching Alt ID',
+                                        'exception' => $e
+                                    ]);
+                                    throw $e;
+                                }
                             }
                         }
                  }
@@ -1176,7 +1196,31 @@ trait Authorize
         $cardCore = new Card\Core;
         $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment, $currentTerminal);
 
-        $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput, $payment);
+        try {
+            $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input, $gatewayInput, $terminalGatewayInput, $payment);
+
+        } catch (\Throwable $e) {
+
+            $splitzMerchantResult = (new APPCardCore())->getSplitzResponse();
+
+            if (strtolower($splitzMerchantResult) === 'enable')
+            {
+                $this->trace->error(
+                    TraceCode::ALT_ID_FETCH_ERROR,
+                    [
+                        'message'       => 'Failed to fetch alt id data'
+                    ]
+                );
+            } else{
+                if(app()->isEnvironmentQA() === false) {
+
+                    $this->updatePaymentFailed($e, TraceCode::ALT_ID_FETCH_ERROR);
+
+                    throw $e;
+                }
+            }
+
+        }
 
 
         // saving data in card entity for future use

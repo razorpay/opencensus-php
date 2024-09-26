@@ -3163,6 +3163,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_VPA                                                   = 'BAD_REQUEST_INVALID_VPA';
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER';
 
+    const ALT_ID_FETCH_ERROR                                    = 'ALT_ID_FETCH_ERROR';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
