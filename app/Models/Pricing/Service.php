@@ -985,7 +985,7 @@ class Service extends Base\Service
                 ->setEntityAndId('org_pricing', $input['org_id'])
                 ->setInput(['org_id' => $input['org_id']])
                 ->setController($ORG_PRICING_APPROVE_CONTROLLER)
-                ->handle([], ['org_id' => $input['org_id']]);
+                ->handle([], ['org_id' => $input['org_id']], false, false, true);
 
             return [];
         }
@@ -1003,8 +1003,14 @@ class Service extends Base\Service
             $headers = [
                 ChargeCollections::X_DASHBOARD_USER_ID => $input['admin_id']
             ];
-            $this->app->charge_collections->sendRequest($endPoint, Requests::POST, $input, $headers );
-
+            try
+            {
+                $this->app->charge_collections->sendRequest($endPoint, Requests::POST, $input, $headers );
+            }
+            catch(\Exception $e)
+            {
+                (new Action\Service())->closeAction("w_action_".$input['workflow_id']);
+            }
             throw $e;
         }
     }
