@@ -12245,11 +12245,10 @@ class Processor
 
         // it is s2s call, the response is return immediately. no verify needed for failed payment except for pending
 
-        if($payment->isWalletAutoRecurring() === true and  $payment->getGateway() === Payment\Gateway::TNGD and $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_WALLET_PAYMENT_PENDING)
+        if($payment->isWalletAutoRecurring() === true and  $payment->getGateway() === Payment\Gateway::TNGD and $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE)
         {
             $isReminderVerifyPayment = false;
             $isReminderTimeoutPayment = false;
-
         }
 
         if (in_array($method, Payment\Method::$timeoutDisabledMethods) === true)
