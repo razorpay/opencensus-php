@@ -78,7 +78,8 @@ class Validator extends Base\Validator
         // -- code end
         "apps_installed"                 => 'sometimes|array|min:1|max:2',
         "apps_installed.*"               => 'string|distinct:ignore_case|in:magic_checkout,sopc',
-        "wallet_payment"                 => 'sometimes|array|custom:wallet_payment_config'
+        "wallet_payment"                 => 'sometimes|array|custom:wallet_payment_config',
+        "one_cc_multipass_enabled"       => 'sometimes|boolean'
     ];
 
     protected static $shippingProviderRules = [

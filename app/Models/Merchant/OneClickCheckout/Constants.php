@@ -48,6 +48,8 @@ class Constants
     // and the remaining as cod to reduce the RTOs.
     const ONE_CC_PARTIAL_PAYMENTS_COD     = 'one_cc_partial_payments_cod';
 
+    const ONE_CC_MULTIPASS = 'one_cc_multipass_enabled';
+
     // Coupon-Engine OneCC Config controls whether the merchant wants to use
     // coupon-engine's features (or) not.
     // Coupon-Engine flows/features include:
@@ -133,6 +135,7 @@ class Constants
     const DELEGATE_ACCESS_TOKEN             = 'delegate_access_token';
     const ADMIN_ACCESS_TOKEN                = 'admin_access_token';
     const APP_NAME                          = 'app_name';
+    const MULTIPASS_TOKEN                   = 'multipass_token';
 
     // shopify supported app names
     const SOPC_APP                          = 'sopc';
@@ -183,6 +186,7 @@ class Constants
         self::STOREFRONT_ACCESS_TOKEN,
         self::SHOP_ID,
         self::DELEGATE_ACCESS_TOKEN,
+        self::MULTIPASS_TOKEN,
     ];
 
     const SHOPIFY_AUTH_ENCRYPT = [
@@ -190,6 +194,7 @@ class Constants
         self::STOREFRONT_ACCESS_TOKEN,
         self::OAUTH_TOKEN,
         self::DELEGATE_ACCESS_TOKEN,
+        self::MULTIPASS_TOKEN,
     ];
 
     const WOOCOMMERCE_AUTH = [
@@ -218,6 +223,7 @@ class Constants
         self::DELEGATE_ACCESS_TOKEN,
         self::USERNAME,
         self::PASSWORD,
+        self::MULTIPASS_TOKEN,
     ];
 
     /**
@@ -259,6 +265,8 @@ class Constants
         self::ONE_CC_SHIPPING_USING_CHECKOUT,
         self::ONE_CC_HIDE_COD_WHEN_DISABLED,
         self::ONE_CC_PARTIAL_PAYMENTS_COD,
+        self::ONE_CC_MULTIPASS,
+        self::MULTIPASS_TOKEN,
     ];
 
     /**
@@ -296,6 +304,8 @@ class Constants
         self::ONE_CC_SHIPPING_USING_CHECKOUT,
         self::SHOP_PLAN_NAME,
         self::SOPC_METAFIELDS,
+        self::ONE_CC_MULTIPASS,
+        self::MULTIPASS_TOKEN,
     ];
 
     const COMMON_CONFIGS = [
@@ -311,6 +321,8 @@ class Constants
        self::ONE_CC_COUPON_ENGINE,
        self::ONE_CC_HIDE_COD_WHEN_DISABLED,
        self::ONE_CC_PARTIAL_PAYMENTS_COD,
+       self::ONE_CC_MULTIPASS,
+       self::MULTIPASS_TOKEN,
     ];
 
     public const COUPON_CONFIGS = [
