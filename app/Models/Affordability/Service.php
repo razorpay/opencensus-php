@@ -55,7 +55,15 @@ class Service extends Base\Service
     {
         $this->validator->validateInput('fetch', $input);
 
-        $this->findAndSetMerchantByKey($input['key']);
+        $merchantId = $input['merchantId'];
+
+        if (empty($merchantId) === true) {
+            $this->findAndSetMerchantByKey($input['key']);
+        }
+        else {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+            $this->auth->setMerchant($this->merchant);
+        }
 
         $data = [];
 
