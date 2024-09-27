@@ -5206,95 +5206,97 @@ class Core extends Base\Core
      * @param Entity          $user
      * @param string          $action
      */
-    public function verifyEmailWithOtp(array $input, Merchant\Entity $merchant, Entity $user, string $action = 'verify_email')
+    public function verifyEmailWithOtp(array $input, Entity $user, Merchant\Entity $merchant = null, string $action = 'verify_email')
     {
         $this->verifyOtp($input + ['action' => $action], $merchant, $user);
 
-        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
-        $signupCampaign = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
+        if ($merchant !== null) {
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+            $signupCampaign = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 
-        $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
-            [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.enable_unverified_email_check_for_easy_onboarding'),
-            ],
-            'variables'
-        );
+            $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
+                [
+                    'id'            => $merchant->getId(),
+                    'experiment_id' => $this->app['config']->get('app.enable_unverified_email_check_for_easy_onboarding'),
+                ],
+                'variables'
+            );
 
 
-        if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
-        {
-            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input) {
-                $user->setEmail($input[Merchant\Entity::EMAIL]);
-                $this->repo->saveOrFail($user);
-            });
+            if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
+            {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input) {
+                    $user->setEmail($input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($user);
+                });
 
-            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
-                $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
-                $this->repo->saveOrFail($merchant);
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
+                    $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchant);
 
-                try
-                {
-                    $pgosProxyController = new MerchantOnboardingProxyController();
-
-                    // send request to PGOS to save email
-                    $merchantId = $merchant->getId();
-
-                    $this->trace->debug(TraceCode::PGOS_CALL_TO_SAVE_VERIFIED_EMAIL, [
-                        'merchant_id' => $merchantId,
-                        'caller'      => 'verifyEmailWithOtp',
-                    ]);
-
-                    $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(
-                        $pgosProxyController::MERCHANT_ACTIVATION_SAVE,
-                        [
-                        'merchant_id' => $merchantId,
-                        'email'       => $input['email'],
-                        ],
-                        $merchant);
-
-                    if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                    try
                     {
-                        throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                        $pgosProxyController = new MerchantOnboardingProxyController();
+
+                        // send request to PGOS to save email
+                        $merchantId = $merchant->getId();
+
+                        $this->trace->debug(TraceCode::PGOS_CALL_TO_SAVE_VERIFIED_EMAIL, [
+                            'merchant_id' => $merchantId,
+                            'caller'      => 'verifyEmailWithOtp',
+                        ]);
+
+                        $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(
+                            $pgosProxyController::MERCHANT_ACTIVATION_SAVE,
+                            [
+                            'merchant_id' => $merchantId,
+                            'email'       => $input['email'],
+                            ],
+                            $merchant);
+
+                        if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                        {
+                            throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                        }
+
+                        if($pgosResponse === null)
+                        {
+                            $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
+                                'merchant_id'   => $merchantId,
+                                'pgos_response' => $pgosResponse,
+                                'caller'        => 'verifyEmailWithOtp',
+                            ]);
+                        }
                     }
-
-                    if($pgosResponse === null)
+                    catch (\Throwable $exception)
                     {
-                        $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
+                        $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                             'merchant_id'   => $merchantId,
-                            'pgos_response' => $pgosResponse,
-                            'caller'        => 'verifyEmailWithOtp',
+                            'error_message' => $exception->getMessage()
+                        ]);
+
+                        throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                            'error description' => 'submitted data could not be processed'
                         ]);
                     }
-                }
-                catch (\Throwable $exception)
-                {
-                    $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                        'merchant_id'   => $merchantId,
-                        'error_message' => $exception->getMessage()
-                    ]);
+                });
 
-                    throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                        'error description' => 'submitted data could not be processed'
-                    ]);
-                }
-            });
+                $merchantDetails = $this->merchant->merchantDetail;
 
-            $merchantDetails = $this->merchant->merchantDetail;
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
+                    $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchantDetails);
+                });
 
-            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
-                $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
-                $this->repo->saveOrFail($merchantDetails);
-            });
-
-            $user = $this->repo->user->findByEmail($input['email']);
+                $user = $this->repo->user->findByEmail($input['email']);
+            }
         }
-
 
         $this->trace->info(
             TraceCode::USER_EMAIL_VERIFY_WITH_OTP,
             [
-                'merchantId'      => $merchant->getId(),
+                'merchantId'      => $merchant?->getId(),
+                'userId'          => $user->getId(),
             ]);
 
         $this->confirm($user, Entity::OTP);

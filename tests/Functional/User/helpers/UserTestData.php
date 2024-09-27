@@ -5593,6 +5593,25 @@ return [
         ],
     ],
 
+    'testVerifyEmailWithOtpInternalAuth' => [
+        'request'  => [
+            'url'     => '/users/verify_email_internal',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user' => [
+                    'email'     => 'user_verify_email_internal_auth@abc.com',
+                    'confirmed' => true,
+                ]
+            ],
+        ],
+    ],
+
     'testVerifyEmailWithOtpInX' => [
         'request'  => [
             'url'     => '/users/verify_email',

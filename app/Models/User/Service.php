@@ -3517,7 +3517,7 @@ class Service extends Base\Service
 
             $action = ($requestOriginProduct === Product::BANKING) ? 'x_verify_email' : 'verify_email';
 
-            $this->core()->verifyEmailWithOtp($input, $this->merchant, $this->user, $action);
+            $this->core()->verifyEmailWithOtp($input, $this->user, $this->merchant, $action);
 
             LoginSignupRateLimit::resetKey($this->user->getId(), Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
         }

@@ -9671,6 +9671,23 @@ class UserTest extends TestCase
         $this->assertTrue($user->getConfirmedAttribute());
     }
 
+    public function testVerifyEmailWithOtpInternalAuth()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'user_verify_email_internal_auth@abc.com']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($user->getConfirmedAttribute());
+    }
+
     public function testVerifyEmailWithOtpInX()
     {
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
