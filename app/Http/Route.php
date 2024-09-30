@@ -1527,7 +1527,8 @@ class Route
         'merchant_policy_preview_v2'                        => ['get',      'pg/onboarding/merchant_policy_preview/v2',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'fetch_sales_assisted_merchants'                    => ['get',      'pg/onboarding/fetch_sales_assisted_merchants',                 'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_website_policy_verify'                    => ['put',      'merchant/website/policy/verify',                               'MerchantController@verifyMerchantWebsitePolicy'                    ],
-
+        'fetch_brand_dealer_details'                        => ['get',      'pg/onboarding/fetch_brand_dealer_details',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'update_brand_dealer_details'                       => ['put',      'pg/onboarding/update_brand_dealer_details',                    'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'rize_marketplace_dashboard'               => ['post',       'rize/dashboard/{path?}',                       'RizeMarketplaceProxyController@handleDashboardProxyRequest'        ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
@@ -9676,6 +9677,9 @@ class Route
 
         'get_mozart_audit_logs',
         'get_mozart_audit_logs_by_params',
+
+        'fetch_brand_dealer_details',
+        'update_brand_dealer_details'
     ];
 
     protected static $splitPaymentRoutes = [
@@ -9744,6 +9748,8 @@ class Route
         'pgos_verify_otp'                                 => Permission::EDIT_MERCHANT,
         'onboarding_order_create'                         => Permission::EDIT_MERCHANT,
         'fetch_sales_assisted_merchants'                  => Permission::VIEW_MERCHANT,
+        'fetch_brand_dealer_details'                      => Permission::POS_VALIDATE_BRAND_DETAILS,
+        'update_brand_dealer_details'                     => Permission::POS_VALIDATE_BRAND_DETAILS,
         'onboarding_order_verify'                         => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
@@ -14684,6 +14690,8 @@ class Route
             'fetch_batch_actions',
             'fetch_instrument_comment_list',
             'fetch_instrument_previous_status',
+            'fetch_brand_dealer_details',
+            'update_brand_dealer_details',
             'terminal_enable_bulk',
             'terminal_sync',
             'update_template_mappings',

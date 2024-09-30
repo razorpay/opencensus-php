@@ -1220,6 +1220,9 @@ class Name
     const VIEW_MERCHANT_LOGIN_READ_ONLY = 'view_merchant_login_read_only';
     const VIEW_MERCHANT_LOGIN_EDIT = 'view_merchant_login_edit';
 
+    // Permission to validate merchant brand dealer details
+    const POS_VALIDATE_BRAND_DETAILS = 'pos_validate_brand_details';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
