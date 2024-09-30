@@ -33,7 +33,7 @@ web/js/merchantLA/containers/Reports              @joel-jaimon @TanroopSing @asp
 web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp48
 web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48
 web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe @razorpay/merchant-dashboard
-web/js/merchant/views/Transactions/v1/SuccessRate @amitabh-blade @akash-sachan @NarasimhaSwamy
+web/js/merchant/views/Transactions/v1/SuccessRate @akash-sachan @NarasimhaSwamy
 web/js/merchant/views/Navigator                   @parth-p-ui
 web/js/merchant/views/Optimizer                   @parth-p-ui
 config/splitz.php                                  @razorpay/ssab-fe
@@ -49,3 +49,9 @@ environment/.env.vault.j2                         @razorpay-sanjib @shubham25kr0
 .github/workflows/e2e.yml                          @razorpay/deploy-leads-dashboard
 playwright/config/devstack.json                    @razorpay/deploy-leads-dashboard
 playwright/utils/infraE2EUtils.js                 @razorpay/deploy-leads-dashboard
+web/e2e/suites/RizeMarketplace/app-store-banner.spec.js     @razorpay/deploy-leads-dashboard
+web/e2e/suites/RizeMarketplace/marketplace.spec.js          @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/batch.spec.js                  @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/upi.spec.js                    @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/v1.spec.js                     @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/v2.spec.js                     @razorpay/deploy-leads-dashboard
