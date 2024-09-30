@@ -657,7 +657,7 @@ function PaymentDetails(props) {
                 <ShowWhen
                   className="if-condition"
                   additionalCondition={() =>
-                    ERRORCODETOCHECK.includes(payment.error_code) &&
+                    ERRORCODETOCHECK.includes(payment.error_reason) &&
                     isBounceModalMemoEnabled &&
                     paymentMethodtoCheck.includes(payment.method)
                   }

@@ -25,23 +25,16 @@ export const NOTEBODY =
   'The information as above is certified to be true copy based on the debit transaction response file /  report received from the sponsor bank of Razorpay Software \n Solutions Pvt Ltd or NPCI, as applicable. This Transaction Summary is being shared for your reference and informational purposes only';
 
 export const ERRORCODETOCHECK = [
-  'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
-  'BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED',
-  'BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER',
-  'BAD_REQUEST_PAYMENT_FAILED',
-  'BAD_REQUEST_ACCOUNT_CLOSED',
-  'BAD_REQUEST_PAYMENT_INVALID_ACCOUNT',
-  'BAD_REQUEST_PAYMENT_FAILED_EXCEEDS_ARRANGEMENT',
-  'BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN',
-  'BAD_REQUEST_EMANDATE_DEBIT_NOT_ALLOWED',
-  'BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED',
-  'BAD_REQUEST_ACCOUNT_HOLDER_EXPIRED',
-  'GATEWAY_ERROR_REQUEST_ERROR',
-  'BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE',
-  'BAD_REQUEST_PAYMENT_KYC_PENDING',
-  'GATEWAY_ERROR_MERCHANT_NOT_ENABLED_FOR_STANDING_INSTRUCTION',
-  'GATEWAY_ERROR_PREMATURE_SI_EXECUTION',
-  'BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER',
+  'insufficient_funds',
+  'transaction_limit_exceeded',
+  'payment_cancelled',
+  'payment_failed',
+  'bank_account_invalid',
+  'debit_instrument_blocked',
+  'transaction_limit_exceeded',
+  'mandate_not_active',
+  'debit_instrument_blocked',
+  'payment_cancelled',
 ];
 
 export const TITLE =

@@ -235,10 +235,25 @@ class GenericController extends Controller
 
     public function bounceMemo()
     {
+        $allRequestHeaders = Request::header();
+
+        $headers = [];
+
+        foreach($allRequestHeaders as $key => $value) {
+            $key = strtolower($key);
+
+            if (in_array($key, self::WHITELISTED_HEADERS, true) === true) {
+                $key = title_case($key);
+
+                $headers[$key] = $value[0];
+            }
+        }
 
         $request = new App\Admin\ApiRequestAny([]);
 
         $method = 'post';
+
+        $app = App::getFacadeRoot();
 
         try{
             list($error, $data, $httpCode) = $request->send(self::EMANDATE_SERVICE, $method);
