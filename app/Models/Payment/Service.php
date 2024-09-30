@@ -3570,6 +3570,8 @@ class Service extends Base\Service
 
             if (isset($input['block_order_mismatch']) === true){
 
+                $paymentHasOrder = $payment->hasOrder() && !empty($payment->getAttribute(Payment\Entity::ORDER_ID));
+
                 $orderMismatch =  $input['block_order_mismatch'];
 
                 $this->trace->info(
@@ -3577,10 +3579,10 @@ class Service extends Base\Service
                     [
                         'payment_id'             => $payment->getId(),
                         'cron_request'           => $orderMismatch,
-                        'payment_has_Order'      => $payment->hasOrder(),
+                        'payment_has_Order'      => $paymentHasOrder,
                     ]);
 
-                if ($orderMismatch === true and $payment->hasOrder() === true)
+                if ($orderMismatch === true and $paymentHasOrder === true)
                 {
                     $order = $payment->order;
 
