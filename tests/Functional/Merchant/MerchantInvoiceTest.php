@@ -403,6 +403,76 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testMerchantInvoiceWithOptimizerConvenienceFee()
+    {
+        $knownDate = Carbon::create(2018, 1, 27, 12,0, 0, Timezone::IST);
+
+        Carbon::setTestNow($knownDate);
+
+        $authPayment = $this->createData(false,true);
+
+        $knownDate = Carbon::create(2018, 2, 1, 12,0, 0, Timezone::IST);
+
+        Carbon::setTestNow($knownDate);
+
+        $this->capturePayment(
+            $authPayment['id'],
+            $authPayment['amount'], 'INR', $authPayment['amount']);
+
+        $this->fixtures->edit('payment', $authPayment['id'], [
+            'captured_at' => Carbon::create(2018, 2, 1, 6, 0, 0, Timezone::IST)->timestamp
+        ]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+        ];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(9, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
+        $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
+        $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
+        $this->assertArraySelectiveEquals($invoiceEntities['charge_collections'], $data['charge_collections']);
+        $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
+        $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
+
+        $dateString = Carbon::createFromDate(
+            $entities[0]['year'],
+            $entities[0]['month'],
+            1,
+            Timezone::IST)->format('my');
+
+        $this->assertEquals(substr($entities[0]['invoice_number'], -4), $dateString);
+
+        Carbon::setTestNow();
+    }
+
     public function testFeeAdjustment()
     {
         $md1 = $this->fixtures->create(
@@ -1041,7 +1111,7 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
-    protected function createData($merchantAlreadyCreated = false)
+    protected function createData($merchantAlreadyCreated = false, $optimizerFlow = false)
     {
         if($merchantAlreadyCreated === false)
         {
@@ -1080,6 +1150,26 @@ class MerchantInvoiceTest extends TestCase
 
             // NB payment
             $this->fixtures->create('terminal:shared_netbanking_pnb_terminal');
+        }
+
+        if ($optimizerFlow === true)
+        {
+            $this->fixtures->create('feature', [
+                'name'        => 'optimizer_cfb_standard',
+                'entity_id'   => 10000000000000,
+                'entity_type' => 'merchant',
+            ]);
+            $this->fixtures->create('pricing', [
+                'plan_id'             => '1hDYlICobzOCYt',
+                'plan_name'           => 'OptiConvenienceFeePlan',
+                'feature'             => 'optimizer_convenience_fee',
+                'payment_method'      => 'card',
+                'percent_rate'        => 200,
+                'fixed_rate'          => 0,
+                'gateway'             => null,
+                'org_id'              => '100000razorpay',
+                'international'       => 0,
+            ]);
         }
 
         // Card payment less than 2k

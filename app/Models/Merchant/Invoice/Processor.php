@@ -10,8 +10,10 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Feature;
 use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Settlement\SlackNotification;
@@ -855,7 +857,12 @@ class Processor extends Base\Core
                         $this->beginTimestamp,
                         $this->endTimestamp,
                         $type);
-
+                // if optimizer cfb feature is enabled
+                // we need to remove optimizer conveninec fee from total payment fee amount
+                if ($this->merchant->isAtLeastOneFeatureEnabled(Feature\Constants::OPTIMIZER_CFB_FEATURES) === true)
+                {
+                    $this->removeOptimizerConvenienceFeeFromFeeDeatils($paymentFeeAmount, $type);
+                }
                 $this->storeResultsInCache($cacheKey, $paymentFeeAmount);
             }
 
@@ -1502,6 +1509,58 @@ class Processor extends Base\Core
             }
         }
         return false;
+    }
+
+    /**
+     * Removes the optimizer convenience fee from the payment fee details
+     * as this not be in the invoice
+     *
+     * @param $paymentFeeAmount
+     * @param $type
+     */
+    private function removeOptimizerConvenienceFeeFromFeeDeatils(&$paymentFeeAmount, $type)
+    {
+        try
+        {
+            $feesBreakup = $this->repo->fee_breakup->fetchFeeBreakUpByMerchantIdAndFeatureName(
+                $this->merchantId,
+                PricingFeature::OPTIMIZER_CONVENIENCE_FEE,
+                $type,
+                $this->beginTimestamp,
+                $this->endTimestamp);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_INVOICE_OPTIMIZER_CONVENIENCE_FEE_DETAILS,
+                [
+                    'optimizer_convenience' => $feesBreakup,
+                    'type' => $type,
+                    'payment_fee' => $paymentFeeAmount,
+                    'merchant_id' => $this->merchantId,
+                    'begin_timestamp' => $this->beginTimestamp,
+                    'end_timestamp' => $this->endTimestamp
+                ]
+            );
+            if (isset($paymentFeeAmount['fee']) and $paymentFeeAmount['fee'] > 0) {
+                $paymentFeeAmount['fee'] = $paymentFeeAmount['fee'] - $feesBreakup[0]['amount'];
+            }
+            if (isset($paymentFeeAmount['tax']) and $paymentFeeAmount['tax'] > 0) {
+                $paymentFeeAmount['tax'] = $paymentFeeAmount['tax'] -  ((int) round((0.18 * $feesBreakup[0]['amount']) ));
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(
+                TraceCode::MERCHANT_INVOICE_FETCH_OPTIMIZER_CONVENIENCE_FEE_ERROR,
+                [
+                    'error_message' => $exception->getMessage(),
+                    'merchant_id' => $this->merchantId,
+                    'type' => $type,
+                    'payment_fee' => $paymentFeeAmount,
+                    'begin_timestamp' => $this->beginTimestamp,
+                    'end_timestamp' => $this->endTimestamp
+                ]
+            );
+        }
     }
 
     // remove platform fee transfer amount from the fee details (trxn, payment etc.) to avoid double
