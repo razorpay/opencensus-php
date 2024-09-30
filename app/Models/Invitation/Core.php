@@ -78,7 +78,7 @@ class Core extends Base\Core
         {
             $input[Entity::METADATA] = merge_jsons($invitation->getMetadata(), $input[Entity::METADATA]);
         }
-        
+
         $invitation->build($input);
 
         $senderName = $this->getSenderName($input);
@@ -143,7 +143,7 @@ class Core extends Base\Core
         $invitationDetails = $input[Entity::INVITATION_DETAILS] ?? [];
 
         $this->sendEmailIfApplicable($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $isIntegrationInvite, $invitationDetails);
-        
+
         $this->sendSMSIfApplicable($invitation, $invitedUserExists, 'create');
 
         $this->pushSelfServeSuccessEventsToSegmentForMemberInvitation();
@@ -201,7 +201,7 @@ class Core extends Base\Core
 
         $vendorPortalMerchantId = $this->app['config']['applications.vendor_payments']['vendor_portal_merchant_id'];
 
-        $vendorPortalMerchant = $this->getDbMerchantById($vendorPortalMerchantId);
+        $vendorPortalMerchant = $this->repo->merchant->findOrFailPublic($vendorPortalMerchantId);
 
         $invitation->merchant()->associate($vendorPortalMerchant);
 
@@ -249,7 +249,7 @@ class Core extends Base\Core
         // While accepting the invite, we will not associate the user with this merchant
         $vendorPortalMerchantId = $this->app['config']['applications.vendor_payments']['vendor_portal_merchant_id'];
 
-        $vendorPortalMerchant = $this->getDbMerchantById($vendorPortalMerchantId);
+        $vendorPortalMerchant = $this->repo->merchant->findOrFailPublic($vendorPortalMerchantId);
 
         $invitation->merchant()->associate($vendorPortalMerchant);
 
@@ -339,7 +339,7 @@ class Core extends Base\Core
         unset($input[Entity::INVITATION_DETAILS]);
 
         $invitation->edit($input, 'resend');
-        
+
         $senderName = $this->getSenderName($input);
         $invitationEmail = $invitation->getEmail();
         $invitedUser = empty($invitationEmail) === false ? $this->repo->user->getUserFromEmail($invitationEmail) : null;
@@ -602,7 +602,7 @@ class Core extends Base\Core
                                  bool       $isIntegrationInvite = false,
                                  array      $invDetails = null)
     {
-        if (empty($invitation->getEmail()) === true) 
+        if (empty($invitation->getEmail()) === true)
         {
             return;
         }
