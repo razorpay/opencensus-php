@@ -758,7 +758,7 @@ class Core extends Base\Core
     public function createRefundAndUpdateDispute(Entity $dispute, $acceptedAmount)
     {
         // https://docs.google.com/spreadsheets/d/1znRQjMiV7WFywAo1a7qb5WCHky96D6iycCbcYulyD7s/edit#gid=1471838983&range=C16
-        if ($acceptedAmount > $dispute->payment->getAmountUnRefunded())
+        if ($acceptedAmount > $dispute->payment->getBaseAmountUnRefunded())
         {
             $message = 'Cannot create refund for dispute accept because dispute amount is greater than unrefunded amount';
 
