@@ -22,6 +22,8 @@ final class Constants
         2 => 'cycle',    // enum = 2
         3 => 'forever', // enum = 3
     ];
+
+    // Todo:: Add Benefit map for voucher benefit_type
     const API_OFFER_BENEFIT_MAP = [
         self::INSTANT_OFFER => self::BENEFIT_TYPE_DISCOUNT,
         self::CASHBACK_OFFER => self::BENEFIT_TYPE_CASHBACK,
@@ -29,18 +31,19 @@ final class Constants
     ];
 
     const BENEFIT_API_OFFER_MAP = [
-        'BENEFIT_TYPE_DISCOUNT' => Constants::INSTANT_OFFER,
-        'BENEFIT_TYPE_CASHBACK' => Constants::CASHBACK_OFFER,
-        'BENEFIT_TYPE_ALREADY_DISCOUNTED' => Constants::ALREADY_DISCOUNTED,
+        self::BENEFIT_TYPE_DISCOUNT           => Constants::INSTANT_OFFER,
+        self::BENEFIT_TYPE_CASHBACK           => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_VOUCHER            => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_ALREADY_DISCOUNTED => Constants::ALREADY_DISCOUNTED,
     ];
 
     const BENEFIT_DISCOUNT_MAP = [
-        self::BENEFIT_TYPE_DISCOUNT => 'discount',
-        self::BENEFIT_TYPE_CASHBACK => 'cashback',
+        self::BENEFIT_TYPE_DISCOUNT           => 'discount',
+        self::BENEFIT_TYPE_CASHBACK           => 'cashback',
         self::BENEFIT_TYPE_ALREADY_DISCOUNTED => 'already_discounted',
-        self::BENEFIT_TYPE_NO_COST_EMI => 'no_cost_emi',
-        self::BENEFIT_TYPE_LOW_COST_EMI => 'low_cost_emi',
-
+        self::BENEFIT_TYPE_NO_COST_EMI        => 'no_cost_emi',
+        self::BENEFIT_TYPE_LOW_COST_EMI       => 'low_cost_emi',
+        self::BENEFIT_TYPE_VOUCHER            => 'vouchers',
     ];
 
     const METADATA = 'metadata';
@@ -98,6 +101,7 @@ final class Constants
     const BENEFIT_TYPE_DISCOUNT = 'BENEFIT_TYPE_DISCOUNT';
     const BENEFIT_TYPE_CASHBACK = 'BENEFIT_TYPE_CASHBACK';
     const BENEFIT_TYPE_ALREADY_DISCOUNTED = 'BENEFIT_TYPE_ALREADY_DISCOUNTED';
+    const BENEFIT_TYPE_VOUCHER = 'BENEFIT_TYPE_VOUCHER';
 
     const MAXIMUM_VALUE = 'maximum_value';
     const ON = 'on';
