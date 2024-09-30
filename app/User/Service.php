@@ -399,7 +399,7 @@ class Service extends Base\Service
             Constants::OAUTH_LOGIN_ROUTE,
             Constants::POST_METHOD);
 
-        return $this->handleOauthLoginResponse($error, $genericUser, "email", $httpCode);
+        return $this->handleOauthLoginResponse($error, $genericUser, "email", $httpCode, $input);
     }
 
     /**
@@ -463,7 +463,7 @@ class Service extends Base\Service
             $this->markUserTwoFactorVerified();
         }
 
-        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via, null, $input);
     }
 
     public function verifyOtpAndMarkUserTwoFactorVerified(array $input)
@@ -498,6 +498,8 @@ class Service extends Base\Service
 
     public function verify2faOtp(array $input, array $options = [])
     {
+        $this->unsetUnnecessaryFieldsInLoginInput($input);
+
         return $this->loginOnApiOnRoute($input,'users/2fa/verify', 'POST', $options);
     }
 
@@ -686,7 +688,7 @@ class Service extends Base\Service
             $logged_in_via = Constants::CONTACT_MOBILE;
         }
 
-        return $this->handleLoginResponse($error, $genericUser, $logged_in_via, $httpCode);
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via, $httpCode, $input);
     }
 
     /**
@@ -762,7 +764,7 @@ class Service extends Base\Service
             $logged_in_via = Constants::CONTACT_MOBILE;
         }
 
-        return $this->handleLoginResponse($error, $genericUser, $logged_in_via, $httpCode);
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via, $httpCode, $input);
     }
 
     /**
@@ -786,7 +788,55 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
-    protected function handleLoginResponse($error, $genericUser, $logged_in_via=null, $httpCode=null)
+    public function isUserAllowedSegregatedLoginSignup(): bool
+    {
+        $adminService = new AdminService;
+        // Org ids will be added as they adopt USL
+        $allowedOrgIds = [$adminService::RAZORPAY_ORG_ID];
+
+        $domain = \Request::server('SERVER_NAME');
+        list($error, $org) = $adminService->getOrg($domain);
+
+        if (empty($error) === false) {
+            return false;
+        }
+
+        $orgId = $org['id'];
+
+        if(empty($orgId) === true)
+        {
+            $orgId = $adminService::RAZORPAY_ORG_ID;
+        }
+
+        $this->stripSign($orgId);
+
+        if (in_array($orgId, $allowedOrgIds)) {
+            $this->trace->info(TraceCode::USER_ORG_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP, [
+                "orgId"          => $orgId,
+            ]);
+
+            return true;
+        }
+
+        $this->trace->info(TraceCode::USER_ORG_NOT_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP, [
+            "orgId"          => $orgId,
+        ]);
+
+        return false;
+    }
+
+    public function isUserAllowedSegregatedLoginViaExperiment($userId): bool
+    {
+        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariant(
+            env(Constants::SEGREGATED_LOGIN_EXP_ID),
+            "",
+            $userId
+        );
+
+        return ($data['variables'][0]['value'] ?? null) === 'on';
+    }
+
+    protected function handleLoginResponse($error, $genericUser, $logged_in_via=null, $httpCode=null, $input = [])
     {
         if (empty($error) === false)
         {
@@ -862,8 +912,12 @@ class Service extends Base\Service
         ];
 
         $user = Auth::user();
+        $userOnly = $input[Constants::USER_ONLY] ?? false;
 
-        $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+        $shouldConditionallyLoginOnlyToUser = ($userOnly === true && $this->isUserAllowedSegregatedLoginSignup()) || $this->isUserAllowedSegregatedLoginViaExperiment($user->id);
+
+        $currentMerchant = $user->currentMerchant($shouldConditionallyLoginOnlyToUser);
+        $currentMerchantId = $currentMerchant ? $currentMerchant->id : null;
 
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
@@ -871,12 +925,17 @@ class Service extends Base\Service
         // 1. the request is from X and banking_role is present
         // 2. the request is from PG and role is present
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
-        if ((empty($user->currentMerchant()) === false)  and
-            ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-                (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
+        if ((empty($currentMerchant) === false)  and
+            ((($isBankingRequest === true) and ($currentMerchant->banking_role !== null)) or
+                (($isBankingRequest === false) and ($currentMerchant->role !== null))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
             $res['otp_auth_token'] = $genericUser->otp_auth_token ?? null;
+        }
+
+        // If user_only login was allowed we return it back. This is so that the frontend could change redirection logic
+        if ($shouldConditionallyLoginOnlyToUser) {
+            $res['user_only'] = true;
         }
 
         if (isset($logged_in_via))
@@ -910,7 +969,7 @@ class Service extends Base\Service
         return [$error, $this->addAccessTokenAndMidToResponse($res, $genericUser), $httpCode];
     }
 
-    protected function handleOauthLoginResponse($error, $genericUser, $logged_in_via=null, $httpCode = null)
+    protected function handleOauthLoginResponse($error, $genericUser, $logged_in_via=null, $httpCode = null, $input = [])
     {
         if (empty($error) === false)
         {
@@ -964,7 +1023,12 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
-        $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+        $userOnly = $input[Constants::USER_ONLY] ?? false;
+
+        $shouldConditionallyLoginOnlyToUser = ($userOnly === true && $this->isUserAllowedSegregatedLoginSignup()) || $this->isUserAllowedSegregatedLoginViaExperiment($user->id);
+
+        $currentMerchant = $user->currentMerchant($shouldConditionallyLoginOnlyToUser);
+        $currentMerchantId = $currentMerchant ? $currentMerchant->id : null;
 
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
@@ -972,9 +1036,9 @@ class Service extends Base\Service
         // 1. the request is from X and banking_role is present
         // 2. the request is from PG and role is present
         // Below conditions are false when a PG user logs into X for the first time or vice versa.
-        if ((empty($user->currentMerchant()) === false)  and
-            ((($isBankingRequest === true) and ($user->currentMerchant()->banking_role !== null)) or
-                (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
+        if ((empty($currentMerchant) === false)  and
+            ((($isBankingRequest === true) and ($currentMerchant->banking_role !== null)) or
+                (($isBankingRequest === false) and ($currentMerchant->role !== null))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
         }
@@ -982,6 +1046,11 @@ class Service extends Base\Service
         if (isset($logged_in_via))
         {
             $res["logged_in_via"] = $logged_in_via;
+        }
+
+        // If user_only login was allowed we return it back. This is so that the frontend could change redirection logic
+        if ($shouldConditionallyLoginOnlyToUser) {
+            $res['user_only'] = true;
         }
 
         $traceData = [
@@ -1137,6 +1206,9 @@ class Service extends Base\Service
             }
 
             Session::put('current_merchant_id', $merchantId);
+
+            // We don't need this after the user has purposely switched the account.
+            Session::forget(Constants::DISABLE_AUTO_MERCHANT_LOGIN);
 
             // Forgetting is_merchant_login session for current Merchant i.e the merchant who has done switched account.
             // so that switched merchant not go through Chunked Based streaming part in first render.
@@ -2629,6 +2701,14 @@ class Service extends Base\Service
         return [$error, $genericUser, $httpCode];
     }
 
+    public function unsetUnnecessaryFieldsInLoginInput(array &$input)
+    {
+        // Not required on api
+        if (isset($input[Constants::USER_ONLY])) {
+            unset($input[Constants::USER_ONLY]);
+        }
+    }
+
     public function loginOnApi(array $input)
     {
         /**
@@ -2662,6 +2742,8 @@ class Service extends Base\Service
             MetricConstants::PASSWORD,
             true
         );
+
+        $this->unsetUnnecessaryFieldsInLoginInput($input);
 
         return $this->loginOnApiOnRoute($input,'users/login', 'POST', [ 'headers' => $headers ]);
     }
@@ -2711,6 +2793,7 @@ class Service extends Base\Service
 
     public function verifyOtpLogin2faPasswordOnApi(array $input, $options)
     {
+        $this->unsetUnnecessaryFieldsInLoginInput($input);
 
         $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
 
@@ -2732,6 +2815,8 @@ class Service extends Base\Service
         );
 
         unset($input[Constants::REQUEST_SOURCE]);
+
+        $this->unsetUnnecessaryFieldsInLoginInput($input);
 
         return $this->loginOnApiOnRoute(
             $input,'users/login/otp/verify',

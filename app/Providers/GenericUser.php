@@ -17,9 +17,9 @@ class GenericUser extends AuthGenericUser
         return $userArray;
     }
 
-    public function currentMerchant()
+    public function currentMerchant($shouldConditionallyLoginOnlyToUser = false)
     {
-        $currentMerchant = (new Helper)->getCurrentMerchant($this);
+        $currentMerchant = (new Helper)->getCurrentMerchant($this, $shouldConditionallyLoginOnlyToUser);
 
         return $currentMerchant;
     }

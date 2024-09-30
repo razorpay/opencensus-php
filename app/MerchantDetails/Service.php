@@ -346,10 +346,12 @@ class Service extends Base\Service
             $currentMerchant = $genericUser->merchants->where('id', $currentMerchantId)->first();
         }
 
-        if (($currentMerchant->role !== 'owner') and
-            ($currentMerchant->banking_role !== 'owner'))
-        {
-            $data['pre_signup_complete'] = true;
+        if (empty($currentMerchant) === false) {
+            if (($currentMerchant->role !== 'owner') and
+                ($currentMerchant->banking_role !== 'owner'))
+            {
+                $data['pre_signup_complete'] = true;
+            }
         }
 
         // Using this because test balance is not getting created for X

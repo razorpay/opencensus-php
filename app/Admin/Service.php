@@ -57,6 +57,8 @@ class Service extends Base\Service
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
 
+    const RAZORPAY_ORG_ID       = '100000razorpay';
+
     const CACHE_KEY_ORG_DATA = 'org_data_';
 
     // This is the Admin\Logger trait

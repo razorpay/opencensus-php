@@ -4,6 +4,7 @@ type LoginSignUpUserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Captcha  string `json:"captcha"`
+	UserOnly *bool  `json:"user_only,omitempty"`
 }
 
 type LoginSignUpUserSendOtpRequest struct {

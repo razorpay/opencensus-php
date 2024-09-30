@@ -28,9 +28,72 @@ class Helper
     {
         $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
     }
-
-    public function getCurrentMerchant(GenericUser $user)
+    
+    public function selectMerchantConditionally($merchants, $shouldConditionallyLoginOnlyToUser = false)
     {
+        // If user has only one merchant to log into we use that merchant
+        // If not then we check if the conditional merchant login is off
+        if (count($merchants) === 1 || $shouldConditionallyLoginOnlyToUser !== true) {
+            return $merchants->first();
+        }
+
+        return null;
+    }
+
+    public function selectMerchantToLogin(GenericUser $user, $shouldConditionallyLoginOnlyToUser) {
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+        // Primary role
+        $productRole = 'role';
+        // Banking role
+        $switchProductRole = 'banking_role';
+
+        if ($isBankingRequest === true)
+        {
+            // Banking role
+            $productRole = 'banking_role';
+            // Primary role
+            $switchProductRole = 'role';
+        }
+
+        // Select owner if it exists on given product
+        $ownerMerchants = $user->merchants->filter(function ($item) use ($productRole)
+        {
+            return ($item->$productRole === 'owner');
+        });
+
+        $currentMerchant = $this->selectMerchantConditionally($ownerMerchants, $shouldConditionallyLoginOnlyToUser);
+
+        if ($currentMerchant !== null) {
+            return $currentMerchant;
+        }
+
+        // If owner doesn't existing on product, check switch prioduct, if it exists we'll allow switch-product
+        $switchProductRoleMerchants = $user->merchants->filter(function ($item) use ($switchProductRole)
+        {
+            return ($item->$switchProductRole === 'owner');
+        });
+
+        $currentMerchant = $this->selectMerchantConditionally($switchProductRoleMerchants, $shouldConditionallyLoginOnlyToUser);
+
+        if ($currentMerchant !== null) {
+            return $currentMerchant;
+        }
+
+        // If owner doesn't exist, check if user is associated to any merchant on given product
+        $productRoleMerchants = $user->merchants->filter(function ($item) use ($productRole)
+        {
+            return ($item->$productRole !== null);
+        });
+
+        return $this->selectMerchantConditionally($productRoleMerchants, $shouldConditionallyLoginOnlyToUser);
+    }
+
+    public function getCurrentMerchant(GenericUser $user, $shouldConditionallyLoginOnlyToUser = false)
+    {
+        $app        = \App::getFacadeRoot();
+        $trace      = $app['trace'];
+
         $sessionMerchantId = Session::get('current_merchant_id');
 
         if (app('request.ctx')->isOauthRequest() === true)
@@ -82,40 +145,43 @@ class Helper
             }
         }
 
+         $disableAutoMerchantLoginSessionValue = Session::get(Constants::DISABLE_AUTO_MERCHANT_LOGIN, false);
+         $isAutoMerchantLoginDisabled = $disableAutoMerchantLoginSessionValue === true;
+
+         if ($isAutoMerchantLoginDisabled) {
+             $trace->info(TraceCode::USER_LOGIN, [
+                 'action'       => 'AutoMerchantLoginDisabled',
+                 'merchantId'   => $currentMerchant?->id,
+             ]);
+
+             return $currentMerchant;
+         }
+
         if ($currentMerchant === null)
         {
-            // Select owner if it exists on given product
-            $currentMerchant = $user->merchants->filter(function ($item) use ($productRole)
-                                                 {
-                                                     return ($item->$productRole === 'owner');
-                                                 })
-                                               ->first();
+            $currentMerchant = $this->selectMerchantToLogin($user, $shouldConditionallyLoginOnlyToUser);
+        }
 
-            // If owner doesn't existing on product, check switch prioduct, if it exists we'll allow switch-product
-            if ($currentMerchant === null)
-            {
-                $currentMerchant = $user->merchants->filter(function ($item) use ($switchProductRole)
-                                                     {
-                                                         return ($item->$switchProductRole === 'owner');
-                                                     })
-                                                   ->first();
-            }
+        if ($shouldConditionallyLoginOnlyToUser === true) {
+            if ($currentMerchant === null) {
+                Session::put(Constants::DISABLE_AUTO_MERCHANT_LOGIN, true);
 
-            // If owner doesn't exist, check if user is associated to any merchant on given product
-            if ($currentMerchant === null)
-            {
-                $currentMerchant = $user->merchants->filter(function ($item) use ($productRole)
-                                                     {
-                                                         return ($item->$productRole !== null);
-                                                     })
-                                                   ->first();
+                $trace->info(TraceCode::USER_LOGIN, [
+                    'action'    => 'MerchantConditionallyNotLoggedIn',
+                    'userId'    => $user->id,
+                ]);
+            } else {
+                $trace->info(TraceCode::USER_LOGIN, [
+                    'action'    => 'MerchantConditionallyLoggedIn',
+                    'userId'    => $user->id,
+                ]);
             }
         }
 
-        if ($currentMerchant !== null)
-        {
-            Session::put('current_merchant_id', $currentMerchant->id);
-        }
+       if ($currentMerchant !== null)
+       {
+           Session::put('current_merchant_id', $currentMerchant->id);
+       }
 
         return $currentMerchant;
     }

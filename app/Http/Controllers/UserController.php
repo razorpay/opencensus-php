@@ -210,7 +210,6 @@ class UserController extends Controller
 
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
     {
-
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);
 
         $currentRouteName = \Route::currentRouteName();
@@ -337,6 +336,21 @@ class UserController extends Controller
 
                 Cookie::queue('rzp_merchant_id',$id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
                 Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+            }
+
+            // Redirection if the user has come through multi account flow
+            // The user login was successful but the user didn't choose a merchant to login
+            // They will be able to login to a merchant from a list in USL
+            if (count($details['user']['merchants'] ?? []) > 0 && Session::get(Constants::DISABLE_AUTO_MERCHANT_LOGIN, false)) {
+                $this->trace->info(TraceCode::USL_REDIRECTION, [
+                    'redirection_url' => env('RAZORPAY_ACCOUNTS_URL'),
+                    'condition'       => 'USER_ONLY_LOGIN_REDIRECT',
+                    'userId'            => $details['id'] ?? null,
+                    'api_host'        => $data['api_host'] ?? null,
+                    'session_id'      => $data['session_id'] ?? null,
+                ]);
+
+                return redirect(env('RAZORPAY_ACCOUNTS_URL'));
             }
         }
 
@@ -914,6 +928,10 @@ class UserController extends Controller
         ]);
 
         $merchantId = $details['current'];
+
+        if (isset(config(self::SPLITZ_EXPERIMENTS)[self::PG3_V1_ENABLED]) === false) {
+            return false;
+        }
 
         $experimentID = config(self::SPLITZ_EXPERIMENTS)[self::PG3_V1_ENABLED];
 

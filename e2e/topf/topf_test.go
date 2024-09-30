@@ -1,12 +1,13 @@
 package e2e
 
 import (
+	"net/url"
+	"testing"
+
 	"github.com/razorpay/dashboard/e2e"
 	"github.com/razorpay/goutils/itf"
 	"github.com/razorpay/goutils/itf/httpexpect"
 	"github.com/stretchr/testify/suite"
-	"net/url"
-	"testing"
 )
 
 var xsrf, session, decodeXsrf string
@@ -25,7 +26,7 @@ func (s *TopfAPISuite) BeforeTest(suiteName, testName string) {
 
 func (s TopfAPISuite) TestUserRegister() {
 
-    // Skipping this test as it is failing due to devstack issue.
+	// Skipping this test as it is failing due to devstack issue.
 	s.T().Skip()
 
 	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
@@ -51,7 +52,7 @@ func (s TopfAPISuite) TestRegisterSendOtp() {
 
 func (s TopfAPISuite) TestRegisterVerifyOtp() {
 
-    // Skipping this test as it is failing due to devstack issue.
+	// Skipping this test as it is failing due to devstack issue.
 	s.T().Skip()
 
 	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
@@ -94,6 +95,50 @@ func (s TopfAPISuite) TestLoginVerifyOtp() {
 	})
 
 	e.DoRequestTests(requestLoginOtpVerify)
+}
+
+func (s TopfAPISuite) TestUserOnlyLoginToUserWithhSingleMerchant() {
+	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
+		e2e.DevstackLabelHeader: e2e.DevServeHeader,
+		"X-XSRF-TOKEN":          decodeXsrf,
+		"Cookie":                "rzp_usr_session=" + session,
+	})
+
+	userOnly := true
+
+	response := e.POST("/user/signin").
+		WithJSON(&LoginSignUpUserRequest{
+			Email:    "userWithSingleMerchant@razorpay.com",
+			Password: "1p1p1p1p1p@",
+			Captcha:  "Faked",
+			UserOnly: &userOnly,
+		}).
+		Expect()
+
+	// Since there is only one merchant for the user, login is successful and currentMerchantId is present in the response
+	response.JSON().Object().Path("$.data").Object().ContainsKey("currentMerchantId")
+}
+
+func (s TopfAPISuite) TestUserOnlyLoginToUserWithMultipleMerchants() {
+	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
+		e2e.DevstackLabelHeader: e2e.DevServeHeader,
+		"X-XSRF-TOKEN":          decodeXsrf,
+		"Cookie":                "rzp_usr_session=" + session,
+	})
+
+	userOnly := true
+
+	response := e.POST("/user/signin").
+		WithJSON(&LoginSignUpUserRequest{
+			Email:    "userWithMultipleMerchants@razorpay.com",
+			Password: "1p1p1p1p1p@",
+			Captcha:  "Faked",
+			UserOnly: &userOnly,
+		}).
+		Expect()
+
+	// Since there are multiple merchants for the user, login is unsuccessful and currentMerchantId is not present in the response
+	response.JSON().Object().Path("$.data").Object().NotContainsKey("currentMerchantId")
 }
 
 func TestTopf(t *testing.T) {

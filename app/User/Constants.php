@@ -70,9 +70,8 @@ class Constants
     const CURLEC_COM = 'curlec.com';
 
     const CURLEC_DEV = 'dashboard-curlec.dev.razorpay.in';
-
+    const DISABLE_AUTO_MERCHANT_LOGIN = 'DISABLE_AUTO_MERCHANT_LOGIN';
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';
-
 
     /**
      * determines the 2fa verification state of user in session
@@ -109,6 +108,8 @@ class Constants
     const NETWORK_ISSUE_RELOAD_PAGE = 'Network issue, please reload the page.';
 
     const USER_ID_DEBUG_ACTIVATION_ISSUE = 'DqVrGiqepp5gxF';
+
+    const SEGREGATED_LOGIN_EXP_ID = 'SEGREGATED_LOGIN_EXP_ID';
 
     // RazorX Experiments and config keys
     // Experiments
@@ -149,6 +150,7 @@ class Constants
     const PAYOUTS            = 'payouts';
     const FEATURES           = 'features';
     const MERCHANT_DETAILS   = 'merchant_details';
+    const USER_ONLY          = 'user_only';
 
     const CAMPAIGNS          = 'campaigns';
 

@@ -368,7 +368,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getVariant($experimentId, $merchantId)
+    public function getVariant($experimentId, $merchantId, $userId = '')
     {
         if (empty($experimentId) === true)
         {
@@ -378,6 +378,10 @@ class Service extends Base\Service
         $request = new ApiRequestAny();
 
         $requestData = ['mid' => $merchantId];
+
+        if (empty($userId) === false) {
+            $requestData['id'] = $userId;
+        }
 
         $input = [
             'id'            => $merchantId,

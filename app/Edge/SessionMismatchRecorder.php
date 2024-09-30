@@ -203,7 +203,7 @@ class SessionMismatchRecorder
      * @param string $merchantId merchant id from session token
      * @return void
      */
-    public function setDashboardVerifiedData(string $userId, string $merchantId) : void {
+    public function setDashboardVerifiedData(string $userId, $merchantId = null) : void {
 
          if (empty($this->edgeVerified)) {
              return;
