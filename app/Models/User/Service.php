@@ -1070,31 +1070,7 @@ class Service extends Base\Service
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-        if ($shouldOnboardViaPGOS === false)
-        {
-            //Merchant onboarding to be continued with API as PGOS account creation failed
-            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_API]];
-        }
-        else
-        {
-            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
-
-            if ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING)
-            {
-                if ($this->shouldStoreProductSpecificWorkflowType($product) === true)
-                {
-                    $productSpecificWorkflowTypeKey = sprintf(DeviceDetailConstants::PRODUCT_WORKFLOW_TYPE_TEMPLATE, $product);
-
-                    $ddInput[DeviceDetail\Entity::METADATA][DeviceDetailConstants::WORKFLOW_DETAILS][$productSpecificWorkflowTypeKey] = DeviceDetailConstants::MODULAR_ONBOARDING;
-                }
-                else
-                {
-                    $ddInput[DeviceDetail\Entity::METADATA][DeviceDetailConstants::WORKFLOW_TYPE] = DeviceDetailConstants::MODULAR_ONBOARDING;
-                }
-            }
-        }
-
-        $ddInput[DeviceDetail\Entity::METADATA] = $this->mergeJson($userDeviceDetail->getMetadata(), $ddInput[DeviceDetail\Entity::METADATA]);
+        $ddInput[DeviceDetail\Entity::METADATA] = $this->mergeJson($userDeviceDetail->getMetadata(), $this->getUserDeviceDetailsMetadata($shouldOnboardViaPGOS, $workflowType, $product));
 
         $userDeviceDetail->setAttribute('metadata', $ddInput['metadata']);
         $this->repo->user_device_detail->saveOrFail($userDeviceDetail);
@@ -1251,6 +1227,39 @@ class Service extends Base\Service
         }
     }
 
+    private function getUserDeviceDetailsMetadata($shouldOnboardViaPGOS, $workflowType, $product)
+    {
+        if ($shouldOnboardViaPGOS === false)
+        {
+            //Merchant onboarding to be continued with API as PGOS account creation failed
+            return [
+                DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_API
+            ];
+        }
+
+        $ddMetadata = [
+            DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS
+        ];
+
+        if ($workflowType !== DeviceDetailConstants::MODULAR_ONBOARDING)
+        {
+            return $ddMetadata;
+        }
+
+        if ($this->shouldStoreProductSpecificWorkflowType($product) === true)
+        {
+            $productSpecificWorkflowTypeKey = sprintf(DeviceDetailConstants::PRODUCT_WORKFLOW_TYPE_TEMPLATE, $product);
+
+            $ddMetadata[DeviceDetailConstants::WORKFLOW_DETAILS][$productSpecificWorkflowTypeKey] = DeviceDetailConstants::MODULAR_ONBOARDING;
+        }
+        else
+        {
+            $ddMetadata[DeviceDetailConstants::WORKFLOW_TYPE] = DeviceDetailConstants::MODULAR_ONBOARDING;
+        }
+
+        return $ddMetadata;
+    }
+
     private function handlePGOSOnboardingForOAuthMerchants($merchant, $signupCampaign, $input, $user)
     {
         $shouldOnboardViaPGOS = false;
@@ -1332,24 +1341,7 @@ class Service extends Base\Service
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-        if ($shouldOnboardViaPGOS === false)
-        {
-            //Merchant onboarding to be continued with API as PGOS account creation failed
-            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_API]];
-        }
-        else
-        {
-            if ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING)
-            {
-                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS, DeviceDetailConstants::WORKFLOW_TYPE => DeviceDetailConstants::MODULAR_ONBOARDING ]];
-            }
-            else
-            {
-                $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
-            }
-        }
-
-        $ddInput[DeviceDetail\Entity::METADATA] = $this->mergeJson($userDeviceDetail->getMetadata(), $ddInput[DeviceDetail\Entity::METADATA]);
+        $ddInput[DeviceDetail\Entity::METADATA] = $this->mergeJson($userDeviceDetail->getMetadata(), $this->getUserDeviceDetailsMetadata($shouldOnboardViaPGOS, $workflowType, $product));
 
         $userDeviceDetail->setAttribute('metadata', $ddInput['metadata']);
         $this->repo->user_device_detail->saveOrFail($userDeviceDetail);
