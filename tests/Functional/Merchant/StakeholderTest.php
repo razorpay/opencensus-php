@@ -283,6 +283,48 @@ class StakeholderTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testCreateStakeholderForNonStringCity()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateStakeholderForNonStringCity()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $testData = $this->testData['testCreateStakeholderForThinRequest'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
+        $this->runRequestResponseFlow($testData);
+    }
+
     private function getStakeholderMetricData($partner): array
     {
         return [
