@@ -150,6 +150,12 @@ return [
             ]
     ],
 
+    'ezetap-notification' => [
+        'mock'          => env('EZETAP_WEBHOOK_MOCK', false),
+        'url'           => env('EZETAP_WEBHOOK_URL'),
+        'secret'        => env('EZETAP_WEBHOOK_SECRET'),
+    ],
+
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),

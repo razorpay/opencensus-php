@@ -2287,6 +2287,10 @@ class ErrorCode
     const SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON                              = 'SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
 
+    const SERVER_ERROR_EZETAP_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_EZETAP_SERVICE_TIMEOUT';
+    const SERVER_ERROR_EZETAP_SERVICE_ERROR                                         = 'SERVER_ERROR_EZETAP_SERVICE_ERROR';
+    const SERVER_ERROR_EZETAP_INTEGRATION_ERROR                                     = 'SERVER_ERROR_EZETAP_INTEGRATION_ERROR';
+
     // Fund transfer service
     const SERVER_ERROR_FTS_SERVICE_TIMEOUT                                          = 'SERVER_ERROR_FTS_SERVICE_TIMEOUT';
     const BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT                           = 'BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT';

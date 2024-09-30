@@ -611,6 +611,8 @@ return array(
 
     'dedicated_terminal_qr_code_splitz_experiment_id' => env('DEDICATED_TERMINAL_QR_CODE_SPLITZ_EXPERIMENT_ID'),
 
+    'enable_ezetap_notification_splitz_experiment_id' => env('ENABLE_EZETAP_NOTIFICATION_SPLITZ_EXPERIMENT_ID'),
+
     'qr_code_status_check_splitz_experiment_id' => env('QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_service_preferences_splitz_experiment_id' => env('CHECKOUT_SERVICE_PREFERENCES_SPLITZ_EXPERIMENT_ID'),

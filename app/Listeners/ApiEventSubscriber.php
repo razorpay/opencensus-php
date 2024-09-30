@@ -604,6 +604,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($payment->getMerchantId(), "payment", $payment->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
 
@@ -784,6 +786,7 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
 
         $this->dispatchPaymentCaptureEvent($payment);
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function isForNocodeApps(Payment\Entity $payment): bool
@@ -1005,6 +1008,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function onQrCodeCreated(QrCode\Entity $qrCode)
@@ -1014,6 +1019,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function onQrCodeCredited(Payment\Entity $payment)
@@ -1025,6 +1032,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function onInvoicePartiallyPaid($payment)
@@ -2313,6 +2322,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $event = $this->createEventEntity($payload);
         (new Stork($this->getMode(), $this->storkProduct))->processEventSafe($event, $ownerType);
+    }
+
+    /**
+     * Dispatches event to ezetap notification service
+     * @param array  $payload
+     */
+    protected function dispatchEventToEzetapNotification(array $payload)
+    {
+        $event = $this->createEventEntity($payload);
+        $this->app['ezetapNotification']->sendEzetapRequest($event);
     }
 
     /**

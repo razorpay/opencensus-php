@@ -681,6 +681,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerMozart();
 
+        $this->registerEzetapNotification();
+
         $this->registerHyperVerge();
 
         $this->registerMandateHQ();
@@ -973,6 +975,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'doppler',
             'diag',
             'mozart',
+            'ezetapNotification',
             'hubspot',
             'salesforce',
             'freshdesk_client',
@@ -1288,6 +1291,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $mock = $app['config']->get('applications.mozart.mock');
 
             $implementation = $mock ? Mock\Mozart::class : Mozart::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerEzetapNotification()
+    {
+        $this->app->bind('ezetapNotification', function($app)
+        {
+            $mock = $app['config']->get('applications.ezetap-notification.mock');
+
+            $implementation = $mock ? EzetapNotification\Mock\EzetapNotification::class : EzetapNotification\EzetapNotification::class;
 
             return new $implementation($app);
         });
