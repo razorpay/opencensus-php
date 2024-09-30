@@ -1481,6 +1481,10 @@ return [
         'override_terminal_entity_reads' => env('OVERRIDE_TERMINAL_ENTITY_READS'),
     ],
 
+    'payment_methods' => [
+        'secret'        => env('PAYMENT_METHODS_API_SECRET'),
+    ],
+
     'pos_app' => [
       'secret' => env('POS_APP_SECRET'),
     ],

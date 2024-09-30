@@ -525,6 +525,7 @@ class Route
         'merchant_methods_edit_internal'           => ['patch',    'merchants/{mid}/methods',                        'MerchantController@editMerchantMethods'                            ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_fetch_methods_internal'          => ['get',      'merchant/methods/{id}',                          'MerchantController@getPaymentMethodsById'                          ],
+        'merchant_fetch_all_methods_internal'      => ['get',      'merchant/methods/all/{id}',                      'MerchantController@getAllPaymentMethodsById'                       ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_enable_internal'            => ['post',     'merchants/{id}/live/enable/internal',            'MerchantController@postLiveEnable'                                 ],
@@ -6757,6 +6758,8 @@ class Route
         '1cc_update_shipping_provider_config',
 
         'merchant_fetch_methods_internal',
+
+        'merchant_fetch_all_methods_internal',
 
         'terminal_sync_internal',
 
@@ -17823,6 +17826,10 @@ class Route
             'role_list_admins_internal',
             'payment_fetch_multiple_internal',
             'qr_code_merchant_create',
+        ],
+
+        'payment_methods' => [
+            'merchant_fetch_all_methods_internal',
         ],
 
         'pos_app' => [
