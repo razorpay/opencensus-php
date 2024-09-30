@@ -259,13 +259,7 @@ class Processor extends VirtualAccount\Processor
         // feature flag based call to Ledger service
         if ($this->virtualAccount->isBalanceTypeBanking() === true and $isCollectXBankTransferPayment === false) {
             if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) {
-
-                $ledgerResponse = $this->processLedgerForReverseShadow($bankTransfer);
-
-                if ($ledgerResponse != null and !$this->isLedgerReverseShadowLatestTxnBalanceExperimentEnable()) {
-
-                    (new Transaction\Core)->dispatchEventForLedgerTransactionCreated($ledgerResponse[Entity::ID], $this->merchant->getMerchantId());
-                }
+                $this->processLedgerForReverseShadow($bankTransfer);
             } else {
                 $this->processLedgerForShadow($bankTransfer);
             }
@@ -344,7 +338,6 @@ class Processor extends VirtualAccount\Processor
             $ledgerResponse = (new LedgerFundLoading)->createJournalEntry($ledgerPayload);
             $bankTransfer->setStatus(Status::PROCESSED);
             $this->repo->saveOrFail($bankTransfer);
-            return $ledgerResponse;
         } catch (\Throwable $ex) {
             // trace and ignore exception as it will be retries in async
             $this->trace->traceException(
@@ -357,7 +350,6 @@ class Processor extends VirtualAccount\Processor
                 ]
             );
         }
-        return null;
     }
 
     protected function sendEventForTransactionCreated(Entity $bankTransfer, $isCollectXPayment = false)
@@ -371,13 +363,6 @@ class Processor extends VirtualAccount\Processor
             if ($bankTransfer->isBalanceTypeBanking() === true) {
                 $this->dispatchEventForTransactionCreated($bankTransfer, $bankTransfer->transaction);
             }
-        }
-    }
-    public function dispatchEventForTransactionCreatedOnlyForMerchantInExperiment(Base\PublicEntity $bankTransfer, Transaction\Entity $transaction): void
-    {
-        if ($this->isLedgerReverseShadowLatestTxnBalanceExperimentEnable()) {
-
-            $this->dispatchEventForTransactionCreated($bankTransfer, $transaction);
         }
     }
 
@@ -395,16 +380,13 @@ class Processor extends VirtualAccount\Processor
     }
     public function dispatchEventForLedgerTransactionCreated(Base\PublicEntity $bankTransfer, string $txnId, string $merchantId)
     {
-        if($this->isLedgerReverseShadowLatestTxnBalanceExperimentEnable()) {
+        if ($bankTransfer->isBalanceTypeBanking() === true) {
+            $transactionCore = new Transaction\Core;
 
-            if ($bankTransfer->isBalanceTypeBanking() === true) {
-                $transactionCore = new Transaction\Core;
-
-                if ($this->isLiveMode() === true) {
-                    $transactionCore->dispatchEventForLedgerTransactionCreated($txnId, $merchantId);
-                } else {
-                    $transactionCore->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($txnId, $merchantId);
-                }
+            if ($this->isLiveMode() === true) {
+                $transactionCore->dispatchEventForLedgerTransactionCreated($txnId, $merchantId);
+            } else {
+                $transactionCore->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($txnId, $merchantId);
             }
         }
     }
@@ -1279,15 +1261,5 @@ class Processor extends VirtualAccount\Processor
         }
 
         return $terminal;
-    }
-    protected function isLedgerReverseShadowLatestTxnBalanceExperimentEnable(): bool
-    {
-        $ledgerReverseShadowLatTxnBalance = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE,
-            $this->mode);
-
-        return strtolower($ledgerReverseShadowLatTxnBalance) === 'on';
-
     }
 }

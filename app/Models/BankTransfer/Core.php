@@ -1239,7 +1239,7 @@ class Core extends Base\Core
                 });
 
                 // dispatch event for txn created
-                (new Processor())->dispatchEventForTransactionCreatedOnlyForMerchantInExperiment($bankTransfer, $txn);
+                (new Processor())->dispatchEventForTransactionCreated($bankTransfer, $txn);
                 return [
                     $bankTransfer->getPublicId(),
                     $txn->getPublicId(),
