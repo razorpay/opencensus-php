@@ -689,10 +689,12 @@ class Service extends Base\Service
         unset($input[DEConstants::IS_POS_DETAILS_SUBMITTED]);
 
         $this->saveMerchantEligibilityForCategoriesV3Revamp($merchantId, $input, $merchant);
+        
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-        $loggedInUserRole=$this->auth->getUserRole();
-
-        if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and  $loggedInUserRole != User\Role::RAZORPAY_SALES)
+        // Check if POS details have been submitted and merchant details are set.
+        // Additionally, skip the process if the merchant's signup campaign is 'assisted_onboarding'.
+        if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and  $userDeviceDetail->signup_campaign !== DDConstants::ASSISTED_ONBOARDING)
         {
             $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
 
@@ -700,14 +702,10 @@ class Service extends Base\Service
                 'pos_activation_flow' => $posActivationFlow
             ]);
 
-            //if l3 submission is not done by sales user then we should treat it as self serve merchant and create pos case and create online case as well if it was not created at l2 submission(only possible if l2 is submitted by sales user)
+            //if l3 submission is not done by sales user then we should create pos case
             // TODO: Maintain 'pos_submission' and 'pos_submitted_at' timestamps.
             // TODO: Implement 'pos_form_locked' flag.
             // TODO: Add validation to prevent edits to POS fields based on 'pos_form_locked' statu
-            if($merchantDetails->getActivationStatus() === null){
-                $input[Entity::ACTIVATION_FORM_MILESTONE] = DEConstants::L2_SUBMISSION;
-                $this->saveMerchantDetails($input, $merchant);
-            }
 
             if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
 

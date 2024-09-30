@@ -4094,6 +4094,22 @@ return [
         ],
     ],
 
+    'testShopDetailsSubmissionChangesForAssistedOnboardingOfOwnerRole' => [
+        'request'   => [
+            'content' => [
+                'is_pos_details_submitted' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'is_pos_details_submitted' => '1',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBlacklistActivationFlowEasyOnboarding' => [
         'request'   => [
             'content' => [
@@ -4131,7 +4147,7 @@ return [
                 'can_submit'   => true,
                 'submitted' => true,
                 'activation_form_milestone' => 'L2',
-                'activation_status' => 'under_review',
+                'activation_status' => null,
             ],
             'status_code' => 200,
         ],

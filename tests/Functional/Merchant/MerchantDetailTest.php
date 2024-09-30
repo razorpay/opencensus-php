@@ -5904,6 +5904,71 @@ Team Razorpay', '+911234567890');
         $this->startTest();
     }
 
+    public function testShopDetailsSubmissionChangesForAssistedOnboardingOfOwnerRole()
+    {
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+
+        // Ensure 'merchant_fetch_pos_activation_flow' is never called
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_fetch_pos_activation_flow';
+            })->never();
+
+
+        // Ensure 'merchant_pgos_update_activation_status' is never called
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_update_activation_status';
+            })->never();
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+        $merchantId = 'NBmMve28Nvwq12';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'          => FeatureConstants::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $salesUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $ezetapMerchantId,
+            'user_id' => $salesUser->getId()
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'owner');
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata'        => [
+                'service' => 'pgos'
+            ]
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['user_id']);
+
+        $this->startTest();
+    }
 
     public function testBlacklistActivationFlowEasyOnboarding()
     {

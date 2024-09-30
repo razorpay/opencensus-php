@@ -449,11 +449,12 @@ class Core extends Base\Core
                         'response'                    => $response,
                     ]);
 
-                    $loggedInUserRole = $this->app['basicauth']->getUserRole();
+                    $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-                    //if l2 submission is done by sales then mark milestone as l2 but not submit activation form and not create cmma case as well
-                    if($loggedInUserRole === UserRole::RAZORPAY_SALES and
-                       $this->canSubmit($input, $response, $activationFormMilestone) === true)
+                    // If the signup campaign is 'assisted_onboarding', mark the milestone as L2 and submitted as true.
+                   // In such cases, do not submit the activation form and do not create a CMMA case.
+                    if($userDeviceDetail->signup_campaign  === DDConstants::ASSISTED_ONBOARDING and
+                        $this->canSubmit($input, $response, $activationFormMilestone) === true)
                     {
                         $this->validateEmailVerificationIfApplicable($merchant);
                         // blacklisted merchant should not be allowed to submit l2 form
@@ -5372,15 +5373,6 @@ class Core extends Base\Core
             $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
             $merchant        = $merchantDetails->merchant;
             $this->setMerchantForInternalApi($merchant);
-
-            //pg submission
-            $hasBusinessWebsiteOrAppurls = $this->hasBusinessWebsiteOrAppUrls($merchant);
-            $hasSocialMediaUrls          = $this->hasSocialMediaUrls($merchant);
-            if ($hasBusinessWebsiteOrAppurls === true or $hasSocialMediaUrls === true)
-            {
-                $input[Entity::ACTIVATION_FORM_MILESTONE] = DEConstants::L2_SUBMISSION;
-                $this->saveMerchantDetails($input, $merchant);
-            }
 
             //pos submission
             $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
@@ -13704,30 +13696,6 @@ class Core extends Base\Core
 
     public function pushKafkaEventOnPOSActivationFormSubmit($merchant, $eventType): array
     {
-        try
-        {
-            // Update the signup campaign based on the case creation.
-            // The signup campaign will later be used to determine the case type when pushing case events to CMMA.
-            if ($eventType == DetailConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA)
-            {
-                $this->changeSignupCampaign(DeviceDetailConstants::EASY_ONBOARDING, $merchant);
-            }
-            else
-            {
-                if ($eventType == DetailConstants::POS_V2_ACTIVATION_FORM_SUBMISSION_KAFKA)
-                {
-                    $this->changeSignupCampaign(DeviceDetailConstants::ASSISTED_ONBOARDING, $merchant);
-                }
-            }
-        } catch (\Throwable $ex){
-            $this->trace->traceException(
-                $ex,
-                500,
-                TraceCode::POS_ACTIVATION_SINGUP_CAMPAIGN_UPDATE_FAILED,
-                [
-                    "singup_campaign" => DeviceDetailConstants::EASY_ONBOARDING,
-                ]);
-        }
         $kafkaActivationFormSubmissionEventData = $this->constructEventDataForCMMACase($merchant, $eventType);
 
         $activationFormSubmissionEventTopic = env(DEConstants::ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
