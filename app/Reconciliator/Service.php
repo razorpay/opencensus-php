@@ -844,7 +844,7 @@ class Service extends Base\Service
         $method = $payment->getMethod();
 
         if($method == Payment\Method::NETBANKING or $method == Payment\Method::WALLET
-            or $method == Payment\Method::CARDLESS_EMI or $method == Payment\Method::PAYLATER)
+            or $method == Payment\Method::CARDLESS_EMI or $method == Payment\Method::PAYLATER or $method == Payment\Method::EMANDATE)
         {
             return $this->updateNetbankingReconciliationData($input, $payment);
         }
