@@ -6,6 +6,10 @@ if [ "${JIRA_ISSUE_ID}" = "" ]
 then
   echo "Jira Id is not present for PR."
   exit 1
+elif [[ "${JIRA_ISSUE_ID}" != *lig* ]]
+  then
+  echo "Jira Id is not from the LIGHT Board."
+  exit 1
 else
   jira_issue_status=$(curl -s "${BASE_URL}/rest/api/2/issue/${JIRA_ISSUE_ID}?fields=status" --user "${USER_EMAIL}":"${API_TOKEN}" | jq .fields.status.name)
   echo "Server response is <$jira_issue_status>"
