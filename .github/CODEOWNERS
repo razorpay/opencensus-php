@@ -46,7 +46,7 @@ app/Models/Customer/Truecaller                         @razorpay/checkout-backen
 app/Models/Pricing/                                    @razorpay/pricing-team
 app/Models/Payout/                                     @razorpay/Payouts-core
 app/Models/Pricing/Payout.php                          @razorpay/Payouts-core
-app/Models/Reversal/                                   @razorpay/Payouts-core
+app/Models/Reversal/                                   @razorpay/Payouts-core @razorpay/enterprise-apps
 app/Models/Terminal/Sorters/                           @razorpay/TechRulesRouting
 app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRouting
 app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting

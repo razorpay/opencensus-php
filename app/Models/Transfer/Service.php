@@ -200,7 +200,6 @@ class Service extends Base\Service
     {
         try
         {
-
             $merchantId = $this->merchant->getId();
 
             $isExpEnabled = $this->isRouteRearchExpEnabled($merchantId, 'enabled');
