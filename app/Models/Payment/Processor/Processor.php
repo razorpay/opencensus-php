@@ -1134,6 +1134,14 @@ class Processor
         return $isOptimizerCFBFlow && $isInternalFlow && $isPaymentCreateAjaxRoute;
     }
 
+    private function inputCurrencyNotINR($input): bool{
+        if((empty($input['currency']) === false and
+            $input['currency'] !== Currency\Currency::INR)){
+            return true;
+        }
+        return false;
+    }
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -1657,6 +1665,9 @@ class Processor
                                             'token_id' => $input[Payment\Entity::TOKEN],
                                             'card_number' => $input[Payment\Entity::CARD],
                                         ]);
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     return true;
                                 }
 
@@ -1708,6 +1719,9 @@ class Processor
                                     {
                                         $input["cryptogram_source"] = "cps";
                                     }
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     return true;
                                 }
                                 else {
@@ -1716,6 +1730,9 @@ class Processor
                                     //modify input for cards
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::TOKEN] = $token->getId();
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     return true;
                                 }
                             }
@@ -1751,6 +1768,9 @@ class Processor
             // route all point payments requests via cps
             if (isset($input['card']['reward']) === true)
             {
+                if($this->inputCurrencyNotINR($input)){
+                    return false;
+                }
                 return true;
             }
 
@@ -1765,6 +1785,9 @@ class Processor
             if ($this->isExternalAltIdPayment($input)) {
                 $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
                 $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
+                if($this->inputCurrencyNotINR($input)){
+                    return false;
+                }
                 return true;
             }
 
@@ -7128,7 +7151,6 @@ class Processor
             }
         }
 
-       
         $offlineRefundSkipRoutes = ['scrooge_entities_fetch','refund_scrooge_payment_update','refund_fetch_discount','refund_verify_call','refund_gateway_call','refund_update_status'];
 
         $offlineCardSkipRoutes = ['payment_notify'];
