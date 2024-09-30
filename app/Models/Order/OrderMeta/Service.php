@@ -204,7 +204,7 @@ class Service extends \RZP\Models\Base\Service
             $result = (new OneClickCheckoutCore)->update1CcOrder($orderId, $orderMetaInput);
 
             try {
-                $this->app['magic_checkout_service_client']->sendRequest(self::UPDATE_ABANDONED_QUOTE_PATH, $input, Requests::POST);
+                $this->app['magic_checkout_service_client']->sendRequest(self::UPDATE_ABANDONED_QUOTE_PATH, ['order_id'=>$orderId, 'merchant_id'=>$this->merchant->getId()], Requests::POST);
             } catch (\Throwable $e) {
                 //just catching the exception so that UI gets success response as email would already been updated in RZP order
                 // even in cases where email is not updated in abandoned_quote of magento
