@@ -10266,6 +10266,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_ADDRESS_USAGE_ERROR                         = 'UPDATE_ADDRESS_USAGE_ERROR';
     const RESET_ORDER_REQUEST                                = 'RESET_ORDER_REQUEST';
     const RESET_ORDER_REQUEST_ERROR                          = 'RESET_ORDER_REQUEST_ERROR';
+    const UPDATE_EMAIL_ABANDONED_QUOTE_ERROR                 = 'UPDATE_EMAIL_ABANDONED_QUOTE_ERROR';
 
     const UPDATE_1CC_ORDER_NOTES_REQUEST                     = 'UPDATE_1CC_ORDER_NOTES_REQUEST';
     const UPDATE_1CC_ORDER_NOTES_REQUEST_ERROR               = 'UPDATE_1CC_ORDER_NOTES_REQUEST_ERROR';
