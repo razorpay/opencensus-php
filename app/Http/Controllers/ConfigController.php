@@ -122,4 +122,17 @@ class ConfigController extends Controller
         return ApiResponse::json($data);
     }
 
+    // createCheckoutConfigBulkInternal is a temporary internal route create specifically to create checkout configs in bulk
+    // a new endpoint is needed for this use-case, because existing bulk endpoint can only create same config for multiple
+    // merchants. but our use-case is to create different configs for different merchants. this is no longer needed
+    // after we cut off dual write from API monolith and only read from DCS
+    public function createCheckoutConfigBulkInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createCheckoutConfigInBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
 }
