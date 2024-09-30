@@ -283,7 +283,8 @@ class Core extends Base\Core
                 ]
             );
         }
-        else if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) and
+        else if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true or
+                  $payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
                 ($payment->isCaptured() === true))
         {
             // for async txn fill details, dispatch happens from inside worker

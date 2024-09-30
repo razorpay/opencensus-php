@@ -1086,7 +1086,8 @@ trait Capture
         try
         {
             if ((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)) or
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)) or
                 ($txn->isBalanceUpdated() === true))
             {
                 return;
@@ -1094,7 +1095,8 @@ trait Capture
 
             $asyncTxnEnabled = false;
 
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true or
+                $payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
                 $asyncTxnEnabled = true;
             }
@@ -1113,6 +1115,12 @@ trait Capture
                 ]);
 
             $asyncBalancePushedAt = time();
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                MerchantBalanceUpdateReverseShadowQueue::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return;
+            }
 
             if($this->pushedToMerchantsBasedBalanceUpdateQueue($input, $payment->getMerchantId(), $asyncBalancePushedAt) === true)
             {
@@ -2233,11 +2241,6 @@ trait Capture
             else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'Queue3'))
             {
                 MerchantBasedBalanceUpdateV3::dispatch($input, $this->mode, $asyncBalancePushedAt);
-                return true;
-            }
-            else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'QueueReverseShadow'))
-            {
-                MerchantBalanceUpdateReverseShadowQueue::dispatch($input, $this->mode, $asyncBalancePushedAt);
                 return true;
             }
         }

@@ -46,7 +46,8 @@ class Payment extends Base
 
         $this->repo->saveOrFail($this->txn);
 
-        if ($this->txn->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+        if ($this->txn->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false or
+            $this->txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
         {
             $this->fillSettledAtInfo();
         }
@@ -231,7 +232,8 @@ class Payment extends Base
 
     protected function shouldMoveTxnFillToAsync(): bool
     {
-        return ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true);
+        return ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) or
+            ($this->source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true);
     }
 
     protected function fillEmptyTxnFeesAndAmount()
