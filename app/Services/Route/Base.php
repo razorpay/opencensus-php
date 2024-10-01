@@ -2,9 +2,11 @@
 
 namespace RZP\Services\Route;
 
+use Razorpay\Edge\Passport\Passport;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Http\BasicAuth\BasicAuth;
 use \WpOrg\Requests\Response;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -14,6 +16,8 @@ use Razorpay\Trace\Logger as Trace;
 
 class Base
 {
+    protected $app;
+
     protected $trace;
 
     protected $config;
@@ -39,6 +43,11 @@ class Base
     const X_PASSPORT_JWT_V1     = 'X-Passport-JWT-V1';
     const PASSPORT_AUD          = 'route';
     const REQUEST_TIMEOUT       = 60;
+    const CONSUMER = 'consumer';
+    const PASSPORT = 'passport';
+    const NAME               = 'name';
+    const TYPE     = 'type';
+    const APP_USER_ID_HEADER = 'App-User-Id';
 
     /**
      *  Base constructor.
@@ -47,6 +56,8 @@ class Base
      */
     public function __construct($app)
     {
+        $this->app = $app;
+
         $this->trace   = $app['trace'];
 
         $this->config  = $app['config']->get('applications.route');
@@ -73,7 +84,7 @@ class Base
     {
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
-        $url = $this->baseUrl[$mode] . $endpoint;
+        $url = $this->baseUrl . $endpoint;
 
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
@@ -169,6 +180,8 @@ class Base
     {
         unset($request['options']['auth']);
 
+        unset($request['headers'][self::X_PASSPORT_JWT_V1]);
+
         $this->trace->info(TraceCode::ROUTE_MICROSERVICE_REQUEST, $request);
     }
 
@@ -253,9 +266,13 @@ class Base
                 'response_body' => $body,
             ]);
 
-            throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_ROUTE_SERVICE_FAILURE, null, [
-                'error'       => $response['error']['internal_error_code']
-            ]);
+            throw new Exception\ServerErrorException(
+                'Non 200 response code received from Route microservice',
+                ErrorCode::SERVER_ERROR_ROUTE_SERVICE_FAILURE,
+                [
+                    'error'  => $response['error']['internal_error_code']
+                ]
+            );
         }
     }
 
@@ -276,4 +293,49 @@ class Base
         $this->setCustomHeaders($customHeader);
     }
 
+    public function getHeadersWithJwt()
+    {
+        $jwt = $this->app['basicauth']->getPassportJwt($this->baseUrl);
+
+        /** @var BasicAuth $ba */
+        $ba = $this->app['basicauth'];
+
+        $headers = [];
+
+        if ($ba->isPrivilegeAuth() === true)
+        {
+            $passport = $ba->getPassport();
+
+            if (array_key_exists(self::CONSUMER, $passport) === true)
+            {
+                if ($passport[self::CONSUMER][self::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
+                {
+                    $this->trace->info(TraceCode::PASSPORT_EDIT_FOR_PRIVILEGE_AUTH_WITH_USER_CLAIMS,
+                        [
+                            self::PASSPORT => $ba->getPassport(),
+                        ]);
+
+                    $baTemp = clone $ba;
+
+                    $baTemp->setPassportConsumerClaims(BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION,
+                        $ba->getInternalApp(),
+                        true,
+                        [self::NAME => $ba->getInternalApp()]);
+
+                    $jwt = $baTemp->getPassportJwt($this->baseUrl);
+
+                    $headers[self::APP_USER_ID_HEADER] = $ba->getUser()->getId();
+                }
+            }
+        }
+
+        $headers[Passport::PASSPORT_JWT_V1] = $jwt;
+
+        return $headers;
+    }
+
+    public function getJwtTokenFromRequestHeader()
+    {
+        return Request::header('X-Passport-JWT-V1');
+    }
 }

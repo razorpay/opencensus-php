@@ -3,7 +3,10 @@
 namespace RZP\Models\Transfer;
 
 use Carbon\Carbon;
+use Neves\Events\TransactionalClosureEvent;
 use Razorpay\Trace\Logger;
+use RZP\Jobs\Order\OrderUpdate;
+use RZP\Jobs\Transfers\TransferUpdate;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Order;
@@ -442,25 +445,11 @@ class Repository extends Base\Repository
 
         if ($transfer->isExternal())
         {
-            try
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transfer)
             {
-                $params = $this->getUpdatableTransfersFields($transfer);
+                TransferUpdate::dispatchNow($transfer);
+            }));
 
-                $this->saveTransferViaRouteService($params);
-            }
-            catch (\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Logger::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-
-                throw $ex;
-            }
         }
         else
         {

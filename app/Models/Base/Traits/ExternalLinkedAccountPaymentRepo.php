@@ -25,7 +25,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return parent::findByPublicId($id, $connectionType);
+            return (new Payment\Repository())->findByPublicId($id, $connectionType);
         }
         catch (\Throwable $e) {}
 
@@ -51,9 +51,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
-
-            return $entity;
+            return (new Payment\Repository())->findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
         }
         catch (\Throwable $e) {}
 
@@ -66,9 +64,7 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        $entity =  $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
-
-        return $entity;
+        return $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
     }
 
     public function findByIdAndMerchant(
@@ -81,7 +77,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+            return (new Payment\Repository())->findByIdAndMerchant($id, $merchant, $params, $connectionType);
         }
         catch (\Throwable $e) {}
 
@@ -103,7 +99,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+            return (new Payment\Repository())->findByIdAndMerchantId($id, $merchantId, $connectionType);
         }
         catch (\Throwable $e) {}
 
@@ -125,7 +121,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+            return (new Payment\Repository())->findOrFailByPublicIdWithParams($id, $params, $connectionType);
         }
         catch (\Throwable $e) {}
 
@@ -147,7 +143,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return parent::findOrFailPublic($id, $columns, $connectionType);
+            return (new Payment\Repository())->findOrFailPublic($id, $columns, $connectionType);
         }
         catch (\Throwable $e) {}
 
@@ -169,7 +165,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return parent::findOrFail($id, $columns, $connectionType);
+            return (new Payment\Repository())->findOrFail($id, $columns, $connectionType);
         }
         catch (\Throwable $e) {}
 
@@ -191,7 +187,7 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return parent::findByTransferIdAndMerchant($transferId, $accountId, $relations, $connectionType);
+            return (new Payment\Repository())->findByTransferIdAndMerchant($transferId, $accountId, $relations, $connectionType);
         }
         catch (\Throwable $outerEx)
         {
@@ -213,26 +209,22 @@ trait ExternalLinkedAccountPaymentRepo
                         'function_name'     => __FUNCTION__
                     ]);
 
-                throw $outerEx;
             }
+
+            throw $outerEx;
         }
     }
 
     private function validateExternalFetchEnabled()
     {
-        if (app()->runningUnitTests() === true)
-        {
-            $keyName = Entity::getExternalConfigKeyName($this->entityName);
+        $keyName = Entity::getExternalConfigKeyName($this->entityName);
 
-            return (bool) ConfigKey::get($keyName, false);
-        }
-
-        return true;
+        return (bool) ConfigKey::get($keyName, false);
     }
 
     public function fetchExternalTransferTypePaymentById(string $id, $input=[]): Payment\Entity
     {
-        $class = Entity::getExternalRepoSingleton('transfer');
+        $class = Entity::getExternalRepoSingleton(Entity::PAYMENT_METHOD_TRANSFER);
 
         try
         {
@@ -279,7 +271,7 @@ trait ExternalLinkedAccountPaymentRepo
         string $accountId,
         $input=[]): Payment\Entity
     {
-        $class = Entity::getExternalRepoSingleton('payment_method_transfer');
+        $class = Entity::getExternalRepoSingleton(Entity::PAYMENT_METHOD_TRANSFER);
 
         try
         {
@@ -320,6 +312,33 @@ trait ExternalLinkedAccountPaymentRepo
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    public function getUpdatableLinkedAccountPaymentFields(Payment\Entity $payment)
+    {
+        $params = [];
+
+        $params[Payment\Entity::STATUS] = $payment->getStatus();
+
+        $params[Payment\Entity::AMOUNT_REFUNDED] = $payment->getAmountRefunded();
+
+        $params[Payment\Entity::ON_HOLD_UNTIL] = $payment->getOnHoldUntil();
+
+        $params[Payment\Entity::ON_HOLD] = $payment->getOnHold();
+
+        $params[Payment\Entity::TRANSACTION_ID] = $payment->getTransactionId();
+
+        $params[Payment\Entity::TRANSFER_ID] = $payment->getTransferId();
+
+        $params[Payment\Entity::REFUND_STATUS] = $payment->getRefundStatus();
+
+        $params[Payment\Entity::UPDATED_AT] = $payment->getUpdatedAt();
+
+        $params[Payment\Entity::ERROR_CODE] = $payment->getErrorCode();
+
+        $params['message'] = '';
+
+        return $params;
     }
 
     public function serializeForIndexingForExternal(PublicEntity $entity): array

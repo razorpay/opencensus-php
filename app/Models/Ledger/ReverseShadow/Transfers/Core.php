@@ -618,13 +618,22 @@ class Core extends Base\Core
             ]);
     }
 
-    public function createTransferTransactionFromLedgerJournal($journal, $transfer, $saveTransfer = true)
+    public function createTransferTransactionFromLedgerJournal($journal, $transfer)
     {
         $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
 
         $merchant = $transfer->merchant;
 
-        $txn->sourceAssociate($transfer);
+        if ($transfer->isExternal() === false)
+        {
+            $txn->sourceAssociate($transfer);
+        }
+        else
+        {
+            $txn->setEntityId($transfer->getId());
+
+            $txn->setType($transfer->getEntity());
+        }
 
         $txn->merchant()->associate($merchant);
 
@@ -686,7 +695,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        if ($saveTransfer === true)
+        if ($transfer->isExternal() === false)
         {
             $this->repo->saveOrFail($transfer);
         }
@@ -702,13 +711,19 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createTransferPaymentTransactionFromLedgerJournal($journal, $transferPayment, $savePayment = true)
+    public function createTransferPaymentTransactionFromLedgerJournal($journal, $transferPayment)
     {
         $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
 
-        if ($transferPayment->hasTransaction() === true)
+        if ($transferPayment->hasTransaction() === true && $transferPayment->isExternal() === false)
         {
             $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($transferPayment);
+        }
+        else if ($transferPayment->isExternal() === true)
+        {
+            $txn->setEntityId($transferPayment->getId());
+
+            $txn->setType($transferPayment->getEntity());
         }
         else
         {
@@ -774,7 +789,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        if ($savePayment === true)
+        if ($transferPayment->isExternal() === false)
         {
             $this->repo->saveOrFail($transferPayment);
         }

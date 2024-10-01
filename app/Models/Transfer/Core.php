@@ -356,54 +356,56 @@ class Core extends Base\Core
 
         unset($transferInput[Order\Entity::PUBLIC_KEY]);
 
-        foreach ($transferInput as $input)
-        {
-            $input[Entity::STATUS] = Status::CREATED;
-
-            $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
-
-            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
-
-            if (isset($input[Entity::ACCOUNT_CODE]) === true)
+        $this->mutex->acquireAndReleaseStrict('trf_' . $order->getId(), function () use ($parentMerchant, $transfers, $transferInput, $order) {
+            foreach ($transferInput as $input)
             {
-                $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($input[Entity::ACCOUNT_CODE], $this->merchant->getId());
+                $input[Entity::STATUS] = Status::CREATED;
 
-                $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
-            }
+                $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
 
-            if (isset($input[ToType::BALANCE]) === true)
-            {
-                $description = 'Transfer for ' . $input[ToType::BALANCE];
-                if (isset($order->getNotes()['description']) === true) {
-                     $description = $order->getNotes()['description'];
+                $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
+
+                if (isset($input[Entity::ACCOUNT_CODE]) === true)
+                {
+                    $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($input[Entity::ACCOUNT_CODE], $this->merchant->getId());
+
+                    $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
                 }
-                $input[Entity::NOTES]['description'] = $description;
-                $input[Entity::NOTES]['type'] = $input[ToType::BALANCE];
-                $to = $this->repo
-                    ->balance
-                    ->getMerchantBalance($this->merchant);
+
+                if (isset($input[ToType::BALANCE]) === true)
+                {
+                    $description = 'Transfer for ' . $input[ToType::BALANCE];
+                    if (isset($order->getNotes()['description']) === true) {
+                        $description = $order->getNotes()['description'];
+                    }
+                    $input[Entity::NOTES]['description'] = $description;
+                    $input[Entity::NOTES]['type'] = $input[ToType::BALANCE];
+                    $to = $this->repo
+                        ->balance
+                        ->getMerchantBalance($this->merchant);
+                }
+                else if (isset($input[ToType::ACCOUNT]) === true)
+                {
+                    $to = $this->repo->account->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $parentMerchant);
+
+                    // extracts linked account notes and validates.
+                    $this->getLinkedAccountNotes($input);
+                }
+                $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function() use ($order, $to, $input)
+                {
+                    return $this->buildTransferEntity($order, $to, $input, $this->merchant);
+                });
+
+                $this->repo->transfer->saveOrFail($transfer);
+
+                if($this->isValidPlatformTransfer() === true)
+                {
+                    (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
+                }
+
+                $transfers->push($transfer->toArrayPublic());
             }
-            else if (isset($input[ToType::ACCOUNT]) === true)
-            {
-                $to = $this->repo->account->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $parentMerchant);
-
-                // extracts linked account notes and validates.
-                $this->getLinkedAccountNotes($input);
-            }
-            $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function() use ($order, $to, $input)
-            {
-                return $this->buildTransferEntity($order, $to, $input, $this->merchant);
-            });
-
-            $this->repo->transfer->saveOrFail($transfer);
-
-            if($this->isValidPlatformTransfer() === true)
-            {
-                (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
-            }
-
-            $transfers->push($transfer->toArrayPublic());
-        }
+        }, 900, ErrorCode::BAD_REQUEST_TRANSFER_TXN_CREATION_PROCESS_IN_PROGRESS);
 
         return $transfers;
     }
@@ -658,7 +660,7 @@ class Core extends Base\Core
             ]);
 
         $payment = $this->repo
-                        ->payment
+                        ->payment_method_transfer
                         ->findByTransferIdAndMerchant(
                             $transfer->getId(),
                             $transfer->getToId());
@@ -1897,9 +1899,9 @@ class Core extends Base\Core
 
                     $transfer = $this->repo->transfer->findByPublicId($transferPublicId);
 
-                    $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+                    $transferPayment = $this->repo->payment_method_transfer->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
-                    $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+                    $transferPayment = $this->repo->payment_method_transfer->findOrFail($transferPayment->getId());
 
                     $oldTransfer = clone $transfer;
 
@@ -2311,7 +2313,7 @@ class Core extends Base\Core
     {
         try
         {
-            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+            $transferPayment = $this->repo->payment_method_transfer->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
         }
         catch (\Exception $ex)
         {
@@ -2403,20 +2405,20 @@ class Core extends Base\Core
 
         [$creditJournal, ] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getToId());
 
-        [, $debitJournal] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getId());
+        [, $debitJournal] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getMerchantId());
 
         $this->repo->transaction(
             function () use ($transfer, $debitJournal, $creditJournal, $transferJournalId, $paymentJournalId) {
-                $transferPayment = $this->repo->payment->findByTransferIdAndMerchant(
+                $transferPayment = $this->repo->payment_method_transfer->findByTransferIdAndMerchant(
                     $transfer->getId(), $transfer->getToId());
 
                 $reverseShadowCore = new ReverseShadowTransfersCore();
 
                 $transferTxn = $reverseShadowCore->createTransferTransactionFromLedgerJournal(
-                    $debitJournal, $transfer, false);
+                    $debitJournal, $transfer);
 
                 $transferPaymentTxn = $reverseShadowCore->createTransferPaymentTransactionFromLedgerJournal(
-                    $creditJournal, $transferPayment, false);
+                    $creditJournal, $transferPayment);
 
                 if ($transferJournalId !== $transferTxn->getId())
                 {

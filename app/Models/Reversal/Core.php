@@ -106,7 +106,16 @@ class Core extends Base\Core
 
         $reversal->merchant()->associate($merchant);
 
-        $reversal->entity()->associate($transfer);
+        if ($transfer->isExternal() === false)
+        {
+            $reversal->entity()->associate($transfer);
+        }
+        else
+        {
+            $reversal->setEntityId($transfer->getId());
+
+            $reversal->setEntityType($transfer->getEntity());
+        }
 
         $reversal->initiator()->associate($initiator);
 
@@ -162,7 +171,7 @@ class Core extends Base\Core
         (new Validator)->validateInitiatorForReversal($transfer, $initiator);
 
         $transferPayment = $this->repo
-            ->payment
+            ->payment_method_transfer
             ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
         $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
@@ -200,7 +209,7 @@ class Core extends Base\Core
             $transfer->getId(),
             function() use ($transfer, $input, $merchant, $initiator)
             {
-                $this->repo->reload($transfer);
+                $transfer = $this->repo->transfer->findOrFail($transfer->getId());
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
@@ -359,7 +368,7 @@ class Core extends Base\Core
             $transfer->getId(),
             function() use ($transfer, $input, $merchant, $initiator)
             {
-                $this->repo->reload($transfer);
+                $transfer = $this->repo->transfer->findOrFail($transfer->getId());
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
@@ -458,21 +467,21 @@ class Core extends Base\Core
 
                             // compensatory action in case of failure
                             $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
-                            
+
                             $variant = App::getFacadeRoot()->razorx->getTreatment(
                                 UniqueIdEntity::generateUniqueId(),
                                 Merchant\RazorxTreatment::TRANSFER_REVERSALS_VIA_REVERSE_SHADOW,
                                 $this->mode
                             );
-                    
+
                             $isExperimentEnabled = ($variant === 'on');
-                    
+
                             $this->trace->info(TraceCode::TRANSFER_REVERSALS_VIA_REVERSE_SHADOW,
                                 [
                                     'merchant'               => $transfer->merchant->getId(),
                                     'isExperimentEnabled'    => $isExperimentEnabled,
                                 ]);
-                            
+
                             if (($isExperimentEnabled) === true and ($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
                             {
                                 //rollback source payment with refunded amount. Transfer payment will get rolled abck due to txn block not committed earlier.

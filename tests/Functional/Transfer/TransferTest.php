@@ -3511,9 +3511,19 @@ class TransferTest extends TestCase
         $this->assertArraySelectiveEquals($expected, $response);
     }
 
+    public function testExternalTransferRepoFindOrFailPublic()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $transfer = $repo->transfer->findOrFailPublic('trf_abcdefg1234567');
+
+        $this->assertEquals('abcdefg1234567', $transfer->getId());
+    }
+
     public function testExternalRepoPaymentMethodTransferFetch()
     {
-        //
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
 
         $repo = App::getFacadeRoot()['repo'];
@@ -3532,6 +3542,8 @@ class TransferTest extends TestCase
         $repo = App::getFacadeRoot()['repo'];
 
         $payment = (new Payment());
+
+        $payment->setId('P2aV1cskaPaNf1');
 
         $payment->setMethod('transfer');
 

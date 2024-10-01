@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Admin\ConfigKey;
@@ -42,6 +43,15 @@ trait ExternalRepo
 
             try
             {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
                 return parent::findByPublicId($id, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -60,6 +70,15 @@ trait ExternalRepo
                 if (Entity::validateExternalRepoEntity($this->entityName) === true and $this->validateExternalFetchEnabled() === true )
                 {
                     return $this->fetchExternalEntity($id);
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
             catch (\Throwable $e) {}
@@ -91,6 +110,15 @@ trait ExternalRepo
 
             try
             {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
                 $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
 
                 $class = Entity::getExternalRepoSingleton($this->entity);
@@ -120,6 +148,15 @@ trait ExternalRepo
                 if ($this->validateExternalFetchEnabled() === true)
                 {
                     return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
             catch (\Throwable $e) {}
@@ -157,6 +194,15 @@ trait ExternalRepo
 
             try
             {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
                 return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -174,6 +220,15 @@ trait ExternalRepo
                 if ($this->validateExternalFetchEnabled() === true)
                 {
                     return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
             catch (\Throwable $e) {}
@@ -201,6 +256,15 @@ trait ExternalRepo
 
             try
             {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
                 return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -218,6 +282,15 @@ trait ExternalRepo
                 if ($this->validateExternalFetchEnabled() === true)
                 {
                     return $this->fetchExternalEntity($id, $merchantId);
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
             catch (\Throwable $e) {}
@@ -245,6 +318,15 @@ trait ExternalRepo
 
             try
             {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
                 return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -262,6 +344,15 @@ trait ExternalRepo
                 if ($this->validateExternalFetchEnabled() === true)
                 {
                     return $this->fetchExternalEntity($id, "", $params);
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
             catch (\Throwable $e) {}
@@ -283,6 +374,15 @@ trait ExternalRepo
                 if ($this->validateExternalFetchEnabled() === true)
                 {
                     return $this->fetchExternalEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
             catch (\Throwable $e) {}
@@ -334,6 +434,15 @@ trait ExternalRepo
 
             try
             {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
                 return parent::findOrFail($id, $columns, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -351,6 +460,15 @@ trait ExternalRepo
                 if ($this->validateExternalFetchEnabled() === true)
                 {
                     return $this->fetchExternalEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
             catch (\Throwable $e) {}
@@ -384,6 +502,18 @@ trait ExternalRepo
         }
 
         return true;
+    }
+
+    private function validateExternalFetchEnabledForLaPayment()
+    {
+        if ($this->entity !== Entity::PAYMENT)
+        {
+            return false;
+        }
+
+        $keyName = Entity::getExternalConfigKeyName(EntityConstants::PAYMENT_METHOD_TRANSFER);
+
+        return (bool) ConfigKey::get($keyName, false);
     }
 
     private function fetchExternalEntity($id, $merchantId = '', $input = [])
@@ -422,6 +552,52 @@ trait ExternalRepo
         $data = [
             'model' => $this->entityName,
             'attributes' => $id,
+            'operation' => 'find'
+        ];
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    private function fetchExternalLinkedAccountPaymentEntity($id, $merchantId = '', $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton('transfer');
+
+        $id =  Payment\Entity::silentlyStripSign($id);
+
+        try
+        {
+            $entity = $class->fetchPaymentById($id);
+
+            if (empty($entity) === false)
+            {
+                $entity->setExternal(true);
+
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity;
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data' => $e->getMessage()
+                ]);
+        }
+
+        $data = [
+            'model' => $this->entityName,
+            'attributes' => [
+                'id'       => $id,
+                'input'    => $input,
+            ],
             'operation' => 'find'
         ];
 

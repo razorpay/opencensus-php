@@ -3,12 +3,12 @@
 namespace RZP\Models\Base\Traits;
 
 use App;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
-use RZP\Models\Merchant;
+use RZP\Jobs\Transfers\PaymentUpdate;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 
 trait ExternalCore
@@ -17,7 +17,10 @@ trait ExternalCore
     {
         if ($entity->getEntity() === Entity::PAYMENT && $entity->hasTransfer())
         {
-            $this->savePaymentViaRouteService($entity);
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($entity)
+            {
+                PaymentUpdate::dispatchNow($entity);
+            }));
 
             return;
         }
@@ -53,34 +56,6 @@ trait ExternalCore
 
             throw $e;
         }
-
-    }
-
-    public function savePaymentViaRouteService($params)
-    {
-        $class = Entity::getExternalRepoSingleton(Entity::TRANSFER);
-
-        try
-        {
-            return $class->saveApiPayment($params);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
-                [
-                    'data'        => $e->getMessage(),
-                ]);
-        }
-
-        $data = [
-            'model'      => $this->entityName,
-            'operation'  => 'savePaymentViaRouteService'
-        ];
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 }
+

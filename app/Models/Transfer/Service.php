@@ -12,6 +12,7 @@ use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Models\Key;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -208,6 +209,14 @@ class Service extends Base\Service
             {
                 // make request to micro service
                 $resp = App::getFacadeRoot()['route']->createDirectTransfer($input);
+
+                $this->trace->info(
+                    TraceCode::DIRECT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
+                    [
+                        'input'      => $input,
+                        'response'   => $resp,
+                    ]
+                );
 
                 return $resp;
             }

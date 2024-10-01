@@ -56,6 +56,44 @@ trait ExternalTransferRepo
         }
     }
 
+    public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null)
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            return parent::findOrFailPublic($id, $columns, $connectionType);
+        }
+        catch (\Throwable $e)
+        {
+            try
+            {
+                if ($this->validateIfExternalFetchIsEnabledForTransfer() and
+                    (EntityConstants::validateExternalRepoEntity($this->entityName) === true))
+                {
+                    Transfer\Entity::stripSignWithoutValidation($id);
+
+                    return $this->fetchExternalTransfer($id);
+                }
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
+                    [
+                        'exception_message' => $ex->getMessage(),
+                        'function_name'     => __FUNCTION__
+                    ]);
+            }
+
+            // Throw original exception
+            throw $e;
+        }
+    }
+
+
     public function findByPublicId($id, string $connectionType = null)
     {
         $this->entityName = $this->entity;
@@ -209,42 +247,6 @@ trait ExternalTransferRepo
         }
     }
 
-    public function saveOrFail(Transfer\Entity $transfer, array $options = array())
-    {
-        if (($transfer !== null)
-            and ($transfer->isExternal() === true)
-            and ($this->validateIfExternalFetchIsEnabledForTransfer() === true))
-        {
-            try
-            {
-                $this->entityName = $this->entity;
-
-                if (EntityConstants::validateExternalRepoEntity($this->entityName) === true)
-                {
-                    $params = $this->getUpdatableTransfersFields($transfer);
-
-                    $this->saveTransferViaRouteService($params);
-                }
-
-                return;
-            }
-            catch (\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-                throw $ex;
-            }
-        }
-
-        parent::saveOrFail($transfer, $options);
-    }
-
     protected function fetchExternalTransfer($transferId, $queryParams=[])
     {
         $class = EntityConstants::getExternalRepoSingleton($this->entity);
@@ -282,13 +284,13 @@ trait ExternalTransferRepo
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 
-    protected function saveTransferViaRouteService($params)
+    protected function saveTransferViaRouteService($transferId, $params)
     {
         $class = EntityConstants::getExternalRepoSingleton($this->entity);
 
         try
         {
-            return $class->saveApiTransfer($params);
+            return $class->saveApiTransfer($transferId, $params);
         }
         catch (\Throwable $e)
         {
@@ -313,21 +315,16 @@ trait ExternalTransferRepo
 
     protected function validateIfExternalFetchIsEnabledForTransfer()
     {
-        if (app()->runningUnitTests() === true)
-        {
-            $keyName = EntityConstants::getExternalConfigKeyName($this->entityName);
+        $keyName = EntityConstants::getExternalConfigKeyName($this->entityName);
 
-            return (bool) ConfigKey::get($keyName, false);
-        }
-
-        return true;
+        return (bool) ConfigKey::get($keyName, false);
     }
 
-    protected function getUpdatableTransfersFields($transfer)
+    public function getUpdatableTransfersFields($transfer)
     {
         $params = [];
 
-        $params[Transfer\Entity::ID] = $transfer->getId();
+//        $params[Transfer\Entity::ID] = $transfer->getId();
 
         $params[Transfer\Entity::STATUS] = $transfer->getStatus();
 

@@ -3,6 +3,7 @@
 namespace RZP\Services\Route;
 
 use App;
+use Razorpay\Edge\Passport\Passport;
 use RZP\Exception;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
@@ -24,7 +25,9 @@ class Api extends Base
      */
     public function createDirectTransfer(array $input) : array
     {
-        $this->addPassportToken();
+        $jwt = $this->getJwtTokenFromRequestHeader();
+
+        $this->setCustomHeaders([Passport::PASSPORT_JWT_V1 => $jwt]);
 
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
@@ -81,7 +84,7 @@ class Api extends Base
 
         $response = $this->sendRequest($endpoint, Requests::GET);
 
-        return $response;
+        return  $response['payment'];
     }
 
     /**
@@ -112,7 +115,7 @@ class Api extends Base
 
         $response = $this->sendRequest($endpoint, Requests::GET);
 
-        return $response;
+        return $response['payment'];
     }
 
     /**
@@ -120,9 +123,9 @@ class Api extends Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function saveApiTransfer(array $input) : array
+    public function saveApiTransfer(string $transferId, array $input) : array
     {
-        $endpoint = Constant::SAVE_API_TRANSFER_ENDPOINT;
+        $endpoint = sprintf(Constant::SAVE_API_TRANSFER_ENDPOINT, $transferId);
 
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }
@@ -132,9 +135,9 @@ class Api extends Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function saveApiPayment(array $input) : array
+    public function saveApiPayment(string $paymentId, array $input) : array
     {
-        $endpoint = Constant::SAVE_API_PAYMENT_ENDPOINT;
+        $endpoint = sprintf(Constant::SAVE_API_PAYMENT_ENDPOINT, $paymentId);
 
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }

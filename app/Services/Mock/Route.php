@@ -46,7 +46,7 @@ class Route extends BaseRoute
         ];
     }
 
-    public function saveApiPayment($input): array
+    public function saveApiPayment(string $paymentId, array $input): array
     {
         return [
 
