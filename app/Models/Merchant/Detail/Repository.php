@@ -912,7 +912,12 @@ class Repository extends Base\Repository
         $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
         $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
 
-        $dbQuery = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        }
+
+        $dbQuery = $query
                         ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
                         ->select($merchantDetailMerchantId)
                         ->where($accessMapsEntityOwnerId, $partnerMerchantId)
