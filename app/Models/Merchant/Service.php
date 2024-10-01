@@ -912,7 +912,9 @@ class Service extends Base\Service
             throw $e;
         }
 
-        $this->repo->reload($linkedAccount);
+        if($linkedAccount !=null) {
+            $linkedAccount->reload();
+        }
 
         $accountStatus = $merchantDetailCore->getCombinedActivationStatusForLinkedAccounts($linkedAccount->merchantDetail);
 
@@ -1020,7 +1022,9 @@ class Service extends Base\Service
                         throw $e;
                     }
 
-                    $this->repo->reload($linkedAccount);
+                    if($linkedAccount !=null) {
+                        $linkedAccount->reload();
+                    }
 
                     $accountStatus = $merchantDetailCore->getCombinedActivationStatusForLinkedAccounts($linkedAccount->merchantDetail);
 
