@@ -2001,11 +2001,11 @@ class Service extends Base\Service
 
         $response = $this->app->mozart->sendMozartRequest('payments', Constants\Entity::CURRENCY_CLOUD, 'get_sender_detail', $request);
 
-        $payment = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
+        $payments = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
 
         return [
             'success' => 'true',
-            'payment_id' => $payment->getId(),
+            'payment_ids' => array_pluck($payments, 'id'),
         ];
     }
 

@@ -121,6 +121,30 @@ return [
         ]
     ],
 
+    'testSplitPaymentsForCurrencyCloud' => [
+        'request' => [
+            'url' => '/international/virtual_accounts/payment/create',
+            'method' => 'post',
+            'headers' => [
+                'notification_type' => 'cash_manager_transaction_notification'
+            ],
+            'content' => [
+                'id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                'account_id' => '15b78101-0142-44a1-9758-8f7262429e9b',
+                'currency' => 'USD',
+                'amount' => '32000',
+                'related_entity_type' => 'inbound_funds',
+                'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                'related_entity_short_reference' => 'IF-20230609-GFOTB9'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
     'testCashManagerTransactionNotificationForCurrencyCloudForFPS' => [
         'request' => [
             'url' => '/international/virtual_accounts/payment/create',
