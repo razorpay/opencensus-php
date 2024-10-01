@@ -4232,7 +4232,7 @@ class Service extends Base\Service
 
         $response = [];
 
-        $transaction = $this->repo->transaction->findByEntityIdWithoutMerchant($input[RefundConstants::REFUND_ID]);
+        $transaction = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($input[RefundConstants::REFUND_ID]);
 
         if (empty($transaction) == true) {
             $error_data = [];

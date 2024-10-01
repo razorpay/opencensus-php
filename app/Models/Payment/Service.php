@@ -8884,22 +8884,7 @@ class Service extends Base\Service
             return false;
         }
 
-        $variant = \App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            self::TRANSACTION_ON_HOLD_WRITE_REMOVAL,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::TRANSACTION_ON_HOLD_WRITE_REMOVAL_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "payment"
-            ]);
-
-        return $isExperimentEnabled;
+        return true;
     }
 
     /** showMarkupExperimentEnabled(string $merchantId string $network) checks

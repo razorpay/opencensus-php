@@ -87,6 +87,8 @@ class Service extends Base\Service
             ]
         );
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         if(isset($input['rearch_flow']) === true && $input['rearch_flow'] === true){
             return (new Processor)->createSettlementEntryForRearch($input);
         }
@@ -1080,6 +1082,9 @@ class Service extends Base\Service
 
     public function getSettlementTransactionsSourceDetails($id, $input)
     {
+        //enabling context to remove alerts for these as fetched from tidb
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
         $shadow = $this->app->razorx->getTreatment($experimentVariable,
@@ -1402,6 +1407,10 @@ class Service extends Base\Service
 
     public function getSettlementSourceDetails($input)
     {
+
+        // enabling context to remve from metric, fetched from tidb
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         // Maps the transaction source to the entities to be fetched for it
         $txnToRelationFetchMap = [
             // Maps transaction source to entities that need to be fetched
@@ -1580,6 +1589,9 @@ class Service extends Base\Service
 
     public function settlementTimeline(array $input) : array
     {
+        // fetched from tidb or nss, enabling dual write context to remove from metric
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
         $shadow = $this->app->razorx->getTreatment($experimentVariable,

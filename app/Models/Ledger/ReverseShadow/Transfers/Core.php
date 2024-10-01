@@ -263,6 +263,18 @@ class Core extends Base\Core
 
         $creditJournal = reset($filteredCreditJournal);
 
+
+        // dual write beginning and nss to push
+        $runningInQueue = app()->runningInQueue();
+        if ($runningInQueue === true)
+        {
+            app('worker.ctx')->setLedgerDualWriteFlow(true);
+        }
+        else
+        {
+            app('request.ctx')->setLedgerDualWriteFlow(true);
+        }
+
         // create txns without balance update and dispatch for settlement if experiment is enabled
         // balance update is done asynchronously via Kafka for sync journal creates
         $this->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
@@ -584,6 +596,7 @@ class Core extends Base\Core
 
     public function createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal)
     {
+
         $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
         $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
