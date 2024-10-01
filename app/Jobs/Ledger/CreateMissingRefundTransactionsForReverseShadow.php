@@ -78,6 +78,10 @@ class CreateMissingRefundTransactionsForReverseShadow extends Job
         {
             throw(new \Exception("reverse shadow not enabled"));
         }
+        else
+        {
+            app('worker.ctx')->setLedgerDualWriteFlow(true);
+        }
 
         try
         {

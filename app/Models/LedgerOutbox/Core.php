@@ -1826,6 +1826,18 @@ class Core extends Base\Core
         {
             throw(new \Exception("reverse shadow not enabled"));
         }
+        else
+        {
+            $runningInQueue = app()->runningInQueue();
+            if ($runningInQueue === true)
+            {
+                app('worker.ctx')->setLedgerDualWriteFlow(true);
+            }
+            else
+            {
+                app('request.ctx')->setLedgerDualWriteFlow(true);
+            }
+        }
 
         try
         {
