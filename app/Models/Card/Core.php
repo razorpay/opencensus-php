@@ -669,14 +669,24 @@ class Core extends Base\Core
         if ($card->isVisa() && boolval($input[Card\Entity::TOKENISED]) === true
             && empty($input[Card\Entity::CVV]) === true) {
 
-            $input['cvv'] = '123';
-
-            $this->trace->info(
-                TraceCode::CVV_OPTIONAL,
-                [
-                    'message'       => 'Setting cvv to dummy value',
-                ]
-            );
+            $splitzMerchantResult = $this->getVisaCVVLessSplitzResponse();
+            if (strtolower($splitzMerchantResult) === 'enable') {
+                $input['cvv'] = '';
+                $this->trace->info(
+                    TraceCode::CVV_OPTIONAL,
+                    [
+                        'message'       => 'Setting cvv to empty value',
+                    ]
+                );
+            }else {
+                $input['cvv'] = '123';
+                $this->trace->info(
+                    TraceCode::CVV_OPTIONAL,
+                    [
+                        'message'       => 'Setting cvv to dummy value',
+                    ]
+                );
+            }
         }
 
         return array_merge(
@@ -1227,7 +1237,7 @@ class Core extends Base\Core
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             CARD\Entity::IS_CVV_OPTIONAL        => false,
-            Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::CVV                    => $input['card']['cvv'] ?? "",
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
@@ -1263,14 +1273,24 @@ class Core extends Base\Core
             && boolval($input[Card\Entity::TOKENISED]) === true
             && empty($input[Card\Entity::CVV]) === true) {
 
-            $input[Card\Entity::CVV ] = "123";
-
-            $this->trace->info(
-                TraceCode::CVV_OPTIONAL,
-                [
-                    'message'       => 'Setting cvv to dummy value',
-                ]
-            );
+            $splitzMerchantResult = $this->getVisaCVVLessSplitzResponse();
+            if (strtolower($splitzMerchantResult) === 'enable') {
+                $input['cvv'] = '';
+                $this->trace->info(
+                    TraceCode::CVV_OPTIONAL,
+                    [
+                        'message'       => 'Setting cvv to empty value',
+                    ]
+                );
+            }else {
+                $input['cvv'] = '123';
+                $this->trace->info(
+                    TraceCode::CVV_OPTIONAL,
+                    [
+                        'message'       => 'Setting cvv to dummy value',
+                    ]
+                );
+            }
         }
 
         if ($card->getVault() === Card\Vault::AXIS || ($card->getVault() === Card\Vault::PROVIDERS && $cryptogram === null && $card->getIssuer() === Card\Issuer::UTIB)) {
@@ -1860,5 +1880,20 @@ class Core extends Base\Core
         array_push($expiry_array, (int) $expiry_month);
         return $expiry_array;
 
+    }
+
+    public function getVisaCVVLessSplitzResponse()
+    {
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.visa_cvv_less_experiment'),
+            'request_data'  => json_encode(
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                ]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 }

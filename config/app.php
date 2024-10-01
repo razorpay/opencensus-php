@@ -949,7 +949,7 @@ return array(
     'submerchant_prefill_login_exp_id' => env('SUBMERCHANT_PREFILL_LOGIN_EXP_ID'),
 
     'phantom_prefill_contact_number_exp_id' => env('PHANTOM_PREFILL_CONTACT_NUMBER_EXP_ID'),
-    
+
     'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
 
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
@@ -1013,10 +1013,13 @@ return array(
     'api_stork_banking_mail_reset_password_id' => env('STORK_BANKING_MAIL_RESET_PASSWORD_EXPERIMENT_ID'),
 
     'ups_unexpected_payment_experiment_id' => env('UPS_UNEXPECTED_PAYMENT_EXPERIMENT_ID'),
-  
+
     'alt_id-fallback_api' => env('ALT_ID_FALLBACK_API'),
 
     'route_rearch_exp_id' => env('ROUTE_REARCH_EXP_ID'),
 
-    'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA')
+    'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),
+
+    'visa_cvv_less_experiment' => env('VISA_CVV_LESS_EXPERIMENT'),
+
 );
