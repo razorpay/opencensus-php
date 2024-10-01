@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY               = 'currency';
     const BASE_AMOUNT            = 'base_amount';
     const IS_REVERSAL            = 'is_reversal';
+    const TAX                    = 'tax';
 
     protected $fillable = [
         self::AMOUNT,
@@ -25,15 +26,18 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BASE_AMOUNT,
         self::IS_REVERSAL,
+        self::TAX,
     ];
 
     protected $casts = [
+        self::TAX              => 'int',
         self::AMOUNT           => 'int',
         self::BASE_AMOUNT      => 'int',
         self::IS_REVERSAL      => 'bool',
     ];
 
     protected $amounts = [
+        self::TAX,
         self::AMOUNT,
         self::BASE_AMOUNT,
     ];
@@ -51,6 +55,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
     }
 
     public function getBaseAmount()

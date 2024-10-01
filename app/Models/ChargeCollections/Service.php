@@ -16,6 +16,8 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('create_internal_transaction', $input);
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $entityId = $input[Constants::ENTITY_ID];
 
         return $this->app['api.mutex']->acquireAndRelease($entityId, function () use ($input) {
@@ -41,6 +43,7 @@ class Service extends Base\Service
                     Entity::AMOUNT      => $input[Constants::AMOUNT],
                     Entity::MERCHANT_ID => $input[Constants::MERCHANT_ID],
                     Entity::IS_REVERSAL => $input[Constants::IS_REVERSAL],
+                    Entity::TAX         => $input[Constants::TAX],
                 ];
                 $charge->fill($chargeInput);
                 $charge->merchant()->associate($merchant);

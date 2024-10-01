@@ -682,6 +682,28 @@ return [
     'testTransactionsBulkUpdateBalanceIdLimitTest' => [
     ],
 
+    'testProductChargeTransactionDualWrite' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'entity_id' => 'P3L0OYRyqW4wA2',
+                'amount' => 11800,
+                'journal_id' => 'P3L2TtUJO4VUl7',
+                'currency' => 'INR',
+                'tax' => 1800,
+            ],
+            'url'    => '/charge_collections/internal_transaction',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'response' => [
+                    'id' => 'txn_P3L2TtUJO4VUl7',
+                ],
+            ],
+        ],
+    ],
+
     'testPaymentAuthorizedTransactionCreateAfterCaptureTransactionsCreateInternal' => [
         'request' => [
             'content' => [

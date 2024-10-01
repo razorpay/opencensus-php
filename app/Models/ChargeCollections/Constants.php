@@ -10,6 +10,7 @@ class Constants
     const AMOUNT        = "amount";
     const CURRENCY      = "currency";
     const IS_REVERSAL   = 'is_reversal';
+    const TAX           = 'tax';
 
     const CODE        = 'code';
     const MESSAGE     = 'message';

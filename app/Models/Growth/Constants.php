@@ -17,6 +17,8 @@ class Constants
     const ERROR         = 'ERROR';
     const PACKAGE_NAME = 'package_name';
     const AMOUNT = "amount";
+
+    const TAX = "tax";
     const CURRENCY = "currency";
     const IS_REVERSAL = 'is_reversal';
     const CAMPAIGN_NAME = "campaign_name";

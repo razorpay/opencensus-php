@@ -1726,6 +1726,13 @@ class TransactionTest extends TestCase
         $this->startTest();
     }
 
+    public function testProductChargeTransactionDualWrite()
+    {
+        $this->ba->chargeCollectionsAuth();
+
+        $this->startTest();
+    }
+
     public function testPaymentAuthorizedTransactionCreateAfterCaptureTransactionsCreateInternal()
     {
         $this->ba->appAuth();
