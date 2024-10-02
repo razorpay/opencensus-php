@@ -1022,4 +1022,6 @@ return array(
 
     'visa_cvv_less_experiment' => env('VISA_CVV_LESS_EXPERIMENT'),
 
+    'validate_transfer_using_oauth_exp_id' => env('VALIDATE_TRANSFER_USING_OAUTH'),
+
 );

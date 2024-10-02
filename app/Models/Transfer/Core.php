@@ -231,7 +231,9 @@ class Core extends Base\Core
     {
         $this->validateMerchantForTransfer($merchant);
 
-        $this->validateUsingOauth($payment);
+        if ($this->partner?->getId() && $this->isvalidateTransferOauthExpEnabled($this->partner->getId())) {
+            $this->validateUsingOauth($payment);
+        }
 
         $this->addAccountFromAccountCodeIfApplicable($input);
 
@@ -1138,13 +1140,22 @@ class Core extends Base\Core
     }
     public function validateUsingOauth(Payment\Entity $payment)
     {
-        $entityOrigin = (new EntityOrigin\Core)->fetchEntityOriginV2($payment);
 
-        $paymentOAuth = optional($entityOrigin)->getOriginId();
+        if($this->app['basicauth']->isOAuth()) {
+            $entityOrigin = (new EntityOrigin\Core)->fetchEntityOriginV2($payment);
 
-        if($this->oauthApplicationId !== $paymentOAuth){
-            throw new Exception\BadRequestValidationFailureException(
-                'This transfer is not supported');
+            $paymentOAuth = optional($entityOrigin)->getOriginId();
+
+            $originType =optional($entityOrigin)->getOriginType();
+
+            $isOriginApplication = ($originType === EntityOrigin\Constants::MARKETPLACE_APPLICATION || $originType === EntityOrigin\Constants::APPLICATION);
+
+
+            if (($this->oauthApplicationId !== $paymentOAuth) or !$isOriginApplication) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'This transfer is not supported');
+            }
+
         }
     }
     protected function validateMerchantForTransfer(Merchant\Entity $merchant)
@@ -3170,5 +3181,15 @@ class Core extends Base\Core
         ]);
 
         return $experimentEnabled;
+    }
+
+    private function isvalidateTransferOauthExpEnabled(String $partnerMerchant) : bool
+    {
+        $properties = [
+            'id'            => $partnerMerchant,
+            'experiment_id' => $this->app['config']->get('app.validate_transfer_using_oauth_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }
