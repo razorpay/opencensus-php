@@ -427,7 +427,7 @@ class Repository extends Base\Repository
 
     public function getIdsByRecipientSettlementId(string $settlementId, array $status = [])
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                       ->select(Entity::ID)
                       ->where(Entity::RECIPIENT_SETTLEMENT_ID, $settlementId);
 

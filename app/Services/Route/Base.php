@@ -44,10 +44,10 @@ class Base
     const X_PASSPORT_JWT_V1     = 'X-Passport-JWT-V1';
     const PASSPORT_AUD          = 'route';
     const REQUEST_TIMEOUT       = 60;
-    const CONSUMER = 'consumer';
-    const PASSPORT = 'passport';
-    const NAME               = 'name';
-    const TYPE     = 'type';
+    const CONSUMER              = 'consumer';
+    const PASSPORT              = 'passport';
+    const NAME                  = 'name';
+    const TYPE                  = 'type';
     const APP_USER_ID_HEADER = 'App-User-Id';
 
     /**
@@ -139,7 +139,7 @@ class Base
             throw $e;
         }
 
-        (new Metric)->pushRequestMetrics($response);
+        (new Metric)->pushRequestMetrics($response->status_code);
 
         $this->traceResponse($response);
 

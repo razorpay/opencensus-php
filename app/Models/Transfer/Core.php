@@ -1593,7 +1593,7 @@ class Core extends Base\Core
 
             $transfer->setSettlementStatus(SettlementStatus::SETTLED);
 
-            $transfer->saveOrFail();
+            $this->repo->transfer->saveOrFail($transfer);
         }
 
         $this->checkIfTransfersAmountMatchesSettlementAmount($settlementId, $totalTransfersAmount);
