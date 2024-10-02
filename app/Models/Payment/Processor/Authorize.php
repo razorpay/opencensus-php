@@ -4832,6 +4832,12 @@ trait Authorize
                 try
                 {
                     $this->validateFraudDetectionV2($payment, $this->merchant, $input);
+                    if ($payment->hasCard() and $payment->card->isInternational() === true) {
+                        $this->trace->count(Payment\Metric::INTL_CARD_SHIELD_REQUEST_ONE_COUNT, [
+                            'success' => "true",
+                            'error' => ""
+                        ]);
+                    }
                 }
                 catch (Exception\IntegrationException $exception)
                 {
@@ -4867,6 +4873,10 @@ trait Authorize
                     {
                         $this->updatePaymentAuthFailed($e);
                     }
+                    $this->trace->count(Payment\Metric::INTL_CARD_SHIELD_REQUEST_ONE_COUNT, [
+                        "success" => "false",
+                        "error" => $e->getCode()
+                    ]);
                     throw $e;
                 }
                 else
@@ -4923,7 +4933,6 @@ trait Authorize
                 ]);
 
             $this->addBackupMethodForRetry($this->payment, $this->merchant, $ex);
-
             throw $ex;
         }
     }

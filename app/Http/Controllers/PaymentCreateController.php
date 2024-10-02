@@ -996,25 +996,29 @@ class PaymentCreateController extends Controller
     public function getRedirectToDCCInfo($id)
     {
         $response = [];
+        try {
+            $response['data'] = $this->service(E::PAYMENT)->redirectToDCCInfo($id);
 
-        $response['data'] = $this->service(E::PAYMENT)->redirectToDCCInfo($id);
+            $merchant =  $this->app['basicauth']->getMerchant();
 
-        $merchant =  $this->app['basicauth']->getMerchant();
+            $response['org_info'] = (new CheckoutView())->addOrgInformationInResponse($merchant);
 
-        $response['org_info'] = (new CheckoutView())->addOrgInformationInResponse($merchant);
+            $languageCode = App::getLocale() !== null ?
+                App::getLocale() :
+                LocaleCore::setLocale($response, $this->app['basicauth']->getMerchant()->getId());
 
-        $languageCode = App::getLocale() !== null ?
-            App::getLocale() :
-            LocaleCore::setLocale($response, $this->app['basicauth']->getMerchant()->getId());
+            $response['production'] = $this->app->environment() === Environment::PRODUCTION;
+            $response['cdn'] = $this->config->get('url.cdn.production');
+            $response['language_code'] = $languageCode;
 
-        $response['production'] = $this->app->environment() === Environment::PRODUCTION;
-        $response['cdn'] = $this->config->get('url.cdn.production');
-        $response['language_code'] = $languageCode;
-
-        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
-            [
-                'dcc view create via'   =>  'gateway.gatewayDccSelectorForm',
-            ]);
+            $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+                [
+                    'dcc view create via'   =>  'gateway.gatewayDccSelectorForm',
+                ]);
+            (new Payment\Metric())->pushDccInfoRedirectMetrics("true", "");
+        } catch (\Exception $e) {
+            (new Payment\Metric())->pushDccInfoRedirectMetrics("false", $e->getCode());
+        }
 
         return View::make('gateway.gatewayDccSelectorForm')
             ->with('data', $response);

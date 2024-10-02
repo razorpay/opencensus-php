@@ -2947,72 +2947,83 @@ class Service extends Base\Service
 
     public function getPaymentFlows(array $input)
     {
-        $merchant = $this->merchant;
+        $data = [];
+        try {
+            $merchant = $this->merchant;
 
-        Locale::setLocale($input, $merchant->getId());
+            Locale::setLocale($input, $merchant->getId());
 
-        if (isset($input['token']) === true)
-        {
-            $tokenId = $input['token'];
-
-            $token = $this->repo->token->findByPublicId($tokenId);
-
-            if (($token !== null) and
-                ($token->hasCard() === true))
+            if (isset($input['token']) === true)
             {
-                $input['iin'] = $token->card->getIin();
+                $tokenId = $input['token'];
+
+                $token = $this->repo->token->findByPublicId($tokenId);
+
+                if (($token !== null) and
+                    ($token->hasCard() === true))
+                {
+                    $input['iin'] = $token->card->getIin();
+                }
             }
-        }
 
-        (new Payment\Validator)->validateInput('get_flows', $input);
+            (new Payment\Validator)->validateInput('get_flows', $input);
 
-        if (isset($input['iin']) === true)
-        {
-            $iinEntity = $this->repo->iin->find($input['iin']);
-        }
-        else
-        {
-            $iinEntity = null;
-        }
-
-        $data = $merchant->getPaymentFlows($iinEntity);
-
-        $library = '';
-        if(isset($input['_']) === true and isset($input['_']['source']) === true)
-        {
-            $library = $input['_']['source'];
-        }
-        elseif (isset($input['source']) === true)
-        {
-            $library = $input['source'];
-        }
-
-        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
-
-        $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
-
-        $data['address_name_required'] = $this->isAddressWithNameRequired($library,$input, $merchant);
-
-        $this->updateCurrencyWrapperIfApplicable($input, $merchant,$data);
-
-        $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $data);
-
-        $this->updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $data);
-
-        if (isset($input['order_id']) === true)
-        {
-            $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
-
-            if ($order->hasOffers() === true)
+            if (isset($input['iin']) === true)
             {
-                $payment = $this->getDummyPayment($order, $iinEntity);
-
-                $applicableOffers = (new Offer\Core)->getApplicableOffersForPayment($order, $payment);
-
-                $data['offers'] = $applicableOffers;
+                $iinEntity = $this->repo->iin->find($input['iin']);
             }
-        }
+            else
+            {
+                $iinEntity = null;
+            }
 
+            $data = $merchant->getPaymentFlows($iinEntity);
+
+            $library = '';
+            if(isset($input['_']) === true and isset($input['_']['source']) === true)
+            {
+                $library = $input['_']['source'];
+            }
+            elseif (isset($input['source']) === true)
+            {
+                $library = $input['source'];
+            }
+
+            $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
+
+            $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
+
+            $data['address_name_required'] = $this->isAddressWithNameRequired($library,$input, $merchant);
+
+            $this->updateCurrencyWrapperIfApplicable($input, $merchant,$data);
+
+            $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $data);
+
+            $this->updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $data);
+
+            if (isset($input['order_id']) === true)
+            {
+                $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+                if ($order->hasOffers() === true)
+                {
+                    $payment = $this->getDummyPayment($order, $iinEntity);
+
+                    $applicableOffers = (new Offer\Core)->getApplicableOffersForPayment($order, $payment);
+
+                    $data['offers'] = $applicableOffers;
+                }
+            }
+            $this->trace->count(Metric::GET_PAYMENT_FLOWS_COUNT, [
+                'success' => "true",
+                'error'   => ""
+            ]);
+        } catch (\Exception $e) {
+            $this->trace->count(Metric::GET_PAYMENT_FLOWS_COUNT, [
+                'success' => "false",
+                'error'   => $e->getCode()
+            ]);
+        }
         return $data;
     }
 
@@ -3254,13 +3265,23 @@ class Service extends Base\Service
         {
             (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID, $baseCurrency, $baseAmount, $markupPercent, $method, $isZeroExponentCurrencySupported, $dccInfo);
         }
-        else
-        {
-            $currencyRequestId = UniqueIdEntity::generateUniqueId();
+        else {
+            try {
+                $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-            $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method, $isZeroExponentCurrencySupported);
+                $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method, $isZeroExponentCurrencySupported);
 
-            $dccInfo['currency_request_id'] = $currencyRequestId;
+                $dccInfo['currency_request_id'] = $currencyRequestId;
+                $this->trace->count(Metric::GET_DCC_INFO_COUNT, [
+                    'success' => "true",
+                    'error' => ""
+                ]);
+            } catch (\Exception $e) {
+                $this->trace->count(Metric::GET_DCC_INFO_COUNT, [
+                    'success' => "false",
+                    'error' => $e->getCode()
+                ]);
+            }
         }
 
         return $dccInfo;

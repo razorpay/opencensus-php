@@ -122,6 +122,22 @@ class Metric extends Base\Core
     const VALIDATE_ACCOUNT_UPS_REQUEST_FAILED_COUNT        = 'validate_account_ups_request_failed_count';
     const VALIDATE_VPA_UPS_REQUEST_FAILED_COUNT            = 'validate_vpa_ups_request_failed_count';
 
+    const GET_DCC_INFO_COUNT                              = 'get_dcc_info_count';
+
+    const GET_PAYMENT_FLOWS_COUNT                         = 'get_payment_flows_count';
+
+    const DCC_INFO_ROUTE_COUNT                             = 'dcc_info_route_count';
+
+    const CACHE_MISS_COUNT                                 = 'cache_miss_count';
+
+    const CACHE_HIT_COUNT                                  = 'cache_hit_count';
+
+    const INTL_CARD_SHIELD_REQUEST_ONE_COUNT               = 'intl_card_shield_request_one_count';
+
+    const CURRENCY_EXCHANGE_RATE_CURRENCY_KEY              = 'currency_exchange_rates_currency';
+
+    const CURRENCY_EXCHANGE_RATE_REQUEST_VS_TIME_KEY       = 'currency_exchange_rates_request_vs_time';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);
@@ -714,5 +730,14 @@ class Metric extends Base\Core
         }
 
         $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER, $requestTime, $dimensions);
+    }
+
+    public function pushDccInfoRedirectMetrics(string $success, string $error)
+    {
+        $this->trace->count(
+            Metric::DCC_INFO_ROUTE_COUNT, [
+                "success" => $success,
+                "error" => $error
+        ]);
     }
 }
