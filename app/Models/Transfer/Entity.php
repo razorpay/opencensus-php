@@ -688,10 +688,12 @@ class Entity extends Base\PublicEntity
         //
         $app = \App::getFacadeRoot();
 
-        if (($app['basicauth']->isProxyOrPrivilegeAuth() === false && $app['basicauth']->isDashboardApp() === false))
+        if (($app['basicauth']->isProxyOrPrivilegeAuth() === true && $app['basicauth']->isDashboardApp() === true))
         {
-            unset($attributes[self::RECIPIENT_DETAILS]);
+            return;
         }
+
+        unset($attributes[self::RECIPIENT_DETAILS]);
     }
 
     public function setPublicTransactionIdAttribute(array & $attributes)
