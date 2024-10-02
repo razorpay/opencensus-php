@@ -531,6 +531,102 @@ class DedupeTest extends OAuthTestCase
         $this->assertFalse($response['merchant']['activated']);
     }
 
+    public function testL2FormSubmitWithWebsiteProvidesKeyAccessKLATrueAndActivated()
+    {
+        $this->fixtures->create('merchant', [
+            'id' => 'TFMWFIqabujap0'
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+            [
+                'merchant_id' => 'TFMWFIqabujap0',
+                'business_website'          => 'https://www.sukhdev.org',
+                'activation_status'  => 'activated'
+            ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'dbcdef12345671',
+            'merchant_id'   => 'TFMWFIqabujap0'
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => 'TFMWFIqabujap0',
+            'metadata'    => [
+                'key_less_activation_enable' => true
+            ]
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())->method('match')
+            ->willReturn([false, null]);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(false);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $input = ['submit' => '1'];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->assertNotNull($response['activation_status']);
+    }
+
+    public function testL2FormSubmitWithKLAFalseNoKeyAccessAndNotActivated()
+    {
+        $this->fixtures->create('merchant', [
+            'id' => 'SMMWFIqabujap2'
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+            [
+                'merchant_id' => 'SMMWFIqabujap2',
+                'business_website'          => 'https://www.sukhdev.org',
+                'activation_Status' => 'activated_mcc_pending'
+            ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'stcdef12345672',
+            'merchant_id'   => 'SMMWFIqabujap2'
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => 'SMMWFIqabujap2',
+            'metadata'    => [
+                'key_less_activation_enable' => false
+            ]
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())->method('match')
+            ->willReturn([false, null]);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(false);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $input = ['submit' => '1'];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->assertNotNull($response['activation_status']);
+    }
+
     public function testIsDedupeBlockAfterL1Submission()
     {
         $this->fixtures->create('merchant', [

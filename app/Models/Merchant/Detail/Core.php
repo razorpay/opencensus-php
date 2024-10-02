@@ -3803,7 +3803,8 @@ class Core extends Base\Core
             [
                 'business_website' => $merchantDetails->getWebsite(),
                 'has_key_access'   => $merchant->getHasKeyAccess(),
-                'merchant_id'      => $merchant->getId()
+                'merchant_id'      => $merchant->getId(),
+                'activation_status'=> $merchantDetails->getActivationStatus()
             ]);
 
         if ($this->hasBusinessWebsiteOrAppUrls($merchant) === false)
@@ -3812,7 +3813,9 @@ class Core extends Base\Core
         }
 
         // skip set has_key_access to true when merchant is enabled for key_less_activation
-        if ($this->isKLAEnabled($merchant) === true){
+        // on post-onboarding, has_key_access should only be provided if activation_status is set to 'activated'
+        if ($this->isKLAEnabled($merchant) === true && $merchantDetails->getActivationStatus() !== Status::ACTIVATED)
+        {
             return;
         }
 
