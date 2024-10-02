@@ -227,22 +227,4 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function setOrphanUserEmailNull($userIds)
-    {
-        return $this->newQuery()
-                ->whereIn(Entity::ID, $userIds)
-                ->update([
-                    Entity::EMAIL  => null,
-                ]);
-    }
-
-    public function setOrphanUserMobilelNull($userIds)
-    {
-        return $this->newQuery()
-                ->whereIn(Entity::ID, $userIds)
-                ->update([
-                    Entity::CONTACT_MOBILE  => null,
-                ]);
-    }
-
 }

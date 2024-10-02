@@ -3196,7 +3196,22 @@ class Core extends Base\Core
 
         return $response;
     }
-
+    
+    public function setContactNumberAsNullForOrphanUser(array $orphanUserIds) {
+        // Set contact number as null for Orphan user ids
+        $this->repo->transactionOnLiveAndTest(function () use ($orphanUserIds) {
+            foreach ($orphanUserIds as $orphanUserId){
+            
+                $user = $this->repo->user->findOrFail($orphanUserId);
+            
+                $user->contact_mobile = null;
+            
+                $this->repo->user->saveOrFail($user);
+            }
+        });
+    }
+    
+    
     //verify otp on the new added number
     public function verifyOtpAndUpdateContactMobile(array $input, Merchant\Entity $merchant, Entity $user)
     {
@@ -3248,9 +3263,10 @@ class Core extends Base\Core
             if (count($orphanUserIds) !== count($existingUserIds)){
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
             }
-
-            // Set email as null for Orphan user ids
-            $this->repo->user->setOrphanUserMobilelNull($orphanUserIds);
+            
+            // Set contact number as null for Orphan user ids
+            $this->setContactNumberAsNullForOrphanUser($orphanUserIds);
+            
         }
 
         if($smsOtpAuth->is2faCredentialValid($input) == false)

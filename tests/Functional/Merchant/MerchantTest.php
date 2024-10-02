@@ -6843,7 +6843,92 @@ Team Razorpay',
         });
     }
 
-    public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExist()
+    public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExistOrphan()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $testData = $this->testData['testMerchantEmailGetUserStatus'];
+
+        $testData['response']['content'] = [
+            'is_user_exist'  => false,
+            'is_team_member' => false,
+            'is_owner'       => false,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $token = $user->getPasswordResetToken();
+
+        $expectedCacheData = [
+            'current_owner_email'    => 'abctest@gmail.com',
+            'email'                  => 'newowner@gmail.com',
+            'merchant_id'            => $merchant['id'],
+            'reattach_current_owner' => true,
+            'set_contact_email'      => true,
+        ];
+
+        $oldOwnerDuplicateUser = $this->fixtures->create('user', [
+            'email' => 'newowner@gmail.com',
+            'contact_mobile' => '8839106483',
+            'name' => 'ownernameduplicate',
+            'contact_mobile_verified' => true,
+            'password_reset_token' => $token,
+            'password_reset_expiry' => Carbon::now()->timestamp + 86400,
+        ]);
+        $this->fixtures->user->deleteAllMerchantUserMapping($oldOwnerDuplicateUser->getID());
+
+        $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], $expectedCacheData);
+
+        Mail::assertQueued(MerchantMail\OwnerEmailChange::class, function ($mailable) use($merchant, $token)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertEquals('emails.merchant.owner_email_change_request', $mailable->view);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertEquals('abctest@gmail.com', $mailData['current_owner_email']);
+
+            $this->assertEquals('newowner@gmail.com', $mailData['email']);
+
+            $this->assertTrue($mailable->hasTo('abctest@gmail.com'));
+
+            return true;
+        });
+
+        Mail::assertQueued(PasswordAndEmailResetMail::class, function ($mailable) use($merchant, $token)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertEquals($mailData['token'], $token);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertEquals('abctest@gmail.com', $mailData['current_owner_email']);
+
+            $this->assertEquals($merchant['id'], $mailData['merchant_id']);
+
+            $this->assertEquals('newowner@gmail.com', $mailData['email']);
+
+            $this->assertTrue($mailable->hasTo('newowner@gmail.com'));
+
+            return true;
+        });
+    }
+
+    public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExistNonOrphan()
     {
         Mail::fake();
 
@@ -7368,6 +7453,7 @@ Team Razorpay',
 
         $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], $setContactEmail);
         $this->assertUserDeviceDetailUpdateForEmailUpdate($merchant['id'],$userDeviceDetail);
+        $this->assertUserContactNull($oldOwnerDuplicateUser['id']);
     }
 
     protected function merchantEmailUpdateCreateNewOwnerAlreadyExistingNonOrphan($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
@@ -7879,6 +7965,12 @@ Team Razorpay',
 
             $this->assertEquals('oldcontact@gmail.com', $merchantDetail->getContactEmail());
         }
+    }
+
+    protected function assertUserContactNull($userId)
+    {
+        $user =  $this->getDbEntityById('user', $userId);
+        $this->assertNull($user->getEmail());
     }
     protected function assertUserDeviceDetailUpdateForEmailUpdate($merchantId,$UserDeviceDetails)
     {

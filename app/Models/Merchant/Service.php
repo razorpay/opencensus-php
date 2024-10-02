@@ -1897,6 +1897,13 @@ class Service extends Base\Service
             }else{
                 // If all users are Oprhan users
                 $status[Constants::IS_USER_EXIST] = false;
+                
+                $this->saveMerchantEmailUpdateData($ownerUser->getEmail(), $merchant->getId(), $input);
+    
+                $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
+    
+                $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, ["status" => $status]);
+                
                 return $status;
             }
         }
@@ -1949,6 +1956,20 @@ class Service extends Base\Service
 
     }
 
+    public function setEmailAsNullForOrphanUser(array $orphanUserIds) {
+        // Set email as null for Orphan user ids
+        $this->repo->transactionOnLiveAndTest(function () use ($orphanUserIds) {
+            foreach ($orphanUserIds as $orphanUserId){
+            
+                $user = $this->repo->user->findOrFail($orphanUserId);
+            
+                $user->email = null;
+            
+                $this->repo->user->saveOrFail($user);
+            }
+        });
+    }
+    
     public function editMerchantEmailCreateNewUserAndTransferOwnerShip($input)
     {
         (new Validator())->validateInput('changeEmailToken', $input);
@@ -2011,8 +2032,9 @@ class Service extends Base\Service
             if (count($orphanUserIds) !== count($existingUserIds)){
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
             }
+            
             // Set email as null for Orphan user ids
-            $this->repo->user->setOrphanUserEmailNull($orphanUserIds);
+            $this->setEmailAsNullForOrphanUser($orphanUserIds);
         }
 
         // using merchant_id from cache

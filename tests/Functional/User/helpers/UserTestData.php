@@ -5401,6 +5401,24 @@ return [
         ],
     ],
 
+    'testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan' => [
+        'request' => [
+            'url'     => '/users/verify/update/new/mobile',
+            'method'  => 'POST',
+            'content' => [
+                'receiver' => '9123456789',
+                'otp'      => '000007',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '9123456789',
+                'contact_mobile_verified' => true,
+            ],
+        ],
+    ],
+
     'testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphan' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
