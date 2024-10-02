@@ -17894,6 +17894,7 @@ class Route
             'internal_pricing',
             'payment_calculate_fees_with_gateway',
             'token_fetch_cryptogram_internal',
+            'internal_token_create',
             'update_token_on_authorized'
         ],
 
