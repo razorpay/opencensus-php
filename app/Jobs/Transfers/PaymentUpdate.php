@@ -2,6 +2,8 @@
 
 namespace RZP\Jobs\Transfers;
 
+use App;
+use RZP\Constants\Metric;
 use RZP\Jobs\Job;
 use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
@@ -45,7 +47,11 @@ class PaymentUpdate extends Job
 
         try
         {
+            $startTime = millitime();
+
             app('route')->saveApiPayment($this->payment->getId(), $params);
+
+            $this->traceSuccessMetrics('paymentUpdateJob', millitime()-$startTime);
         }
         catch (\Exception $ex)
         {
@@ -57,8 +63,40 @@ class PaymentUpdate extends Job
                     'id' => $this->payment->getId()
                 ]);
 
+            $this->traceFailureMetrics('paymentUpdateJob', millitime()-$startTime);
+
             $this->checkRetry();
         }
+    }
+
+    protected function traceFailureMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE, [
+            'caller'      => $functionName,
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
+    }
+
+    protected function traceSuccessMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS, [
+            'caller'      => $functionName,
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
     }
 
     protected function checkRetry()

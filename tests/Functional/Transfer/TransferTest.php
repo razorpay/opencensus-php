@@ -3522,7 +3522,7 @@ class TransferTest extends TestCase
         $this->assertEquals('abcdefg1234567', $transfer->getId());
     }
 
-    public function testExternalRepoPaymentMethodTransferFetch()
+    public function testExternalRepoPaymentMethodTransferFetchByTransferIdAndMerchant()
     {
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
 
@@ -3533,6 +3533,19 @@ class TransferTest extends TestCase
         $this->assertEquals('dummypayment001', $payment->getId());
 
         $this->assertEquals('abcdefg1234567', $payment->getTransferId());
+    }
+
+    public function testExternalRepoPaymentMethodTransferFetchById()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::ROUTE_SERVICE_ENABLED => 1]);
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $payment = $repo->payment->findOrFail('abcdefg1234567');
+
+        $this->assertEquals('abcdefg1234567', $payment->getId());
+
+        $this->assertEquals('P1aV1cjfsJuNf9', $payment->getTransferId());
     }
 
     public function testExternalRepoPaymentMethodTransferSave()

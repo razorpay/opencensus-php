@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Route;
 
+use RZP\Models\Admin;
 use Razorpay\Edge\Passport\Passport;
 use Request;
 use RZP\Error\ErrorCode;
@@ -80,14 +81,12 @@ class Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function sendRequest(string $endpoint, string $method, array $data = null): array
+    protected function sendRequest(string $endpoint, string $method, array $data = null): array
     {
-        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
-
         $url = $this->baseUrl . $endpoint;
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => (new Config())->getRequestTimeout(),
             'auth'    => [
                 $this->config['username'],
                 $this->config['password']
@@ -135,12 +134,14 @@ class Base
                     'request_body' => $request['content'],
                 ]);
 
+            (new Metric)->pushRequestMetrics(null, $e);
+
             throw $e;
         }
 
-        $this->trace->info(TraceCode::ROUTE_MICROSERVICE_RESPONSE, [
-            'response' => $response->body
-        ]);
+        (new Metric)->pushRequestMetrics($response);
+
+        $this->traceResponse($response);
 
         $resp = $this->parseResponse($response);
 
@@ -178,11 +179,26 @@ class Base
      */
     protected function traceRequest(array $request)
     {
-        unset($request['options']['auth']);
+        if ((new Config())->shouldLogRequest())
+        {
+            unset($request['options']['auth']);
 
-        unset($request['headers'][self::X_PASSPORT_JWT_V1]);
+            unset($request['headers'][self::X_PASSPORT_JWT_V1]);
 
-        $this->trace->info(TraceCode::ROUTE_MICROSERVICE_REQUEST, $request);
+            $this->trace->info(TraceCode::ROUTE_MICROSERVICE_REQUEST, $request);
+        }
+    }
+
+    protected function traceResponse($response)
+    {
+        if ((new Config())->shouldLogResponse())
+        {
+            $this->trace->info(TraceCode::ROUTE_MICROSERVICE_RESPONSE,
+            [
+                'status_code'   => $response->status_code,
+                'response_body' => $response->body
+            ]);
+        }
     }
 
     /**
@@ -293,7 +309,7 @@ class Base
         $this->setCustomHeaders($customHeader);
     }
 
-    public function getHeadersWithJwt()
+    protected function getHeadersWithJwt()
     {
         $jwt = $this->app['basicauth']->getPassportJwt($this->baseUrl);
 
@@ -334,7 +350,7 @@ class Base
         return $headers;
     }
 
-    public function getJwtTokenFromRequestHeader()
+    protected function getJwtTokenFromRequestHeader()
     {
         return Request::header('X-Passport-JWT-V1');
     }

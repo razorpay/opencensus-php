@@ -124,8 +124,11 @@ class ConfigKey
 
     const ROUTE_TRANSFER_QUEUE_CONFIG = self::PREFIX . 'route_transfer_queue_config';
 
-    CONST ROUTE_SERVICE_ENABLED       = self::PREFIX . 'route_service_enabled';
     const ROUTE_ASYNC_BALANCE_UPDATE_QUEUE_CONFIG = self::PREFIX . 'route_async_balance_update_queue_config';
+
+    CONST ROUTE_SERVICE_ENABLED       = self::PREFIX . 'route_service_enabled';
+
+    CONST ROUTE_SERVICE_CONFIG       = self::PREFIX . 'route_service_config';
 
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
     // So if last fetched at was while ago greater than this value, then we will fetch balance
@@ -668,6 +671,7 @@ class ConfigKey
         self::ODS_CAPPING_SCALE_FACTOR,
         self::ODS_CAPPED_MID_LIST,
         self::ROUTE_SERVICE_ENABLED,
+        self::ROUTE_SERVICE_CONFIG,
     ];
 
     const REDIS_CONFIG_MAP = [
@@ -696,6 +700,15 @@ class ConfigKey
         self::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS => [Name::SET_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS],
         self::TENANT_ROLES_ENTITY => [Name::SET_TENANT_ROLES_CONFIG],
         self::DCS_READ_WHITELISTED_FEATURES => [Name::SET_DCS_READ_WRITE_CONFIG],
+        self::TRANSFER_PROCESSING_MUTEX_CONFIG => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::TRANSFER_SYNC_PROCESSING_VIA_API_HOURLY_RATE_LIMIT_PER_MID => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::DIRECT_TRANSFER_LIMITS => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::ROUTE_TRANSFER_QUEUE_CONFIG => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::ROUTE_ASYNC_BALANCE_UPDATE_QUEUE_CONFIG => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::ROUTE_SERVICE_ENABLED => [Name::DEBUG_TRANSFERS_ROUTES],
+        self::ROUTE_SERVICE_CONFIG => [Name::DEBUG_TRANSFERS_ROUTES],
     ];
 
     /**

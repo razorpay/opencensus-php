@@ -67,6 +67,8 @@ class Api extends Base
 
         $payment = (new Payment\Entity)->forceFill($response);
 
+        $payment->setExternal(true);
+
         $repo = App::getFacadeRoot()['repo'];
 
         $transfer = $repo->transfer->findOrFail($payment->getTransferId());
@@ -97,6 +99,8 @@ class Api extends Base
         $response = $this->fetchPaymentByIdInternalRequest($paymentId);
 
         $payment = (new Payment\Entity)->forceFill($response);
+
+        $payment->setExternal(true);
 
         $repo = App::getFacadeRoot()['repo'];
 

@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Base\Traits;
 
+use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Metric;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
@@ -39,17 +41,7 @@ trait ExternalTransferRepo
                     return $this->fetchExternalTransfer($id);
                 }
             }
-            catch(\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-            }
+            catch(\Throwable $ex) {}
 
             // Throw original exception
             throw $e;
@@ -76,17 +68,7 @@ trait ExternalTransferRepo
                     return $this->fetchExternalTransfer($id);
                 }
             }
-            catch(\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-            }
+            catch(\Throwable $ex) {}
 
             // Throw original exception
             throw $e;
@@ -114,17 +96,7 @@ trait ExternalTransferRepo
                     return $this->fetchExternalTransfer($id);
                 }
             }
-            catch(\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-            }
+            catch(\Throwable $ex) {}
 
             // Throw original exception
             throw $e;
@@ -156,17 +128,7 @@ trait ExternalTransferRepo
                     return $this->fetchExternalTransfer($id);
                 }
             }
-            catch(\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-            }
+            catch(\Throwable $ex) {}
 
             // Throw original exception
             throw $e;
@@ -195,17 +157,7 @@ trait ExternalTransferRepo
                     return $this->fetchExternalTransfer($id);
                 }
             }
-            catch(\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-            }
+            catch(\Throwable $ex) {}
 
             // Throw original exception
             throw $e;
@@ -230,17 +182,7 @@ trait ExternalTransferRepo
                     return $this->fetchExternalTransfer($id);
                 }
             }
-            catch(\Throwable $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $ex->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-            }
+            catch(\Throwable $ex) {}
 
             // Throw original exception
             throw $e;
@@ -250,6 +192,10 @@ trait ExternalTransferRepo
     protected function fetchExternalTransfer($transferId, $queryParams=[])
     {
         $class = EntityConstants::getExternalRepoSingleton($this->entity);
+
+        $startTime = millitime();
+
+        $callerFunc = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
 
         try
         {
@@ -261,6 +207,8 @@ trait ExternalTransferRepo
 
                 $entity->loadMissing($relations);
 
+                $this->traceSuccessMetrics($callerFunc, $startTime);
+
                 return $entity;
             }
         }
@@ -269,15 +217,20 @@ trait ExternalTransferRepo
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                TraceCode::FETCH_TRANSFER_VIA_ROUTE_SERVICE_FAILURE,
                 [
-                    'data'        => $e->getMessage(),
+                    '$transfer_id' => $transferId,
+                    'data'         => $e->getMessage(),
+                    'from'         => $callerFunc,
+
                 ]);
+
+            $this->traceFailureMetrics($callerFunc, $startTime);
         }
 
         $data = [
             'model'      => $this->entityName,
-            'operation'  => 'find'
+            'operation'  => $callerFunc,
         ];
 
         throw new BadRequestException(
@@ -288,6 +241,8 @@ trait ExternalTransferRepo
     {
         $class = EntityConstants::getExternalRepoSingleton($this->entity);
 
+        $callerFunc = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
+
         try
         {
             return $class->saveApiTransfer($transferId, $params);
@@ -297,15 +252,17 @@ trait ExternalTransferRepo
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                TraceCode::SAVE_TRANSFER_VIA_ROUTE_SERVICE_FAILURE,
                 [
+                    'id'          => $transferId,
                     'data'        => $e->getMessage(),
+                    'from'        => $callerFunc,
                 ]);
         }
 
         $data = [
             'model'      => $this->entityName,
-            'operation'  => 'saveTransferViaRouteService'
+            'operation'  => $callerFunc,
         ];
 
         throw new BadRequestException(
@@ -350,4 +307,36 @@ trait ExternalTransferRepo
 
         return $params;
     }
+
+    protected function traceFailureMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_TRANSFER_REPO_FETCH_FAILURE, [
+            'caller'      => $functionName,
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_TRANSFER_REPO_FETCH_FAILURE_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
+    }
+
+    protected function traceSuccessMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS, [
+            'caller'      => $functionName,
+
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
+    }
+
 }

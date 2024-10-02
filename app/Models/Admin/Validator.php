@@ -142,6 +142,7 @@ class Validator extends Base\Validator
         ConfigKey::ROUTE_TRANSFER_QUEUE_CONFIG                                => 'filled|array',
         ConfigKey::ROUTE_ASYNC_BALANCE_UPDATE_QUEUE_CONFIG                    => 'filled|array',
         ConfigKey::ROUTE_SERVICE_ENABLED                                      => 'filled|boolean',
+        ConfigKey::ROUTE_SERVICE_CONFIG                                       => 'filled|array',
 
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT              => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT      => 'filled|integer',

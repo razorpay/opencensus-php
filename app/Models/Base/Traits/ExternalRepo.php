@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\Traits;
 
 use App;
+use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -43,19 +44,9 @@ trait ExternalRepo
 
             try
             {
-                if ($this->validateExternalFetchEnabledForLaPayment() === true)
-                {
-                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
-                }
-            }
-            catch (\Throwable $e) {}
-
-            try
-            {
                 return parent::findByPublicId($id, $connectionType);
             }
             catch (\Throwable $e) {}
-
         }
         else
         {
@@ -73,7 +64,14 @@ trait ExternalRepo
                 }
             }
             catch (\Throwable $e) {}
+        }
 
+        try
+        {
+            return $this->findByPublicIdArchived($id);
+        }
+        catch (\Throwable $outerEx)
+        {
             try
             {
                 if ($this->validateExternalFetchEnabledForLaPayment() === true)
@@ -81,10 +79,10 @@ trait ExternalRepo
                     return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
-            catch (\Throwable $e) {}
-        }
+            catch (\Throwable $innerEx) {}
 
-        return $this->findByPublicIdArchived($id);
+            throw $outerEx;
+        }
     }
 
     public function findByPublicIdAndMerchant(
@@ -110,15 +108,6 @@ trait ExternalRepo
 
             try
             {
-                if ($this->validateExternalFetchEnabledForLaPayment() === true)
-                {
-                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
-                }
-            }
-            catch (\Throwable $e) {}
-
-            try
-            {
                 $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
 
                 $class = Entity::getExternalRepoSingleton($this->entity);
@@ -151,7 +140,20 @@ trait ExternalRepo
                 }
             }
             catch (\Throwable $e) {}
+        }
 
+        try
+        {
+            $entity =  $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
+
+            $class = Entity::getExternalRepoSingleton($this->entity);
+
+            $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
+
+            return $entity;
+        }
+        catch (\Throwable $outerEx)
+        {
             try
             {
                 if ($this->validateExternalFetchEnabledForLaPayment() === true)
@@ -159,16 +161,10 @@ trait ExternalRepo
                     return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
-            catch (\Throwable $e) {}
+            catch (\Throwable $innerEx) {}
+
+            throw $outerEx;
         }
-
-        $entity =  $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
-
-        $class = Entity::getExternalRepoSingleton($this->entity);
-
-        $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
-
-        return $entity;
     }
 
     public function findByIdAndMerchant(
@@ -194,15 +190,6 @@ trait ExternalRepo
 
             try
             {
-                if ($this->validateExternalFetchEnabledForLaPayment() === true)
-                {
-                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
-                }
-            }
-            catch (\Throwable $e) {}
-
-            try
-            {
                 return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -223,7 +210,14 @@ trait ExternalRepo
                 }
             }
             catch (\Throwable $e) {}
+        }
 
+        try
+        {
+            return $this->findByIdAndMerchantArchived($id, $merchant, $params);
+        }
+        catch (\Throwable $outerEx)
+        {
             try
             {
                 if ($this->validateExternalFetchEnabledForLaPayment() === true)
@@ -231,10 +225,10 @@ trait ExternalRepo
                     return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
-            catch (\Throwable $e) {}
-        }
+            catch (\Throwable $innerEx) {}
 
-        return $this->findByIdAndMerchantArchived($id, $merchant, $params);
+            throw $outerEx;
+        }
     }
 
     public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
@@ -256,15 +250,6 @@ trait ExternalRepo
 
             try
             {
-                if ($this->validateExternalFetchEnabledForLaPayment() === true)
-                {
-                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
-                }
-            }
-            catch (\Throwable $e) {}
-
-            try
-            {
                 return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -285,7 +270,14 @@ trait ExternalRepo
                 }
             }
             catch (\Throwable $e) {}
+        }
 
+        try
+        {
+            return $this->findByIdAndMerchantIdArchived($id, $merchantId);
+        }
+        catch (\Throwable $outerEx)
+        {
             try
             {
                 if ($this->validateExternalFetchEnabledForLaPayment() === true)
@@ -293,10 +285,10 @@ trait ExternalRepo
                     return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
-            catch (\Throwable $e) {}
-        }
+            catch (\Throwable $innerEx) {}
 
-        return $this->findByIdAndMerchantIdArchived($id, $merchantId);
+            throw $outerEx;
+        }
     }
 
     public function findOrFailByPublicIdWithParams($id, array $params, string $connectionType = null): PublicEntity
@@ -318,15 +310,6 @@ trait ExternalRepo
 
             try
             {
-                if ($this->validateExternalFetchEnabledForLaPayment() === true)
-                {
-                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
-                }
-            }
-            catch (\Throwable $e) {}
-
-            try
-            {
                 return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -347,7 +330,14 @@ trait ExternalRepo
                 }
             }
             catch (\Throwable $e) {}
+        }
 
+        try
+        {
+            return $this->findOrFailByPublicIdWithParamsArchived($id, $params);
+        }
+        catch (\Throwable $outerEx)
+        {
             try
             {
                 if ($this->validateExternalFetchEnabledForLaPayment() === true)
@@ -355,10 +345,10 @@ trait ExternalRepo
                     return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
-            catch (\Throwable $e) {}
-        }
+            catch (\Throwable $innerEx) {}
 
-        return $this->findOrFailByPublicIdWithParamsArchived($id, $params);
+            throw $outerEx;
+        }
     }
 
     public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
@@ -380,15 +370,6 @@ trait ExternalRepo
 
             try
             {
-                if ($this->validateExternalFetchEnabledForLaPayment() === true)
-                {
-                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
-                }
-            }
-            catch (\Throwable $e) {}
-
-            try
-            {
                 return parent::findOrFailPublic($id, $columns, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -411,8 +392,23 @@ trait ExternalRepo
             catch (\Throwable $e) {}
         }
 
+        try
+        {
+            return $this->findOrFailPublicArchived($id, $columns);
+        }
+        catch (\Throwable $outerEx)
+        {
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $innerEx) {}
 
-        return $this->findOrFailPublicArchived($id, $columns);
+            throw $outerEx;
+        }
     }
 
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
@@ -434,15 +430,6 @@ trait ExternalRepo
 
             try
             {
-                if ($this->validateExternalFetchEnabledForLaPayment() === true)
-                {
-                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
-                }
-            }
-            catch (\Throwable $e) {}
-
-            try
-            {
                 return parent::findOrFail($id, $columns, $connectionType);
             }
             catch (\Throwable $e) {}
@@ -463,7 +450,14 @@ trait ExternalRepo
                 }
             }
             catch (\Throwable $e) {}
+        }
 
+        try
+        {
+            return $this->findOrFailOnlyArchived($id, $columns);
+        }
+        catch (\Throwable $outerEx)
+        {
             try
             {
                 if ($this->validateExternalFetchEnabledForLaPayment() === true)
@@ -471,10 +465,10 @@ trait ExternalRepo
                     return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
                 }
             }
-            catch (\Throwable $e) {}
-        }
+            catch (\Throwable $innerEx) {}
 
-        return $this->findOrFailOnlyArchived($id, $columns);
+            throw $outerEx;
+        }
     }
 
     /**
@@ -563,7 +557,11 @@ trait ExternalRepo
     {
         $class = Entity::getExternalRepoSingleton('transfer');
 
-        $id =  Payment\Entity::silentlyStripSign($id);
+        Payment\Entity::silentlyStripSign($id);
+
+        $startTime = millitime();
+
+        $callerFunc = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
 
         try
         {
@@ -577,6 +575,8 @@ trait ExternalRepo
 
                 $entity->loadMissing($relations);
 
+                $this->traceSuccessMetrics($callerFunc, $startTime);
+
                 return $entity;
             }
 
@@ -586,10 +586,14 @@ trait ExternalRepo
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                TraceCode::FETCH_PAYMENT_VIA_ROUTE_SERVICE,
                 [
-                    'data' => $e->getMessage()
+                    'id'         => $id,
+                    'data'       => $e->getMessage(),
+                    'from'       => $callerFunc,
                 ]);
+
+            $this->traceFailureMetrics($callerFunc, $startTime);
         }
 
         $data = [
@@ -598,7 +602,7 @@ trait ExternalRepo
                 'id'       => $id,
                 'input'    => $input,
             ],
-            'operation' => 'find'
+            'operation' => $callerFunc,
         ];
 
         throw new Exception\BadRequestException(
@@ -643,6 +647,36 @@ trait ExternalRepo
                 unset($expands[self::EXPAND][$key]);
             }
         }
+    }
+
+    protected function traceFailureMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE, [
+            'caller'      => $functionName,
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
+    }
+
+    protected function traceSuccessMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS, [
+            'caller'      => $functionName,
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
     }
 
     public function serializeForIndexingForExternal(PublicEntity $entity): array

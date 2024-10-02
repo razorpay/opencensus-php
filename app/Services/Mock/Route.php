@@ -20,6 +20,17 @@ class Route extends BaseRoute
         ];
     }
 
+    protected function fetchPaymentByIdInternalRequest(string $paymentId): array
+    {
+        return [
+            'id' => $paymentId,
+            'amount' => 1000,
+            'merchant_id' => '10000000000001',
+            'status' => 'captured',
+            'transfer_id' => 'P1aV1cjfsJuNf9',
+        ];
+    }
+
     protected function fetchPaymentByTransferIdAndAccountIdInternalRequest(string $transferId, string $accountId): array
     {
         return [

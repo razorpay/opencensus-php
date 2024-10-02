@@ -5,6 +5,7 @@ namespace RZP\Models\Base\Traits;
 use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity;
+use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Admin\ConfigKey;
@@ -198,18 +199,7 @@ trait ExternalLinkedAccountPaymentRepo
                     return $this->fetchExternalTransferTypePaymentByTransferIdAndAccountId($transferId, $accountId, $relations);
                 }
             }
-            catch (\Throwable $innerEx)
-            {
-                $this->trace->traceException(
-                    $innerEx,
-                    Trace::ERROR,
-                    TraceCode::ROUTE_ENTITY_FETCH_FAILURE,
-                    [
-                        'exception_message' => $innerEx->getMessage(),
-                        'function_name'     => __FUNCTION__
-                    ]);
-
-            }
+            catch (\Throwable $innerEx) {}
 
             throw $outerEx;
         }
@@ -226,6 +216,10 @@ trait ExternalLinkedAccountPaymentRepo
     {
         $class = Entity::getExternalRepoSingleton(Entity::PAYMENT_METHOD_TRANSFER);
 
+        $startTime = millitime();
+
+        $callerFunc = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
+
         try
         {
             $entity = $class->fetchPaymentById($id);
@@ -238,6 +232,8 @@ trait ExternalLinkedAccountPaymentRepo
 
                 $entity->loadMissing($relations);
 
+                $this->traceSuccessMetrics($callerFunc, $startTime);
+
                 return $entity;
             }
 
@@ -247,10 +243,14 @@ trait ExternalLinkedAccountPaymentRepo
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                TraceCode::FETCH_PAYMENT_VIA_ROUTE_SERVICE,
                 [
-                    'data' => $e->getMessage()
+                    'id'         => $id,
+                    'data'       => $e->getMessage(),
+                    'from'       => $callerFunc,
                 ]);
+
+            $this->traceFailureMetrics($callerFunc, $startTime);
         }
 
         $data = [
@@ -259,7 +259,7 @@ trait ExternalLinkedAccountPaymentRepo
                 'id'       => $id,
                 'input'    => $input,
             ],
-            'operation' => 'find'
+            'operation' => $callerFunc,
         ];
 
         throw new Exception\BadRequestException(
@@ -273,6 +273,10 @@ trait ExternalLinkedAccountPaymentRepo
     {
         $class = Entity::getExternalRepoSingleton(Entity::PAYMENT_METHOD_TRANSFER);
 
+        $startTime = millitime();
+
+        $callerFunc = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
+
         try
         {
             $entity = $class->fetchPaymentByTransferIdAndAccountId($transferId, $accountId);
@@ -285,18 +289,25 @@ trait ExternalLinkedAccountPaymentRepo
 
                 $entity->loadMissing($relations);
 
+                $this->traceSuccessMetrics($callerFunc, $startTime);
+
                 return $entity;
             }
 
         }
         catch (\Throwable $e)
         {
+            $this->traceFailureMetrics($callerFunc, $startTime);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                TraceCode::FETCH_PAYMENT_VIA_ROUTE_SERVICE,
                 [
-                    'data' => $e->getMessage()
+                    'transfer_id'  => $transferId,
+                    'account_id'   => $accountId,
+                    'data'         => $e->getMessage(),
+                    'from'         => $callerFunc,
                 ]);
         }
 
@@ -307,7 +318,7 @@ trait ExternalLinkedAccountPaymentRepo
                 'account_id'       => $accountId,
                 'input'            => $input,
             ],
-            'operation' => 'find'
+            'operation' => $callerFunc,
         ];
 
         throw new Exception\BadRequestException(
@@ -339,6 +350,36 @@ trait ExternalLinkedAccountPaymentRepo
         $params['message'] = '';
 
         return $params;
+    }
+
+    protected function traceFailureMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE, [
+            'caller'      => $functionName,
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
+    }
+
+    protected function traceSuccessMetrics(string $functionName, $startTime)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS, [
+            'caller'      => $functionName,
+        ]);
+
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN,
+            millitime() - $startTime,
+            [
+                'caller'  => $functionName
+            ]);
     }
 
     public function serializeForIndexingForExternal(PublicEntity $entity): array

@@ -2144,7 +2144,7 @@ class Core extends Base\Core
             }
     }
 
-    private function findTransferPaymentFromNotes($transfer)
+    public function findTransferPaymentFromNotes($transfer)
     {
 
         $payloadName = $this->getPayloadName($transfer->getPublicId(),LedgerConstants::TRANSFER);

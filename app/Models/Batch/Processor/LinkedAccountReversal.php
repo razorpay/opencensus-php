@@ -15,7 +15,7 @@ class LinkedAccountReversal extends Base
 
         $parentMerchant = $this->merchant->getParentId();
 
-        if ((new Transfer\Service)->isRouteRearchExpEnabled($parentMerchant, $this->mode))
+        if ((new Transfer\Service)->isRouteRearchExpEnabled($parentMerchant))
         {
             $transfer = $this->repo->transfer->fetchByPublicIdAndLinkedAccountMerchant(
                 $transferId, $this->merchant, ConnectionType::DATA_WAREHOUSE_MERCHANT);
