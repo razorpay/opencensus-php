@@ -40,11 +40,13 @@ class CCRouter
         'pricing_fetch_plan' => true,
         'pricing_create_plan' => true,
         'pricing_update_plan_rule' => true,
+        'pricing_delete_plan_rule_force' => true,
         );
 
     private const FUNCTION_MAP = array(
         'RZP\\Models\\Pricing\\Service\\createPlan' => true,
         'RZP\\Models\\Pricing\\Service\\updatePlanRule' => true,
+        'RZP\\Models\\Pricing\\Service\\deletePlanRuleForce' => true,
     );
 
     public function __construct(bool $writes = false)
@@ -134,7 +136,9 @@ class CCRouter
                 $response = $this->app->charge_collections->createPricingPlan($input);
             }else if ($methodName == 'updatePlanRule'){
                 $response = $this->app->charge_collections->updatePricingPlanRule($input);
-            } else{
+            }else if ($methodName == 'deletePlanRuleForce'){
+                $response = $this->app->charge_collections->deletePricingPlanRule($input);
+            }else{
                 $this->trace->info(TraceCode::CC_ROUTER_EXCEPTION,
                     [
                         'Endpoint not found for method' => $methodName,

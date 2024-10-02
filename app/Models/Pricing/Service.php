@@ -880,18 +880,33 @@ class Service extends Base\Service
 
     public function deletePlanRuleForce($planId, $ruleId)
     {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $ccRequest = [
+            'plan_id' => $planId,
+            'rule_id' => $ruleId,
+        ];
+
+        $legacyCallable = function () use ($planId, $ruleId) {
+            return $this->deletePlanRuleForceLegacy($planId, $ruleId);
+        };
+
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function deletePlanRuleForceLegacy($planId, $ruleId)
+    {
         $this->trace->info(TraceCode::PRICING_PLAN_RULE_DELETE_ATTEMPT,
-                            [
-                                'plan_id'    => $planId,
-                                'rule_id'    => $ruleId,
-                                'force'      => true,
-                            ]);
+            [
+                'plan_id'    => $planId,
+                'rule_id'    => $ruleId,
+                'force'      => true,
+            ]);
 
         $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
 
         $this->app['workflow']
-             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
-             ->handle($rule, (new \stdClass));
+            ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+            ->handle($rule, (new \stdClass));
 
         $flag = $this->repo->pricing->deletePlanRuleForce($planId, $ruleId);
 
