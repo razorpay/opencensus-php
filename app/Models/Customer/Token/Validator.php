@@ -28,6 +28,7 @@ class Validator extends Base\Validator
     const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_RUPAY = 'create_network_token_authentication_data_rupay';
     const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_AMEX = 'create_network_token_authentication_data_amex';
     const FETCH_CRYPTOGRAM                              = 'fetch_cryptogram';
+    const FETCH_CRYPTOGRAM_INTERNAL                     = 'fetch_cryptogram_internal';
     const FETCH_TOKEN                                   = 'fetch_token';
     const DELETE_TOKEN                                  = 'delete_token';
     const GET_STATUS                                    = 'get_status';
@@ -172,6 +173,12 @@ class Validator extends Base\Validator
     protected static $fetchCryptogramRules = [
         'id'         => 'sometimes',
         'token_id'   => 'sometimes|public_id',
+    ];
+
+    protected static $fetchCryptogramInternalRules = [
+        'id'         => 'sometimes',
+        'token_id'   => 'sometimes',
+        'merchant_id' => 'required|string'
     ];
 
     protected static $fetchTokenRules = [

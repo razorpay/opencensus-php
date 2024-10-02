@@ -1225,6 +1225,72 @@ class Service extends Base\Service
         }
     }
 
+    public function fetchCryptoGramInternal($input)
+    {
+        $startTime = microtime(true);
+
+        try
+        {
+            $this->trace->info(TraceCode::FETCH_TOKEN_INTERNAL_REQUEST, [
+                "merchant_id" => $input['merchant_id'],
+                "token_id"    => $input['token_id'],
+            ]);
+            (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM_INTERNAL, $input);
+
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+            unset($input['merchant_id']);
+
+            if ($this->merchant->isTokenizationEnabled())
+            {
+
+                $isSptToken = (isset($input['token_id']) === false);
+
+                $token = $this->repo->token->getByTokenAndMerchant($input['token_id'], $this->merchant);
+
+                $this->addAdditionalInputParamsIfPresent($token, $input, $isSptToken, false);
+
+                $this->validateifDinersToken($token, $isSptToken);
+
+                (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_REQUEST_RECEIVED");
+
+                $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant, $token);
+
+                (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CRYPTOGRAM);
+
+                $response = $this->generateCryptogramResponse($serviceProviderToken);
+
+                (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_RESPONSE_SENT", $response);
+
+                return $response;
+            }
+
+            $this->validateMode();
+
+            $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
+
+            if ($token === null)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Token not found');
+            }
+
+            return $this->generateMockResponseForCryptoGram($token);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
+
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::CRYPTOGRAM);
+
+            (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_RESPONSE_SENT", null, $e);
+
+            throw $e;
+        }
+    }
+
     public function fetchMerchantsWithTokenPresent(& $input, $internalServiceRequest = false)
     {
 
