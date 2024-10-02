@@ -229,6 +229,17 @@ class Core extends QrCode\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
         }
 
+        if($qrCode->getStatus() === Status::CLOSED)
+        {
+            $this->trace->info(TraceCode::QR_CODE_EXPIRE_REQUEST_SKIPPED,
+                [
+                    'qr_status' => $qrCode->getStatus(),
+                    'id' => $qrCode->getId()
+            ]);
+
+            return;
+        }
+
         $qrCode->setStatus(Status::CLOSED);
 
         $currentTime = Carbon::now()->getTimestamp();

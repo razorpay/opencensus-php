@@ -2770,4 +2770,52 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     }
 
+    public function testReminderCallbackOnClosedQrCode()
+    {
+        $input = [
+            'type'  => 'upi_qr',
+            'usage' => 'single_use',
+            'fixed_amount' => true,
+            'payment_amount' => 4000
+        ];
+
+        $input['close_by'] = Carbon::now()->getTimestamp() + 1000;
+
+        $qrCode = $this->createQrCode($input);
+
+
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['BankRRN'] = '000011100101';
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrEntity = $this->getDbLastEntity('qr_code');
+        $this->assertEquals('closed', $qrEntity['status']);
+        $this->assertEquals('paid', $qrEntity['close_reason']);
+
+
+        $testData = $this->testData['testReminderCallback'];
+        $callback_url = $testData['base_url'] . $qrCode['id'];
+        $request = [
+            'method'  => 'POST',
+
+            'url'     => $callback_url
+        ];
+
+        $this->ba->reminderAppAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertTrue($response['success']);
+
+        $qrCodeEntity= $this->getDbLastEntity('qr_code');
+
+        $this->assertEquals('paid', $qrCodeEntity['close_reason']);
+        $this->assertEquals($testData['expected_status'], $qrCodeEntity->getStatus());
+    }
+
+
 }
