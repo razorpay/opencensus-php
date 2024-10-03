@@ -604,9 +604,18 @@ class Service extends Base\Service
 
     public function verifyEmailOtp($input)
     {
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        $user = Auth::user();
 
-        list($error, $data) = $request->processInput($input)->send('users/verify_email', 'POST');
+        $requestData = Constants::VERIFY_EMAIL_OTP_AUTH_REQ_DATA_MAP['user'];
+
+        // Switch to proxy auth if merchant is present in the session
+        if (empty($user->currentMerchant()) === false) {
+            $requestData = Constants::VERIFY_EMAIL_OTP_AUTH_REQ_DATA_MAP['merchant'];
+        }
+
+        $request = new \App\Admin\ApiRequestAny($requestData['options']);
+
+        list($error, $data) = $request->processInput($input)->send($requestData['path'], 'POST');
 
         if (empty($error) === false)
         {
