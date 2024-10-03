@@ -43,7 +43,7 @@ export const LinkWidget: React.FC<LinkWidgetProps> = ({
 
   return (
     <Link
-      variant={properties?.variant ?? 'anchor'}
+      variant={properties?.variant || 'anchor'}
       icon={getActionWidgetIcon(icon)}
       iconPosition={iconPosition}
       onClick={handleLinkClick}

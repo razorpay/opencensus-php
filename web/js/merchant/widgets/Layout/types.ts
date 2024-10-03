@@ -7,6 +7,6 @@ export interface LayoutWidgetProps {
   properties?: {
     variant?: BoxProps['display'];
   };
-  components: React.ReactNode[];
+  components: Array<{ id: string; type: string }>;
   styles: BoxProps;
 }

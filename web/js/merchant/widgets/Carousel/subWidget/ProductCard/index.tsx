@@ -73,8 +73,8 @@ export const ProductCardWidget: React.FC<
         testID="product-card-widget"
         width={styles?.width ?? '284px'}
         height={styles?.height ?? '416px'}
-        position="relative"
-        display={isToggleResponsive ? { base: 'block', s: 'flex', xl: 'block' } : undefined}
+        display="flex"
+        flexDirection={isToggleResponsive ? { base: 'column', s: 'row', xl: 'column' } : 'column'}
         borderRadius={styles?.border_radius ?? 'medium'}
         overflow="hidden"
       >
@@ -82,7 +82,7 @@ export const ProductCardWidget: React.FC<
           backgroundImage={getBackgroundImage(background_img)}
           backgroundSize="cover"
           backgroundPosition="center center"
-          height={isToggleResponsive ? { base: '70%', s: 'auto', xl: '75%' } : '300px'}
+          height={isToggleResponsive ? { base: '100%', s: 'auto', xl: '100%' } : '100%'}
           width={isToggleResponsive ? { base: '100%', s: '200px', xl: '100%' } : undefined}
         />
         <Box
@@ -92,10 +92,6 @@ export const ProductCardWidget: React.FC<
           display="flex"
           flexDirection="column"
           gap="spacing.3"
-          position={
-            isToggleResponsive ? { base: 'absolute', s: 'static', xl: 'absolute' } : 'absolute'
-          }
-          bottom="spacing.0"
         >
           <Box display="flex" alignItems="center" justifyContent="space-between">
             <Heading size="medium">{title}</Heading>

@@ -43,7 +43,7 @@ export const ButtonWidget: React.FC<ButtonWidgetProps> = ({
 
   return (
     <Button
-      variant={properties?.variant ?? 'primary'}
+      variant={properties?.variant || 'primary'}
       icon={getActionWidgetIcon(icon)}
       iconPosition={iconPosition}
       onClick={handleLinkClick}

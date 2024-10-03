@@ -7,9 +7,20 @@ import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 const commonProps = { title: 'View', icon: 'arrow_right', icon_position: 'right' as const };
 
 describe('Widgets->Common->Link', () => {
-  test('should render component', () => {
+  test('should render component as link', () => {
     render(<LinkWidget {...commonProps} action="http://www.razorpay.com" />);
     expect(screen.getByRole('link', { name: commonProps.title })).toBeVisible();
+  });
+
+  test('should render component as button', () => {
+    render(
+      <LinkWidget
+        {...commonProps}
+        action="http://www.razorpay.com"
+        properties={{ variant: 'button' }}
+      />,
+    );
+    expect(screen.getByRole('button', { name: commonProps.title })).toBeVisible();
   });
 
   test('should not display link CTA if action is missing', () => {

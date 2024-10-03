@@ -6,6 +6,7 @@ import { BoxProps } from '@razorpay/blade/components';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { QueryKey } from '@tanstack/react-query';
+import { ValueOf } from 'merchant/views/Affordability/AssistedFinancing/type';
 
 export const renderWidget = ({
   widget,
@@ -33,14 +34,29 @@ const backgroundImageMap = {
   payrollBackground: 'payroll.jpg',
   currentAccountBackground: 'current-account.jpg',
   rizeBackground: 'rize.jpg',
-  incorporateBackground: 'incorporate.jpg',
+  incorporateBackground: {
+    base: 'incorporate-base.jpg',
+    s: 'incorporate-s.jpg',
+  },
 };
 
-export const getBackgroundImage = (imageIdentifier) => {
+export const getBackgroundImage = (imageIdentifier?: string): BoxProps['backgroundImage'] => {
+  if (!imageIdentifier) return undefined;
+
   const isImageUrl = /^http/i.test(imageIdentifier);
   if (isImageUrl) return `url(${imageIdentifier})`;
 
-  return `url(/img/rtux/${backgroundImageMap[imageIdentifier]})`;
+  const image = backgroundImageMap[imageIdentifier] as
+    | ValueOf<typeof backgroundImageMap>
+    | undefined;
+  if (!image) return undefined;
+  if (typeof image === 'string') return `url(/img/rtux/${image})`;
+
+  const responsiveImage = {};
+  Object.entries(image).forEach(([size, image]) => {
+    responsiveImage[size] = /^http/i.test(image) ? `url(${image})` : `url(/img/rtux/${image})`;
+  });
+  return responsiveImage;
 };
 
 export const getBaseWidget = ({ widget, isLoading, queryKey }: renderWidgetProps) => {
