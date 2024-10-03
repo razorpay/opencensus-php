@@ -56,13 +56,16 @@ export const fetchSupportTicketsApiCall = (
   filter,
   isFetchTicketsApiMigrationActive,
   isPosMerchantActivated,
+  isTicketPaginationEnabled,
 ) => {
   const requestPayload = {
     url: TICKET_BASE_URL,
     mode: 'live',
   };
 
-  if (isPosMerchantActivated || isFetchTicketsApiMigrationActive) {
+  const isCareAPI = isPosMerchantActivated || isFetchTicketsApiMigrationActive;
+
+  if (isCareAPI) {
     requestPayload.url = FETCH_TICKETS;
     requestPayload.method = 'post';
     requestPayload.data = {
@@ -78,6 +81,23 @@ export const fetchSupportTicketsApiCall = (
   } else if (filter) {
     const key = Object.keys(filter)[0];
     requestPayload.url = `${requestPayload.url}?${key}=${filter[key]}`;
+  }
+  if (isTicketPaginationEnabled) {
+    const page = params?.page || 1;
+    /**
+     * There are two endpoints -
+     * One goes to care. It is a POST endpoint
+     * Another goes to api. It is a GET endpoint
+     */
+    if (isCareAPI) {
+      requestPayload.data.page = page;
+    } else {
+      const urlParams = new URLSearchParams({ page });
+      // If parameters are already added in the URL then append otherwise add new parameters
+      requestPayload.url = filter
+        ? `${requestPayload.url}&${urlParams.toString()}`
+        : `${requestPayload.url}?${urlParams.toString()}`;
+    }
   }
 
   return merchantFetch(requestPayload).then((res) => {
@@ -310,6 +330,7 @@ export const fetchSupportTickets = (
   filter,
   isFetchTicketsApiMigrationActive = false,
   isPosMerchantActivated,
+  isTicketPaginationEnabled,
 ) => {
   return {
     type: FETCH_SUPPORT_TICKETS,
@@ -318,6 +339,7 @@ export const fetchSupportTickets = (
       filter,
       isFetchTicketsApiMigrationActive,
       isPosMerchantActivated,
+      isTicketPaginationEnabled,
     ),
   };
 };

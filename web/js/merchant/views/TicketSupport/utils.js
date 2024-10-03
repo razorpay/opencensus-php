@@ -5,6 +5,7 @@ import EventEmitter from 'eventemitter3';
 import { TICKET_BASE_URL } from 'merchant/reducers/config';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getDeviceSource } from 'merchant/components/Support/getCommonSupportProperties';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const monthsMap = [
   'Jan',
@@ -145,4 +146,12 @@ export const createWorkFlowTicket = (workflow, user) => {
     method: 'POST',
     data: ticketData,
   });
+};
+
+export const isPaginationEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { support_ticket_pagination: undefined } };
+
+  if (!abExperiments?.support_ticket_pagination) return false;
+
+  return isExperimentEnabled(abExperiments.support_ticket_pagination);
 };

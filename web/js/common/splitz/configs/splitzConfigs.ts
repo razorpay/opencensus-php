@@ -1661,6 +1661,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/business-settings/ticket-support/*'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'support_ticket_pagination',
+          experimentId: {
+            beta: 'P3RRfp9aSjvJhe',
+            production: 'P3ROFFQs4uE6FV',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/international-settings/firs'],
       abExperiments: [
         {

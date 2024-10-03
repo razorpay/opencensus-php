@@ -6,11 +6,12 @@ import { statuses, MAX_PAGE_SIZE } from './data';
 import { fetchSupportTickets } from 'merchant/reducers/config';
 import Spinner from 'common/ui/Spinner';
 import TicketBrief from './TicketBrief';
-import { raiseTicket } from 'merchant/views/TicketSupport/utils';
+import { isPaginationEnabled, raiseTicket } from 'merchant/views/TicketSupport/utils';
 import FailedScreen from './FailedScreen';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
 import { getPosActivationStatus, isHelpWidgetDisabled } from 'merchant/components/Support/utils';
+import { Box, Button } from '@razorpay/blade/components';
 @connect(
   (state) => {
     return {
@@ -32,6 +33,9 @@ class Tickets extends React.Component {
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.ticketType !== this.props.match.params.ticketType) {
       this.goNext(1, true);
+      if (this.isTicketPaginationEnabled()) {
+        this.setState((prevState) => ({ ...prevState, current_page: 1 }));
+      }
     }
   }
 
@@ -39,6 +43,8 @@ class Tickets extends React.Component {
     size: MAX_PAGE_SIZE,
     current_page: 1,
   };
+
+  isTicketPaginationEnabled = () => isPaginationEnabled(this.props.splitz);
 
   raiseTicket = () => {
     window.rzpAnalytics?.({
@@ -90,6 +96,7 @@ class Tickets extends React.Component {
           filter,
           isFetchTicketsApiMigrationActive,
           getPosActivationStatus(user, splitz) === 'activated',
+          this.isTicketPaginationEnabled(),
         )
         .then(() => {
           window.rzpAnalytics?.({
@@ -115,7 +122,10 @@ class Tickets extends React.Component {
       return null;
     }
 
-    const NO_TICKETS_PRESENT = !this.props.support_tickets.loading && totalTickets.length === 0;
+    const NO_TICKETS_PRESENT =
+      !this.props.support_tickets.loading &&
+      (totalTickets.length === 0 ||
+        (this.isTicketPaginationEnabled() && currentPageTickets.length === 0));
 
     if (NO_TICKETS_PRESENT) {
       return (
@@ -228,6 +238,24 @@ class Tickets extends React.Component {
     );
   };
 
+  handleNext = () => {
+    this.setState(
+      ({ current_page, ...rest }) => ({ current_page: current_page + 1, ...rest }),
+      () => {
+        this.goNext(this.state.current_page, true);
+      },
+    );
+  };
+
+  handlePrevious = () => {
+    this.setState(
+      ({ current_page, ...rest }) => ({ current_page: current_page - 1, ...rest }),
+      () => {
+        this.goNext(this.state.current_page, true);
+      },
+    );
+  };
+
   render() {
     let tickets = [];
     const total_tickets = [];
@@ -243,22 +271,44 @@ class Tickets extends React.Component {
       tickets = tickets.filter((ticket) => ticket.custom_fields.cf_created_by !== 'agent');
     }
 
+    const isPreviousDisabled = this.props.support_tickets.loading || this.state.current_page === 1;
+    const isNextDisabled =
+      this.props.support_tickets.loading || this.state.current_page === 10 || tickets.length === 0;
+
     const createTicket = raiseTicket;
+    const isTicketPaginated = this.isTicketPaginationEnabled();
+
     return (
-      <div className="content-wrapper content-sm ticket-support">
-        <div className="row">
-          <div className="col-xs-12">
-            <div className="tickets-container">
-              {this.props.support_tickets.loading ? (
-                <div className="ticket-cont-spinner">
-                  <Spinner />
-                </div>
-              ) : null}
-              {this.showTickets(total_tickets, tickets, this.props.user, createTicket)}
+      <>
+        <div className="content-wrapper content-sm ticket-support">
+          <div className="row">
+            <div className="col-xs-12">
+              <div className="tickets-container">
+                {this.props.support_tickets.loading ? (
+                  <div className="ticket-cont-spinner">
+                    <Spinner />
+                  </div>
+                ) : null}
+                {this.showTickets(total_tickets, tickets, this.props.user, createTicket)}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        {isTicketPaginated && !this.props.support_tickets.loading ? (
+          <Box display="flex" gap="spacing.3" justifyContent="flex-end">
+            <Button
+              variant="secondary"
+              onClick={this.handlePrevious}
+              isDisabled={isPreviousDisabled}
+            >
+              Previous
+            </Button>
+            <Button variant="secondary" onClick={this.handleNext} isDisabled={isNextDisabled}>
+              Next
+            </Button>
+          </Box>
+        ) : null}
+      </>
     );
   }
 }
