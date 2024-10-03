@@ -37,7 +37,7 @@ describe('MagicX Settings Form Component', () => {
   test('should render specific fields for all', async () => {
     render(<App />);
 
-    const appEnabledField = await screen.findByText('Enable MagicX');
+    const appEnabledField = await screen.findByText('Enable Checkout360');
     const emailField = await screen.findByText('Email Field');
     const modalColorField = await screen.findByText('Theme Color');
     const loginMandatoryField = await screen.findByText('Mandatory OTP');
@@ -48,7 +48,8 @@ describe('MagicX Settings Form Component', () => {
     expect(loginMandatoryField).toBeInTheDocument();
   });
 
-  test('should render flow type field only for plus plan merchants', async () => {
+  //For Checkout360 flow , we wont be supporting checkout type as of initial rollout. Skipped but not removed incase needed for future versions
+  test.skip('should render flow type field only for plus plan merchants', async () => {
     const customState = {
       magic_settings: {
         shop_plan_name: 'shopify_plus',
@@ -72,7 +73,6 @@ describe('MagicX Settings Form Component', () => {
             },
           },
           cart_page_login: false,
-          permalinks_flow: false,
           is_email_optional: true,
           is_email_mandatory: false,
           is_login_mandatory: true,
@@ -84,13 +84,11 @@ describe('MagicX Settings Form Component', () => {
     const { container } = render(<App state={customState} />);
 
     const appEnabledToggle = container.querySelector(`button[name="appEnabled"]`);
-    const flowTypeDropdown = container.querySelector(`select[name="flowType"]`);
     const emailFieldDropdown = container.querySelector(`select[name="emailField"]`);
     const isLoginMandatoryToggle = container.querySelector(`button[name="isLoginMandatory"]`);
     const themeColor = container.querySelector(`input[name="themeColor"]`);
 
     expect(appEnabledToggle).toHaveValue('true');
-    expect(flowTypeDropdown).toHaveValue('checkout_ui_extensions');
     expect(emailFieldDropdown).toHaveValue('optional');
     expect(isLoginMandatoryToggle).toHaveValue('true');
     expect(themeColor).toHaveValue('#ffffff');

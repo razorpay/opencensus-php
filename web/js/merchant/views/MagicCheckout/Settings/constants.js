@@ -13,6 +13,7 @@ import PlatformSettingsV2 from 'merchant/views/MagicCheckout/Settings/containers
 import CODComponentV2 from 'merchant/views/MagicCheckout/Settings/containers/CODV2';
 import RTOReductionSetupV2 from 'merchant/views/MagicCheckout/Settings/containers/RTOReductionSetupV2';
 
+import MagicXCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD';
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
 import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingWrapper';
 
@@ -24,12 +25,25 @@ import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import CardCTA from 'merchant/views/MagicCheckout/common/components/CardCTA';
 
 import { convertMagicRoutesToConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
+import { useSplitzService } from 'common/splitz';
 
 const AnalyticsSettings = lazy(() =>
   import(
     /* webpackChunkName: "MagicAnalyticsSettings" */ 'merchant/views/MagicCheckout/AnalyticsSettings'
   ),
 );
+
+const MagicXCodSetup = () => {
+  const {
+    abExperiments: { magic_dashboard_revamp, magicx_publicapp_cod },
+  } = useSplitzService();
+  if (magicx_publicapp_cod?.variables?.result === 'on') return <MagicXCOD />;
+  return magic_dashboard_revamp?.variables?.result === 'on' ? (
+    <CODComponentV2 />
+  ) : (
+    <CODSettingsTab />
+  );
+};
 
 export const APP_VIEW_RADIO_OPTIONS = [
   {
@@ -65,7 +79,13 @@ export const TABS = {
       label: 'COD Settings',
       Component: CODSettingsTab,
       condition: (_user) => _user.isMagicCODEngineEnabled,
-      onRCOD: true,
+    },
+    {
+      className: 'cod-settings',
+      label: 'COD Settings',
+      path: '/magic/settings/cod-settings',
+      Component: MagicXCodSetup,
+      onRCODOnly: true,
     },
     {
       className: 'shipping-settings',
@@ -239,6 +259,12 @@ export const SWITCH_TEXTS = {
       secondaryCtaLabel: 'No, don’t!',
       primaryCtaLabel: 'Yes, enable',
     },
+    codIntelligence: {
+      header: 'Enable COD Intelligence?',
+      desc: 'Realtime review of COD orders will be turned on. Checkout360 will decide which customer sees COD option based on their past buying history.',
+      secondaryCtaLabel: 'Cancel',
+      primaryCtaLabel: 'Enable COD Intelligence',
+    },
   },
   disable: {
     codIntelligence: {
@@ -396,7 +422,7 @@ export const ROUTES = {
     },
     {
       className: 'magic-checkout-settings',
-      path: '/magic/setup-settings/checkout-setup-magicx',
+      path: '/magic/setup-settings/magicx-store-settings',
       label: 'Checkout Setup',
       Component: MagicXStoreSettings,
       condition: (_user, abExperiments) =>
@@ -415,10 +441,16 @@ export const ROUTES = {
     {
       className: 'cod-settings',
       label: 'COD Setup',
-      path: '/magic/setup-settings/cod',
+      path: '/magic/setup-settings/cod-settings',
       Component: CODComponentV2,
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
-      onRCOD: true,
+    },
+    {
+      className: 'cod-settings',
+      label: 'COD Setup',
+      path: '/magic/setup-settings/cod-settings',
+      Component: MagicXCodSetup,
+      onRCODOnly: true,
     },
     {
       className: 'intelligence-settings',

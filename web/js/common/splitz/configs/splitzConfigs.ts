@@ -941,6 +941,22 @@ export const splitzConfig: SplitzInitConfig = {
       routesToMatch: [/^(\/magic(\/.*)?|\/configuration\/magic\/.*)$/],
       abExperiments: [
         {
+          uniqueHashKey: 'magicx_publicapp_cod',
+          experimentId: {
+            beta: 'P48gdKIuJWPB02',
+            production: 'P48s8XHiHP9wRc',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'magic_dashboard_revamp',
           experimentId: {
             beta: 'OKyLfVMA1lbZob',

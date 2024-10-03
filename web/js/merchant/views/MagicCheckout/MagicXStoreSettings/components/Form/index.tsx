@@ -16,7 +16,6 @@ import { ColorPickerWrapper } from './styled';
 const Form = ({ settings, showNotification, updateSopcMetafields }) => {
   const [formState, dispatch] = useReducer(magicXReducer, INITIAL_STATE);
   const [isSaving, setIsSaving] = useState(false);
-  const isPlusPlan = settings.shop_plan_name === 'shopify_plus';
 
   useEffect(() => {
     const tranformedData = transformServerDataToForm(settings);
@@ -89,7 +88,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         flexDirection="column"
       >
         <Box width="100%" display="flex" paddingY="spacing.4">
-          <Box width="50%">Enable MagicX</Box>
+          <Box width="50%">Enable Checkout360</Box>
           <Box>
             <SwitchField
               onChange={() => handleSwitchChange('status')}
@@ -108,7 +107,11 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         gap="spacing.7"
         flexDirection="column"
       >
-        {isPlusPlan && (
+        {/**
+         * For Checkout360 flow , permlinks will be the only checkout type.
+         * Commenting for future ref incase of change in requirements.
+         */}
+        {/* {isPlusPlan && (
           <Box width="100%" display="flex" alignItems="center">
             <Box width="50%">Checkout Type</Box>
             <Box width="50%">
@@ -130,7 +133,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
               />
             </Box>
           </Box>
-        )}
+        )} */}
         <Box width="100%" display="flex" alignItems="center">
           <Box width="50%">Email Field</Box>
           <Box width="50%">
@@ -194,8 +197,8 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Box maxWidth="75%">
           <Text>
-            Upon clicking "Save Settings", you will be redirected to your Shopify admin and MagicX
-            checkout will be enabled on your live theme
+            Upon clicking "Save Settings", you will be redirected to your Shopify admin and
+            Checkout360 will be enabled on your live theme
           </Text>
         </Box>
         <Button
