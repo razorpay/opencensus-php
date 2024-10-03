@@ -12086,6 +12086,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACTIVATION_CHECK_SKIPPED                     = 'MERCHANT_ACTIVATION_CHECK_SKIPPED';
     const MERCHANT_PERMISSIONS_CHECK_IN_PERSON_PAYMENT          = 'MERCHANT_PERMISSIONS_CHECK_IN_PERSON_PAYMENT';
     const INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE = "INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE";
+    const METHODS_WRITE = "METHODS_WRITE";
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
