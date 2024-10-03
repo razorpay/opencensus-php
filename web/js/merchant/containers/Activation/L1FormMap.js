@@ -43,8 +43,7 @@ export default [
   {
     label: 'Billing Label',
     name: 'business_dba',
-    info:
-      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.',
+    info: 'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.',
   },
   [
     {

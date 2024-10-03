@@ -6,13 +6,12 @@ import { CheckoutFrame } from 'merchant/views/Settings/Configuration/CheckoutDem
 
 import { CHECKOUT_IFRAME_URL } from './constants';
 import { useCheckoutPreview } from './context/createContext';
-import { useCheckoutDemoValues } from './hooks';
 import { initCheckout } from './liveCheckout';
+import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
 const CheckoutV2 = ({ shouldScaleToFit }: { shouldScaleToFit: boolean }) => {
   const { isDesktopPreview } = useCheckoutPreview();
-  const { values } = useCheckoutDemoValues();
-
+  const { values } = useCheckoutEditor();
   const updateCheckout = useRef<Promise<{
     update: (value: Record<string, unknown>) => void;
   }> | null>(null);

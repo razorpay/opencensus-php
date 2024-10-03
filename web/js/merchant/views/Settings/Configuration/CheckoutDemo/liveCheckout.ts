@@ -7,6 +7,15 @@ function getOptionsFromState(state) {
     'config.display.display.language'?: string;
     image?: string;
     'theme.color'?: string;
+    'theme.border_radius'?: string;
+    'theme.sidebar_graphic'?: {
+      enabled: boolean;
+      svg: string;
+    };
+    'theme.title_style'?: string;
+    'theme.font_family'?: {
+      heading: string;
+    };
   } = {
     key: 'rzp_live_ILgsfZCZoFIKMb',
     amount: 5000_00,
@@ -29,6 +38,23 @@ function getOptionsFromState(state) {
     options.name = state.brandName;
   }
 
+  if (state.borderRadius) {
+    options['theme.border_radius'] = state.borderRadius;
+  }
+
+  if (state.sidebarGraphic) {
+    options['theme.sidebar_graphic'] = state.sidebarGraphic;
+  }
+
+  if (state.titleStyle) {
+    options['theme.title_style'] = state.titleStyle;
+  }
+
+  if (state.fontFamily) {
+    options['theme.font_family'] = {
+      heading: state.fontFamily,
+    };
+  }
   return {
     options,
   };

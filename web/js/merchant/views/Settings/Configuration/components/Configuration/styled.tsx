@@ -33,4 +33,5 @@ export const RightChildrenWrapper = styled.div`
   align-items: center;
   gap: ${({ theme }: StyledProps) => theme.spacing[3]}px;
   overflow: hidden;
+  cursor: pointer;
 `;

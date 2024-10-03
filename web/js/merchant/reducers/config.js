@@ -34,6 +34,8 @@ const FETCH_INSIGHTS = 'FETCH_INSIGHTS';
 const FETCH_FEATURE_BY_NAME = 'FETCH_FEATURE_BY_NAME';
 const FETCH_MERCHANT_CHECKOUT_CONFIG = 'FETCH_MERCHANT_CHECKOUT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_CONFIG';
+const CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG = 'CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG';
+const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 const ADD_REPLY_URL_CARE_SERVICE =
@@ -604,6 +606,24 @@ export const createMerchantCheckoutConfig = ({ type, ...data }) => {
   };
 };
 
+export const fetchMerchantCheckoutStylingConfig = () => {
+  return {
+    type: FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG,
+    payload: merchantFetch('checkout_config?type=3'),
+  };
+};
+
+export const createMerchantCheckoutStylingConfig = ({ type, ...data }) => {
+  return {
+    type: CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG,
+    payload: merchantFetch({
+      url: 'checkout_config',
+      method: type,
+      data,
+    }),
+  };
+};
+
 const initialState = {
   loading: true,
   error: null,
@@ -661,6 +681,11 @@ const initialState = {
     error: null,
   },
   checkoutConfig: {
+    loading: true,
+    data: null,
+    error: null,
+  },
+  checkoutStylingConfig: {
     loading: true,
     data: null,
     error: null,
@@ -985,6 +1010,32 @@ const configReducer = (state = initialState, action) => {
 
     case `${FETCH_MERCHANT_CHECKOUT_CONFIG}::ERROR`: {
       return set(state, 'checkoutConfig', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors,
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG}::PENDING`: {
+      return merge(state, {
+        checkoutStylingConfig: {
+          ...state.checkoutStylingConfig,
+          loading: true,
+        },
+      });
+    }
+
+    case `${CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG}::SUCCESS`:
+    case `${FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG}::SUCCESS`: {
+      return set(state, 'checkoutStylingConfig', {
+        loading: false,
+        data: action.payload.data.checkout_configuration.checkout_style_config,
+        error: null,
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG}::ERROR`: {
+      return set(state, 'checkoutStylingConfig', {
         loading: false,
         data: action.payload.data,
         error: action.payload.errors,

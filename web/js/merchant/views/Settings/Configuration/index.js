@@ -30,8 +30,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import { CheckoutConfigExperiment } from './CheckoutConfig';
-import { CheckoutFeatureExperiment } from './CheckoutFeatures';
-import { CheckoutStylingExperiment } from './CheckoutStyling';
+import { CheckoutEditorExperiment } from './CheckoutEditor';
 import DefaultRefundSpeed from './DefaultRefundSpeed';
 import EmailNotifications from './EmailNotifications';
 import FeeBearerSelfserver from './FeeBearerSelfserve';
@@ -434,12 +433,12 @@ class CongfigurationContainer extends Component {
             )}
             {showStyling && (
               <IntoView hashedWith={ACCOUNT_SETTINGS}>
-                <CheckoutStylingExperiment />
+                <CheckoutEditorExperiment showStyling={showStyling} />
               </IntoView>
             )}
             {showFeatures && (
               <IntoView hashedWith={ACCOUNT_SETTINGS}>
-                <CheckoutFeatureExperiment extraConfig={extraConfig} />
+                <CheckoutEditorExperiment showFeatures={showFeatures} extraConfig={extraConfig} />
               </IntoView>
             )}
             {showMissedOrderPaymentLink && remarketerEnabled && (

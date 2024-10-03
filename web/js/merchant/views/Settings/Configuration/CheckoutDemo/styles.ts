@@ -51,7 +51,7 @@ export const PreviewSizeWrapper = styled.div(
   justify-content: center;
   align-items: center;
   width: 112px;
-  gap: 8px;
+  gap: ${theme.spacing[3]}px;
 `,
 );
 
