@@ -1,8 +1,29 @@
 import React, { Component } from 'react';
+import {
+  Box,
+  PlusCircleIcon,
+  ActionListItem,
+  ActionListItemIcon,
+  Button,
+  ActionList,
+} from '@razorpay/blade/components';
 import { PowerSelect } from 'react-power-select';
+
+import { useSplitzService, withSplitzService } from 'common/splitz';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { isExperimentActive } from 'common/utils/rzp-utils';
+
+import { createNewAccountTrack } from './track';
+
+const CREATE_MERCHANT_CTA_LABEL = 'Create a new account';
 
 const SwitchMerchant = ({ user, onSwitchMerchant }) => {
+  const {
+    abExperiments: { create_merchant_cta },
+  } = useSplitzService();
+
+  const isCreateMerchantCTAEnabled = isExperimentActive(create_merchant_cta);
+
   let merchants = user.merchants;
   merchants = Object.keys(merchants).map((merchantId) => merchants[merchantId]);
   const linkedActs = merchants.flatMap((merchant) => (merchant.parent_id ? merchant : []));
@@ -12,6 +33,11 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   merchants = merchants
     .flatMap((merchant) => (merchant.parent_id ? [] : merchant))
     .concat(linkedActs);
+
+  const handleCreateNewAccount = () => {
+    createNewAccountTrack();
+    window.open(`${window.RAZORPAY_ACCOUNTS_URL}/merchants/new`, '_blank');
+  };
 
   return (
     <PowerSelect
@@ -39,6 +65,22 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
           </span>
         );
       }}
+      afterOptionsComponent={
+        isCreateMerchantCTAEnabled
+          ? () => {
+              return (
+                <ActionList>
+                  <ActionListItem
+                    leading={<ActionListItemIcon icon={PlusCircleIcon} />}
+                    title={CREATE_MERCHANT_CTA_LABEL}
+                    isSelected={true}
+                    onClick={handleCreateNewAccount}
+                  />
+                </ActionList>
+              );
+            }
+          : undefined
+      }
       onChange={({ option }) => {
         if (option) {
           onSwitchMerchant(option);
@@ -48,7 +90,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   );
 };
 
-export class SwitchMerchantTypeahead extends Component {
+class SwitchMerchantTypeaheadComponent extends Component {
   constructor(props) {
     super(props);
 
@@ -79,8 +121,18 @@ export class SwitchMerchantTypeahead extends Component {
     this.setState({ searchTerm, merchants });
   }
 
+  handleCreateNewAccount() {
+    createNewAccountTrack();
+    window.open(`${window.RAZORPAY_ACCOUNTS_URL}/merchants/new`, '_blank');
+  }
+
   render() {
-    const { user, onSwitchMerchant } = this.props;
+    const { user, onSwitchMerchant, splitz } = this.props;
+    const {
+      abExperiments: { create_merchant_cta },
+    } = splitz;
+
+    const isCreateMerchantCTAEnabled = isExperimentActive(create_merchant_cta);
 
     return (
       <div>
@@ -105,9 +157,25 @@ export class SwitchMerchantTypeahead extends Component {
             );
           })}
         </ul>
+        {isCreateMerchantCTAEnabled ? (
+          <Box marginTop={'spacing.2'}>
+            <Button
+              size="small"
+              variant="secondary"
+              iconPosition="left"
+              icon={PlusCircleIcon}
+              isFullWidth
+              onClick={this.handleCreateNewAccount}
+            >
+              {CREATE_MERCHANT_CTA_LABEL}
+            </Button>
+          </Box>
+        ) : null}
       </div>
     );
   }
 }
 
+export const SwitchMerchantTypeahead = withSplitzService(SwitchMerchantTypeaheadComponent);
+export { CREATE_MERCHANT_CTA_LABEL };
 export default SwitchMerchant;

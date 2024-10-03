@@ -1,6 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import SwitchMerchant from 'merchant/components/HeaderNav/SwitchMerchant';
+import SwitchMerchant, {
+  CREATE_MERCHANT_CTA_LABEL,
+} from 'merchant/components/HeaderNav/SwitchMerchant';
 import { noop } from 'lodash';
 
 const props = {
@@ -13,6 +15,19 @@ const props = {
   },
   onSwitchMerchant: () => noop,
 };
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {
+      create_merchant_cta: {
+        variables: {
+          result: 'off',
+        },
+      },
+    },
+  }),
+  withSplitzService: jest.fn(),
+}));
 
 describe('SwitchMerchant', () => {
   beforeEach(() => {
@@ -35,5 +50,36 @@ describe('SwitchMerchant', () => {
     );
     const test2 = screen.queryByText('Test2');
     expect(test2).toBeNull();
+    expect(screen.getByText(CREATE_MERCHANT_CTA_LABEL)).toBeVisible();
+  });
+
+  xit('should show create account button if experiment is on', () => {
+    jest.doMock('common/splitz', () => ({
+      useSplitzService: () => ({
+        abExperiments: {
+          create_merchant_cta: {
+            variables: {
+              result: 'on',
+            },
+          },
+        },
+      }),
+    }));
+
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {});
+
+    render(<SwitchMerchant {...props} />);
+
+    expect(screen.getByText(CREATE_MERCHANT_CTA_LABEL)).toBeVisible();
+
+    fireEvent.click(screen.getByText(CREATE_MERCHANT_CTA_LABEL));
+
+    expect(openSpy).toHaveBeenCalledWith('https://accounts.np.razorpay.in/merchants/new', '_blank');
+  });
+
+  xit('should not show create account button if experiment is on', () => {
+    render(<SwitchMerchant {...props} />);
+
+    expect(screen.getByText(CREATE_MERCHANT_CTA_LABEL)).not.toBeVisible();
   });
 });

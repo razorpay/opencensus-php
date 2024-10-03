@@ -472,6 +472,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'create_merchant_cta',
+        experimentId: {
+          beta: 'P1LKVIbCQYMgPZ',
+          production: 'P1LLv2j5lxR5JZ',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],
