@@ -1034,4 +1034,35 @@ class Core extends Base\Core
 
         return ['total_ods_settled_' . $keyDateSuffix, $keyTimeStamp];
     }
+
+    public function syncOdsTransaction($input)
+    {
+        $journalId = $input["journal_id"];
+        $settlementOndemandId = $input["ods_id"];
+        $merchantId = $input["merchant_id"];
+        $accountAlreadyExistsForCapitalInNewLedger = true;
+
+        $this->trace->info(
+            TraceCode::ODS_TXN_CREATE,
+            [
+                LedgerConstants::JOURNAL_ID => $journalId,
+                LedgerConstants::TRANSACTOR_ID => $settlementOndemandId,
+                "merchant" => $merchantId,
+            ]);
+
+        return $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
+            $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
+            $resource = $this->getTransactionMutexresource($settlementOndemand);
+
+            list($txn, $feeSplit) = $this->app['api.mutex']->acquireAndRelease(
+                $resource,
+                function () use ($settlementOndemand, $journalId) {
+                    list($txn, $feeSplit) = (new Transaction\Processor\SettlementOndemand($settlementOndemand))
+                        ->createTransaction($journalId);
+                    $txn->setReference3("enabled");
+                    $this->repo->saveOrFail($txn);
+                });
+            return $txn;
+        });
+    }
 }

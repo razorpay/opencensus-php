@@ -3250,6 +3250,7 @@ class Route
         'settlement_ondemand_blocked'              => ['get',       'settlements/ondemand/merchant/config',          'SettlementOndemandController@isOndemandBlocked'                    ],
         'settlement_ondemand_linked_account'       => ['post',      'settlements/ondemand/linked_account_settlements','SettlementOndemandController@linkedAccountSettlement'             ],
         'settlement_ondemand_reverse'              => ['post',      'settlements/ondemand/reverse',                   'SettlementOndemandController@reverseOndemandSettlement'           ],
+        'settlement_ondemand_sync_txn'             => ['post',      'settlements/ondemand/transaction/sync',          'SettlementOndemandController@syncOdsTransaction'                  ],
         'settlement_ondemand_create_internal'      => ['post',      'settlements/ondemand/internal',                 'SettlementOndemandController@postSettlementOndemand'               ],
 
 
@@ -8359,6 +8360,7 @@ class Route
         'setl_ondemand_transfer_processed',
         'setl_ondemand_transfer_trigger',
         'setl_ondemand_transfer_payout_update',
+        'settlement_ondemand_sync_txn',
         'banking_account_statement_process_admin',
         'banking_account_statement_insert_missing',
         'correct_merchant_owners_products',
@@ -9834,6 +9836,7 @@ class Route
         'setl_ondemand_transfer_trigger'           => Permission::SETTLEMENT_ONDEMAND_TRANSFER_RETRY,
         'setl_ondemand_transfer_payout_update'     => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_feature_enable'       => Permission::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        'settlement_ondemand_sync_txn'             => Permission::CAPITAL_DEVELOPER,
         'merchant_tags_batch'                      => Permission::CAPITAL_DEVELOPER,
         'early_settlement_feature_period_create'   => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,

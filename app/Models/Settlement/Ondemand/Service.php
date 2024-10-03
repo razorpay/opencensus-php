@@ -598,4 +598,11 @@ class Service extends Base\Service
             ($requestDetails['settlement_type'] === 'linked_account_settlement')) ||
         (isset($requestDetails['scheduled']) && $requestDetails['scheduled'] === true);
     }
+
+    public function syncOdsTransaction($input)
+    {
+        $response = $this->core()->syncOdsTransaction($input['ods_input']);
+
+        return ["response" => $response];
+    }
 }
