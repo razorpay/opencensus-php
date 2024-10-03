@@ -51,6 +51,10 @@ function SteppedSplitPane({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !isWidgetVisibleOnce) {
+          const defaultSelectedStepId = getDefaultSelectedStepId(components);
+          const defaultTabNumber =
+            components.findIndex((step) => step.id === defaultSelectedStepId) + 1;
+
           analyticsTrack({
             objectName: 'Cross Sell Widget ',
             actionName: 'Displayed',
@@ -66,6 +70,7 @@ function SteppedSplitPane({
               session_id: window?.session_id || '',
               suggested_product: suggestedProduct,
               type_of_pitch: pitchingType,
+              default_tab_number: defaultTabNumber,
             },
           });
 
@@ -88,7 +93,7 @@ function SteppedSplitPane({
         observer.unobserve(steppedSplitPaneRef.current);
       }
     };
-  }, [isWidgetVisibleOnce]);
+  }, [isWidgetVisibleOnce, components]);
 
   useEffect(() => {
     setSelectedStepId(getDefaultSelectedStepId(components));
