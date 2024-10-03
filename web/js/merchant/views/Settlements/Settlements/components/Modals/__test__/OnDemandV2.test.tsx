@@ -15,11 +15,27 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/OndemandModa
   default: () => <p>OndemandModal V1</p>,
 }));
 
+const mockActiveExp = { variables: { result: 'on' } };
+const mockGTMExpActive: any = { value: undefined };
+
 jest.mock('common/splitz', () => ({
   useSplitzService: () =>
     ({
-      abExperiments: { capital_is_settle_now_v2: { variables: { result: 'on' } } },
+      abExperiments: {
+        capital_is_settle_now_v2: { variables: { result: 'on' } },
+        capital_is_gtm: mockGTMExpActive.value,
+      },
     } as unknown as SpiltzContextState),
+}));
+
+const mockGTMSeen = { value: { isViewed: () => false, setViewed: jest.fn() } };
+
+jest.mock('merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers', () => ({
+  ...(jest.requireActual(
+    'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers',
+  ) as object),
+  __esModule: true,
+  midLimitGTMViewedStatus: mockGTMSeen.value,
 }));
 
 const waitForOdsModal = async () => {
@@ -284,6 +300,107 @@ describe('Capital/OnDemandV2', () => {
           name: /Close/i,
         }),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('IS Restricted merchants', () => {
+    test('should render IS restricted banner', async () => {
+      const user = userEvent.setup();
+      renderApp({ user: { isOndemandSettlementsRestricted: true } });
+      await waitForOdsModal();
+      expect(screen.getByText('Current balance')).toBeInTheDocument();
+      expect(
+        screen.getByText(/Withdraw upto 60% of your balance upto ₹5,000/i),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/Remaining daily limit/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Maximum daily withdrawal limit/i)).not.toBeInTheDocument();
+      /** Open Modal */
+      user.click(screen.getByText('Learn More'));
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            'You are enjoying early access to Instant Settlements and can settle a part of your balance.',
+          ),
+        ).toBeInTheDocument();
+      });
+      /** Close Modal */
+      user.click(screen.getByRole('button', { name: 'Understood' }));
+      await waitFor(() => {
+        expect(
+          screen.queryByText(
+            'You are enjoying early access to Instant Settlements and can settle a part of your balance.',
+          ),
+        ).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('IS Merchant level limit GTM', () => {
+    test('should render GTM when mid limit present & non ODS restricted & experiment active & has not seen GTM', async () => {
+      mockGTMExpActive.value = mockActiveExp;
+      const user = userEvent.setup();
+      renderApp();
+      await waitFor(() => {
+        expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      });
+      // Info screen
+      await waitFor(() => {
+        expect(screen.getByText('Reliable')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Daily Limits')).toBeInTheDocument();
+      expect(screen.getByText('Learn More')).toBeInTheDocument();
+      user.click(screen.getByRole('button', { name: 'Next' }));
+      // Analyzing screen
+      await waitFor(() => {
+        expect(screen.getByText('Analyzing your transaction history...')).toBeInTheDocument();
+      });
+      await waitFor(() => {
+        expect(screen.getByText('Analyzing your business details...')).toBeInTheDocument();
+      });
+      // Offer screen
+      await waitFor(() => {
+        expect(screen.getByText('Maximum Daily Withdrawal Limit')).toBeInTheDocument();
+      });
+      expect(screen.getByText(/39,800/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
+      // Hide GTM and should show amount screen
+      user.click(screen.getByRole('button', { name: 'Settle now' }));
+      await waitFor(() => {
+        expect(screen.getByText('Instant Settlements')).toBeInTheDocument();
+      });
+      expect(mockGTMSeen.value.setViewed).toHaveBeenCalled();
+      expect(screen.queryByText('Maximum Daily Withdrawal Limit')).not.toBeInTheDocument();
+    });
+    /** GTM disabled cases */
+    test('should not render GTM when it was already viewed', async () => {
+      mockGTMExpActive.value = mockActiveExp;
+      mockGTMSeen.value.isViewed = () => true;
+      renderApp();
+      await waitForOdsModal();
+      expect(screen.queryByText('Reliable')).not.toBeInTheDocument();
+      mockGTMSeen.value.isViewed = () => false;
+    });
+
+    test('should not render GTM when exp not active', async () => {
+      mockGTMExpActive.value = undefined;
+      renderApp();
+      await waitForOdsModal();
+      expect(screen.queryByText('Reliable')).not.toBeInTheDocument();
+    });
+
+    test('should not render GTM for IS restricted merchant', async () => {
+      mockGTMExpActive.value = mockActiveExp;
+      renderApp({ user: { isOndemandSettlementsRestricted: true } });
+      await waitForOdsModal();
+      expect(screen.getByText(/Withdraw upto 60% of your balance upto/i)).toBeInTheDocument();
+    });
+
+    test('should not render GTM when mid limit not present', async () => {
+      mockGTMExpActive.value = mockActiveExp;
+      server.use(apiHandlers.odsConfigNoBreachHandler);
+      renderApp();
+      await waitForOdsModal();
+      expect(screen.queryByText('Reliable')).not.toBeInTheDocument();
     });
   });
 });

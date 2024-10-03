@@ -1674,6 +1674,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'capital_is_gtm',
+          experimentId: {
+            beta: 'P3eJWSuYWs63GF',
+            production: 'P3eGB6lvwslrul',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

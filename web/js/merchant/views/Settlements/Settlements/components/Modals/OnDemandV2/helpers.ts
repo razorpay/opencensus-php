@@ -4,6 +4,8 @@ import {
   formatNumber,
 } from '@razorpay/i18nify-js';
 
+import { getItem, setItem } from 'common/utils/localStorage';
+
 export const SCREENS = {
   WITHDRAW: 'WITHDRAW',
   SUCCESS: 'SUCCESS',
@@ -74,4 +76,9 @@ export const formatAmount = (
       maximumFractionDigits: decimal,
     },
   });
+};
+
+export const midLimitGTMViewedStatus = {
+  isViewed: () => Boolean(getItem('ods_gtm_viewed')),
+  setViewed: () => setItem('ods_gtm_viewed', 'true'),
 };

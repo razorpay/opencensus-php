@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
   Button,
   Box,
@@ -28,6 +28,8 @@ import {
 import { getCurrencySymbol } from '@razorpay/i18nify-js';
 import { connect } from 'react-redux';
 
+import { useSplitzService } from 'common/splitz';
+import lazy from 'merchant/routes/LazyLoader';
 import { useLinkedAccountBalance } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useLinkedAccountBalance';
 import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 import { useODSRestrictedConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
@@ -44,6 +46,7 @@ import {
   getIsPartialOndemandSettlementEnabled,
   getIsRouteOndemandSettlementEnabled,
 } from 'merchant/views/Settlements/InstantSettlements/utils/common';
+import { ODSRestrictedBanner } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/ODSRestrictedBanner';
 import {
   MODAL_PADDING,
   MODAL_HEADER_BG,
@@ -54,16 +57,19 @@ import {
   convertToMajorUnit,
   SCREENS,
   MODAL_ZINDEX,
+  midLimitGTMViewedStatus,
 } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
+
+const GtmModalContent = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "GtmModalContent", webpackPrefetch: true */
+      'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/GtmModalContent'
+    ),
+);
 
 const TOOLTIP_CONTENT = {
   PG_BALANCE: 'This is the live payment gateway balance that can be withdrawn instantly.',
-  ODS_RESTRICTED: {
-    LIMIT:
-      'You can settle 60% of your balance upto ₹15,000 initially. To unlock 100% settlements, keep up your sales cycle.',
-    AVAILABLE:
-      'Remaining daily limit is calculated as Maximum daily withdrawal limit minus Amount withdrawn today. Remaining daily limit will be refreshed the next day.',
-  },
   MID_LIMIT: {
     LIMIT: 'This is the maximum amount that you can withdraw per day.',
     AVAILABLE:
@@ -220,6 +226,21 @@ const ConfirmScreen = ({
   );
 };
 
+/** No Actions allowed */
+const HardLoading = () => {
+  return (
+    <Box borderRadius="large" overflow="hidden">
+      <ProgressBar isIndeterminate />
+      <Box padding={MODAL_PADDING}>
+        <Skeleton borderRadius="medium" height="22px" width="60%" />
+        <Skeleton borderRadius="medium" marginTop="spacing.4" height="16px" width="80%" />
+        <Skeleton borderRadius="medium" marginTop="60px" height="48px" />
+        <Skeleton borderRadius="medium" marginTop="82px" height="36px" />
+      </Box>
+    </Box>
+  );
+};
+
 /** Analytics utils */
 let hasEditedAmount = false;
 
@@ -323,6 +344,16 @@ const WithdrawalScreen = ({
   const shouldDisableShowBreakup =
     isPricingLoading || pricingBreakupQuery.isError || !!errorMessage;
 
+  const [hasSeenGTMModal, setHasSeenGTMModal] = useState(() => {
+    return midLimitGTMViewedStatus.isViewed();
+  });
+  const {
+    abExperiments: { capital_is_gtm },
+  } = useSplitzService();
+  const isMIDLimitGTMExpActive = capital_is_gtm?.variables?.result === 'on';
+  const shouldShowMIDGtm =
+    !isODSRestricted && hasMIDLevelLimit && isMIDLimitGTMExpActive && !hasSeenGTMModal;
+
   const isFetchingInitialData =
     pgBalanceQuery.isInitialLoading ||
     odsConfigQuery.isInitialLoading ||
@@ -330,9 +361,6 @@ const WithdrawalScreen = ({
   /** Using isFetchingInitialData as state initialiser, allows us to avoid CLS when going to next screen(confirm screen) and coming back here*/
   const [isInitialised, setIsInitialised] = useState(!isFetchingInitialData);
 
-  const tooltipContent = isODSRestricted
-    ? TOOLTIP_CONTENT.ODS_RESTRICTED
-    : TOOLTIP_CONTENT.MID_LIMIT;
   const shouldDisableConfirmCta = isLinkedAccountTabActive
     ? linkedAccountBalanceQuery.isFetching
     : false;
@@ -425,40 +453,47 @@ const WithdrawalScreen = ({
     return (
       <>
         {/* Limit-info */}
-        {showDailyLimit ? (
-          <Box padding={MODAL_PADDING} backgroundColor={MODAL_HEADER_BG}>
-            <KeyValuePair
-              title="Current balance"
-              tooltip={{
-                content: TOOLTIP_CONTENT.PG_BALANCE,
-                type: 'pg',
-              }}
-              value={currentBalance}
-              currency={currency}
-            />
-            <Divider variant="normal" width="40px" marginY="spacing.6" />
-            <KeyValuePair
-              title="Maximum daily withdrawal limit"
-              tooltip={{
-                content: tooltipContent.LIMIT,
-                type: 'max',
-              }}
-              value={dailyMaxLimit || 0}
-              currency={currency}
-            />
-            <Box marginTop="spacing.3">
-              <KeyValuePair
-                title="Remaining daily limit"
-                tooltip={{
-                  content: tooltipContent.AVAILABLE,
-                  type: 'avail',
-                }}
-                value={dailyAvailableLimit || 0}
-                currency={currency}
-              />
-            </Box>
-          </Box>
-        ) : null}
+        <Box padding={MODAL_PADDING} backgroundColor={MODAL_HEADER_BG}>
+          <KeyValuePair
+            title="Current balance"
+            tooltip={{
+              content: TOOLTIP_CONTENT.PG_BALANCE,
+              type: 'pg',
+            }}
+            value={currentBalance}
+            currency={currency}
+          />
+          {/* MID level limit or IS Restricted limit */}
+          {showDailyLimit ? (
+            !isODSRestricted ? (
+              <>
+                <Divider variant="normal" width="40px" marginY="spacing.6" />
+                <KeyValuePair
+                  title="Maximum daily withdrawal limit"
+                  tooltip={{
+                    content: TOOLTIP_CONTENT.MID_LIMIT.LIMIT,
+                    type: 'max',
+                  }}
+                  value={dailyMaxLimit || 0}
+                  currency={currency}
+                />
+                <Box marginTop="spacing.3">
+                  <KeyValuePair
+                    title="Remaining daily limit"
+                    tooltip={{
+                      content: TOOLTIP_CONTENT.MID_LIMIT.AVAILABLE,
+                      type: 'avail',
+                    }}
+                    value={dailyAvailableLimit || 0}
+                    currency={currency}
+                  />
+                </Box>
+              </>
+            ) : (
+              <ODSRestrictedBanner currency={currency} maxLimit={dailyMaxLimit || 0} />
+            )
+          ) : null}
+        </Box>
         {/* Body */}
         <Box padding={MODAL_PADDING}>
           <Text weight="semibold">How much do you want to settle now?</Text>
@@ -542,16 +577,18 @@ const WithdrawalScreen = ({
   };
 
   if (isFetchingInitialData || !isInitialised) {
+    return <HardLoading />;
+  }
+
+  if (shouldShowMIDGtm) {
     return (
-      <Box borderRadius="large" overflow="hidden">
-        <ProgressBar isIndeterminate />
-        <Box padding={MODAL_PADDING}>
-          <Skeleton borderRadius="medium" height="22px" width="60%" />
-          <Skeleton borderRadius="medium" marginTop="spacing.4" height="16px" width="80%" />
-          <Skeleton borderRadius="medium" marginTop="60px" height="48px" />
-          <Skeleton borderRadius="medium" marginTop="82px" height="36px" />
-        </Box>
-      </Box>
+      <Suspense fallback={<HardLoading />}>
+        <GtmModalContent
+          maxLimit={dailyMaxLimit || 0}
+          currency={currency}
+          onComplete={() => setHasSeenGTMModal(true)}
+        />
+      </Suspense>
     );
   }
 
@@ -561,9 +598,6 @@ const WithdrawalScreen = ({
       <Box
         paddingX={MODAL_PADDING}
         paddingTop={MODAL_PADDING}
-        paddingBottom={
-          !showDailyLimit && !isOndemandRouteSettlementsEnabled ? MODAL_PADDING : undefined
-        }
         backgroundColor={!isOndemandRouteSettlementsEnabled ? MODAL_HEADER_BG : undefined}
       >
         <Text size="large" weight="semibold">
@@ -592,6 +626,7 @@ const WithdrawalScreen = ({
           Confirm Settlement
         </Button>
       </Box>
+      {/* Common Modals */}
       <ConfirmScreen
         isOpen={shouldShowConfirm}
         user={user}
