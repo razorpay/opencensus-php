@@ -262,7 +262,7 @@ export const navigateToPaymentHistory = async ({ page, container, isPartialPaid 
   const paymentLink = await detailsContainer.getByText(/^pay_/);
   await expect(paymentLink).toBeVisible();
   const paymentId = await paymentLink.innerText();
-  console.log(paymentId);
+  console.log('paymentId', paymentId);
   await paymentLink.click();
 
   const paymentDetails = await page.getByTestId('payment-details');
@@ -289,7 +289,7 @@ export const verifyInvoicePaymentHistory = async ({ page, container, isPartialPa
   const invocieLink = await paymentDetails.getByText(/^inv_/);
   await expect(invocieLink).toBeVisible();
   const invoiceId = await invocieLink.innerText();
-  console.log(invoiceId);
+  console.log('invoiceId', invoiceId);
   await invocieLink.click();
 
   const txnDetails = await page.locator('.txn-details');

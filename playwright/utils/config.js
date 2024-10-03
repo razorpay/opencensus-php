@@ -12,7 +12,7 @@ function getReporter() {
   const isCi = process.env.CI === 'true';
 
   const reportPortalConfig = {
-    token: process.env.REPORT_PORTAL_TOKEN,
+    apiKey: process.env.REPORT_PORTAL_TOKEN,
     endpoint: `${process.env.REPORT_PORTAL_HOST}/api/v1`,
     project: process.env.REPORT_PORTAL_PROJECT,
     launch: `${process.env.REPO_NAME}`,

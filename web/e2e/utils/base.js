@@ -18,6 +18,15 @@ async function setTestConfigInLocalStorageForAnalytics(page, testInfo) {
   }, info);
 }
 
+function extractDevstackLabel(url) {
+  // Regular expression pattern to extract ITF label
+  const pattern = /itf[\w\d]+/;
+
+  const match = url.match(pattern);
+
+  return match ? match[0] : '';
+}
+
 const testExtended = test.extend({
   page: async ({ page }, use, testInfo) => {
     await page.goto(routes.DASHBOARD);
@@ -32,13 +41,19 @@ const testExtended = test.extend({
     const originalGoto = page.goto.bind(page);
 
     page.goto = async (url, options = {}) => {
-      if (options.useOriginal) {
+      if (options?.useOriginal) {
         return originalGoto(url, options);
       }
-      return await page.evaluate(async (url) => {
+      const domain = await page.evaluate((url) => {
         window.history.pushState({}, undefined, url);
         dispatchEvent(new PopStateEvent('popstate', {}));
+        return window.location.origin;
       }, url);
+
+      const devstackLabel = extractDevstackLabel(domain);
+      const grafanaUrl = `https://grafana.np.razorpay.in/d/fffac27f-2f8f-477b-879c-0efbee34b653/merchant-dashboard-devstack?orgId=1&var-namespace=All&var-deployment=All&var-devstack_label=${devstackLabel}&from=now-2d&to=now`;
+      console.log(`Devstack label: ${devstackLabel}`);
+      console.log(`Grafana URL: ${grafanaUrl}`);
     };
 
     await use(page);
