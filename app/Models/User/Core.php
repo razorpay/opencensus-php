@@ -6720,7 +6720,7 @@ class Core extends Base\Core
             'sender'                => 'RZPAYX',
             'language'              => 'english',
             'contentParams'         => [
-                'app_link'  => 'https://bit.ly/RX-APP',
+                'app_link'  => 'https://rzp.io/rzp/MWf3LW4',
             ],
         ];
 
