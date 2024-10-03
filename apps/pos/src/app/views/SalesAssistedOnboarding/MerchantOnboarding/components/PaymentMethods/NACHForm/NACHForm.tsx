@@ -30,7 +30,6 @@ export interface NachFormProps {
   onNachSkipClick: () => void;
   isFormDisabled: boolean;
   isModularLoading?: boolean;
-  removeExistingPricingDocs: () => void;
 }
 
 const NACHForm: React.FC<NachFormProps> = ({

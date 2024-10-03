@@ -3,6 +3,7 @@ import {
   getFieldFromComponent,
   getProgressFromModularStep,
   getStepsFromModularConfig,
+  isPosEnabledForMerchant,
   processFormDataForModularSubmit,
 } from '../modularConfig';
 import { MerchantModularOnboardingDetailsSuccessResponse } from '../../types/modular';
@@ -117,5 +118,135 @@ describe('modularconfig utils', () => {
       });
       expect(progress).toBe('completed');
     });
+  });
+});
+
+describe('isPosEnabledForMerchant', () => {
+  it('should return true when the merchant is registered, WHITELISTED, and is a PGOS merchant', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'REGISTERED' },
+        },
+        activation: {
+          posActivationFlow: 'WHITELIST',
+          isPgosMerchant: true,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(true);
+  });
+
+  it('should return false when the merchant is unregistered', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'UNREGISTERED' },
+        },
+        activation: {
+          posActivationFlow: 'WHITELIST',
+          isPgosMerchant: true,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(false);
+  });
+
+  it('should return true if the posActivationFlow is allowed (WHITELIST or GREYLIST)', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'REGISTERED' },
+        },
+        activation: {
+          posActivationFlow: 'GREYLIST',
+          isPgosMerchant: true,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(true);
+  });
+
+  it('should return false if the posActivationFlow is not allowed', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'REGISTERED' },
+        },
+        activation: {
+          posActivationFlow: 'BLACKLIST',
+          isPgosMerchant: true,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(false);
+  });
+
+  it('should return false if isPgosMerchant is false', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'REGISTERED' },
+        },
+        activation: {
+          posActivationFlow: 'WHITELIST',
+          isPgosMerchant: false,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(false);
+  });
+
+  it('should return true when posActivationFlow is undefined but merchant is registered and is PGOS merchant', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'REGISTERED' },
+        },
+        activation: {
+          posActivationFlow: undefined,
+          isPgosMerchant: true,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(true);
+  });
+
+  it('should return false when posActivationFlow is null and merchant is unregistered', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'UNREGISTERED' },
+        },
+        activation: {
+          posActivationFlow: null,
+          isPgosMerchant: true,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(false);
+  });
+
+  it('should return true if posActivationFlow is null but the merchant is registered and is PGOS merchant', () => {
+    const states = {
+      merchantDetails: {
+        business: {
+          type: { value: 'REGISTERED' },
+        },
+        activation: {
+          posActivationFlow: null,
+          isPgosMerchant: true,
+        },
+      },
+    };
+
+    expect(isPosEnabledForMerchant({ states })).toBe(true);
   });
 });

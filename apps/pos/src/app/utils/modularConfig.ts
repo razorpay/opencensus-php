@@ -144,3 +144,34 @@ export const getAgreementSigningStatus = ({
     getAgreementMode(modularConfig) === OFFLINE && getAgreementComponentStatus(modularConfig);
   return isOnlineAgreementExecuted || isOfflineAgreementExecuted ? COMPLETED : PENDING;
 };
+
+interface IsPosEnabledForMerchant {
+  states: {
+    merchantDetails: {
+      business: {
+        type: {
+          value: string;
+        };
+      };
+      activation: {
+        posActivationFlow: string | undefined | null;
+        isPgosMerchant: boolean;
+      };
+    };
+  };
+}
+export const isPosEnabledForMerchant = ({ states }: IsPosEnabledForMerchant) => {
+  if (!states) return false;
+  const businessType = states.merchantDetails?.business.type.value;
+  const posActivationFlow = states.merchantDetails?.activation.posActivationFlow;
+  const isPgosMerchant = states.merchantDetails?.activation.isPgosMerchant;
+  const isRegisteredMerchant =
+    businessType !== 'UNREGISTERED' && businessType !== 'UNREGISTERED_OLD'; //same condition in self-serve, just that id is 11 & 2 respectively
+  const allowedFlows = ['WHITELIST', 'GREYLIST'];
+  const isWhitelistedForPos =
+    posActivationFlow !== null && typeof posActivationFlow !== 'undefined'
+      ? allowedFlows.includes(posActivationFlow ?? '')
+      : true;
+
+  return isRegisteredMerchant && isWhitelistedForPos && isPgosMerchant;
+};

@@ -144,7 +144,6 @@ describe('<PaymentMethodForm/>', () => {
         onFormSubmitClick={props.onFormSubmitClick}
         onFileUploadChange={props.onFileUploadChange}
         isFormDisabled={false}
-        removeExistingPricingDocs={jest.fn()}
       />,
     );
     expect(screen.getByRole('heading', { name: /^mdr rates$/i, exact: true })).toBeInTheDocument();
@@ -174,7 +173,6 @@ describe('<PaymentMethodForm/>', () => {
         onFormSubmitClick={props.onFormSubmitClick}
         onFileUploadChange={props.onFileUploadChange}
         isFormDisabled={false}
-        removeExistingPricingDocs={jest.fn()}
       />,
     );
     expect(screen.queryByText(/mdr rates/i)).not.toBeInTheDocument();

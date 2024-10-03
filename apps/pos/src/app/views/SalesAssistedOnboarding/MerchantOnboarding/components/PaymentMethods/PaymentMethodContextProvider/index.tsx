@@ -395,12 +395,6 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     setMethodFormValue('form', newForm);
   };
 
-  const removeExistingPricingDocs = () => {
-    const newForm = JSON.parse(JSON.stringify(methodForm.form));
-    newForm[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value = [];
-    setMethodFormValue('form', newForm);
-  };
-
   const autoCheckVasRateEnabledFields = (key, form) => {
     const newForm = JSON.parse(JSON.stringify(form));
     if (key === PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD) {
@@ -498,7 +492,6 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     onFieldInputChange,
     onFormSubmitClick,
     isFormDisabled,
-    removeExistingPricingDocs,
 
     // props for NACH
     onNachTextAreaChange,

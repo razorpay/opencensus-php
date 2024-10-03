@@ -481,6 +481,7 @@ export const MERCHANT_DETAILS = gql`
         status
         isFormSubmitted
         milestone
+        isPgosMerchant
       }
       name {
         display
@@ -500,6 +501,9 @@ export const MERCHANT_DETAILS = gql`
       }
 
       business {
+        type {
+          value
+        }
         address {
           registered {
             city {

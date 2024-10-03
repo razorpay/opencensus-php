@@ -49,7 +49,6 @@ export interface PaymentMethodFormProps {
   onFormSubmitClick: () => void;
   isFormDisabled: boolean;
   isModularLoading?: boolean;
-  removeExistingPricingDocs: () => void;
 }
 
 const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
@@ -59,7 +58,6 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   onFieldInputChange,
   onFormSubmitClick,
   isFormDisabled,
-  removeExistingPricingDocs,
 }) => {
   const { form } = methodForm;
   const toast = useToast();
@@ -69,17 +67,11 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
 
   const onEditVASClick = (label: string) => {
     handleVasEditAnalytics(label);
-    if (isVASEditEnabled) {
-      removeExistingPricingDocs();
-    }
     setIsVASEditEnabled((prev) => !prev);
   };
 
   const onEditMDRClick = (label: string) => {
     handleMdrEditAnalytics(label);
-    if (isMDREditEnabled) {
-      removeExistingPricingDocs();
-    }
     setIsMDREditEnabled((prev) => !prev);
   };
 

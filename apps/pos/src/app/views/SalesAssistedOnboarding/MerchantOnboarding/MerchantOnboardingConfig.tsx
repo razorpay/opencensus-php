@@ -28,6 +28,7 @@ import {
   getAgreementSigningStatus,
   getProgressFromModularStep,
   isDevicePricingAdditionalDetailsCompleted,
+  isPosEnabledForMerchant,
 } from 'apps/pos/src/app/utils/modularConfig';
 import { getDeviceStepStatus } from 'apps/pos/src/app/utils/deviceSelection';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
@@ -138,7 +139,9 @@ const DEVICE_SELECTION_STEP = {
   description: 'Help your merchants optimise their transactions with the perfect POS devices',
   getStatus: ({ states }) => getDeviceStepStatus({ modularConfig: states.modularConfig }),
   checkIfDisabled: ({ values, states }) =>
-    !values.merchantId || !states.merchantDetails?.activation.isFormSubmitted,
+    !values.merchantId ||
+    !states.merchantDetails?.activation.isFormSubmitted ||
+    !isPosEnabledForMerchant({ states }),
   checkIfCompleted: ({ states }) =>
     getProgressFromModularStep({
       modularConfig: states.modularConfig,
@@ -185,7 +188,7 @@ const PAYMENTS_METHOD_STEP = {
   slug: AvailableSteps.PAYMENT_METHODS,
   modularKey: 'pricing_step',
   title: 'Payment Methods & Service Selection',
-  description: 'Provide merchant’s business information to start the POS journey ',
+  description: 'Choose the methods, MDRs and any VAS needed by the merchant',
   getStatus: ({ states }) => {
     return getProgressFromModularStep({
       modularConfig: states.modularConfig,
@@ -193,7 +196,11 @@ const PAYMENTS_METHOD_STEP = {
     });
   },
   checkIfDisabled: ({ values, states }) => {
-    return !values.merchantId || !states.merchantDetails?.activation.isFormSubmitted;
+    return (
+      !values.merchantId ||
+      !states.merchantDetails?.activation.isFormSubmitted ||
+      !isPosEnabledForMerchant({ states })
+    );
   },
   checkIfCompleted: ({ states }) =>
     getProgressFromModularStep({
@@ -224,7 +231,7 @@ const ADDITIONAL_DETAILS_STEP = {
   slug: AvailableSteps.ADDITIONAL_DETAILS,
   modularKey: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
   title: 'Additional Details',
-  description: 'Provide merchant’s business information to start the POS journey ',
+  description: 'Merchant’s preference for Taxation and Regulatory compliance',
   getStatus: ({ states }) => {
     return getProgressFromModularStep({
       modularConfig: states.modularConfig,
@@ -232,7 +239,9 @@ const ADDITIONAL_DETAILS_STEP = {
     });
   },
   checkIfDisabled: ({ values, states }) =>
-    !values.merchantId || !states.merchantDetails?.activation.isFormSubmitted,
+    !values.merchantId ||
+    !states.merchantDetails?.activation.isFormSubmitted ||
+    !isPosEnabledForMerchant({ states }),
   checkIfCompleted: ({ states }) =>
     getProgressFromModularStep({
       modularConfig: states.modularConfig,
@@ -257,7 +266,8 @@ const AGREEMENT_SIGNING_STEP = {
   getStatus: ({ states }) => getAgreementSigningStatus({ modularConfig: states.modularConfig }),
   checkIfDisabled: ({ states, values }) =>
     !values.merchantId ||
-    !isDevicePricingAdditionalDetailsCompleted({ modularConfig: states.modularConfig }),
+    !isDevicePricingAdditionalDetailsCompleted({ modularConfig: states.modularConfig }) ||
+    !isPosEnabledForMerchant({ states }),
   checkIfCompleted: ({ states }) =>
     getAgreementSigningStatus({ modularConfig: states.modularConfig }) === COMPLETED,
   icon: <CheckCircleIcon />,
