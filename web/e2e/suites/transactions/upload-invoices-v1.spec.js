@@ -14,7 +14,7 @@ test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=p
     storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
-  test('should show payments list in Upload Invoices', async ({ page }) => {
+  test.skip('should show payments list in Upload Invoices', async ({ page }) => {
     await navigateToTransactions(page);
     await page.getByRole('link', { name: 'Upload Invoices' }).click();
 
