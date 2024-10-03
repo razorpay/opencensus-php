@@ -1941,10 +1941,11 @@ class Core extends Base\Core
         $formattedPaymentDetails['refunds'] = $paymentDetails['payments'][0]['refunds'] ?? [];
         $formattedPaymentDetails['payment']['method'] = $payment->getMethod();
         $formattedPaymentDetails['payment']['status'] = $payment->getStatus();
+        $formattedPaymentDetails['payment']['captured_at'] = $payment->getCapturedAt();
         $formattedPaymentDetails['business_support_details'] = $paymentDetails['business_support_details'] ?? null;
         $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
         $formattedPaymentDetails['payment']['gateway'] = $payment->getGateway();
-        $formattedPaymentDetails['payment']['optimizer_payment'] = $payment->terminal->isOptimizer();
+        $formattedPaymentDetails['payment']['optimizer_payment'] = isset($payment->terminal) && $payment->terminal->isOptimizer();
         if (isset($payment->order)) {
             $formattedPaymentDetails['payment']['order_id'] = $payment->order->getPublicId();
         }
