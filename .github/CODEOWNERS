@@ -189,9 +189,14 @@ app/Models/Merchant/Consent                        @razorpay/pg-onboarding-servi
 app/Models/Merchant/Escalations                    @razorpay/pg-onboarding-service
 app/Models/Merchant/Store                          @razorpay/pg-onboarding-service
 app/Models/Merchant/VerificationDetail             @razorpay/pg-onboarding-service
+
+#
+# Tech Banking
+# Any update on these entities will require explicit approval from @razorpay/tech-banking team.
 app/Models/Merchant/Detail/Service.php             @razorpay/tech-banking
 app/Models/Merchant/Consent                        @razorpay/tech-banking
 app/Models/Merchant/Service.php                    @razorpay/tech-banking
+app/Models/Settlement/Processor/HDFC/GifuFile.php  @razorpay/tech-banking
 
 # Blocking PR merge on merchant package to check correct usages of save or fail with asv
 # Any update on these entities will require explicit approval from @razorpay/identity-core team.
