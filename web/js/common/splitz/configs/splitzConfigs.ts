@@ -1214,22 +1214,6 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
-          uniqueHashKey: 'phonepe_gateway',
-          experimentId: {
-            beta: 'N8xDoy1qS40xgl',
-            production: 'N8xmsufxvDqFKg',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-        {
           uniqueHashKey: 'easebuzz_optimizer_gateway',
           experimentId: {
             beta: 'NS38QuzGdG77EL',

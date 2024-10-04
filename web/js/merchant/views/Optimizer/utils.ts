@@ -1138,6 +1138,7 @@ export const gatewayLogos = {
   easebuzz_optimizer: require('assets/optimizer/easebuzz_optimizer.png'),
   wallet_payzapp: require('assets/optimizer/payzapp.png'),
   pay10: require('assets/optimizer/pay10.png'),
+  phonepe: require('assets/optimizer/phonepe.svg'),
 };
 
 export const getValue = (type, value) => {
