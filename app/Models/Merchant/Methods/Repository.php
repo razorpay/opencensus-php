@@ -355,12 +355,4 @@ class Repository extends Base\Repository
         return $methods;
     }
 
-    public function saveOrFail($entity, array $options = array()){
-        $this->trace->info(TraceCode::METHODS_WRITE, [
-            'data' => $entity,
-            'options' => $options,
-        ]);
-        parent::saveOrFail($entity, $options);
-    }
-
 }
