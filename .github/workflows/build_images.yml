@@ -3,11 +3,13 @@ on:
   pull_request:
     branches:
       - 'master'
+      - 'dark'
       - singapore_release
   push:
     branches:
       - 'master'
       - 'hotfix**'
+      - 'dark'
       - singapore_release
   workflow_dispatch:
 
