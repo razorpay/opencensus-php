@@ -57,3 +57,12 @@ web/e2e/suites/paymentsLinks/v1.spec.js                     @razorpay/deploy-lea
 web/e2e/suites/paymentsLinks/v2.spec.js                     @razorpay/deploy-leads-dashboard
 apps/self-serve/e2e/suites/transactions/upload-invoices-v1.spec.ts @razorpay/deploy-leads-dashboard
 web/e2e/suites/transactions/upload-invoices-v1.spec.js @razorpay/deploy-leads-dashboard
+
+# DO NOT REMOVE (KEEP AT THE END!)
+apps/*                                   @joel-jaimon @dhruvdutt
+web/webpack.config.js                    @joel-jaimon @dhruvdutt
+tsconfig.base.json                       @joel-jaimon @dhruvdutt
+pnpm-workspace.yaml                      @joel-jaimon @dhruvdutt
+libs/*                                   @joel-jaimon @dhruvdutt
+nx.json                                  @joel-jaimon @dhruvdutt
+web/tsconfig.json                        @joel-jaimon @dhruvdutt
