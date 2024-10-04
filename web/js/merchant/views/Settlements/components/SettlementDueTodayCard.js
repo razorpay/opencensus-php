@@ -5,6 +5,7 @@ import moment from 'moment';
 
 import { ANALYTICS } from 'common/constant';
 import Amount from 'common/ui/Amount';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getFormattedAmount } from 'common/utils/rzp-utils';
@@ -15,7 +16,7 @@ import { BADGE_INFO, HEADING_INFO, SETTLEMENT_SLA_IN_HOURS, SETTLEMENT_STATUS } 
 
 const InitiatedSettlementStatuses = [SETTLEMENT_STATUS.CREATED, SETTLEMENT_STATUS.INITIATED];
 
-const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency = 'INR' }) => {
+const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency }) => {
   const initiatedSettlements = settlementsList?.filter((setl) =>
     InitiatedSettlementStatuses.includes(setl?.status?.toLowerCase()),
   );
@@ -39,7 +40,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency = 
   try {
     currencySym = i18nifyGetCurrencySymbol(currency);
   } catch (error) {
-    currencySym = currency;
+    currencySym = currency || 'INR';
     analyticsTrack({
       objectName: ANALYTICS.OBJECT.I18N,
       actionName: ANALYTICS.ACTION.CURRENCY,
@@ -53,12 +54,17 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency = 
 
   const content = (
     <FlexBetween>
-      <Amount
-        aria-label="amount"
-        value={totalTransferAmount}
-        currency={currency}
-        className="amount-current-balance"
-      />
+      {currency ? (
+        <Amount
+          aria-label="amount"
+          value={totalTransferAmount}
+          currency={currency}
+          className="amount-current-balance"
+        />
+      ) : (
+        <PlaceholderLoader />
+      )}
+
       {delayedTransferAmount > 0 && !isDelayedSettlement ? (
         <span>
           <Badge size="medium" color="negative">

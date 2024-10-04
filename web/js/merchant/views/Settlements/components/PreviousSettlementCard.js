@@ -1,10 +1,13 @@
 import React from 'react';
 import { Badge } from '@razorpay/blade/components';
-import { FlexBetween, CardWrapper } from './styledUtils';
+
 import Amount from 'common/ui/Amount';
-import SettlementCard from './SettlementCard';
-import { BADGE_INFO, HEADING_INFO, SETTLEMENT_STATUS } from './utils';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+
+import SettlementCard from './SettlementCard';
+import { FlexBetween, CardWrapper } from './styledUtils';
+import { BADGE_INFO, HEADING_INFO, SETTLEMENT_STATUS } from './utils';
 
 const PreviousSettlementCard = ({ settlementsList, currency }) => {
   const amount = settlementsList?.[0]?.amount || 0;
@@ -61,12 +64,17 @@ const PreviousSettlementCard = ({ settlementsList, currency }) => {
     <FlexBetween>
       {settlementsList?.[0] ? (
         <>
-          <Amount
-            aria-label="amount"
-            value={amount}
-            currency={currency}
-            className="amount-current-balance"
-          />
+          {currency ? (
+            <Amount
+              aria-label="amount"
+              value={amount}
+              currency={currency}
+              className="amount-current-balance"
+            />
+          ) : (
+            <PlaceholderLoader />
+          )}
+
           {badge}
         </>
       ) : (

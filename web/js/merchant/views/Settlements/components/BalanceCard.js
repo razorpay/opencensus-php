@@ -1,10 +1,13 @@
 import React from 'react';
+
 import Amount from 'common/ui/Amount';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
+
 import SettleNow from './SettleNow';
 import SettlementCard from './SettlementCard';
-import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
-import { HEADING_INFO } from './utils';
 import { CashAdvanceWrapper } from './styledUtils';
+import { HEADING_INFO } from './utils';
 
 const BalanceCard = ({
   user,
@@ -26,12 +29,17 @@ const BalanceCard = ({
 
   const content = (
     <>
-      <Amount
-        aria-label="amount"
-        value={amount}
-        currency={balanceCurrency}
-        className={amountClassName}
-      />
+      {balanceCurrency ? (
+        <Amount
+          aria-label="amount"
+          value={amount}
+          currency={balanceCurrency}
+          className={amountClassName}
+        />
+      ) : (
+        <PlaceholderLoader />
+      )}
+
       <CashAdvanceWrapper>
         <CashAdvanceNudge />
       </CashAdvanceWrapper>

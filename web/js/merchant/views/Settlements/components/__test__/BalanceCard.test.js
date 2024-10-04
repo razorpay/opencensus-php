@@ -13,13 +13,16 @@ const user = {
 describe('BalanceCard', () => {
   const App = (props) => <BalanceCard {...props} />;
 
+  const balanceCurrency = 'INR';
+
   test('should render Balance Card', () => {
     const current_balance = {
       data: {
         balance: 10099,
       },
     };
-    render(<App current_balance={current_balance} user={user} />);
+
+    render(<App current_balance={current_balance} balanceCurrency={balanceCurrency} user={user} />);
     expect(screen.getByText('Current balance')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
     expect(screen.getByText('.99')).toBeInTheDocument();
@@ -35,7 +38,7 @@ describe('BalanceCard', () => {
         balance: -10099,
       },
     };
-    render(<App current_balance={current_balance} user={user} />);
+    render(<App current_balance={current_balance} balanceCurrency={balanceCurrency} user={user} />);
     expect(screen.getByText('Current balance')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
     expect(screen.getByText('.99')).toBeInTheDocument();

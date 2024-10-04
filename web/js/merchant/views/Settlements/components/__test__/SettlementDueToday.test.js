@@ -8,6 +8,8 @@ import { HEADING_INFO } from 'merchant/views/Settlements/components/utils';
 describe('SettlementDueTodayCard', () => {
   const App = (props) => <SettlementDueTodayCard {...props} />;
 
+  const currency = 'INR';
+
   test('should render SettlementDueToday Card', () => {
     const settlementsList = [
       {
@@ -16,7 +18,7 @@ describe('SettlementDueTodayCard', () => {
         created_at: moment().format('X'),
       },
     ];
-    render(<App settlementsList={settlementsList} />);
+    render(<App settlementsList={settlementsList} currency={currency} />);
     expect(screen.getByText('Settlement due today')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.SETTLEMENT_DUE_TODAY)).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
@@ -39,7 +41,7 @@ describe('SettlementDueTodayCard', () => {
         created_at: moment().subtract(5, 'hours').format('X'),
       },
     ];
-    render(<App settlementsList={settlementsList} />);
+    render(<App settlementsList={settlementsList} currency={currency} />);
     expect(screen.getByText('Settlement due today')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.SETTLEMENT_DUE_TODAY)).toBeInTheDocument();
     expect(screen.getByText('201')).toBeInTheDocument();

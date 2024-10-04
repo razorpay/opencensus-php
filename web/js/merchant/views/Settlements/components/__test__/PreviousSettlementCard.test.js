@@ -8,6 +8,8 @@ import { HEADING_INFO } from 'merchant/views/Settlements/components/utils';
 describe('PreviousSettlementCard', () => {
   const App = (props) => <PreviousSettlementCard {...props} />;
 
+  const currency = 'INR';
+
   test('should render PreviousSettlement Card', () => {
     const settlementsList = [
       {
@@ -16,7 +18,7 @@ describe('PreviousSettlementCard', () => {
         created_at: moment().format('X'),
       },
     ];
-    render(<App settlementsList={settlementsList} />);
+    render(<App settlementsList={settlementsList} currency={currency} />);
     expect(screen.getByText('Previous settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.PREVIOUS_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
@@ -34,7 +36,7 @@ describe('PreviousSettlementCard', () => {
         created_at: moment().format('X'),
       },
     ];
-    render(<App settlementsList={settlementsList} />);
+    render(<App settlementsList={settlementsList} currency={currency} />);
     expect(screen.getByText('Previous settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.PREVIOUS_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
@@ -54,7 +56,7 @@ describe('PreviousSettlementCard', () => {
         created_at: moment().format('X'),
       },
     ];
-    render(<App settlementsList={settlementsList} />);
+    render(<App settlementsList={settlementsList} currency={currency} />);
     expect(screen.getByText('Previous settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.PREVIOUS_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('99')).toBeInTheDocument();
@@ -74,7 +76,7 @@ describe('PreviousSettlementCard', () => {
         created_at: moment().format('X'),
       },
     ];
-    render(<App settlementsList={settlementsList} />);
+    render(<App settlementsList={settlementsList} currency={currency} />);
     expect(screen.getByText('Previous settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.PREVIOUS_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('99')).toBeInTheDocument();

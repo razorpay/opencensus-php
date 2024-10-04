@@ -5,8 +5,9 @@ import moment from 'moment/moment';
 
 import { ANALYTICS } from 'common/constant';
 import Amount from 'common/ui/Amount';
-import Spinner from 'common/ui/Spinner';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
 
 import SettlementCard from './SettlementCard';
@@ -96,12 +97,16 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency, i
   ) : (
     <FlexBetween>
       {next_settlement?.next_settlement_time ? (
-        <Amount
-          aria-label="amount"
-          value={next_settlement?.settlement_amount}
-          currency={currency}
-          className="amount-current-balance"
-        />
+        currency ? (
+          <Amount
+            aria-label="amount"
+            value={next_settlement?.settlement_amount}
+            currency={currency}
+            className="amount-current-balance"
+          />
+        ) : (
+          <PlaceholderLoader />
+        )
       ) : (
         'NA'
       )}
