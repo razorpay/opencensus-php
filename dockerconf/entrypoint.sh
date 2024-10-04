@@ -32,12 +32,12 @@ echo "$(date) Cast config for environments"
 devserve="${DEV_SERVE:-false}"
 if [[ $devserve == "true" ]]; then
   bash /app/dockerconf/admin-files-downloader.sh
-  alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/env.php.j2"
+  alohomora cast --region $AWS_REGION --env $APP_MODE --app dashboard "environment/env.php.j2"
   # log the output into stdout as php monolog has a bug in logging
   # Note this is enabled only for devstack for easing the debugging but should STRICTLY be avoided in any other environement as tail will run as a background process
   tail -F storage/logs/$HOSTNAME-trace.log &
 else
-  alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
+  alohomora cast --region $AWS_REGION --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
 fi
 
 #export APP_ENV=$APP_MODE

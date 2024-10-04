@@ -47,6 +47,9 @@ class RegionCookieHandler
             $response = $response->toResponse($request);
         }
 
+        if (empty($region) && ($this->isInvitationFlow($request->getUri()) === true)) {
+            $region = $this->extractCountryCodeFromUri((string) $request->getUri());
+        }
         // set the cookie only if region is available
         if (! empty($region)) {
             // same as user session cookie
@@ -69,5 +72,38 @@ class RegionCookieHandler
     {
         // same as user session cookie
         return Date::instance(Carbon::now()->addRealMinutes($config['lifetime']));
+    }
+
+    /**
+     * Extracts the country_code query parameter from a given URI.
+     *
+     * @param string $uri The URI to extract the country_code from.
+     * @return string|null The country_code if found, null otherwise.
+     */
+    function extractCountryCodeFromUri($uri) {
+        // Parse the URI and get its query component
+        $parsedUrl = parse_url($uri);
+        if (!isset($parsedUrl['query'])) {
+            return null;
+        }
+
+        // Parse the query string into an associative array
+        parse_str($parsedUrl['query'], $queryParams);
+
+        // Return the country_code if it exists, otherwise return null
+        return $queryParams['country_code'] ?? null;
+    }
+    
+    function isInvitationFlow($uri): bool
+    {
+        $parsedUrl = parse_url($uri);
+        if (!isset($parsedUrl['query'])) {
+            return false;
+        }
+    
+        // Parse the query string into an associative array
+        parse_str($parsedUrl['query'], $queryParams);
+        
+        return isset($queryParams["merchant_invitation"]);
     }
 }
