@@ -462,6 +462,17 @@ class SavedCardTokenisationJob extends Job
             'entity' => $serviceProviderTokens,
         ];
 
+        if(isset($customer)) {
+            $partialPayload['token']['entity']['customer']['id'] = 'cust_'.$customer['id'];
+            $partialPayload['token']['entity']['customer']['entity'] = 'customer';
+            $partialPayload['token']['entity']['customer']['name'] = $customer['name'] ?? null;
+            $partialPayload['token']['entity']['customer']['email'] = $customer['email'] ?? null;
+            $partialPayload['token']['entity']['customer']['contact'] =  $customer['contact'] ?? null;
+            $partialPayload['token']['entity']['customer']['gstin'] = $customer['gstin'] ?? null;
+            $partialPayload['token']['entity']['customer']['notes'] = $customer['notes'] ?? null;
+            $partialPayload['token']['entity']['customer']['created_at'] = $customer['created_at'] ?? null;
+        }
+
         if($token->getSource() === Token\Constants::ISSUER && isset($customer) === true)
         {
             $partialPayload['customer'] = [
