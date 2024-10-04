@@ -7153,7 +7153,7 @@ class Processor
 
         $offlineRefundSkipRoutes = ['scrooge_entities_fetch','refund_scrooge_payment_update','refund_fetch_discount','refund_verify_call','refund_gateway_call','refund_update_status'];
 
-        $offlineCardSkipRoutes = ['payment_notify'];
+        $offlineCardSkipRoutes = ['payment_notify','internal_transactions'];
 
         //Temporary change to skip activation flag for offline refunds
         if ($route === 'payment_refund' && $merchant->isOmniEnabled() === true)
