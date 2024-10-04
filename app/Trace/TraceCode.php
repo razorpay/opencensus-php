@@ -2944,8 +2944,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // CC Router Traces
     const CC_DEBUG_LOG                                          = 'CC_DEBUG_LOG';
     const CC_ROUTER_SERVICE_RESPONSE                            = 'CC_ROUTER_SERVICE_RESPONSE';
-    const API_PRICING_LEGACY_RESPONSE                           = 'API_LEGACY_RESPONSE';
-    const API_PRICING_LEGACY_ERROR                              = 'API_LEGACY_ERROR';
+    const API_PRICING_LEGACY_RESPONSE                           = 'API_PRICING_LEGACY_RESPONSE';
+    const API_PRICING_LEGACY_ERROR                              = 'API_PRICING_LEGACY_ERROR';
     const CC_ROUTING_TRANSFORMED_REQUEST                        = 'CC_ROUTING_TRANSFORMED_REQUEST';
     const CC_ROUTER_ROUTE_ERROR                                 = 'CC_ROUTER_ROUTE_ERROR';
     const CC_ROUTER_EXCEPTION                                   = 'CC_ROUTER_EXCEPTION';

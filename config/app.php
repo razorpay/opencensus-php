@@ -651,6 +651,8 @@ return array(
 
     'pricing_writes_experiment_id' => env('PRICING_WRITES_EXPERIMENT_ID'),
 
+    'pricing_reads_experiment_id' => env('PRICING_READS_EXPERIMENT_ID'),
+
     'pricing_fee_round_experiment_id' => env('PRICING_FEE_ROUND_EXPERIMENT_ID'),
 
     'charge_collections_invoicing_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_EXPERIMENT_ID'),

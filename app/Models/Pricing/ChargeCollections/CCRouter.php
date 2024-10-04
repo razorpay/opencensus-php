@@ -6,6 +6,9 @@ use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Pricing\Plan as PlanCollection;
+use RZP\Models\Pricing\Entity as PricingEntity;
+use RZP\Services\ChargeCollections;
 use RZP\Trace\TraceCode;
 
 
@@ -47,9 +50,20 @@ class CCRouter
         'RZP\\Models\\Pricing\\Service\\createPlan' => true,
         'RZP\\Models\\Pricing\\Service\\updatePlanRule' => true,
         'RZP\\Models\\Pricing\\Service\\deletePlanRuleForce' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPlan' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductAndFeatureWithoutOrgId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountNonFreePayouDefaultPricingRules' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPlanByName' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => true,
     );
 
-    public function __construct(bool $writes = false)
+    private array $FunctionToCCRouteMap;
+
+    public function __construct(bool $writes = false, bool $reads = false)
     {
         $app = App::getFacadeRoot();
         $this->app = $app;
@@ -58,13 +72,29 @@ class CCRouter
 
 
         if ($writes) {
-            $this->splitzExperimentID = $app['config']->get('app.pricing_writes_experiment_id');
+            $this->splitzExperimentID = $app['config']->get('app.pricing_writes_experiment_id') ?? '';
         }
+        if ($reads) {
+            $this->splitzExperimentID= $app['config']->get('app.pricing_reads_experiment_id') ?? 'P3jQnkfWa0vrnm';
+        }
+        $this->FunctionToCCRouteMap = array(
+            'RZP\\Models\\Pricing\\Repository\\getPlan' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductAndFeatureWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountNonFreePayouDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPlanByName' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => ChargeCollections::GetPricingPlanURL,
+        );
     }
 
     public function route($fqcn, $ccRequest, $legacyCallable)
     {
-        $rampPhase = $this->shouldRouteRequestToChargeCollections($fqcn, '');
+        $planId = $ccRequest['plan_id'] ?? $ccRequest['id'];
+        if($planId == null) $planId = '';
+        $rampPhase = $this->shouldRouteRequestToChargeCollections($fqcn, $planId);
         $methodName = Utils::extractMethodFromFunction($fqcn);
 
         if ($rampPhase == CCRouter::DISABLE || $rampPhase == CCRouter::SHADOW) {
@@ -122,7 +152,10 @@ class CCRouter
         $routeName = null;
 
         try {
-            $routeName = app('request.ctx')->getRoute() ?? null;
+            $routeName = app('request.ctx')->getRoute();
+            if(empty($routeName)) {
+                $routeName =  app('worker.ctx')->getJobName() ?? '';
+            }
             $methodName = Utils::extractMethodFromFunction($fqcn);
 
             if ($methodName == 'createPlan' || $methodName == 'updatePlanRule'){
@@ -130,6 +163,11 @@ class CCRouter
                     'route' => $routeName,
                     'function' => $fqcn,
                 ]);
+            }
+
+            if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingPlanURL) {
+                $response = $this->app->charge_collections->getPricingPlan($input);
+                return $this->transformToPlanModel($response);
             }
 
             if ($methodName == 'createPlan'){
@@ -150,7 +188,7 @@ class CCRouter
             }
 
             return $response;
-        }catch (\Exception $e){
+        }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
             $this->monitorChargeCollectionsRequestNotRouted($routeName, $fqcn ,self::EXCEPTION);
             return null;
@@ -171,7 +209,10 @@ class CCRouter
         $routeName = null;
 
         try {
-            $routeName = app('request.ctx')->getRoute() ?? null;
+            $routeName = app('request.ctx')->getRoute();
+            if(empty($routeName)) {
+                $routeName =  app('worker.ctx')->getJobName() ?? '';
+            }
 
             if($this->isRouteApplicableForDecomp($routeName) === false &&
                 $this->isFunctionApplicableForDecomp($functionName) === false) {
@@ -195,7 +236,7 @@ class CCRouter
             }
 
             return $result[self::VARIANT];
-        }catch (\Exception $e){
+        }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
             $this->monitorChargeCollectionsRequestNotRouted($routeName, $functionName, self::EXCEPTION);
             return self::DISABLE;
@@ -243,7 +284,7 @@ class CCRouter
                     self::VARIANT => '',
                 ];
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
                 'splitz_exception' => $e,
                 "splitz_call_response" => $response,
@@ -266,5 +307,30 @@ class CCRouter
     private function isFunctionApplicableForDecomp($functionName): bool
     {
         return self::FUNCTION_MAP[$functionName] === true;
+    }
+
+    private function transformToPlanModel($response)
+    {
+        if(!isset($response['rules']) || count($response['rules']) == 0) {
+            return new PlanCollection;
+        }
+        try {
+            $pricingEntities = array();
+            $entityClass = PricingEntity::class;
+            foreach($response['rules'] as $rule) {
+                try {
+                    $entityClass::unguard();
+                    $pricingEntities[] = new PricingEntity($rule);
+                } catch (\Throwable $e) {
+                    throw new \Exception('Could not map charge collections response to entity');
+                } finally {
+                    $entityClass::reguard();
+                }
+            }
+            return new PlanCollection($pricingEntities);
+        } catch (\Throwable $e) {
+            throw new \Exception('Could not map charge collections response to entity');
+        }
+        return new PlanCollection;
     }
 }
