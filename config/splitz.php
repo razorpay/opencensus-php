@@ -166,6 +166,9 @@ return [
         // FTUX After L2 submit for Onboarding
         'ONBOARDING_FTUX_AFTER_L2' => env('ONBOARDING_FTUX_AFTER_L2', ''),
 
+        // Disable easy onboarding redirection for banking origin requests
+        'DISABLE_EASY_REDIRECTION_FOR_BANKING' => env('DISABLE_EASY_REDIRECTION_FOR_BANKING', ''),
+
         // eligible for pos
         'ELIGIBLE_FOR_POS' => env('ELIGIBLE_FOR_POS', ''),
 
@@ -242,7 +245,7 @@ return [
 
         // disables capital Instant Settlements Settle Now button
         'CAPITAL_ES_BLOCKED_SPLITZ' => env('CAPITAL_ES_BLOCKED_SPLITZ', ''),
-    
+
         // 2fa  for password and api key
         'PASSWORD_API_KEY_2FA' => env('PASSWORD_API_KEY_2FA', ''),
 

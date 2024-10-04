@@ -328,6 +328,9 @@ class TraceCode
 
     const BOUNCE_MEMO_REQUEST_FAILED = 'BOUNCE_MEMO_REQUEST_FAILED';
 
+    const REDIRECTION_EXPERIMENT = 'REDIRECTION_EXPERIMENT';
+    const BANKING_ORIGIN_REQUEST_V2 = 'BANKING_ORIGIN_REQUEST_V2';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

@@ -3,6 +3,7 @@
 namespace App\Http;
 use Config;
 use Request;
+use App\Trace\TraceCode;
 
 class ApiUrl
 {
@@ -113,11 +114,37 @@ class ApiUrl
         return $originDomain;
     }
 
-    public static function isBankingOriginRequest()
+    public static function isBankingOriginRequest($shouldUseBankingOriginRequestV2 = false)
     {
         $originDomain = self::getRequestOriginUrl();
-
         $originHost = parse_url($originDomain, PHP_URL_HOST);
+
+        if ($shouldUseBankingOriginRequestV2 === true)
+        {
+            $app = \App::getFacadeRoot();
+            $trace = $app['trace'];
+
+            $bankingUrls = explode(',', config('app.banking_service_url_v2'));
+
+            $trace->info(TraceCode::BANKING_ORIGIN_REQUEST_V2, [
+                'originDomain' => $originDomain,
+                'originHost' => $originHost,
+            ]);
+
+            foreach($bankingUrls as $bankingUrl) {
+                $bankingHost = parse_url(trim($bankingUrl), PHP_URL_HOST);
+                if ($originHost === $bankingHost) {
+                    $trace->info(TraceCode::BANKING_ORIGIN_REQUEST_V2, [
+                        'originDomain' => $originDomain,
+                        'originHost' => $originHost,
+                        'bankingUrl' => $bankingUrl,
+                        'bankingHost' => $bankingHost,
+                    ]);
+
+                    return true;
+                }
+            }
+        }
 
         $bankingHost = parse_url(config('app.banking_service_url'), PHP_URL_HOST);
 

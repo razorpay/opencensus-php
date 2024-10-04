@@ -80,6 +80,8 @@ class UserController extends Controller
 
     const EASY_DASHBOARD_URL = 'EASY_DASHBOARD_URL';
 
+    const DISABLE_EASY_REDIRECTION_FOR_BANKING = 'DISABLE_EASY_REDIRECTION_FOR_BANKING';
+
     /**
      * @var \App\Admin\Service|null
      */
@@ -159,8 +161,9 @@ class UserController extends Controller
         $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
         $eligibleForPosExperiment = config('splitz.experiments')[self::ELIGIBLE_FOR_POS];
         $chunkedBasedStreamingEnabled = config('splitz.experiments')[self::CHUNKED_BASED_STREAMING_DISABLED];
+        $disableEasyRedirectionForBankingRequestsExperiment = config('splitz.experiments')[self::DISABLE_EASY_REDIRECTION_FOR_BANKING];
 
-        $experimentIds = [$onboardingFtuxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment, $chunkedBasedStreamingEnabled];
+        $experimentIds = [$onboardingFtuxExperiment, $concurrentApiCallExperimentId, $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment, $chunkedBasedStreamingEnabled, $disableEasyRedirectionForBankingRequestsExperiment];
 
         $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariantBulk(
             $currentMerchantId,
@@ -1027,12 +1030,32 @@ class UserController extends Controller
 
     }
 
+    private function isRedirectionExptEnabled($details): bool
+    {
+        $merchantId = $details['current'];
+        $experimentId = config(self::SPLITZ_EXPERIMENTS)[self::DISABLE_EASY_REDIRECTION_FOR_BANKING];
+
+        $this->trace->info(TraceCode::REDIRECTION_EXPERIMENT, [
+            'merchantId' => $merchantId,
+            'experimentId' => $experimentId,
+        ]);
+
+        if (!array_key_exists($experimentId, $this->splitzExprimentData))
+        {
+            return false;
+        }
+
+        return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
+    }
+
     private function isRedirectionApplicable($details): bool
     {
 
         $isAdminAsMerchant = (new Admin\Service)->isAdminLoggedIn();
 
-        if ($isAdminAsMerchant === true || ApiUrl::isBankingOriginRequest() === true)
+        $shouldUseBankingOriginRequestV2 = $this->isRedirectionExptEnabled($details);
+
+        if ($isAdminAsMerchant === true || ApiUrl::isBankingOriginRequest($shouldUseBankingOriginRequestV2) === true)
         {
             return false;
         }
@@ -2198,7 +2221,7 @@ class UserController extends Controller
             $partnerType = $details[MerchantConstants::PARTNER_TYPE] ?? null;
             $countryCode = $details[MerchantConstants::COUNTRY_CODE] ?? null;
 
-            if($isAdminAsMerchant === true || $isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true)
+            if($isAdminAsMerchant === true || $isSubMerchant === true || empty($partnerType) === false || $this->isEligibleForPos($details) === true || ApiUrl::isBankingOriginRequest(true) === true)
             {
                 return false;
             }
