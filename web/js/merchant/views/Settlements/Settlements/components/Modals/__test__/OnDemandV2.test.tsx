@@ -336,6 +336,9 @@ describe('Capital/OnDemandV2', () => {
   });
 
   describe('IS Merchant level limit GTM', () => {
+    afterEach(() => {
+      mockGTMExpActive.value = undefined;
+    });
     test('should render GTM when mid limit present & non ODS restricted & experiment active & has not seen GTM', async () => {
       mockGTMExpActive.value = mockActiveExp;
       const user = userEvent.setup();
