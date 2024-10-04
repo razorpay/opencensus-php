@@ -49,10 +49,10 @@ class OTPVerificationSession
      *                       The keys in this map can be url patterns as well
      */
     public static array $checkUrls = [
-        "merchant/api/*/users/2fa" => ["http_method" => "PATCH"],
-        "password"                 => ["http_method" => "POST"],
-        "merchant/api/*/keys/*"    => ["http_method" => "PUT"],
-        "merchant/api/*/keys"      => ["http_method" => "POST"],
+        "merchant/api/*/users/2fa"              => ["http_method" => "PATCH"],
+        "password"                              => ["http_method" => "POST"],
+        "merchant/api/*/keys/rzp_*"              => ["http_method" => "PUT"],
+        "merchant/api/*/keys"                   => ["http_method" => "POST"],
     ];
 
     public static array $checkRouteName = [
@@ -64,7 +64,7 @@ class OTPVerificationSession
     // This url is subset of checkUrls arrays.
     private static array $newPatternUrlBehindExp = [
         "password",
-        "merchant/api/*/keys/*",
+        "merchant/api/*/keys/rzp_*",
         "merchant/api/*/keys"
     ];
     
