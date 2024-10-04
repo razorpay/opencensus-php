@@ -6,9 +6,6 @@ import createPdfTable from '../PdfCreation';
 // Mock dependencies
 jest.mock('jspdf');
 jest.mock('jspdf-autotable');
-jest.mock('../../components/assets/razorpay-logo.png');
-jest.mock('../../components/assets/blueline.png');
-jest.mock('../../components/assets/razorpay-logo-bg.png');
 
 describe('CreatePdfTable', () => {
   let mockPdfInstance, mockImages;
@@ -82,7 +79,7 @@ describe('CreatePdfTable', () => {
     });
 
     // Check that addImage was called for the background and logos
-    expect(mockPdfInstance.addImage).toHaveBeenCalledTimes(4); // Assuming 3 images should be added
+    expect(mockPdfInstance.addImage).toHaveBeenCalledTimes(3); // Assuming 3 images should be added
   });
 });
 

@@ -1,9 +1,6 @@
 /* eslint-disable no-relative-import-paths/no-relative-import-paths */
 import { jsPDF as JSPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import Blueline from '../components/assets/blueline.png';
-import RazorpayLogo from '../components/assets/razorpay-logo.png';
-import RazorpayLogoBg from '../components/assets/razorpay-logo-bg.png';
 import {
   ADDRESS,
   MAIL,
@@ -13,40 +10,45 @@ import {
   MERCHANTTITLE,
   NOTE,
   NOTEBODY,
+  RazorpayLogo,
+  RazorpayLogoBg,
+  Blueline,
 } from '../constants';
 
 // Function to add the logo and background
 const addLogoAndBackground = (Doc, pageWidth, pageHeight, callback) => {
   const imageHeight = 113.03; // 25% of the page height
   const imageYPosition = pageHeight - imageHeight;
+  try {
+    // Load background image as Base64
+    const backgroundImgBase64 = RazorpayLogoBg;
+    // Add background image directly
+    Doc.addImage(backgroundImgBase64, 'PNG', 0, imageYPosition, pageWidth, imageHeight);
 
-  const backgroundImg = new Image();
-  backgroundImg.src = RazorpayLogoBg;
-  backgroundImg.onload = () => {
-    Doc.addImage(backgroundImg, 'JPEG', 0, imageYPosition, pageWidth, imageHeight);
+    // Load logo image as Base64
+    const logoImgBase64 = RazorpayLogo;
+    const logoWidth = 55.118;
+    const logoHeight = 11.684;
+    const logoXPosition = 10;
+    const logoYContact = 20;
 
-    const logoImg = new Image();
-    logoImg.src = RazorpayLogo;
-    const logoImgLine = new Image();
-    logoImgLine.src = Blueline;
+    // Add logo image directly
+    Doc.addImage(logoImgBase64, 'PNG', logoXPosition, logoYContact, logoWidth, logoHeight);
 
-    logoImg.onload = () => {
-      const logoWidth = 55.118;
-      const logoHeight = 11.684;
-      const logoXPosition = 10;
-      const logoYContact = 20;
+    // Load line image as Base64
+    const logoImgLineBase64 = Blueline;
+    const lineWidth = 186.69;
+    const lineHeight = 1.27;
+    const lineY = 40;
+    const lineX = 10;
 
-      Doc.addImage(logoImg, 'PNG', logoXPosition, logoYContact, logoWidth, logoHeight);
+    // Add line image directly
+    Doc.addImage(logoImgLineBase64, 'PNG', lineX, lineY, lineWidth, lineHeight);
 
-      const lineWidth = 186.69;
-      const lineHeight = 1.27;
-      const lineY = 40;
-      const lineX = 10;
-      Doc.addImage(logoImgLine, 'PNG', lineX, lineY, lineWidth, lineHeight);
-
-      callback();
-    };
-  };
+    callback();
+  } catch (error) {
+    console.error('Error loading images:', error);
+  }
 };
 
 // Function to add text content
@@ -164,5 +166,4 @@ function CreatePdfTable(response, merchantId) {
 
   handleGenerate();
 }
-
 export default CreatePdfTable;

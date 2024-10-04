@@ -662,7 +662,7 @@ function PaymentDetails(props) {
                     paymentMethodtoCheck.includes(payment.method)
                   }
                 >
-                  <EntityDetailRow label="Failed Trasaction Memo">
+                  <EntityDetailRow label="Failed Transaction Memo">
                     <div>
                       <button
                         data-testid="failed-trasaction-memo"

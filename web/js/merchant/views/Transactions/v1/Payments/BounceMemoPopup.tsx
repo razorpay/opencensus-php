@@ -1,5 +1,5 @@
 /* eslint-disable import/no-restricted-paths */
-import React from 'react';
+import React, { useState } from 'react';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -14,10 +14,12 @@ import { TITLE } from './constants';
 
 const BounceMemoPopup = ({ paymentID, user }: any): JSX.Element => {
   const showNotification = useStore((state) => state.showNotification);
+  const [isSubmitButtonLoading, setSubmitButtonLoading] = useState(false);
 
   const { id: merchantId } = user;
 
   const FetchBouncememo = async () => {
+    setSubmitButtonLoading(true);
     try {
       const response = await fetchBouncememo(paymentID);
       if (!response.data || !response.data.data) {
@@ -32,6 +34,8 @@ const BounceMemoPopup = ({ paymentID, user }: any): JSX.Element => {
         type: 'error',
         message: 'Unable to fetch Bounce memo information at this moment, please try again later.',
       });
+    } finally {
+      setSubmitButtonLoading(false);
     }
   };
 
@@ -54,6 +58,7 @@ const BounceMemoPopup = ({ paymentID, user }: any): JSX.Element => {
             <Button
               testID="bounce-memo-modal-cancel"
               type="button"
+              isDisabled={isSubmitButtonLoading}
               variant="tertiary"
               marginX="spacing.5"
               onClick={closeModal}
@@ -63,6 +68,7 @@ const BounceMemoPopup = ({ paymentID, user }: any): JSX.Element => {
             <Button
               testID="bounce-memo-download-btn"
               type="button"
+              isLoading={isSubmitButtonLoading}
               variant="primary"
               onClick={FetchBouncememo}
             >
