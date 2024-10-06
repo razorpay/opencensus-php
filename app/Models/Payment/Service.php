@@ -6922,6 +6922,7 @@ class Service extends Base\Service
             EntityConstants::NETBANKING,
             EntityConstants::CARDLESS_EMI,
             EntityConstants::PAYMENT,
+            EntityConstants::PAYLATER,
             Entity::META,
         ];
 
@@ -6937,6 +6938,9 @@ class Service extends Base\Service
                 break;
             case Payment\Method::CARDLESS_EMI:
                 (new Payment\Validator)->validateInput('authorize_failed_cardless_emi_payment', $input);
+                break;
+            case Payment\Method::PAYLATER:
+                (new Payment\Validator)->validateInput('authorize_failed_paylater_payment', $input);
                 break;
             default:
                 throw new Exception\BadRequestValidationFailureException(
