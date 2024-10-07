@@ -102,6 +102,46 @@ function AnimatedBarGraph({
             />
           </>
         );
+      case BAR_GRAPH_VARIANTS.NEGATIVE_NEUTRAL_INCREASE:
+        return (
+          <>
+            <Bar
+              variant={BAR_VARIANTS.NEGATIVE}
+              height="low"
+              labelAlignment="left"
+              showChangeIndicator={false}
+              barLabel={barLabels[0] || null}
+            />
+            <Bar
+              variant={BAR_VARIANTS.NEUTRAL}
+              height="high"
+              labelAlignment="right"
+              showChangeIndicator={true}
+              barLabel={barLabels[1] || null}
+              barValue={graphValue}
+            />
+          </>
+        );
+      case BAR_GRAPH_VARIANTS.NEGATIVE_NEUTRAL_DECREASE:
+        return (
+          <>
+            <Bar
+              variant={BAR_VARIANTS.NEGATIVE}
+              height="high"
+              labelAlignment="left"
+              showChangeIndicator={false}
+              barLabel={barLabels[0] || null}
+            />
+            <Bar
+              variant={BAR_VARIANTS.NEUTRAL}
+              height="low"
+              labelAlignment="right"
+              showChangeIndicator={true}
+              barLabel={barLabels[1] || null}
+              barValue={graphValue}
+            />
+          </>
+        );
       default:
         throw new Error('Invalid graph variant');
     }
