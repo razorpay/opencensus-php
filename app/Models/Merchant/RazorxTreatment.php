@@ -1062,6 +1062,12 @@ final class RazorxTreatment
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_REVERSALS = 'early_dispatch_of_txns_for_settlements_using_journal_reversals';
 
     /**
+     * Experiment for payment fee and tax population from txn entity in pg ledger reverse shadow
+     */
+    const PG_LEDGER_ASYNC_TRANSACTION_CREATION = 'pg_ledger_async_transaction_creation';
+
+
+    /**
      * Experiment to use the new flow for creating linked accounts via batch upload
      */
     const USE_NEW_FLOW_FOR_LA_BATCH_UPLOAD = 'use_new_flow_for_la_batch_upload';

@@ -140,7 +140,7 @@ class Core extends Base\Core{
                         Constants::CRON_TYPE              => Constants::CUSTOMER_TRANSFER
                     ]);
 
-                    $ledgerOutboxCore->dispatchToSettlementFromJournalIfApplicable($journal);
+                    $ledgerOutboxCore->postProcessingJournalResponse($journal);
 
                     try
                     {

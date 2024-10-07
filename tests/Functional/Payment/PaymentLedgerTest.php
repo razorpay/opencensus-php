@@ -4,6 +4,8 @@ namespace Functional\Payment;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order\Entity as Order;
@@ -5211,6 +5213,73 @@ class PaymentLedgerTest extends TestCase
         $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
 
     }
+
+    public function testKafkaSuccessForPaymentMerchantCaptureEventFailureScenario()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        $mock = $this->getMockBuilder('\RZP\Models\LedgerOutbox\Core')
+            ->onlyMethods(array('handleTransactionCreationOnAcknowledgement'))
+            ->getMock();
+
+        $mockException = new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, "");
+
+        $mock->method('handleTransactionCreationOnAcknowledgement')->willReturn($mockException);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+//        $txn = $this->getDbLastEntity('transaction');
+//
+//        $this->assertNotNull($txn);
+//
+//        $this->assertNotNull($txn['fee']);
+//        $this->assertNotNull($txn['tax']);
+//        $this->assertNotNull($txn['credit']);
+//        $this->assertNotNull($txn['balance_id']);
+//        $this->assertTrue($txn->isBalanceUpdated());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+//        $this->assertEquals($payment['fee'], $txn['fee']);
+//        $this->assertEquals($payment['tax'], $txn['tax']);
+//        $this->assertEquals($payment['amount']-$payment['fee'], $txn['credit']);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
+
+//        $this->assertEquals($paymentId, 'pay_'.$txn['entity_id']);
+        $this->assertEquals($journalId, $payment['transaction_id']);
+        $this->assertEquals($journal['ledger_entry'][0]['amount'], $payment['fee']);
+        $this->assertEquals($journal['ledger_entry'][1]['amount'], $payment['tax']);
+//        $this->assertEquals($journal['ledger_entry'][2]['amount'], $txn['amount']);
+//        $this->assertEquals($journal['ledger_entry'][3]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
+//        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+//        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+    }
+
 
 
 

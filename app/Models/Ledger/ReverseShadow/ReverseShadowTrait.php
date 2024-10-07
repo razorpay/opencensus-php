@@ -14,6 +14,7 @@ use RZP\Constants\Metric;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
 use RZP\Models\Pricing\Fee;
@@ -55,6 +56,26 @@ trait ReverseShadowTrait
             Constants::TRANSACTION_DATE          => $transactionDate,
         );
     }
+
+    public function isEnabledForPaymentFeeTaxPopulation(string $variant, $payment): bool
+    {
+        if($variant != "on")
+        {
+            return false;
+        }
+
+        if (($payment->isInternational() === true) or
+            ($payment->merchant->isLRSFlowEnabled() === true) or
+            ($payment->merchant->isLRSTravelCitiFlowEnabled() === true) or
+            ($payment->merchant->isOpgspImportEnabled() === true) or
+            ($payment->merchant->isJpmcImportFlowEnabled() === true))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 
     protected function isFeeCreditsWithoutCustomerFeeBearer($feeCredits ,$fee, PaymentEntity $payment)
     {
@@ -943,6 +964,37 @@ trait ReverseShadowTrait
         }
 
         return $baseTransactionEntity;
+    }
+
+
+    public function setPaymentFeeAndTaxAsPerJournal($baseTransactionEntity)
+    {
+        $payment = $this->repo->payment->findOrFail($baseTransactionEntity->getEntityId());
+
+        // First verify if its enabled if not enabled return
+        // we have a razorx exp for this, and currently we are blocking all cross border payments for this
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),Merchant\RazorxTreatment::PG_LEDGER_ASYNC_TRANSACTION_CREATION, $this->app['rzp.mode']);
+
+        if($this->isEnabledForPaymentFeeTaxPopulation($variant, $payment) === false)
+        {
+            return;
+        }
+
+        $payment->setAttribute(Payment\Entity::TRANSACTION_ID, $baseTransactionEntity->getId());
+
+        $payment->setTax($baseTransactionEntity->getTax());
+
+        // currently, international cases are blocked on this flow, so we can cleanly just have the fee set for non CFB cases.
+        // TODO on this will be to start flowing cross borded payments and have the fee set for them for CFB use cases too.
+        if ($payment->isFeeBearerCustomer() === false)
+        {
+            //set and fee values from txn
+            $payment->setFee($baseTransactionEntity->getFee());
+        }
+
+        $payment->setMdr($baseTransactionEntity->getFee());
+
+        $this->repo->saveOrFail($payment);
     }
 
     public function transformJournalResponseToTransactionEntityForAdjustment($journalResponse)

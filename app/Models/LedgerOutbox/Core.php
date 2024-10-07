@@ -270,7 +270,7 @@ class Core extends Base\Core
         {
             $this->dispatchForTransferProcessingIfApplicable($journal);
 
-            $this->dispatchToSettlementFromJournalIfApplicable($journal);
+            $this->postProcessingJournalResponse($journal);
         }
 
         if($isBulkJournal === true)
@@ -1463,7 +1463,7 @@ class Core extends Base\Core
                     {
                         $this->dispatchForTransferProcessingIfApplicable($journal);
 
-                        $this->dispatchToSettlementFromJournalIfApplicable($journal);
+                        $this->postProcessingJournalResponse($journal);
                     }
 
                     $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE,
@@ -2050,7 +2050,10 @@ class Core extends Base\Core
         (new Transfer\Core())->eventTransferFailed($transfer);
     }
 
-    public function dispatchToSettlementFromJournalIfApplicable($journal)
+    /**
+     * Responsible for updating fee and tax in payment entity, if applicable and the dispatches the journal to settlements
+     */
+    public function postProcessingJournalResponse($journal)
     {
         $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
@@ -2059,6 +2062,8 @@ class Core extends Base\Core
             $bucketCore = new Bucket\Core;
 
             $virtualPaymentTransaction = $this->transformJournalResponseToTransactionEntityForPayments($journal);
+
+            $this->setPaymentFeeAndTaxAsPerJournal($virtualPaymentTransaction);
 
             $status = $bucketCore->shouldProcessViaNewService($virtualPaymentTransaction->getMerchantId());
 
