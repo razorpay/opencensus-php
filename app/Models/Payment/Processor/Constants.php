@@ -115,6 +115,8 @@ class Constants
     const PAYMENT_PASSED_ALL_CHECKS_FOR_CAPTURE     = 'Payment passed all checks for auto capture.';
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_TRUE      = 'Merchant has auto capture late auth enabled.';
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_FALSE     = 'Merchant has auto capture late auth disabled.';
+    const MERCHANT_SILENT_REFUND_LATE_AUTH_TRUE     = 'Mercant has silent refund late auth enabled.';
+
     const PAYMENT_METHOD_COD                        = 'Cannot auto capture cash on delivery payment.';
     const ORDER_PAYMENT_CAPTURE_TRUE                = 'Order payment capture flag is true.';
     const OPTIMIZER_AUTO_CAPTURE_TIMEOUT_EXCEEDED   = 'Optimizer Auto Capture timeout exceeded';

@@ -11003,6 +11003,16 @@ class Processor
             return $response;
         }
 
+        if (($payment->isLateAuthorized() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::SILENT_REFUND_LATE_AUTH) === true))
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::MERCHANT_SILENT_REFUND_LATE_AUTH_TRUE;
+
+            return $response;
+        }
+
         [$captureConfig, $captureSettings]  = $this->shouldAutoCapturePaymentConfig($payment);
 
         if ($captureConfig === true)
