@@ -1450,6 +1450,19 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testSendSmsAndWhatsappOnPosActivationStatusUnderReview' => [
+        'request'  => [
+            'content' => [
+                'pos_activation_status' => 'under_review',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => null,
+            ],
+        ],
+    ],
     'testFormUnlockedWhenMakerRaiseRequestForNC' => [
         'request'  => [
             'content' => [
