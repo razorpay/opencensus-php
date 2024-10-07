@@ -4788,6 +4788,70 @@ return [
         ],
     ],
 
+    'testChangePasswordEmailViaStork' => [
+        'request' => [
+            'url'     => '/users/password',
+            'method'  => 'PUT',
+            'content' => [
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'old_password'          => '12345',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "email_verified" => true,
+            ],
+        ],
+    ],
+
+    'testChangePasswordEmailViaMailgun' => [
+        'request' => [
+            'url'     => '/users/password',
+            'method'  => 'PUT',
+            'content' => [
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'old_password'          => '12345',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "email_verified" => true,
+            ],
+        ],
+    ],
+
+    'testResendOtpVerificationMailViaStork' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "token" => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+    ],
+
+    'testResendOtpVerificationMailViaMailgun' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "token" => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+    ],
+
     'testPasswordResetSMS' => [
         'request' => [
             'url'     => '/users/reset-password',

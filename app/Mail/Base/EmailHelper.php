@@ -5,6 +5,7 @@ namespace RZP\Mail\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\RazorxTreatment;
+use Razorpay\Trace\Logger as Trace;
 
 class EmailHelper
 {

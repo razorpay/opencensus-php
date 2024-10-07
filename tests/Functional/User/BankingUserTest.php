@@ -6,12 +6,15 @@ use Mail;
 use Mockery;
 use RZP\Mail\User\PasswordReset;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Mail\User\PasswordChange;
+use RZP\Models\User\Entity as UserEntity;
+use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
+use RZP\Mail\User\Otp;
 
 class BankingUserTest extends TestCase
 {
@@ -121,6 +124,153 @@ class BankingUserTest extends TestCase
 
             $this->assertEquals($getParamsForStork['params']['org']['isCustomOnboardingEmail'], false);
             $this->assertEquals('emails.user.password_reset', $mail->view);
+
+            return true;
+        });
+    }
+    public function testChangePasswordEmailViaStork()
+    {
+        Mail::fake();
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable',]]]);
+        $user = $this->fixtures->create('user', ['password' => '12345']);
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordChange::class, function ($mail) {
+            $shouldSendEmailViaStork = $mail->shouldSendEmailViaStork();
+            $getParamsForStork = $mail->getParamsForStork();
+
+            $this->assertEquals($shouldSendEmailViaStork, true);
+            $this->assertArrayHasKey('template_name', $getParamsForStork);
+            $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+            $this->assertArrayHasKey('params', $getParamsForStork);
+            $this->assertArrayHasKey('changed_at', $getParamsForStork['params']);
+            $this->assertArrayHasKey('resetPasswordUrl', $getParamsForStork['params']);
+            $this->assertArrayHasKey('org', $getParamsForStork['params']);
+            $this->assertArrayHasKey('display_name', $getParamsForStork['params']['org']);
+            $this->assertArrayHasKey('login_logo_url', $getParamsForStork['params']['org']);
+            $this->assertEquals('emails.user.password_change', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testChangePasswordEmailViaMailgun()
+    {
+        Mail::fake();
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'off',]]]);
+        $user = $this->fixtures->create('user', ['password' => '12345']);
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordChange::class, function ($mail) {
+            $shouldSendEmailViaStork = $mail->shouldSendEmailViaStork();
+
+            $this->assertEquals($shouldSendEmailViaStork, false);
+            $this->assertEquals('emails.user.password_change', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testResendOtpVerificationMailViaStork()
+    {
+        Mail::fake();
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable',]]]);
+
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789',
+                UserEntity::EMAIL => 'abc@rzp.com']);
+
+        $merchant = $this->fixtures->create('merchant',
+            ['id'    => '10000000000002',
+                'email' => 'abc@rzp.com']);
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth();
+
+        $response=$this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $shouldSendEmailViaStork = $mail->shouldSendEmailViaStork();
+            $getParamsForStork = $mail->getParamsForStork();
+
+            $this->assertEquals($shouldSendEmailViaStork, true);
+            $this->assertArrayHasKey('template_name', $getParamsForStork);
+            $this->assertArrayHasKey('template_namespace', $getParamsForStork);
+            $this->assertArrayHasKey('params', $getParamsForStork);
+            $this->assertArrayHasKey('otp', $getParamsForStork['params']);
+            $this->assertArrayHasKey('otp', $getParamsForStork['params']['otp']);
+            $this->assertArrayHasKey('expires_at', $getParamsForStork['params']['otp']);
+            $this->assertEquals('verify_email', $mail->input['action']);
+            $this->assertNotEmpty($mail->user);
+            $this->assertNotEmpty($mail->otp);
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testResendOtpVerificationMailViaMailgun()
+    {
+        Mail::fake();
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'off',]]]);
+
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789',
+                UserEntity::EMAIL => 'abc@rzp.com']);
+
+        $merchant = $this->fixtures->create('merchant',
+            ['id'    => '10000000000002',
+                'email' => 'abc@rzp.com']);
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth();
+
+        $response=$this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $shouldSendEmailViaStork = $mail->shouldSendEmailViaStork();
+
+            $this->assertEquals($shouldSendEmailViaStork, actual: false);
+            $this->assertEquals('verify_email', $mail->input['action']);
+            $this->assertNotEmpty($mail->user);
+            $this->assertNotEmpty($mail->otp);
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
 
             return true;
         });

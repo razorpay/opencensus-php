@@ -195,7 +195,7 @@ class EmailNotificationService extends BaseNotificationService
         $business_website=empty($merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE))?null:$merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE);
 
         $isCustomOnboardingEmail = $org->isFeatureEnabled(FeatureConstant::CUSTOM_ONBOARDING_EMAILS);
-        $isStorkSupported = (new EmailHelper)->isStorkSupportedCheckViaSplitz($merchant['id'], $org['id'], 'activated_mcc_pending_success') ?? false;
+        $isStorkSupported = (new EmailHelper)->isStorkSupportedCheckViaSplitz($merchant['id'], $org['id'], strtolower($this->event)) ?? false;
 
         $data = [
             DEConstants::MERCHANT => [
@@ -209,7 +209,8 @@ class EmailNotificationService extends BaseNotificationService
             ],
             DEConstants::ORG => $org->toArray(),
             'isCustomOnboardingEmail' =>  $isCustomOnboardingEmail,
-            'isStorkSupported' => $isStorkSupported
+            'isStorkSupported' => $isStorkSupported,
+            'payment_url' => 'https://' . $hostname,
         ];
 
         Handler::updateNCUrlIfApplicable($merchant->getId(), $this->event, $this->args);

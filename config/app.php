@@ -1006,6 +1006,12 @@ return array(
 
     'restricted_scheduled_es_migration_experiment_id' => env('RESTRICTED_SCHEDULED_ES_MIGRATION_EXP_ID'),
 
+    'banking_mail_otp_email_verify_exp_id' => env('BANKING_MAIL_OTP_EMAIL_VERIFY_EXP_ID'),
+
+    'banking_mail_activated_mcc_pending_action_required_exp_id' => env('BANKING_MAIL_ACTIVATED_MCC_PENDING_ACTION_REQUIRED_EXP_ID'),
+
+    'banking_mail_password_change_exp_id' => env('BANKING_MAIL_PASSWORD_CHANGE_EXP_ID'),
+
     'banking_mail_invite_merchant_exp_id' => env('BANKING_MAIL_INVITE_MERCHANT_EXP_ID'),
 
     'banking_mail_rejection_notification_exp_id' => env('BANKING_MAIL_REJECTION_NOTIFICATION_EXP_ID'),

@@ -478,4 +478,147 @@ class BankingCoreTest extends TestCase
 
     }
 
+    public function testActivatedMccPendingActivationStatusWithoutCustomOnboardingViaStork()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'          => 'under_review',
+            'submitted'=>true,
+            'business_Website'=> null
+        ]);
+
+       // $this->mockRazorxTreatment();
+
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData,$merchantDetails->merchant);
+
+        //verify email has been sent
+        $expectedEmails=['emails.merchant.onboarding.activated_mcc_pending_success',
+                         'emails.merchant.onboarding.activated_mcc_pending_action_required'];
+
+        $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
+
+        $this->assertCount(2,$queuedEmails);
+        $activatedMccPendingSuccessData = $queuedEmails->get(0)->getData();
+        $activatedMccPendingActionRequiredData = $queuedEmails->get(1)->getData();
+        $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
+        $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+        $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingSuccessData);
+        $this->assertEquals($activatedMccPendingSuccessData['isCustomOnboardingEmail'], false);
+        $this->assertArrayHasKey('org', $activatedMccPendingSuccessData);
+        $this->assertArrayHasKey('login_logo_url', $activatedMccPendingSuccessData['org']);
+        $this->assertArrayHasKey('merchant', $activatedMccPendingSuccessData);
+        $this->assertArrayHasKey('name', $activatedMccPendingSuccessData['merchant']);
+        $this->assertArrayHasKey('hostname', $activatedMccPendingSuccessData['merchant']['org']);
+        $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingActionRequiredData);
+        $this->assertEquals($activatedMccPendingActionRequiredData['isCustomOnboardingEmail'], false);
+        $this->assertArrayHasKey('org', $activatedMccPendingActionRequiredData);
+        $this->assertArrayHasKey('login_logo_url', $activatedMccPendingActionRequiredData['org']);
+        $this->assertArrayHasKey('merchant', $activatedMccPendingActionRequiredData);
+        $this->assertArrayHasKey('name', $activatedMccPendingActionRequiredData['merchant']);
+
+    }
+
+    public function testActivatedMccPendingActivationStatusMailWithCustomOnboardingViaStork()
+    {
+        Mail::fake();
+
+        $this->fixtures->org->addFeatures([FeatureConstant::CUSTOM_ONBOARDING_EMAILS],"100000razorpay");
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'          => 'under_review',
+            'submitted'=>true,
+            'business_Website'=> null
+        ]);
+
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData,$merchantDetails->merchant);
+
+        //verify email has been sent
+        $expectedEmails=['emails.merchant.onboarding.activated_mcc_pending_success',
+                         'emails.merchant.onboarding.activated_mcc_pending_action_required'];
+
+        $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
+
+        $this->assertCount(2,$queuedEmails);
+        $activatedMccPendingSuccessData = $queuedEmails->get(0)->getData();
+        $activatedMccPendingActionRequiredData = $queuedEmails->get(1)->getData();
+        $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
+        $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+        $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingSuccessData);
+        $this->assertEquals($activatedMccPendingSuccessData['isCustomOnboardingEmail'], actual: true);
+        $this->assertArrayHasKey('payment_url', $activatedMccPendingSuccessData);
+        $this->assertArrayHasKey('org', $activatedMccPendingSuccessData);
+        $this->assertArrayHasKey('login_logo_url', $activatedMccPendingSuccessData['org']);
+        $this->assertArrayHasKey('merchant', $activatedMccPendingSuccessData);
+        $this->assertArrayHasKey('name', $activatedMccPendingSuccessData['merchant']);
+        $this->assertArrayHasKey('hostname', $activatedMccPendingSuccessData['merchant']['org']);
+        $this->assertArrayHasKey('isCustomOnboardingEmail', $activatedMccPendingActionRequiredData);
+        $this->assertEquals($activatedMccPendingActionRequiredData['isCustomOnboardingEmail'], true);
+        $this->assertArrayHasKey('org', $activatedMccPendingActionRequiredData);
+        $this->assertArrayHasKey('login_logo_url', $activatedMccPendingActionRequiredData['org']);
+        $this->assertArrayHasKey('merchant', $activatedMccPendingActionRequiredData);
+        $this->assertArrayHasKey('name', $activatedMccPendingActionRequiredData['merchant']);
+
+    }
+
 }
