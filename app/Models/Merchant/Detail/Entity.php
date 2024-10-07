@@ -21,6 +21,7 @@ use RZP\Exception\InvalidPermissionException;
 use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use RZP\Models\Merchant\Acs\Traits\AsvUpdateTimeStamp;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
@@ -40,7 +41,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
  */
 class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
-    use Cacheable, AsvReload, AsvLoad;
+    use Cacheable, AsvReload, AsvLoad, AsvUpdateTimeStamp;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const MERCHANT_ID                        = 'merchant_id';

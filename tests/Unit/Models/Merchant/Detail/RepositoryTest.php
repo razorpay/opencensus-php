@@ -23,6 +23,7 @@ use Rzp\Accounts\Merchant\V1\MerchantDetail as MerchantDetailProto;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
+use function PHPUnit\Framework\assertNotEquals;
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
 class RepositoryTest extends RepositoryTestHelper
@@ -710,6 +711,34 @@ class RepositoryTest extends RepositoryTestHelper
         $merchant =  (new \RZP\Models\Merchant\Repository())->connection(Mode::LIVE)->find("CzmiCwTPCL3t2K");
         $merchantDetail =  $merchant->merchantDetail;
         $this->assertEquals($merchantDetail->getConnectionName(), 'live');
+    }
+
+    public function testMerchantDetailsUpdatedAt()
+    {
+        $MerchantRepo = new \RZP\Models\Merchant\Repository();
+        $repo = new Repository();
+        $merchantDetailEntity = (new Entity());
+
+        $id = 'CzmiCwTPCL3t2K';
+        $MerchantRepo->saveOrFail($this->getMerchantEntityFromJson($this->merchantEntityJson1));
+        $merchant = $MerchantRepo->find('CzmiCwTPCL3t2K');
+
+        $merchantDetailEntity->merchant()->associate($merchant);
+        $repo->repo->transactionOnLiveAndTest(function() use ($merchantDetailEntity, $repo){
+            $repo->saveOrFail($merchantDetailEntity);
+        });
+
+        $detailEntity1 = $repo->findOrFail($id);
+        assertNotEquals(1234, $detailEntity1->getUpdatedAt());
+
+        $detailEntity1->setUpdatedAt(1234);
+        $repo->repo->transactionOnLiveAndTest(function() use ($detailEntity1, $repo){
+            $repo->saveOrFail($detailEntity1);
+        });
+
+        $detailEntity2 = $repo->findOrFail($id);
+
+        assertNotEquals(1234, $detailEntity2->getUpdatedAt());
     }
 
     /**
