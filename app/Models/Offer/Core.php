@@ -1324,6 +1324,15 @@ class Core extends Base\Core
         if ($payment->isMethodCardOrEmi() === true)
         {
             $iin = $this->fetchCardIIN($payment);
+
+            if ($isDummyPayment === true)
+            {
+                // Always setting isCardSaved to true here for v1 validation during
+                // standard checkout, as we cannot determine whether the customer has
+                // shown intent for tokenization. This ensures validation doesn't
+                // fail for selected saved card offers.
+                $offer->setIsCardSaved(true);
+            }
         }
 
         try

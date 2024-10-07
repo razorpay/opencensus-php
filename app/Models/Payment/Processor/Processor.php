@@ -6750,6 +6750,12 @@ class Processor
             return $valid;
         }
 
+        // Set the save attribute of offer model from $input array
+        $isCardSaved = ((isset($input[self::SAVE]) === true) and
+                        (boolval($input[self::SAVE]) === true));
+
+        $offer->setIsCardSaved($isCardSaved);
+
         $this->offer = $offer;
 
         if (!$this->validateOffersViaOffersEngine($payment, $offer, $experiments))

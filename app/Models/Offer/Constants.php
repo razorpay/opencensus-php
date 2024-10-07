@@ -183,6 +183,7 @@ final class Constants
     const IIN = 'iin';
     const WALLET = 'wallet';
     const PROVIDER = 'provider';
+    const CARD = 'card';
 
     const EMI_TENURE = 'emi_tenure';
 
@@ -220,5 +221,7 @@ final class Constants
     const PAYMENT_INSTRUMENT = "PaymentInstrument";
 
     const PLATFORM_AD_PUBLISHER = '100000razorpay';
+
+    const IS_CARD_SAVED = 'is_saved';
 
 }

@@ -118,6 +118,10 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_NETWORK
     ];
 
+    // This parameter stores the intent of the customer to save the card for
+    // tokenization when payment was initiated.
+    protected bool $isCardSaved = false;
+
     protected $entity      = 'offer';
 
     protected static $sign = 'offer';
@@ -312,7 +316,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT          => 'int',
         self::DEFAULT_OFFER       => 'boolean',
         self::MAX_ORDER_AMOUNT    => 'int',
-        self::UPI =>'array'
+        self::UPI                => 'array',
     ];
 
     /**
@@ -512,6 +516,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT_TYPE);
     }
 
+    public function isCardSaved()
+    {
+        return ($this->isCardSaved === true);
+    }
+
     public function isNoCostEmi()
     {
         if ($this->getEmiSubvention() == true)
@@ -700,6 +709,11 @@ class Entity extends Base\PublicEntity
     public function setErrorMessage(string $errorMessage)
     {
         $this->setAttribute(self::ERROR_MESSAGE, $errorMessage);
+    }
+
+    public function setIsCardSaved(bool $isCardSaved)
+    {
+        $this->isCardSaved = $isCardSaved;
     }
 
 // ------------------------Public Setters--------------------------------------------

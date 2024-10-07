@@ -1243,9 +1243,11 @@ class OffersEngine extends Base\Core
 
         $this->isDummyPayment = $isDummyPayment;
 
+        $intentToSaveCard = $offer->isCardSaved();
+
         try
         {
-            $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin);
+            $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
 
             $response = $this->app['offers_engine']->validateOffer($merchantId, [
                 'offer_id' => $offer->getPublicId(),
@@ -1259,7 +1261,7 @@ class OffersEngine extends Base\Core
                     [Constants::VALIDATE_CARD_NUMBER_REQUIRED_ERROR,
                     Constants::VALIDATE_MISSING_FACT_ERROR], true) === true )
                 {
-                    $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin);
+                    $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
 
                     $response = $this->app['offers_engine']->validateOffer($merchantId, [
                         'offer_id' => $offer->getPublicId(),
@@ -1289,7 +1291,8 @@ class OffersEngine extends Base\Core
         }
     }
 
-    private function buildValidateFact(bool $validateWithCardPAR, string $cardIin): array
+    private function buildValidateFact(
+        bool $validateWithCardPAR, string $cardIin, bool $intentToSaveCard = false): array
     {
         $fact = array();
         $instrumentFact = array();
@@ -1312,12 +1315,15 @@ class OffersEngine extends Base\Core
             }
 
             $instrumentFact = [
-                Constants::CARD_TYPE => strtolower($this->payment->card->getType()),
-                Constants::CARD_NETWORK => $this->payment->card->getNetworkCode(),
-                Constants::IIN => $cardIin,
-                Constants::ISSUER => $this->payment->card->getIssuer(),
-                Constants::IS_CARD_INTERNATIONAL => $this->payment->card->isInternational(),
+                Constants::CARD_TYPE               => strtolower($this->payment->card->getType()),
+                Constants::CARD_NETWORK            => $this->payment->card->getNetworkCode(),
+                Constants::IIN                     => $cardIin,
+                Constants::ISSUER                  => $this->payment->card->getIssuer(),
+                Constants::IS_CARD_INTERNATIONAL   => $this->payment->card->isInternational(),
                 Constants::CARD_COBRANDING_PARTNER => $coBrandingPartner,
+                Constants::CARD                    => [
+                    Constants::IS_CARD_SAVED => $intentToSaveCard,
+                ],
             ];
         }
 
