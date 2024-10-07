@@ -1240,8 +1240,7 @@ trait Capture
 
             // If API Payment and merchant is on reverse shadow, that payment would have been dispatched to
             // settlement from ack worker, we need not to dispatch again after api transaction creation
-            if (($payment->isExternal() === false) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
                 $shouldDispatchSettlementBucket = false;
             }

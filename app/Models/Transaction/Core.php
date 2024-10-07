@@ -185,8 +185,7 @@ class Core extends Base\Core
         // If API Payment and merchant is on reverse shadow, that payment would have been dispatched to
         // settlement from ack worker, we need not to dispatch again after api transaction creation
         if(($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) or
-            (($payment->isExternal() === false) and
-            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)))
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {
             $shouldDispatchSettlementBucket = false;
         }
