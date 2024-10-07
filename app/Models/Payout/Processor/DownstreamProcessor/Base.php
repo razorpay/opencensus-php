@@ -52,8 +52,11 @@ class Base extends BaseCore
         return $this->saveCreatedTxn($payout, $txn, $feeSplit);
     }
 
-    protected function createFundTransferAttemptProcess(Entity $payout, $ftaAccount, $ftaCreateStartTime)
+    protected function createFundTransferAttemptProcess(Entity $payout, $ftaAccount)
     {
+
+        $ftaCreateStartTime = millitime();
+
         $ftaInput = [
             FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
@@ -110,7 +113,6 @@ class Base extends BaseCore
 
     protected function createFundTransferAttempt(Entity $payout, $ftaAccount)
     {
-        $ftaCreateStartTime = millitime();
 
         // For VA to VA transfers using creditTransfer entity we don't create FTA
         if ($payout->isVaToVaPayout() === true)
@@ -118,45 +120,37 @@ class Base extends BaseCore
             return;
         }
 
-        $isDoubleFTAExperimentEnabled = $this->fetchSplitzExperiment($payout->getMerchantId(),
-                                                                     $this->app['config']->get('app.double_fta_fix_experiment_id'));
+        // Check if there exists an FTA entity for this source id, if it does then return
+        $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payout->getId(),Entity::PAYOUT);
 
-        if ($isDoubleFTAExperimentEnabled === true) {
+        if (empty($fta) === false) {
+            $this->trace->info(
+                TraceCode::FTA_ENTITY_ALREADY_EXISTS,
+                [
+                    'fta_id'    => $fta->getId(),
+                    'payout_id' => $payout->getId(),
+                ]);
 
-            // Check if there exists an FTA entity for this source id, if it does then return
-            $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payout->getId(),Entity::PAYOUT);
-
-            if (empty($fta) === false) {
-                $this->trace->info(
-                    TraceCode::FTA_ENTITY_ALREADY_EXISTS,
-                    [
-                        'fta_id'    => $fta->getId(),
-                        'payout_id' => $payout->getId(),
-                    ]);
-
-                return;
-            }
-
-            $mutexKey = 'fta_create_mutex_key_'.$payout->getId();
-
-            return $this->app['api.mutex']->acquireAndRelease(
-                $mutexKey,
-                function() use ($payout, $ftaAccount,$ftaCreateStartTime){
-
-                    $this->trace->info(
-                        TraceCode::FTA_MUTEX_ACQUIRED,
-                        [
-                            'payout_id'         => $payout->getId(),
-                            'merchant_id'       => $payout->getMerchantId(),
-                        ]);
-
-                    $this->createFundTransferAttemptProcess($payout, $ftaAccount, $ftaCreateStartTime);
-                },
-                self::FTA_MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_FTA_ALREADY_BEING_PROCESSED);
+            return;
         }
 
-        $this->createFundTransferAttemptProcess($payout, $ftaAccount, $ftaCreateStartTime);
+        $mutexKey = 'fta_create_mutex_key_'.$payout->getId();
+
+        return $this->app['api.mutex']->acquireAndRelease(
+            $mutexKey,
+            function() use ($payout, $ftaAccount){
+
+                $this->trace->info(
+                    TraceCode::FTA_MUTEX_ACQUIRED,
+                    [
+                        'payout_id'         => $payout->getId(),
+                        'merchant_id'       => $payout->getMerchantId(),
+                    ]);
+
+                $this->createFundTransferAttemptProcess($payout, $ftaAccount);
+            },
+            self::FTA_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_FTA_ALREADY_BEING_PROCESSED);
     }
 
     public function fetchSplitzExperiment(string $merchantID, string $experimentID): bool
