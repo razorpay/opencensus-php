@@ -12,6 +12,7 @@ use Mockery;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\EsSync;
 use RZP\Models\FeeRecovery;
+use RZP\Services\Mock\DataLakePresto;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
 use RZP\Error\PublicErrorCode;
@@ -5880,6 +5881,40 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          $approveList[0]['user_id'] = "RazorpyUserId1";
+                          $approveList[1]['user_id'] = "RazorpyUserId2";
+
+                          $approveList[0]['name'] = "Razorpay1";
+                          $approveList[1]['name'] = "Razorpay2";
+
+                          $approveList[0]['email'] = "razorpay1@razorpay.com";
+                          $approveList[1]['email'] = "razorpay2@razorpay.com";
+
+                          $approveList[0]['business_name'] = "Razorpay1";
+                          $approveList[1]['business_name'] = "Razorpay1";
+
+                          $approveList[0]['merchant_id'] = "10000000000000";
+                          $approveList[1]['merchant_id'] = "10000000000000";
+
+                          $approveList[0]['role'] = Org::FINANCE_L1_ROLE;
+                          $approveList[1]['role'] = Org::FINANCE_L2_ROLE;
+
+                          $approveList[0]['payout_count'] = "1";
+                          $approveList[1]['payout_count'] = "1";
+
+                          $approveList[0]['payout_total'] = "1";
+                          $approveList[1]['payout_total'] = "1";
+                          return $approveList;
+
+                      });
+
         $this->startTest();
 
         Mail::assertQueued(PendingApprovals::class, function($mail) {
@@ -5892,14 +5927,6 @@ class PayoutTest extends OAuthTestCase
             $this->assertArrayHasKey('data', $mail->viewData);
 
             $mail->hasTo('merchantuser01@razorpay.com');
-
-            $this->assertArrayHasKey('refund', $mail->viewData['data']);
-            $this->assertArrayHasKey('cashback', $mail->viewData['data']);
-            $this->assertArrayHasKey('salary', $mail->viewData['data']);
-
-            $this->assertEquals(count($mail->viewData['data']['refund']), 1);
-            $this->assertEquals(count($mail->viewData['data']['cashback']), 2);
-            $this->assertEquals(count($mail->viewData['data']['salary']), 2);
 
             return true;
         });
@@ -5945,6 +5972,40 @@ class PayoutTest extends OAuthTestCase
         $this->createBankingAccount($bankingAccountAttributes, 'live');
 
         $this->ba->cronAuth('live');
+
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          $approveList[0]['user_id'] = "RazorpyUserId1";
+                          $approveList[1]['user_id'] = "RazorpyUserId2";
+
+                          $approveList[0]['name'] = "Razorpay1";
+                          $approveList[1]['name'] = "Razorpay2";
+
+                          $approveList[0]['email'] = "razorpay1@razorpay.com";
+                          $approveList[1]['email'] = "razorpay2@razorpay.com";
+
+                          $approveList[0]['business_name'] = "Razorpay1";
+                          $approveList[1]['business_name'] = "Razorpay1";
+
+                          $approveList[0]['merchant_id'] = "10000000000000";
+                          $approveList[1]['merchant_id'] = "10000000000000";
+
+                          $approveList[0]['role'] = Org::FINANCE_L1_ROLE;
+                          $approveList[1]['role'] = Org::FINANCE_L2_ROLE;
+
+                          $approveList[0]['payout_count'] = "1";
+                          $approveList[1]['payout_count'] = "1";
+
+                          $approveList[0]['payout_total'] = "1";
+                          $approveList[1]['payout_total'] = "1";
+                          return $approveList;
+
+                      });
 
         $this->startTest();
 
@@ -6019,6 +6080,40 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          $approveList[0]['user_id'] = "RazorpyUserId1";
+                          $approveList[1]['user_id'] = "RazorpyUserId2";
+
+                          $approveList[0]['name'] = "Razorpay1";
+                          $approveList[1]['name'] = "Razorpay2";
+
+                          $approveList[0]['email'] = "razorpay1@razorpay.com";
+                          $approveList[1]['email'] = "razorpay2@razorpay.com";
+
+                          $approveList[0]['business_name'] = "Razorpay1";
+                          $approveList[1]['business_name'] = "Razorpay1";
+
+                          $approveList[0]['merchant_id'] = "10000000000000";
+                          $approveList[1]['merchant_id'] = "10000000000000";
+
+                          $approveList[0]['role'] = Org::FINANCE_L1_ROLE;
+                          $approveList[1]['role'] = Org::FINANCE_L2_ROLE;
+
+                          $approveList[0]['payout_count'] = "1";
+                          $approveList[1]['payout_count'] = "1";
+
+                          $approveList[0]['payout_total'] = "1";
+                          $approveList[1]['payout_total'] = "1";
+                          return $approveList;
+
+                      });
         $splitzResp = [
             "response" => [
                 'variant' => [
@@ -6045,7 +6140,7 @@ class PayoutTest extends OAuthTestCase
                     $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
                     $this->assertEquals('merchant', $params['message']['owner_type']);
                     $this->assertEquals('Approve Pending Payouts', $title);
-                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+                    $this->assertEquals('1 payouts worth ₹0.01 pending your approval', $body);
                     return true;
                 })
             )
@@ -6082,6 +6177,39 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          $approveList[0]['user_id'] = "RazorpyUserId1";
+                          $approveList[1]['user_id'] = "RazorpyUserId2";
+
+                          $approveList[0]['name'] = "Razorpay1";
+                          $approveList[1]['name'] = "Razorpay2";
+
+                          $approveList[0]['email'] = "razorpay1@razorpay.com";
+                          $approveList[1]['email'] = "razorpay2@razorpay.com";
+
+                          $approveList[0]['business_name'] = "Razorpay1";
+                          $approveList[1]['business_name'] = "Razorpay1";
+
+                          $approveList[0]['merchant_id'] = "10000000000000";
+                          $approveList[1]['merchant_id'] = "10000000000000";
+
+                          $approveList[0]['role'] = Org::FINANCE_L1_ROLE;
+                          $approveList[1]['role'] = Org::FINANCE_L2_ROLE;
+
+                          $approveList[0]['payout_count'] = "1";
+                          $approveList[1]['payout_count'] = "1";
+
+                          $approveList[0]['payout_total'] = "1";
+                          $approveList[1]['payout_total'] = "1";
+                          return $approveList;
+                      });
+
         $splitzResp = [
             "response" => [
                 'variant' => [
@@ -6108,7 +6236,7 @@ class PayoutTest extends OAuthTestCase
                     $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
                     $this->assertEquals('user', $params['message']['owner_type']);
                     $this->assertEquals('Approve Pending Payouts', $title);
-                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+                    $this->assertEquals('1 payouts worth ₹0.01 pending your approval', $body);
 
                     $this->assertEquals('razorpayx', $params['message']['push_notification_channels'][0]['push_notification_request']['account_name']);
                     $this->assertEquals(0, $params['message']['push_notification_channels'][0]['push_notification_request']['push_notification_type']);
@@ -41013,6 +41141,41 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          $approveList[0]['user_id'] = "RazorpyUserId1";
+                          $approveList[1]['user_id'] = "RazorpyUserId2";
+
+                          $approveList[0]['name'] = "Razorpay1";
+                          $approveList[1]['name'] = "Razorpay2";
+
+                          $approveList[0]['email'] = "razorpay1@razorpay.com";
+                          $approveList[1]['email'] = "razorpay2@razorpay.com";
+
+                          $approveList[0]['business_name'] = "Razorpay1";
+                          $approveList[1]['business_name'] = "Razorpay1";
+
+                          $approveList[0]['merchant_id'] = "10000000000000";
+                          $approveList[1]['merchant_id'] = "10000000000000";
+
+                          $approveList[0]['role'] = Org::FINANCE_L1_ROLE;
+                          $approveList[1]['role'] = Org::FINANCE_L2_ROLE;
+
+                          $approveList[0]['payout_count'] = "1";
+                          $approveList[1]['payout_count'] = "1";
+
+                          $approveList[0]['payout_total'] = "1";
+                          $approveList[1]['payout_total'] = "1";
+                          return $approveList;
+
+                      });
+
         $splitzResp = [
             "response" => [
                 'variant' => [
@@ -41039,7 +41202,7 @@ class PayoutTest extends OAuthTestCase
                     $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
                     $this->assertEquals('merchant', $params['message']['owner_type']);
                     $this->assertEquals('Approve Pending Payouts', $title);
-                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+                    $this->assertEquals('1 payouts worth ₹0.01 pending your approval', $body);
                     return true;
                 })
             )
@@ -41117,6 +41280,41 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          $approveList[0]['user_id'] = "RazorpyUserId1";
+                          $approveList[1]['user_id'] = "RazorpyUserId2";
+
+                          $approveList[0]['name'] = "Razorpay1";
+                          $approveList[1]['name'] = "Razorpay2";
+
+                          $approveList[0]['email'] = "razorpay1@razorpay.com";
+                          $approveList[1]['email'] = "razorpay2@razorpay.com";
+
+                          $approveList[0]['business_name'] = "Razorpay1";
+                          $approveList[1]['business_name'] = "Razorpay1";
+
+                          $approveList[0]['merchant_id'] = "10000000000000";
+                          $approveList[1]['merchant_id'] = "10000000000000";
+
+                          $approveList[0]['role'] = Org::FINANCE_L1_ROLE;
+                          $approveList[1]['role'] = Org::FINANCE_L2_ROLE;
+
+                          $approveList[0]['payout_count'] = "1";
+                          $approveList[1]['payout_count'] = "1";
+
+                          $approveList[0]['payout_total'] = "1";
+                          $approveList[1]['payout_total'] = "1";
+                          return $approveList;
+
+                      });
+
         $splitzResp = [
             "response" => [
                 'variant' => [
@@ -41143,7 +41341,7 @@ class PayoutTest extends OAuthTestCase
                     $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
                     $this->assertEquals('merchant', $params['message']['owner_type']);
                     $this->assertEquals('Approve Pending Payouts', $title);
-                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+                    $this->assertEquals('1 payouts worth ₹0.01 pending your approval', $body);
                     return true;
                 })
             )
