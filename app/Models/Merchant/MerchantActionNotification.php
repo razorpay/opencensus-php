@@ -13,6 +13,7 @@ use RZP\lib\TemplateEngine;
 use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\FreshdeskTicket;
+use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Models\Merchant\FreshdeskTicket\Type as FreshdeskTicketType;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
@@ -432,7 +433,16 @@ class MerchantActionNotification
 
     private function sendWhatsappMessage($merchant, $whatsappTemplateName, $whatappTemplate, $params)
     {
+        // Whatsapp Experiment is applicable only for FOH template.
+        $isWhatsappEnabled = $whatsappTemplateName != Constants::FOH_WHATSAPP_TEMPLATE_NAME ||
+            (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+                Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
+
         $receiver = $merchant->merchantDetail->getContactMobile();
+        if ($whatappTemplate == Constants::FOH_WHATSAPP_TEMPLATE_NAME)
+        {
+            $receiver = (new DisputeCore())->getChargebackPOCMobile($merchant);
+        }
 
         $whatsAppPayload = [
             'ownerId'       => $merchant->getId(),
@@ -441,12 +451,20 @@ class MerchantActionNotification
             'params'        => $params
         ];
 
-        $this->app['stork_service']->sendWhatsappMessage(
-            $this->mode,
-            $whatappTemplate,
-            $receiver,
-            $whatsAppPayload
-        );
+        $this->trace->info(TraceCode::ADMIN_SEND_WHATSAPP_MESSAGE_FOH_RAZORX_RESULT, [
+            "merchant_id" => $merchant->getId(),
+            "template_name" => $whatsappTemplateName,
+            "is_whatsapp_enabled" => $isWhatsappEnabled
+        ]);
+
+        if ($isWhatsappEnabled) {
+            $this->app['stork_service']->sendWhatsappMessage(
+                $this->mode,
+                $whatappTemplate,
+                $receiver,
+                $whatsAppPayload
+            );
+        }
     }
 
     private function getTagsForAction($action)

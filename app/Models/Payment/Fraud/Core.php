@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\CyberCrimeHelpDesk\Service as CyberHelpDeskService;
+use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Services\Shield;
 use RZP\Models\Merchant\Fraud\BulkNotification;
 use RZP\Services\Stork;
@@ -41,7 +42,7 @@ class Core extends Base\Core
         (new BulkNotification\Freshdesk(new BulkNotification\Entity(), null))->notifySingle([$fraudRowResult], $payment->getMerchantId(), $isCardNetworkRequest);
     }
 
-    public function notifyFraudVIAWhatsAPP($fraudEntity, $merchantId, $type){
+    public function notifyFraudVIAWhatsAPP($fraudEntity, $merchantId){
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
@@ -51,12 +52,12 @@ class Core extends Base\Core
                 MerchantConstants::FRAUD_ENTITY          => $fraudEntity,
             ]);
 
-        $contact = $merchant->merchantDetail->getContactMobile();
+        $contact = (new DisputeCore())->getChargebackPOCMobile($merchant);
         try
         {
             if (isset($contact)===true)
             {
-                $this->generatePDFAndSendWhatsapp($merchant, $fraudEntity, $contact, $type);
+                $this->generatePDFAndSendWhatsapp($merchant, $fraudEntity, $contact);
             }
             else
             {
@@ -81,7 +82,7 @@ class Core extends Base\Core
 
     }
 
-    public function generatePDFAndSendWhatsapp($merchant, $fraudEntity, $contact, $type)
+    public function generatePDFAndSendWhatsapp($merchant, $fraudEntity, $contact)
     {
         $options = [
             'print-media-type',
@@ -100,39 +101,15 @@ class Core extends Base\Core
 
         $viewTemplate = CyberHelpdeskConstants::CYBER_HELPDESK_WHATSAPP_TEMPLATE;
 
-        if($type == 'single')
-        {
-            $html = View::make($viewTemplate, $fraudEntity)->with('paymentsDataTable', $this->createPaymentsDataTable($fraudEntity))->render();
-        }
-        else
-        {
-            $html = View::make($viewTemplate, $fraudEntity)->with('paymentsDataTable', $this->createPaymentsDataTableBulk($fraudEntity))->render();
-        }
+        $html = View::make($viewTemplate, $fraudEntity)->with('paymentsDataTable', $this->createPaymentsDataTable($fraudEntity))->render();
 
         (new CyberHelpDeskService())->createdPDFAndSendWhatsApp($options, $html, $merchant, $contact);
     }
 
     public function createPaymentsDataTable($fraudEntity){
-        $payment = $fraudEntity;
-
-        $tableData = [];
-
-        $tableRow = array();
-        $tableRow[CyberHelpdeskConstants::PAYMENT_ID]       = $payment[CyberHelpdeskConstants::PAYMENT_ID];
-        $tableRow[CyberHelpdeskConstants::AMOUNT]           = $payment[CyberHelpdeskConstants::AMOUNT];
-        $tableRow[CyberHelpdeskConstants::SOURCE]           = $payment[CyberHelpdeskConstants::REPORTED_BY];
-        $tableRow[CyberHelpdeskConstants::CREATED_DATE]     = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
-        $tableRow[CyberHelpdeskConstants::RESPOND_BY]       = 'Within 24 hrs.';
-
-        $tableData[] = $tableRow;
-        return $tableData;
-    }
-
-    public function createPaymentsDataTableBulk($fraudEntity){
         $tableData = [];
 
         foreach ($fraudEntity as $payment){
-
             $tableRow = array();
             $tableRow[CyberHelpdeskConstants::PAYMENT_ID]       = $payment[CyberHelpdeskConstants::PAYMENT_ID];
             $tableRow[CyberHelpdeskConstants::AMOUNT]           = $payment[CyberHelpdeskConstants::AMOUNT];

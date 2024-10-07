@@ -18,6 +18,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Trace\TraceCode;
 use RZP\lib\TemplateEngine;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Merchant\Risk as MerchantRiskEmailer;
 use RZP\Models\Workflow\Action\MakerType;
@@ -454,7 +455,7 @@ class Service extends Base\Service
     {
         $mode = $this->app['rzp.mode'];
 
-        $receiver = $merchant->merchantDetail->getContactMobile();
+        $receiver = (new DisputeCore())->getChargebackPOCMobile($merchant);
 
         [$templateName, $template, $params, $notificationType, $rasTriggerReason] = $content;
 

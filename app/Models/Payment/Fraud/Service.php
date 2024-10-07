@@ -73,15 +73,6 @@ class Service extends Base\Service
         {
             (new Core())->notifyFraud($fraudEntity);
 
-            $merchantId = $payment->getMerchantId();
-
-            $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantId,
-                Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
-
-            if ($isWhatsappEnabled)
-            {
-                (new Core())->notifyFraudVIAWhatsAPP($fraudEntity, $merchantId, $type = 'single');
-            }
         }
         return $fraudEntity;
     }

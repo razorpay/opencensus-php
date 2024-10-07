@@ -853,8 +853,18 @@ final class Constants
 
     //FOH Notification templates
     const FOH_SMS_TEMPLATE           = 'sms.merchant_risk.generic.funds_on_hold.confirmation';
-    const FOH_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.funds_on_hold';
-    const FOH_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that your settlements are under review due to risk alert for non-compliance with regulatory guidelines as set by our partner banks. Please check your email ID registered with Razorpay and help us with clarification to re-enable settlements';
+    const FOH_WHATSAPP_TEMPLATE_NAME = 'risk_foh_intimation';
+    const FOH_WHATSAPP_TEMPLATE      = 'Dear Merchant,
+
+We are writing to inform you that the funds associated with your account have been placed on hold due to risk alerts received from one of our partner banks. Further details have been sent to you via email with the subject: Razorpay Account Review: {merchant_id} | Funds Under Review.
+
+To expedite the resolution of this issue, we kindly request that you provide the required details in the same email thread. Your prompt cooperation and understanding in this matter would be greatly appreciated.
+
+Best Regards,
+
+Risk Team,
+Razorpay';
+
     const FOH_DASHBOARD_TEMPLATE_TAG = 'mra_foh';
     const FOH_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.funds_on_hold.confirmation';
     const FOH_EMAIL_SUBJECT          = 'Razorpay Account Review: {merchant_name} | {merchant_id} | Funds under Review';

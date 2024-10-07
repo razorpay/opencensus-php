@@ -6,6 +6,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Models\CyberCrimeHelpDesk\Constants;
 use RZP\Models\CyberCrimeHelpDesk\Constants as CyberHelpdeskConstants;
+use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Settlement\Merchant;
 use RZP\Notifications\Dashboard\Constants as DashboardConstants;
@@ -537,7 +538,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $contact = $merchant->merchantDetail->getContactMobile();
+        $contact = (new DisputeCore())->getChargebackPOCMobile($merchant);
 
         $isWhatsappEnabled = (new MecrchantRZP\Core())->isRazorxExperimentEnable($merchantId,
             MecrchantRZP\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
