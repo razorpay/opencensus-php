@@ -124,7 +124,7 @@ class Service extends Base\Service
                 );
             }
 
-            if ($this->isRouteRearchExpEnabled($merchantId))
+            if ($this->isRouteTidbFetchExpEnabled($merchantId))
             {
                 return $this->repo
                     ->transfer
@@ -338,7 +338,7 @@ class Service extends Base\Service
 
         try
         {
-            if ($this->isRouteRearchExpEnabled($parentMerchant))
+            if ($this->isRouteTidbFetchExpEnabled($parentMerchant))
             {
                 $transfer = $this->repo
                     ->transfer
@@ -376,7 +376,7 @@ class Service extends Base\Service
 
         $parentMerchant = $this->merchant->getParentId();
 
-        if ($this->isRouteRearchExpEnabled($parentMerchant))
+        if ($this->isRouteTidbFetchExpEnabled($parentMerchant))
         {
             $payment = $this->repo->payment->findByTransferIdAndMerchant(
                 $id, $merchantId, $relations, ConnectionType::DATA_WAREHOUSE_MERCHANT);
@@ -479,11 +479,11 @@ class Service extends Base\Service
 
         $parentMerchant = $this->merchant->getParentId();
 
-        $isRouteRearchEnabled = $this->isRouteRearchExpEnabled($parentMerchant);
+        $isRouteTidbFetchEnabled = $this->isRouteTidbFetchExpEnabled($parentMerchant);
 
         if ($transId == null)
         {
-            if ($isRouteRearchEnabled)
+            if ($isRouteTidbFetchEnabled)
             {
                 $paymentTransfers =  $this->repo->transfer->getTransfersByPayments(
                     $parentPaymentId, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
@@ -499,7 +499,7 @@ class Service extends Base\Service
 
                 $orderId = $payment->getApiOrderId();
 
-                if ($isRouteRearchEnabled)
+                if ($isRouteTidbFetchEnabled)
                 {
                     $paymentTransfers =  $this->repo->transfer->getTransfersByPayments(
                         $orderId, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
@@ -2629,6 +2629,41 @@ class Service extends Base\Service
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
                 'merchant_id'   => $merchantId,
                 'experiment_id' => $this->app['config']->get('app.route_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
+    public function isRouteTidbFetchExpEnabled(string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_tidb_fetch_exp_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::ROUTE_TIDB_FETCH_SPLITZ_EXP_RESULT, [
+                'splitz_output' => $variant,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_tidb_fetch_exp_id') ?? null
             ]);
 
             return false;
