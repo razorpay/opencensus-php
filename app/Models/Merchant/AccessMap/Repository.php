@@ -163,13 +163,17 @@ class Repository extends Base\Repository
                 $this->resetConnectionOnModels($merchants, $this->getSlaveConnection());
             }
 
-            // set entity owner relation
+            $validMerchantAccessMaps = new Base\PublicCollection();
             foreach ($accessMaps as $accessMap)
             {
                 $merchant = $merchants->where(Merchant\Entity::ID, $accessMap->getEntityOwnerId())->first();
-                $accessMap->setRelation('entityOwner', $merchant);
+                if(! empty($merchant))
+                {
+                    $accessMap->setRelation('entityOwner', $merchant);
+                    $validMerchantAccessMaps->push($accessMap);
+                }
             }
-            return $accessMaps;
+            return $validMerchantAccessMaps;
         }
 
         $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
