@@ -25,6 +25,7 @@ class Entity extends Base\Entity
     const GATEWAY_CONFIG    = 'gateway_config';
     const GATEWAYS          = 'gateways';
     const TOKEN             = 'token';
+    const CERT              = "cert";
 
     /************** Entity Properties ************/
 

@@ -105,7 +105,8 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
                 $data->putMany([
                     Entity::CUSTOMER => [
                         Fields::ID => $gatewayResponse[Fields::DATA][Fields::DATA][Fields::CUSTOMER_REFERENCE]
-                    ]
+                    ],
+                    Entity::CERT => $gatewayResponse[Fields::DATA][Fields::DATA][Fields::PUBLIC_KEY]
                 ]);
 
                 $response->setData($data->all());

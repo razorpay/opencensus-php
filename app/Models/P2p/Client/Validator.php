@@ -93,6 +93,7 @@ class Validator extends Base\Validator
                       Entity::GATEWAY_CONFIG  => 'required',
                       Entity::TOKEN           => 'required',
                       Entity::CUSTOMER        => 'sometimes',
+                      Entity::CERT            => 'sometimes',
                   ]);
 
         return $rules;
