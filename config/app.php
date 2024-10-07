@@ -1034,5 +1034,8 @@ return array(
 
     'validate_transfer_using_oauth_exp_id' => env('VALIDATE_TRANSFER_USING_OAUTH'),
 
-    'gifu_upi_ds_settlement_timestamp_exp_id' => env('GIFU_UPI_DS_SETTLEMENT_TIMESTAMP_EXP_ID')
+    'gifu_upi_ds_settlement_timestamp_exp_id' => env('GIFU_UPI_DS_SETTLEMENT_TIMESTAMP_EXP_ID'),
+
+    'pos_activation_check_for_offline_payments_splitz_exp_id' => env('POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENTS_SPLITZ_EXP_ID')
+
 );

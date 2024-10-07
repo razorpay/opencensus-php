@@ -3703,6 +3703,9 @@ class Processor
             if ($this->shouldValidateCheckoutSignature($input)) {
                 $this->validateCheckoutSignature($input);
             }
+
+            $this->validateMerchantActivationStatusForPaymentCreate($input);
+
             $this->convertNewFormatToOldFormatIfRequired($input);
 
             $this->validatePaymentForOptimizerOnlyMerchants();
@@ -7130,32 +7133,10 @@ class Processor
                 'merchant_id'                   => $merchant->getId(),
                 'route_name'                    => $routeName,
                 'omni_enabled feature enabled'  => $merchant->isOmniEnabled(),
+                'merchant actiavted'            => $merchant->getActivated(),
                 'payment_input'                 => $this->paymentInput
             ]
         );
-
-        //Temporary change to skip activation flag check for in person payments and pos_activated merchants
-        if ((empty($this->paymentInput) === false) and
-            ($this->paymentInput[Payment\Entity::SOURCE_CHANNEL] === QrConstants::PAYMENT_TYPE_IN_PERSON))
-        {
-            if ($merchant->isOmniEnabled() === true)
-            {
-                $this->trace->info(
-                    TraceCode::MERCHANT_ACTIVATION_CHECK_SKIPPED,
-                    [
-                        'merchant_id'     => $merchant->getId(),
-                    ]
-                );
-
-                return;
-            }
-            else
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ERROR, null, null,
-                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
-            }
-        }
 
         $offlineRefundSkipRoutes = ['scrooge_entities_fetch','refund_scrooge_payment_update','refund_fetch_discount','refund_verify_call','refund_gateway_call','refund_update_status'];
 
@@ -7181,7 +7162,9 @@ class Processor
         if ($merchant->isActivated())
         {
             return;
-        } else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true) {
+        } 
+        else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true) 
+        {
             //This is fix is for skipping permissions on pricing route only for omni enabled offline payments
             $request = $this->app['request.ctx']->getRequest();
             $entityId = $request->route('entityId');
@@ -7199,6 +7182,18 @@ class Processor
                   (new MerchantCore())->isXVaActivated($merchant)))
         {
             // TODO: remove this condition once PG onboarding & VA-activation are resumed.
+            return;
+        }
+
+        if ($merchant->isOmniEnabled() === true)
+        {
+            $this->trace->info(
+                TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
+                [
+                    'merchant_id'     => $merchant->getId(),
+                ]
+            );
+
             return;
         }
 
@@ -13436,5 +13431,85 @@ class Processor
 
         return false;
     }
+    protected function validateMerchantActivationStatusForPaymentCreate(array $input)
+    {
+        if($this->isPosActivationCheckForOfflinePaymentsSupportedViaSplitz() === false)
+        {
+            return;
+        }
+
+        if ((empty($input[Payment\Entity::SOURCE_CHANNEL]) === false) and
+        ($input[Payment\Entity::SOURCE_CHANNEL] === QrConstants::PAYMENT_TYPE_IN_PERSON))
+        {
+            // check pos_activation feature flag for in person payments
+            if($this->merchant->isOmniEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
+                    [
+                        'merchant_id'     => $this->merchant->getId(),
+                        'input'           => $input,
+                    ]
+                );
+
+                return;
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, null,
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+            }
+        }
+        
+        //check merchant's activation status for online payments
+        if ($this->merchant->isActivated())
+        {
+            return;
+        }
+
+
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR, null, null,
+            PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+    }
+
+    public function isPosActivationCheckForOfflinePaymentsSupportedViaSplitz()
+    {
+        try
+        {
+            $experimentName = 'app.pos_activation_check_for_offline_payments_splitz_exp_id';
+
+            $variant = (new Payment\Service())->getSplitzResponse(UniqueIdEntity::generateUniqueId(),$experimentName);
+
+            $this->trace->info(
+                TraceCode::POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENT_SPLITZ_RESPONSE,
+                [
+                    'variant'     => $variant,
+                ]
+            );
+
+            if (strtolower($variant) === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENT_SPLITZ_FAILURE,
+            );
+        }
+
+        return false;
+    }
+
 
 }
