@@ -841,6 +841,33 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findOrFail($paymentId);
 
+        if (isset($input['ups_reverse_shadow']) &&
+            $input['ups_reverse_shadow'] === true)
+        {
+            $this->trace->info(
+                TraceCode::RECON_UPDATE_UPI_REVERSE_SHADOW,
+                [
+                    'input'   => $input,
+                ]
+            );
+
+            try {
+                $this->updateGatewayData($input, $payment);
+            }
+            catch (\Throwable $ex) {
+                $this->trace->error(
+                    TraceCode::RECON_UPDATE_UPI_REVERSE_SHADOW_ERROR,[
+                        'error' => $ex->getCode(),
+                    ]
+                );
+            }
+
+            return [
+                'success' => true,
+                'gateway' => $payment->getGateway(),
+            ];
+        }
+
         $method = $payment->getMethod();
 
         if($method == Payment\Method::NETBANKING or $method == Payment\Method::WALLET

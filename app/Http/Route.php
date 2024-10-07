@@ -17923,6 +17923,7 @@ class Route
             'pricing_fetch_plan',
             'qr_code_merchant_create',
             'internal_payments_upi_action',
+            'recon_update_data',
         ],
 
         'emandate_service' => [
