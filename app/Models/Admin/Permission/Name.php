@@ -359,6 +359,7 @@ class Name
     const REPORTING_DEVELOPER                 = 'reporting_developer';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const CREATE_QR_CODE_CONFIG               = 'create_qr_code_config';
+    const BULK_CLOSE_MULTIPLE_QR              = 'bulk_close_multiple_qr';
     const CREATE_BANKING_VIRTUAL_ACCOUNTS     = 'create_banking_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const BANK_TRANSFER_MODIFY_PAYER_ACCOUNT  = 'bank_transfer_modify_payer_account';

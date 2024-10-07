@@ -637,6 +637,71 @@ class Service extends QrCode\Service
             (new Metric())->pushCloseMetrics($closeReason, $errorMessage, $requestSource);
         }
     }
+    public function closeQrCodesBulk(array $input, $closeReason = CloseReason::COMPLIANCE)
+    {
+        $this->trace->info(TraceCode::QR_CODES_CLOSE_BULK_REQUEST,
+            [
+                'count' => count($input[Constants::IDS])
+            ]);
+
+        $errorMessage = null;
+
+        (new Validator())->validateInput('closeQrCodesBulk', $input);
+
+        $failed_ids = [];
+        $failure_details = [];
+        $success = 0;
+        $failure = 0;
+
+        foreach($input[Constants::IDS] as $id)
+        {
+            try
+            {
+                $qrCode = $this->repo->qr_code->findOrFailPublic(Entity::silentlyStripSign($id));
+
+                if($qrCode->getStatus() === Status::CLOSED)
+                {
+                    $success++;
+                    continue;
+                }
+
+                (new Core)->closeQrCodeAdmin($qrCode, $closeReason);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::QR_CODE_CLOSE_REQUEST_FAILED,
+                    [
+                        'id' => $id,
+                    ]);
+
+                $errorMessage = $ex->getMessage();
+
+                $failed_ids[] = $id;
+
+                $failure_details[$id] = $errorMessage;
+                $failure++;
+            }
+            finally
+            {
+                $requestSource = $qrCode ? $qrCode->getRequestSource() : null;
+
+                (new Metric())->pushCloseMetrics($closeReason, $errorMessage, $requestSource);
+            }
+        }
+
+        return [
+            'failed_ids' => $failed_ids,
+            'failure_details' => $failure_details,
+            'success' => $success,
+            'failure' => $failure
+        ];
+
+    }
 
     public function fetchMultiple($input)
     {

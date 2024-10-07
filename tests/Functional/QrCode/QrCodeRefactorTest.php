@@ -2006,7 +2006,7 @@ class QrCodeRefactorTest extends TestCase
     public function testQrStatusCheckViaRefactorFlowForUpiRzpapb()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
-        
+
         $count = 0;
 
         $this->fixtures->create(

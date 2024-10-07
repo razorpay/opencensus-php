@@ -69,6 +69,11 @@ class Validator extends QrCode\Validator
         $this->validateInput('tax_invoice', $taxInvoiceInput);
     }
 
+    protected static $closeQrCodesBulkRules = [
+        QrCode\Constants::IDS        => 'required|array|max:500',
+        QrCode\Constants::IDS.'.*'   => 'string|size:14'
+    ];
+
     public function validateCloseBy(string $attribute, int $closeBy)
     {
         $now = Carbon::now(Timezone::IST);

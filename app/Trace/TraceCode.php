@@ -4840,6 +4840,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_CHECKOUT_CREATE_REQUEST                       = 'QR_CODE_CHECKOUT_CREATE_REQUEST';
     const QR_CODE_PAYMENT_LINKS_CREATE_REQUEST                  = 'QR_CODE_PAYMENT_LINKS_CREATE_REQUEST';
     const QR_CODE_CLOSE_REQUEST                                 = 'QR_CODE_CLOSE_REQUEST';
+    const QR_CODES_CLOSE_BULK_REQUEST                           = 'QR_CODES_CLOSE_BULK_REQUEST';
     const QR_CODE_CREATED                                       = 'QR_CODE_CREATED';
     const QR_CODE_CHECKOUT_CREATED                              = 'QR_CODE_CHECKOUT_CREATED';
     const QR_CODE_PAYMENT_LINKS_CREATED                         = 'QR_CODE_PAYMENT_LINKS_CREATED';

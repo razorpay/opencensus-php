@@ -9,7 +9,9 @@ use Carbon\Carbon;
 
 use RZP\Exception\LogicException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Terminal\Shared;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Merchant\Account;
@@ -50,6 +52,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     use NonVirtualAccountQrCodeTrait;
     use TestsWebhookEvents;
     use PartnerTrait;
+    use WorkflowTrait;
+
 
     private $vpaTerminal;
 
@@ -1932,7 +1936,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     public function testDelayedCallbackOnSingleUseQrCodeForPosQr()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
-        
+
         $posQRPricingPlan = [
             'plan_id'             => '1hDYlICobzOCYt',
             'plan_name'           => 'TestMerchantPosUPIPricingPlan1',
@@ -2384,6 +2388,125 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
         $this->assertEquals(false, $isQRCodeFeatureEnabled);
+    }
+
+    public function testInvalidLengthMultipleQrCodeClose()
+    {
+        $this->ba->adminAuth();
+        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
+
+
+        $attributes = [ 'ids' => ['1','2','3']];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/qr_codes/close/bulk',
+            'content' => $attributes,
+        ];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testClosingMultipleUseQrCode()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $attributes = [];
+        $total_count = 2;
+
+        for($i = 0;$i<$total_count;$i++)
+        {
+            $qrCode = $this->createQrCode([
+                'usage' => 'multiple_use',
+                'type' => 'upi_qr'
+            ],'test', 'LiveAccountMer');
+
+            $attributes['ids'][$i] = substr($qrCode['id'],3);
+
+        }
+
+        $this->ba->adminAuth('test');
+        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/qr_codes/close/bulk',
+            'content' => $attributes,
+        ];
+
+       $response  = $this->makeRequestAndGetContent($request);
+
+       $this->assertEquals(true,empty($response['failed_jobs']));
+       $this->assertEquals(true,empty($response['failure_details']));
+       $this->assertEquals($total_count,$response['success']);
+       $this->assertEquals(0,$response['failure'],);
+
+       foreach($attributes['ids'] as $id)
+       {
+            $qrCode = $this->getDbEntityById('qr_code',$id,'test');
+            $this->assertEquals('closed',$qrCode['status']);
+            $this->assertEquals('compliance',$qrCode['close_reason'],);
+       }
+    }
+    public function testClosingMoreThan500MultipleUseQrCode()
+    {
+        $attributes['ids'] = array_fill(0, 501, 'default_values');
+
+        $this->ba->adminAuth('test');
+        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/qr_codes/close/bulk',
+            'content' => $attributes,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testClosingSingleQRByPassingInBulkMultipleClose()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $attributes = [];
+        $total_count = 2;
+
+        for($i = 0;$i<$total_count;$i++)
+        {
+            $qrCode = $this->createQrCode([
+                'usage' => 'single_use',
+                'type' => 'upi_qr'
+            ],'test', 'LiveAccountMer');
+
+            $attributes['ids'][$i] = substr($qrCode['id'],3);
+
+        }
+
+        $this->ba->adminAuth('test');
+        $this->addPermissionToBaAdmin(Permission::BULK_CLOSE_MULTIPLE_QR);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/qr_codes/close/bulk',
+            'content' => $attributes,
+        ];
+
+        $response  = $this->makeRequestAndGetContent($request);
+
+       for($i = 0;$i < $total_count ; $i++)
+       {
+            $qrId = $attributes['ids'][$i];
+            $this->assertEquals($qrId , $response['failed_ids'][$i]);
+            $this->assertEquals("Single use QR code cannot be closed via this Admin route" , $response['failure_details'][$qrId]);
+       }
+
+        $this->assertEquals(0,$response['success']);
+        $this->assertEquals($total_count,$response['failure'],);
+
     }
 
 }

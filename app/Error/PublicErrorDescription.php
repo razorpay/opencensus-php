@@ -1812,6 +1812,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE                                  = 'Multiple use QR code cannot be closed';
 
+    const BAD_REQUEST_CLOSE_DYNAMIC_QR_CODE_FAILURE                                 = 'Single use QR code cannot be closed via this Admin route';
+
     const BAD_REQUEST_ACCOUNT_ALREADY_DELETED                                       = 'Bank account is already deleted';
 
     const BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST                                        = 'Bank account does not exist';

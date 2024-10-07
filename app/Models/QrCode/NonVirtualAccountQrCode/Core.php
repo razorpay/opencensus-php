@@ -274,6 +274,26 @@ class Core extends QrCode\Core
         return $qrCode;
     }
 
+    public function closeQrCodeAdmin($qrCode, $closeReason)
+    {
+        if ($qrCode->getUsageType() === UsageType::SINGLE_USE)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CLOSE_DYNAMIC_QR_CODE_FAILURE);
+        }
+
+        $qrCode->setStatus(Status::CLOSED);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $qrCode->setClosedAt($currentTime);
+
+        $qrCode->setCloseReason($closeReason);
+
+        $this->repo->saveOrFail($qrCode);
+
+        return $qrCode;
+    }
+
     public function createOrFetchSharedQrCode()
     {
         $fallbackQrCodeId = Entity::SHARED_ID;

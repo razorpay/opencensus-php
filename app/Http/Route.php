@@ -818,6 +818,7 @@ class Route
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'qr_code_fetch'                            => ['get',      'payments/qr_codes/{id}',                         'QrCodeController@get'                                              ],
         'qr_code_close'                            => ['post',     'payments/qr_codes/{id}/close',                   'QrCodeController@closeQrCode'                                      ],
+        'close_qr_codes_bulk'                      => ['post',     'payments/qr_codes/close/bulk',                   'QrCodeController@closeQrCodesBulk'                              ],
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
         'qr_code_merchant_create'                  => ['post',     'payments/merchant/qr_codes',                     'QrCodeController@createQrForMerchant'                              ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
@@ -9683,7 +9684,8 @@ class Route
         'get_mozart_audit_logs_by_params',
 
         'fetch_brand_dealer_details',
-        'update_brand_dealer_details'
+        'update_brand_dealer_details',
+        'close_qr_codes_bulk',
     ];
 
     protected static $splitPaymentRoutes = [
@@ -10578,6 +10580,7 @@ class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'qr_code_create'                           => Permission::CREATE_QR_CODE,
         'qr_code_close'                            => Permission::CREATE_QR_CODE,
+        'close_qr_codes_bulk'                   => Permission::BULK_CLOSE_MULTIPLE_QR,
         'qr_configs_create'                        => Permission::CREATE_QR_CODE_CONFIG,
         'qr_configs_update'                        => Permission::CREATE_QR_CODE_CONFIG,
         'qr_configs_delete'                        => Permission::CREATE_QR_CODE_CONFIG,
@@ -16754,6 +16757,7 @@ class Route
             'pos_fetch_latest_order',
             'get_non_3ds_details',
             'user_update_name',
+            'close_qr_codes_bulk'
         ],
 
         //
@@ -18370,8 +18374,6 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
-            'email_user_status_for_email_update',
-            'merchant_edit_email_self_serve',
             'fetch_users_internal',
             'settlement_ondemand_fees',
             'merchant_activation_business_categories',
