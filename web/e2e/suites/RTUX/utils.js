@@ -18,7 +18,17 @@ export async function getRTUXResponse({ page }) {
 }
 
 export function getWidgetResponse(components, widgetKey) {
-  return components.find((c) => c.type === widgetKey);
+  for (const widget of components) {
+    if (widget.type === widgetKey) {
+      return widget;
+    } else if (widget.type === 'layout') {
+      const result = getWidgetResponse(widget.components, widgetKey);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return undefined;
 }
 
 export async function assertAPICallForDataRefresh({ page, title }) {
