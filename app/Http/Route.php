@@ -18370,6 +18370,8 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
+            'email_user_status_for_email_update',
+            'merchant_edit_email_self_serve',
             'fetch_users_internal',
             'settlement_ondemand_fees',
             'merchant_activation_business_categories',

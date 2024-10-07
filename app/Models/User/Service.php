@@ -3619,7 +3619,10 @@ class Service extends Base\Service
             }
         }
 
-        return ['owner_ids' => $nonPartnerIds];
+        return [
+            'owner_ids' => $nonPartnerIds,
+            'user' => $user->toArrayPublic(),
+            ];
     }
 
     public function fetchPrimaryUserContact(string $merchantId) {
