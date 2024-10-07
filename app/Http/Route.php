@@ -16753,6 +16753,7 @@ class Route
             'pos_fetch_all_device_orders',
             'pos_fetch_latest_order',
             'get_non_3ds_details',
+            'user_update_name',
         ],
 
         //
