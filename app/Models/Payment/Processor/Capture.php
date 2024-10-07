@@ -683,9 +683,20 @@ trait Capture
 
         $this->notifyPaymentCaptured();
 
-        // temporarily disabling metric push for "api_payment_captured_v1_bucket"
-        //
-        //(new Payment\Metric)->pushCapturedMetrics($this->payment);
+         //temporarily disabling metric push for "api_payment_captured_v1_bucket"
+        try
+        {
+            (new Payment\Metric)->pushCapturedMetrics($this->payment);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYMENT_CAPTURE_FAILURE_EXCEPTION,[]
+            );
+        }
+
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
