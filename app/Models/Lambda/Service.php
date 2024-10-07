@@ -87,8 +87,7 @@ class Service extends Base\Service
     const FIRS_FIRSTDATA_SUMMARY_FILE   = 'firs_firstdata_sum_file';
 
     const JPMC                      = "jpmc";
-    const VALID_JPMC_REPAT_FILE     = "RAZORPAYIN.POSTGTP.EXCEL";
-    const VALID_JPMC_REVERSE_FILES  = array("RAZORPAYIN.DISCREPANCY.EXCEL", "RAZORPAYIN.GTP.EXCEL", "RAZORPAYIN.MLR", "RAZORPAYIN.RETURNMIS.EXCEL", "RAZORPAYIN.VIOLATIONREP.EXCEL");
+    const VALID_JPMC_REVERSE_FILES  = array("RAZORPAYIN.DISCREPANCY.EXCEL", "RAZORPAYIN.GTP.EXCEL", "RAZORPAYIN.MLR", "RAZORPAYIN.RETURNMIS.EXCEL", "RAZORPAYIN.VIOLATIONREP.EXCEL","RAZORPAYIN.POSTGTP.EXCEL");
     const JPMC_DECRYPTED_FILES      = 'jpmc_decrypted_files';
 
     protected static $headers = [
@@ -1001,8 +1000,7 @@ class Service extends Base\Service
                 'file_name'     => $fileName,
             ]);
 
-            if ($this->checkValidFile($fileName, self::VALID_JPMC_REVERSE_FILES) === true)
-            {
+            if ($this->checkValidFile($fileName, self::VALID_JPMC_REVERSE_FILES) === true) {
                 // jpmc can send different types of files
                 // log them
                 $this->trace->info(TraceCode::JPMC_REPATRIATION_DIFFERENT_FILE, [
@@ -1017,190 +1015,7 @@ class Service extends Base\Service
                 $this->uploadAndNotifyFileForJpmc($fileDetails, $input, $fileName);
 
                 return ['success' => true, 'file_name' => $fileName, 'message' => 'JPMC sent different reverse file'];
-            }
-
-            if (($input['partner'] === self::JPMC) &&
-                ($this->checkValidFile($fileName, self::VALID_JPMC_REPAT_FILE) === true))
-            {
-                $this->getDecryptedFile($fileDetails);
-
-                $excelReader = (new ExcelImport(1))->toArray($fileDetails['file_path']);
-
-                if (count($excelReader) < 1)
-                {
-                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
-                        'message'       => 'empty file found',
-                        'input'         => $input,
-                        'file_details'  => $fileDetails,
-                        'file_name'     => $fileName,
-                    ]);
-                    return ['success' => false, 'message' => 'empty file found'];
-                }
-
-                $transactionLevelDetails = $excelReader[0];
-
-                if (count($transactionLevelDetails) === 0)
-                {
-                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
-                        'message'       => 'repatriation sheet does not have appropriate number of entries',
-                        'input'         => $input,
-                        'file_details'  => $fileDetails,
-                        'file_name'     => $fileName,
-                    ]);
-                    return ['success' => false, 'message' => 'repatriation sheet does not have appropriate number of entries'];
-                }
-
-                $totalSettlementAmount = 0;
-                $totalINRAmount = 0;
-                $totalForexAmount = 0;
-
-                // get the settlement id since file is per settlement
-                $orderNum = $transactionLevelDetails['0']['order_no'] ?? '';
-
-                if (empty($orderNum) === true)
-                {
-                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_DETAILS, [
-                        'message'       => 'repatriation sheet missing order number',
-                        'input'         => $input,
-                        'file_details'  => $fileDetails,
-                        'file_name'     => $fileName,
-                        'transaction_level_details' => $transactionLevelDetails['0'] ?? '',
-                    ]);
-                    return ['success' => false, 'message' => 'repatriation sheet missing order number'];
-                }
-
-                [$str1, $str2] = explode("|", $orderNum);
-                $settlementId = SEntity::verifyIdAndStripSign($str2);
-                $settlementEntity = $this->repo->settlement->findOrFail($settlementId);
-                $merchant = $this->repo->merchant->findOrFail($settlementEntity->merchant_id);
-
-                if ($merchant->isJpmcImportFlowEnabled() === false)
-                {
-                    $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
-                        'message'       => 'Merchant not on jpmc import flow',
-                        'input'         => $input,
-                        'file_details'  => $fileDetails,
-                        'file_name'     => $fileName,
-                    ]);
-
-                    throw new Exception\BadRequestException(
-                        Error\ErrorCode::BAD_REQUEST_INVALID_ACTION);
-                }
-
-                // get transaction details
-                foreach ($transactionLevelDetails as $row)
-                {
-                    $status = $row['invoice_status'];
-
-                    if ($status !== 'paid')
-                    {
-                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
-                            'message'       => 'Transaction is not processed',
-                            'input'         => $input,
-                            'file_details'  => $fileDetails,
-                            'file_name'     => $fileName,
-                            'status'        => $status,
-                            'record'        => $row,
-                        ]);
-                        return ['success' => false, 'status' => $status, 'record' => $row, 'message' => 'Transaction is not processed'];
-                    }
-
-                    $orderNum = $row['order_no'];
-                    [$str1, $str2] = explode("|", $orderNum);
-                    $paymentId = substr($str1, 4);
-                    $transactionEntity = $this->repo->transaction->findByEntityIdWithConnection($paymentId, $merchant, true);
-
-                    if ($transactionEntity->getSettlementId() !== $settlementEntity->getId())
-                    {
-                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
-                            'message'           => 'Invalid Transaction, file contains txn from diff settlements',
-                            'input'             => $input,
-                            'file_details'      => $fileDetails,
-                            'file_name'         => $fileName,
-                            'txn_id'            => $transactionEntity->getId(),
-                            'txn_settlement'    => $transactionEntity->getSettlementId(),
-                            'settl_id'          => $settlementEntity->getId(),
-                            'record'            => $row,
-                        ]);
-
-                        return ['success' => false, 'txn_id' => $transactionEntity->getId(), 'txn_settlement' => $transactionEntity->getSettlementId(), 'settl_id' => $settlementEntity->getId(), 'record' => $row, 'message' => 'Invalid Transaction, file contains txn from diff settlements'];
-                    }
-
-                    $txnAmount = $transactionEntity->getCredit();
-                    $rowAmount = round($row['net_invoice_amount'] * 100);
-
-                    if ($txnAmount != $rowAmount)
-                    {
-                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
-                            'message'       => 'Transaction amount mismatch',
-                            'input'         => $input,
-                            'file_details'  => $fileDetails,
-                            'file_name'     => $fileName,
-                            'txn_amount'    => $txnAmount,
-                            'row_amount'    => $rowAmount,
-                        ]);
-                        return ['success' => false, 'txn_amount' => $txnAmount, 'row_amount' => $rowAmount, 'order_num' => $orderNum, 'txn_id' => $transactionEntity->getId(), 'message' => 'Transaction amount mismatch'];
-                    }
-
-                    $totalSettlementAmount += $row['net_invoice_amount'];
-                    $totalForexAmount += $row['transaction_amount'];
-                    $totalINRAmount += ($row['transaction_amount'] * $row['exchange_rate']);
-                }
-
-                $formattedCreditAmount = number_format((float)$totalSettlementAmount, 2, '.', '') * 100;
-                $formattedForexAmount = number_format((float)$totalForexAmount, 2, '.', '') * 100;
-                $formattedAmount = number_format((float)$totalINRAmount, 2, '.', '') * 100;
-
-                if ($formattedCreditAmount != $settlementEntity->getAmount())
-                {
-                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_AMOUNT, [
-                        'message'       => 'Invalid total settlement amount in file',
-                        'file_details'  => $fileDetails,
-                        'file_name'     => $fileName,
-                        'amount'        => $formattedAmount,
-                        'settlement'    => $settlementId,
-                        'formatted_credit_amount'   => $formattedCreditAmount,
-                        'settlement_amount'         => $settlementEntity->getAmount(),
-                    ]);
-                    return ['success' => false, 'formatted_credit_amount' => $formattedCreditAmount, 'settlement_amount' => $settlementEntity->getAmount(), 'message' => 'Invalid total settlement amount in file'];
-                }
-
-                // save to repat ledger
-                $repatriationEntity = [];
-
-                $repatriationEntity[RepatEntity::SETTLED_AT] = $settlementEntity->getUpdatedAt();
-                $repatriationEntity[RepatEntity::CURRENCY] = Currency::INR;
-                $repatriationEntity[RepatEntity::CREDIT_CURRENCY] = $transactionLevelDetails['0']['transaction_currency'] ?? '';
-                $repatriationEntity[RepatEntity::PARTNER_TRANSACTION_ID] = $transactionLevelDetails[0]['match_id'];
-                $repatriationEntity[RepatEntity::AMOUNT] = $settlementEntity->getAmount();
-                $repatriationEntity[RepatEntity::CREDIT_AMOUNT] = $formattedForexAmount;
-                $repatriationEntity[RepatEntity::MERCHANT_ID] = $settlementEntity->getMerchantId();
-                $repatriationEntity[RepatEntity::UPDATED_AT] = time();
-                $repatriationEntity[RepatEntity::SETTLEMENT_IDS] = [$settlementId];
-                $repatriationEntity[RepatEntity::INTEGRATION_ENTITY] = $input['partner'];
-
-                $forexRate  = $transactionLevelDetails['0']['exchange_rate'] ?? '';
-                $forexRateFormatted = number_format((float)$forexRate, 6, '.', '');
-                $repatriationEntity[RepatEntity::FOREX_RATE] = $forexRateFormatted;
-
-                $this->saveRepatriationDetails($repatriationEntity);
-
-                $this->uploadAndNotifyFileForJpmc($fileDetails, $input, $fileName, $settlementEntity->getMerchantId());
-
-                $properties = [
-                    'merchant_id'        => $settlementEntity->getMerchantId(),
-                    'merchant_mcc_code'  => $merchant->getCategory(),
-                    'merchant_category2' => $merchant->getCategory2(),
-                    'settlement_id'      => $settlementId,
-                    'settlement_amt'     => $settlementEntity->getAmount(),
-                    'file_type'          => $fileName,
-                ];
-
-                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                    $merchant, $properties, SegmentEvent::JPMC_IMPORT_FLOW_RECON_FILE_RECEIVED);
-            }
-            else
-            {
+            } else {
                 $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
                     'message'       => 'JPMC invalid file',
                     'file_details'  => $fileDetails,
@@ -1223,12 +1038,197 @@ class Service extends Base\Service
             return ['success' => false, 'error_message' => $e->getMessage(), 'message' => 'JPMC repatriation failed'];
         }
 
-        $this->trace->info(TraceCode::JPMC_REPATRIATION_SUCCESS, [
-                    'message'       => 'JPMC repatriation success',
-                    'file_details'  => $fileDetails,
-                    'file_name'     => $fileName,
-                ]);
-        return ['success' => true, 'message' => 'JPMC repatriation success'];
+
+
+        //code commented which has repatriation logic
+        //            if (($input['partner'] === self::JPMC) &&
+//                ($this->checkValidFile($fileName, self::VALID_JPMC_REPAT_FILE) === true))
+//            {
+//                $this->getDecryptedFile($fileDetails);
+//
+//                $excelReader = (new ExcelImport(1))->toArray($fileDetails['file_path']);
+//
+//                if (count($excelReader) < 1)
+//                {
+//                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
+//                        'message'       => 'empty file found',
+//                        'input'         => $input,
+//                        'file_details'  => $fileDetails,
+//                        'file_name'     => $fileName,
+//                    ]);
+//                    return ['success' => false, 'message' => 'empty file found'];
+//                }
+//
+//                $transactionLevelDetails = $excelReader[0];
+//
+//                if (count($transactionLevelDetails) === 0)
+//                {
+//                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
+//                        'message'       => 'repatriation sheet does not have appropriate number of entries',
+//                        'input'         => $input,
+//                        'file_details'  => $fileDetails,
+//                        'file_name'     => $fileName,
+//                    ]);
+//                    return ['success' => false, 'message' => 'repatriation sheet does not have appropriate number of entries'];
+//                }
+//
+//                $totalSettlementAmount = 0;
+//                $totalINRAmount = 0;
+//                $totalForexAmount = 0;
+//
+//                // get the settlement id since file is per settlement
+//                $orderNum = $transactionLevelDetails['0']['order_no'] ?? '';
+//
+//                if (empty($orderNum) === true)
+//                {
+//                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_DETAILS, [
+//                        'message'       => 'repatriation sheet missing order number',
+//                        'input'         => $input,
+//                        'file_details'  => $fileDetails,
+//                        'file_name'     => $fileName,
+//                        'transaction_level_details' => $transactionLevelDetails['0'] ?? '',
+//                    ]);
+//                    return ['success' => false, 'message' => 'repatriation sheet missing order number'];
+//                }
+//
+//                [$str1, $str2] = explode("|", $orderNum);
+//                $settlementId = SEntity::verifyIdAndStripSign($str2);
+//                $settlementEntity = $this->repo->settlement->findOrFail($settlementId);
+//                $merchant = $this->repo->merchant->findOrFail($settlementEntity->merchant_id);
+//
+//                if ($merchant->isJpmcImportFlowEnabled() === false)
+//                {
+//                    $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+//                        'message'       => 'Merchant not on jpmc import flow',
+//                        'input'         => $input,
+//                        'file_details'  => $fileDetails,
+//                        'file_name'     => $fileName,
+//                    ]);
+//
+//                    throw new Exception\BadRequestException(
+//                        Error\ErrorCode::BAD_REQUEST_INVALID_ACTION);
+//                }
+//
+//                // get transaction details
+//                foreach ($transactionLevelDetails as $row)
+//                {
+//                    $status = $row['invoice_status'];
+//
+//                    if ($status !== 'paid')
+//                    {
+//                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+//                            'message'       => 'Transaction is not processed',
+//                            'input'         => $input,
+//                            'file_details'  => $fileDetails,
+//                            'file_name'     => $fileName,
+//                            'status'        => $status,
+//                            'record'        => $row,
+//                        ]);
+//                        return ['success' => false, 'status' => $status, 'record' => $row, 'message' => 'Transaction is not processed'];
+//                    }
+//
+//                    $orderNum = $row['order_no'];
+//                    [$str1, $str2] = explode("|", $orderNum);
+//                    $paymentId = substr($str1, 4);
+//                    $transactionEntity = $this->repo->transaction->findByEntityIdWithConnection($paymentId, $merchant, true);
+//
+//                    if ($transactionEntity->getSettlementId() !== $settlementEntity->getId())
+//                    {
+//                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+//                            'message'           => 'Invalid Transaction, file contains txn from diff settlements',
+//                            'input'             => $input,
+//                            'file_details'      => $fileDetails,
+//                            'file_name'         => $fileName,
+//                            'txn_id'            => $transactionEntity->getId(),
+//                            'txn_settlement'    => $transactionEntity->getSettlementId(),
+//                            'settl_id'          => $settlementEntity->getId(),
+//                            'record'            => $row,
+//                        ]);
+//
+//                        return ['success' => false, 'txn_id' => $transactionEntity->getId(), 'txn_settlement' => $transactionEntity->getSettlementId(), 'settl_id' => $settlementEntity->getId(), 'record' => $row, 'message' => 'Invalid Transaction, file contains txn from diff settlements'];
+//                    }
+//
+//                    $txnAmount = $transactionEntity->getCredit();
+//                    $rowAmount = round($row['net_invoice_amount'] * 100);
+//
+//                    if ($txnAmount != $rowAmount)
+//                    {
+//                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+//                            'message'       => 'Transaction amount mismatch',
+//                            'input'         => $input,
+//                            'file_details'  => $fileDetails,
+//                            'file_name'     => $fileName,
+//                            'txn_amount'    => $txnAmount,
+//                            'row_amount'    => $rowAmount,
+//                        ]);
+//                        return ['success' => false, 'txn_amount' => $txnAmount, 'row_amount' => $rowAmount, 'order_num' => $orderNum, 'txn_id' => $transactionEntity->getId(), 'message' => 'Transaction amount mismatch'];
+//                    }
+//
+//                    $totalSettlementAmount += $row['net_invoice_amount'];
+//                    $totalForexAmount += $row['transaction_amount'];
+//                    $totalINRAmount += ($row['transaction_amount'] * $row['exchange_rate']);
+//                }
+//
+//                $formattedCreditAmount = number_format((float)$totalSettlementAmount, 2, '.', '') * 100;
+//                $formattedForexAmount = number_format((float)$totalForexAmount, 2, '.', '') * 100;
+//                $formattedAmount = number_format((float)$totalINRAmount, 2, '.', '') * 100;
+//
+//                if ($formattedCreditAmount != $settlementEntity->getAmount())
+//                {
+//                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_AMOUNT, [
+//                        'message'       => 'Invalid total settlement amount in file',
+//                        'file_details'  => $fileDetails,
+//                        'file_name'     => $fileName,
+//                        'amount'        => $formattedAmount,
+//                        'settlement'    => $settlementId,
+//                        'formatted_credit_amount'   => $formattedCreditAmount,
+//                        'settlement_amount'         => $settlementEntity->getAmount(),
+//                    ]);
+//                    return ['success' => false, 'formatted_credit_amount' => $formattedCreditAmount, 'settlement_amount' => $settlementEntity->getAmount(), 'message' => 'Invalid total settlement amount in file'];
+//                }
+//
+//                // save to repat ledger
+//                $repatriationEntity = [];
+//
+//                $repatriationEntity[RepatEntity::SETTLED_AT] = $settlementEntity->getUpdatedAt();
+//                $repatriationEntity[RepatEntity::CURRENCY] = Currency::INR;
+//                $repatriationEntity[RepatEntity::CREDIT_CURRENCY] = $transactionLevelDetails['0']['transaction_currency'] ?? '';
+//                $repatriationEntity[RepatEntity::PARTNER_TRANSACTION_ID] = $transactionLevelDetails[0]['match_id'];
+//                $repatriationEntity[RepatEntity::AMOUNT] = $settlementEntity->getAmount();
+//                $repatriationEntity[RepatEntity::CREDIT_AMOUNT] = $formattedForexAmount;
+//                $repatriationEntity[RepatEntity::MERCHANT_ID] = $settlementEntity->getMerchantId();
+//                $repatriationEntity[RepatEntity::UPDATED_AT] = time();
+//                $repatriationEntity[RepatEntity::SETTLEMENT_IDS] = [$settlementId];
+//                $repatriationEntity[RepatEntity::INTEGRATION_ENTITY] = $input['partner'];
+//
+//                $forexRate  = $transactionLevelDetails['0']['exchange_rate'] ?? '';
+//                $forexRateFormatted = number_format((float)$forexRate, 6, '.', '');
+//                $repatriationEntity[RepatEntity::FOREX_RATE] = $forexRateFormatted;
+//
+//                $this->saveRepatriationDetails($repatriationEntity);
+//
+//                $this->uploadAndNotifyFileForJpmc($fileDetails, $input, $fileName, $settlementEntity->getMerchantId());
+//
+//                $properties = [
+//                    'merchant_id'        => $settlementEntity->getMerchantId(),
+//                    'merchant_mcc_code'  => $merchant->getCategory(),
+//                    'merchant_category2' => $merchant->getCategory2(),
+//                    'settlement_id'      => $settlementId,
+//                    'settlement_amt'     => $settlementEntity->getAmount(),
+//                    'file_type'          => $fileName,
+//                ];
+//
+//                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+//                    $merchant, $properties, SegmentEvent::JPMC_IMPORT_FLOW_RECON_FILE_RECEIVED);
+//            }
+
+        //trace code removed
+//        $this->trace->info(TraceCode::JPMC_REPATRIATION_SUCCESS, [
+//            'message'       => 'JPMC repatriation success',
+//            'file_details'  => $fileDetails,
+//            'file_name'     => $fileName,
+//        ]);
+//        return ['success' => true, 'message' => 'JPMC repatriation success'];
     }
 
     // To save repatriation details into DB
