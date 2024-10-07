@@ -475,6 +475,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
         Entity::MODE                                    => 'sometimes|in:2',
         Entity::CARD                                    => 'sometimes|boolean|in:0,1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
 
