@@ -8,11 +8,14 @@ const DEFAULT_REQUEST_TIMEOUT = 60;
 const DEFAULT_LOG_REQUEST = true;
 const DEFAULT_LOG_RESPONSE = true;
 
+const DEFAULT_TOKEN = false;
 
 const REQUEST_TIMEOUT_KEY = 'request_timeout';
 
 const LOG_REQUEST_KEY = 'log_request';
 const LOG_RESPONSE_KEY = 'log_response';
+
+const NEW_PASSPORT_TOKEN = 'new_passport_token';
 
 class Config
 {
@@ -36,5 +39,10 @@ class Config
     public function shouldLogResponse()
     {
         return $this->config[LOG_RESPONSE_KEY] ?? DEFAULT_LOG_RESPONSE;
+    }
+
+    public function shouldCreateNewPassportToken()
+    {
+        return $this->config[NEW_PASSPORT_TOKEN] ?? DEFAULT_TOKEN;
     }
 }

@@ -248,10 +248,12 @@ class Base
         $code = $response[self::CODE];
         $body = $response[self::BODY];
 
-        if ($code !== 200 && isset($body['error']['code']))
+
+        if ($code !== 200 && isset($body['details']))
         {
-            $errorCode = $body['error']['code'];
-            $description = $body['error']['description'];
+            $errorBody = $body['details'][0]['error'];
+            $errorCode = $errorBody['code'];
+            $description = $errorBody['description'];
 
             $publicError = str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $errorCode))));
             if ($publicError != ErrorCode::SERVER_ERROR)
@@ -297,7 +299,7 @@ class Base
         $this->headers = $this->headers + $customHeaders;
     }
 
-    protected function addPassportToken()
+    protected function addNewPassportToken()
     {
         $passportHeader = (empty($this->auth->getPassportFromJob()) === false) ? $this->auth->getPassportFromJob() : $this->auth->getPassportJwt(self::PASSPORT_AUD);
 
@@ -307,6 +309,19 @@ class Base
 
         // set custom headers
         $this->setCustomHeaders($customHeader);
+    }
+
+    protected function addPassportToken()
+    {
+        $jwt = $this->getJwtTokenFromRequestHeader();
+
+        $customHeader = [
+            self::X_PASSPORT_JWT_V1 => $jwt,
+        ];
+
+        // set custom headers
+        $this->setCustomHeaders($customHeader);
+
     }
 
     protected function getHeadersWithJwt()

@@ -25,9 +25,16 @@ class Api extends Base
      */
     public function createDirectTransfer(array $input) : array
     {
-        $jwt = $this->getJwtTokenFromRequestHeader();
+        if ( (new Config())->shouldCreateNewPassportToken() ){
 
-        $this->setCustomHeaders([Passport::PASSPORT_JWT_V1 => $jwt]);
+            $this->addNewPassportToken();
+
+        }
+        else {
+
+            $this->addPassportToken();
+
+        }
 
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
