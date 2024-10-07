@@ -66,8 +66,7 @@ const renderSenderAddress = (senderAddress, { isSenderDetailsEnabled = true } = 
 };
 
 const assertSenderDetailsNotAvailable = () => {
-  expect(screen.queryByText('Name not available')).toBeInTheDocument();
-  expect(screen.queryByText('Country not available')).toBeInTheDocument();
+  expect(screen.queryByText('Unavailable')).toBeInTheDocument();
 };
 
 describe('Test <ListTable />', () => {

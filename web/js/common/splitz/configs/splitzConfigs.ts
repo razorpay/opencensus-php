@@ -728,6 +728,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'export_payments_v2',
+          experimentId: {
+            beta: 'OvrPbmQy0feiR7',
+            production: 'OvrQDHgTb5q5mL',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

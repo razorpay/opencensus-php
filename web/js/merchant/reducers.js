@@ -105,6 +105,7 @@ import {
   commissionsReducer,
   commissionsAggregateReducer,
   invitationsReducer,
+  exportPaymentsReducer,
 } from 'merchant/reducers/collection';
 
 import { teamReducer } from 'merchant/reducers/team';
@@ -309,4 +310,5 @@ export default combineReducers({
   genericFeature: genericFeatureReducer,
   videoKYCBanner: videoKYCBannerReducer,
   unlockIntlPaymentMethods: unlockIntlPaymentMethodsReducer,
+  exportPayments: exportPaymentsReducer,
 });

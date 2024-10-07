@@ -17,6 +17,7 @@ import Token from 'merchant/models/Token';
 import Commission from 'merchant/models/Commission';
 import Invitation from 'merchant/models/Invitation';
 import B2bExportsPayments from 'merchant/models/B2bExportsPayments';
+import ExportTransactions from 'merchant/models/ExportTransactions';
 
 import RegistrationLink from 'merchant/models/RegistrationLink';
 
@@ -161,6 +162,16 @@ export const paymentsReducer = makeActionCollectionReducer(
   // ignore( do not send to API ) "ref" param if seen present the url
   { ...defaultInitialState, blacklistQueryParams: ['ref'] },
 );
+
+export const exportPaymentsReducer = makeActionCollectionReducer('EXPORT_TRANSACTIONS');
+export const fetchExportPayments = (params) =>
+  fetchAll(params, ExportTransactions, 'EXPORT_TRANSACTIONS');
+export const updateExportPayment = (item) => {
+  return {
+    type: 'EXPORT_TRANSACTION_EDIT::SUCCESS',
+    payload: item,
+  };
+};
 
 export const fetchOrders = (params) => fetchAll(params, Order, 'ORDERS');
 export const ordersReducer = makeCollectionReducer('ORDERS');

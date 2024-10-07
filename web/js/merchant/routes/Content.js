@@ -97,6 +97,12 @@ const B2bPaymentsList = lazy(() =>
   ),
 );
 
+const B2bPaymentsListV2 = lazy(() =>
+  import(
+    /* webpackChunkName: "B2bPaymentsListV2" */ 'merchant/views/Transactions/v2/UploadInvoices/components/PaymentsContainer'
+  ),
+);
+
 const BatchPaymentsList = lazy(() =>
   import(
     /* webpackChunkName: "BatchPaymentsList" */ 'merchant/views/Transactions/v1/BatchPayments/List'
@@ -814,7 +820,7 @@ class Content extends Component {
     const { abExperiments } = splitz;
     const extraConfig = { isConfigTagEnabled, abExperiments };
 
-    const { STREAKS_REWARDS_GROWTH } = abExperiments;
+    const { STREAKS_REWARDS_GROWTH, export_payments_v2 } = abExperiments;
 
     if (fullPageView) return fullPageView;
 
@@ -823,6 +829,9 @@ class Content extends Component {
     const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
     const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
     const isPosSalesAgent = this.checkIfPosSalesAgent();
+    const ExportPaymentsList = isExperimentActive(export_payments_v2)
+      ? B2bPaymentsListV2
+      : B2bPaymentsList;
     const isAssistedOnboardingUser = this.checkIfAssistedOnboardingUser();
     const isDisputesRevampV2Enabled = this.checkIsDisputesRevampV2Enabled();
 
@@ -969,7 +978,7 @@ class Content extends Component {
                 path="b2b-exports/*"
                 element={
                   <RouteGuard additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}>
-                    <B2bPaymentsList />
+                    <ExportPaymentsList />
                   </RouteGuard>
                 }
               />
