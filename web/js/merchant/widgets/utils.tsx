@@ -38,6 +38,7 @@ const backgroundImageMap = {
     base: 'incorporate-base.jpg',
     s: 'incorporate-s.jpg',
   },
+  receiveGlobalBankBackground: 'global-bank.png',
 };
 
 export const getBackgroundImage = (imageIdentifier?: string): BoxProps['backgroundImage'] => {
