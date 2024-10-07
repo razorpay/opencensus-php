@@ -236,11 +236,11 @@ th {
                 <td>Brand EMI/IBD/Additional Cashback 
 (does not include IBD financing cost)
 </td>
-                <td>{{feeBrandEmi}}</td>
+                <td>{{brand_emi_rate_field}}</td>
             </tr>
             <tr>
             <td>EMI Plus</td>
-            <td>{{emiPlus}}</td>
+            <td>{{emi_plus_rate_field}}</td>
         </tr>
         </tbody>
     </table>
