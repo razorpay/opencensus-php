@@ -341,4 +341,145 @@ return [
             ],
         ],
     ],
+    'testCreateOrderWithProductsInPGRouter' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'merchant_id'   => "bypassApiForOrderCreationToPGRouter",
+                'products' => [
+                    [
+                        'type'                  => 'mutual_fund',
+                        'receipt'               => 'dummy_receipt1',
+                        'plan'                  => 'dummy_plan1',
+                        'scheme'                => 'dummy_scheme1',
+                        'option'                => 'dummy_option1',
+                        'amount'                => '12345',
+                        'folio'                 => 'dummy_folio1',
+                        'mf_member_id'          => 'dummy_mf_member_id',
+                        'mf_user_id'            => 'dummy_mf_user_id',
+                        'mf_partner'            => 'dummy_mf_partner',
+                        'mf_investment_type'    => 'dummy_mf_investment_type',
+                        'mf_amc_code'           => 'dummy_mf_amc_code',
+                        'notes'         => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                        ]
+                    ],
+                    [
+                        'type'          => 'loan',
+                        'loan_number'   => '1234556',
+                        'amount'        => '6789',
+                        'receipt'       => 'dummy_receipt2',
+                    ],
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'id'  => "order_Odgdjdh2446754",
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'products' => [
+                    [
+                        'type'          => 'mutual_fund',
+                        'receipt'       => 'dummy_receipt1',
+                        'plan'          => 'dummy_plan1',
+                        'scheme'        => 'dummy_scheme1',
+                        'option'        => 'dummy_option1',
+                        'amount'        => '12345',
+                        'folio'         => 'dummy_folio1',
+                        'mf_member_id'          => 'dummy_mf_member_id',
+                        'mf_user_id'            => 'dummy_mf_user_id',
+                        'mf_partner'            => 'dummy_mf_partner',
+                        'mf_investment_type'    => 'dummy_mf_investment_type',
+                        'mf_amc_code'           => 'dummy_mf_amc_code',
+                        'notes'         => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                        ]
+                    ],
+                    [
+                        'type'          => 'loan',
+                        'loan_number'   => '1234556',
+                        'amount'        => '6789',
+                        'receipt'       => 'dummy_receipt2',
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testCreateOrderErrorScenarioWithProductsInPGRouterWithInvalidProductType' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'merchant_id'   => "bypassApiForOrderCreationToPGRouter",
+                'products' => [
+                    [
+                        'type'          => 'test',
+                        'receipt'       => 'dummy_receipt1',
+                        'plan'          => 'dummy_plan1',
+                        'scheme'        => 'dummy_scheme1',
+                        'option'        => 'dummy_option1',
+                        'amount'        => '12345',
+                        'folio'         => 'dummy_folio1',
+                        'notes'         => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                        ]
+                    ],
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'test is not a valid product type',
+                    'field'         => 'type',
+                ],
+            ],
+        ],
+    ],
+    'testCreateOrderErrorScenarioWith5xxResponseFromPgRouter' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'merchant_id'   => "bypassApiForOrderCreationToPGRouter",
+                'products' => [
+                    [
+                        'type'          => 'test',
+                        'receipt'       => 'dummy_receipt1',
+                        'plan'          => 'dummy_plan1',
+                        'scheme'        => 'dummy_scheme1',
+                        'option'        => 'dummy_option1',
+                        'amount'        => '12345',
+                        'folio'         => 'dummy_folio1',
+                        'notes'         => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                        ]
+                    ],
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'status_code' => 500,
+            'content'     => [
+                'error' => [
+                    'code'          => 'INTERNAL_SERVER_ERROR',
+                    'description'   => 'Error with PG Router service',
+                ],
+            ],
+        ],
+    ],
 ];

@@ -24,4 +24,5 @@ class Constants
 
     //Loan constants
     const LOAN_NUMBER = 'loan_number';
+    const BYPASS_API_FOR_ORDER_CREATION_TO_PG_ROUTER = "bypassApiForOrderCreationToPGRouter";
 }

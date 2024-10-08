@@ -37,8 +37,7 @@ class ProductTest extends TestCase
 
         $this->assertCount(2, $entities);
 
-        foreach ($this->getEntities('product', [], true)['items'] as $productEntity)
-        {
+        foreach ($this->getEntities('product', [], true)['items'] as $productEntity) {
             $this->assertArrayNotHasKey('type', $productEntity['product']); // assert that while its stored, `product` column doesnt store `type`
         }
     }
@@ -79,20 +78,18 @@ class ProductTest extends TestCase
 
     public function testFetchOrdersWithProducts()
     {
-        for ($i = 0; $i < 5; $i++)
-        {
+        for ($i = 0; $i < 5; $i++) {
             $this->createOrderWithProducts();
         }
 
         $orderFetchRequest = [
-            'url'    => '/orders',
+            'url' => '/orders',
             'method' => 'get',
         ];
 
         $orderFetchResponse = $this->makeRequestAndGetContent($orderFetchRequest);
 
-        foreach ($orderFetchResponse['items'] as $order)
-        {
+        foreach ($orderFetchResponse['items'] as $order) {
             $this->assertArrayHasKey('products', $order);
 
             $this->assertEquals(2, count($order['products']));
@@ -111,7 +108,7 @@ class ProductTest extends TestCase
         $orderCreateResponse = $this->createOrderWithoutProduct();
 
         $orderGetRequest = [
-            'url'    => '/orders/' . $orderCreateResponse['id'],
+            'url' => '/orders/' . $orderCreateResponse['id'],
             'method' => 'get',
         ];
 
@@ -122,20 +119,18 @@ class ProductTest extends TestCase
 
     public function testFetchOrdersNoProducts()
     {
-        for ($i = 0; $i < 5; $i++)
-        {
+        for ($i = 0; $i < 5; $i++) {
             $this->createOrderWithoutProduct();
         }
 
         $orderFetchRequest = [
-            'url'    => '/orders',
+            'url' => '/orders',
             'method' => 'get',
         ];
 
         $orderFetchResponse = $this->makeRequestAndGetContent($orderFetchRequest);
 
-        foreach ($orderFetchResponse['items'] as $order)
-        {
+        foreach ($orderFetchResponse['items'] as $order) {
             $this->assertArrayNotHasKey('products', $order);
         }
     }

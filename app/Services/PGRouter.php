@@ -863,7 +863,7 @@ class PGRouter
             unset($response['body']['offers']);
 
             $response['body']['bank_account_data'] = $response['body']['bank_account'] ?? [];
-
+            $response['body']['products_data'] = $response['body']['products'] ?? [];
             $order = (new Order\Entity())->forceFill($response['body']);
 
             $this->setNotificationInOrder($response, $order);

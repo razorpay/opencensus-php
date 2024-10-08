@@ -31,6 +31,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Services\Segment\Constants as SegmentConstants;
+use RZP\Models\Order\Product\Constants as ProductConstants;
 
 class Service extends Base\Service
 {
@@ -116,6 +117,10 @@ class Service extends Base\Service
 
         if ($this->app->runningUnitTests() === true)
         {
+            if ($input['merchant_id'] === ProductConstants::BYPASS_API_FOR_ORDER_CREATION_TO_PG_ROUTER)
+            {
+                return true;
+            }
             return false;
         }
 
