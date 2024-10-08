@@ -9,6 +9,7 @@ use Exception as defaultException;
 
 use RZP\Constants\Environment;
 use RZP\Constants\Metric;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
@@ -18,6 +19,7 @@ use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Ledger\ReverseShadow\Refunds\Core as ReverseShadowRefundsCore;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Ledger\ReverseShadow\Transfers\Reversal\Core as ReverseShadowTransferReversalCore;
+use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
@@ -941,10 +943,50 @@ trait Refund
         return $virtualRefundEntity;
     }
 
+    public function validateMerchantActivationStatusForRefundCreate(Payment\Entity $payment)
+    {
+        if ($payment->getSourceChannel() === QrConstants::PAYMENT_TYPE_IN_PERSON){
+            if ($this->merchant->isOmniEnabled() === true){
+                $this->trace->info(
+                    TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_REFUND,
+                    [
+                        'merchant_id'     => $this->merchant->getId(),
+                        'payment_id'      => $payment->getId(),
+                    ]
+                );
+
+                return;
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, null,
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+            }
+        }
+
+        //check merchant's activation status for online refunds
+        if ($this->merchant->isActivated())
+        {
+            return;
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR, null, null,
+            PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+    }
+
     public function refundPaymentViaMerchant($paymentId, $input)
     {
         /** @var Payment\Entity $payment */
         $payment = $this->retrieve($paymentId);
+
+        $this->validateMerchantActivationStatusForRefundCreate($payment);
 
         // From subscription service we will always refund authorized payments
         if ($this->ba->isSubscriptionsApp() === true)

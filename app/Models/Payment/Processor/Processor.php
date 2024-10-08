@@ -7138,22 +7138,9 @@ class Processor
             ]
         );
 
-        $offlineRefundSkipRoutes = ['scrooge_entities_fetch','refund_scrooge_payment_update','refund_fetch_discount','refund_verify_call','refund_gateway_call','refund_update_status'];
-
         $offlineCardSkipRoutes = ['payment_notify','internal_transactions'];
 
-        //Temporary change to skip activation flag for offline refunds
-        if ($route === 'payment_refund' && $merchant->isOmniEnabled() === true)
-        {
-            $paymentId = $this->app['request.ctx']->getRequest()->route('id');
-            $payment = $this->paymentRepo->findByPublicId($paymentId);
-            if ($payment->getSourceChannel() === Payment\Constant::IN_PERSON)
-            {
-                return;
-            }
-        }
-
-        if ((in_array($route, $offlineRefundSkipRoutes) || in_array($route, $offlineCardSkipRoutes)) && $merchant->isOmniEnabled() === true) {
+        if ((in_array($route, $offlineCardSkipRoutes)) && $merchant->isOmniEnabled() === true) {
             return;
         }
 
@@ -7162,8 +7149,8 @@ class Processor
         if ($merchant->isActivated())
         {
             return;
-        } 
-        else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true) 
+        }
+        else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true)
         {
             //This is fix is for skipping permissions on pricing route only for omni enabled offline payments
             $request = $this->app['request.ctx']->getRequest();
@@ -13461,7 +13448,7 @@ class Processor
                     PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
             }
         }
-        
+
         //check merchant's activation status for online payments
         if ($this->merchant->isActivated())
         {
