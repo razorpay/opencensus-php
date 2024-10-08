@@ -1017,6 +1017,28 @@ class Gateway extends BaseProcessor
 
         return $data;
     }
+
+    public function getCredentialsForMozartSessionToken(array $input)
+    {
+        $basCredentials = (new BankingAccountService())->fetchCredentialsFromApiAndBas(
+            $this->basDetails->getMerchantId(),
+            $this->channel,
+            $this->accountNumber
+        );
+        $data = [
+            Fields::SOURCE_ACCOUNT   => [
+                Fields::CREDENTIALS    => [
+                    Fields::AUTH_USERNAME => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_USERNAME],
+                    Fields::AUTH_PASSWORD => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_PASSWORD],
+                    Fields::CLIENT_ID     => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_ID],
+                    Fields::CLIENT_SECRET => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_SECRET],
+                    Fields::CORP_ID       => $basCredentials[Fields::CREDENTIALS][Fields::CORP_ID],
+                ]
+            ],
+        ];
+        return $data;
+    }
+
     protected function getRequestDataForMozartV2(array $input)
     {
         $basCredentials = (new BankingAccountService())->fetchCredentialsFromApiAndBas(

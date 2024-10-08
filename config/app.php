@@ -783,6 +783,8 @@ return array(
 
     'enable_compliance_checks_on_auto_kyc_rules' => env('ENABLE_COMPLIANCE_CHECKS_ON_AUTO_KYC_RULES'),
 
+    'vpa_validation' => env('VPA_VALIDATION'),
+
     'remove_ngo_business_type' => env('REMOVE_NGO_BUSINESS_TYPE'),
 
     'enable_unverified_email_check_for_easy_onboarding' => env('ENABLE_UNVERIFIED_EMAIL_CHECK_FOR_EASY_ONBOARDING_EXP_ID'),
