@@ -14,6 +14,10 @@ import {
 } from './utils/helper';
 import { SELECTORS } from './utils/constants';
 
+async function clickNext(page) {
+  await page.getByRole('button', { name: 'Next' }).click();
+}
+
 // NOTE: Different Payment Method aren't tested as they are covered in
 // Offer subscription flows.
 test.describe
@@ -36,23 +40,23 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(SELECTORS.NEXT_CTA).click();
+    await clickNext(page);
 
     // Discount tab
     await fillPercentageDiscountType({ page });
-    await page.getByText(SELECTORS.NEXT_CTA).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectPaymentMethod({ page, paymentMethod: 'Card' });
-    await page.getByText(SELECTORS.NEXT_CTA).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(SELECTORS.NEXT_CTA).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();
-    await page.getByText(SELECTORS.CREATE_OFFER_CTA).click();
+    await page.getByText(/create offer/i).click();
 
     // Cleanup, remove offer so as to avoid violating uniqueness
     // constraint by API.
@@ -70,22 +74,22 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Discount tab
     await page.locator("button[name='redemption_type']").click();
     await page.getByText('Limited Number of Cycles').click();
     await page.locator("input[name='no_of_cycles']").fill('3');
     await fillPercentageDiscountType({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectPaymentMethod({ page, paymentMethod: 'Card' });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();

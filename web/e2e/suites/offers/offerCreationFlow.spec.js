@@ -13,6 +13,10 @@ import {
   fillPercentageDiscountType,
 } from './utils/helper';
 
+async function clickNext(page) {
+  await page.getByRole('button', { name: 'Next' }).click();
+}
+
 test.describe
   .parallel('Offers creation Flow (Payment methods) @suite=merchant-offers @project=offers', () => {
   test.use({
@@ -42,22 +46,22 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectOfferType({ page, offerType: 'Cashback' });
     await selectPaymentMethod({ page, paymentMethod: 'Card' });
     await page.getByPlaceholder('Max times a card can be used to avail this offer').fill('1');
     await page.locator("input[name='iins']").fill(iins);
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Discount tab
     await fillFlatDiscountType({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();
@@ -76,20 +80,20 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectOfferType({ page, offerType: 'Cashback' });
     await selectPaymentMethod({ page, paymentMethod: 'Net Banking' });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Discount tab
     await fillFlatDiscountType({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();
@@ -109,21 +113,21 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectOfferType({ page, offerType: 'Cashback' });
     await page.locator("button[name='payment_method']").click();
     await page.getByTestId('option-wallet').click();
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Discount tab
     await fillFlatDiscountType({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();
@@ -143,20 +147,20 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectOfferType({ page, offerType: 'Cashback' });
     await selectPaymentMethod({ page, paymentMethod: 'EMI' });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Discount tab
     await fillFlatDiscountType({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();
@@ -176,20 +180,20 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectOfferType({ page, offerType: 'Cashback' });
     await selectPaymentMethod({ page, paymentMethod: 'Pay Later' });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Discount tab
     await fillPercentageDiscountType({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();
@@ -209,20 +213,20 @@ test.describe
 
     // Description tab
     await fillDescription({ page, offerName });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Applicable on tab
     await selectOfferType({ page, offerType: 'Cashback' });
     await selectPaymentMethod({ page, paymentMethod: 'Cardless EMI' });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Discount tab
     await fillPercentageDiscountType({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Offer validity tab
     await fillOfferValidity({ page });
-    await page.getByText(/next/i).click();
+    await clickNext(page);
 
     // Select agreement
     await page.getByText('I understand').click();
