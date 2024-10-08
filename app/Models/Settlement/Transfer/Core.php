@@ -54,7 +54,7 @@ class Core extends Base\Core
 
         $destinationBalance = $this->repo
                                    ->balance
-                                   ->getMerchantBalanceByType($destinationMerchantId, $balanceType);
+                                   ->getMerchantBalanceByTypeHarvester($destinationMerchantId, $balanceType);
 
         //
         // We should not transfer the money to the same balance ID

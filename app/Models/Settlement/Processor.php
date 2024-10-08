@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Cache;
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -1227,7 +1228,7 @@ class Processor extends Base\Core
 
             $isAggregateSettlement = $input['type'] === Feature\Constants::AGGREGATE_SETTLEMENT;
 
-            $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $input['balance_type']);
+            $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($merchant->getId(), $input['balance_type']);
 
             $merchantSettler = new SetlMerchant(
                 $merchant,

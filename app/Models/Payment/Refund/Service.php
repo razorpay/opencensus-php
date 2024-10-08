@@ -26,7 +26,7 @@ use RZP\Services\Dcs\Features\Type;
 use RZP\Services\Ledger as LedgerService;
 
 use RZP\Models\Reversal;
-
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Reversal\Constants as ReversalConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -1018,7 +1018,8 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+                                $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($merchant->getId(), Balance\Type::PRIMARY);
+
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
                                 $negativeAllowedFlows = (new BalanceConfig\Core)->getNegativeFlowsForBalance($balance->getId());

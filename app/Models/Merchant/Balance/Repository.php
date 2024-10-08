@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\TraceCode;
@@ -336,6 +337,14 @@ class Repository extends Base\Repository
     public function getMerchantBalanceByType(string $merchantId, string $balanceType, string $connection = null)
     {
         $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->merchantIdAndType($merchantId, $balanceType)
+                     ->first();
+    }
+
+    public function getMerchantBalanceByTypeHarvester(string $merchantId, string $balanceType)
+    {
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA));
 
         return $query->merchantIdAndType($merchantId, $balanceType)
                      ->first();
