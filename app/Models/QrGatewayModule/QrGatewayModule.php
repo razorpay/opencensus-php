@@ -141,7 +141,8 @@ class QrGatewayModule
         // Read- https://docs.google.com/document/d/1Nec4mgpijP5K7JN_cDgqp3b4JeqjUNondKttshPSwDo/edit#heading=h.t66228qh55aw
         if ((empty($invoiceDetails) === true) or
             (empty($invoiceDetails[InvoiceDetails::INVOICE_NUMBER]) === true) or
-            (empty($invoiceDetails[InvoiceDetails::CUSTOMER_NAME]) === true))
+            (empty($invoiceDetails[InvoiceDetails::CUSTOMER_NAME]) === true) or
+            (empty($invoiceDetails[InvoiceDetails::GST_AMOUNT]) === true))
         {
             return;
         }
