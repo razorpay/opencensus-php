@@ -6020,7 +6020,8 @@ trait Authorize
                     $currency !== $merchant->getCurrency() and
                     $payment->isInternational() and
                     $payment->isCard() and
-                    $this->evaluateSplitzExperimentforMCCParityCheck($payment) === true)
+                    $this->evaluateSplitzExperimentforMCCParityCheck($payment) === true and
+                    $this->mode !== Mode::TEST)
                     {
                     $body = [
                         'amount' => $payment->getAmount(),
