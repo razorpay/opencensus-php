@@ -244,6 +244,30 @@ export interface ModularOnboardingFieldMeta {
   placeholder?: string;
   disableOnSelected?: string;
   canSubmitOnChange?: boolean;
+  jsonValue?: ModularOnboardingFieldJsonValue;
+}
+
+export interface CurrentDeviceDetails {
+  details_page_name: string;
+  device_model: string;
+  device_order_item_id: string;
+  device_serial: string;
+  display_label: string;
+  display_name: string;
+  icon: string;
+  id: string;
+  mapped_vpa: string;
+  mapping_status: string;
+  plan_name: string;
+  setup_charge: number;
+}
+
+interface ModularOnboardingFieldJsonValue {
+  data_type: string;
+  device_deployment_details?: CurrentDeviceDetails;
+  device_deployment_details_list?: JSONObject[];
+  is_hidden: boolean;
+  merchant_id: boolean;
 }
 
 // Modular Component Meta UI Field Meta

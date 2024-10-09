@@ -23,13 +23,13 @@ export const DeviceFees: DeviceFee[] = [
   },
 ];
 
-export const DeviceOptionalFeatures: DeviceOptionalFeature[] = [
-  {
-    title: 'Collecting Rental Charges in Advance (in months)',
-    field: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE,
-    customInputField: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD,
-  },
-];
+const RENTAL_CHARGE_FEATURE: DeviceOptionalFeature = {
+  title: 'Collecting Rental Charges in Advance (in months)',
+  field: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_FEE,
+  customInputField: MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD,
+};
+
+export const DeviceOptionalFeatures: DeviceOptionalFeature[] = [RENTAL_CHARGE_FEATURE];
 
 export const DevicePlanAvailableCharges: DevicePlanCharge[] = [
   {

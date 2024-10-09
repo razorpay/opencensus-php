@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -13,24 +12,26 @@ import {
   Link,
   useToast,
 } from '@razorpay/blade/components';
-import { useForm, FormProvider } from 'react-hook-form';
+import React, { useEffect, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import AddDeviceToCartHeader from './AddDeviceToCartHeader';
-import PlanSelectionCard from './PlanSelectionCard';
 import DeviceFee from './DeviceFee';
 import OptionalFeatures from './OptionalFeatures';
-import { DeviceConfig, ModularPayload, PlanConfig } from 'apps/pos/src/app/types/modular';
-import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
-import {
-  MODULAR_DEVICE_FIELDS,
-  EditDeviceInCartForm,
-} from 'apps/pos/src/app/types/DeviceSelection';
+import PlanSelectionCard from './PlanSelectionCard';
 import {
   DeviceFees,
   DeviceOptionalFeatures,
   MODULAR_FLAGS,
 } from 'apps/pos/src/app/constants/DeviceSelection';
+import {
+  EditDeviceInCartForm,
+  MODULAR_DEVICE_FIELDS,
+} from 'apps/pos/src/app/types/DeviceSelection';
+import { DeviceConfig, ModularPayload, PlanConfig } from 'apps/pos/src/app/types/modular';
+import { DeviceModel } from 'apps/pos/src/app/utils/deviceSelection';
+import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import { processFormDataForModularSubmit } from 'apps/pos/src/app/utils/modularConfig';
-import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
+import { analyticsTypes, trackEvent } from 'apps/pos/src/services/analytics';
 
 interface AddDeviceToCartProps {
   deviceConfig: DeviceConfig;
@@ -39,6 +40,7 @@ interface AddDeviceToCartProps {
   isDisabled?: boolean;
   isDeviceAlreadyAdded?: boolean;
   isUpdateModularLoading?: boolean;
+  isPosEkycAgent?: boolean;
   handleModularUpdate: (payload: ModularPayload) => void;
 }
 
@@ -49,6 +51,7 @@ const AddDeviceToCart = ({
   isDisabled,
   isUpdateModularLoading,
   isDeviceAlreadyAdded,
+  isPosEkycAgent,
   handleModularUpdate,
 }: AddDeviceToCartProps): JSX.Element => {
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
@@ -183,6 +186,16 @@ const AddDeviceToCart = ({
     handleModularUpdate(payload);
   };
 
+  const handleDrawerOpen = () => {
+    toggleDetails();
+    if (isPosEkycAgent) {
+      const payload: ModularPayload = {
+        [MODULAR_DEVICE_FIELDS.DEVICE_NAME]: deviceConfig.title,
+      };
+      handleModularUpdate(payload);
+    }
+  };
+
   const devicePlan = watch(MODULAR_DEVICE_FIELDS.DEVICE_PLAN);
 
   useEffect(() => {
@@ -200,13 +213,22 @@ const AddDeviceToCart = ({
     }
   }, [isDetailsOpen]);
 
+  const shouldShowOptionalFeatures = () => {
+    if (!isPosEkycAgent) {
+      return true;
+    } else if (deviceConfig.title === DeviceModel.SOUNDBOX_KIT) {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <React.Fragment>
       {isMobile || isEditFlow ? (
         <Link
           variant="button"
           icon={isEditFlow ? EditIcon : ChevronRightIcon}
-          onClick={toggleDetails}
+          onClick={handleDrawerOpen}
           iconPosition={isEditFlow ? 'left' : 'right'}
           isDisabled={isDisabled}
           size="small"
@@ -235,21 +257,28 @@ const AddDeviceToCart = ({
               </Heading>
               <PlanSelectionCard plans={latestRateConfig?.plans as PlanConfig[]} />
               <Divider orientation="horizontal" width="100%" marginBottom="spacing.5" />
-              <Box testID="device-fees-container">
-                {DeviceFees.map((deviceFee, index) =>
-                  deviceFee?.isHidden?.(devicePlan) ? null : (
-                    <React.Fragment key={deviceFee.field}>
-                      <DeviceFee deviceFee={deviceFee} />
-                      {index !== DeviceFees.length - 1 ? (
-                        <Divider orientation="horizontal" width="100%" marginBottom="spacing.5" />
-                      ) : null}
-                    </React.Fragment>
-                  ),
-                )}
-              </Box>
-              {DeviceOptionalFeatures.map((optionalFeature) => (
-                <OptionalFeatures key={optionalFeature.field} optionalFeature={optionalFeature} />
-              ))}
+              {!isPosEkycAgent ? (
+                <Box testID="device-fees-container">
+                  {DeviceFees.map((deviceFee, index) =>
+                    deviceFee?.isHidden?.(devicePlan) ? null : (
+                      <React.Fragment key={deviceFee.field}>
+                        <DeviceFee deviceFee={deviceFee} />
+                        {index !== DeviceFees.length - 1 ? (
+                          <Divider orientation="horizontal" width="100%" marginBottom="spacing.5" />
+                        ) : null}
+                      </React.Fragment>
+                    ),
+                  )}
+                </Box>
+              ) : null}
+              {shouldShowOptionalFeatures()
+                ? DeviceOptionalFeatures.map((optionalFeature) => (
+                    <OptionalFeatures
+                      key={optionalFeature.field}
+                      optionalFeature={optionalFeature}
+                    />
+                  ))
+                : null}
               <Box marginBottom="spacing.6" display="flex" alignItems="center">
                 <Button
                   variant="tertiary"
@@ -259,7 +288,13 @@ const AddDeviceToCart = ({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" isLoading={isUpdateModularLoading} isFullWidth>
+
+                <Button
+                  type="submit"
+                  isLoading={isUpdateModularLoading}
+                  isDisabled={!latestRateConfig?.plans?.length}
+                  isFullWidth
+                >
                   {isEditFlow ? 'Update Cart' : 'Add to Cart'}
                 </Button>
               </Box>

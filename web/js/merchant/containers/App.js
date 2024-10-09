@@ -1,6 +1,4 @@
 import React, { Component, Suspense } from 'react';
-
-import { withRouter } from 'common/deprecated/withRouter';
 import errorService from '@razorpay/universe-utils/errorService';
 import { createSidetab, createPopup } from '@typeform/embed';
 import cloneDeep from 'lodash/cloneDeep';
@@ -13,6 +11,7 @@ import { bindActionCreators, compose } from 'redux';
 import 'refiner-js';
 
 import Wrapper from 'common/components/Bootstrap/Wrapper';
+import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service, withI18nifyState } from 'common/i18';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -30,6 +29,7 @@ import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics'
 import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import getMobileDetect from 'common/utils/mobileDetect';
 import { initSentry } from 'common/utils/observability';
+import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import {
   classList,
   isPresent,
@@ -83,7 +83,6 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
 
 import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
-import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 

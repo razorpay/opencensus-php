@@ -1238,7 +1238,7 @@ export const isCustomRateEnabled = (workflowConfig) => {
   const pricingConsentField: any = consentFields.find(
     (field: any) => field.name === PRICING_CONSENT_FIELD,
   );
-  return pricingConsentField.is_required;
+  return pricingConsentField?.is_required;
 };
 
 export const getAgreementStatus = (workflowConfig) => {

@@ -10,6 +10,7 @@ import {
   UPDATE_MODULAR_CONFIG,
 } from 'apps/pos/src/services/queries/SalesDashboard';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store/index';
 
 interface UseModular {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
@@ -19,6 +20,7 @@ interface UseModular {
   isModularFetchError: boolean;
   isModularUpdateError: boolean;
   isRefetching: boolean;
+  isPosEkycAgent: boolean;
   refetchModular: () => void;
 }
 interface UseModularArgs {
@@ -29,7 +31,7 @@ interface UseModularArgs {
 const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseModular => {
   const toast = useToast();
   const queryClient = useQueryClient();
-
+  const { isPosEkycAgent, workflowProduct: product } = useOnboardingStore();
   const handleModularFetchError = () => {
     toast.show({
       content: 'Failed to fetch modular config',
@@ -49,9 +51,9 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     isLoading: isModularLoading,
     isError: isModularFetchError,
     refetch: refetchModular,
-    isRefetching: isRefetching,
+    isRefetching,
   } = useQuery<MerchantModularOnboardingDetailsSuccessResponse | null>(
-    ['modularConfig', merchantId],
+    ['modularConfig', merchantId, product],
     async () => {
       const response = await graphqlRequest<
         'merchantModularOnboardingDetailsAsSales',
@@ -61,6 +63,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
         document: MODULAR_CONFIG,
         variables: {
           merchantId,
+          product,
         },
       });
 
@@ -77,7 +80,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     {
       cacheTime: 1000 * 60 * 1,
       staleTime: Infinity,
-      enabled: !!merchantId,
+      enabled: !!merchantId && !!product,
       retry: false,
       networkMode: 'always',
       refetchOnWindowFocus: false,
@@ -111,6 +114,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
         variables: {
           merchantId,
           fieldData: variables,
+          product,
         },
       });
 
@@ -133,7 +137,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     retry: false,
     onSuccess: (data) => {
       if (data) {
-        queryClient.setQueryData(['modularConfig', merchantId], data);
+        queryClient.setQueryData(['modularConfig', merchantId, product], data);
         onModularConfigUpdate?.(data);
       }
     },
@@ -154,6 +158,7 @@ const useModular = ({ merchantId, onModularConfigUpdate }: UseModularArgs): UseM
     isModularFetchError,
     isModularUpdateError,
     isRefetching,
+    isPosEkycAgent,
     refetchModular,
   };
 };

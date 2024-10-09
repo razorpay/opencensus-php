@@ -19,8 +19,8 @@ export const PARENT_ROUTE_CONFIG: RouteObject[] = [
     element: <SalesDashboard />,
   },
   {
-    route: '/basic-info',
-    view: <BasicInfo />,
+    path: 'basic-info',
+    element: <BasicInfo />,
   },
   {
     path: '/join',

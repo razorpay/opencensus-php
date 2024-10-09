@@ -1,4 +1,3 @@
-/* eslint-disable i18n-rules/no-region-specific-image */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TextInput, Button, Box, Text } from '@razorpay/blade/components';

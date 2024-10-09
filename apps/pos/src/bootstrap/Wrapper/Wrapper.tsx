@@ -1,11 +1,13 @@
-import * as React from 'react';
+import React from 'react';
 import { BladeProvider, Box, ToastContainer } from '@razorpay/blade/components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
-import initSentry from 'apps/pos/src/services/obervability';
 import { graphqlClient } from '@dashboard/shared-utils/graphql/graphql';
+import initSentry from 'apps/pos/src/services/obervability';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
+import { PARTNER_ASSISTED_ONBOARDING } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 import App from 'apps/pos/src/app';
 import PageError from 'apps/pos/src/app/components/PageError';
 import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
@@ -19,7 +21,20 @@ graphqlClient.setHeader(
   process.env.UNIVERSE_PUBLIC_APP_NAME as string,
 );
 
-const Wrapper = (): JSX.Element => {
+interface WrapperProps {
+  workflowProduct?: string;
+}
+
+const Wrapper: React.FC<WrapperProps> = ({ workflowProduct }) => {
+  const { setWorkflowProduct, setIsPosEkycAgent } = useOnboardingStore();
+
+  React.useEffect(() => {
+    if (workflowProduct) {
+      setWorkflowProduct(workflowProduct);
+      setIsPosEkycAgent(workflowProduct === PARTNER_ASSISTED_ONBOARDING);
+    }
+  }, [workflowProduct, setWorkflowProduct]);
+
   const { isProduction, cdnBaseUrl } = useEnv();
 
   React.useEffect(() => {

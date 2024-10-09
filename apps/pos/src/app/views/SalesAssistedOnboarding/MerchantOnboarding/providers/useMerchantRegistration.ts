@@ -12,7 +12,11 @@ import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
 import useMerchantSwitch from 'apps/pos/src/app/utils/hooks/useMerchantSwitch';
 import redirectToEasyOnboarding from 'apps/pos/src/app/utils/redirectToEasyOnboarding';
 import { MERCHANT_REGISTRATION_ERRORS } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
+import useOnboardingContext from './useOnboardingContext';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
+
+const ASSISTED_ONBOARDING = 'assisted_onboarding';
+const PARTNER_ASSISTED_ONBOARDING = 'partner_assisted_onboarding';
 
 interface UseMerchantRegistration {
   isOTPSent: boolean;
@@ -37,7 +41,8 @@ const useMerchantRegistration = (): UseMerchantRegistration => {
   const { isProduction } = useEnv();
   const [isOTPSent, setIsOTPSent] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { states } = useOnboardingContext();
+  const { isPosEkycAgent } = states;
   const triggerRemoveError = () => {
     setError(null);
   };
@@ -87,6 +92,8 @@ const useMerchantRegistration = (): UseMerchantRegistration => {
       triggerRemoveError();
       const response = await verifyMerchantOTP({
         ...variables,
+        signup_campaign: isPosEkycAgent ? PARTNER_ASSISTED_ONBOARDING : ASSISTED_ONBOARDING,
+        product: isPosEkycAgent ? PARTNER_ASSISTED_ONBOARDING : ASSISTED_ONBOARDING,
         ...(!isProduction ? { mockSend: true } : {}),
       });
       return response;

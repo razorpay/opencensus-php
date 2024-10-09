@@ -12,6 +12,7 @@ interface DeviceCardProps {
   isUpdateModularLoading: boolean;
   addedDevices: DeviceOrderSummaryItem[];
   isDisabled?: boolean;
+  isPosEkycAgent: boolean;
   handleModularUpdate: (payload: ModularPayload) => void;
 }
 
@@ -20,6 +21,7 @@ const DeviceCard = ({
   addedDevices,
   isUpdateModularLoading,
   isDisabled,
+  isPosEkycAgent,
   handleModularUpdate,
 }: DeviceCardProps): JSX.Element => {
   const addedDevice =
@@ -54,6 +56,7 @@ const DeviceCard = ({
           {deviceConfig.title}
         </Text>
         <AddDeviceToCart
+          isPosEkycAgent={isPosEkycAgent}
           deviceConfig={deviceConfig}
           isDeviceAlreadyAdded={!!addedDevice}
           isUpdateModularLoading={isUpdateModularLoading}

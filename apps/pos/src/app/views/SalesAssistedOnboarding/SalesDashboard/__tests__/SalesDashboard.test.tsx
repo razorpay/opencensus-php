@@ -72,6 +72,7 @@ describe('<SalesDashboard/>', () => {
             offset: 0,
             startDate: 1718755200,
             status: 'all',
+            signupCampaign: 'ASSISTED_ONBOARDING',
           },
         }),
       );

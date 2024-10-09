@@ -56,6 +56,11 @@ interface GetDeviceCatalogFromModularConfig {
   addedDevices: DeviceOrderSummaryItem[];
 }
 
+export enum DeviceModel {
+  SOUNDBOX_KIT = 'Soundbox Kit',
+  STICKER_AND_STANDEE = 'Sticker and Standee',
+}
+
 export const getCatalogDataFromModularConfig = ({
   modularConfig,
 }: GetDeviceCatalogFromModularConfigProps): GetDeviceCatalogFromModularConfig => {

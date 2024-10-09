@@ -12,6 +12,7 @@ const defaultProps = {
   deviceConfig: TestDeviceConfig,
   isUpdateModularLoading: false,
   isDisabled: false,
+  isPosEkycAgent: false,
   handleUpdateModular: jest.fn(),
 };
 

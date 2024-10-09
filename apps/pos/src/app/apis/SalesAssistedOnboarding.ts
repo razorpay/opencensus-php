@@ -30,6 +30,8 @@ export const verifyMerchantOTP = ({
   otp,
   token,
   mockSend = false,
+  signup_campaign,
+  product,
 }: MerchantOTPVerifyRequestArgs): Promise<MerchantOTPVerifyAPIResponse> =>
   salesFetch<MerchantOTPVerifyRequestAPIArgs, MerchantOTPVerifyAPIResponse>({
     url: 'register/merchant/otp/verify',
@@ -39,8 +41,9 @@ export const verifyMerchantOTP = ({
       otp,
       token,
       contact_mobile: String(contactMobile),
+      signup_campaign,
+      product,
       captcha: 'Faked',
-      signup_campaign: 'assisted_onboarding',
       captcha_disable: 'DISABLE_THE_CAPTCHA_YOU_SHALL',
       ...(mockSend ? { skip_sms_request: !!mockSend } : {}),
     },

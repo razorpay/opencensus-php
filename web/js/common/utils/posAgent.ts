@@ -14,6 +14,7 @@ interface CheckIfPosSalesAgentResponse {
   isOwner: boolean;
   isSalesAgentActingAsMerchant: boolean;
   isRzpSalesToPosAgentSwitchEnabled: boolean;
+  isPosEkycAgent: boolean;
 }
 
 const defaultResponse = {
@@ -22,6 +23,7 @@ const defaultResponse = {
   isOwner: false,
   isSalesAgentActingAsMerchant: false,
   isRzpSalesToPosAgentSwitchEnabled: false,
+  isPosEkycAgent: false,
 };
 
 export const checkIfPosSalesAgent = ({
@@ -42,6 +44,7 @@ export const checkIfPosSalesAgent = ({
     user.isPartnerAgentRole &&
     ezetapMids.includes(user.current as string)
   );
+  const isPosEkycAgent = user.isPartnerAgentRole && !isPosSalesAgent;
 
   const isOwner = !!(isEnabled && ezetapMids.includes(user.current as string));
   const isSalesAgentActingAsMerchant = user.role === RolesList.RAZORPAY_SALES;
@@ -49,6 +52,7 @@ export const checkIfPosSalesAgent = ({
     ...defaultResponse,
     isEnabled,
     isPosSalesAgent,
+    isPosEkycAgent,
     isOwner,
     isSalesAgentActingAsMerchant,
     isRzpSalesToPosAgentSwitchEnabled,

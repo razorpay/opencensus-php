@@ -1,18 +1,18 @@
 import React from 'react';
-import DeviceSelectionCatalog from './DeviceSelectionCatalog';
 import { Box } from '@razorpay/blade/components';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import errorService from '@razorpay/universe-cli/errorService';
+import DeviceSelectionCatalog from './DeviceSelectionCatalog';
 import { getCatalogDataFromModularConfig } from 'apps/pos/src/app/utils/deviceSelection';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import { getProgressFromModularStep } from 'apps/pos/src/app/utils/modularConfig';
-import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
-import errorService from '@razorpay/universe-cli/errorService';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
 
 const DeviceSelectionCatalogForPosSalesAgent = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
-  const { modularConfig, isUpdateModularLoading } = states;
+  const { modularConfig, isUpdateModularLoading, isPosEkycAgent } = states;
   const {
     getComponentConfigFromStep,
     updateModularConfig,
@@ -49,6 +49,7 @@ const DeviceSelectionCatalogForPosSalesAgent = (): JSX.Element | null => {
       }
     >
       <DeviceSelectionCatalog
+        isPosEkycAgent={isPosEkycAgent}
         heading={componentConfig?.title ?? ''}
         deviceConfig={deviceConfig}
         addedDevices={addedDevices}

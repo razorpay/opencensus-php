@@ -22,7 +22,7 @@ const HandleIndex = ({ user }: HandleIndexProps) => {
   // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
   const splitz = useSplitzService();
   const { abExperiments } = splitz;
-  const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments });
+  const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({ user, abExperiments });
 
   useEffect(() => {
     const matchView = matchFullPageView(location.pathname, {
@@ -38,7 +38,7 @@ const HandleIndex = ({ user }: HandleIndexProps) => {
       const newRoute = location.pathname + path;
       navigate(newRoute);
     } else if (user.isPartnerAgentRole) {
-      if (isPosSalesAgent) {
+      if (isPosSalesAgent || isPosEkycAgent) {
         const isKYCOngoing = searchParams.get('source') === SALES_ASSISTED_ONBOARDING;
         const rzpSalesMid = searchParams.get('rzp_sales_mid');
         let navigationInfo = { pathname: '/pos-sales', search: '' };

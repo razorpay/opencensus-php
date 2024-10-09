@@ -1,0 +1,151 @@
+import React from 'react';
+import {
+  Box,
+  Link,
+  ChevronRightIcon,
+  Text,
+  Badge,
+  CheckCircleIcon,
+  Spinner,
+} from '@razorpay/blade/components';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
+import { AvailableComponents } from 'apps/pos/src/app/types/common';
+
+interface DeviceCardProps {
+  imageUrl: string;
+  name: string;
+  isDeployed: boolean;
+  type: 'allDevices' | 'deployedDevices';
+  plan?: string;
+  deviceModelLabel?: string;
+  serialNumber?: string;
+  deviceId: string;
+  isModularLoading: boolean;
+  vpa: string;
+  currentDeployingDeviceId: string;
+  handleDeployNow: () => void;
+}
+export const DeviceCard = ({
+  imageUrl,
+  name,
+  isDeployed,
+  type = 'allDevices',
+  plan,
+  deviceModelLabel,
+  serialNumber,
+  deviceId,
+  isModularLoading,
+  currentDeployingDeviceId,
+  vpa,
+  handleDeployNow,
+}: DeviceCardProps): JSX.Element => {
+  const { id, step } = useParams();
+  const navigate = useNavigate();
+
+  const handleDetailsClick = () => {
+    navigate(
+      `/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${AvailableComponents.DEVICE_DETAILS}?deviceId=${deviceId}`,
+    );
+  };
+
+  return (
+    <Box display="flex" flexDirection="column" gap="spacing.6">
+      <Box display="flex" gap="spacing.4">
+        <img src={imageUrl} alt={name} width="68px" height="68px" />
+        <Box display="flex" flexDirection="column" gap="spacing.2" flex="1">
+          <Box display="flex" justifyContent="space-between" alignItems="baseline">
+            <Text>{name}</Text>
+            {type === 'deployedDevices' ? (
+              <Link
+                icon={ChevronRightIcon}
+                iconPosition="right"
+                onClick={handleDetailsClick}
+                variant="button"
+                size="medium"
+              >
+                Details
+              </Link>
+            ) : null}
+          </Box>
+
+          <Text>{plan}</Text>
+          {deviceModelLabel ? (
+            <Box
+              backgroundColor="surface.background.gray.subtle"
+              padding={['spacing.3', 'spacing.4']}
+              borderRadius="medium"
+              width="max-content"
+            >
+              <Text>{deviceModelLabel}</Text>
+            </Box>
+          ) : null}
+        </Box>
+      </Box>
+      <Box display="flex" justifyContent="space-between">
+        <Box>
+          <Box>
+            {serialNumber ? (
+              <Box display="flex" alignItems="center" justifyContent="flex-start" gap="spacing.2">
+                <Text color="surface.text.gray.muted" weight="regular" size="small">
+                  Serial No:
+                </Text>
+
+                <Text
+                  color="surface.text.gray.muted"
+                  weight="regular"
+                  size="small"
+                  truncateAfterLines={1}
+                >
+                  {serialNumber}
+                </Text>
+              </Box>
+            ) : null}
+          </Box>
+          <Box>
+            {vpa ? (
+              <Box display="flex" alignItems="center" justifyContent="flex-start" gap="spacing.2">
+                <Text color="surface.text.gray.muted" weight="regular" size="small">
+                  VPA:
+                </Text>
+
+                <Text
+                  color="surface.text.gray.muted"
+                  weight="regular"
+                  size="small"
+                  truncateAfterLines={1}
+                >
+                  {vpa}
+                </Text>
+              </Box>
+            ) : null}
+          </Box>
+        </Box>
+        {type === 'allDevices' ? (
+          <>
+            {isModularLoading && deviceId === currentDeployingDeviceId ? (
+              <Spinner accessibilityLabel="deployNowSpinner" size="large" />
+            ) : (
+              <Box>
+                {isDeployed ? (
+                  <Badge color="positive" emphasis="subtle" icon={CheckCircleIcon} size="large">
+                    Deployed
+                  </Badge>
+                ) : (
+                  <Link
+                    icon={ChevronRightIcon}
+                    iconPosition="right"
+                    onClick={handleDeployNow}
+                    variant="button"
+                  >
+                    Deploy Now
+                  </Link>
+                )}
+              </Box>
+            )}
+          </>
+        ) : null}
+      </Box>
+    </Box>
+  );
+};

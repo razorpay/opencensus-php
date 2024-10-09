@@ -41,6 +41,8 @@ export interface MerchantOTPVerifyRequestArgs {
   otp: string;
   token: string;
   mockSend?: boolean;
+  signup_campaign: 'assisted_onboarding' | 'partner_assisted_onboarding';
+  product: string;
 }
 
 export interface MerchantOTPVerifyRequestAPIArgs {
@@ -48,7 +50,8 @@ export interface MerchantOTPVerifyRequestAPIArgs {
   captcha: 'Faked';
   otp: string;
   token: string;
-  signup_campaign: 'assisted_onboarding';
+  signup_campaign: string;
+  product: string;
   skip_sms_request?: boolean;
   captcha_disable: 'DISABLE_THE_CAPTCHA_YOU_SHALL';
 }
@@ -89,7 +92,12 @@ export type STATUS_FILTERS =
   | 'pending'
   | 'kyc_qualified_stb';
 
-export type OnboardingStoreState = {};
+export type OnboardingStoreState = {
+  workflowProduct: string;
+  isPosEkycAgent: boolean;
+  setWorkflowProduct: (setWorkflowProduct: string) => void;
+  setIsPosEkycAgent: (isPosEkycAgent: boolean) => void;
+};
 
 export interface AddressField {
   value: string | null;

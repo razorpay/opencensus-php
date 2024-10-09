@@ -28,6 +28,7 @@ export enum AvailableSteps {
   PAYMENT_METHODS = 'paymentMethods',
   AGREEMENT_SIGNING = 'agreementSigning',
   ADDITIONAL_DETAILS = 'additionalDetails',
+  DEVICE_DEPLOYMENT = 'deviceDeployment',
 }
 
 export enum AvailableComponents {
@@ -39,8 +40,17 @@ export enum AvailableComponents {
   ADDITIONAL_DETAILS = 'merchantAdditionalDetails',
   DEVICE_DELIVERY_ADDRESS = 'deviceDeliveryAddress',
   DEVICE_PAYMENT = 'devicePayment',
+  DEVICE_DEPLOYMENT_LIST = 'deviceDeploymentList',
+  DEVICE_TESTING = 'deviceTesting',
+  DEVICE_CONFIGURATION = 'deviceConfiguration',
+  LANGUAGE_CONFIGURATION = 'languageConfiguration',
+  WIFI_CONFIGURATION = 'wifiConfiguration',
+  DEVICE_DETAILS = 'deviceDetails',
+  DEVICE_MAPPING_SCANNER = 'deviceMappingScanner',
+  DEVICE_MAPPING_MANUAL = 'deviceMappingManual',
   PAYMENT_METHODS = 'vasForm',
   NACH_FORM = 'nachForm',
+  DEVICE_MAPPING_SUCCESS = 'deviceMappingSuccess',
 }
 
 export type OnboardingStepType =
@@ -49,7 +59,8 @@ export type OnboardingStepType =
   | AvailableSteps.DEVICE_SELECTION
   | AvailableSteps.PAYMENT_METHODS
   | AvailableSteps.AGREEMENT_SIGNING
-  | AvailableSteps.ADDITIONAL_DETAILS;
+  | AvailableSteps.ADDITIONAL_DETAILS
+  | AvailableSteps.DEVICE_DEPLOYMENT;
 
 export type OnboardingComponentType =
   | AvailableComponents.MOBILE_NUMBER_VERIFY
@@ -60,6 +71,15 @@ export type OnboardingComponentType =
   | AvailableComponents.ADDITIONAL_DETAILS
   | AvailableComponents.DEVICE_DELIVERY_ADDRESS
   | AvailableComponents.DEVICE_PAYMENT
+  | AvailableComponents.DEVICE_DEPLOYMENT_LIST
+  | AvailableComponents.DEVICE_TESTING
+  | AvailableComponents.DEVICE_CONFIGURATION
+  | AvailableComponents.LANGUAGE_CONFIGURATION
+  | AvailableComponents.WIFI_CONFIGURATION
+  | AvailableComponents.DEVICE_DETAILS
+  | AvailableComponents.DEVICE_MAPPING_SCANNER
+  | AvailableComponents.DEVICE_MAPPING_MANUAL
+  | AvailableComponents.DEVICE_MAPPING_SUCCESS
   | AvailableComponents.PAYMENT_METHODS
   | AvailableComponents.NACH_FORM;
 
@@ -99,4 +119,5 @@ export enum MODULES {
   PAYMENT_METHODS = 'Payment Methods',
   AGREEMENT_SIGNING = 'Agreement Signing',
   ADDITIONAL_DETAILS = 'Additional Details',
+  DEVICE_DEPLOYMENT = 'Device Deployment',
 }

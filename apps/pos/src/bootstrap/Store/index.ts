@@ -1,7 +1,11 @@
 import create from 'zustand';
 import { OnboardingStoreState } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 
-// Create the Zustand store with types
-const useOnboardingStore = create<OnboardingStoreState>(() => ({}));
+const useOnboardingStore = create<OnboardingStoreState>((set) => ({
+  workflowProduct: '',
+  isPosEkycAgent: false,
+  setWorkflowProduct: (workflowProduct: string) => set({ workflowProduct }),
+  setIsPosEkycAgent: (isPosEkycAgent: boolean) => set({ isPosEkycAgent }),
+}));
 
 export default useOnboardingStore;

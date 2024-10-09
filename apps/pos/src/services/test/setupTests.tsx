@@ -28,6 +28,18 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 global.setImmediate =
   global.setImmediate || ((fn, ...args) => global.setTimeout(() => null, 0, ...args));
 
+// This is used inside useModular hook for POS assisted onboarding flows
+jest.mock('apps/pos/src/bootstrap/Store/index', () => ({
+  __esModule: true,
+  ...jest.requireActual('apps/pos/src/bootstrap/Store/index'),
+  default: jest.fn(() => ({
+    workflowProduct: 'ASSISTED_ONBOARDING',
+    isPosEkycAgent: false,
+    setWorkflowProduct: jest.fn(),
+    setIsPosEkycAgent: jest.fn(),
+  })),
+}));
+
 jest.mock('merchant/reducers/session', () => {
   return {
     initialState: {

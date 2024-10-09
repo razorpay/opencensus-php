@@ -45,3 +45,6 @@ export const StatusTiles: StatusTile[] = [
 ];
 
 export const ONLY_NUMBER_REGEX = /^\d+(\.\d+)?$/;
+
+export const PARTNER_ASSISTED_ONBOARDING = 'PARTNER_ASSISTED_ONBOARDING';
+export const ASSISTED_ONBOARDING = 'ASSISTED_ONBOARDING';

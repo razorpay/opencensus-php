@@ -150,9 +150,9 @@ export const RouteGuardComponent = withRouter((props: RouteGuardProps) => {
   );
 
   const user = session?.user;
-  const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments });
+  const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({ user, abExperiments });
 
-  if (!defaultPath && isPosSalesAgent) {
+  if (!defaultPath && (isPosSalesAgent || isPosEkycAgent)) {
     //default path should be always pos-sales for POS sales agent
     fallbackPath = '/pos-sales';
   } else {

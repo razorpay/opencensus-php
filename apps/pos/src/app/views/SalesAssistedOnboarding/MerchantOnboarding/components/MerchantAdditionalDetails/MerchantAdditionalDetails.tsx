@@ -46,6 +46,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
   const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
 
   const defaultValues = getInitialMerchantAdditionalDetails({ modularConfig });
+
   const {
     control,
     handleSubmit,

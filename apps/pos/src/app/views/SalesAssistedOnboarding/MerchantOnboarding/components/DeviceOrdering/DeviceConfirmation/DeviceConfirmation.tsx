@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
 import { Alert, Box, Divider, Heading } from '@razorpay/blade/components';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DeviceOrderSummaryItem from './DeviceOrderSummaryItem';
 import DeviceConfirmationCTA from './DeviceConfirmationCTA';
 import DeviceConfirmationCustomPricing from './DeviceConfirmationCustomPricing';
+import DeviceOrderSummaryItem from './DeviceOrderSummaryItem';
+import { MODULAR_FLAGS } from 'apps/pos/src/app/constants/DeviceSelection';
+import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { AvailableComponents, AvailableSteps } from 'apps/pos/src/app/types/common';
+import {
+  MODULAR_DEVICE_FIELDS,
+  OrderSummaryItemWithDeviceConfig,
+} from 'apps/pos/src/app/types/DeviceSelection';
 import {
   ArrayOfDocumentFieldsUpload,
   DeviceCharges,
   ModularPayload,
 } from 'apps/pos/src/app/types/modular';
-import { MODULAR_FLAGS } from 'apps/pos/src/app/constants/DeviceSelection';
-import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
-import {
-  MODULAR_DEVICE_FIELDS,
-  OrderSummaryItemWithDeviceConfig,
-} from 'apps/pos/src/app/types/DeviceSelection';
-import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
+import { analyticsTypes, trackEvent } from 'apps/pos/src/services/analytics';
 
 interface DeviceConfirmationProps {
   addedDevices: OrderSummaryItemWithDeviceConfig[];
@@ -27,6 +27,7 @@ interface DeviceConfirmationProps {
   isUpdateModularLoading: boolean;
   isDisabled: boolean;
   isCustomRatesApplicable: boolean;
+  isPosEkycAgent: boolean;
   handleUpdateModular: (data: ModularPayload) => void;
   handleGoToNextStep: () => void;
 }
@@ -40,6 +41,7 @@ const DeviceConfirmation = ({
   isUpdateModularLoading,
   isDisabled,
   isCustomRatesApplicable,
+  isPosEkycAgent,
   handleUpdateModular,
   handleGoToNextStep,
 }: DeviceConfirmationProps): JSX.Element | null => {
@@ -66,6 +68,7 @@ const DeviceConfirmation = ({
       ...MODULAR_FLAGS.CONFIRM_ORDER,
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: handleGoToNextStep,
     };
+
     trackEvent({
       eventName: analyticsTypes.ANALYTICS_EVENTS.WEBSITE_CTA,
       action: analyticsTypes.ANALYTICS_ACTIONS.CLICKED,
@@ -124,6 +127,7 @@ const DeviceConfirmation = ({
                 deviceConfig={device.deviceConfig}
                 isUpdateModularLoading={isUpdateModularLoading}
                 isDisabled={isDisabled}
+                isPosEkycAgent={isPosEkycAgent}
                 handleUpdateModular={handleUpdateModular}
               />
               {index !== addedDevices.length - 1 ? (
@@ -140,6 +144,15 @@ const DeviceConfirmation = ({
         addedDevices={addedDevices ?? []}
         orderSummary={orderSummary ?? {}}
         isDisabled={(addedDevices ?? []).length === 0 || isDisabled}
+        extra={
+          <Alert
+            title="Are you sure about your order?"
+            description="Changes to your order won't be possible after payment. Please review your order carefully before confirming"
+            marginBottom={'spacing.4'}
+            color="notice"
+            isDismissible={false}
+          />
+        }
       />
     </Box>
   );

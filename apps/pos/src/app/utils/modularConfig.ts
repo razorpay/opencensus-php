@@ -21,9 +21,15 @@ interface GetStepsFromModularConfigProps {
 }
 
 export const getStepsFromModularConfig = ({ modularConfig }: GetStepsFromModularConfigProps) => {
-  const steps = modularConfig.workflowData.milestones?.[0]?.steps;
-  if (!steps) return [];
-  return steps;
+  //NOTE: Partner assisted onboarding contains 2 milestones and the FE uses both of these milestones to render in a single page. Hence, all steps are combined. This will not affect existing flows. 1st milestone is used for triggering the form_submission_action in BE
+  const mergedSteps = modularConfig.workflowData.milestones.reduce((acc, currentMilestone) => {
+    if (currentMilestone && currentMilestone.steps) {
+      return [...acc, ...currentMilestone.steps];
+    }
+    return acc;
+  }, [] as ModularOnboardingStep[]);
+
+  return mergedSteps;
 };
 
 interface GetComponentFromStepProps {
@@ -103,7 +109,6 @@ export const getProgressFromModularStep = ({
   if (!modularConfig) return 'pending';
   const steps = getStepsFromModularConfig({ modularConfig });
   const _targetStep = steps.find((_step) => _step?.name === step);
-
   if (_targetStep?.status === 'executed') {
     return 'completed';
   }
@@ -127,10 +132,26 @@ export const isDevicePricingAdditionalDetailsCompleted = ({
       modularConfig,
       step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
     }) === COMPLETED;
+
   if (isDeviceOrderingCompleted && isPricingCompleted && isAdditionalDetailsCompleted) return true;
   return false;
 };
 
+export const isDevicePricingAdditionalDetailsCompletedForPosEkyc = ({
+  modularConfig,
+}: IsDevicePricingAdditionalDetailsCompleted) => {
+  if (!modularConfig) return false;
+  const isDeviceOrderingCompleted =
+    getProgressFromModularStep({ modularConfig, step: 'device_selection_step' }) === COMPLETED;
+  const isAdditionalDetailsCompleted =
+    getProgressFromModularStep({
+      modularConfig,
+      step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
+    }) === COMPLETED;
+
+  if (isDeviceOrderingCompleted && isAdditionalDetailsCompleted) return true;
+  return false;
+};
 interface GetAgreementSigningStatus {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
 }

@@ -7,6 +7,7 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
     $startDate: PositiveInt!
     $endDate: PositiveInt!
     $status: String!
+    $signupCampaign: UserSignupCampaignEnum!
   ) {
     salesOnboardedMerchants(
       limit: $limit
@@ -14,6 +15,7 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
       startDate: $startDate
       endDate: $endDate
       status: $status
+      signupCampaign: $signupCampaign
     ) {
       ... on SalesOnboardedMerchants {
         __typename
@@ -50,8 +52,11 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
 `;
 
 export const MODULAR_CONFIG = gql`
-  query MerchantModularOnboardingDetailsAsSales($merchantId: String!) {
-    merchantModularOnboardingDetailsAsSales(merchantId: $merchantId) {
+  query MerchantModularOnboardingDetailsAsSales(
+    $merchantId: String!
+    $product: MerchantModularOnboardingDetailsProductEnum
+  ) {
+    merchantModularOnboardingDetailsAsSales(merchantId: $merchantId, product: $product) {
       ... on merchantModularOnboardingDetailsSuccessResponse {
         __typename
         success
@@ -252,6 +257,7 @@ export const MODULAR_CONFIG = gql`
         value
       }
       validations
+      jsonValue
     }
     failureReason
     failureReasonType
@@ -262,8 +268,13 @@ export const UPDATE_MODULAR_CONFIG = gql`
   mutation MerchantModularOnboardingDetailsUpdateAsSales(
     $merchantId: String!
     $fieldData: JSONObject
+    $product: MerchantModularOnboardingDetailsProductEnum
   ) {
-    merchantModularOnboardingDetailsUpdateAsSales(merchantId: $merchantId, fieldData: $fieldData) {
+    merchantModularOnboardingDetailsUpdateAsSales(
+      merchantId: $merchantId
+      fieldData: $fieldData
+      product: $product
+    ) {
       ... on merchantModularOnboardingDetailsSuccessResponse {
         __typename
         success
@@ -464,6 +475,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
         value
       }
       validations
+      jsonValue
     }
     failureReason
     failureReasonType

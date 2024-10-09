@@ -1,11 +1,11 @@
+import { Amount, Box, Button, Link, Text } from '@razorpay/blade/components';
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Amount, Box, Button, Link, Text } from '@razorpay/blade/components';
 import DeviceOrderPricing from './DeviceOrderPricing';
 import ModalWithBottomSheet from 'apps/pos/src/app/components/ModalWithBottomSheet';
-import { DeviceCharges } from 'apps/pos/src/app/types/modular';
 import { OrderSummaryItemWithDeviceConfig } from 'apps/pos/src/app/types/DeviceSelection';
-import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
+import { DeviceCharges } from 'apps/pos/src/app/types/modular';
+import { analyticsTypes, trackEvent } from 'apps/pos/src/services/analytics';
 
 interface DeviceConfirmationCTAProps {
   ctaName: string;

@@ -16,6 +16,7 @@ import {
   ChipGroupProps,
 } from '@razorpay/blade/components';
 import { FormikProps } from 'formik';
+import InviteMemberBanner from 'assets/partner-dashboard/pos-ekyc/invite-member.webp';
 
 import { InviteMemberDataT } from './types';
 
@@ -26,7 +27,6 @@ interface InviteMemberProps {
 }
 
 const InviteMember = ({ isOpen = false, closeModal, formik }: InviteMemberProps): JSX.Element => {
-  const [backgroundImage, setBackgroundImage] = useState('initial-url');
   const isEditMode = !!formik.values.id; //if id has been set, edit this member details
 
   //TODO: check edit content with design & update to support i18n
@@ -40,7 +40,6 @@ const InviteMember = ({ isOpen = false, closeModal, formik }: InviteMemberProps)
 
   const onRoleChange: ChipGroupProps['onChange'] = ({ values }) => {
     formik.setFieldValue('role', values[0]);
-    setBackgroundImage('get-image-for-role');
   };
 
   const onInputChange: TextInputProps['onChange'] = ({ name, value }) => {
@@ -129,14 +128,7 @@ const InviteMember = ({ isOpen = false, closeModal, formik }: InviteMemberProps)
             </form>
           </Box>
 
-          {/* TODO: get background image here */}
-          <Box
-            height="100%"
-            width="100%"
-            backgroundColor="surface.background.cloud.subtle"
-            backgroundImage={backgroundImage}
-            borderRadius="2xlarge"
-          />
+          <img height="100%" width="100%" src={InviteMemberBanner} />
         </Box>
         <Box position="absolute" top="spacing.6" right="spacing.6">
           <IconButton icon={CloseIcon} onClick={closeModal} accessibilityLabel="Close Modal" />

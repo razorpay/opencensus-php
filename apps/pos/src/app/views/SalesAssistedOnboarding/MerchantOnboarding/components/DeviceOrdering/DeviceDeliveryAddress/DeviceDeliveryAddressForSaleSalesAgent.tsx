@@ -1,15 +1,15 @@
 import React, { useMemo, useEffect } from 'react';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import errorService from '@razorpay/universe-cli/errorService';
+import { Box } from '@razorpay/blade/components';
 import DeviceDeliveryAddress from './DeviceDeliveryAddress';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers';
 import { getProgressFromModularStep } from 'apps/pos/src/app/utils/modularConfig';
 import { getOrderSummaryFieldsFromModularConfig } from 'apps/pos/src/app/utils/deviceSelection';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
-import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
-import errorService from '@razorpay/universe-cli/errorService';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
-import { Box } from '@razorpay/blade/components';
 
 const DeviceDeliveryAddressForSaleSalesAgent = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();

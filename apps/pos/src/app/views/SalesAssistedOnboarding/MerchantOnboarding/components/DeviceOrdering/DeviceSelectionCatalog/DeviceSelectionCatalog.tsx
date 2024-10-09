@@ -15,6 +15,7 @@ interface DeviceSelectionCatalogProps {
   addedDevices: DeviceOrderSummaryItem[];
   isUpdateModularLoading: boolean;
   isStepCompleted: boolean;
+  isPosEkycAgent: boolean;
   handleModularUpdate: (payload: ModularPayload) => void;
   handleProceed: () => void;
 }
@@ -25,6 +26,7 @@ const DeviceSelectionCatalog = ({
   addedDevices,
   isUpdateModularLoading,
   isStepCompleted,
+  isPosEkycAgent,
   handleModularUpdate,
   handleProceed,
 }: DeviceSelectionCatalogProps): JSX.Element | null => {
@@ -48,6 +50,7 @@ const DeviceSelectionCatalog = ({
       <Box display="flex" flexWrap="wrap">
         {deviceConfig.map((device) => (
           <DeviceCard
+            isPosEkycAgent={isPosEkycAgent}
             key={device.title}
             deviceConfig={device}
             addedDevices={addedDevices}

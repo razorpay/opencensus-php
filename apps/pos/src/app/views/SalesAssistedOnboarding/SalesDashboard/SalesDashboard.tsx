@@ -26,6 +26,11 @@ import {
   StatusCounts,
 } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { GraphQLErrorResponseType } from 'apps/pos/src/app/types/common';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store/index';
+import {
+  ASSISTED_ONBOARDING,
+  PARTNER_ASSISTED_ONBOARDING,
+} from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
 interface Filters {
@@ -70,6 +75,7 @@ const SalesDashboard = (): JSX.Element => {
   const queryCache = useQueryClient();
   const toast = useToast();
   const navigate = useNavigate();
+  const { isPosEkycAgent } = useOnboardingStore();
 
   const handleError = (response: GraphQLErrorResponseType): void => {
     toast.show({
@@ -90,7 +96,7 @@ const SalesDashboard = (): JSX.Element => {
     SalesOnboardedMerchants | null,
     GraphQLErrorResponseType
   >({
-    queryKey: [QUERY_KEY],
+    queryKey: [QUERY_KEY, isPosEkycAgent],
     queryFn: async ({ pageParam = 0 }) => {
       const { salesOnboardedMerchants: response } = await graphqlRequest<
         'salesOnboardedMerchants',
@@ -104,6 +110,7 @@ const SalesDashboard = (): JSX.Element => {
           startDate: range?.startDate,
           endDate: range?.endDate,
           status: filters.status,
+          signupCampaign: isPosEkycAgent ? PARTNER_ASSISTED_ONBOARDING : ASSISTED_ONBOARDING,
         },
       });
 
@@ -119,7 +126,6 @@ const SalesDashboard = (): JSX.Element => {
       if (!lastPage?.hasMore) return undefined;
       return page + 1;
     },
-    enabled: false,
     staleTime: 60000 * 1,
     retry: false,
     networkMode: 'always',
@@ -134,7 +140,7 @@ const SalesDashboard = (): JSX.Element => {
   const { totalMerchantsOnboarded, statusCounts } = pages[pages.length - 1] ?? {};
 
   const handleOnApplyFilter = () => {
-    void queryCache.removeQueries({ queryKey: [QUERY_KEY] });
+    void queryCache.removeQueries({ queryKey: [QUERY_KEY, isPosEkycAgent] });
     setPage(0);
     void fetchNextPage({ pageParam: 0 });
   };

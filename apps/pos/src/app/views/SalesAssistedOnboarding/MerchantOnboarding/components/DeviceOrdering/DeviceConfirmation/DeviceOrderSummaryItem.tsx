@@ -18,6 +18,7 @@ interface DeviceOrderSummaryItemProps {
   device: OrderSummaryItemWithDeviceConfig;
   deviceConfig: DeviceConfig | null;
   isDisabled?: boolean;
+  isPosEkycAgent: boolean;
   handleUpdateModular: (payload: ModularPayload) => void;
 }
 
@@ -26,6 +27,7 @@ const DeviceOrderSummaryItem = ({
   deviceConfig,
   isUpdateModularLoading,
   isDisabled,
+  isPosEkycAgent,
   handleUpdateModular,
 }: DeviceOrderSummaryItemProps): JSX.Element | null => {
   const [isItemLoading, setIsItemLoading] = useState(false);
@@ -121,6 +123,7 @@ const DeviceOrderSummaryItem = ({
           ) : null}
         </Box>
         <AddDeviceToCart
+          isPosEkycAgent={isPosEkycAgent}
           deviceConfig={deviceConfig}
           defaultValues={deviceFormDefaultValues}
           isUpdateModularLoading={isUpdateModularLoading}

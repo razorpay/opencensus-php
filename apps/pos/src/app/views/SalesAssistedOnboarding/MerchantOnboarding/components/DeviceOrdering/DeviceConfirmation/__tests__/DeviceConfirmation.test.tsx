@@ -19,6 +19,7 @@ const defaultProps = {
   handleUpdateModular: jest.fn(),
   handleGoToNextStep: jest.fn(),
   isCustomRatesApplicable: true,
+  isPosEkycAgent: false,
 };
 
 const renderApp = (props = {}) => {

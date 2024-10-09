@@ -35,9 +35,30 @@ export const getInitialMerchantAdditionalDetails = ({
   return allFieldValues;
 };
 
+export const getInitialMerchantAdditionalDetailsPosEkyc = ({
+  modularConfig,
+}: GetInitialMerchantAdditionalDetailsProps): Record<string, string> | null => {
+  if (!modularConfig) return null;
+  const additionalDetailsComponent = getComponentFromStep({
+    modularConfig,
+    step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
+    component: MODULAR_ADDITIONAL_DETAILS_FIELDS.PARTNER_ADDITIONAL_DETAILS_COMPONENT,
+  });
+
+  if (!additionalDetailsComponent) return null;
+  const fields = additionalDetailsComponent.fields;
+  const allFieldValues = fields.reduce((acc, field) => {
+    if (!acc[field.name]) {
+      acc[field.name] = isStringValue(field) ? field.stringValue : '';
+    }
+    return acc;
+  }, {});
+  return allFieldValues;
+};
+
 interface FieldRulesProps {
   field: ModularOnboardingField;
-  omcValue: string;
+  omcValue?: string;
 }
 
 export const getFieldRules = ({ field, omcValue }: FieldRulesProps): FieldRules | undefined => {
@@ -55,7 +76,7 @@ export const getFieldRules = ({ field, omcValue }: FieldRulesProps): FieldRules 
 interface FieldErrorTextProps {
   item: ModularOnboardingField;
   errors: FieldErrors<Record<string, string>>;
-  omcValue: string;
+  omcValue?: string;
 }
 export const getFieldErrorText = ({ item, errors, omcValue }: FieldErrorTextProps) => {
   if (!item) return '';
@@ -74,7 +95,7 @@ export const getFieldErrorText = ({ item, errors, omcValue }: FieldErrorTextProp
 
 interface NecessityIndicatorProps {
   field: ModularOnboardingField;
-  omcValue: string;
+  omcValue?: string;
 }
 
 export const getNecessityIndicator = ({ field, omcValue }: NecessityIndicatorProps) => {
@@ -88,7 +109,11 @@ export const getNecessityIndicator = ({ field, omcValue }: NecessityIndicatorPro
 
 interface AdditionalDetailsFieldsProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
-  omcValue: string;
+  omcValue?: string;
+}
+
+interface AdditionalDetailsFieldsPosEkycProps {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
 }
 
 export const getAdditionalDetailFields = ({
@@ -132,4 +157,17 @@ export const getAdditionalDetailFields = ({
   });
 
   return processedFields;
+};
+
+export const getAdditionalDetailFieldsPosEkyc = ({
+  modularConfig,
+}: AdditionalDetailsFieldsPosEkycProps) => {
+  if (!modularConfig) return [];
+  const additionalDetailsComponent = getComponentFromStep({
+    modularConfig,
+    step: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
+    component: MODULAR_ADDITIONAL_DETAILS_FIELDS.PARTNER_ADDITIONAL_DETAILS_COMPONENT,
+  });
+
+  return additionalDetailsComponent?.fields;
 };

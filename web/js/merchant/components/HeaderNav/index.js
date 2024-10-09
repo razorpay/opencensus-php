@@ -200,7 +200,7 @@ class HeaderNav extends Component {
     };
     const isUniversalSearchEnabled = user.isUniversalSearchEnabled;
     const isMobileSearch = isUniversalSearchEnabled && isMobile;
-    const { isPosSalesAgent } = checkIfPosSalesAgent({
+    const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({
       user,
       abExperiments: splitz.abExperiments,
     });
@@ -245,12 +245,12 @@ class HeaderNav extends Component {
                         <span className="i-bar" />
                         <span className="i-bar" />
                       </button>{' '}
-                      {isPosSalesAgent ? null : activePageName || 'Dashboard'}
+                      {isPosSalesAgent || isPosEkycAgent ? null : activePageName || 'Dashboard'}
                     </>
                   )}
                 </div>
               ) : null}
-              {!isPosSalesAgent ? (
+              {!isPosSalesAgent && !isPosEkycAgent ? (
                 <React.Fragment>
                   {isUniversalSearchEnabled && !isMobile && (
                     <div className="universal-search-desktop">
@@ -402,7 +402,7 @@ class HeaderNav extends Component {
             </div>
           </div>
         </nav>
-        {!isPosSalesAgent ? (
+        {!isPosSalesAgent && !isPosEkycAgent ? (
           <React.Fragment>
             {isMobileSearch && (
               <div

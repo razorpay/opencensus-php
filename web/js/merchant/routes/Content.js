@@ -652,8 +652,20 @@ class Content extends Component {
 
   checkIfPosSalesAgent = () => {
     const { splitz, user } = this.props;
-    const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments: splitz.abExperiments });
-    return isPosSalesAgent;
+    const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({
+      user,
+      abExperiments: splitz.abExperiments,
+    });
+    return isPosSalesAgent || isPosEkycAgent;
+  };
+
+  checkIfPosEkycAgent = () => {
+    const { splitz, user } = this.props;
+    const { isPosEkycAgent } = checkIfPosSalesAgent({
+      user,
+      abExperiments: splitz.abExperiments,
+    });
+    return isPosEkycAgent;
   };
 
   checkIsHelpWidgetDisabled = () => {
@@ -663,7 +675,10 @@ class Content extends Component {
 
   checkIfAssistedOnboardingUser = () => {
     const { user } = this.props;
-    return user?.user.signup_campaign === 'assisted_onboarding';
+    return (
+      user?.user.signup_campaign === 'assisted_onboarding' ||
+      user?.user.signup_campaign === 'partner_assisted_onboarding'
+    );
   };
 
   isRAYEnabled = () => {
@@ -829,6 +844,7 @@ class Content extends Component {
     const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
     const isMicrofrontendSelfserveEnabled = this.checkIsMicrofrontendSelfserveEnabled();
     const isPosSalesAgent = this.checkIfPosSalesAgent();
+    const isPosEkycAgent = this.checkIfPosEkycAgent();
     const ExportPaymentsList = isExperimentActive(export_payments_v2)
       ? B2bPaymentsListV2
       : B2bPaymentsList;
@@ -2471,7 +2487,11 @@ class Content extends Component {
             path="pos-sales/*"
             element={
               <RouteGuard additionalCondition={() => isPosSalesAgent}>
-                <PosApp />
+                <PosApp
+                  workflowProduct={
+                    isPosEkycAgent ? 'PARTNER_ASSISTED_ONBOARDING' : 'ASSISTED_ONBOARDING'
+                  }
+                />
               </RouteGuard>
             }
           />

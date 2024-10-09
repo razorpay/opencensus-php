@@ -6,6 +6,7 @@
  */
 
 import { useNavigate, useParams } from 'react-router-dom';
+import { ONBOARDING_STEPS_POS_EKYC } from '../MerchantOnboardingConfigPosEkyc';
 import useMerchantActivation from './useMerchantActivation';
 import useModular from './useModular';
 import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
@@ -48,6 +49,7 @@ export interface OnboardingStatesType {
   isUpdateModularLoading: boolean;
   isModularFetchError: boolean;
   isRefetching: boolean;
+  isPosEkycAgent: boolean;
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
 }
 
@@ -88,18 +90,20 @@ const useOnboardingContext = ({
     isUpdateModularLoading,
     isModularFetchError,
     refetchModular,
+    isPosEkycAgent,
   } = useModular({ merchantId, onModularConfigUpdate });
   const { merchantDetails } = useMerchantActivation({
     merchantId,
     onMerchantDetailsFetchError,
   });
+  const onboardingSteps = isPosEkycAgent ? ONBOARDING_STEPS_POS_EKYC : ONBOARDING_STEPS;
 
   const OnboardingValues: OnboardingValuesType = {
     component,
     isNewOnboarding: id === 'new',
     merchantId,
     step,
-    onboardingSteps: ONBOARDING_STEPS,
+    onboardingSteps,
   };
 
   const OnboardingStates: OnboardingStatesType = {
@@ -109,6 +113,7 @@ const useOnboardingContext = ({
     isModularFetchError,
     isRefetching,
     modularConfig,
+    isPosEkycAgent,
     updateModularConfig,
   };
 
@@ -136,9 +141,7 @@ const useOnboardingContext = ({
 
   const getStepConfigStepSlug = (stepSlug = step) => {
     if (!availableSteps.includes(stepSlug)) return;
-    const onboardingStepConfig = ONBOARDING_STEPS.find(
-      (stepConfig) => stepConfig.slug === stepSlug,
-    );
+    const onboardingStepConfig = onboardingSteps.find((stepConfig) => stepConfig.slug === stepSlug);
     return onboardingStepConfig;
   };
 

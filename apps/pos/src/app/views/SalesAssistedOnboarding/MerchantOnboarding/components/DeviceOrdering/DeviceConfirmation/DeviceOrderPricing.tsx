@@ -10,6 +10,7 @@ import {
   ChevronDownIcon,
 } from '@razorpay/blade/components';
 import { DeviceCharges, DeviceOrderSummaryItem } from 'apps/pos/src/app/types/modular';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
 
 interface CollapsedContent {
   title: string;
@@ -89,6 +90,7 @@ const DeviceOrderPricing = ({
   addedDevices,
   orderSummary,
 }: DeviceOrderPricingProps): JSX.Element | null => {
+  const { isPosEkycAgent } = useOnboardingStore();
   return (
     <React.Fragment>
       <CollapsedContent
@@ -109,7 +111,9 @@ const DeviceOrderPricing = ({
         }
       />
       <PricingItem title="Advance Rental Charges" value={orderSummary?.advanceRentalCharge} />
-      <PricingItem title="Paper roll" value={orderSummary?.paperRollCharge} />
+      {!isPosEkycAgent ? (
+        <PricingItem title="Paper roll" value={orderSummary?.paperRollCharge} />
+      ) : null}
       <PricingItem title="Shipping" value={orderSummary?.shippingCharge} />
       <PricingItem title="GST @18%" value={orderSummary?.gst} />
       <PricingItem title="Total Order Price" value={orderSummary?.totalOrderCharge} size="large" />

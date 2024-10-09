@@ -1,12 +1,12 @@
 import { Box, Spinner, useToast } from '@razorpay/blade/components';
 import React, { useEffect } from 'react';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import errorService from '@razorpay/universe-cli/errorService';
 import KYCRedirectionLoader from '../MerchantRegistration/KYCRedirectionLoader';
 import redirectToEasyOnboarding from 'apps/pos/src/app/utils/redirectToEasyOnboarding';
 import useMerchantSwitch from 'apps/pos/src/app/utils/hooks/useMerchantSwitch';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
-import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
-import errorService from '@razorpay/universe-cli/errorService';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
 
