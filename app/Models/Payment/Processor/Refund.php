@@ -19,6 +19,7 @@ use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Ledger\ReverseShadow\Refunds\Core as ReverseShadowRefundsCore;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Ledger\ReverseShadow\Transfers\Reversal\Core as ReverseShadowTransferReversalCore;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Vpa;
@@ -1931,8 +1932,8 @@ trait Refund
 
     protected function refundBalanceChecks(RefundEntity &$refund, $useClsBalance = false)
     {
-        //Fetch from harvester
-        $refund->balance()->associate($refund->merchant->primaryBalance);
+        $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($refund->merchant->getId(), BalanceType::PRIMARY);
+        $refund->balance()->associate($balance);
         if ($refund->getGateway() === RefundConstants::GATEWAY_RZP_INTERNAL)
         {
             $this->validateMerchantBalance($refund, 'reversal', $useClsBalance);
@@ -2866,7 +2867,7 @@ trait Refund
             // Not allowing negative balance in refund credits
             // Ref slack thread: https://razorpay.slack.com/archives/C6XG1F99N/p1651128045835069?thread_ts=1642673759.195000&cid=C6XG1F99N
             return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
-                                                            Transaction\Type::REFUND, false, \RZP\Models\Merchant\Balance\Type::PRIMARY,
+                                                            Transaction\Type::REFUND, false, BalanceType::PRIMARY,
                                                             $useClsBalance);
         }
 
@@ -2878,7 +2879,7 @@ trait Refund
                 try
                 {
                     $creditsCheck = (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
-                        Transaction\Type::REFUND, false, \RZP\Models\Merchant\Balance\Type::PRIMARY, $useClsBalance);
+                        Transaction\Type::REFUND, false, BalanceType::PRIMARY, $useClsBalance);
                 }
                 catch (\Throwable $exception)
                 {
@@ -4522,7 +4523,7 @@ trait Refund
         try
         {
             return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getNetAmount(),
-                                                        Transaction\Type::REFUND, $negativeBalanceEnabled, \RZP\Models\Merchant\Balance\Type::PRIMARY, $useClsBalance);
+                                                        Transaction\Type::REFUND, $negativeBalanceEnabled, BalanceType::PRIMARY, $useClsBalance);
         }
         catch (\Throwable $e)
         {

@@ -874,8 +874,8 @@ class Core extends Base\Core
         $reversal->entity()->associate($refund);
 
         // Todo: remove null balance check after backfilling is done
-        // TODO: Move to harvester
-        $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
+        $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($refund->merchant->getId(), Balance\Type::PRIMARY);
+        $reversal->balance()->associate($balance);
 
         $txnCore = new Transaction\Core;
 

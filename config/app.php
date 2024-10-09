@@ -1038,6 +1038,10 @@ return array(
 
     'refund_creation_data_cls_balance_experiment' => env('REFUND_CREATION_DATA_CLS_BALANCE_EXP_ID'),
 
+    'refund_journal_payload_harvester_balance_experiment' => env('REFUND_JOURNAL_PAYLOAD_BALANCE_EXP_ID'),
+
+    'reversal_debit_journal_payload_harvester_balance_experiment' => env('REVERSAL_DEBIT_JOURNAL_BALANCE_EXP_ID'),
+
     'validate_transfer_using_oauth_exp_id' => env('VALIDATE_TRANSFER_USING_OAUTH'),
 
     'gifu_upi_ds_settlement_timestamp_exp_id' => env('GIFU_UPI_DS_SETTLEMENT_TIMESTAMP_EXP_ID'),
