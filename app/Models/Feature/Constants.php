@@ -2247,6 +2247,8 @@ class Constants
 
     const PG_V3_ONBOARDING_COMPLETED = 'pg_v3_onboarding_complete';
 
+    const PG_V3_ONBOARDING_IN_PROGRESS = 'pg_v3_onboarding_progress';
+
     /**
      * Feature flag to make idempotency key mandatory for the merchant while creating payouts.
      */
@@ -3191,6 +3193,7 @@ class Constants
         self::SHOW_TRUST_MARKERS                     => true,
         self::SHOW_PG_V3                             => true,
         self::PG_V3_ONBOARDING_COMPLETED             => true,
+        self::PG_V3_ONBOARDING_IN_PROGRESS            => true,
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
         self::BANKING_UPI_REARCH                     => true,
@@ -4615,6 +4618,11 @@ class Constants
         self::PG_V3_ONBOARDING_COMPLETED => [
             'feature'       => self::PG_V3_ONBOARDING_COMPLETED,
             'display_name'  => 'merchant completes new onboarding flow',
+            'documentation' => ''
+        ],
+        self::PG_V3_ONBOARDING_IN_PROGRESS => [
+            'feature'       => self::PG_V3_ONBOARDING_IN_PROGRESS,
+            'display_name'  => 'merchant is in progress of new onboarding flow',
             'documentation' => ''
         ],
         self::PAYOUT_IDEM_KEY_REQUIRED => [
