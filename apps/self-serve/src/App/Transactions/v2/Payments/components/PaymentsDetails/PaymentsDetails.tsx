@@ -49,11 +49,12 @@ import {
   trackDetailsPageLoad,
 } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import { User } from '@dashboard/shared-utils/typings';
 
 const flexDirectionSettings: any = { base: 'column', xl: 'row', l: 'row' };
 
 interface PaymentDetailsProps extends RouteComponentProps<{ id: string }> {
-  user: Record<string, string>;
+  user: User;
   fetchCurrentBalance: () => Promise<ICurrentBalance>;
   fetchRefundFee: () => Promise<Record<string, string>>;
 }
@@ -64,6 +65,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     openModal: state.openModal,
   }));
   const {
+    user,
     match: { params },
     location,
   } = props;
@@ -81,7 +83,13 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   });
   const isDesktop = ['xl', 'l'].includes(matchedBreakpoint as string);
   const queryParams = getURLQueryParams(location.search);
-  const dashboardFlag = queryParams?.dashboard_flag;
+  const dashboardFlag: string[] = [];
+  if (queryParams.dashboard_flag) {
+    dashboardFlag.push(queryParams.dashboard_flag);
+  }
+  if (user?.isPayerNameEnabled) {
+    dashboardFlag.push('upi_payer_name');
+  }
 
   const fetchDetails = async () => {
     setError(null);

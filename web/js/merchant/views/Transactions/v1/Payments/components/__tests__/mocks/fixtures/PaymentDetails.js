@@ -157,6 +157,10 @@ export const defaultProps = {
     customer_fee_gst: '12',
     order_id: 'paymentOrderID',
     invoice_id: 'paymentInvoiceID',
+    upi: {
+      vpa: 'test@upi',
+      payer_name: 'Test Payer',
+    },
   },
   card: {},
   bankTransfer: {

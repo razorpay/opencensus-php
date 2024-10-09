@@ -4,11 +4,8 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { createPayloadForSavePreferences } from './utils';
 import { ApplicationDetails } from './v2/Payments/components/PaymentsDetails/types';
 
-export const fetchPaymentIdDetails = (id: string, dashboardFlag?: string): Promise<any> => {
-  const dashboardFlags = ['refund_create_data'];
-  if (dashboardFlag) {
-    dashboardFlags.push(dashboardFlag);
-  }
+export const fetchPaymentIdDetails = (id: string, dashboardFlag: string[]): Promise<any> => {
+  const dashboardFlags = ['refund_create_data', ...dashboardFlag];
   return merchantFetch({
     url: `payments/${id}`,
     method: 'GET',

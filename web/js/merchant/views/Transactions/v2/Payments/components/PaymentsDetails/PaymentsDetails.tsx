@@ -20,6 +20,7 @@ import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
+import User from 'common/typings/User';
 import { getErrorMessageFromResponse, deepClone, getURLQueryParams } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import {
@@ -59,7 +60,7 @@ const flexDirectionSettings: any = { base: 'column', xl: 'row', l: 'row' };
 
 interface PaymentDetailsProps extends RouteComponentProps<{ id: string }> {
   showNotification: (data: any) => void;
-  user: Record<string, string>;
+  user: User;
   openModal: (args) => void;
   fetchCurrentBalance: () => Promise<ICurrentBalance>;
   fetchRefundFee: () => Promise<Record<string, string>>;
@@ -67,6 +68,7 @@ interface PaymentDetailsProps extends RouteComponentProps<{ id: string }> {
 
 const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   const {
+    user,
     match: { params },
     location,
     showNotification,
@@ -86,7 +88,13 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   });
   const isDesktop = ['xl', 'l'].includes(matchedBreakpoint as string);
   const queryParams = getURLQueryParams(location.search);
-  const dashboardFlag = queryParams?.dashboard_flag;
+  const dashboardFlag: string[] = [];
+  if (queryParams.dashboard_flag) {
+    dashboardFlag.push(queryParams.dashboard_flag);
+  }
+  if (user?.isPayerNameEnabled) {
+    dashboardFlag.push('upi_payer_name');
+  }
   const splitz = useSplitzService();
 
   const fetchDetails = async () => {

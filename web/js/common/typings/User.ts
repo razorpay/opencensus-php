@@ -89,6 +89,7 @@ type Getters = {
   isAdditionalDomainWhitelistSelfServeOn: boolean;
   isRRNSearchEnabled: boolean;
   isMagicCouponEngineEnabled: boolean;
+  isPayerNameEnabled: boolean;
 };
 
 type Merchant = {

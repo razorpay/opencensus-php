@@ -141,6 +141,19 @@ describe('PaymentDetails', () => {
     expect(screen.getByText(defaultProps.payment.provider)).toBeInTheDocument();
   });
 
+  test('should render payer name when enabled', () => {
+    render(
+      <App
+        user={{
+          ...defaultProps.user,
+          isPayerNameEnabled: true,
+        }}
+      />,
+    );
+    expect(screen.getByText('Payer Name')).toBeInTheDocument();
+    expect(screen.getByText(defaultProps.payment.upi.payer_name)).toBeInTheDocument();
+  });
+
   test('should render payment gateway provider', () => {
     render(<App />);
     expect(screen.getByText(defaultProps.payment.gateway_provider)).toBeInTheDocument();

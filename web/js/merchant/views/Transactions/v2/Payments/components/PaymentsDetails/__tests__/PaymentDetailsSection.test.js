@@ -136,6 +136,16 @@ describe('Payment Details Section component', () => {
         screen.getByText(`TID: ${happyFlowProps.paymentDetails.gateway_terminal_id}`),
       ).toBeInTheDocument();
     });
+    test('should render Payer name', () => {
+      const globalState = store.getState();
+      const user = globalState.session.user;
+      jest.spyOn(user, 'isPayerNameEnabled', 'get').mockReturnValue(true);
+      render(<App props={happyFlowProps} />);
+      expect(screen.getByText('Payer Name')).toBeInTheDocument();
+      expect(
+        screen.getByText(`${happyFlowProps.paymentDetails.upi.payer_name}`),
+      ).toBeInTheDocument();
+    });
   });
 
   describe('Mobile view', () => {

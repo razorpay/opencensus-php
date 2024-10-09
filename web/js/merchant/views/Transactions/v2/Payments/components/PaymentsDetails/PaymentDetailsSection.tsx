@@ -15,6 +15,7 @@ import {
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import { useMobile } from 'common/hooks/useMobile';
 import { useI18Service } from 'common/i18';
@@ -23,12 +24,15 @@ import { withSplitzService } from 'common/splitz';
 import { SpiltzContextState } from 'common/splitz/types';
 import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
+import { noop } from 'common/utils/rzp-utils';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
+
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
+import PaymentSplitItems from './PaymentSplitItems';
 import PaymentTransfers from './PaymentTransfers';
 import Tooltip from './Tooltip';
 import {
@@ -40,10 +44,9 @@ import {
   SectionHeader,
 } from './styled';
 import { IPaymentDetails, ApplicationDetails } from './types';
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
-import { noop } from 'common/utils/rzp-utils';
-import PaymentSplitItems from './PaymentSplitItems';
+
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 const PaymentReceipt = lazy(
   () =>
     import(
@@ -139,6 +142,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
     source_channel,
     payee_vpa,
     device_detail,
+    upi,
   } = paymentDetails;
   const { isConfigTagEnabled } = useI18Service();
   const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
@@ -320,6 +324,12 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     </Box>
                   }
                 />
+                {user?.isPayerNameEnabled && (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow label="Payer Name" value={upi?.payer_name || '--'} />
+                  </>
+                )}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Fee bearer"

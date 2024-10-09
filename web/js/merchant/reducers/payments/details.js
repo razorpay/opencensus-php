@@ -22,8 +22,9 @@ const PAYMENT_VOID_OFFLINE = 'PAYMENT_VOID_OFFLINE';
 const UPDATE_REFUND_STATUS_IN_NOTES = 'UPDATE_REFUND_STATUS_IN_NOTES';
 const FETCH_EZETAP_KEYS = 'FETCH_EZETAP_KEYS';
 
-export const fetchItem = (id) => {
+export const fetchItem = (id, dashboardFlag = []) => {
   const payment = new Payment();
+  const dashboardFlags = ['refund_create_data', ...dashboardFlag];
 
   return {
     type: PAYMENT_FETCH,
@@ -32,7 +33,7 @@ export const fetchItem = (id) => {
       {},
       {
         expand: ['card', 'emi_plan', 'disputes', 'transaction', 'transaction.settlement'],
-        dashboard_flag: ['refund_create_data'],
+        dashboard_flag: dashboardFlags,
       },
     ),
   };

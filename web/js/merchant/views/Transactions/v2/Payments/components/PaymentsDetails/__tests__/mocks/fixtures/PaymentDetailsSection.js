@@ -89,6 +89,10 @@ export const happyFlowProps = {
     gateway_terminal_id: '80001501',
     gateway_merchant_id: '150000000001501',
     device_id: '1491701832',
+    upi: {
+      vpa: 'qa.testing@razorpay',
+      payer_name: 'Test User',
+    },
   },
   applicationDetails: {
     name: 'WhatsApp',

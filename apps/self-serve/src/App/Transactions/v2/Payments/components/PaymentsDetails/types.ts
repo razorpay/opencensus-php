@@ -157,6 +157,10 @@ export interface IPaymentDetails {
   source_channel?: string;
   payee_vpa?: string;
   device_detail?: string;
+  upi?: {
+    vpa: string;
+    payer_name: string;
+  };
 }
 
 export interface IPaymentIdRefundDetail {

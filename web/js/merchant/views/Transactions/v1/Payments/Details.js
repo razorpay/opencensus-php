@@ -96,10 +96,16 @@ class PaymentDetailsContainer extends Component {
       fetchBankTransfer,
       fetchUPITransfer,
       fetchTransfers,
+      user,
     } = this.props;
     resetPayment();
 
-    fetchItem(id).then((payment) => {
+    const dashboardFlag = [];
+    if (user?.isPayerNameEnabled) {
+      dashboardFlag.push('upi_payer_name');
+    }
+
+    fetchItem(id, dashboardFlag).then((payment) => {
       /* istanbul ignore else */
       if (payment.amount_refunded !== 0) {
         fetchRefunds(payment);

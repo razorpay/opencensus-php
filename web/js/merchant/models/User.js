@@ -2083,6 +2083,13 @@ export default class User {
   get isMagicCouponEngineEnabled() {
     return this.isFeatureEnabled('one_cc_coupon_engine');
   }
+
+  get isPayerNameEnabled() {
+    return (
+      this.isOrgFeatureEnabled('display_upi_payer_name') &&
+      getSplitzExperimentVariant('display_upi_payer_name')?.variables?.result === 'on'
+    );
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

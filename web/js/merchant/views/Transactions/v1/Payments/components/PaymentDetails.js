@@ -562,6 +562,10 @@ function PaymentDetails(props) {
                   </Definition>
                 </EntityDetailRow>
 
+                <ShowWhen additionalCondition={() => user.isPayerNameEnabled}>
+                  <EntityDetailRow label="Payer Name">{payment.upi?.payer_name}</EntityDetailRow>
+                </ShowWhen>
+
                 <EntityDetailRow label="Total Fee">
                   {showPlatformFee ? (
                     <PlatformFeeDetails transfers={transfers} payment={payment} />

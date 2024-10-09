@@ -132,6 +132,7 @@ function PaymentDetailsSection({
     source_channel,
     payee_vpa,
     device_detail,
+    upi,
   } = paymentDetails;
   const showNotification = useStore((state) => state.showNotification);
 
@@ -298,6 +299,12 @@ function PaymentDetailsSection({
                     </Box>
                   }
                 />
+                {user?.isPayerNameEnabled && (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow label="Payer Name" value={upi?.payer_name || '--'} />
+                  </>
+                )}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Fee bearer"
