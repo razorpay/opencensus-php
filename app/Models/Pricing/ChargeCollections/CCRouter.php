@@ -59,6 +59,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getPlanByName' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlansSummary' => true,
     );
 
     private array $FunctionToCCRouteMap;
@@ -87,6 +88,7 @@ class CCRouter
             'RZP\\Models\\Pricing\\Repository\\getPlanByName' => ChargeCollections::GetPricingPlanURL,
             'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => ChargeCollections::GetPricingPlanURL,
             'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingPlansSummary' => ChargeCollections::GetPricingPlansSummaryURL,
         );
     }
 
@@ -163,6 +165,11 @@ class CCRouter
                     'route' => $routeName,
                     'function' => $fqcn,
                 ]);
+            }
+
+            if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
+                $response = $this->app->charge_collections->getPricingPlansSummary($input);
+                return $this->transformSummaryResponse($response);
             }
 
             if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingPlanURL) {
@@ -309,6 +316,13 @@ class CCRouter
         return self::FUNCTION_MAP[$functionName] === true;
     }
 
+    private function transformSummaryResponse($response) {
+        $responseForPlanMap = ['rules' => []];
+        foreach ($response['plans'] as $planResponse) {
+            $responseForPlanMap['rules'][] = $planResponse;
+        }
+        return $this->transformToPlanModel($responseForPlanMap);
+    }
     private function transformToPlanModel($response)
     {
         if(!isset($response['rules']) || count($response['rules']) == 0) {

@@ -971,7 +971,24 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getPricingPlansSummary(array $input = [])
+    public function getPricingPlansSummary(array $input = []) {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($input) {
+            $response = $this->getPricingPlansSummaryLegacy($input);
+            return $response;
+        };
+        $ccRequest = [];
+        $ccRequest['count'] = $input['count'] ?? 20;
+        $ccRequest['skip'] = $input['skip'] ?? 0;
+        $orgId = $this->getOrgIdForQuery(null);
+        if (strlen($orgId) > 0) {
+            $ccRequest['org_id'] = $orgId;
+        }
+        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $ccResponseCollection;
+    }
+
+    public function getPricingPlansSummaryLegacy(array $input = [])
     {
         $query = $this->newQueryWithOrgIdParam();
 
