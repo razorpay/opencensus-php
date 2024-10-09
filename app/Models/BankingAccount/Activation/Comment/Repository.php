@@ -71,7 +71,7 @@ class Repository extends BaseModels\Repository
 
         $data = $this->newQuery()
                     ->select($this->getTableName() . '.*')
-                    ->with(['bankingAccount', 'bankingAccount.merchant.merchantDetail', 'bankingAccount.spocs'])
+                    ->with(['bankingAccount', 'bankingAccount.spocs'])
                     ->where($baCommentsCreatedAt, '>', $fromTs)
                     ->where($baCommentsCreatedAt, '<', $toTs)
                     ->get();
@@ -121,10 +121,10 @@ class Repository extends BaseModels\Repository
     }
 
     /**
-     * Given an array for bankingAccountIds  
+     * Given an array for bankingAccountIds
      * Join with the same table with left join
      * to find the last comment
-     * 
+     *
      * @param $bankingAccountIds
      */
     public function getCommentForMultipleBankingAccounts(array $bankingAccountIds)
@@ -158,7 +158,7 @@ class Repository extends BaseModels\Repository
             ->where($commentSourceTeamCol, 'bank')
             ->where($commentTypeCol, 'external')
             ->whereNull('b2.'.Entity::CREATED_AT);
-    
+
         $comments = $query->get();
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DB_QUERY_DURATION, [
