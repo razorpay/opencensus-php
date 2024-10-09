@@ -348,6 +348,43 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    public function save(array $options = array())
+    {
+        $merchant = $this->stripMerchantRelationIfApplicable();
+
+        $save = parent::save($options);
+
+        $this->associateMerchantIfApplicable($merchant);
+
+        return $save;
+    }
+
+    protected function stripMerchantRelationIfApplicable()
+    {
+        if ($this->isPlatformOffer() === true)
+        {
+            $merchant = $this->merchant;
+
+            $this->merchant()->dissociate();
+
+            $this->setMerchantId($merchant->getId());
+
+            return $merchant;
+        }
+
+        return null;
+    }
+
+    protected function associateMerchantIfApplicable($merchant): void
+    {
+        if ($merchant === null)
+        {
+            return;
+        }
+
+        $this->merchant()->associate($merchant);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -548,6 +585,11 @@ class Entity extends Base\PublicEntity
             return true;
         }
         return false;
+    }
+
+    public function setMerchantId(string $merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
     public function setUpiApps(array $upiApps)
