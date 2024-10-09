@@ -77,7 +77,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
-use RZP\Services\PayoutService\Base as PaymentServiceBase;
+use RZP\Services\PayoutService\Base as PayoutServiceBase;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Shield as PayoutServiceShieldEvaluate;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
@@ -4916,24 +4916,43 @@ class Base extends BaseCore
 
             $app = App::getFacadeRoot();
 
+
             /** @var BasicAuth $ba */
             $ba = $app['basicauth'];
 
-            if ($ba->isPrivilegeAuth() === true)
-            {
-                $passport = $ba->getPassport();
+            $passport = $ba->getPassport();
 
-                if (array_key_exists( PaymentServiceBase::CONSUMER, $passport) === true)
+            if (array_key_exists( PayoutServiceBase::CONSUMER, $passport) === true)
+            {
+                if ($passport[PayoutServiceBase::CONSUMER][PayoutServiceBase::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
                 {
-                    if ($passport[PaymentServiceBase::CONSUMER][PaymentServiceBase::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
+
+                    $userId = $passport[PayoutServiceBase::CONSUMER][PayoutServiceBase::ID];
+
+                    $this->trace->info(
+                        TraceCode::PRICING_INFO_USER_ID_FOR_PAYOUT_SERVICE_CONSUMER_TYPE_USER,
+                        [
+                            'user_id' => $userId,
+                            Entity::MERCHANT_ID => $this->merchant->getId(),
+                        ]);
+                }
+            }
+
+            if ($userId === null && $ba->isPrivilegeAuth() === true)
+            {
+
+                if (array_key_exists( PayoutServiceBase::CONSUMER, $passport) === true)
+                {
+                    if ($passport[PayoutServiceBase::CONSUMER][PayoutServiceBase::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
                     {
 
                         $userId = $ba->getUser()->getId();
 
                         $this->trace->info(
-                            TraceCode::FETCH_PRICING_INFO_FOR_PAYOUT_SERVICE_USER_ID,
+                            TraceCode::PRICING_INFO_USER_ID_FOR_PAYOUT_SERVICE_CONSUMER_TYPE_APPLICATION,
                             [
-                                'user_id' => $userId
+                                'user_id' => $userId,
+                                Entity::MERCHANT_ID => $this->merchant->getId(),
                             ]);
                     }
                 }
@@ -4952,7 +4971,7 @@ class Base extends BaseCore
                 Entity::USER_ID => $userId?? null,
             ];
             $this->trace->info(
-                TraceCode::PAYOUT_SERVICE_FETCH_PRICING_INFO_REQUEST,
+                TraceCode::PAYOUT_SERVICE_FETCH_PRICING_REQUEST,
                 [
                     'params' => $params
                 ]);
