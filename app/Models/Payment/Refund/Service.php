@@ -2521,8 +2521,10 @@ class Service extends Base\Service
                     $refund = $this->repo->refund->findOrFailPublic($refundId);
 
                     $processor = $this->getNewProcessor($refund->merchant);
-                    $refund->setFee($refund->transaction->getFee());
-                    $refund->setTax($refund->transaction->getTax());
+
+                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchantPaymentFetchReplica($refundId);
+                    $refund->setFee($txn->getFee());
+                    $refund->setTax($txn->getTax());
 
                     switch ($input['event'])
                     {

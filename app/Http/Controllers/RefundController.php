@@ -133,6 +133,8 @@ class RefundController extends Controller
     {
         $input = Request::all();
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $response = $this->service()->scroogeRefundsTransactionCreate($input);
 
         return ApiResponse::json($response);

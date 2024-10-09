@@ -1717,7 +1717,7 @@ trait Refund
         });
     }
 
-    protected function buildRefundEntity(Payment\Entity $payment, array &$input, Batch\Entity $batch = null, $batchId = null)
+    protected function buildRefundEntity(Payment\Entity $payment, array &$input, Batch\Entity $batch = null, $batchId = null, $useClsBalance = false)
     {
         $this->setPayment($payment);
 
@@ -1752,7 +1752,7 @@ trait Refund
             $refund->setSpeedProcessed(RefundSpeed::NORMAL);
         }
 
-        $this->refundBalanceChecks($refund);
+        $this->refundBalanceChecks($refund, $useClsBalance);
 
         //
         // If the batch is created in batch service, api db will not have batch entity corresponding to batch_id.
@@ -1929,13 +1929,13 @@ trait Refund
         }
     }
 
-    protected function refundBalanceChecks(RefundEntity &$refund)
+    protected function refundBalanceChecks(RefundEntity &$refund, $useClsBalance = false)
     {
+        //Fetch from harvester
         $refund->balance()->associate($refund->merchant->primaryBalance);
-
         if ($refund->getGateway() === RefundConstants::GATEWAY_RZP_INTERNAL)
         {
-            $this->validateMerchantBalance($refund, 'reversal');
+            $this->validateMerchantBalance($refund, 'reversal', $useClsBalance);
         }
         else if ($refund->payment->hasBeenCaptured() === true)
         {
@@ -1953,7 +1953,7 @@ trait Refund
 
             if ($validBalanceCheckNotApplicable === false)
             {
-                $this->validateMerchantBalance($refund, 'refund');
+                $this->validateMerchantBalance($refund, 'refund', $useClsBalance);
             }
         }
     }
@@ -2256,6 +2256,17 @@ trait Refund
         return $this->getDiscountIfApplicable($payment, $refundAmount);
     }
 
+    public function getRefundCreationDataClsBalanceSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.refund_creation_data_cls_balance_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     // Fetches refund creation related data of the payment for FE apps
     //
     // Reference : https://docs.google.com/document/d/134CGvpRknoACraReuAVB7EAtUCmYRA4GYfu_cLhnm5w/edit?usp=sharing
@@ -2296,7 +2307,10 @@ trait Refund
 
         try
         {
-            $refund = $this->buildRefundEntity($payment, $buildInput);
+
+            $useClsBalance = $this->getRefundCreationDataClsBalanceSplitzResponse($this->merchant->getId()) === 'enable';
+
+            $refund = $this->buildRefundEntity($payment, $buildInput, null, null, $useClsBalance);
 
             if ($refund->isRefundSpeedInstant() === true)
             {
@@ -2363,7 +2377,7 @@ trait Refund
 
                 $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-                $this->refundBalanceChecks($refund);
+                $this->refundBalanceChecks($refund, true);
             }
             catch (\Throwable $ex)
             {
@@ -2827,20 +2841,23 @@ trait Refund
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    protected function validateMerchantBalance(RefundEntity $refund, string $type = 'refund')
+    protected function validateMerchantBalance(RefundEntity $refund, string $type = 'refund', $useClsBalance = false)
     {
         $merchant = $refund->merchant;
-
-        $balance = $refund->balance;
 
         $traceData = [
             'type'              => $type,
             'message'           => 'Not enough balance',
-            'merchant_balance'  => $balance->getBalance(),
-            'merchant_credits'  => $balance->getRefundCredits(),
             'refund_amount'     => $refund->getBaseAmount(),
             'refund_id'         => $refund->getId(),
         ];
+
+        if ($useClsBalance === false)
+        {
+            $balance = $refund->balance;
+            $traceData['merchant_balance'] = $balance->getBalance();
+            $traceData['merchant_credits'] = $balance->getRefundCredits();
+        }
 
         $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(Transaction\Type::REFUND);
 
@@ -2849,7 +2866,8 @@ trait Refund
             // Not allowing negative balance in refund credits
             // Ref slack thread: https://razorpay.slack.com/archives/C6XG1F99N/p1651128045835069?thread_ts=1642673759.195000&cid=C6XG1F99N
             return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
-                                                            Transaction\Type::REFUND, false);
+                                                            Transaction\Type::REFUND, false, \RZP\Models\Merchant\Balance\Type::PRIMARY,
+                                                            $useClsBalance);
         }
 
         if ($merchant->getRefundSource() === RefundSource::BALANCE)
@@ -2860,11 +2878,11 @@ trait Refund
                 try
                 {
                     $creditsCheck = (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
-                        Transaction\Type::REFUND, false);
+                        Transaction\Type::REFUND, false, \RZP\Models\Merchant\Balance\Type::PRIMARY, $useClsBalance);
                 }
                 catch (\Throwable $exception)
                 {
-                    return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
+                    return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled, $useClsBalance);
                 }
 
                 return $creditsCheck;
@@ -2872,7 +2890,7 @@ trait Refund
             }
             else
             {
-                return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
+                return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled, $useClsBalance);
             }
         }
     }
@@ -4498,12 +4516,13 @@ trait Refund
                                           RefundEntity $refund,
                                           string $type,
                                           array $traceData,
-                                          bool $negativeBalanceEnabled = false)
+                                          bool $negativeBalanceEnabled = false,
+                                          bool $useClsBalance = false)
     {
         try
         {
             return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getNetAmount(),
-                                                        Transaction\Type::REFUND, $negativeBalanceEnabled);
+                                                        Transaction\Type::REFUND, $negativeBalanceEnabled, \RZP\Models\Merchant\Balance\Type::PRIMARY, $useClsBalance);
         }
         catch (\Throwable $e)
         {

@@ -928,6 +928,15 @@ class Repository extends Base\Repository
         return $txn;
     }
 
+    public function findByEntityIdWithoutMerchantPaymentFetchReplica($entityId)
+    {
+        $txn = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::PAYMENT_FETCH_REPLICA))
+            ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+            ->first();
+
+        return $txn;
+    }
+
     public function fetchBySettlement($setl, $txnToRelationFetchMap)
     {
         $txns = $this->newQuery()
