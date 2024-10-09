@@ -122,6 +122,8 @@ class RequestHeader
 
     const X_RAZORPAY_REQUEST_ID          = 'X-Razorpay-Request-Id';
 
+    const X_CASE_TYPE                    = 'X-Case-type';
+
     const X_MOBILE_OAUTH                 = 'x-mobile-oauth';
 
     const ACCEPT_VERSION                 = 'Accept-Version';
