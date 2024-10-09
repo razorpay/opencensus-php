@@ -214,7 +214,7 @@ class Service
             {
                 $value = $orderMeta['value'];
 
-                $arrayInternal[self::LINE_ITEMS] = $value[self::LINE_ITEMS] ?? 0;
+                $arrayInternal[self::LINE_ITEMS] = $value[self::LINE_ITEMS] ?? [];
             }
         }
 
