@@ -219,6 +219,7 @@ const MagicIntelligenceTab = ({
           <CodIntelligenceToggle
             checked={codIntelligence}
             switchMode={() => onToggleClick('codIntelligence', codIntelligence)}
+            sopcMetafields={settings.sopc_metafields}
           />
           {!rcodEnabled && (
             <>

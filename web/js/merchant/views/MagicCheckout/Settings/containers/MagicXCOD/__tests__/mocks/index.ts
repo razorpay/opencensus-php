@@ -46,3 +46,9 @@ export const shipping_profiles = {
     isLoading: { summary: false },
   },
 };
+
+export const magic_settings = {
+  rcod: {
+    enabled: true,
+  },
+};

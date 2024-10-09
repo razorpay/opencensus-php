@@ -31,7 +31,7 @@ const CODOrdersTab = lazy(() =>
 
 const routes = [
   {
-    tabName: 'Settings',
+    tabName: 'Setup and Settings',
     path: '/magic/settings',
     condition: (_user) => _user.isMagicSettingsEnabled,
     Component: MagicSettings,

@@ -6,9 +6,13 @@ import BasicCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD
 
 import { setProfile, clearProfile } from 'merchant/reducers/magicCheckout/shippingEngine/action';
 
-import { shipping_profiles } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/__tests__/mocks';
+import {
+  shipping_profiles,
+  magic_settings,
+} from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/__tests__/mocks';
 
 const initState = {
+  magic_settings,
   magicShippingEngine: {
     shipping_profiles: {},
     isLoading: { summary: false },
@@ -41,6 +45,16 @@ describe('BasicCOD Component', () => {
   test('Should Render shipping methods when shipping profiles data is present', () => {
     render(<BasicCOD />, shipping_profiles);
     expect(screen.getByText(/Profile1-zone1/i)).toBeInTheDocument();
+  });
+
+  test('Should not render shipping methods table if COD is disabled', () => {
+    const magicSettings = { rcod: { enabled: false } };
+    render(<BasicCOD />, { magic_settings: magicSettings });
+
+    expect(
+      screen.queryByText(/Configure COD for Shopify Shipping Methods/i),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('rowheader')).not.toBeInTheDocument();
   });
 
   test('Should open modal on edit button click , sets the profile to be edited and clears the profile on modal close', async () => {

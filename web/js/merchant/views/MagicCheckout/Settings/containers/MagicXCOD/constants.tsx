@@ -89,8 +89,9 @@ export const INVALID_COD_RANGE = 'Please Set Valid COD Order Range';
 
 export const GENERAL_FEE_INFO = 'Fee can only be configured in Shopify.';
 export const COD_FEE_INFO = `${GENERAL_FEE_INFO} For COD profile, set rate as total [Shipping + COD]`;
-export const COD_TABLE_INFO =
-  'COD can be configured for Shipping Methods created on Shopify. The following methods are synced from your Shopify store. Incase of any queries, Please contact support at checkout360-support@razorpay.com';
+export const SETUP_GUIDE_DOCS_HREF =
+  'https://razorpay.com/docs/payments/checkout360/configure-cod/';
+export const SETUP_GUIDE_VIDEO_HREF = 'http://bit.ly/checkout360-guide';
 export const SETUP_MAGICX_V2_ROUTE = '/magic/setup-settings/magicx-store-settings';
 export const SETUP_MAGICX_V1_ROUTE = '/magic/settings/magicx-store-settings';
 

@@ -38,12 +38,7 @@ export const CODTable = ({ shippingMethods, isLoading, columns }) => {
   }, [shippingMethods, isLoading]);
 
   return (
-    <Box
-      backgroundColor="surface.background.gray.intense"
-      overflow="auto"
-      minHeight="400px"
-      marginTop="spacing.5"
-    >
+    <Box backgroundColor="surface.background.gray.intense" overflow="auto" marginTop="spacing.5">
       <Table
         data={data}
         isLoading={isLoading}

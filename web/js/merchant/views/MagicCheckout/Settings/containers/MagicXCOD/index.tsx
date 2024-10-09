@@ -161,6 +161,7 @@ const MagicXCOD = ({ settings, updateMagicSettings, showNotification, fetchShipp
             </Box>
             {isCODPaymentEnabled && (
               <Box
+                borderLeftWidth="none"
                 borderWidth="thinner"
                 borderColor="surface.border.gray.subtle"
                 padding="spacing.5"

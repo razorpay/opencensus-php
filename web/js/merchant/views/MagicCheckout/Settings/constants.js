@@ -88,14 +88,14 @@ export const TABS = {
       onRCODOnly: true,
     },
     {
-      className: 'shipping-settings',
-      path: '/magic/settings/shipping-settings',
-      label: 'Shipping Settings',
-      Component: ShippingSettingsTab,
-      exact: false,
+      className: 'magic-checkout-settings',
+      path: '/magic/settings/magicx-store-settings',
+      label: 'Checkout Settings',
+      Component: MagicXStoreSettings,
       condition: (_user, abExperiments) =>
-        abExperiments?.magic_shopify_shipping_engine?.variables?.result === 'on',
-      onRCOD: true,
+        ACCESS_ROLES.includes(_user.role) &&
+        abExperiments?.magic_x_store_settings?.variables?.result === 'on',
+      onRCODOnly: true,
     },
     {
       className: 'intelligence-settings',
@@ -103,6 +103,16 @@ export const TABS = {
       label: 'RTO Settings',
       Component: MagicIntelligenceTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'shipping-settings',
+      path: '/magic/settings/shipping-settings',
+      label: 'Shipping Settings',
+      Component: ShippingSettingsTab,
+      exact: false,
+      condition: (_user, abExperiments) =>
+        abExperiments?.magic_shopify_shipping_engine?.variables?.result === 'on',
       onRCOD: true,
     },
     {
@@ -126,16 +136,6 @@ export const TABS = {
       Component: AnalyticsSettings,
       condition: (_, abExperiments) =>
         abExperiments?.magic_analytics_setting?.variables?.result === 'on',
-    },
-    {
-      className: 'magic-checkout-settings',
-      path: '/magic/settings/magicx-store-settings',
-      label: 'Store Settings',
-      Component: MagicXStoreSettings,
-      condition: (_user, abExperiments) =>
-        ACCESS_ROLES.includes(_user.role) &&
-        abExperiments?.magic_x_store_settings?.variables?.result === 'on',
-      onRCODOnly: true,
     },
   ],
   [PLATFORMS.WOOCOMMERCE]: [
@@ -421,6 +421,13 @@ export const ROUTES = {
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'cod-settings',
+      label: 'COD Setup',
+      path: '/magic/setup-settings/cod-settings',
+      Component: MagicXCodSetup,
+      onRCODOnly: true,
+    },
+    {
       className: 'magic-checkout-settings',
       path: '/magic/setup-settings/magicx-store-settings',
       label: 'Checkout Setup',
@@ -429,6 +436,14 @@ export const ROUTES = {
         ACCESS_ROLES.includes(_user.role) &&
         abExperiments?.magic_x_store_settings?.variables?.result === 'on',
       onRCODOnly: true,
+    },
+    {
+      className: 'intelligence-settings',
+      label: 'RTO Reduction Setup',
+      path: '/magic/setup-settings/rto-reduction-setup',
+      Component: RTOReductionSetupV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
     },
     {
       className: 'shipping-settings',
@@ -444,21 +459,6 @@ export const ROUTES = {
       path: '/magic/setup-settings/cod-settings',
       Component: CODComponentV2,
       condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
-    },
-    {
-      className: 'cod-settings',
-      label: 'COD Setup',
-      path: '/magic/setup-settings/cod-settings',
-      Component: MagicXCodSetup,
-      onRCODOnly: true,
-    },
-    {
-      className: 'intelligence-settings',
-      label: 'RTO Reduction Setup',
-      path: '/magic/setup-settings/rto-reduction-setup',
-      Component: RTOReductionSetupV2,
-      condition: (_user) => ACCESS_ROLES.includes(_user.role),
-      onRCOD: true,
     },
     {
       className: 'analytics-settings',
