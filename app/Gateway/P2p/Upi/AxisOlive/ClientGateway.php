@@ -106,8 +106,10 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
                     Entity::CUSTOMER => [
                         Fields::ID => $gatewayResponse[Fields::DATA][Fields::DATA][Fields::CUSTOMER_REFERENCE]
                     ],
-                    Entity::CERT => $gatewayResponse[Fields::DATA][Fields::DATA][Fields::PUBLIC_KEY]
-                ]);
+                    Entity::CREDS => [
+                        Fields::PUBLIC_KEY => $gatewayResponse[Fields::DATA][Fields::DATA][Fields::ENCODED_PUBLIC_KEY]
+                    ]]
+                );
 
                 $response->setData($data->all());
             }
