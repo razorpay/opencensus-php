@@ -15,6 +15,7 @@ use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Repository extends Base\Repository
 {
@@ -29,6 +30,13 @@ class Repository extends Base\Repository
         Entity::TYPE            => 'sometimes|in:customer,merchant',
         Entity::ENTITY_ID       => 'sometimes|alpha_num'
     ];
+
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
 
     public function saveOrFail($entity, array $options = array())
     {
@@ -257,22 +265,30 @@ class Repository extends Base\Repository
 
     public function getBankAccountsBetweenTimestamp($from, $to)
     {
-        return $this->newQuery()
-                    ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
-                    ->whereIn(Entity::TYPE, Type::getBeneficiaryRegistrationTypes())
-                    ->with(['source'])
-                    ->oldest()
-                    ->get();
+        $query = $this->newQuery()
+            ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
+            ->whereIn(Entity::TYPE, Type::getBeneficiaryRegistrationTypes())
+            ->oldest();
+
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            return $query->get();
+        }
+
+        return $query->with(['source'])->get();
     }
 
     public function getMerchantBankAccountsBetweenTimestamp($from, $to)
     {
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
-                    ->with(['source'])
-                    ->oldest()
-                    ->get();
+                    ->oldest();
+
+        if ($this->asvRouter->shouldRouteFilterToAsv(__FUNCTION__)) {
+            return $query->get();
+        }
+
+        return $query->with(['source'])->get();
     }
 
     public function fetchByEntityIdAndType($entityId, $type, $merchantId)

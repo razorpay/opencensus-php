@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Merchant;
 use RZP\Constants\Country;
+use RZP\Constants\Entity as E;
 use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -324,6 +325,16 @@ class Entity extends Base\PublicEntity
     public function source()
     {
         return $this->morphTo('source', self::TYPE, self::ENTITY_ID);
+    }
+
+    public function getSourceAttribute()
+    {
+        if ($this->getType() === E::MERCHANT)
+        {
+            return $this->getMerchantAttribute();
+        }
+
+        return parent::getRelationValue('source');
     }
 
     public function payouts()
