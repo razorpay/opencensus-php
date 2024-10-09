@@ -473,6 +473,11 @@ class Core extends Base\Core
             $data[Payment\Method::PAYLATER][Gateway::PAYPAL] = true;
         }
 
+        if($methods->isPayLaterEnabled() === true && $methods->isAtomeEnabled() === true)
+        {
+            $data[Payment\Method::PAYLATER][Gateway::ATOME] = true;
+        }
+
         $data[Entity::SODEXO] = $methods->isSodexoEnabled();
 
         if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)

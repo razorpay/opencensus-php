@@ -269,6 +269,7 @@ class Gateway
     //
     const NPCI      = 'NPCI';
     const PAYPAL    = 'paypal';
+    const ATOME     = 'atome';
 
     // tokenisation gateways
     const TOKENISATION_VISA        = 'tokenisation_visa';

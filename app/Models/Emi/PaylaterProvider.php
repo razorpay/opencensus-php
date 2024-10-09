@@ -16,6 +16,7 @@ class PaylaterProvider
     const AMAZONPAY = 'amazonpay';
     const RZPXPOSTPAID = 'rzpx_postpaid';
     const PAYLATER = 'paylater';
+    const ATOME = 'atome';
 
 
     protected static $providers = [
@@ -25,6 +26,7 @@ class PaylaterProvider
         self::HDFC,
         self::AMAZONPAY,
         self::RZPXPOSTPAID,
+        self::ATOME,
     ];
 
     public static $disabledInstruments = [

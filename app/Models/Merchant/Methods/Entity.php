@@ -77,6 +77,7 @@ class Entity extends Base\PublicEntity
     const BOOST             = 'boost';
     const MCASH             = 'mcash';
     const SODEXO            = 'sodexo';
+    const ATOME             = 'atome';
 
     const IN_APP             = 'in_app';
     const IN_APP_CREDIT_CARD = 'in_app_credit_card';
@@ -514,6 +515,7 @@ class Entity extends Base\PublicEntity
             Paylaterprovider::HDFC,
             PaylaterProvider::AMAZONPAY,
             Paylaterprovider::RZPXPOSTPAID,
+            Paylaterprovider::ATOME,
         ],
 
         self::CARD => [
@@ -599,6 +601,11 @@ class Entity extends Base\PublicEntity
         return (($this->isDebitCardEnabled()) or
                 ($this->isCreditCardEnabled()) or
                 ($this->isPrepaidCardEnabled()));
+    }
+
+    public function isAtomeEnabled()
+    {
+        return !empty($this->getAttribute(self::PAYLATER_PROVIDERS)[self::ATOME] ?? false);
     }
 
     public function isPaypalEnabled()
