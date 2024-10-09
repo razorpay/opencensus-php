@@ -18,6 +18,7 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
+use function PHPUnit\Framework\assertNotEquals;
 use const Grpc\STATUS_DEADLINE_EXCEEDED;
 
 class RepositoryTest extends RepositoryTestHelper
@@ -601,6 +602,28 @@ class RepositoryTest extends RepositoryTestHelper
         $resultWithSplitz1 = $repository->FindManyOnReadReplica(array($id1, $id2, $id3));
         $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
         $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+    }
+
+    public function testMerchantsUpdatedAt()
+    {
+        $repo = new Repository();
+        $id = 'CzmiCwTPCL3t2K';
+
+        $repo->repo->transactionOnLiveAndTest(function() use ($repo){
+            $repo->saveOrFail($this->getMerchantEntityFromJson($this->merchantEntityJson1));
+        });
+
+        $merchantEntity1 = $repo->findOrFail($id);
+        assertNotEquals(1234, $merchantEntity1->getUpdatedAt());
+
+        $merchantEntity1->setUpdatedAt(1234);
+        $repo->repo->transactionOnLiveAndTest(function() use ($merchantEntity1, $repo){
+            $repo->saveOrFail($merchantEntity1);
+        });
+
+        $merchantEntity2 = $repo->findOrFail($id);
+
+        assertNotEquals(1234, $merchantEntity2->getUpdatedAt());
     }
 
 

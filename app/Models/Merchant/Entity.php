@@ -58,6 +58,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
 use RZP\Models\Payment\Config as PaymentConfig;
+use RZP\Models\Merchant\Acs\Traits\AsvUpdateTimeStamp;
 use RZP\Models\Partner\Activation as PartnerActivation;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
@@ -87,7 +88,7 @@ class Entity extends Base\PublicEntity
 {
     use Taggable;
     use NotesTrait;
-    use Cacheable, AsvLoad;
+    use Cacheable, AsvLoad, AsvUpdateTimeStamp;
     use Base\Traits\LazyLoadingRelationFetch;
     use TransactionalModelEvents\TransactionalAwareEvents;
     use AsvReload {
