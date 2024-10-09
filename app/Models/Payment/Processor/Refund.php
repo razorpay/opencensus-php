@@ -6,7 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Exception as defaultException;
-
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Environment;
 use RZP\Constants\Metric;
 use RZP\Constants\Mode;
@@ -2109,7 +2109,11 @@ trait Refund
 
         $refund = (new Payment\Refund\Service())->buildVirtualRefundEntity($payment, $refundInput);
 
-        $refund->balance()->associate($this->merchant->primaryBalance);
+        $merchant= $this->merchant;
+
+        $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($merchant->getId(), Balance\Type::PRIMARY);
+
+        $refund->balance()->associate($balance);
 
         if (empty($refundInput[RefundConstants::MODE]) === false)
         {

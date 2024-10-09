@@ -1030,6 +1030,8 @@ return array(
 
     'route_rearch_exp_id' => env('ROUTE_REARCH_EXP_ID'),
 
+    'transfer_balance_config_balance_id_harvester_experiment' => env('TRANSFER_BALANCE_CONFIG_BALANCE_ID_EXP_ID'),
+
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),
