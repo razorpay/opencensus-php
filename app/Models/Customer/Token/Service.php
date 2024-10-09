@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Token;
 
 use Carbon\Carbon;
+use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use RZP\Diag\EventCode;
@@ -22,6 +23,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\Network;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
+use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
 use RZP\Encryption;
@@ -1242,26 +1244,34 @@ class Service extends Base\Service
 
             if ($this->merchant->isTokenizationEnabled())
             {
+                $token = (new TokenCore)->getByTokenIdAndMerchant($input['token_id'], $this->merchant);
 
-                $isSptToken = (isset($input['token_id']) === false);
+                $card = $this->repo->card->fetchForToken($token);
 
-                $token = $this->repo->token->getByTokenAndMerchant($input['token_id'], $this->merchant);
+                //check if card is not null
+                if(empty($card) === true)
+                {
+                    $this->trace->info(TraceCode::TOKEN_CARD_NOT_FOUND, [
+                        'token' => $token->getId(),
+                    ]);
 
-                $this->addAdditionalInputParamsIfPresent($token, $input, $isSptToken, false);
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Card not found');
+                }
 
-                $this->validateifDinersToken($token, $isSptToken);
+                $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $this->merchant, 'null', $card);
 
-                (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_REQUEST_RECEIVED");
+                if ($card->isNetworkTokenisedCard() == false)
+                {
+                    $this->trace->info(TraceCode::TOKEN_CARD_NOT_NETWORK_TOKENIZED, [
+                        'card' => $card->toArrayPublic(),
+                        'token_id' => $input['token_id']
+                    ]);
 
-                $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant, $token);
-
-                (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CRYPTOGRAM);
-
-                $response = $this->generateCryptogramResponse($serviceProviderToken);
-
-                (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_RESPONSE_SENT", $response);
-
-                return $response;
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Card not network tokenised');
+                }
+                return $this->getCardInputForRearch($cryptogram, $card, $token);
             }
 
             $this->validateMode();
@@ -1289,6 +1299,140 @@ class Service extends Base\Service
 
             throw $e;
         }
+    }
+
+    protected function getCardInputForRearch($cryptogram, $card, $token)
+    {
+        $input = [
+            Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
+            Card\Entity::NAME                   => $card->getName(),
+            Card\Entity::EXPIRY_MONTH           => $cryptogram['token_expiry_month'] ?? null,
+            Card\Entity::EXPIRY_YEAR            => $cryptogram['token_expiry_year'] ?? null,
+            Card\Entity::LAST4                  => $card->getLast4(),
+            Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
+            Card\Entity::TOKENISED              => true,
+            Card\Entity::VAULT                  => "rzpvault",
+            Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
+            Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? "",
+        ];
+
+        if ( $card->getVault() === Card\Vault::HDFC)
+        {
+            $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
+
+            $this->trace->info(
+                TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
+                [
+                    'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
+                    'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
+                ]);
+
+        }
+
+
+        if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
+        {
+            $input["cvv"] = $cryptogram["cvv"];
+        }
+
+        if (($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS)) === true )
+        {
+            $input = $this->getAdditionalOptimizerCardInputForRearch($token,$input);
+        }
+        // for few customer we get token instead of token id this we ensure we override that
+        $input['token_id'] = $token->getId();
+        
+        return $input;
+    }
+
+    protected function getAdditionalOptimizerCardInputForRearch($token,$input)
+    {
+        if ( $token->card->getVault() === Card\Vault::HDFC  )
+        {
+            return $input;
+        }
+
+        if (empty($this->app) === true)
+        {
+            $this->app = App::getFacadeRoot();
+        }
+
+
+        // fetch network token associated with payment
+        $networkToken = (new TokenCore())->fetchToken($token, false);
+
+        assertTrue(empty($networkToken) === false);
+
+        $tokenisedTerminalId = $networkToken[0][E::TOKENISED_TERMINAL_ID] ?? '';
+        $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
+        $trid = '';
+
+        assertTrue(empty($tokenisedTerminal) === false);
+
+        if (empty($tokenisedTerminal) === false)
+        {
+            $network = $token->card->getNetworkCode();
+
+           if(isset($tokenisedTerminal['provider_name']) === true){
+                $network = strtoupper($tokenisedTerminal['provider_name']);
+            }
+
+            switch ($network)
+            {
+                case Card\Network::MC:
+                case Card\Network::MASTERCARD:
+                    $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID];
+                    break;
+
+                case Card\Network::RUPAY:
+                    $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID2];
+                    break;
+
+                case Card\Network::AMEX:
+                case Card\Network::VISA:
+                    $trid = $tokenisedTerminal[E::GATEWAY_TERMINAL_ID];
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        $par = $networkToken[0][E::PROVIDER_DATA][E::PAYMENT_ACCOUNT_REFERENCE] ?? '';
+        $trn = $networkToken[0][E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+        $nri = $networkToken[0][E::PROVIDER_DATA][E::NETWORK_REFERENCE_ID] ?? '';
+
+        $input[E::PAYMENT_ACCOUNT_REFERENCE ]= $par;
+        $input[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
+        $input[E::TOKEN_REFERENCE_ID ]= $trid;
+        $input[E::NETWORK_REFERENCE_ID ]=  $nri;
+
+        return $input;
+    }
+
+    protected function getAdditionalDinersCardInputForRearch($token,$input)
+    {
+        if (empty($this->app) === true)
+        {
+            $this->app = App::getFacadeRoot();
+        }
+        // fetch network token associated with payment
+        $networkToken = (new TokenCore())->fetchToken($token, false);
+
+        assertTrue(empty($networkToken) === false);
+
+        $tokenisedTerminalId = $networkToken[0][E::TOKENISED_TERMINAL_ID] ?? '';
+        $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
+        assertTrue(empty($tokenisedTerminal) === false);
+
+        $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID];
+        $trn = $networkToken[0][E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+
+        $input[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
+        $input[E::TOKEN_REFERENCE_ID ]= $trid; //incorrect key nomenclature, TOKEN_REQUESTOR_ID is correct.
+
+        return $input;
     }
 
     public function fetchMerchantsWithTokenPresent(& $input, $internalServiceRequest = false)
@@ -2487,5 +2631,23 @@ class Service extends Base\Service
             'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
             'customer' => $customer['id']]);
         return $customer;
+    }
+
+    public function fetchTokenCardInternal($input)
+    {
+        (new Validator)->validateInput(Validator::FETCH_TOKEN_CARD_INTERNAL, $input);
+
+        $tokenId = $input['token_id'];
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $this->trace->info(TraceCode::FETCH_TOKEN_CARD_INTERNAL_REQUEST, [
+            'tokenId' => $tokenId,
+            'merchantId' => $merchant->getId(),
+        ]);
+        $token = (new TokenCore)->getByTokenIdAndMerchant($tokenId, $merchant);
+
+        $card = $this->repo->card->fetchForToken($token);
+
+        return $card->toArray();
     }
 }

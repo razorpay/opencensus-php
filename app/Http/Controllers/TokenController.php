@@ -234,4 +234,13 @@ class TokenController extends Controller
         return ApiResponse::json($data);
 
     }
+
+    public function fetchTokenCardInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchTokenCardInternal($input);
+
+        return ApiResponse::json($data);
+    }
 }
