@@ -543,22 +543,22 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    160 => [
+                    161 => [
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ],
-                    161 => [
+                    162 => [
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ],
-                    162 => [
+                    163 => [
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',
                     ],
-                    201 => [
+                    202 => [
                         'feature'      => 'payout_service_enabled',
                         'value'        => false,
                         'display_name' => 'Payouts Service',

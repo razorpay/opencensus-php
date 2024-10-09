@@ -1730,6 +1730,8 @@ class Constants
 
     const ROUTING_INT_WIBMO_REARCH = 'routing_int_wibmo_rearch' ;
 
+    const  VAS_MS_MX_VCIP = 'vas_ms_mx_vcip';
+
     const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
 
     const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
@@ -2267,7 +2269,7 @@ class Constants
     const POS_CHANNEL_PARTNERSHIP = 'pos_channel_partnership';
 
     /**
-     * If this flag is enabled then finops admin will be able to customize the dates in the merchant configuration 
+     * If this flag is enabled then finops admin will be able to customize the dates in the merchant configuration
      * in admin dashboard to specify the dates when settlement should not happen for 365 day settlement product.
      */
     const CUSTOM_HOLIDAY_SETTLEMENT = 'custom_holiday_settlement';
@@ -2942,6 +2944,7 @@ class Constants
         self::ENABLE_MERCHANT_EXPIRY_PL                    => true,
         self::ENABLE_MERCHANT_EXPIRY_PP                    => true,
         self::DYNAMIC_PL_OFFSET                            => true,
+        self::VAS_MS_MX_VCIP                               => true,
         self::CUSTOM_TXN_TAB_VIEW                          => true,
         self::EXTERNAL_PA_TOKENISATION                     => true,
         self::ROUTING_INT_WIBMO_REARCH                     => true,
@@ -3667,6 +3670,11 @@ class Constants
             'feature'       => self::DYNAMIC_PL_OFFSET,
             'display_name'  => 'Dynamic PL Offset',
             'documentation' => 'Feature allows the merchant to have a extra field in payment links'
+        ],
+        self::VAS_MS_MX_VCIP => [
+            'feature' => self::VAS_MS_MX_VCIP,
+            'display_name' => 'Money Saver feature for Vas Merchant',
+            'documentation' => '',
         ],
         self::RX_SHOW_PAYOUT_SOURCE => [
             'feature'       => self::RX_SHOW_PAYOUT_SOURCE,
