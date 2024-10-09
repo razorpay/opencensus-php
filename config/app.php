@@ -1014,6 +1014,8 @@ return array(
 
     'banking_mail_password_change_exp_id' => env('BANKING_MAIL_PASSWORD_CHANGE_EXP_ID'),
 
+    'scheduled_es_enablement_migration_experiment_id' => env('SCHEDULED_ES_ENABLEMENT_MIGRATION_EXP_ID'),
+
     'banking_mail_invite_merchant_exp_id' => env('BANKING_MAIL_INVITE_MERCHANT_EXP_ID'),
 
     'banking_mail_rejection_notification_exp_id' => env('BANKING_MAIL_REJECTION_NOTIFICATION_EXP_ID'),

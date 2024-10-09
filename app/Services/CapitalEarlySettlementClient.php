@@ -17,6 +17,8 @@ class CapitalEarlySettlementClient
 {
     const ONDEMAND_STATUS_UPDATE_ENDPOINT = 'early_settlements/ondemand_triggers';
 
+    const ENABLE_SCHEDULED_ES = 'instant_settlements/scheduled/enable';
+
     protected $app;
 
     protected $trace;
@@ -53,6 +55,22 @@ class CapitalEarlySettlementClient
             'event'                          => $event,
             'amount'                         => $amount
         ];
+    }
+
+    public function enableScheduledEs($merchantId, $uerRole, $skipRoleCheck)
+    {
+        return $this->sendRequestAndParseResponse(self::ENABLE_SCHEDULED_ES,
+                                                  [
+                                                        'merchant_id' => $merchantId,
+                                                        'user_role'   => $uerRole,
+                                                        'skip_user_role_check' => $skipRoleCheck
+                                                  ],
+                                                  [
+                                                        'X-Auth-Type'    => 'direct',
+                                                        'X-Service-Name' => 'api'
+                                                  ],
+                                                  'POST'
+        );
     }
 
     protected function sendRequestAndParseResponse(

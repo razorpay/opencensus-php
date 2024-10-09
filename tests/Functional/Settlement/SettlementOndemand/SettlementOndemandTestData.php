@@ -1131,6 +1131,36 @@ return [
         ]
     ],
 
+    'testEnableEsOnDemandFullAccessFromBatchRoute_Migrated' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                ],
+            ],
+        ]
+    ],
+
     'testEnableEsOnDemandFullAccessWithEsAutomaticRestrictedEnabledFromBatchRoute' => [
         'request'  => [
             'url'     => '/settlements/ondemand/feature',

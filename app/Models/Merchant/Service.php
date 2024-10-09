@@ -5696,8 +5696,45 @@ class Service extends Base\Service
         }
     }
 
+    private function isEnablementOfScheduledEsMigrated(): bool
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === false)
+        {
+            return false;
+        }
+
+        $request = [
+            'experiment_id' => $this->app['config']->get('app.scheduled_es_enablement_migration_experiment_id'),
+            'request_data'  => json_encode(['merchantId' => $this->merchant->getId()]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($request);
+
+        $variables = $response['response']['variant']['variables'] ?? [];
+        if (is_array($variables) === false)
+        {
+            return false;
+        }
+
+        foreach ($variables as $variable)
+        {
+            if (is_array($variable) === true && $variable['key'] === 'is_enabled' && $variable['value'] === 'true')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function enableScheduledEs($skipRoleCheck = false, $notify = true): array
     {
+        if ($this->isEnablementOfScheduledEsMigrated() === true)
+        {
+            $userRole = $this->app['basicauth']->getUserRole();
+            return $this->app['capital_early_settlements']->enableScheduledEs($this->merchant->getId(), $userRole, $skipRoleCheck);
+        }
+
+
         if($skipRoleCheck == false)
         {
             $userRole = $this->repo

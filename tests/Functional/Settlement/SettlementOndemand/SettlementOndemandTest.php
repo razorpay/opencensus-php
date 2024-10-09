@@ -28,6 +28,7 @@ use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Services\CapitalEarlySettlementClient;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -1890,6 +1891,53 @@ class SettlementOndemandTest extends TestCase
 
         Mail::assertQueued(FullES::class, 0);
 
+    }
+
+    public function testEnableEsOnDemandFullAccessFromBatchRoute_Migrated()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+                                        ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'new_settlement_service']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic_restricted']);
+
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "is_enabled",
+                            "value" => "true",
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.scheduled_es_enablement_migration_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+                   ->zeroOrMoreTimes()
+                   ->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))
+                   ->andReturns($splitzResp);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('enableScheduledEs')
+                      ->once()
+                      ->andReturn(['success'=>true]);
+
+        $this->startTest();
     }
 
     public function testEnableEsOnDemandFullAccessWithEsAutomaticRestrictedEnabledFromBatchRoute()

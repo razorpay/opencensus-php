@@ -17469,7 +17469,12 @@ class Route
             'internal_balances_fetch_by_merchant_ids',
             'merchant_la_fetch',
             'feature_get_merchants_internal',
-            'settlement_ondemand_create_internal'
+            'settlement_ondemand_create_internal',
+            'internal_feature_get_all',
+            'internal_feature_bulk_assign',
+            'internal_feature_bulk_remove',
+            'pricing_fetch_plan_internal',
+            'pricing_add_plan_rule_bulk'
         ],
 
         'leegality' => [
