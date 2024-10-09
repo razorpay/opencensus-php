@@ -5,13 +5,17 @@ namespace Functional\BankTransfer;
 use DB;
 use Mail;
 use Cache;
+use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Terminal\Type;
 use RZP\Models\VirtualAccount;
 use RZP\Services\RazorXClient;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -101,6 +105,24 @@ class AxisBankTransferTest extends TestCase
             ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
             {
                 if ($featureFlag === (RazorxTreatment::BANK_TRANSFER_DISABLE_GATEWAY))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+    }
+
+    // experiment is enabled for '9876543210123456789' account number only.
+    public function enableRazorXTreatmentForCollectXPaymentTransfer(): void
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($id === '9876543210123456789' && $featureFlag === (RazorxTreatment::COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP))
                 {
                     return 'on';
                 }
@@ -238,6 +260,433 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
+    }
+
+    public function createCollectXVirtualAccount(
+        $mode = 'test',
+        $merchantID = '10000000000000',
+        $receivers = ['bank_account'],
+        $gateway = 'axis')
+    {
+        // enabling collectx feature for the merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        (new AdminService())->setConfigKeys([ConfigKey::COLLECTX_SERIES_PREFIX => [
+            $merchantID => 'COLLECTX'
+        ]]);
+
+        // creating banking balance entity with type direct
+        $this->fixtures->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => $merchantID,
+                'balance'          => 0,
+                'account_type'     => 'direct'
+            ]);
+
+        // creating terminal for the merchant
+        if (in_array('bank_account', $receivers)) {
+            $bankTransferTerminalAttributes = [
+                'id' => '10000000000001',
+                'gateway' => "bt_" . $gateway,
+                'merchant_id' => $merchantID,
+                'gateway_merchant_id' => 'COLLECTX',
+                'bank_transfer' => 1,
+                'enabled' => 1,
+                'type' => [
+                    Type::NON_RECURRING => '1',
+                    Type::NUMERIC_ACCOUNT => '1',
+                    Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+                ],
+            ];
+
+            $this->fixtures->on('test')->create('terminal:bank_account_terminal', $bankTransferTerminalAttributes);
+
+            // enabling collectx_live_on_bank_accounts feature flag for merchant to allow creation of bank account type VA
+            $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+            $this->app->instance('razorx', $razorx);
+
+            $razorx->shouldReceive('getTreatment')
+                ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+                {
+                    if ($featureFlag === (RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS))
+                    {
+                        return 'on';
+                    }
+
+                    return 'control';
+                });
+        }
+
+        if (in_array('vpa', $receivers))
+        {
+            $upiTerminalAttributes = [
+                'id'                            => '10000000000002',
+                'gateway'                       => "upi_".$gateway,
+                'merchant_id'                   => $merchantID,
+                'gateway_merchant_id'           => 'CXTEST.',
+                'upi'                           => 1,
+                'virtual_upi_handle'            => $gateway."ltd",
+                'enabled'                       => 1,
+                'type'                          => [
+                    Type::NON_RECURRING                 => '1',
+                    Type::NUMERIC_ACCOUNT               => '1',
+                    Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+                ],
+            ];
+
+            // creating virtual_vpa_prefix entity for vpa type VA use case
+            $this->fixtures->create('virtual_vpa_prefix', [
+                'merchant_id'   => $merchantID,
+                'prefix'        => 'cxtest.',
+                'terminal_id'   => '10000000000002']);
+
+            $this->fixtures->on('test')->create('terminal:bank_account_terminal', $upiTerminalAttributes);
+        }
+
+        $request = [
+            'url'     => '/virtual_accounts',
+            'method'  => 'post',
+            'content' => [
+                'receivers' => [
+                    'types' => $receivers
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testAxisValidationCallbackForCollectx()
+    {
+        $testData = $this->testData['testValidateBankTransferAxis'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Sndr_acnt'] = '9876543210123456789';
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableRazorXTreatmentForCollectXPaymentTransfer();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+    }
+
+    public function testAxisNotificationCallbackForCollectx()
+    {
+        $testData = $this->testData['testValidateBankTransferAxis'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Sndr_acnt'] = '9876543210123456789';
+
+        $testData['request']['content']['Req_type'] = 'notification';
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableRazorXTreatmentForCollectXPaymentTransfer();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(200, $bankTransfer['amount']);
+        $this->assertEquals('processed', $bankTransfer['status']);
+        $this->assertEquals('NEFT', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Sndr_acnt'], $payerBankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_axis', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+    }
+
+    public function testAxisValidationCallbackForCollectx_DuplicateBankTransfer()
+    {
+        $testData = $this->testData['testBankTransferAxisCallbackValidationFailure'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $this->fixtures->create('bank_transfer', [
+            'utr'            => 'RAZP00010742429600013',
+            'amount'         => 2,
+            'payee_account'  => $beneAccountNo,
+            'merchant_id'    => '10000000000000']);
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Sndr_acnt'] = '9876543210123456789';
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $testData['request']['content']['UTR'] = 'RAZP00010742429600013';
+
+        $testData['request']['content']['Txn_amnt'] = '2';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableRazorXTreatmentForCollectXPaymentTransfer();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('Validation failed', $response['message']);
+    }
+
+    public function testAxisNotificationCallbackForCollectx_DuplicateBankTransfer()
+    {
+        $testData = $this->testData['testBankTransferAxisCallbackValidationFailure'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $this->fixtures->create('bank_transfer', [
+            'utr'            => 'RAZP00010742429600013',
+            'amount'         => 2,
+            'payee_account'  => $beneAccountNo,
+            'merchant_id'    => '10000000000000']);
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Sndr_acnt'] = '9876543210123456789';
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['Req_type'] = 'notification';
+
+        $testData['request']['content']['UTR'] = 'RAZP00010742429600013';
+
+        $testData['request']['content']['Txn_amnt'] = '2';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableRazorXTreatmentForCollectXPaymentTransfer();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('Validation failed', $response['message']);
+    }
+
+    public function testAxisNotificationCallbackForCollectx_ClosedVaBankTransferTransfer()
+    {
+        $testData = $this->testData['testBankTransferAxisCallbackValidationFailure'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $this->fixtures->edit('virtual_account', $response['id'], ['status' => 'closed']);
+
+        $testData['request']['content']['Bene_acc_no'] = $beneAccountNo;
+
+        $testData['request']['content']['Sndr_acnt'] = '9876543210123456789';
+
+        $testData['request']['content']['Corp_code'] = '9845';
+
+        $testData['request']['content']['UTR'] = 'RAZP00010742429600013';
+
+        $testData['request']['content']['Txn_amnt'] = '2';
+
+        $testData['request']['content']['Req_type'] = 'notification';
+
+        $testData['request']['content']['Req_dt_time'] = date("Y-m-d H:i:s");
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->enableRazorXTreatmentForCollectXPaymentTransfer();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('Validation failed', $response['message']);
+    }
+
+    public function testYesbankBankTransferValidationCallbackForCollectx()
+    {
+        $testData = $this->testData['testValidateTransferYesbank'];
+
+        $response = $this->createCollectXVirtualAccount(gateway: 'yesbank');
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['validate']['bene_account_no'] = $beneAccountNo;
+
+        $testData['request']['content']['validate']['transfer_type'] = 'IMPS';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->yesbankAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('pass', $response['validateResponse']['decision']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(700, $bankTransfer['amount']);
+        $this->assertEquals('processed', $bankTransfer['status']);
+        $this->assertEquals('IMPS', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['validate']['rmtr_account_no'], $payerBankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(700, $payment['amount']);
+        $this->assertEquals('bt_yesbank', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+    }
+
+    public function testYesbankBankTransferNotificationCallbackForCollectx()
+    {
+        $testData = $this->testData['testNotifyCollectxTransferYesbank'];
+
+        $response = $this->createCollectXVirtualAccount(gateway: 'yesbank');
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['notify']['bene_account_no'] = $beneAccountNo;
+
+        $testData['reque st']['content']['notify']['transfer_type'] = 'IMPS';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->yesbankAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('ok', $response['notifyResult']['result']);
+    }
+
+    public function testYesbankUpiValidationCallbackForCollectx()
+    {
+        $testData = $this->testData['testValidateTransferYesbank'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['vpa'], gateway: 'yesbank');
+
+        $beneAccountNo = $response['receivers'][0]['username'];
+
+        $testData['request']['content']['validate']['bene_account_no'] = $beneAccountNo;
+
+        $testData['request']['content']['validate']['transfer_type'] = 'UPI';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->yesbankAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('pass', $response['validateResponse']['decision']);
+
+        $upiTransferRequest = $this->getLastEntity('upi_transfer_request', true);
+
+        $this->assertTrue($upiTransferRequest['is_created']);
+        $this->assertNotNull($upiTransferRequest['payee_vpa']);
+
+        $upiTransfer =  $this->getLastEntity('upi_transfer', true);
+
+        $this->assertEquals($upiTransfer['narration'], $testData['request']['content']['UTR']);
+        $this->assertEquals(700, $upiTransfer['amount']);
+        $this->assertNotNull($upiTransfer['rrn']);
+        $this->assertTrue($upiTransfer['expected']);
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+        $this->assertNotNull($upiTransfer['payment_id']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(700, $payment['amount']);
+        $this->assertEquals('upi_yesbank', $payment['gateway']);
+        $this->assertEquals('10000000000002', $payment['terminal_id']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
     }
 
     public function testValidateBankTransferAxis()

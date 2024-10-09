@@ -468,6 +468,7 @@ class ErrorCode
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
     const LEDGER_MERCHANT_BALANCE_GET_ERROR                                         = 'LEDGER_MERCHANT_BALANCE_GET_ERROR';
     const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                      = 'BAD_REQUEST_INPUT_VALIDATION_FAILURE';
+    const BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK                              = 'BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK';
     const COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST                                    = 'COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST';
     const COLLECTX_UNEXPECTED_PAYMENT_ON_CLOSED_VA                                  = 'COLLECTX_UNEXPECTED_PAYMENT_ON_CLOSED_VA';
     const BAD_REQUEST_SIGNATURE_ERROR                                               = 'BAD_REQUEST_SIGNATURE_ERROR';
@@ -1686,6 +1687,7 @@ class ErrorCode
     const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
     const BAD_REQUEST_COLLECTX_REDIS_PREFIX_MAPPING_MISSING                         = "BAD_REQUEST_COLLECTX_REDIS_PREFIX_MAPPING_MISSING";
     const NO_TERMINAL_FOR_COLLECTX_PREFIX_EXISTS                                    = "NO_TERMINAL_FOR_COLLECTX_PREFIX_EXISTS";
+    const VPA_PREFIX_ENTITY_FOR_COLLECTX_PREFIX_NOT_FOUND                           = "VPA_PREFIX_ENTITY_FOR_COLLECTX_PREFIX_NOT_FOUND";
     const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                                  = 'BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED';
     const BAD_REQUEST_IP_NOT_WHITELISTED                                            = 'BAD_REQUEST_IP_NOT_WHITELISTED';
     const BAD_REQUEST_IP_FORMAT_INVALID                                             = 'BAD_REQUEST_IP_FORMAT_INVALID';

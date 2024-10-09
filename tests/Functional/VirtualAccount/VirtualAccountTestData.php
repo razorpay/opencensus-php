@@ -23,6 +23,60 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountForCollectWithReceiverBankAccount' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description'     => 'VA for CollectX test',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'description' => 'VA for CollectX test',
+                'status' => 'active',
+                'receivers' => [
+                    [
+                        'entity' => 'bank_account'
+                    ]
+                ],
+            ],
+        ]
+    ],
+
+    'testCreateVirtualAccountForCollectWithReceiverVpa' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description'     => 'VA for CollectX test',
+                'receivers'   => [
+                    'types' => [
+                        'vpa',
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'description' => 'VA for CollectX test',
+                'status' => 'active',
+                'receivers' => [
+                    [
+                        'entity' => 'vpa'
+                    ]
+                ],
+            ],
+        ]
+    ],
+
     'testCreateVirtualAccountForBankingWithVPAReceiver' => [
         'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',

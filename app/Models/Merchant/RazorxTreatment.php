@@ -408,6 +408,8 @@ final class RazorxTreatment
     // Since there could be merchants who are live on UPI but not on Bank Account, VAs should be created accordingly
     const COLLECTX_LIVE_ON_BANK_ACCOUNTS = "collectx_live_on_bank_accounts";
 
+    const COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP = "collectx_axis_payment_transfer_ramp_up";
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';
