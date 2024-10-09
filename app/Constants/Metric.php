@@ -266,4 +266,9 @@ class Metric
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND          = 'settlement_ondemand_feature_config_not_found';
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
+
+    const OPGSP_UFH_FILE_PUSH                                   = 'opgsp_ufh_file_push';
+    const OPGSP_BEAM_PUSH                                       = 'opgsp_beam_push';
+    const OPGSP_FILE_SEND_STARTED                               = 'opgsp_file_send_started';
+    const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                        = 'opgsp_import_no_settlements_found';
 }

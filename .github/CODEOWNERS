@@ -340,7 +340,7 @@ app/Models/Merchant/InternationalIntegration               @razorpay/TechCrossBo
 app/Models/Merchant/InternationalEnablement                @razorpay/TechCrossBorder
 app/Models/Payment/PaymentMeta                             @razorpay/TechCrossBorder
 app/Models/Settlement/Processor/OPGSPImportICICI           @razorpay/TechCrossBorder
-
+app/Jobs/CrossBorder                                       @razorpay/TechCrossBorder
 
 #
 # CDP (Slack - @cdp-devs, #tech_infra_cdp)
