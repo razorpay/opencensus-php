@@ -682,7 +682,7 @@ class Content extends Component {
   };
 
   isRAYEnabled = () => {
-    const { user, splitz: { abExperiments: { ray_ai } = {} } = {} } = this.props;
+    const { user, splitz: { abExperiments: { ray_ai, ray_onboarding_ai } = {} } = {} } = this.props;
     const {
       isCountryIndia,
       isOrgRZP,
@@ -690,19 +690,31 @@ class Content extends Component {
       isPartnerAgentRole,
       isPartnerRole,
       isPosSalesAgent,
+      activation_form_milestone,
+      submitted,
+      activation_status,
     } = user;
 
     const isValidMerchant =
       isOrgRZP &&
+      isCountryIndia &&
+      user.isAllowedView('ray') &&
       !user.isPartner() &&
       !isSourceRX &&
       !isPartnerAgentRole &&
       !isPartnerRole &&
       !isPosSalesAgent;
 
-    return (
-      isCountryIndia && isValidMerchant && user.isAllowedView('ray') && isExperimentEnabled(ray_ai)
-    );
+    const isL2Sumitted = activation_form_milestone === 'L2' || submitted;
+
+    const isEasyEnabledMerchant =
+      isL2Sumitted && (activation_status !== 'activated' && activation_status !== null);
+
+    if (isEasyEnabledMerchant) {
+      return isValidMerchant && isExperimentEnabled(ray_onboarding_ai);
+    }
+
+    return isValidMerchant && isExperimentEnabled(ray_ai);
   };
 
   checkIsDisputesRevampV2Enabled = () => {

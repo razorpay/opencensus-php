@@ -361,6 +361,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'ray_onboarding_ai',
+        experimentId: {
+          beta: 'Oz2lq27rYHq1iP',
+          production: 'Oz2kC4rmY6YECc',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'magic_konnect',
         experimentId: {
           beta: 'NiHLK3gI0O8Kn1',
