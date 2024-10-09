@@ -320,7 +320,7 @@ class Core extends Base\Core
         // Coupon Usage is also updated
         // If either of these fail data need to be rolled back
         //
-        $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $promotion, $coupon)
         {
             if ($this->shouldApplyPromotionPricing($coupon) === true)
             {

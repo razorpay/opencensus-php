@@ -64,7 +64,7 @@ class Core extends Base\Core
 
         unset($input[Detail\Entity::DOCUMENTS]);
 
-        $newDetailEntity = $this->repo->transaction(function() use ($input, $documents, $action, $version)
+        $newDetailEntity = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $documents, $action, $version)
         {
             list($oldDetailEntity, $newDetailEntity) =
                 (new Detail\Core)->upsert($input, $action);
