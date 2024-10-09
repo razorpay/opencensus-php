@@ -4821,7 +4821,7 @@ class Base extends BaseCore
             Payout\Entity::PAYOUT_ID         => $payout->getId(),
             Payout\Entity::AMOUNT            => $payout->getAmount(),
             Payout\Entity::CURRENCY          => $payout->getCurrency(),
-            Payout\Entity::CREATED_AT        => millitime(),
+            Payout\Entity::CREATED_AT        => time(),
             Payout\Entity::MODE              => $payout->getMode(),
             Payout\Entity::NARRATION         => $payout->getNarration(),
             Payout\Entity::PURPOSE           => $payout->getPurpose(),
