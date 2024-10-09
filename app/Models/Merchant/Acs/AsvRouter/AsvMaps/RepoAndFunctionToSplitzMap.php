@@ -153,6 +153,18 @@ final class RepoAndFunctionToSplitzMap
         "MerchantEsSync",
         "isSecondFactorAuthEnabledForUserMerchants",
         "findOrFailPublicWithRelations",
+        "findByIdAndOrgId",
+        "fetchByEmailAndOrgId",
+        "fetchMerchantsCreatedBetweenOfOrg",
+        "fetchLiveEnabledLinkedAccountMids",
+        "fetchLinkedAccountMidsLiveDisabledToParentMerchantLiveDisabled",
+        "accountFindByIdAndMerchant",
+        "findMerchantsByIds",
+        "findMany",
+        "documentFindByIdAndMerchant",
+        "stakeholderFindByIdAndMerchantId",
+        "getFailedSettlementsForRetry",
+        "fetchLinkedAccountsForParentMerchantId",
     );
 
     public const ROUTE_WRITE_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_WRITE_TO_ASV;
