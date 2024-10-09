@@ -3872,6 +3872,14 @@ class Repository extends Base\Repository
                         $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
                             "identifier" => __FUNCTION__
                         ]);
+
+                        if($this->asvRouter->shouldFallbackToAsvDB('Find_Merchants_By_Ids')) {
+                            $results = $this->newQueryWithConnection(
+                                $this->getConnectionFromType(Connection::ASV_WRITER)
+                            )->findMany($ids, array('*'));
+                            $this->resetConnectionOnModels($results);
+                            return $results;
+                        }
                     }
                     return parent::findMany($ids);
                 }

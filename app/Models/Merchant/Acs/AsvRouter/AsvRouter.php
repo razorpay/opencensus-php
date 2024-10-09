@@ -535,4 +535,19 @@ class AsvRouter
         }
     }
 
+    public function shouldFallbackToAsvDB(string $callingIdentifier) : bool
+    {
+        try
+        {
+            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFallbackToASVDB();
+
+            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+        } catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
+
+            return false;
+        }
+    }
+
 }

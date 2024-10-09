@@ -137,6 +137,10 @@ trait AsvFind
                         "id" => $id,
                         "functionIdentifier" => $functionIdentifier,
                     ]);
+
+                    if($this->asvRouter->shouldFallbackToAsvDB(FunctionConstant::FIND_OR_FAIL)) {
+                        $connectionType = Connection::ASV_WRITER;
+                    }
                 }
             }
         }
@@ -190,6 +194,10 @@ trait AsvFind
                         "id" => $id,
                         "functionIdentifier" => $functionIdentifier,
                     ]);
+
+                    if($this->asvRouter->shouldFallbackToAsvDB(FunctionConstant::FIND_OR_FAIL_PUBLIC)) {
+                        $connectionType = Connection::ASV_WRITER;
+                    }
                 }
             }
         }
@@ -287,6 +295,10 @@ trait AsvFind
                         "id" => $id,
                         "functionIdentifier" => $functionIdentifier,
                     ]);
+
+                    if($this->asvRouter->shouldFallbackToAsvDB(FunctionConstant::FIND_FOR_IMPLICIT_JOIN)) {
+                        $connectionType = Connection::ASV_WRITER;
+                    }
                 }
             }
         }

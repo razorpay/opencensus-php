@@ -47,6 +47,7 @@ trait AsvFindEntity
                     }
                 }
             } else {
+
                 $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND;
                 try {
                     return $this->getDetailsFromAsvIgnoreValidationAndNotFound($id, $oldConnection);
@@ -55,9 +56,13 @@ trait AsvFindEntity
                         "id" => $id,
                         "functionIdentifier" => $functionIdentifier,
                     ]);
+                    if($this->asvRouter->shouldFallbackToAsvDB(FunctionConstant::FIND)) {
+                        $connectionType = Connection::ASV_WRITER;
+                    }
                 }
             }
         }
+
         return $this->findDatabase($id, $columns, $connectionType, $oldConnection);
     }
 }
