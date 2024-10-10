@@ -2610,8 +2610,9 @@ class Service extends Base\Service
         try
         {
             $properties = [
-                'id'            => $merchantId,
+                'id'            => Base\UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.route_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
             ];
 
             $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -2619,7 +2620,8 @@ class Service extends Base\Service
             $variant = $response['response']['variant']['name'] ?? '';
 
             $this->trace->info(TraceCode::ROUTE_REARCH_SPLITZ_EXP_RESULT, [
-                'splitz_output' => $variant,
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
             ]);
 
             return $variant === 'enabled';

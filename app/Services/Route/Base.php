@@ -41,6 +41,7 @@ class Base
     const ACCEPT                = 'Accept';
     const CONTENT_TYPE          = 'Content-Type';
     const X_REQUEST_ID          = 'X-Request-ID';
+    const X_TASK_ID             = 'X-Task-ID';
     const X_PASSPORT_JWT_V1     = 'X-Passport-JWT-V1';
     const PASSPORT_AUD          = 'route';
     const REQUEST_TIMEOUT       = 60;
@@ -228,6 +229,7 @@ class Base
         $headers[self::ACCEPT]       = 'application/json';
         $headers[self::CONTENT_TYPE] = 'application/json';
         $headers[self::X_REQUEST_ID]  = $this->request->getId();
+        $headers[self::X_TASK_ID] = $this->app['request']->getTaskId();
 
         if(!empty(Request::header(RequestHeader::DEV_SERVE_USER)))
         {

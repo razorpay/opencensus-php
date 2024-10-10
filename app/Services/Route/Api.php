@@ -3,9 +3,11 @@
 namespace RZP\Services\Route;
 
 use App;
+use Request;
 use Razorpay\Edge\Passport\Passport;
 use RZP\Exception;
 use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Payment;
@@ -35,6 +37,8 @@ class Api extends Base
             $this->addPassportToken();
 
         }
+
+        $this->setDirectTransferIdempotencyHeaderIfPresent();
 
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
@@ -175,4 +179,13 @@ class Api extends Base
         return $transfer;
     }
 
+    private function setDirectTransferIdempotencyHeaderIfPresent()
+    {
+        $idemptencyHeader = Request::header(RequestHeader::X_TRANSFER_IDEMPOTENCY) ?? null;
+
+        if (empty($idemptencyHeader) === false)
+        {
+            $this->setCustomHeaders([RequestHeader::X_TRANSFER_IDEMPOTENCY => $idemptencyHeader]);
+        }
+    }
 }
