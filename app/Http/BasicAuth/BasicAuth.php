@@ -3271,7 +3271,7 @@ class BasicAuth
                 $activationStatus = "";
 
                 $merchantId = $this->isProxyAuth() ? ($this->authCreds->creds[self::KEY_ID] ?? $this->authCreds->getMerchant()->getId()) : "";
-                
+
                 if (empty($merchantId) === false)
                 {
                     $activationStatus = $this->getMerchantActivationStatus($merchantId);
@@ -3459,11 +3459,13 @@ class BasicAuth
 
         $hasEditPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_EDIT);
 
+        $hasEditPermNonActivated = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_NON_ACTIVATED_EDIT);
+
         return [
-            'hasReadPermission'             => $hasReadPerm,
+            'hasReadPermission'              => $hasReadPerm,
             'hasLoginPermission'             => $hasViewLoginPerm,
-            'hasEditPermission'             => $hasEditPerm,
-            'hasNonActivatedEditPermission' => $hasEditPerm
+            'hasEditPermission'              => $hasEditPerm,
+            'hasNonActivatedEditPermission'  => $hasEditPermNonActivated
         ];
     }
 
