@@ -3253,11 +3253,10 @@ class BasicAuth
 
     public function setUserRole(string $userId)
     {
-
         // https://docs.google.com/document/d/1G45uWHQbghZTrWzIPooywJAIKr_K1zt2mc_edeq43p4/edit#heading=h.w22h9m5sn4hl
         if ($this->isAdminLoggedInAsMerchantOnDashboard() === true)
         {
-            $adminId = $this->request->header(RequestHeader::X_DASHBOARD_ADMIN_ID);
+            $adminId = $this->getAdminIdHeader();
 
             $this->trace->info(
                 TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
@@ -3266,18 +3265,45 @@ class BasicAuth
                 ]
             );
 
-            if (empty($adminId) === false)
+            if (!empty($adminId))
             {
+                $merchantId = "";
+                $activationStatus = "";
 
-                $admin = $this->repo->admin->connection('live')->findByPublicId($adminId);
+                $merchantId = $this->isProxyAuth() ? ($this->authCreds->creds[self::KEY_ID] ?? $this->authCreds->getMerchant()->getId()) : "";
+                
+                if (empty($merchantId) === false)
+                {
+                    $activationStatus = $this->getMerchantActivationStatus($merchantId);
+                }
+
+                $permissions = $this->getAdminPermissions($adminId);
+
 
                 // if they have read only permission change the role to read only
 
-                $hasReadPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_READ_ONLY);
+                $hasReadPerm = $permissions['hasReadPermission'];
 
-                $hasViewLoginPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN);
+                $hasViewLoginPerm = $permissions['hasLoginPermission'];
 
-                $hasEditPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_EDIT);
+                $hasEditPerm = $permissions['hasEditPermission'];
+
+                $hasNonActivatedEditPerm = $permissions['hasNonActivatedEditPermission'];
+
+                $isAccountActivated = $activationStatus == Merchant\Detail\Status::ACTIVATED ||
+                                       $activationStatus == Merchant\Detail\Status::ACTIVATED_MCC_PENDING;
+                $this->trace->info(
+                    TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
+                    [
+                        'route_name'                        => $this->route->getCurrentRouteName(),
+                        'userRole'                          => $this->userRole,
+                        'adminId'                           => $adminId,
+                        'hasReadPerm'                       => $hasReadPerm,
+                        'hasEditPerm'                       => $hasEditPerm,
+                        'hasNonActivatedEditPerm'           => $hasNonActivatedEditPerm,
+                        'isactivatedMerchant'               => $isAccountActivated
+                    ]
+                );
 
                 // If product is banking and admin has read only permission, then set the role to banking read only for login as support feature
                 if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false && $this->isProductBanking()===true){
@@ -3292,24 +3318,21 @@ class BasicAuth
                     return;
                 }
 
-                if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false)
+                if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false && $hasNonActivatedEditPerm === false)
                 {
                     $this->userRole = Role::ADMIN_READONLY;
 
-                    $this->trace->info(
-                        TraceCode::ADMIN_MERCHANT_LOGIN_PERMISSION,
-                        [
-                            'route_name'            => $this->route->getCurrentRouteName(),
-                            'userRole'              => $this->userRole,
-                            'adminId'               => $adminId,
-                            'hasReadPerm'           => $hasReadPerm,
-                            'hasEditPerm'           => $hasEditPerm,
-                        ]
-                    );
+                    return;
+                }
+                if ($hasViewLoginPerm === true && $hasReadPerm === true && $hasEditPerm === false &&
+                    ($hasNonActivatedEditPerm === true && $isAccountActivated == true))
+                {
+                    $this->userRole = Role::ADMIN_READONLY;
 
                     return;
                 }
-                else if ($hasViewLoginPerm === true && $hasEditPerm === false)
+                else if ($hasViewLoginPerm === true && $hasEditPerm === false &&
+                         $hasNonActivatedEditPerm === false && $hasNonActivatedEditPerm === false)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_ERROR, null, null,
@@ -3359,7 +3382,7 @@ class BasicAuth
                 }
                 else
                 {
-                    $this->userRole = $userMapping->pivot->role;
+                    $this->userRole = $this->getUserRoleFromEntity($userMapping);
                 }
             }
             else
@@ -3410,6 +3433,42 @@ class BasicAuth
         }
 
         return false;
+    }
+
+    public function getAdminIdHeader()
+    {
+        return $this->request->header(RequestHeader::X_DASHBOARD_ADMIN_ID);;
+    }
+
+    public function getMerchantActivationStatus($merchantId)
+    {
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        return $merchant->merchantDetail->getActivationStatus();
+    }
+
+    public function getAdminPermissions($adminId)
+    {
+        $admin = $this->repo->admin->connection('live')->findByPublicId($adminId);
+
+        // if they have read only permission change the role to read only
+
+        $hasReadPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_READ_ONLY);
+
+        $hasViewLoginPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN);
+
+        $hasEditPerm = $admin->hasPermission(Admin\Permission\Name::VIEW_MERCHANT_LOGIN_EDIT);
+
+        return [
+            'hasReadPermission'             => $hasReadPerm,
+            'hasLoginPermission'             => $hasViewLoginPerm,
+            'hasEditPermission'             => $hasEditPerm,
+            'hasNonActivatedEditPermission' => $hasEditPerm
+        ];
+    }
+
+    public function getUserRoleFromEntity($userMapping){
+        return $userMapping->pivot->role;
     }
 
     public function getKeyForNonBasicAuthTokens()

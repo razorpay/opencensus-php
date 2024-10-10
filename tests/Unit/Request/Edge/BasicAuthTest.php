@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\Request\Edge;
 
 use Exception;
 use Razorpay\Edge\Passport;
+use RZP\Models\Merchant\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -18,6 +19,7 @@ use RZP\Tests\Functional\Helpers\Edge\PassportTrait;
 use RZP\Tests\TestCase;
 use \Mockery;
 use RZP\Tests\Unit\Request\Traits\HasRequestCases;
+use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 use RZP\Trace\TraceCode;
 
 class BasicAuthTest extends TestCase
@@ -153,22 +155,117 @@ class BasicAuthTest extends TestCase
 
     public function testSetUserRoleIsAdminReadOnlyWhenAdminLoggedInAsMerchant()
     {
-        $this->markTestSkipped();
+        $this->repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
 
         $mock = $this->getMockBuilder(BasicAuth::class)
                      ->setConstructorArgs([$this->app])
-                     ->onlyMethods(['isAdminLoggedInAsMerchantOnDashboard'])
+                     ->onlyMethods(['isAdminLoggedInAsMerchantOnDashboard', 'getAdminIdHeader','isProxyAuth','isProductBanking','getAdminPermissions'])
                      ->getMock();
+        $this->app->instance('repo', $this->repoMock);
+
+        $this->repoMock->shouldReceive('driver')->
+        with('merchant')->andReturn($this->merchantRepoMock);
 
         $mock->expects($this->once())
              ->method('isAdminLoggedInAsMerchantOnDashboard')
              ->willReturn(true);
+
+        $mock->expects($this->once())
+             ->method('getAdminPermissions')
+             ->willReturn([
+                              'hasReadPermission'               => true,
+                              'hasLoginPermission'              => true,
+                              'hasEditPermission'               => false,
+                              'hasNonActivatedEditPermission'   => false,
+                          ]);
+
+        $mock->expects($this->once())
+             ->method('getAdminIdHeader')
+             ->willReturn('admi_1234567890123');
+
+        $mock->expects($this->exactly(1))
+             ->method('isProductBanking')
+             ->willReturn(false);
+        $mock->init();
+        $authClas = KeyAuthCreds::class;
+        $authCreds = new $authClas($this->app);
+        $authCreds->creds['key_id'] = '1000000razorpay';
+        $mock->setAuthCreds($authCreds);
 
         $mock->setUserRole('user_id');
 
         $role = $mock->getUserRole();
 
         self::assertEquals(Role::ADMIN_READONLY, $role);
+
+    }
+
+    public function testSetUserRoleIsNonActivatedEditWhenAdminLoggedInAsMerchant()
+    {
+        $this->repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantUserMapping =  new MerchantUserEntity();
+
+        $merchantUserMapping->setAttribute(MerchantUserEntity::ROLE, Role::OWNER);
+
+        $mock = $this->getMockBuilder(BasicAuth::class)
+                     ->setConstructorArgs([$this->app])
+                     ->onlyMethods(['isAdminLoggedInAsMerchantOnDashboard', 'getAdminIdHeader','isProxyAuth','isProductBanking','getAdminPermissions','getMerchantActivationStatus', 'getUserRoleFromEntity'])
+                     ->getMock();
+        $this->app->instance('repo', $this->repoMock);
+
+        $this->repoMock->shouldReceive('driver')->
+        with('merchant')->andReturn($this->merchantRepoMock);
+
+        $mock->expects($this->exactly(2))
+             ->method('isAdminLoggedInAsMerchantOnDashboard')
+             ->willReturn(true);
+
+        $mock->expects($this->exactly(1))
+             ->method('getUserRoleFromEntity')
+             ->willReturn(Role::OWNER);
+
+        $mock->expects($this->once())
+             ->method('getAdminPermissions')
+             ->willReturn([
+                              'hasReadPermission'               => true,
+                              'hasLoginPermission'              => true,
+                              'hasEditPermission'               => false,
+                              'hasNonActivatedEditPermission'   => true,
+                          ]);
+
+        $mock->expects($this->exactly(2))
+             ->method('isProxyAuth')
+             ->willReturn(true);
+
+        $mock->expects($this->once())
+             ->method('getAdminIdHeader')
+             ->willReturn('admi_1234567890123');
+
+        $mock->expects($this->once())
+             ->method('getMerchantActivationStatus')
+             ->willReturn('needs_clarification');
+
+        $this->merchantRepoMock
+            ->shouldReceive('getMerchantUserMapping')
+            ->andReturn($merchantUserMapping);
+
+        $mock->expects($this->exactly(2))
+             ->method('isProductBanking')
+             ->willReturn(false);
+
+        $mock->init();
+        $authClas = KeyAuthCreds::class;
+        $authCreds = new $authClas($this->app);
+        $authCreds->creds['key_id'] = '1000000razorpay';
+        $mock->setAuthCreds($authCreds);
+
+        $mock->setUserRole('user_id');
+
+        $role = $mock->getUserRole();
+
+        self::assertEquals(Role::OWNER, $role);
 
     }
 
