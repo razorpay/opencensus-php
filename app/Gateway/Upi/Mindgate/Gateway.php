@@ -20,6 +20,7 @@ use RZP\Models\BharatQr;
 use RZP\Models\QrCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\QrPayment;
 use RZP\Models\BankAccount;
 use RZP\Models\UpiTransfer;
 use RZP\Gateway\Base\Verify;
@@ -513,12 +514,24 @@ class Gateway extends Base\Gateway
 
         $merchant = (new MerchantRepository())->find($terminal['merchant_id']);
 
-        if ($merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === false)
+        if(($this->isQRv2SuffixPresent($response['payment_id']) === true) or
+            ((new QrPayment\Core)->checkPaymentViaQRv1($merchant) === false))
         {
             return false;
         }
 
         return true;
+    }
+
+    protected function isQRv2SuffixPresent($merchantReference)
+    {
+        if(str_starts_with($merchantReference, QrCode\Constants::QR_CODE_V2_HDFC_PREFIX) === true)
+        {
+            $merchantReferenceDetails = explode('!', $merchantReference);
+            $merchantReference        = $merchantReferenceDetails[0];
+        }
+
+        return (str_ends_with($merchantReference, QrCode\Constants::QR_CODE_V2_TR_SUFFIX) === true);
     }
 
     /**

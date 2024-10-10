@@ -333,6 +333,46 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->assertTrue($response['success']);
     }
 
+    public function testPaymentForStaticQrCodeWithSplitzEnable(): void
+    {
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->mockSplitzTreatment(
+            [
+                "response" => [
+                    "variant" => [
+                        "variables" => [
+                            [
+                                "key"   => "result",
+                                "value" => "on",
+                            ],
+                            [
+                                'name' => 'enable',
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity, $this->terminal);
+
+        $this->runQrPaymentEntityAssertions();
+
+        $this->assertTrue($response['success']);
+    }
+
     public function testPaymentOnDynamicQrCode() :void
     {
         $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);

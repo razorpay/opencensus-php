@@ -1171,7 +1171,8 @@ class Processor
                 return $this->canRouteThroughRearchFlowForMY($input);
             }
 
-            if($this->merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
+            // Merchants with both v1 and v2 QR codes have to do re-arch separately
+            if((new QrPayment\Core)->checkPaymentViaQRv1($this->merchant) === true)
             {
                 return false;
             }

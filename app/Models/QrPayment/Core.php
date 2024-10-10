@@ -11,6 +11,7 @@ use RZP\Models\QrPayment\Metric;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
 use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Models\Feature\Constants as Feature;
 
 class Core extends Base\Core
 {
@@ -97,7 +98,7 @@ class Core extends Base\Core
 
             if(isset($qrPayment->qrCode->merchant) === true)
             {
-                if($qrPayment->qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+                if((new Core)->checkPaymentViaQRv1($qrPayment->qrCode->merchant) === true)
                     $type = QrPaymentRequest\Type::UPI_QR;
             }
 
@@ -152,5 +153,56 @@ class Core extends Base\Core
             BankAccount\Entity::ACCOUNT_NUMBER   => $payerAccount->getAccountNumber(),
             BankAccount\Entity::BENEFICIARY_NAME => $payerAccount->getBeneficiaryName()
         ];
+    }
+
+    public function checkPaymentViaQRv1($merchant){
+
+        if(empty($merchant) === true)
+        {
+            return false;
+        }
+
+        $splitzMerchantResult = $this->getSplitzResponseForQrCodeV1Processing($merchant->getId());
+
+        $isQRv1FeatureEnabled = $merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC);
+
+        if(($splitzMerchantResult === 'enable') or ($isQRv1FeatureEnabled === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getSplitzResponseForQrCodeV1Processing($merchantId)
+    {
+        try {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.qr_code_v1_failed_payment_experiment'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::QR_CODE_V1_FAILED_PAYMENT_SPLITZ_EXP, [
+                'merchant_id' => $merchantId,
+                'experiment_name' =>'qr_code_v1_failed_payment_experiment',
+                'splitz_response' => $response,
+            ]);
+
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Throwable $e) {
+            $this->trace->info( TraceCode::SPLITZ_ERROR, [
+                'merchant_id'     => $merchantId,
+                'experiment_name' => 'qr_code_v1_failed_payment_experiment'
+            ]);
+
+            return '';
+        }
     }
 }

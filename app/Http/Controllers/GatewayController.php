@@ -678,7 +678,8 @@ class GatewayController extends Controller
 
             $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data['terminal']);
 
-            if (($terminal !== null) and ($terminal->isQrV2Terminal() === true))
+            if (($terminal !== null) and ($terminal->isQrV2Terminal() === true) and
+                ((new QrPayment\Core)->checkPaymentViaQRv1($terminal->merchant) === false))
             {
                 $isQrV2Payment = true;
 

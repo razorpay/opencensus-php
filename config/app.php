@@ -1048,6 +1048,7 @@ return array(
 
     'gifu_upi_ds_settlement_timestamp_exp_id' => env('GIFU_UPI_DS_SETTLEMENT_TIMESTAMP_EXP_ID'),
 
-    'pos_activation_check_for_offline_payments_splitz_exp_id' => env('POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENTS_SPLITZ_EXP_ID')
+    'pos_activation_check_for_offline_payments_splitz_exp_id' => env('POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENTS_SPLITZ_EXP_ID'),
 
+    'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT')
 );

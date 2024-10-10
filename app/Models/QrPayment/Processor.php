@@ -5,6 +5,7 @@ namespace RZP\Models\QrPayment;
 use App;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -139,7 +140,7 @@ class Processor extends Base\Core
 
     protected function processPayment(Entity $qrPayment)
     {
-        $isUpiQrV1Hdfc = $this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC);
+        $isUpiQrV1Hdfc = $this->isUpiQRv1HDFCflow($this->merchant, $this->qrCode);
 
         $payment = null;
 
@@ -259,7 +260,7 @@ class Processor extends Base\Core
     {
         $paymentProcessor = $this->getPaymentProcessor();
 
-        if($this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC) === true)
+        if($this->isUpiQRv1HDFCflow($this->merchant, $this->qrCode) === true)
         {
             $payment = null;
 
@@ -960,5 +961,15 @@ class Processor extends Base\Core
         }
 
         return $paymentContext;
+    }
+
+    protected function isUpiQRv1HDFCflow($merchant, $qrCode): bool
+    {
+        if(($qrCode->getEntityType() === EntityConstants::VIRTUAL_ACCOUNT) and
+            ((new Core)->checkPaymentViaQRv1($merchant) === true))
+        {
+            return true;
+        }
+        return false;
     }
 }
