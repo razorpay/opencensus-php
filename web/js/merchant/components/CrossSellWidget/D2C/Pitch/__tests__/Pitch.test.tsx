@@ -35,12 +35,11 @@ describe('Pitch', () => {
 
   it('should render the solution content of the pitch component when clicked on problem content cta', async () => {
     renderApp();
+    const problemContentCta =
+      components[0].components[1].data.cross_sell_widget_data?.actions?.title;
+
+    userEvent.click(screen.getByRole('button', { name: problemContentCta }));
     await waitFor(() => {
-      const problemContentCta =
-        components[0].components[1].data.cross_sell_widget_data?.actions?.title;
-
-      userEvent.click(screen.getByRole('button', { name: problemContentCta }));
-
       const problemContentDisplayText = components[0].components[1].data.cross_sell_widget_data
         ?.text_content.display as string;
       expect(screen.getByText(problemContentDisplayText)).toBeInTheDocument();
@@ -57,12 +56,13 @@ describe('Pitch', () => {
     const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
 
     renderApp();
+
+    const problemContentCta =
+      components[0].components[1].data.cross_sell_widget_data?.actions?.title;
+
+    userEvent.click(screen.getByRole('button', { name: problemContentCta }));
+
     await waitFor(() => {
-      const problemContentCta =
-        components[0].components[1].data.cross_sell_widget_data?.actions?.title;
-
-      userEvent.click(screen.getByRole('button', { name: problemContentCta }));
-
       const solutionContentDisplayText = components[1].components[1].data.cross_sell_widget_data
         ?.text_content.display as string;
       expect(screen.getByText(solutionContentDisplayText)).toBeInTheDocument();
