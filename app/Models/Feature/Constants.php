@@ -2290,6 +2290,10 @@ class Constants
      */
     const VAS_ORG_IDENTIFIER = 'vas_org_identifier';
 
+    const ADD_WEBHOOK_HEADERS_ORG = 'add_webhook_headers_org';
+
+    const ADD_WEBHOOK_HEADERS_MX = 'add_webhook_headers_mx';
+
     /**
      * Feature flag will be enabled for HDFC corp payments
      * below feature flag is org level
@@ -3128,6 +3132,8 @@ class Constants
         self::ONE_CC_ENABLE_NECTOR_COINS                   => true,
         self::ONE_CC_OPT_SHIPPING_TAX                      => true,
         self::VAS_ORG_IDENTIFIER                           => true,
+        self::ADD_WEBHOOK_HEADERS_ORG                      => true,
+        self::ADD_WEBHOOK_HEADERS_MX                       => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
         self::DEBIT_CARD_VALIDATION                  => true,
@@ -4644,6 +4650,12 @@ class Constants
             'feature' => self::VAS_ORG_IDENTIFIER,
             'display_name' => "VAS ORG IDENTIFIER",
             'documentation' => "Feature flag for determining if the organization is a VAS/Banking Program Org",
+        ],
+        self::ADD_WEBHOOK_HEADERS_MX => [
+            'feature' => self::ADD_WEBHOOK_HEADERS_MX,
+            'display_name' => 'add_custom_additional_headers_in_webhooks_mx',
+            'documentation' => 'When enabled on merchants, pre-defined custom additional headers for their org will
+             be passed in the webhook to the merchant as per the compliance requirement of the bank.'
         ],
         self::MESSAGE_BANNER_DISABLED => [
             'feature'       => self::MESSAGE_BANNER_DISABLED,
