@@ -599,28 +599,36 @@ class Metric extends Base\Core
         $enrolled = null;
 
         try {
-            if ($payment->hasCard() === true) {
+            if ($payment->hasCard() === true && $payment->isInternational()) {
                 $authorization_data = (new PaymentService())->getAuthorizationEntity($payment->getPublicId());
                 $protocolVersion = (new PaymentService())->getCardProtcolVersion($authorization_data);
 
                 if (isset($authorization_data['enrollment_status'])) {
                     $enrolled = $authorization_data['enrollment_status'];
                 }
+
+                $dimensions = [
+                    self::LABEL_PAYMENT_LATE_AUTHORIZED => $payment->isLateAuthorized(),
+                    self::LABEL_CARD_ENROLLMENT_STATUS  => $enrolled ?? null,
+                    self::LABEL_CARD_PROTOCOL_VERSION   => $protocolVersion ?? null,
+                ];
+                return $dimensions;
             }
         } catch (\Throwable $e) {
-            $this->trace->info('Error retrieving payment authorization dimensions: ' . $e->getMessage() .
-                ' Protocol version: ' . $protocolVersion .
-                ' Card enrollment status: ' . $enrolled);
+            $this->trace->info(
+                TraceCode::PAYMENTS_AUTH_DIMENSIONS_ERROR,
+                [
+                    'error_message' => $e->getMessage(),
+                    'protocol_version' => $protocolVersion,
+                    'card_enrollment_status' => $enrolled,
+                ]
+            );
         }
 
         $dimensions = [
             self::LABEL_PAYMENT_LATE_AUTHORIZED => $payment->isLateAuthorized(),
-            self::LABEL_CARD_ENROLLMENT_STATUS  => $enrolled ?? null,
-            self::LABEL_CARD_PROTOCOL_VERSION   => $protocolVersion ?? null,
         ];
-
         return $dimensions;
-
     }
 
     protected function getPaymentCapturedDimensions(Entity $payment)
