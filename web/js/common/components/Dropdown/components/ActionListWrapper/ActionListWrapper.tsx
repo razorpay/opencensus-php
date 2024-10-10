@@ -39,7 +39,8 @@ const ActionListWrapper = ({
         } else {
           const { title, value: optionValue } = option as Option;
           const isSelected = _selectedOptions.some(
-            ({ value: selectedValue }) => optionValue === selectedValue,
+            // handling the case where the option is falsy
+            (option) => optionValue === option?.value,
           );
           return (
             <ActionListItem
