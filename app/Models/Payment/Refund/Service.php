@@ -23,6 +23,7 @@ use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\Dcs\Features\Type;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Services\Ledger as LedgerService;
 
 use RZP\Models\Reversal;
@@ -4252,5 +4253,38 @@ class Service extends Base\Service
         $response['transaction_data'] = $transaction;
 
         return $response;
+    }
+
+    public function dispatchEzetapRefundWebhook($input)
+    {
+        $this->trace->info(TraceCode::REFUND_EVENT_PAYLOAD, [
+            'message' => 'REFUND_EVENT_PAYLOAD',
+            'featureParams' =>  $input,
+        ]);
+
+        $refundId = $input['data']['refund']['id'];
+        $refund = $this->repo->refund->findByPublicId($refundId);
+        $this->publishInPersonRefundEvent($refund, $input['name']);
+    }
+
+    public function publishInPersonRefundEvent($entity, $event)
+    {
+        try
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $entity
+            ];
+
+            $event = 'api.in.person.' . $event;
+
+            $this->app['events']->dispatch($event, $eventPayload);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::EZETAP_NOTIFICATION_PUBLISH_FAILED, [
+                'entity' => $entity->toArrayPublic(),
+                'event'  => $event
+            ]);
+        }
     }
 }

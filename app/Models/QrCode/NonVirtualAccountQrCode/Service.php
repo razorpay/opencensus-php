@@ -223,6 +223,7 @@ class Service extends QrCode\Service
         return $response;
     }
 
+
     protected function getInputForPartnerSqrCreate($input)
     {
 

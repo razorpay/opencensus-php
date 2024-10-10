@@ -29,6 +29,10 @@ class KafkaMessageProcessor
     const PGOS_PROD_CDC_EVENTS                      = 'cdc_events_mysql_prod_pg_onboarding';
     const MERCHANT_POS_ACTIVATION_STAGE             = 'merchant_pos_activation_stage';
     const MERCHANT_POS_ACTIVATION_PROD              = 'merchant_pos_activation_prod';
+    const PROD_LIVE_REFUND_EVENTS                   = 'prod_live_refund_events';
+    const PROD_TEST_REFUND_EVENTS                   = 'prod_test_refund_events';
+    const STAGE_LIVE_REFUND_EVENTS                  = 'stage_live_refund_events';
+    const STAGE_TEST_REFUND_EVENTS                  = 'stage_test_refund_events';
     const PARTNER_WEBHOOK_CALLBACK_EVENTS           = "partner_webhook_callback_events";
     const PARTNERSHIPS_OUTBOX_EVENTS                = "api_outbox_partnerships";
     const API_KAFKA_CONSUMER_BVS_VIDEO_KYC_EVENTS   = "api-bvs-video-kyc-result-events";
@@ -175,6 +179,11 @@ class KafkaMessageProcessor
             case self::MERCHANT_POS_ACTIVATION_STAGE:
             case self::MERCHANT_POS_ACTIVATION_PROD:
                 return new KafkaJobs\PosMerchantActivationEventsJob($payload,$mode);
+            case self::PROD_LIVE_REFUND_EVENTS:
+            case self::PROD_TEST_REFUND_EVENTS:
+            case self::STAGE_LIVE_REFUND_EVENTS:
+            case self::STAGE_TEST_REFUND_EVENTS:
+                return new KafkaJobs\EzetapRefundEventsJob($payload,$mode);
             case self::PARTNER_WEBHOOK_CALLBACK_EVENTS:
                 return new KafkaJobs\PartnerWebhookEventHandlerJob($payload, $mode);
             case self::ASV_MERCHANT_UPDATE_EVENTS:

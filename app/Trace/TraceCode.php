@@ -3103,6 +3103,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE            = 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE';
     const POS_QR_CODE_FEATURE_ENABLE_PAYLOAD                    = 'POS_QR_CODE_FEATURE_ENABLE_PAYLOAD';
     const POS_QR_CODE_FEATURE_ENABLE_RESPONSE                   = 'POS_QR_CODE_FEATURE_ENABLE_RESPONSE';
+    const REFUND_EVENT_PAYLOAD                                  = 'REFUND_EVENT_PAYLOAD';
     const CAPTCHA_DISABLE                                       = 'CAPTCHA_DISABLE';
     const REFUND_TRANSACTION_FAILED                             = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                            = 'CREDITS_TRANSACTION_FAILED';
@@ -4824,6 +4825,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPLOAD_FILE_DETAILS                                   = 'UPLOAD_FILE_DETAILS';
     const TRACK_CARD_OPTIONAL_CFB_FLOW                          = 'TRACK_CARD_OPTIONAL_CFB_FLOW';
     const QR_CODE_WEBHOOK_PUBLISH_FAILED                        = 'QR_CODE_WEBHOOK_PUBLISH_FAILED';
+    const EZETAP_NOTIFICATION_PUBLISH_FAILED                    = 'EZETAP_NOTIFICATION_PUBLISH_FAILED';
 
     // To log various debugs for a migrate command
     const BATCH_MIGRATE_DEBUG                                   = 'BATCH_MIGRATE_DEBUG';
@@ -6473,6 +6475,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const POS_MERCHANT_ACTIVATION_PAYLOAD                      = 'POS_MERCHANT_ACTIVATION_PAYLOAD';
     const POS_MERCHANT_ACTIVATION_WARNING                      = 'POS_MERCHANT_ACTIVATION_WARNING';
     const POS_MERCHANT_ACTIVATION_ERROR                        = 'POS_MERCHANT_ACTIVATION_ERROR';
+
+    //Refund ezetap events Kafka Consumer
+    const EZETAP_REFUND_EVENT_PAYLOAD                      = 'EZETAP_REFUND_EVENT_PAYLOAD';
+    const EZETAP_REFUND_EVENT_WARNING                      = 'EZETAP_REFUND_EVENT_WARNING';
+    const EZETAP_REFUND_EVENT_ERROR                        = 'EZETAP_REFUND_EVENT_ERROR';
 
     //PGOS Dual Write Kafka Consumer
     const PGOS_DUAL_WRITE_CONSUMER_PAYLOAD                      = 'PGOS_DUAL_WRITE_CONSUMER_PAYLOAD';

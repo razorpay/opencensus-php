@@ -5,6 +5,8 @@ namespace Functional\QrCode;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
@@ -1822,5 +1824,260 @@ class UpiAirtelQRCodeTest extends TestCase
         $this->runQrPaymentEntityAssertions();
         $this->assertEqualsCanonicalizing($eventList,$expectedEventList);
         $this->assertEquals(0, $actualEzetapNotificationCallCount);
+    }
+
+    protected function createRefundEntities($payment , $createdAt)
+    {
+        $paymentId = $payment['id'];
+        $this->fixtures->stripSign($paymentId);
+        $refund = $this->fixtures->create(
+            'refund',
+            [
+                'payment_id'  => $paymentId,
+                'merchant_id' => '10000000000000',
+                'amount'      => $payment['amount'],
+                'base_amount' => $payment['amount'],
+                'gateway'     => $payment['gateway'],
+            ])->toArray();
+
+        $transaction = $this->fixtures->create(
+            'transaction',
+            [
+                'entity_id' => $refund['id'],
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->fixtures->edit(
+            'refund',
+            $refund['id'],
+            [
+                'created_at' => $createdAt,
+                'transaction_id' => $transaction->getId()
+            ]);
+
+
+        return $refund;
+    }
+
+    protected function getRefundEventPayload($payment , $refund, $event,$createdAt)
+    {
+        $refundId = 'rfnd_'.$refund['id'];
+        $payload = [
+            "name" => $event,
+            "data" => [
+                'refund'   => [
+                    'id'             => $refundId,
+                    'amount'         => $payment['amount'],
+                    'currency'       => 'INR',
+                    'payment_id'     => $payment['id'],
+                    'created_at'     => $createdAt,
+                    'updated_at'     => $createdAt,
+                    'deleted_at'     => null,
+                ],
+                'payment'  => [
+                    'id'            => $payment['id'],
+                    'amount'        => $payment['amount'],
+                    'captured_at'   => $payment['captured_at'],
+                    'created_at'    => $payment['created_at'],
+                    'authorized_at' => $payment['authorized_at'],
+                ],
+                'metadata' => [
+                    'timestamp'          => $createdAt,
+                    'taskId'             => 'taskId',
+                    'publishing_service' => 'scrooge',
+                ]
+            ],
+        ];
+
+        return $payload;
+    }
+
+    public function testEzetapNotificationOfflineRefundCreatedQRCode()
+    {
+        $this->mockSplitzTreatmentForEzetapNotification();
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $actualEzetapNotificationCallCount = 0;
+        $eventList                         = [];
+        $expectedEventList                 = ['qr_code.created',
+                                              'qr_code.credited',
+                                              'payment.captured',
+                                              'refund.created'];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@mairtel',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+        $this->assertEquals(1, $actualEzetapNotificationCallCount);
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+
+        $this->runQrPaymentEntityAssertions();
+        $payment   = $this->getLastEntity('payment', true);
+        $createdAt = Carbon::now(Timezone::IST)->addMicrosecond(4000)->getTimestamp();
+        $refund    = $this->createRefundEntities($payment, $createdAt);
+        $payload   = $this->getRefundEventPayload($payment, $refund, "refund.created", $createdAt);
+
+        (new Refund\Service)->dispatchEzetapRefundWebhook($payload);
+        $this->assertEqualsCanonicalizing($eventList, $expectedEventList);
+        $this->assertEquals(4, $actualEzetapNotificationCallCount);
+    }
+
+    public function testEzetapNotificationOfflineRefundCreatedQRCodeWithoutExperiment()
+    {
+        $this->mockSplitzTreatmentForEzetapNotification('off');
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $actualEzetapNotificationCallCount = 0;
+        $eventList                         = [];
+        $expectedEventList                 = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@mairtel',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+        $this->assertEquals(0, $actualEzetapNotificationCallCount);
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+
+        $this->runQrPaymentEntityAssertions();
+        $payment   = $this->getLastEntity('payment', true);
+        $createdAt = Carbon::now(Timezone::IST)->addMicrosecond(4000)->getTimestamp();
+        $refund    = $this->createRefundEntities($payment, $createdAt);
+        $payload   = $this->getRefundEventPayload($payment, $refund, "refund.created", $createdAt);
+
+        (new Refund\Service)->dispatchEzetapRefundWebhook($payload);
+        $this->assertEqualsCanonicalizing($eventList, $expectedEventList);
+        $this->assertEquals(0, $actualEzetapNotificationCallCount);
+    }
+
+    public function testEzetapNotificationOfflineRefundProcessedQRCode()
+    {
+        $this->mockSplitzTreatmentForEzetapNotification();
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $actualEzetapNotificationCallCount = 0;
+        $eventList                         = [];
+        $expectedEventList                 = ['qr_code.created',
+                                              'qr_code.credited',
+                                              'payment.captured',
+                                              'refund.created',
+                                              'refund.processed',];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@mairtel',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+        $this->assertEquals(1, $actualEzetapNotificationCallCount);
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+
+        $this->runQrPaymentEntityAssertions();
+        $payment   = $this->getLastEntity('payment', true);
+        $createdAt = Carbon::now(Timezone::IST)->addMicrosecond(4000)->getTimestamp();
+        $refund    = $this->createRefundEntities($payment, $createdAt);
+        $payload   = $this->getRefundEventPayload($payment, $refund, "refund.created", $createdAt);
+
+        (new Refund\Service)->dispatchEzetapRefundWebhook($payload);
+        $payload = $this->getRefundEventPayload($payment, $refund, "refund.processed", $createdAt);
+
+        (new Refund\Service)->dispatchEzetapRefundWebhook($payload);
+        $this->assertEqualsCanonicalizing($eventList, $expectedEventList);
+        $this->assertEquals(5, $actualEzetapNotificationCallCount);
+    }
+
+    public function testEzetapNotificationOfflineRefundFailedQRCode()
+    {
+        $this->mockSplitzTreatmentForEzetapNotification();
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $actualEzetapNotificationCallCount = 0;
+        $eventList                         = [];
+        $expectedEventList                 = ['qr_code.created',
+                                              'qr_code.credited',
+                                              'payment.captured',
+                                              'refund.created',
+                                              'refund.failed',];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+                     [
+                         'usage' => 'multiple_use',
+                         'type'  => 'upi_qr',
+                         'vpa'   => 'testvpaOffline@mairtel',
+                     ],
+            headers: [
+                         'X-Razorpay-Request-Source' => 'ezetap'
+                     ]
+        );
+        $this->assertEquals(1, $actualEzetapNotificationCallCount);
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+
+        $this->runQrPaymentEntityAssertions();
+        $payment   = $this->getLastEntity('payment', true);
+        $createdAt = Carbon::now(Timezone::IST)->addMicrosecond(4000)->getTimestamp();
+        $refund    = $this->createRefundEntities($payment, $createdAt);
+        $payload   = $this->getRefundEventPayload($payment, $refund, "refund.created", $createdAt);
+
+        (new Refund\Service)->dispatchEzetapRefundWebhook($payload);
+        $payload = $this->getRefundEventPayload($payment, $refund, "refund.failed", $createdAt);
+
+        (new Refund\Service)->dispatchEzetapRefundWebhook($payload);
+        $this->assertEqualsCanonicalizing($eventList, $expectedEventList);
+        $this->assertEquals(5, $actualEzetapNotificationCallCount);
     }
 }

@@ -1279,6 +1279,33 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onInPersonRefundCreated(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+        $this->event = 'refund.created';
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
+        $this->dispatchEventToEzetapNotification($payload);
+    }
+
+    protected function onInPersonRefundProcessed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+        $this->event = 'refund.processed';
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
+        $this->dispatchEventToEzetapNotification($payload);
+    }
+
+    protected function onInPersonRefundFailed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+        $this->event = 'refund.failed';
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
+        $this->dispatchEventToEzetapNotification($payload);
+    }
+
     protected function onRefundFailed(RefundEntity $refund)
     {
         $payload = $this->getRefundPayload($refund);

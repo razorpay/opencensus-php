@@ -68,7 +68,7 @@ class EzetapNotification
         $startTimeMs = microtime(true) * 1000;
 
         $metric      = new EzetapNotificationMetric();
-
+        $errorMessage = null;
         try
         {
             if ($this->isEzetapNotificationEvent($event) === false)
