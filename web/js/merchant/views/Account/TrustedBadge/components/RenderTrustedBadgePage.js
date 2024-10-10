@@ -16,7 +16,6 @@ const RenderTrustedBadgePage = ({
   loading,
   updateAction,
 }) => {
-  // Opt Out Modal State
   const [modalState, setModalState] = React.useState({ show: false });
 
   const selectedData = React.useMemo(() => data[status], [data, status]);

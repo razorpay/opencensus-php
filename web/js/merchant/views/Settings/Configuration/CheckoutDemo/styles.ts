@@ -33,12 +33,14 @@ export const CheckoutFrame = styled.iframe<{
   isDesktopPreview: boolean;
   shouldScaleToFit: boolean;
 }>`
-  width: ${(props) => (props.isDesktopPreview ? '1000px' : '260px')};
-  height: 100%;
+  width: ${(props) => (props.isDesktopPreview ? '1000px' : '370px')};
+  height: 760px;
   pointer-events: none;
   border: 0;
   transform: ${(props) =>
-    props.isDesktopPreview && props.shouldScaleToFit ? 'translate(-25%, -25%) scale(0.5)' : ''};
+    props.isDesktopPreview && props.shouldScaleToFit
+      ? 'translate(-25%, -20%) scale(0.5)'
+      : 'scale(0.7)'};
   background: ${(props) => props.bgColor || 'none'};
 `;
 

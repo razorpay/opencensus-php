@@ -559,17 +559,16 @@ export const Sections: SectionCardInterface[] = [
     additionalCondition:
       ({ extraConfig }: AdditionalContextInterface) =>
       (user: User): boolean =>
-        isCheckoutV2SettingsAllowed(extraConfig) &&
-        (isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig)),
+        isCheckoutV2SettingsAllowed(extraConfig) && isConfigurationViewAllowed(user),
     subSections: [
       {
         id: Checkout_V2_SettingsFields.CHECKOUT_STYLING,
         title: Checkout_V2_SettingTitles[Checkout_V2_SettingsFields.CHECKOUT_STYLING],
         href: ROUTES_INFO.CHECKOUT_STYLING,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isConfigurationViewAllowed(user),
+            isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig),
       },
       {
         id: Checkout_V2_SettingsFields.FEATURES,
@@ -579,15 +578,6 @@ export const Sections: SectionCardInterface[] = [
           () =>
           (user: User): boolean =>
             isConfigurationViewAllowed(user),
-      },
-      {
-        id: Checkout_V2_SettingsFields.TRUSTED_BADGE,
-        title: CheckoutSettingsTitles[Checkout_V2_SettingsFields.TRUSTED_BADGE],
-        href: ROUTES_INFO.TRUSTED_BADGE,
-        additionalCondition:
-          ({ extraConfig }: AdditionalContextInterface) =>
-          (user: User): boolean =>
-            isTrustedBadgeAllowed(user, extraConfig),
       },
     ],
   },

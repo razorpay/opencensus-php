@@ -70,7 +70,6 @@ export enum CheckoutSettingsFields {
 export enum Checkout_V2_SettingsFields {
   CHECKOUT_STYLING = 'checkout_styling',
   FEATURES = 'features',
-  TRUSTED_BADGE = 'trusted_badge',
 }
 
 export enum PricingFields {
@@ -154,7 +153,6 @@ export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {
 export const Checkout_V2_SettingTitles: Record<Checkout_V2_SettingsFields, string> = {
   [Checkout_V2_SettingsFields.CHECKOUT_STYLING]: 'Checkout styling',
   [Checkout_V2_SettingsFields.FEATURES]: 'Features',
-  [Checkout_V2_SettingsFields.TRUSTED_BADGE]: 'Trusted badge',
 };
 
 export const PricingTitles: Record<PricingFields, string> = {

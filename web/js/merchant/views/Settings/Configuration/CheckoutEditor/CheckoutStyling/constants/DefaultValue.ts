@@ -2,6 +2,10 @@ import graphicOne from 'assets/checkout-editor/sidebar-graphic/graphics-one.svg'
 import graphicTwo from 'assets/checkout-editor/sidebar-graphic/graphics-two.svg';
 import graphicThree from 'assets/checkout-editor/sidebar-graphic/graphics-three.svg';
 
+import typeOne from 'assets/checkout-editor/title-style/type-one.png';
+import typeTwo from 'assets/checkout-editor/title-style/type-two.png';
+import typeThree from 'assets/checkout-editor/title-style/type-three.png';
+
 export const BRAND_COLOR_DEFAULT_VALUE = {
   title: 'Background color',
   subTitle: 'Customize with your brand color',
@@ -14,38 +18,19 @@ export const FONT_STYLE_DEFAULT_VALUE = {
 };
 
 export const FONT_OPTIONS = [
-  // Sans Serif
-  { name: 'Inter (default)', code: 'inter' },
-  { name: 'Montserrat', code: 'montserrat' },
-  { name: 'Open Sans', code: 'open-sans' },
-  { name: 'Roboto', code: 'roboto' },
-  { name: 'Noto', code: 'noto' },
-  { name: 'Poppins', code: 'poppins' },
-
-  // Serif
-  { name: 'Merriweather', code: 'merriweather' },
-  { name: 'Georgia', code: 'georgia' },
-  { name: 'Baskerville', code: 'baskerville' },
-
-  // Slab Serif
-  { name: 'Roboto Slab', code: 'roboto-slab' },
-  { name: 'Sanchez', code: 'sanchez' },
-  { name: 'Rokkitt', code: 'rokkitt' },
-
-  // Display
-  { name: 'TASA (default)', code: 'tasa' },
-  { name: 'Bebas Neue', code: 'bebas-neue' },
-  { name: 'Cera Pro', code: 'cera-pro' },
-  { name: 'Modak', code: 'modak' },
-  { name: 'Grotesque', code: 'grotesque' },
-  { name: 'Space Grotesk', code: 'space-grotesk' },
-  { name: 'Syne', code: 'syne' },
-  { name: 'Familjen Grotesk', code: 'familjen-grotesk' },
-
-  // Script Type
-  { name: 'Playfair Display', code: 'playfair-display' },
-  { name: 'Lobster', code: 'lobster' },
-  { name: 'Pacifico', code: 'pacifico' },
+  { name: 'Inter', code: 'Inter' },
+  { name: 'Montserrat', code: 'Montserrat' },
+  { name: 'Open Sans', code: 'Open Sans' },
+  { name: 'Roboto', code: 'Roboto' },
+  { name: 'Noto Sans', code: 'Noto Sans' },
+  { name: 'Merriweather', code: 'Merriweather' },
+  { name: 'Roboto Slab', code: 'Roboto Slab' },
+  { name: 'Rokkitt', code: 'Rokkitt' },
+  { name: 'Tasa (default)', code: 'Tasa' },
+  { name: 'Space Grotesk', code: 'Space Grotesk' },
+  { name: 'Syne', code: 'Syne' },
+  { name: 'Familjen Grotesk', code: 'Familjen Grotesk' },
+  { name: 'Playfair Display', code: 'Playfair Display' },
 ];
 
 export const AVAILABLE_BORDER_STYLE = {
@@ -83,4 +68,66 @@ export const SIDEBAR_GRAPHICS_ITEMS = [
 export const getFontNameByCode = (code: string) => {
   const font = FONT_OPTIONS.find((font) => font.code === code);
   return font?.name;
+};
+
+export const AVAILABLE_TITLE_STYLE = {
+  LOGO_TEXT: 'LogoText',
+  WORDMARK: 'Wordmark',
+  TEXT_ONLY: 'TextOnly',
+  LOGO_ONLY: 'LogoOnly',
+};
+
+export const DEFAULT_TITLE_TYPE = [
+  {
+    title: 'Logo only',
+    description: 'Best for square logos',
+    src: typeOne,
+    alt: 'Razorpay',
+    value: AVAILABLE_TITLE_STYLE.LOGO_ONLY,
+  },
+  {
+    title: 'Logo & Text',
+    description: 'Best for square logos',
+    src: typeOne,
+    alt: 'Razorpay',
+    value: AVAILABLE_TITLE_STYLE.LOGO_TEXT,
+  },
+  {
+    title: 'Wordmark',
+    description: 'Best for long word based logos',
+    src: typeTwo,
+    alt: 'Razorpay',
+    value: AVAILABLE_TITLE_STYLE.WORDMARK,
+  },
+  {
+    title: 'Text only',
+    description: 'Just text? We got you.',
+    src: typeThree,
+    alt: 'Razorpay',
+    value: AVAILABLE_TITLE_STYLE.TEXT_ONLY,
+  },
+];
+
+export const EDIT_LOGO_TITLE_HEADER_VALUE = {
+  [AVAILABLE_TITLE_STYLE.LOGO_TEXT]: {
+    title: 'Add brand name and upload logo',
+    subTitle: 'Choose an image from your device to upload',
+  },
+  [AVAILABLE_TITLE_STYLE.LOGO_ONLY]: {
+    title: 'Upload a brand logo',
+    subTitle: 'Choose an image from your device to upload',
+  },
+  [AVAILABLE_TITLE_STYLE.WORDMARK]: {
+    title: 'Upload a wordmark logo',
+    subTitle: 'Choose and image from your device to upload',
+  },
+  [AVAILABLE_TITLE_STYLE.TEXT_ONLY]: {
+    title: 'Enter brand  name',
+    subTitle: 'Choose brand name that your customers are familiar with',
+  },
+};
+
+export const TITLE_DEFAULT_VALUE = {
+  title: 'Title style',
+  subTitle: 'Choose a title style best for your logo (max 1 mb)',
 };

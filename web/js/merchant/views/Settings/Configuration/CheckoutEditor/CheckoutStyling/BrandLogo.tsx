@@ -36,7 +36,6 @@ const BrandLogo = ({ user, showNotification }: BrandLogoProps): JSX.Element => {
 
   const handleFileChange = (evt: React.ChangeEvent) => {
     const { files } = evt.target as HTMLInputElement;
-
     if (files?.length) {
       handleLogoChange(files[0]);
     }

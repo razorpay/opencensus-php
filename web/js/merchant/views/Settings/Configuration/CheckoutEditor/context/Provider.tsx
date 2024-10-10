@@ -31,6 +31,9 @@ import {
   createPayloadToSaveConfig,
   hasValuesChanged,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
+
+import { createTitleModalPayloadToSaveConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers/brandConfigHelper';
+
 import { checkoutFeatureReducer } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/reducer';
 import {
   flashCheckoutProps,
@@ -51,6 +54,8 @@ export type CheckoutEditorProviderProps = {
   showNotification: (payload: unknown) => void;
   updateConfig: (payload: unknown) => Promise<unknown>;
   createMerchantCheckoutStylingConfig: (payload: unknown) => Promise<unknown>;
+  createMerchantCheckoutBrandConfig: (payload: unknown) => Promise<unknown>;
+  updateEmailConfig: (payload: unknown) => Promise<unknown>;
 };
 
 const CheckoutEditorProvider = ({
@@ -66,7 +71,9 @@ const CheckoutEditorProvider = ({
   createMerchantCheckoutConfig,
   merchantCheckoutStyledConfig,
   createMerchantCheckoutStylingConfig,
+  createMerchantCheckoutBrandConfig,
   showNotification,
+  updateEmailConfig,
 }: CheckoutEditorProviderProps): JSX.Element => {
   const [state, dispatch] = useReducer(checkoutFeatureReducer, INITIAL_STATE);
 
@@ -113,12 +120,20 @@ const CheckoutEditorProvider = ({
     setValue(CHECKOUT_EDITOR_FIELDS.FONT_FAMILY, value);
   };
 
+  const handleTitleStyleChange = (value: string) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.TITLE_STYLE, value);
+  };
+
   const handleLogoChange = (value: File | null) => {
     setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RAW, value);
-
     if (value === null) {
       setValue(CHECKOUT_EDITOR_FIELDS.LOGO, '');
     }
+  };
+
+  const handleEditLogoModalDiscard = (logValue: string, logoRawVal: File | null) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RAW, logoRawVal);
+    setValue(CHECKOUT_EDITOR_FIELDS.LOGO, logValue);
   };
 
   const handleSidebarGraphicToggle = (value: boolean) => {
@@ -190,6 +205,10 @@ const CheckoutEditorProvider = ({
     setValue(CHECKOUT_EDITOR_FIELDS.SHOW_FINAL_PRICE, isEnabled);
   };
 
+  const handleBrandNameChange = (value: string) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.BRAND_NAME, value);
+  };
+
   const setAccountConfigToState = useCallback(() => {
     const getFeatureFlag = (features: ConfigFeatures | undefined, featureAPIKey: string) => {
       const featureObj = features?.find((feature) => feature.feature === featureAPIKey);
@@ -217,7 +236,6 @@ const CheckoutEditorProvider = ({
           [CHECKOUT_EDITOR_FIELDS.LOGO_RAW]: null,
           [CHECKOUT_EDITOR_FIELDS.LOGO_RECT]: accountConfig.rect_logo_url,
           [CHECKOUT_EDITOR_FIELDS.LOGO_RECT_RAW]: null,
-          [CHECKOUT_EDITOR_FIELDS.BRAND_NAME]: accountConfig.name,
         },
       });
 
@@ -238,6 +256,8 @@ const CheckoutEditorProvider = ({
           [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: merchantCheckoutStyledConfig.button?.shape || '',
           [CHECKOUT_EDITOR_FIELDS.FONT_FAMILY]: merchantCheckoutStyledConfig?.text?.font,
           [CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]: merchantCheckoutStyledConfig?.sidebar_graphic,
+          [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: merchantCheckoutStyledConfig?.title_style,
+          [CHECKOUT_EDITOR_FIELDS.BRAND_NAME]: merchantCheckoutStyledConfig?.brand_name,
         },
       });
 
@@ -278,7 +298,10 @@ const CheckoutEditorProvider = ({
           merchantCheckoutConfig.checkout_message_banner ?? {};
 
         const configs = isEmpty(banner_config)
-          ? values[CHECKOUT_EDITOR_FIELDS.CUSTOM_MESSAGE].configs
+          ? values[CHECKOUT_EDITOR_FIELDS.CUSTOM_MESSAGE].configs.map((item) => ({
+              ...item,
+              bannerBackgroundColor: values[CHECKOUT_EDITOR_FIELDS.COLOR],
+            }))
           : Object.keys(banner_config ?? {}).map((key) => {
               const item = banner_config?.[key];
               const label = CUSTOM_MESSAGE_BANNER_SCREEN_LABELS[key];
@@ -337,22 +360,6 @@ const CheckoutEditorProvider = ({
         });
       }
 
-      if (payload.uploadLogo) {
-        await uploadLogo(payload.uploadLogo.file, payload.uploadLogo.fileName);
-        selfServeTrackSuccess({
-          selfServeAction: 'Brand Logo Uploaded',
-          page: 'Config',
-          screen: 'Settings',
-        });
-      } else if (payload.removeLogo) {
-        await removeLogo(payload.removeLogo);
-        selfServeTrackSuccess({
-          selfServeAction: 'Brand Logo Removed',
-          page: 'Config',
-          screen: 'Settings',
-        });
-      }
-
       if (payload.merchantCheckoutStyledConfig) {
         await createMerchantCheckoutStylingConfig(payload.merchantCheckoutStyledConfig);
         selfServeTrackSuccess({
@@ -382,6 +389,7 @@ const CheckoutEditorProvider = ({
 
       if (payload.emailConfig) {
         await updateFeatures(payload.emailConfig.data);
+        await updateEmailConfig(payload.emailConfig.value);
       }
 
       if (payload.flashCheckout) {
@@ -422,6 +430,43 @@ const CheckoutEditorProvider = ({
           trackMandateSummaryPageFailure(isMandatorySummaryPageEnabled, errors?.[0] || '');
           throw new Error(message);
         }
+      }
+      showNotification({ type: 'success', message: 'Settings saved successfully' });
+    } catch (error) {
+      const { errors, message } = error as { errors: string[]; message: string };
+      showNotification({ type: 'error', message: errors?.[0] ?? message });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveTitleModal = async () => {
+    setIsSaving(true);
+    const payload = createTitleModalPayloadToSaveConfig(state.values, state.config);
+    try {
+      if (payload.uploadLogo) {
+        await uploadLogo(payload.uploadLogo.file, payload.uploadLogo.fileName);
+        selfServeTrackSuccess({
+          selfServeAction: 'Brand Logo Uploaded',
+          page: 'Config',
+          screen: 'Settings',
+        });
+      } else if (payload.removeLogo) {
+        await removeLogo(payload.removeLogo);
+        selfServeTrackSuccess({
+          selfServeAction: 'Brand Logo Removed',
+          page: 'Config',
+          screen: 'Settings',
+        });
+      }
+
+      if (payload.merchantCheckoutBrandConfig) {
+        await createMerchantCheckoutBrandConfig(payload.merchantCheckoutBrandConfig);
+        selfServeTrackSuccess({
+          selfServeAction: 'Merchant Checkout Style Changes',
+          page: 'Config',
+          screen: 'Settings',
+        });
       }
       showNotification({ type: 'success', message: 'Settings saved successfully' });
     } catch (error) {
@@ -494,6 +539,10 @@ const CheckoutEditorProvider = ({
         handleFontStyleChange,
         handleSidebarGraphicToggle,
         handleSidebarGraphicValueChange,
+        handleTitleStyleChange,
+        handleBrandNameChange,
+        handleEditLogoModalDiscard,
+        handleSaveTitleModal,
       }}
     >
       {children}

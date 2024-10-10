@@ -16,11 +16,11 @@ export const CheckoutPreviewButtons = (): JSX.Element => {
   }
   return (
     <PreviewSizeWrapper>
-      <PreviewButton isActive={isDesktopPreview} onClick={handleDesktopPreviewClick}>
-        <DesktopIcon />
-      </PreviewButton>
       <PreviewButton isActive={!isDesktopPreview} onClick={handleMobilePreviewClick}>
         <MobileIcon />
+      </PreviewButton>
+      <PreviewButton isActive={isDesktopPreview} onClick={handleDesktopPreviewClick}>
+        <DesktopIcon />
       </PreviewButton>
     </PreviewSizeWrapper>
   );

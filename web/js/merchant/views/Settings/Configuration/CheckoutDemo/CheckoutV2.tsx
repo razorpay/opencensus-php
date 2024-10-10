@@ -1,15 +1,33 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import debounce from 'lodash/debounce';
+import { connect } from 'react-redux';
+import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
+import { Environments } from 'common/typings';
 import { toBase64 } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils';
 import { CheckoutFrame } from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
+import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
 import { CHECKOUT_IFRAME_URL } from './constants';
 import { useCheckoutPreview } from './context/createContext';
 import { initCheckout } from './liveCheckout';
-import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import { fetchKeys } from 'merchant/reducers/keys';
 
-const CheckoutV2 = ({ shouldScaleToFit }: { shouldScaleToFit: boolean }) => {
+type CheckoutV2Props = {
+  shouldScaleToFit: boolean;
+  fetchKeys: typeof fetchKeys;
+  apiKey: string;
+  mode: Environments;
+  forceLoadDesktopView?: boolean;
+};
+
+const CheckoutV2 = ({
+  shouldScaleToFit,
+  fetchKeys,
+  apiKey,
+  mode,
+  forceLoadDesktopView = false,
+}: CheckoutV2Props) => {
   const { isDesktopPreview } = useCheckoutPreview();
   const { values } = useCheckoutEditor();
   const updateCheckout = useRef<Promise<{
@@ -47,15 +65,36 @@ const CheckoutV2 = ({ shouldScaleToFit }: { shouldScaleToFit: boolean }) => {
     }
   }, [updateValues, values]);
 
+  useEffect(() => {
+    if (apiKey === undefined) {
+      fetchKeys({ mode });
+    }
+  }, [mode, fetchKeys, apiKey]);
+
   return (
     <CheckoutFrame
       tabIndex="-1"
-      src={CHECKOUT_IFRAME_URL}
+      src={`${CHECKOUT_IFRAME_URL}&key=${apiKey}`}
       ref={init}
-      isDesktopPreview={isDesktopPreview}
+      isDesktopPreview={forceLoadDesktopView || isDesktopPreview}
       shouldScaleToFit={shouldScaleToFit}
     />
   );
 };
 
-export default CheckoutV2;
+const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
+  return bindActionCreators(
+    {
+      fetchKeys,
+    },
+    dispatch,
+  );
+};
+
+export default connect((state) => {
+  return {
+    user: state.session.user,
+    apiKey: state.keys?.keys?.[0]?.id ?? null,
+    mode: state.session.mode,
+  };
+}, mapActionsToProps)(CheckoutV2);

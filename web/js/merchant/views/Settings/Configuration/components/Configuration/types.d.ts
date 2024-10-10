@@ -14,8 +14,8 @@ export type FeatureToggleProps = {
 };
 
 export type LineItemsProps = {
-  title?: string | ReactNode;
-  subTitle?: string | ReactNode;
-  rightChildren?: ReactNode;
-  extraItems?: ReactNode;
+  title?: string | React.ReactNode;
+  subTitle?: string | React.ReactNode;
+  rightChildren?: React.ReactNode;
+  extraItems?: React.ReactNode;
 };

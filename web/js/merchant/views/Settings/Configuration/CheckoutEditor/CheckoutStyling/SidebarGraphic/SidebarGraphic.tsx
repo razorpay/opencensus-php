@@ -13,7 +13,7 @@ const SidebarGraphic = () => {
 
   return (
     <FeatureToggle
-      isChecked={values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].enabled}
+      isChecked={values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.enabled}
       feature={CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC}
       title={SIDEBAR_DEFAULT_VALUE.title}
       subTitle={SIDEBAR_DEFAULT_VALUE.subTitle}

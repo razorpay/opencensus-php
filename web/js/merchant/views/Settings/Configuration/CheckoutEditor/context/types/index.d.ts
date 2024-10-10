@@ -18,11 +18,15 @@ export type CheckoutEditorContext<Values> = {
   handleShowFinalPriceToggle: (isEnabled: boolean) => void;
   handleLogoChange: (file: File | null) => void;
   handleRectLogoChange: (file: File | null) => void;
-  handleBrandColorChange: (evt?: React.ChangeEvent) => void;
+  handleBrandColorChange: (evt?: React.ChangeEvent, defaultValue?: string) => void;
   handleButtonStyleChange: (value: string) => void;
   handleFontStyleChange: (value: string) => void;
   handleSidebarGraphicToggle: (value: boolean) => void;
   handleSidebarGraphicValueChange: (value: string) => void;
+  handleTitleStyleChange: (value: string) => void;
+  handleBrandNameChange: (value: string) => void;
+  handleEditLogoModalDiscard: (logValue: string, logoRawVal: File | null) => void;
+  handleSaveTitleModal: () => void;
 };
 
 export type AccountLocale = {
@@ -108,6 +112,7 @@ export type CheckoutEditorPayload = {
     };
     isEmailShown: boolean;
     isEmailOptional: boolean;
+    value?: string;
   } | null;
   flashCheckout?: {
     isFlashCheckoutEnabled?: boolean;
@@ -181,6 +186,15 @@ export type CheckoutEditorPayload = {
       };
     };
   };
+  merchantCheckoutBrandConfig?: {
+    type: 'patch' | 'post';
+    checkout_configuration: {
+      checkout_style_config: {
+        brand_name?: string;
+        title_style?: string;
+      };
+    };
+  };
 };
 
 export type MerchantCheckoutStyledConfig = {
@@ -205,6 +219,11 @@ export type MerchantCheckoutStyledConfig = {
   };
 };
 
+export type MerchantCheckoutBrandConfig = {
+  brand_name?: string;
+  title_style?: string;
+};
+
 export type ColorTextInputProps = {
   label?: string;
   value?: string;
@@ -222,4 +241,15 @@ export type RightChildrenProps = {
 export type ButtonStyleItem = {
   name: string;
   icon: React.ReactElement;
+};
+
+export type TrustedBadgeType = {
+  status: {
+    original: any;
+    badgeStatus: string;
+  };
+  loading: boolean;
+  updatePending?: boolean;
+  updateError?: boolean;
+  updateAction?: string;
 };

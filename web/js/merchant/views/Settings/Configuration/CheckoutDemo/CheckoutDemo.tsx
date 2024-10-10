@@ -15,7 +15,7 @@ import CheckoutV2 from './CheckoutV2';
 import { CheckoutPreviewContext } from './context/createContext';
 
 const CheckoutDemo = (): JSX.Element => {
-  const [isDesktopPreview, setIsDesktopPreivew] = useState(true);
+  const [isDesktopPreview, setIsDesktopPreivew] = useState(false);
   const {
     abExperiments: { checkout_editor_v2_preview },
   } = useSplitzService();

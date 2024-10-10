@@ -5,6 +5,7 @@ import {
   AccountLocale,
   MerchantCheckoutConfig,
   MerchantCheckoutStyledConfig,
+  TrustedBadgeType,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
@@ -22,9 +23,11 @@ import {
   uploadLogo,
   removeLogo,
   createMerchantCheckoutStylingConfig,
+  createMerchantCheckoutBrandConfig,
   updateConfig,
+  updateEmailConfig,
 } from 'merchant/reducers/config';
-import { BrandName } from 'merchant/views/Account/Profile/components/BrandName';
+import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import {
   isFlashCheckoutAllowed,
   isSkipMandatorySummaryPageAllowed,
@@ -36,7 +39,6 @@ import FlashCheckout from 'merchant/views/Settings/Configuration/CheckoutEditor/
 import LanguageSettings from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/LanguageSettings/LanguageSettings';
 import MandatorySummaryPage from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/MandatorySummaryPage';
 import BrandColor from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/BrandColor';
-import BrandLogo from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/BrandLogo';
 import ButtonStyle from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/ButttonStyle';
 import FontStyle from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/FontStyle/FontStyle';
 import SidebarGraphic from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/SidebarGraphic/SidebarGraphic';
@@ -50,6 +52,9 @@ import {
 import { mapCheckoutEmailConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
+import TitleStyle from './CheckoutStyling/TitleStyle/TitleStyle';
+import RazorpayTrustesBadge from './CheckoutStyling/TrustedBadge/RazorpayTrustesBadge';
+
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
   accountLocale?: AccountLocale | null;
@@ -62,6 +67,8 @@ type CheckoutConfigProps = {
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
   showFeatures: boolean;
   showStyling: boolean;
+  trustedBadge: TrustedBadgeType;
+  updateEmailConfig: typeof updateEmailConfig;
 } & Omit<CheckoutEditorProviderProps, 'children'>;
 
 const CheckoutFeatures = ({
@@ -81,9 +88,12 @@ const CheckoutFeatures = ({
   createMerchantCheckoutConfig,
   merchantCheckoutStyledConfig,
   createMerchantCheckoutStylingConfig,
+  createMerchantCheckoutBrandConfig,
   extraConfig,
   showFeatures,
   showStyling,
+  trustedBadge,
+  updateEmailConfig,
 }: CheckoutConfigProps) => {
   const isCustomMessageFeatureEnabled = useMemo(
     () => !user?.isFeatureEnabled(CUSTOM_MESSAGE_FEATURE_FLAG),
@@ -132,15 +142,17 @@ const CheckoutFeatures = ({
     );
   };
 
-  const Styles = ({ user }: { user: User }) => {
+  const Styles = () => {
+    const badgeStatus = trustedBadge?.status?.badgeStatus;
     return (
       <>
-        {user.isAccountAndSettingsRevampEnabled && <BrandName />}
         <BrandColor />
+        {badgeStatus !== STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED && <RazorpayTrustesBadge />}
+        <TitleStyle />
         <ButtonStyle />
         <FontStyle />
         <SidebarGraphic />
-        <BrandLogo user={user} />
+        {badgeStatus === STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED && <RazorpayTrustesBadge />}
       </>
     );
   };
@@ -157,8 +169,10 @@ const CheckoutFeatures = ({
       createMerchantCheckoutConfig={createMerchantCheckoutConfig}
       showNotification={showNotification}
       createMerchantCheckoutStylingConfig={createMerchantCheckoutStylingConfig}
+      createMerchantCheckoutBrandConfig={createMerchantCheckoutBrandConfig}
       updateFeatures={handleUpdateFeatures}
       merchantCheckoutStyledConfig={merchantCheckoutStyledConfig}
+      updateEmailConfig={updateEmailConfig}
     >
       <Box
         display="flex"
@@ -185,7 +199,7 @@ const CheckoutFeatures = ({
               extraConfig={extraConfig}
             />
           )}
-          {showStyling && <Styles user={user} />}
+          {showStyling && <Styles />}
           <ConfigControls />
           <ConfigFooter />
         </Box>
@@ -209,7 +223,9 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
       createMerchantCheckoutConfig,
       fetchMerchantCheckoutStylingConfig,
       createMerchantCheckoutStylingConfig,
+      createMerchantCheckoutBrandConfig,
       updateConfig,
+      updateEmailConfig,
     },
     dispatch,
   );
@@ -228,5 +244,6 @@ export default connect((state) => {
     merchantCheckoutStyledConfig: state.config?.checkoutStylingConfig?.data,
     accountLocale: state.config?.locale,
     merchantCheckoutConfig: state.config?.checkoutConfig?.data?.checkout_configuration,
+    trustedBadge: state.trustedBadge,
   };
 }, mapActionsToProps)(CheckoutFeatures);

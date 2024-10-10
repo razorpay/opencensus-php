@@ -7,7 +7,7 @@ export type CheckoutPreviewContext = {
 };
 
 export const CheckoutPreviewContext = createContext<CheckoutPreviewContext>({
-  isDesktopPreview: true,
+  isDesktopPreview: false,
   setIsDesktopPreivew: noop,
 });
 

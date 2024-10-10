@@ -29,6 +29,10 @@ export const checkoutEditorContext = createContext<
   handleFontStyleChange: noop,
   handleSidebarGraphicToggle: noop,
   handleSidebarGraphicValueChange: noop,
+  handleTitleStyleChange: noop,
+  handleBrandNameChange: noop,
+  handleEditLogoModalDiscard: noop,
+  handleSaveTitleModal: noop,
 });
 
 export const useCheckoutEditor = () => {

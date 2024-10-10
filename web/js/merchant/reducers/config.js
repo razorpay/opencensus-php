@@ -35,7 +35,8 @@ const FETCH_FEATURE_BY_NAME = 'FETCH_FEATURE_BY_NAME';
 const FETCH_MERCHANT_CHECKOUT_CONFIG = 'FETCH_MERCHANT_CHECKOUT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG = 'CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG';
-const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG';
+const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG';
+const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 const ADD_REPLY_URL_CARE_SERVICE =
@@ -624,6 +625,17 @@ export const createMerchantCheckoutStylingConfig = ({ type, ...data }) => {
   };
 };
 
+export const createMerchantCheckoutBrandConfig = ({ type, ...data }) => {
+  return {
+    type: CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG,
+    payload: merchantFetch({
+      url: 'checkout_config_brand',
+      method: type,
+      data,
+    }),
+  };
+};
+
 const initialState = {
   loading: true,
   error: null,
@@ -1025,6 +1037,7 @@ const configReducer = (state = initialState, action) => {
       });
     }
 
+    case `${CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG}::SUCCESS`:
     case `${CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG}::SUCCESS`:
     case `${FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG}::SUCCESS`: {
       return set(state, 'checkoutStylingConfig', {
@@ -1034,6 +1047,8 @@ const configReducer = (state = initialState, action) => {
       });
     }
 
+    case `${CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG}::ERROR`:
+    case `${CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG}::ERROR`:
     case `${FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG}::ERROR`: {
       return set(state, 'checkoutStylingConfig', {
         loading: false,

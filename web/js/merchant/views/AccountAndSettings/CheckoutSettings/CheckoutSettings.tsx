@@ -95,7 +95,11 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
               <NavLink to={ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE}>Mandate Summary Page</NavLink>
             </ShowWhen>
           </ShowWhen>
-          <ShowWhen additionalCondition={(user) => isTrustedBadgeAllowed(user, extraConfig)}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              isTrustedBadgeAllowed(user, extraConfig) && !isCheckoutV2SettingsAllowed(extraConfig)
+            }
+          >
             <NavLink to={ROUTES_INFO.TRUSTED_BADGE}>Trusted Badge</NavLink>
           </ShowWhen>
         </StyledHeader>

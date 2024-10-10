@@ -12,12 +12,16 @@ import {
   EmailLessCheckoutConfigOptions,
   getEmailConfigFlags,
 } from 'merchant/reducers/config';
+
 import {
   flashCheckoutProps,
   skipCardMandateSummaryProps,
 } from 'merchant/views/Settings/Configuration/settings-config-constants';
 
-import { CHECKOUT_EDITOR_INITIAL_VALUES, CHECKOUT_EDITOR_FIELDS } from './constants';
+import {
+  CHECKOUT_EDITOR_FIELDS,
+  CHECKOUT_EDITOR_INITIAL_VALUES,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 
 export const mapCheckoutEmailConfig = (
   email_config: string,
@@ -188,20 +192,24 @@ export const hasValuesChanged = (
   }
 
   if (
-    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].enabled !==
+    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.enabled !==
     merchantCheckoutStyledConfig?.sidebar_graphic?.enabled
   ) {
     return true;
   }
 
   if (
-    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].svg !==
+    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.svg !==
     merchantCheckoutStyledConfig?.sidebar_graphic?.svg
   ) {
     return true;
   }
 
   if (values[CHECKOUT_EDITOR_FIELDS.FONT_FAMILY] !== merchantCheckoutStyledConfig?.text?.font) {
+    return true;
+  }
+
+  if (values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] !== merchantCheckoutStyledConfig?.title_style) {
     return true;
   }
 
@@ -222,22 +230,26 @@ const createEmailConfigPayload = (
   const existingEmailConfigFlag = getEmailConfigFlags(originalConfig.accountConfig?.features);
   let isEmailOptional = false;
   let isEmailShown = false;
+  let emailValue = '';
 
   if (!emailConfig.isEnabled) {
     isEmailOptional = false;
     isEmailShown = false;
+    emailValue = EmailLessCheckoutConfigOptions.NO;
   } else if (
     emailConfig.isEnabled &&
     emailConfig.value === EmailLessCheckoutConfigOptions.OPTIONAL
   ) {
     isEmailOptional = true;
     isEmailShown = true;
+    emailValue = EmailLessCheckoutConfigOptions.OPTIONAL;
   } else if (
     emailConfig.isEnabled &&
     emailConfig.value === EmailLessCheckoutConfigOptions.MANDATORY
   ) {
     isEmailOptional = false;
     isEmailShown = true;
+    emailValue = EmailLessCheckoutConfigOptions.MANDATORY;
   }
 
   const data = {
@@ -252,7 +264,7 @@ const createEmailConfigPayload = (
   if (existingEmailConfigFlag.emailOptional !== isEmailOptional) {
     data.features[CHECKOUT_EMAIL_FEATURE_FLAG.EMAIL_OPTIONAL_ON_CHECKOUT] = isEmailOptional;
   }
-  return { data, isEmailShown, isEmailOptional };
+  return { data, isEmailShown, isEmailOptional, value: emailValue };
 };
 
 /**
@@ -276,22 +288,22 @@ export const createMerchantCheckoutStyledPayloadToSaveConfig = (
   }
 
   if (
-    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].enabled !==
+    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.enabled !==
     merchantCheckoutStyledConfig?.sidebar_graphic?.enabled
   ) {
     payload.sidebar_graphic = {
-      enabled: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].enabled,
-      svg: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].svg,
+      enabled: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.enabled,
+      svg: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.svg,
     };
   }
 
   if (
-    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].svg !==
+    values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.svg !==
     merchantCheckoutStyledConfig?.sidebar_graphic?.svg
   ) {
     payload.sidebar_graphic = {
-      enabled: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].enabled,
-      svg: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC].svg,
+      enabled: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.enabled,
+      svg: values[CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]?.svg,
     };
   }
 

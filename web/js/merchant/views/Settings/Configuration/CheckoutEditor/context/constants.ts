@@ -8,6 +8,7 @@ import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
 import {
   AVAILABLE_BORDER_STYLE,
   AVAILABLE_GRAPHICS,
+  AVAILABLE_TITLE_STYLE,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
 
 export const ACTIONS = {
@@ -39,6 +40,7 @@ export const CHECKOUT_EDITOR_FIELDS = {
   BORDER_STYLE: 'borderRadius',
   FONT_FAMILY: 'fontFamily',
   SIDEBAR_GRAPHIC: 'sidebarGraphic',
+  TITLE_STYLE: 'titleStyle',
 } as const;
 
 export const CUSTOM_MESSAGE_BANNER_SCREENS = {
@@ -105,6 +107,7 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
     enabled: boolean;
     svg: string;
   };
+  [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: string;
 } = {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
     id: '',
@@ -131,11 +134,12 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.EMAIL_OPTIONAL_CHECKOUT]: '',
   [CHECKOUT_EDITOR_FIELDS.SHOW_EMAIL_ON_CHECKOUT]: '',
   [CHECKOUT_EDITOR_FIELDS.BRAND_NAME]: '',
-  [CHECKOUT_EDITOR_FIELDS.FONT_FAMILY]: 'arial',
+  [CHECKOUT_EDITOR_FIELDS.FONT_FAMILY]: 'Tasa',
   [CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]: {
     enabled: false,
     svg: AVAILABLE_GRAPHICS.NONE,
   },
+  [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: AVAILABLE_TITLE_STYLE.LOGO_TEXT,
 };
 
 const CONFIG_INITIAL_STATE: { accountConfig: AccountConfig; locale: AccountLocale } = {

@@ -1,6 +1,7 @@
 export const CUSTOM_MESSAGE_DEFAULT_VALUE = {
   title: 'Message banner',
   subTitle: 'Show a custom message to your customers',
+  bannerColor: '#213785',
 };
 
 export const LANGUAGE_SETTINGS_DEFAULT_VALUE = {
@@ -16,6 +17,7 @@ export const LANGUAGE_OPTIONS = [
   { name: 'Gujarati', code: 'guj' },
   { name: 'Tamil', code: 'tam' },
   { name: 'Telugu', code: 'tel' },
+  { name: 'Kannada', code: 'kan' },
 ];
 
 export const EMAIL_SETTINGS_DEFAULT_VALUE = {
@@ -39,3 +41,9 @@ export const SHOW_FINAL_PRICE_DEFAULT_VALUE = {
 };
 
 export const TAB_INDEX = 0;
+
+export const TRUSTED_BADGE_DEFAULT_VALUE = {
+  title: 'Razorpay trusted badge',
+  subTitle: 'Enable to boost customer’s trust in your brand',
+  subTitleSuffix: 'Know more',
+};
