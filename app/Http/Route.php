@@ -12346,6 +12346,10 @@ class Route
             'vendor_payment_get_tds_categories_internal',
             'contact_update_internal',
             'fund_account_update_internal',
+            'fund_account_list_internal',
+            'contact_list_internal',
+            'contact_get_internal',
+            'fund_account_get_internal',
         ],
 
         'master_onboarding' => [
