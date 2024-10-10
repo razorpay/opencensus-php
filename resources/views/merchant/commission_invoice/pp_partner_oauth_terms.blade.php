@@ -1,1 +1,56 @@
-<html lang="en"><head><title></title></head><body><main><div class="container"><h1 class="center">Terms and conditions for RazorpayX OAuth service.</h1><p>Last updated on December 4, 2020</p><ol><li><ol><li>We hereby appoint and authorize our Partner to facilitate the use of Razorpay X services (either through the virtual account or through the current account) by, including but not limited to, assisting us in managing our Payouts through Razorpay X, updating the status of the same on our Razorpay  Dashboard, accessing all our transaction data and undertaking all other activities incidental to the use of Razorpay X services by us</li></ol></li><li><ol start="2"><li>We agree and acknowledge that Razorpay shall in no event whatsoever, be liable for any actions of the Partner and any negligence, fraud, misconduct or any act of omission or commission of the Partner. It is hereby clarified that such disputes shall be resolved solely between the Partner and us, and Razorpay shall not be a party to the same.</li></ol></li><li><ol start="3"><li>We shall protect, defend, indemnify and hold Razorpay and its promoters, banks, clients, attorneys, employees, officers and directors harmless from and against all losses, costs, liabilities, claims, damages and expenses of every kind and character, as incurred, resulting from or relating to or arising out of</li></ol></li><li><p>(i) any act or omission of the Partner</p></li><li><p>(ii) any claim brought against Razorpay by a third party, including the Partner.</p></li></ol></div><table style="border: 1px solid grey;"><thead><tr style="border: 1px solid grey"><th style="border: 1px solid grey">Payment Method</th><th style="border: 1px solid grey">Percent Rate</th><th style="border: 1px solid grey">Fixed Rate</th><th style="border: 1px solid grey">Min Fee</th><th style="border: 1px solid grey">Max Fee</th><th style="border: 1px solid grey">Amount Range Max</th><th style="border: 1px solid grey">Amount Range Min</th><th style="border: 1px solid grey">Amount Range Active</th><th style="border: 1px solid grey">Fee Bearer</th><th style="border: 1px solid grey">Amount Model</th><th style="border: 1px solid grey">Channel</th><th style="border: 1px solid grey">Expired At</th><th style="border: 1px solid grey">Payment Method SubType</th><th style="border: 1px solid grey">Payment Issuer</th></tr></thead><tbody>@foreach ($data['rules'] as $rules)<tr><td>{{ $rules['payment_method'] }}</td><td>{{ $rules['percent_rate'] }}</td><td>{{ $rules['fixed_rate'] }}</td><td>{{ $rules['min_fee'] }}</td><td>{{ $rules['max_fee'] }}</td><td>{{ $rules['amount_range_max'] }}</td><td>{{ $rules['amount_range_min'] }}</td><td>{{ $rules['amount_range_active'] }}</td><td>{{ $rules['fee_bearer'] }}</td><td>{{ $rules['amount_model'] }}</td><td>{{ $rules['channel'] }}</td><td>{{ $rules['expired_at'] }}</td><td>{{ $rules['payment_method_subtype'] }}</td><td>{{ $rules['payment_issuer'] }}</td></tr>@endforeach</tbody></table></main></body></html>
+<html lang="en">
+   <head>
+      <title></title>
+   </head>
+   <body>
+      <main>
+         <div class="container">
+            <h1 class="center">Pricing Plan</h1>
+            <h4>The following transaction fees will be levied for your transactions initiated via partner platform you are onboarding</h4>
+            <h5>Last updated on Oct 3, 2024</h5>
+            <p> We acknowledge and agree that the Razorpay Fees applicable for transactions initiated through OAuth shall be as provided hereinbelow:
+         </div>
+         <table style="border: 1px solid grey;">
+            <thead>
+               <tr style="border: 1px solid grey">
+                  <th style="border: 1px solid grey">Payment Method</th>
+                  <th style="border: 1px solid grey">Percent Rate</th>
+                  <th style="border: 1px solid grey">Fixed Rate</th>
+                  <th style="border: 1px solid grey">Min Fee</th>
+                  <th style="border: 1px solid grey">Max Fee</th>
+                  <th style="border: 1px solid grey">Amount Range Max</th>
+                  <th style="border: 1px solid grey">Amount Range Min</th>
+                  <th style="border: 1px solid grey">Amount Range Active</th>
+                  <th style="border: 1px solid grey">Fee Bearer</th>
+                  <th style="border: 1px solid grey">Amount Model</th>
+                  <th style="border: 1px solid grey">Channel</th>
+                  <th style="border: 1px solid grey">Expired At</th>
+                  <th style="border: 1px solid grey">Payment Method SubType</th>
+                  <th style="border: 1px solid grey">Payment Issuer</th>
+               </tr>
+            </thead>
+            <tbody>
+               @foreach ($data['rules'] as $rules)
+               <tr>
+                  <td>{{ $rules['payment_method'] }}</td>
+                  <td>{{ $rules['percent_rate'] }}</td>
+                  <td>{{ $rules['fixed_rate'] }}</td>
+                  <td>{{ $rules['min_fee'] }}</td>
+                  <td>{{ $rules['max_fee'] }}</td>
+                  <td>{{ $rules['amount_range_max'] }}</td>
+                  <td>{{ $rules['amount_range_min'] }}</td>
+                  <td>{{ $rules['amount_range_active'] }}</td>
+                  <td>{{ $rules['fee_bearer'] }}</td>
+                  <td>{{ $rules['amount_model'] }}</td>
+                  <td>{{ $rules['channel'] }}</td>
+                  <td>{{ $rules['expired_at'] }}</td>
+                  <td>{{ $rules['payment_method_subtype'] }}</td>
+                  <td>{{ $rules['payment_issuer'] }}</td>
+               </tr>
+               @endforeach
+            </tbody>
+         </table>
+      </main>
+   </body>
+</html>
+
