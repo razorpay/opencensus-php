@@ -73,6 +73,8 @@ const NavLinkItem = ({
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
   const pricingPlanForMerchant = getPricingPlan(user);
+  title =
+    user?.isC360OnboardingCompleted && product_id === 'magic_checkout' ? 'Checkout360' : title;
 
   const noCodeMonetizationApps = ['Payment Links', 'Payment Pages', 'Invoices', 'Razorpay.me Link'];
 

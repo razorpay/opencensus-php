@@ -435,6 +435,10 @@ export default class User {
     return this.getExpStatus('free_credit_recovery_banner');
   }
 
+  get isC360OnboardingCompleted() {
+    return this.isFeatureEnabled('pg_v3_onboarding_complete') && this.isOrgRZP;
+  }
+
   get isMagicCheckoutEnabled() {
     return this.isFeatureEnabled('one_cc_merchant_dashboard') && this.isOrgRZP;
   }

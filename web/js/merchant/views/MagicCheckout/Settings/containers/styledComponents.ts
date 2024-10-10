@@ -37,3 +37,11 @@ export const StyledRCODShippingNoteWrapper = styled.div`
   background: #fff;
   color: #435775;
 `;
+
+export const StyledHelperText = styled.div`
+  color: #768ea7;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0;
+`;

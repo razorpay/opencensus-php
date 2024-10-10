@@ -19,6 +19,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
+import { StyledHelperText } from './styledComponents';
 
 const PlatformSettings = ({
   settings,
@@ -113,7 +114,14 @@ const PlatformSettings = ({
         <div>
           {ACCESS_ROLES.includes(user.role) ? (
             <div className="padding-16 bg-settings platform-heading-container">
-              <div className="font-bold font-20 platform-heading">Platform Settings</div>
+              <div className="font-bold font-20 platform-heading">
+                {user.isC360OnboardingCompleted ? 'Checkout360' : 'Platform'} Settings
+              </div>
+              {user.isC360OnboardingCompleted && (
+                <StyledHelperText>
+                  Checkout360 activated. Set up COD and other configurations here.
+                </StyledHelperText>
+              )}
               <PlatformSubText
                 {...settings}
                 updatePage={handleUpdatePage}

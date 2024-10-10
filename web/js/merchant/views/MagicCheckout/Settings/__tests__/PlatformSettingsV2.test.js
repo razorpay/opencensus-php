@@ -1,4 +1,4 @@
-import PlatformSettings from 'merchant/views/MagicCheckout/Settings/containers/PlatformSettings';
+import PlatformSettingsV2 from 'merchant/views/MagicCheckout/Settings/containers/PlatformSettingsV2';
 import { render, screen, waitFor } from 'test-utils';
 import { storeWithInitialState } from 'merchant/store';
 const initState = {
@@ -23,12 +23,12 @@ const initState = {
 };
 
 const renderAppWithRouter = ({ state, ...props } = {}) => {
-  render(<PlatformSettings {...props} />, {
+  render(<PlatformSettingsV2 {...props} />, {
     reduxStore: storeWithInitialState({ ...initState, ...state }),
   });
 };
 
-describe('PlatformSettings', () => {
+describe('PlatformSettingsV2', () => {
   test('should render', async () => {
     renderAppWithRouter();
     await waitFor(() => {
