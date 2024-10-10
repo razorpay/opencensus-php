@@ -5,6 +5,7 @@ import Form from 'common/new-ui/Form';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
+import { noop } from 'common/utils/rzp-utils';
 import {
   isLowCostAmountMissing,
   isOfferTypeAbsent,
@@ -123,8 +124,14 @@ export default class CreateOfferWizard extends React.Component {
       }
       return !validTabs[currentTab];
     };
+
     return (
-      <Modal isOpen={true} onDismiss={this.props.onClose} zIndex={this.props.zIndex} size="large">
+      <Modal
+        isOpen={true}
+        onDismiss={this.props.onClose ?? noop}
+        zIndex={this.props.zIndex}
+        size="large"
+      >
         <ModalBody padding="spacing.0">
           <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
             <ModalAsideNav
@@ -171,7 +178,7 @@ export default class CreateOfferWizard extends React.Component {
                 size="medium"
                 type="button"
                 variant="tertiary"
-                marginRight={'spacing.4'}
+                marginRight="spacing.4"
               >
                 Previous
               </Button>

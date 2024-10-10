@@ -159,7 +159,8 @@ const EmailNotifications: React.FunctionComponent<EmailNotificationProps> = (pro
   };
 
   const handleSubmit = ({ transaction_report_email }) => {
-    const emails = transaction_report_email ? transaction_report_email.split(',') : [];
+    const emails =
+      typeof transaction_report_email === 'string' ? transaction_report_email.split(',') : [];
 
     const validEmails: string[] = [];
     const invalidEmails: string[] = [];
