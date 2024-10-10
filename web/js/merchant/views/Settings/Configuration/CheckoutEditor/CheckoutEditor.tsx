@@ -86,7 +86,7 @@ const CheckoutFeatures = ({
   showStyling,
 }: CheckoutConfigProps) => {
   const isCustomMessageFeatureEnabled = useMemo(
-    () => user?.isFeatureEnabled(CUSTOM_MESSAGE_FEATURE_FLAG),
+    () => !user?.isFeatureEnabled(CUSTOM_MESSAGE_FEATURE_FLAG),
     [user],
   );
 

@@ -158,4 +158,4 @@ export const CONTEXT_INITIAL_STATE = {
   isLoading: INITIAL_STATE.isLoading,
 };
 
-export const CUSTOM_MESSAGE_FEATURE_FLAG = 'message_banner_enabled';
+export const CUSTOM_MESSAGE_FEATURE_FLAG = 'message_banner_disabled';
