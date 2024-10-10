@@ -63,6 +63,7 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 
 import MagicKonnect from 'merchant/views/MagicKonnect';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
+import TncUpdateModal from 'merchant/components/TncUpdateModal';
 
 // eslint-disable-next-line require-await
 const loadModule = async ({ module, scope }) =>
@@ -641,6 +642,14 @@ class Content extends Component {
     const { splitz, user } = this.props;
     return isTransactionsV2Enabled(splitz, user);
   };
+  checkIsTnCUpdateModalEnabled = () => {
+    const {
+      splitz: {
+        abExperiments: { tnc_update_modal },
+      },
+    } = this.props;
+    return isExperimentEnabled(tnc_update_modal);
+  };
   checkIsSettlementsV3RevampEnabled = () => {
     const { splitz, user } = this.props;
     return isSettlementsV3detailsRevamp(splitz, user);
@@ -708,7 +717,7 @@ class Content extends Component {
     const isL2Sumitted = activation_form_milestone === 'L2' || submitted;
 
     const isEasyEnabledMerchant =
-      isL2Sumitted && (activation_status !== 'activated' && activation_status !== null);
+      isL2Sumitted && activation_status !== 'activated' && activation_status !== null;
 
     if (isEasyEnabledMerchant) {
       return isValidMerchant && isExperimentEnabled(ray_onboarding_ai);
@@ -2641,6 +2650,7 @@ class Content extends Component {
             {DetailView}
             {ModalFormView}
             <MultiSlider />
+            {this.checkIsTnCUpdateModalEnabled() && <TncUpdateModal />}
             {!(
               this.checkIsHelpWidgetDisabled() ||
               window?.RZP?.appName == 'businessbanking' ||

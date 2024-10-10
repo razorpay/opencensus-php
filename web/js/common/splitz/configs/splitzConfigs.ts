@@ -377,6 +377,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'tnc_update_modal',
+        experimentId: {
+          beta: 'P4s9QNbjLYFdw1',
+          production: 'P4sAmsnaGAu89P',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'magic_konnect',
         experimentId: {
           beta: 'NiHLK3gI0O8Kn1',
