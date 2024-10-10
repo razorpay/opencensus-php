@@ -8,6 +8,8 @@ import copyToClipboard from 'common/utils/copyToClipboard';
 import { validateAmount } from 'common/utils/validators';
 import { getHandleEntities } from 'merchant/containers/Home/ProductOnboardingCard/utils';
 import { trackCTAClick } from 'merchant/containers/Home/ProductOnboardingCard/events';
+import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import errorService from '@razorpay/universe-utils/errorService';
 
 const PaymentHandleModal = (props) => {
   const {
@@ -55,14 +57,33 @@ const PaymentHandleModal = (props) => {
     return `${paymentHandleData.paymentHandleUrl}?amount=${data.encrypted_amount}`;
   };
 
-  const shareURL = (url, title = 'Accept payment though payment handle') => {
+  const handleError = ({ error = 'CARE ERROR' } = {}) => {
+    errorService.captureError(error, {
+      tags: {
+        team: Teams.PG_DASHBOARD,
+      },
+      rank: Ranks.P2,
+    });
+  };
+
+  const shareURL = (url, title = 'Accept payment through payment handle') => {
     if (navigator.share) {
-      navigator
-        .share({
-          title,
-          url,
-        })
-        .catch();
+      try {
+        navigator
+          .share({
+            title,
+            url,
+          })
+          .catch((error) => {
+            if (error.name === 'AbortError') {
+              console.log('Share operation aborted by the user.');
+            } else {
+              handleError({ error });
+            }
+          });
+      } catch (error) {
+        handleError({ error });
+      }
     } else {
       copyToClipboard(url);
       showNotification({
@@ -71,7 +92,6 @@ const PaymentHandleModal = (props) => {
       });
     }
   };
-
   const onSubmit = async () => {
     trackCTAClick('PH Copy', { product, section: 'CustomModal' });
     setIsSaving(true);
