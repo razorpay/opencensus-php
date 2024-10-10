@@ -673,7 +673,9 @@ function PaymentDetails(props) {
                         onClick={() => {
                           openModal({
                             size: 'med-large',
-                            component: <BounceMemoPopup paymentID={paymentId} />,
+                            component: (
+                              <BounceMemoPopup paymentPage="singlePage" paymentID={paymentId} />
+                            ),
                           });
                         }}
                       >

@@ -5,4 +5,5 @@ export const StyledHeading = styled.div`
   background-color: #fff;
   padding: 24px 12px 0 24px;
   border-bottom: none;
+  display: flex;
 `;

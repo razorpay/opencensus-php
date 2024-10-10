@@ -75,6 +75,11 @@ const PaymentsDetails = lazy(() =>
     /* webpackChunkName: "PaymentsDetails" */ 'merchant/views/Transactions/v1/Payments/Details'
   ),
 );
+const PdfDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "PdfDetails" */ 'merchant/views/Transactions/v1/Payments/BouncememoRoute'
+  ),
+);
 const RefundDetails = lazy(() =>
   import(/* webpackChunkName: "RefundsDetails" */ 'merchant/views/Transactions/v1/Refunds/Details'),
 );
@@ -649,6 +654,10 @@ export const supportHashMapping = {
  *
  * */
 const fullPageViewsMap = {
+  '/bouncememo/:id': {
+    component: PdfDetails,
+    additionalCondition: (user) => user.isAllowedView('payments'),
+  },
   '/paymentpages/new': {
     component: PaymentPagesCreateEdit,
     additionalCondition: (user) => user.isAllowedEdit('payment_pages'),

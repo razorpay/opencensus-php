@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { render, screen, userEvent, waitFor, act } from 'test-utils';
 import BounceMemoPopup from '../../BounceMemoPopup';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { fetchBouncememo } from '../../BounceMemo.types';
+import { fetchBouncememo, fetchBounceMemoBulk } from '../../BounceMemo.types';
 
 // Mocking the dependencies
 jest.mock('merchant_common/reducers/modals', () => ({
@@ -13,6 +13,7 @@ jest.mock('merchant_common/reducers/modals', () => ({
 
 jest.mock('../../BounceMemo.types', () => ({
   fetchBouncememo: jest.fn(),
+  fetchBounceMemoBulk: jest.fn(),
 }));
 
 jest.mock('../PdfCreation', () => jest.fn());
@@ -28,6 +29,17 @@ const mockState = {
   },
 };
 
+const PAYMENT_METHOD_OPTIONS = [
+  { label: 'eMANDATE', value: 'emandate' },
+  { label: 'eNACH', value: 'nach' },
+];
+
+// Mocking the dropdown options
+jest.mock('../../constants', () => ({
+  PAYMENT_METHOD_OPTIONS,
+  ALL_OPTION: { label: 'All', value: 'all' },
+}));
+
 // Mock the Redux selector
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
@@ -35,7 +47,11 @@ jest.mock('react-redux', () => ({
 }));
 
 const renderApp = () => {
-  render(<BounceMemoPopup paymentID={'pay_12345'} />);
+  render(<BounceMemoPopup paymentPage={'singlePage'} paymentID={'pay_12345'} />);
+};
+
+const renderAppBulk = () => {
+  render(<BounceMemoPopup paymentPage={'failedPaymentPage'} paymentID={'pay_12345'} />);
 };
 
 const mockResponse = {
@@ -60,6 +76,15 @@ const mockResponse = {
   },
 };
 
+// Mocking the DateRangePicker
+jest.mock('common/ui/DateRangePicker', () => ({
+  ...jest.requireActual('common/ui/DateRangePicker'),
+  __esModule: true,
+  default: () => {
+    return <div>DateRangePicker Component</div>;
+  },
+}));
+
 describe('BounceMemoPopup Component', () => {
   beforeEach(() => {
     jest.clearAllMocks(); // Reset all mocks before each test
@@ -82,8 +107,8 @@ describe('BounceMemoPopup Component', () => {
     fetchBouncememo.mockRejectedValueOnce(new Error('Fetch error'));
 
     renderApp();
-    act(() => {
-      userEvent.click(screen.getByTestId('bounce-memo-download-btn'));
+    await act(async () => {
+      await userEvent.click(screen.getByTestId('bounce-memo-download-btn'));
     });
 
     await waitFor(() => {
@@ -93,17 +118,87 @@ describe('BounceMemoPopup Component', () => {
         ),
       ).toBeInTheDocument();
     });
+
+    expect(screen.queryByTestId('bounce-memo-download-btn')).not.toBeDisabled();
   });
 
   test('should handle fetch bounce memo', async () => {
+    const mockParams = {
+      paymentID: 'pay_12345', // get capturable amount
+      merchantId: undefined,
+    };
     fetchBouncememo.mockResolvedValueOnce(mockResponse);
 
-    render(<BounceMemoPopup paymentID="pay_12345" />);
+    render(<BounceMemoPopup paymentPage="singlePage" paymentID="pay_12345" />);
 
-    await userEvent.click(screen.getByTestId('bounce-memo-download-btn'));
+    await act(async () => {
+      await userEvent.click(screen.getByTestId('bounce-memo-download-btn'));
+    });
 
     await waitFor(() => {
-      expect(fetchBouncememo).toHaveBeenCalledWith('pay_12345');
+      expect(fetchBouncememo).toHaveBeenCalledWith(mockParams);
     });
+  });
+
+  test('should handle bulk bounce memo download with correct DateParams', async () => {
+    const mockDateParams = {
+      paymentMethods: undefined,
+      paymentID: 'pay_12345',
+    };
+
+    // Mock the state to include date and payment method
+    renderAppBulk();
+
+    // Set the date range and payment method manually (can be done via UI interaction)
+    await act(async () => {
+      await userEvent.click(screen.getByText('Payment Method'));
+      // Set the mock dates and initiate download
+      await userEvent.click(screen.getByTestId('bounce-memo-download-btn-bulk'));
+    });
+
+    await waitFor(() => {
+      // Expect the fetchBounceMemoBulk to be called with the correct DateParams
+      expect(fetchBounceMemoBulk).toHaveBeenCalledWith(expect.objectContaining(mockDateParams));
+    });
+  });
+
+  test('should show error notification when no bounce memo is available for the specified date range', async () => {
+    const emptyResponse = {
+      data: {
+        data: [], // Empty array simulating no bounce memos available
+      },
+    };
+    const mockDateParams = {
+      paymentMethods: undefined,
+      paymentID: 'pay_12345',
+    };
+
+    // Mock the fetchBounceMemoBulk function to return the empty response
+    fetchBounceMemoBulk.mockResolvedValueOnce(emptyResponse);
+
+    // Render the BounceMemoPopup component in the bulk download mode
+    renderAppBulk(); // Ensure this renders the component with paymentPage as 'paymentPage'
+
+    // Simulate user action to trigger the bounce memo download
+    await act(async () => {
+      await userEvent.click(screen.getByText('Payment Method'));
+      await userEvent.click(screen.getByTestId('bounce-memo-download-btn-bulk'));
+    });
+
+    await waitFor(() => {
+      // Expect the fetchBounceMemoBulk to be called with the correct DateParams
+      expect(fetchBounceMemoBulk).toHaveBeenCalledWith(expect.objectContaining(mockDateParams));
+    });
+
+    // Wait for the asynchronous operations to complete and check the result
+    await waitFor(() => {
+      // Assert that the error notification is shown with the appropriate message
+      expect(
+        screen.getByText(/No bounce memo available for the specified date range/i),
+      ).toBeInTheDocument();
+    });
+
+    // Assert that the submit button is not disabled (operation has completed)
+    expect(screen.queryByTestId('bounce-memo-download-btn-bulk')).not.toBeDisabled();
   });
 });

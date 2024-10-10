@@ -1,4 +1,4 @@
-import { Heading } from '@razorpay/blade/components';
+import { Heading, DownloadIcon, Box, Button } from '@razorpay/blade/components';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -18,13 +18,19 @@ import { connect } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 import { StyledHeading } from './styled';
-import { EntitiesOverviewProps } from './types';
 import { getHeading } from './utils';
+import { openModal } from 'merchant_common/reducers/modals';
+import BounceMemoPopup from 'merchant/views/Transactions/v1/Payments/BounceMemoPopup';
+import { isBounceMemoEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import { useSplitzService } from 'common/splitz';
 
 const { FAILED_PAYMENTS, DISPUTES, SUCCESS_RATE, REFUNDS, BATCH_REFUNDS, BATCH_REFUNDS_UPLOAD } =
   TransactionsEntityRoute;
 
-const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JSX.Element => {
+const EntitiesOverview = ({ location: { pathname }, user }: any): JSX.Element => {
+  const { id: merchantId } = user;
+  const splitz = useSplitzService();
+  const isBounceModalMemoEnabled = isBounceMemoEnabled(splitz);
   const shouldShowHeading = [FAILED_PAYMENTS, SUCCESS_RATE].includes(
     pathname as TransactionsEntityRoute,
   );
@@ -48,6 +54,28 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
       {shouldShowHeading ? (
         <StyledHeading id="transactions-header">
           <Heading size="medium">{getHeading(pathname as TransactionsEntityRoute)}</Heading>
+          <ShowWhen
+            additionalCondition={() => pathname === FAILED_PAYMENTS && isBounceModalMemoEnabled}
+          >
+            <div style={{ marginLeft: 'auto' }}>
+              <Box marginRight="spacing.5">
+                <Button
+                  variant="tertiary"
+                  icon={DownloadIcon}
+                  onClick={() => {
+                    openModal({
+                      size: 'med-large',
+                      component: (
+                        <BounceMemoPopup paymentPage="failedPaymentPage" paymentID={merchantId} />
+                      ),
+                    });
+                  }}
+                >
+                  Download Recurring Transaction Memos
+                </Button>
+              </Box>
+            </div>
+          </ShowWhen>
         </StyledHeading>
       ) : pathname !== DISPUTES ? (
         <StyledTabHeader id="transactions-header">
@@ -87,6 +115,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
 
 const mapStateToProps = (state) => ({
   mode: state.session.mode,
+  user: state.session.user,
 });
 
 export default withRouter(connect(mapStateToProps)(EntitiesOverview));

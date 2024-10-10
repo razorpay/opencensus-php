@@ -1,4 +1,4 @@
-/* eslint-disable no-relative-import-paths/no-relative-import-paths */
+/* eslint-disable */
 import { jsPDF as JSPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
@@ -14,6 +14,7 @@ import {
   RazorpayLogoBg,
   Blueline,
 } from '../constants';
+import moment from 'moment';
 
 // Function to add the logo and background
 const addLogoAndBackground = (Doc, pageWidth, pageHeight, callback) => {
@@ -94,8 +95,14 @@ const generateTable = (Doc, data, startY, pageWidth) => {
       ['Unique Mandate Reference Number (UMRN)', displayValue(item.umrn)],
       ['Customer Ref number/Mandate ID', displayValue(item.mandate_id)],
       ['Amount', displayValue(item.amount)],
-      ['Date Submitted', displayValue(new Date(item.date_submitted * 1000).toLocaleDateString())],
-      ['Date of Failure', displayValue(new Date(item.date_of_failure * 1000).toLocaleDateString())],
+      [
+        'Date Submitted',
+        displayValue(moment.unix(Number(item.date_submitted)).format('DD/MM/YYYY')),
+      ],
+      [
+        'Date of Failure',
+        displayValue(moment.unix(Number(item.date_of_failure)).format('DD/MM/YYYY')),
+      ],
       ['Failure Reason', displayValue(item.failure_reason)],
       ['NACH Utility Code', displayValue(item.utility_code)],
       ['Creditor/Merchant', displayValue(item.merchant_name)],
@@ -139,9 +146,10 @@ const addNote = (Doc, finalY) => {
   Doc.text(NOTEBODY, 25, finalY);
 };
 
-// Main CreatePdfTable function
-function CreatePdfTable(response, merchantId) {
-  const handleGenerate = () => {
+// Main createPdfTable function
+
+function createPdfTable(response, merchantId, pdfPage) {
+  const generatePdfContent = (resolve) => {
     const Doc = new JSPDF();
     const pageWidth = Doc.internal.pageSize.width;
     const pageHeight = Doc.internal.pageSize.height;
@@ -159,11 +167,25 @@ function CreatePdfTable(response, merchantId) {
       const finalY = Doc.lastAutoTable.finalY + 10;
       addNote(Doc, finalY);
 
-      // Save PDF
-      Doc.save('Payment_transaction_summary.pdf');
+      // Check which pdfPage to process
+      if (pdfPage === 'singlePage') {
+        // Save PDF for single page
+        Doc.save('Payment_transaction_summary.pdf');
+      } else if (pdfPage === 'routePage') {
+        // Generate base64 string for route page
+        const base64String = Doc.output('datauristring'); // Generate base64 data URL
+        resolve(base64String); // Return the base64 string
+      }
     });
   };
 
-  handleGenerate();
+  if (pdfPage === 'singlePage') {
+    generatePdfContent(); // Call without resolve
+  } else if (pdfPage === 'routePage') {
+    return new Promise((resolve) => {
+      generatePdfContent(resolve); // Call with resolve
+    });
+  }
 }
-export default CreatePdfTable;
+
+export default createPdfTable;
