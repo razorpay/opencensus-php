@@ -13453,7 +13453,7 @@ class Core extends Base\Core
 
     public function fetchPosActivationFlow(Merchant\Entity $merchant)
     {
-        $posActivationFlow = "whitelist";
+        $posActivationFlow = ActivationFlow::BLACKLIST;
 
         try
         {
@@ -13470,7 +13470,7 @@ class Core extends Base\Core
 
             $posActivationFlow =  $response["pos_activation_flow"];
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, ["error" => $ex]);
         }
