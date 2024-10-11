@@ -19034,4 +19034,66 @@ class CoreTest extends TestCase
 
     }
 
+    public function testSubmitMerchantInternalForPartner()
+    {
+        Queue::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+        $kafkaProducerMock = \Mockery::mock('overload:RZP\Services\KafkaProducer'); // 'overload' allows Mockery to mock the instantiation.
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->andReturn(true);
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_fetch_activation_status';
+            })->andReturn(["pos_activation_status"=>"needs_clarification"]);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->times(1)
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_update_activation_status';
+            })->andReturn(["pos_activation_status"=>'under_review']);
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "contact_mobile"=>"7355206348",
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'partner_assisted_onboarding'
+        ]);
+
+        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+            'submit'                  => 1,
+            'onboarding_type'         => "pos"
+        ]);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        // Asserting form is Locked after Merchant Responded to Nc
+        $this->assertTrue($merchantDetail->isLocked());
+    }
+
 }

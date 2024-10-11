@@ -8512,7 +8512,7 @@ return [
                 'captcha'               => 'faked',
                 'token'                 => 'token',
                 'otp'                   => '0007',
-                'signup_campaign'       => 'assisted_onboarding',
+                'signup_campaign'       => 'partner_assisted_onboarding',
             ],
         ],
         'response' => [
@@ -8522,7 +8522,7 @@ return [
                 'confirmed'                 => false,
                 'email_verified'            => false,
                 'contact_mobile_verified'   => true,
-                'signup_campaign'           => 'assisted_onboarding'
+                'signup_campaign'           => 'partner_assisted_onboarding'
             ]
         ]
     ],

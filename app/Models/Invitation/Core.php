@@ -538,13 +538,13 @@ class Core extends Base\Core
 
     private function sendSMSForPartnerAgentInvite(Entity     $invitation, bool $invitedUserExists)
     {
-        $token = $invitation->getToken();
+        $invitationToken = $invitation->getToken();
         $partnerMerchant = $this->merchant;
 
         $metadata = $invitation->getMetadata();
         $trimmedName = trim_string_to_width($metadata["name"] ?? '', 13, "");
 
-        $appInstallUrl = sprintf(InvitationConstants::PARTNER_AGENT_APP_INSTALL_URL, $token);
+        $appInstallUrl = InvitationConstants::PARTNER_AGENT_APP_INSTALL_URL_PREFIX.''.$invitationToken;
         $inviteLink = $this->elfin->shorten($appInstallUrl);
 
         $contentParams = [

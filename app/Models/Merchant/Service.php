@@ -2132,6 +2132,8 @@ class Service extends Base\Service
             (new Methods\Core)->addIntlBankTransferMethodsIfApplicable($methods, $data['methods']);
         }
 
+        $data['is_submerchant'] = (new Merchant\AccessMap\Core())->isSubMerchant($merchantId);
+
         return $data;
     }
 
@@ -6873,6 +6875,8 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT]['is_transacted'] = $isTransacted;
 
+        $data[EntityConstants::MERCHANT]['is_submerchant'] = (new Merchant\AccessMap\Core())->isSubMerchant($merchant->getId());
+
         $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
@@ -8366,7 +8370,7 @@ class Service extends Base\Service
      *
      * @throws BadRequestException
      */
-    protected function mapSubmerchant(Merchant\Entity $partner, $submerchantId): array
+    public function mapSubmerchant(Merchant\Entity $partner, $submerchantId): array
     {
         // Using findOrFail here will not give a proper error code in the batch output.
         $submerchant = $this->repo->merchant->find($submerchantId);

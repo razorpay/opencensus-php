@@ -451,9 +451,10 @@ class Core extends Base\Core
 
                     $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-                    // If the signup campaign is 'assisted_onboarding', mark the milestone as L2 and submitted as true.
-                   // In such cases, do not submit the activation form and do not create a CMMA case.
-                    if($userDeviceDetail->signup_campaign  === DDConstants::ASSISTED_ONBOARDING and
+                    // If the signup campaign is 'assisted_onboarding' or `partner_assisted_onboarding, 
+                    // mark the milestone as L2 and submitted as true.
+                    // In such cases, do not submit the activation form and do not create a CMMA case.
+                    if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant() and
                         $this->canSubmit($input, $response, $activationFormMilestone) === true)
                     {
                         $this->validateEmailVerificationIfApplicable($merchant);
@@ -654,7 +655,7 @@ class Core extends Base\Core
 
             // Locking the activation form for Assisted Merchants when the merchants pos activation status moves to under review state
 
-            if($userDeviceDetail->isAssistedOnboardedMerchant()){
+            if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant()){
 
                 unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -674,9 +675,8 @@ class Core extends Base\Core
 
         $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
         $caseType = DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
-        $signupCampaign = $deviceDetail->getSignupCampaign();
 
-        if ($signupCampaign === DeviceDetailConstants::ASSISTED_ONBOARDING)
+        if (!empty($deviceDetail) && $deviceDetail->isAssistedOnboardedMerchant())
             $caseType = DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE;
 
         $cmmaCaseEventData = [
@@ -5058,7 +5058,7 @@ class Core extends Base\Core
 
                             // Unlocking the activation form for Assisted Merchants when the merchants pos activation status moves to needs_clarification review state
 
-                            if($userDeviceDetail->isAssistedOnboardedMerchant()) {
+                            if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant()) {
 
                                 unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -5263,7 +5263,7 @@ class Core extends Base\Core
 
                         // Unlocking the activation form for Assisted Merchants when the merchants pos activation status moves to needs_clarification review state
 
-                        if($userDeviceDetail->isAssistedOnboardedMerchant()) {
+                        if (!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant()) {
 
                             unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -12865,10 +12865,10 @@ class Core extends Base\Core
             );
 
             $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
-            $asssitedOnboarding = $merchant->isSignupCampaign(DDConstants::ASSISTED_ONBOARDING);
 
-            if ($phantomOnboarding === true or $asssitedOnboarding === true)
-            {
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant->getId());
+
+            if ($phantomOnboarding === true or (!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant())) {
                 return [
                     "fee_based_gating" => [
                         "is_eligible"    => false,
@@ -13876,6 +13876,5 @@ class Core extends Base\Core
 
         return [$type, $format];
     }
-
 }
 

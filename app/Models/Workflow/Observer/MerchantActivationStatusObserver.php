@@ -102,7 +102,7 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
                 $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
 
-                $caseType = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+                $caseType = $deviceDetail->isAssistedOnboardedMerchant()
                     ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
                     : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
 
@@ -191,7 +191,7 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
         if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
         {
             $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
-            $caseType     = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+            $caseType     = $deviceDetail->isAssistedOnboardedMerchant()
                 ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
                 : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
 
@@ -281,7 +281,7 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
             {
 
                 $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
-                $caseType     = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+                $caseType     = $deviceDetail->isAssistedOnboardedMerchant()
                     ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
                     : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
 
@@ -375,7 +375,7 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
         if ($this->permissionName === PermissionName::POS_EDIT_ACTIVATE_MERCHANT)
         {
             $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($this->entityId);
-            $caseType     = $deviceDetail->getSignupCampaign() === DeviceDetailConstants::ASSISTED_ONBOARDING
+            $caseType     = $deviceDetail->isAssistedOnboardedMerchant()
                 ? DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE
                 : DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
 

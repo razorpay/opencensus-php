@@ -768,7 +768,7 @@ class Service extends Base\Service
         unset($input[Entity::SKIP_SMS_REQUEST]);
 
         // If signup campaign is Assisted onboarding avoid creating api merchant, if workflow creation get failed will throw error
-        if ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING){
+        if ($this->isAssistedOnboardingSignupCampaign($signupCampaign)){
             // Generate unique identifiers for the user and merchant
             $uniqueUserId = UniqueIdEntity::generateUniqueId();
             $uniqueMerchantId = UniqueIdEntity::generateUniqueId();
@@ -791,9 +791,10 @@ class Service extends Base\Service
             catch (\Throwable $exception)
             {
                 $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                    'message'       => "Error in handlePGOSOnboarding()",
-                    'merchant_id'   => $uniqueMerchantId,
-                    'error_message' => $exception->getMessage()
+                    'message'        => "Error in handlePGOSOnboarding()",
+                    'merchant_id'    => $uniqueMerchantId,
+                    'signupCampaign' => $signupCampaign,
+                    'error_message'  => $exception->getMessage()
                 ]);
 
                 throw new Exception\BadRequestValidationFailureException(ErrorCode::ASSISTED_WORKFLOW_CREATION_FAILED);
@@ -805,7 +806,7 @@ class Service extends Base\Service
             if ($verifySuccess === true)
             {
                 $userOnly = $input[Entity::USER_ONLY] ?? false;
-                $shouldCreateOnlyUser = $userOnly && $this->isUserOrgAllowedSegregatedLoginSignup() && $signupCampaign !== DeviceDetail\Constants::ASSISTED_ONBOARDING;
+                $shouldCreateOnlyUser = $userOnly && $this->isUserOrgAllowedSegregatedLoginSignup() && !$this->isAssistedOnboardingSignupCampaign($signupCampaign);
                 $merchant = null;
 
                 $referrer = $input['ref'] ?? '';
@@ -875,7 +876,7 @@ class Service extends Base\Service
                             DeviceDetail\Entity::USER_ID => $user['id'],
                             DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
                             DeviceDetail\Entity::METADATA => [
-                                DeviceDetailConstants::SERVICE => ($signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING?DeviceDetailConstants::SERVICE_PGOS:DeviceDetailConstants::SERVICE_API)
+                                DeviceDetailConstants::SERVICE => ($this->isAssistedOnboardingSignupCampaign($signupCampaign) ? DeviceDetailConstants::SERVICE_PGOS : DeviceDetailConstants::SERVICE_API)
                             ]
                         ];
 
@@ -890,7 +891,14 @@ class Service extends Base\Service
                             'merchant_id' => $merchantData['id'],
                         ];
                         $loggedInUser = $this->app['basicauth']->getUser();
+
                         $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
+                        
+                        if ($signupCampaign === DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING)
+                        {
+                            $loggedInMerchant=  $this->app['basicauth']->getMerchant();
+                            $detailService = (new Merchant\Service())->mapSubmerchant($loggedInMerchant, $merchantData['id']);
+                        }
                     }
 
                     if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false)
@@ -913,7 +921,7 @@ class Service extends Base\Service
             }
         });
 
-        if ($signupCampaign != DeviceDetail\Constants::ASSISTED_ONBOARDING) {
+        if (!$this->isAssistedOnboardingSignupCampaign($signupCampaign)) {
             try {
                 if (empty($merchant) === false) {
                     $this->handlePGOSOnboarding($merchant, $signupCampaign, $countryCode, $input, $user);
@@ -1275,7 +1283,7 @@ class Service extends Base\Service
             and (new Merchant\Core)->isRegularMerchant($merchant) === true
                 and $countryCode === 'IN') ||
             ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
-             $signupCampaign === DeviceDetailConstants::ASSISTED_ONBOARDING ||
+            $this->isAssistedOnboardingSignupCampaign($signupCampaign) ||
             $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION))
 
         {
@@ -2375,7 +2383,7 @@ class Service extends Base\Service
         } else if (empty($user[Entity::OAUTH_PROVIDER]) === true) {
             $input[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
 
-            if ($signupCampaign != DeviceDetail\Constants::ASSISTED_ONBOARDING) {
+            if (!$this->isAssistedOnboardingSignupCampaign($signupCampaign)) {
                 try {
                     $merchant = $this->repo->merchant->findOrFail($merchantId);
 
@@ -4345,9 +4353,14 @@ class Service extends Base\Service
         $loggedInMerchant=  $this->app['basicauth']->getMerchant();
         $ezetapMerchantId=  $this->app['config']->get('app.ezetap_merchant_id');
 
-        return $signupCampaign === DeviceDetail\Constants::ASSISTED_ONBOARDING &&
+        return $this->isAssistedOnboardingSignupCampaign($signupCampaign) &&
             ($loggedInMerchant->getId() == $ezetapMerchantId ||
                 ($loggedInMerchant->isResellerPartner() &&
                     $loggedInMerchant->isFeatureEnabled(FeatureConstant::POS_CHANNEL_PARTNERSHIP)));
+    }
+
+    public static function isAssistedOnboardingSignupCampaign($signupCampaign) : bool
+    {
+        return in_array($signupCampaign, [DeviceDetailConstants::ASSISTED_ONBOARDING, DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING]);
     }
 }

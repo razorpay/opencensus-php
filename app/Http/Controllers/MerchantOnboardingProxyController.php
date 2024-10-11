@@ -22,6 +22,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstants;
 use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -673,10 +674,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
     }
     public function handleMerchantSignup($payload, $merchant)
     {
-        $merchantId = $merchant->getMerchantId();
-
+        $signupCampaign = $payload[DeviceDetailEntity::SIGNUP_CAMPAIGN];
         $routeKey = self::MERCHANT_SIGN_UP;
-        if ($payload[DeviceDetailEntity::SIGNUP_CAMPAIGN] === DeviceDetailConstants::ASSISTED_ONBOARDING)
+        if ((new UserService())->isAssistedOnboardingSignupCampaign($signupCampaign))
         {
             $routeKey = self::SALES_ASSISTED_MERCHANT_SIGN_UP;
         }

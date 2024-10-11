@@ -7,10 +7,14 @@ use Hash;
 use Config;
 
 use Mockery;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Base\EsDao;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Account;
 use Rzp\Models\Admin\Permission;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Workflow\Observer\MerchantActivationStatusObserver;
 use RZP\Services\KafkaProducerClient;
 use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
@@ -29,6 +33,7 @@ use RZP\Tests\Functional\Fixtures\Entity\WorkflowAction;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Trace\TraceCode;
+use \RZP\Models\Workflow\Observer\Constants as WorkflowConstants;
 
 class WorkflowActionTest extends TestCase
 {
@@ -810,5 +815,275 @@ class WorkflowActionTest extends TestCase
 
     }
 
+    public function testCloseActionForPartner()
+    {
+        $kafkaProducerMock = \Mockery::mock('overload:RZP\Services\KafkaProducer');
+        $merchantId = 'No72z8gsJTcHKu';
 
+        // Define the expected data for the Kafka producer
+        $expectedData = [
+            WorkflowConstants::WORKFLOW_ACTION_ID => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            WorkflowConstants::PERMISSION_NAME    => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            WorkflowConstants::STATUS             => Status::REJECTED,
+            WorkflowConstants::AGENT_Id           => 'undefined_agent',
+            WorkflowConstants::AGENT_NAME         => 'undefined_agent',
+            DifferEntity::ENTITY_ID               => $merchantId,
+            DifferEntity::ENTITY_NAME             => WorkflowConstants::MERCHANT,
+            WorkflowConstants::EVENT_TYPE         => WorkflowConstants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+            WorkflowConstants::CMMA_CASE_TYPE     => DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE,
+        ];
+
+        // Set expectations for the `produce` method
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->withNoArgs()
+            ->andReturn(true);
+
+        // Set expectations for KafkaProducer constructor with expected arguments
+        $kafkaProducerMock->shouldReceive('__construct')
+            ->once()
+            ->with(
+                env('CMMA_CASE_EVENTS_TOPIC_NAME'),
+                Mockery::on(function ($actualPayload) use ($expectedData) {
+                    // Ensure the data sent matches the expected data
+                    return $actualPayload === stringify($expectedData);
+                })
+            );
+
+        // Mock the observer data to simulate an action
+        $observerData = [
+            DifferEntity::ACTION_ID  => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            DifferEntity::AGENT_ID   => $merchantId,
+            DifferEntity::AGENT_NAME => 'test_agent',
+        ];
+
+        // Create merchant and related fixtures
+        $merchantAttributes = ['id' => $merchantId];
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            $merchantDetail['merchant_id'],
+            ['contact_mobile' => '9891817372', 'contact_mobile_verified' => true],
+            "owner"
+        );
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'partner_assisted_onboarding',
+            'metadata'        => ['service' => 'pgos']
+        ]);
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $merchantActivationStatusObserver = new MerchantActivationStatusObserver([
+            Action\Differ\Entity::ENTITY_ID  => $merchantId,
+            Action\Differ\Entity::PERMISSION => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+        ]);
+
+        // Trigger the observer method
+        $merchantActivationStatusObserver->onClose($observerData);
+    }
+
+    public function testOnRejectWhenPermissionIsPosEditActivateMerchantForPartner()
+    {
+        $kafkaProducerMock = \Mockery::mock('overload:RZP\Services\KafkaProducer');
+        $merchantId = 'No72z8gsJTcHKu';
+
+        $expectedData = [
+            WorkflowConstants::WORKFLOW_ACTION_ID => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            WorkflowConstants::PERMISSION_NAME    => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            WorkflowConstants::STATUS             => Status::REJECTED,
+            WorkflowConstants::AGENT_Id           => 'undefined_agent',
+            WorkflowConstants::AGENT_NAME         => 'undefined_agent',
+            DifferEntity::ENTITY_ID               => $merchantId,
+            DifferEntity::ENTITY_NAME             => WorkflowConstants::MERCHANT,
+            WorkflowConstants::EVENT_TYPE         => WorkflowConstants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+            WorkflowConstants::CMMA_CASE_TYPE     => DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE,
+        ];
+
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn(true);
+
+        $kafkaProducerMock->shouldReceive('__construct')
+            ->once()
+            ->with(
+                env('CMMA_CASE_EVENTS_TOPIC_NAME'),
+                Mockery::on(function ($actualPayload) use ($expectedData) {
+                    return $actualPayload === stringify($expectedData);
+                })
+            );
+
+        $observerData = [
+            DifferEntity::ACTION_ID  => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            DifferEntity::AGENT_ID   => $merchantId,
+            DifferEntity::AGENT_NAME => 'test_agent',
+        ];
+
+        $merchantAttributes = ['id' => $merchantId];
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            $merchantDetail['merchant_id'],
+            ['contact_mobile' => '9891817372', 'contact_mobile_verified' => true],
+            "owner"
+        );
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'partner_assisted_onboarding',
+            'metadata'        => ['service' => 'pgos']
+        ]);
+
+        $merchantActivationStatusObserver = new MerchantActivationStatusObserver([
+            Action\Differ\Entity::ENTITY_ID  => $merchantId,
+            Action\Differ\Entity::PERMISSION => 'pos_edit_activate_merchant',
+        ]);
+
+        $merchantActivationStatusObserver->onReject($observerData);
+    }
+
+    public function testOnCreateWithPosEditActivateMerchantForPartner()
+    {
+        $kafkaProducerMock = \Mockery::mock('overload:RZP\Services\KafkaProducer');
+        $merchantId = 'No72z8gsJTcHKu';
+
+        $expectedData = [
+            WorkflowConstants::WORKFLOW_ACTION_ID => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            WorkflowConstants::PERMISSION_NAME    => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            WorkflowConstants::STATUS             => WorkflowConstants::OPEN,
+            WorkflowConstants::AGENT_Id           => 'undefined_agent',
+            WorkflowConstants::AGENT_NAME         => 'undefined_agent',
+            DifferEntity::ENTITY_ID               => $merchantId,
+            DifferEntity::ENTITY_NAME             => WorkflowConstants::MERCHANT,
+            WorkflowConstants::EVENT_TYPE         => WorkflowConstants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+            WorkflowConstants::CMMA_CASE_TYPE     => DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE,
+        ];
+
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn(true);
+
+        $kafkaProducerMock->shouldReceive('__construct')
+            ->once()
+            ->with(
+                env('CMMA_CASE_EVENTS_TOPIC_NAME'),
+                Mockery::on(function ($actualPayload) use ($expectedData) {
+                    return $actualPayload === stringify($expectedData);
+                })
+            );
+
+        $merchantId = 'No72z8gsJTcHKu';
+        $merchantAttributes = ['id' => $merchantId];
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            $merchantDetail['merchant_id'],
+            ['contact_mobile' => '9891817372', 'contact_mobile_verified' => true],
+            "owner"
+        );
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'partner_assisted_onboarding',
+            'metadata'        => ['service' => 'pgos']
+        ]);
+
+        $observer = new MerchantActivationStatusObserver([
+            Action\Differ\Entity::ENTITY_ID  => $merchantId,
+            Action\Differ\Entity::PERMISSION => 'pos_edit_activate_merchant',
+        ]);
+
+        $observerData = [
+            DifferEntity::ACTION_ID  => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            DifferEntity::AGENT_ID   => $merchantId,
+            DifferEntity::AGENT_NAME => 'test_agent',
+        ];
+
+        $observer->onCreate($observerData);
+    }
+
+    public function testOnExecuteWithPosEditActivateMerchantForPartner()
+    {
+        $kafkaProducerMock = Mockery::mock('overload:RZP\Services\KafkaProducer');
+        $merchantId = 'No72z8gsJTcHKu';
+
+        $expectedData = [
+            WorkflowConstants::WORKFLOW_ACTION_ID => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            WorkflowConstants::PERMISSION_NAME    => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            WorkflowConstants::STATUS             => WorkflowConstants::EXECUTED,
+            WorkflowConstants::AGENT_Id           => 'undefined_agent',
+            WorkflowConstants::AGENT_NAME         => 'undefined_agent',
+            DifferEntity::ENTITY_ID               => $merchantId,
+            DifferEntity::ENTITY_NAME             => WorkflowConstants::MERCHANT,
+            WorkflowConstants::EVENT_TYPE         => WorkflowConstants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+            WorkflowConstants::CMMA_CASE_TYPE     => DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE,
+        ];
+
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn(true);
+
+        $kafkaProducerMock->shouldReceive('__construct')
+            ->once()
+            ->with(
+                env('CMMA_CASE_EVENTS_TOPIC_NAME'),
+                Mockery::on(function ($actualPayload) use ($expectedData) {
+                    return $actualPayload === stringify($expectedData);
+                })
+            );
+
+        $merchantAttributes = ['id' => $merchantId];
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            $merchantDetail['merchant_id'],
+            ['contact_mobile' => '9891817372', 'contact_mobile_verified' => true],
+            "owner"
+        );
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'partner_assisted_onboarding',
+            'metadata'        => ['service' => 'pgos']
+        ]);
+
+        $observer = new MerchantActivationStatusObserver([
+            'entity_id'             => $merchantId,
+            'permission_name'       => Permission\Name::POS_EDIT_ACTIVATE_MERCHANT,
+            'old_activation_status' => null,
+            'new_activation_status' => Status::ACTIVATED,
+        ]);
+
+        $observerData = [
+            DifferEntity::ACTION_ID  => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            DifferEntity::AGENT_ID   => $merchantId,
+            DifferEntity::AGENT_NAME => 'test_agent',
+        ];
+
+        $observer->onExecute($observerData);
+    }
 }

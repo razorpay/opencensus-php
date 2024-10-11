@@ -6751,4 +6751,24 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSaveMerchantDetailsForPartnerMerchant' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_type' => '1',
+                'is_pos_details_submitted' => true,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'is_pos_details_submitted' => '1',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];
+
+

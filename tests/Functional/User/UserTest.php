@@ -15667,6 +15667,7 @@ class UserTest extends TestCase
 
         $this->fixtures->create('merchant', $merchantAttributes);
         $this->fixtures->edit('merchant', $merchantId, ['partner_type' =>'reseller']);
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller', 'type'=> 'referred', 'merchant_id' => $merchantId], true);
 
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             'merchant_id' => $merchantId,
@@ -15704,13 +15705,19 @@ class UserTest extends TestCase
 
         $merchant1 = $this->getDbEntityById('merchant', $merchantId);
 
-        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $response['merchants'][0]['id']]);;
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $response['merchants'][0]['id']]);
+
+        $merchantAccessMap = $this->getDbEntity('merchant_access_map',
+              [
+                'merchant_id' => $response['merchants'][0]['id']
+              ], 'test');
 
         $this->assertEquals($merchantUserMapping[0]->role, 'razorpay_sales');
 
         $this->assertEquals($merchant1->getPartnerType(), 'reseller');
 
-        $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
+        $this->assertEquals($userDeviceDetails['signup_campaign'], 'partner_assisted_onboarding');
+        $this->assertNotNull($merchantAccessMap);
 
     }
 }

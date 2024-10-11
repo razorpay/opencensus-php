@@ -694,7 +694,8 @@ class Service extends Base\Service
 
         // Check if POS details have been submitted and merchant details are set.
         // Additionally, skip the process if the merchant's signup campaign is 'assisted_onboarding'.
-        if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and  $userDeviceDetail->signup_campaign !== DDConstants::ASSISTED_ONBOARDING)
+        if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and
+            !empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant() !== true)
         {
             $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
 
