@@ -5,6 +5,7 @@ namespace Functional\QrCode;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
@@ -137,7 +138,7 @@ class UpiYesBankQRCodeTest extends TestCase
     // Payment - Offline, POSActivated - false , Merchant Activated - false ,  Result =  Fail
     public function testSkipCheckMerchantPermissionsForNonPOSActivatedMerchantForPaymentForStaticQrCode(): void
     {
-    
+
         $merchant = $this->fixtures->create('merchant', [
             'activated' => false
         ]);
@@ -168,7 +169,7 @@ class UpiYesBankQRCodeTest extends TestCase
      // Payment - Offline, POSActivated - false , Merchant Activated - true ,  Result =  Fail
     public function testSkipCheckMerchantPermissionsForNonPOSActivatedButActivatedMerchantForPaymentForStaticQrCode(): void
     {
-    
+
         $merchant = $this->fixtures->create('merchant', [
             'activated' => true
         ]);
@@ -215,7 +216,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
         $this->createPricingForOffline();
-        
+
         $this->makeUpiYesBankPayment($qrCodeEntity);
 
         $payment = $this->getLastEntity('payment', true);
@@ -246,7 +247,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
         $this->createPricingForOffline();
-        
+
         $this->makeUpiYesBankPayment($qrCodeEntity);
 
         $payment = $this->getLastEntity('payment', true);
@@ -287,7 +288,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
-    // Payment - Online, POSActivated - false , Merchant Activated - true ,  Result =  Success 
+    // Payment - Online, POSActivated - false , Merchant Activated - true ,  Result =  Success
     public function testSkipCheckMerchantPermissionsForPOSActivatedAndNonActivatedMerchantForOnlinePaymentForStaticQrCode(): void
     {
         $merchant = $this->fixtures->create('merchant', [
@@ -1056,5 +1057,48 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
         $this->assertEquals(null, $payment['reference2']);
+    }
+
+    public function testCreateQrWithOnDemandFeatureFlagEnabledAndCloseQrOnDemandForYesBank()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->on('live')->merchant->addFeatures(['close_qr_on_demand']);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_QR_CODE_ON_DEMAND_CLOSE_FOR_YES_BANK);
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+                'name' => 'Mitasha']
+        );
+
+    }
+
+    public function testCreateSingleUseQrCodeWithServerErrorException() // Testing exception handling for QR Creation with yesbank dedicated terminal
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+
+        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
+        $this->expectException(BadRequestException::class);
+
+        $this->app['config']->set('gateway.mock_upi_yesbank', false);
+
+        $iciciGatewayMock = \Mockery::mock('RZP\Gateway\Upi\Yesbank\Gateway')->makePartial();
+
+        $iciciGatewayMock
+            ->shouldReceive('getQrRefId')
+            ->andThrow(
+                new ServerErrorException('test error', ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE)
+            );
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+                'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway']);
     }
 }

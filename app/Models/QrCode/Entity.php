@@ -405,16 +405,6 @@ class Entity extends Base\PublicEntity
 
         $mode = $app['rzp.mode'];
 
-        $variant = $app['razorx']->getTreatment($app['request']->getTaskId(),
-                                                RazorxTreatment::TOKENIZE_QR_STRING_MPANS, $mode, 2);
-
-        if (strtolower($variant) !== 'on')
-        {
-            $this->setAttribute(self::QR_STRING, $qrString);
-
-            return;
-        }
-
         $tokenizedMpansQrString = self::getQrStringWithTokenizedMpans($qrString);
 
         $app['trace']->info(TraceCode::SETTING_QR_STRING_WITH_MPANS_TOKENIZED, [

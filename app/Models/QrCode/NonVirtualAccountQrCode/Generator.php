@@ -1141,82 +1141,68 @@ class Generator extends QrCode\Generator
     {
         $vpa = null;
 
-        if ($this->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true)
+        $terminals = $terminal === null ? $this->getDedicatedTerminalForQrCreate($qrCode) : [0 => $terminal];
+
+        $errorMessage = '';
+        $errorCode    = '';
+        foreach ($terminals as $terminal)
         {
-            $terminals = $terminal === null ? $this->getDedicatedTerminalForQrCreate($qrCode) : [0 => $terminal];
-
-            $errorMessage = '';
-            $errorCode    = '';
-            foreach ($terminals as $terminal)
+            try
             {
-                try
+                if ($terminal->getGateway() === Gateway::UPI_RZPAPB)
                 {
-                    if ($terminal->getGateway() === Gateway::UPI_RZPAPB)
-                    {
-                        return $this->generateQrIntentUrlViaGatewayModuleForUpiRzpApb($qrCode, $terminal);
-                    }
+                    return $this->generateQrIntentUrlViaGatewayModuleForUpiRzpApb($qrCode, $terminal);
+                }
 
-                    if
+                if
+                (
                     (
-                        (
-                            strtolower(
-                                $this->app->razorx->getTreatment(
-                                    $terminal->getGateway(),
-                                    RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
-                                    $this->mode
-                                )
-                            ) === RazorxTreatment::RAZORX_VARIANT_ON
-                        ) and
-                        ($qrCode->getProvider() === Provider::UPI_QR)
-                    )
-                    {
-                        return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
-                    }
-
-                    $vpa = $this->getDedicatedTerminalVpaForQr($qrCode, $terminal);
-
-                    if ($vpa !== null)
-                    {
-                        if ($qrCode->getProvider() === Provider::UPI_QR)
-                        {
-                            return $this->generateUpiQrIntentUrl($vpa, $qrCode);
-                        }
-                        else
-                        {
-                            return $vpa;
-                        }
-                    }
-                }
-                catch (\Exception $e)
+                        strtolower(
+                            $this->app->razorx->getTreatment(
+                                $terminal->getGateway(),
+                                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
+                                $this->mode
+                            )
+                        ) === RazorxTreatment::RAZORX_VARIANT_ON
+                    ) and
+                    ($qrCode->getProvider() === Provider::UPI_QR)
+                )
                 {
-                    $errorMessage = $e->getMessage();
-                    $errorCode    = $e->getCode();
+                    return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
+                }
 
-                    $this->trace->traceException($e);
+                $vpa = $this->getDedicatedTerminalVpaForQr($qrCode, $terminal);
+
+                if ($vpa !== null)
+                {
+                    if ($qrCode->getProvider() === Provider::UPI_QR)
+                    {
+                        return $this->generateUpiQrIntentUrl($vpa, $qrCode);
+                    }
+                    else
+                    {
+                        return $vpa;
+                    }
                 }
             }
-
-            if (($errorMessage) !== '')
+            catch (\Exception $e)
             {
-                throw new BadRequestException($errorCode, $errorMessage);
-            }
+                $errorMessage = $e->getMessage();
+                $errorCode    = $e->getCode();
 
-            if (empty($vpa) === true)
-            {
-                throw new InvalidArgumentException('VPA is required for generating QR');
+                $this->trace->traceException($e);
             }
         }
-        else
+
+        if (($errorMessage) !== '')
         {
-            $vpa = $this->generateVpaForQr($qrCode);
-
-            if ($qrCode->getProvider() === Provider::UPI_QR)
-            {
-                return $this->generateUpiQrIntentUrl($vpa, $qrCode);
-            }
+            throw new BadRequestException($errorCode, $errorMessage);
         }
 
-        return $vpa;
+        if (empty($vpa) === true)
+        {
+            throw new InvalidArgumentException('VPA is required for generating QR');
+        }
     }
 
     public function checkIfDedicatedTerminalSplitzExperimentEnabled($merchantId)

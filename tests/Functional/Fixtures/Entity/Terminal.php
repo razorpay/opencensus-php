@@ -222,6 +222,7 @@ class Terminal extends Base
             'gateway'                   => 'upi_icici',
             'gateway_merchant_id'       => 'abcd_bharat_qr',
             'gateway_terminal_id'       => 'abcde',
+            'gateway_merchant_id2'       => 'random@icici',
             'gateway_acquirer'          => 'ratn',
             'gateway_terminal_password' => 'abcdef',
             'upi'                       => true,

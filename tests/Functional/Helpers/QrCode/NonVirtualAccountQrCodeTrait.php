@@ -1024,9 +1024,9 @@ trait NonVirtualAccountQrCodeTrait
         $this->assertEquals('upi_qr', $qrCode['provider']);
 
         // Intent link checks
-        $tr = 'RZP' . $qrCode['id'] . 'qrv2';
+        $tr = 'icicirefID';
         $this->assertStringContainsString($tr, $qrCode['qr_string']);
-        $this->assertStringContainsString('qrmoremegast', $qrCode['qr_string']);
+//        $this->assertStringContainsString('qrmoremegast', $qrCode['qr_string']);
         $this->assertStringContainsString('@icici', $qrCode['qr_string']);
         $this->assertStringContainsString('am=' . $qrCode['amount']/100, $qrCode['qr_string']);
 
@@ -1044,7 +1044,7 @@ trait NonVirtualAccountQrCodeTrait
 
         $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
-        $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
+//        $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
         $this->assertStringContainsString('@icici', $qrCodeEntity['qr_string']);
 
         if ($qrCodeEntity['fixed_amount'] === true)

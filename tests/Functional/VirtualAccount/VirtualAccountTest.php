@@ -120,8 +120,6 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->on('test');
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
-        $this->enableRazorXTreatmentForTokenizeQrStringMpans();
     }
 
     public function testCreateHdfcEcmsVirtualAccount()
@@ -3326,23 +3324,6 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
-    }
-
-    protected function enableRazorXTreatmentForTokenizeQrStringMpans()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::TOKENIZE_QR_STRING_MPANS))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
     }
 
     public function testVaCoreGetVaName()

@@ -41,23 +41,6 @@ class QrCodeConfigTest extends TestCase
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
     }
 
-    protected function enableRazorXTreatmentForQrCutoffConfig()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function(string $id, string $featureFlag, string $mode) {
-                   if ($featureFlag === (RazorxTreatment::QR_CODE_CUTOFF_CONFIG))
-                   {
-                       return 'on';
-                   }
-
-                   return 'control';
-               });
-    }
-
     private function createQrCodeConfigs($cutoff = null)
     {
         $this->ba->privateAuth();
@@ -76,8 +59,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testQrCodeConfigsCreate()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $response = $this->createQrCodeConfigs();
 
         $this->assertEquals($response['cut_off_time'], 1500);
@@ -98,8 +79,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testQrCodeConfigsUpdate()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $response = $this->createQrCodeConfigs();
 
         $configs = $this->getDbLastEntityToArray('qr_code_config');
@@ -125,8 +104,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testQrCodeConfigsFetch()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $this->createQrCodeConfigs();
 
         $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]);
@@ -136,8 +113,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testQrCodeConfigsCreateWithNegativeCutoffValue()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_NON_POSITIVE_CUTOFF);
@@ -150,8 +125,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testQrCodeConfigsCreateWithHighCutoffValue()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_TOO_HIGH);
@@ -164,8 +137,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testQrCodeConfigsCreateWithStringNumberedCutoffValue()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $this->createQrCodeConfigs("1500");
 
         $configs = $this->getDbLastEntityToArray('qr_code_config');
@@ -175,8 +146,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testQrCodeConfigsCreateWithAlphaNumericCutoffValue()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_ALPHA_NUMERIC);
@@ -189,8 +158,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testProcessIciciQrPaymentCutoffTimeExceeded()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $this->fixtures->create('qr_code_config');
 
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
@@ -223,8 +190,6 @@ class QrCodeConfigTest extends TestCase
 
     public function testProcessIciciQrPaymentCutoffTimeNotExceeded()
     {
-        $this->enableRazorXTreatmentForQrCutoffConfig();
-
         $this->fixtures->create('qr_code_config');
 
         $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);

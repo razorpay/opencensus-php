@@ -75,7 +75,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
-        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+        $this->bqrTerminal = $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
 
         $this->fixtures->on('test')->create('terminal:bharat_qr_terminal');
 
@@ -544,6 +544,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $now = Carbon::now(Timezone::IST);
 
         $input = [
+            'usage'     => 'single_use',
             'close_by'  => $now->getTimestamp() + 10,
         ];
 
@@ -780,7 +781,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $qrCode = $this->getDbLastEntity('qr_code');
 
         $this->assertEquals($response['payment_amount'], $order->getAmount());
-        $this->assertStringContainsString('RZP' . $qrCode['id'] . 'qrv2', $response[Entity::QR_STRING]);
+        $this->assertStringContainsString('icicirefID', $response[Entity::QR_STRING]);
 
         $this->runEntityAssertionsForPaymentLinksQR($qrCode, $input, $order);
 
@@ -1479,6 +1480,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrPaymentWithDisabledUpiMethod()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
 
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
 
@@ -1510,6 +1516,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrPaymentWithOrderIdMandatoryEnabled()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
 
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
 
@@ -1719,6 +1730,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentWithCustomerFeeBearerModel()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
         $this->fixtures->merchant->edit('LiveAccountMer',['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
@@ -1986,6 +2002,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentOnSingleUseQrCode()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
 
         $qrCodeId = $qrCode['id'];
@@ -2018,6 +2039,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCreateUseQrCodeWithEzetapRequestSource()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer', headers: ['X-Razorpay-Request-Source' => 'ezetap']);
 
         $qrCode = $this->getDbLastEntity('qr_code', 'live');
@@ -2027,6 +2053,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQRCreatedWebhookWithEzetapRequestSource()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
         $this->expectWebhookEvent(
             'qr_code.created',
             function (array $event)
@@ -2591,6 +2622,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrPaymentOnIntentSubType()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
 
         $qrCodeId = $qrCode['id'];
@@ -2628,6 +2664,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
     // which will result in payment refund due to amount mismatch
     public function testProcessQrPaymentWithPaiseInAmount()
     {
+        /**
+         *The Terminal didn't have merchant ID as LiveAccountMer, so this is being adjusted for the terminal.
+         *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
+         */
+        $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
         $this->setMockRazorxTreatment([RazorxTreatment::QR_AMOUNT_MISMATCH_FIX => RazorxTreatment::RAZORX_VARIANT_ON]);
 
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr', 'payment_amount'=>27071, 'fixed_amount'=> true], 'live', 'LiveAccountMer');

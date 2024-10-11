@@ -27,23 +27,11 @@ class Service extends Base\Service
         return $processedOutput;
     }
 
-    public function checkIfExperimentEnabled()
-    {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::QR_CODE_CUTOFF_CONFIG, $this->mode);
-
-        if ($variant !== 'on')
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_CONFIG_EXPERIMENT_NOT_ENABLED_FOR_MERCHANT);
-        }
-    }
-
     public function create($input)
     {
         $this->trace->info(TraceCode::QR_CODE_CONFIG_CREATE_REQUEST, $input);
 
         $input = $this->preProcessInput($input);
-
-        $this->checkIfExperimentEnabled();
 
         $configs = $this->core()->createQrCodeConfigs($input);
 
@@ -60,8 +48,6 @@ class Service extends Base\Service
 
         $input = $this->preProcessInput($input);
 
-        $this->checkIfExperimentEnabled();
-
         $configs = $this->core()->updateQrCodeConfigs($input);
 
         $configs = $this->preProcessOutput($configs);
@@ -75,8 +61,6 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::QR_CODE_CONFIG_FETCH_REQUEST);
 
-        $this->checkIfExperimentEnabled();
-
         $configs = $this->core()->fetchQrCodeConfigs();
 
         $configs = $this->preProcessOutput($configs);
@@ -89,8 +73,6 @@ class Service extends Base\Service
     public function delete()
     {
         $this->trace->info(TraceCode::QR_CODE_CONFIG_DELETE_REQUEST);
-
-        $this->checkIfExperimentEnabled();
 
         $response = $this->core()->deletePreviousConfigs();
 

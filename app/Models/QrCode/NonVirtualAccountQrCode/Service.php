@@ -73,10 +73,7 @@ class Service extends QrCode\Service
         {
             $input[Entity::REQUEST_SOURCE] = $input[Entity::REQUEST_SOURCE] ?? $this->getRequestSourceViaAuth();
 
-            if ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($this->merchant->getId()) === true)
-            {
-                (new Validator)->validateQrOnDedicatedTerminal($input);
-            }
+            (new Validator)->validateQrOnDedicatedTerminal($input);
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
                 return (new Core)->buildQrCode($input);

@@ -551,20 +551,6 @@ class Processor extends Base\Core
         return false;
     }
 
-    public function checkIfExperimentEnabled($qrPayment)
-    {
-        $merchantId = $this->qrCode->merchant->getId();
-
-        $variant = $this->app->razorx->getTreatment($merchantId, RazorxTreatment::QR_CODE_CUTOFF_CONFIG, $this->mode);
-
-        if ($variant !== 'on')
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     private function checkPaymentExpectedAndSetQrCode($qrPayment)
     {
         $this->setQrCode($qrPayment);
@@ -670,14 +656,6 @@ class Processor extends Base\Core
                 $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH);
                 return;
             }
-        }
-
-        if (($this->checkIfExperimentEnabled($qrPayment) == true)
-            and ($this->checkIfCutoffTimeIsExceeded($qrPayment) == true))
-        {
-            $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_CODE_CUTOFF_TIME_EXCEEDED);
-
-            return;
         }
 
         $qrPayment->setExpected(true);

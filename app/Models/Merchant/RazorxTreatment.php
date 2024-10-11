@@ -300,8 +300,6 @@ final class RazorxTreatment
     // To skip generating QR image in the QR create flow in order to reduce latency.
     const QR_CODE_GENERATE_IMAGE = 'qr_code_generate_image';
 
-    const QR_CODE_CUTOFF_CONFIG = 'qr_code_cutoff_config';
-
     const QR_ON_EMAIL = 'qr_on_email';
 
 
@@ -312,8 +310,6 @@ final class RazorxTreatment
 
     // experiment for opting out of settlement notification
     const SETTLEMENT_NOTIFICATION_OPT_OUT = 'settlement_notification_opt_out';
-
-    const TOKENIZE_QR_STRING_MPANS = 'tokenize_qr_string_mpans';
 
     // experiment to enable webhooks on route gateway_payment_static_s2scallback_post/gateway_payment_static_s2scallback_get
     const ENABLE_WEBHOOKS = 'enable_webhooks';
