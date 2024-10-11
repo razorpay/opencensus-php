@@ -10084,11 +10084,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT                           = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT';
     const INVALID_CREDENTIALS_UNAUTHORIZED                             = 'INVALID_CREDENTIALS_UNAUTHORIZED';
     const FETCHING_CREDENTIALS                                         = 'FETCHING_CREDENTIALS';
-    const SOME_ERROR_IN_VALIDATING                                     = 'SOME_ERROR_IN_VALIDATING';
     const SERVICE_REQUEST_FAILED                                       = 'SERVICE_REQUEST_FAILED';
     const CREDENTIALS_FETCHED_SUCCESSFULLY                             = 'CREDENTIALS_FETCHED_SUCCESSFULLY';
     const SUCCESS_MOZART_RESPONSE                                      = 'SUCCESS_MOZART_RESPONSE';
-    const TESTING_CODE_RUNNING                                         = 'TESTING_CODE_RUNNING';
+    const VPA_VALIDATION_FAILED                                        = 'VPA_VALIDATION_FAILED';
     const VALUES_TOKENIZED_SUCCESSFULLY                                = 'VALUES_TOKENIZED_SUCCESSFULLY';
     const FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY      = 'FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY';
     const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS           = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS';

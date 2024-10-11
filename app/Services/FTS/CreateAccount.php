@@ -734,15 +734,8 @@ class CreateAccount extends Base
             if($isExpEnabled === true)
             {
                 //Call to Mozart for validation of credentials before storing them in DB
-                $isVPAValidated = $this->VPAValidationBySessionTokenApi($input);
+                $this->VPAValidationBySessionTokenApi($input);
 
-                if ($isVPAValidated === false) {
-
-                    throw new Exception\BadRequestValidationFailureException(
-                        'VPA validation failed',
-                    );
-
-                }
             }
 
             // Creating a transaction as updating banking account details and updating source account
@@ -778,7 +771,7 @@ class CreateAccount extends Base
             $input);
     }
 
-    public function VPAValidationBySessionTokenApi(array $input): bool {
+    public function VPAValidationBySessionTokenApi(array $input) {
 
         try {
 
@@ -798,6 +791,8 @@ class CreateAccount extends Base
                 TraceCode::VALUES_TOKENIZED_SUCCESSFULLY
             );
 
+            $tokenizedValues[RblGatewayFields::CLIENT_SECRET] =  $credentials[RblGatewayFields::CLIENT_SECRET];
+
             $request[self::SOURCE_ACCOUNT_CONST][self::CREDENTIALS] = $tokenizedValues;
 
             $response =(new MozartCall($app))->sendMozartRequest('fts',
@@ -815,63 +810,49 @@ class CreateAccount extends Base
                 ['response' => $response]
             );
 
-            if (isset($response['success']) === true && $response['success'] === true)
-            {
-                return true;
-            }
-
         } catch (Exception\GatewayErrorException $exception){
 
-            $gatewayErrorDesc = $exception->getError()->getGatewayErrorDesc();
-
-            $this->trace->info(
-                TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+            $this->trace->error(
+                TraceCode::VPA_VALIDATION_FAILED,
                 [
-                    'gateway_error_code' => $exception->getError()->getGatewayErrorCode(),
-                    $gatewayErrorDesc,
+                    'error' => $exception->getError(),
                 ]
             );
 
+            $internalErrorCode = $exception->getError()->getInternalErrorCode();
             $gatewayErrorCode = $exception->getError()->getGatewayErrorCode();
 
-            if($gatewayErrorCode === '401'){
-                $this->trace->info(
-                    TraceCode::INVALID_CREDENTIALS_UNAUTHORIZED,
-                    ["error" => $exception->getError()]
-                );
-
-                $error_message = "Invalid Credentials";
-
-            } else{
-                $this->trace->info(
-                    TraceCode::SOME_ERROR_IN_VALIDATING,
-                    ["error" => $exception->getError()]
-                );
-
-                $error_message = "Technical issue at bank's end. Please retry later";
-            }
-
             throw new Exception\BadRequestValidationFailureException(
-                $gatewayErrorCode." _ ".$error_message,
-                $error_message."_".$gatewayErrorCode,
-                ["error"=>$gatewayErrorDesc]
+                $gatewayErrorCode." - ".$internalErrorCode,
+                $internalErrorCode." - ".$gatewayErrorCode,
+                [
+                    "error" => $exception->getError(),
+                    "error_message" => $exception->getMessage(),
+                ]
             );
 
         } catch (\Throwable $exception){
 
             $this->trace->traceException(
                 $exception,
-                Trace::CRITICAL,
+                Trace::ERROR,
                 TraceCode::SERVICE_REQUEST_FAILED,
                 [
                     'error_code'  => $exception->getCode(),
                     'error_message' => $exception->getMessage(),
                 ]);
 
-            return false;
+            throw new Exception\ServerErrorException(
+                'VPA Validation Failed due to Server Error',
+                ErrorCode::SERVER_ERROR_SERVICE_UNAVAILABLE,
+                [
+                    'error_code'  => $exception->getCode(),
+                    'error_message' => $exception->getMessage(),
+                ]
+            );
+
         }
 
-        return true;
     }
 
     protected function formatDataForMozartForVpaValidation($input): array|string
