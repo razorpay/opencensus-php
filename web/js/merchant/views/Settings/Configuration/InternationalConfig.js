@@ -177,7 +177,7 @@ function withInternationalConfig(WrappedComponent) {
 
       if (questionnaireStatus?.new_flow) {
         modalOptions = {
-          component: <Questionnaire triggerSource={triggerSource} />,
+          component: <Questionnaire triggerSource={triggerSource} isRevampFlow />,
           overlayStyles: { display: 'flex', justifyContent: 'center', alignItems: 'center' },
         };
       }

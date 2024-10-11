@@ -89,6 +89,7 @@ type Getters = {
   isAdditionalDomainWhitelistSelfServeOn: boolean;
   isRRNSearchEnabled: boolean;
   isMagicCouponEngineEnabled: boolean;
+  isMoreInternationalMethodsEnabledForVAS: boolean;
   isPayerNameEnabled: boolean;
 };
 

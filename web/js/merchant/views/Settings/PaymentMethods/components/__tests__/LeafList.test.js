@@ -31,6 +31,22 @@ describe('Test LeafList component', () => {
 
     expect(screen.getByText(LEAF_LIST_TESTS[1].output.header)).toBeInTheDocument();
   });
+
+  test('should render more international methods if isMoreInternationalMethodsEnabledForVAS is true', () => {
+    render(<LeafList />, {
+      initialState: LEAF_LIST_TESTS[5].input.initialState,
+    });
+
+    expect(screen.getByText(LEAF_LIST_TESTS[5].output.header)).toBeInTheDocument();
+  });
+
+  test('should not render more international methods if isMoreInternationalMethodsEnabledForVAS is false', () => {
+    render(<LeafList />, {
+      initialState: LEAF_LIST_TESTS[6].input.initialState,
+    });
+
+    expect(screen.queryByText(LEAF_LIST_TESTS[6].output.header)).not.toBeInTheDocument();
+  });
 });
 
 describe('Test LeafList component for recurring methods', () => {

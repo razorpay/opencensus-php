@@ -172,13 +172,24 @@ const RECURRING_METHODS = {
     ],
   },
 };
+
+const MORE_INTERNATIONAL_METHODS = {
+  name: 'More international payment methods',
+  description:
+    'Includes international bank transfer, local currency bank transfer and instant bank transfer',
+  slug: 'moreinternationalmethods',
+  icon: 'moreinternationalmethods',
+  actionItems: {},
+  leafList: [],
+};
+
 const INTERNATIONAL_INSTRUMENT = {
   name: 'International Payments',
   description: 'Cards, Paypal, USD ACH & more',
   slug: 'international',
   icon: 'international',
   actionItems: {},
-  leafList: [MONEY_SAVER_EXPORT_ACCOUNT_INSTRUMENT],
+  leafList: [MONEY_SAVER_EXPORT_ACCOUNT_INSTRUMENT, MORE_INTERNATIONAL_METHODS],
 };
 
 export const LEAF_LIST_TESTS = [
@@ -257,6 +268,41 @@ export const LEAF_LIST_TESTS = [
           },
         },
       },
+    },
+  },
+  {
+    input: {
+      initialState: {
+        instrumentRequests: {
+          leafInstrument: INTERNATIONAL_INSTRUMENT,
+        },
+        session: {
+          user: {
+            international: true,
+            isMoreInternationalMethodsEnabledForVAS: true,
+          },
+        },
+      },
+    },
+    output: {
+      header: MORE_INTERNATIONAL_METHODS.description,
+    },
+  },
+  {
+    input: {
+      initialState: {
+        instrumentRequests: {
+          leafInstrument: INTERNATIONAL_INSTRUMENT,
+        },
+        session: {
+          user: {
+            isMoreInternationalMethodsEnabledForVAS: false,
+          },
+        },
+      },
+    },
+    output: {
+      header: MORE_INTERNATIONAL_METHODS.name,
     },
   },
 ];

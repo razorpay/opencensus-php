@@ -48,6 +48,12 @@ const SwiftBankTransfer = lazy(() =>
   ),
 );
 
+const UnlockMoreMethods = lazy(() =>
+  import(
+    /* webpackChunkName: "UnlockMoreMethods" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/UnlockMoreMethods'
+  ),
+);
+
 const handleViewFirc = () => {
   analyticsTrack({
     objectName: 'FIRC Banner',
@@ -152,7 +158,7 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
         }
       })
       .filter(Boolean);
-    if (list.length === 0) {
+    if (list.length === 0 && leafList.slug !== 'moreinternationalmethods') {
       if (filter === 'inactive') {
         return <p className="all-active">All banks are active on your account!</p>;
       } else if (filter === 'active') {
@@ -171,6 +177,13 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
       return (
         <SuspenseWithLoader>
           <InstantBankTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
+    }
+    if (leafList?.slug === 'moreinternationalmethods') {
+      return (
+        <SuspenseWithLoader>
+          <UnlockMoreMethods instrument={leafList} />
         </SuspenseWithLoader>
       );
     }
@@ -212,7 +225,14 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
       className={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}
     >
       {instrument.leafList.map((leafList) => {
-        if (isInternationalLeafItemDisabled({ leafList, user })) return null;
+        if (
+          isInternationalLeafItemDisabled({
+            leafList,
+            user,
+            showMoreInternationalMethods: user?.isMoreInternationalMethodsEnabledForVAS,
+          })
+        )
+          return null;
         if (
           RECURRING_METHOD_HEADERS.includes(leafList.header) &&
           !isRecurringInstrumentEnabled(splitz)

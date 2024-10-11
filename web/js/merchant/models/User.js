@@ -2088,6 +2088,10 @@ export default class User {
     return this.isFeatureEnabled('one_cc_coupon_engine');
   }
 
+  get isMoreInternationalMethodsEnabledForVAS() {
+    return this.isFeatureEnabled('vas_ms_mx_vcip');
+  }
+
   get isPayerNameEnabled() {
     return (
       this.isOrgFeatureEnabled('display_upi_payer_name') &&
