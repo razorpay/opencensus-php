@@ -366,7 +366,7 @@ class PublicController extends Controller
             $requestOptions     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
 
             $app = \App::getFacadeRoot();
-            
+
             $app['trace']->info(TraceCode::RENDER_HOSTED_CHECKOUT, [
                 'key' => $key,
                 'requestOptions' => $requestOptions

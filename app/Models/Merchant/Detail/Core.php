@@ -6037,8 +6037,15 @@ class Core extends Base\Core
 
         $merchant = $newMerchantDetails->merchant;
 
+        $connectionType = (new Merchant\Service)->isReadFromTiDBExpEnabled($merchant->getId()) ?
+            ConnectionType::DATA_WAREHOUSE_MERCHANT : null;
+
+        $this->app['trace']->info(TraceCode::TRIGGER_WORKFLOW_FOR_REJECTION_ACTIVATION_STATUS_CHANGE_CONNECTION_TYPE, [
+            'connection_type' => $connectionType,
+        ]);
+
         $balances = $this->repo->balance->getMerchantBalancesByType($merchant->getId(),
-                                                                   \RZP\Models\Merchant\Balance\Type::PRIMARY);
+                                                                   \RZP\Models\Merchant\Balance\Type::PRIMARY, $connectionType);
 
         if (count($balances) >0)
         {

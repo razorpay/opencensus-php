@@ -689,7 +689,7 @@ class Service extends Base\Service
         unset($input[DEConstants::IS_POS_DETAILS_SUBMITTED]);
 
         $this->saveMerchantEligibilityForCategoriesV3Revamp($merchantId, $input, $merchant);
-        
+
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
         // Check if POS details have been submitted and merchant details are set.

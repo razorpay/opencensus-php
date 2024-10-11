@@ -338,7 +338,10 @@ class Repository extends Base\Repository
      */
     public function getMerchantBalanceByType(string $merchantId, string $balanceType, string $connection = null)
     {
-        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+        $query = ($connection !== null) ? $connection === ConnectionType::DATA_WAREHOUSE_MERCHANT ?
+            $this->newQueryWithConnection($this->getConnectionFromType($connection)) :
+            $this->newQueryWithConnection($connection) :
+            $this->newQuery();
 
         return $query->merchantIdAndType($merchantId, $balanceType)
                      ->first();
@@ -387,7 +390,10 @@ class Repository extends Base\Repository
      */
     public function getMerchantBalancesByType(string $merchantId, string $balanceType, string $connection = null)
     {
-        $query = ($connection !== null) ? $this->newQueryWithConnection($connection) : $this->newQuery();
+        $query = ($connection !== null) ? $connection === ConnectionType::DATA_WAREHOUSE_MERCHANT ?
+            $this->newQueryWithConnection($this->getConnectionFromType($connection)) :
+            $this->newQueryWithConnection($connection) :
+            $this->newQuery();
 
         return $query->merchantIdAndType($merchantId, $balanceType)
                      ->get();
@@ -546,13 +552,14 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function getBalancesForMerchantIds(array $merchantIds, $balanceType)
+    public function getBalancesForMerchantIds(array $merchantIds, $balanceType, string $connection = null)
     {
-        return $this->newQuery()
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-                    ->where(Entity::TYPE, $balanceType)
-                    ->pluck(Entity::BALANCE, Entity::MERCHANT_ID)
-                    ->toArray();
+        $query = ($connection !== null) ? $this->newQueryWithConnection($this->getConnectionFromType($connection)) : $this->newQuery();
+
+        return $query->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                     ->where(Entity::TYPE, $balanceType)
+                     ->pluck(Entity::BALANCE, Entity::MERCHANT_ID)
+                     ->toArray();
     }
 
     public function getBalancesForAccountNumbersForTypeBanking($accountNumbers, $merchantID)

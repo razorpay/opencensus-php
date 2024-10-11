@@ -4,7 +4,9 @@ namespace RZP\Models\Merchant\Cron\Collectors;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
@@ -125,7 +127,13 @@ class PreActivationMerchantReleaseFundsDataCollector extends DbDataCollector
     {
         $result = [];
 
-        $balances = $this->repo->balance->getBalancesForMerchantIds($merchantIdList, BalanceType::PRIMARY);
+        $connectionType = (new Merchant\Service)->isReadFromTiDBExpEnabled($merchantIdList) ?
+            ConnectionType::DATA_WAREHOUSE_MERCHANT : null;
+        $balances = $this->repo->balance->getBalancesForMerchantIds($merchantIdList, BalanceType::PRIMARY, $connectionType);
+
+        $this->app['trace']->info(TraceCode::FILTER_POSITIVE_PRIMARY_BALANCE_MERCHANTS_CONNECTION_TYPE, [
+            'connection_type' => $connectionType,
+        ]);
 
         foreach ($balances as $merchantId => $balance)
         {

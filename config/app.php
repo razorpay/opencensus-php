@@ -735,6 +735,8 @@ return array(
 
     'easy_kyc_access_referral_experiment_id' => env('EASY_KYC_ACCESS_REFERRAL_EXP_ID'),
 
+    'read_from_ti_db_experiment_id' => env('READ_FROM_TI_DB_EXPERIMENT_ID'),
+
     '1cc_enable_v165_splitz_experiment_id' => env('MAGIC_CHECKOUT_ENABLE_V165_EXP_ID'),
 
     '1cc_coupons_with_se_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_WITH_SCRIPT_EDITOR_EXP_ID'),
