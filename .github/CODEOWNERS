@@ -57,6 +57,7 @@ web/e2e/suites/paymentsLinks/v1.spec.js                     @razorpay/deploy-lea
 web/e2e/suites/paymentsLinks/v2.spec.js                     @razorpay/deploy-leads-dashboard
 apps/self-serve/e2e/suites/transactions/upload-invoices-v1.spec.ts @razorpay/deploy-leads-dashboard
 web/e2e/suites/transactions/upload-invoices-v1.spec.js @razorpay/deploy-leads-dashboard
+web/e2e/suites/CAW/registration_link.spec.js @razorpay/deploy-leads-dashboard
 
 # DO NOT REMOVE (KEEP AT THE END!)
 apps/*                                   @joel-jaimon @dhruvdutt

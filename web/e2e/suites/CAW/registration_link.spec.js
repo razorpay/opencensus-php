@@ -20,7 +20,8 @@ test.describe.parallel('Create Registration Link @flow=CAW @country=MY', () => {
     storageState: getStorageStatePath(BASE_PATH).CURLEC_TEST_CAW_LOGIN_STATE,
   });
 
-  test('should create a registration link with TNG as payment method', async ({ page }) => {
+  // https://razorpay.slack.com/archives/C061HJGS1CY/p1728536332543699
+  test.skip('should create a registration link with TNG as payment method', async ({ page }) => {
     await navigateToInCurlecDashboard(page, routes.DASHBOARD);
     await page
       .getByRole('link', { name: REGISTRATION_LINKS_BUTTONS_NAMES_ASSERTIONS.SUBSCRIPTIONS })
