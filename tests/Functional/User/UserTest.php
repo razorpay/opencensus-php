@@ -8117,6 +8117,34 @@ class UserTest extends TestCase
         });
     }
 
+    public function testResendOtpVerificationMailInternalAuth()
+    {
+        Mail::fake();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $user = $this->fixtures->create('user', ['email' => 'user_verify_resend_email_otp_internal_auth@abc.com', UserEntity::CONFIRM_TOKEN => $testData['request']['content']['token']]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
+
+        $response = $this->startTest();
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testResendEmailOtpVerificationMailThresholdExhausted()
     {
         $user = $this->fixtures->edit(

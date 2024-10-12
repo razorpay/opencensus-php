@@ -4621,6 +4621,21 @@ return [
         ],
     ],
 
+    'testResendOtpVerificationMailInternalAuth' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp-internal',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "token" => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+    ],
+
     'testResendEmailOtpVerificationMailThresholdExhausted' => [
         'request' => [
             'url'     => '/users/resend-verification-otp',
