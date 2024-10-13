@@ -95,23 +95,20 @@ const GtmModalContent = ({
         <>
           {/* Header */}
           <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            gap="spacing.6"
             paddingX="spacing.6"
             paddingY="spacing.9"
             backgroundColor="surface.background.cloud.subtle"
+            backgroundImage={`url(${ShieldImg})`}
+            backgroundSize="cover"
+            backgroundOrigin="content-box"
+            backgroundRepeat="no-repeat"
           >
-            <div>
-              <Heading color="surface.text.primary.normal" size="xlarge">
-                Reliable
-              </Heading>
-              <Heading color="surface.text.primary.normal" size="xlarge" weight="regular">
-                Daily Limits
-              </Heading>
-            </div>
-            <img width="76" height="86" src={ShieldImg} alt="Shield" />
+            <Heading color="surface.text.primary.normal" size="xlarge">
+              Reliable
+            </Heading>
+            <Heading color="surface.text.primary.normal" size="xlarge" weight="regular">
+              Daily Limits
+            </Heading>
           </Box>
           {/* Body */}
           <Box padding="spacing.6">
@@ -174,6 +171,7 @@ const GtmModalContent = ({
             marginBottom="spacing.3"
             color="surface.text.primary.normal"
             size="xlarge"
+            weight="semibold"
             value={convertToMajorUnit(maxLimit, { currency, keepDecimal: false })}
             suffix="none"
             currency={currency}

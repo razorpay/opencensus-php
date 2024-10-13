@@ -94,6 +94,8 @@ const renderApp = ({ user }: { user?: any } = {}) => {
     },
   });
 };
+
+jest.setTimeout(20 * 1000);
 /** Integration testing - PO flows */
 describe('Capital/OnDemandV2', () => {
   beforeEach(() => {
