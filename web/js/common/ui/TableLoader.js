@@ -1,6 +1,6 @@
 import Spinner from 'common/ui/Spinner';
 
-export default props => {
+export default (props) => {
   return (
     <tr>
       <td class="text-center empty-table" colSpan={props.colSpan}>

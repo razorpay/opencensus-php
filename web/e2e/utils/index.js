@@ -259,6 +259,10 @@ export const switchToTestModeShortCircuit = async ({ page, mid }) => {
   }, mid);
   await page.reload();
 };
+export const waitForLoader = async ({ page, selector }) => {
+  await expect(page.locator(selector)).toBeVisible();
+  await expect(page.locator(selector)).not.toBeVisible();
+};
 
 module.exports = {
   generateRandomText,
@@ -280,4 +284,5 @@ module.exports = {
   fillExpiry,
   clickSkipAndStartBtn,
   getRandomItemData,
+  waitForLoader,
 };

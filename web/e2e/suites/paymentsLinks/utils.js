@@ -1,5 +1,11 @@
-import { expectSuccessNotification, fillExpiry, generateRandomText } from 'utils';
+import {
+  expectSuccessNotification,
+  fillExpiry,
+  generateRandomText,
+  clickSkipAndStartBtn,
+} from 'utils';
 import { expect } from 'utils/base';
+import { routes } from 'testConstants';
 
 const SELECTORS = {
   detailsContainer: '.list-group.details-row-container',
@@ -31,7 +37,6 @@ export const createPaymentLink = async ({ page, productData, type }) => {
   await page.getByRole('link', { name: 'Create Payment Link' }).click();
 
   const referenceId = generateRandomText(12);
-
   // if its a v2 PL i.e. standard or upi we need to select the option to open modal
   // if its v1 then the modal should be already opened
   if (isV2PL) {
@@ -93,17 +98,22 @@ export const createPaymentLink = async ({ page, productData, type }) => {
   }
   await page.getByRole('button', { name: 'Create Payment Link' }).click();
   await expectSuccessNotification({ page, notificationText: 'Payment link created successfully.' });
-  // await page.waitForSelector(COMMON_SELECTORS.successNotification, { state: 'hidden' });
-  console.log(`PL Link created with referenceId: ${referenceId}`);
-  return referenceId;
+  await clickSkipAndStartBtn({ page });
+  const firstRow = await page.locator('[data-testid*="entity-item-row"]').first();
+  const firstCell = await firstRow.getByRole('cell').first();
+  const paymentsLinkId = await firstCell.textContent();
+
+  return { referenceId, paymentsLinkId };
 };
 
-export const searchPLAndOpenDetails = async ({ page, referenceId }) => {
-  const searchBtn = await page.getByRole('button', { name: 'Search' });
-  expect(searchBtn).toBeVisible();
-  await page.locator('input[name="receipt"]').fill(referenceId);
-  await searchBtn.click();
-  await expect(await page.getByRole('cell', { name: referenceId })).toBeVisible();
+export const searchPLAndOpenDetails = async ({ page, referenceId, paymentsLinkId }) => {
+  await expect(
+    page.getByRole('link', {
+      name: paymentsLinkId,
+    }),
+  ).toBeVisible();
+  const cell = await page.getByRole('cell', { name: referenceId });
+  await expect(cell).toBeVisible();
   const plRecordRow = await page.$(`tr:has(td:has-text("${referenceId}"))`);
   if (!plRecordRow) {
     console.log(`Not able to find PL Record with reference Id ${referenceId}`);
@@ -125,27 +135,38 @@ export const verifyPLCreated = async ({
 }) => {
   const detailsContainer = page.locator(SELECTORS.detailsContainer);
   await detailsContainer.waitFor();
-  await expect(await detailsContainer.getByText(statusToVerify, { exact: true })).toBeVisible();
-  await expect(await detailsContainer.getByText(referenceId)).toBeVisible();
-  await expect(
-    await detailsContainer.getByText(productData.description, { exact: true }),
-  ).toBeVisible();
-  await expect(await detailsContainer.getByText(productData.customer.contact)).toBeVisible();
-  await expect(
-    await detailsContainer.getByText(productData.customer.email, { exact: true }),
-  ).toBeVisible();
+
+  const statusElement = await detailsContainer.getByText(statusToVerify, { exact: true });
+  await expect(statusElement).toBeVisible();
+
+  const referenceElement = await detailsContainer.getByText(referenceId);
+  await expect(referenceElement).toBeVisible();
+
+  const descriptionElement = await detailsContainer.getByText(productData.description, {
+    exact: true,
+  });
+  await expect(descriptionElement).toBeVisible();
+
+  const contactElement = await detailsContainer.getByText(productData.customer.contact);
+  await expect(contactElement).toBeVisible();
+
+  const emailElement = await detailsContainer.getByText(productData.customer.email, {
+    exact: true,
+  });
+  await expect(emailElement).toBeVisible();
 };
 
 export const cancelPLCreated = async ({ page }) => {
   const detailsContainer = page.locator(SELECTORS.detailsContainer);
   await detailsContainer.waitFor();
   await expect(detailsContainer).toBeVisible();
+
   const cancelButton = detailsContainer.getByRole('button', { name: 'Cancel Link' });
   await cancelButton.waitFor();
   await expect(cancelButton).toBeVisible();
+
   await cancelButton.click();
   await page.getByRole('button', { name: 'Yes, Cancel' }).click();
-
   await expectSuccessNotification({
     page,
     notificationText: 'Link Cancelled!',
@@ -154,10 +175,11 @@ export const cancelPLCreated = async ({ page }) => {
   const paymentLinkDetailsURL = await page.url();
   await page.goto(paymentLinkDetailsURL);
 
-  await expect(await detailsContainer.getByText('Cancelled')).toBeVisible();
+  const cancelledElement = await detailsContainer.getByText('Cancelled');
+  await expect(cancelledElement).toBeVisible();
 };
 
-export const clonePLCreated = async ({ page, productData, isClassic = false }) => {
+export const clonePLCreated = async ({ page, productData, isPaymentLinkV1 = false }) => {
   const cloneButton = await page.locator('i.i-copy');
 
   await expect(cloneButton).toBeVisible();
@@ -165,40 +187,39 @@ export const clonePLCreated = async ({ page, productData, isClassic = false }) =
 
   const amount = `${productData.amount / 100}`;
   await page.waitForTimeout(5000);
-  await expect(await page.locator('input[name="amount"]').inputValue()).toBe(amount);
-  await expect(await page.getByPlaceholder('Payment description').inputValue()).toBe(
-    productData.description,
-  );
+  const amountInputValue = await page.locator('input[name="amount"]').inputValue();
+  await expect(amountInputValue).toBe(amount);
+  const descriptionInputValue = await page.getByPlaceholder('Payment description').inputValue();
+  await expect(descriptionInputValue).toBe(productData.description);
   if (productData.customer) {
     await expect(
-      await page.getByPlaceholder(isClassic ? 'Mobile' : '+91 9876543210').inputValue(),
+      await page.getByPlaceholder(isPaymentLinkV1 ? 'Mobile' : '+91 9876543210').inputValue(),
     ).toBe(`+91 ${productData.customer.contact}`);
     await expect(
-      await page.getByPlaceholder(isClassic ? 'Email' : 'john@example.com').inputValue(),
+      await page.getByPlaceholder(isPaymentLinkV1 ? 'Email' : 'john@example.com').inputValue(),
     ).toBe(productData.customer.email);
   }
 
   const referenceId = generateRandomText(12);
-  if (isClassic) {
+  if (isPaymentLinkV1) {
     await page.locator(SELECTORS.legacyLinkReceiptInput).fill(referenceId);
   } else {
     await page.getByPlaceholder('123456').fill(referenceId);
+    await page.getByRole('button', { name: 'Create Payment Link' }).click();
+    await expectSuccessNotification({
+      page,
+      notificationText: 'Payment link created successfully.',
+    });
   }
-
-  // TODO: debug and fix
-  // await page.getByRole('button', { name: 'Create Payment Link' }).click();
-  // await expectSuccessNotification({
-  //   page,
-  //   notificationText: 'Payment link created successfully.',
-  // });
 };
 
-export const editPLCreated = async ({ page, productData, referenceId }) => {
+export const editPLCreated = async ({ page, productData }) => {
   const referenceIdChangeButton = await page.waitForSelector(
     'div.pair-label:has-text("Reference Id") + div.pair-value button.Button',
   );
   await referenceIdChangeButton.click();
-  await page.getByPlaceholder('Reference Id').fill(`${referenceId}NEW`);
+  const referenceId = generateRandomText(12);
+  await page.getByPlaceholder('Reference Id').fill(`${referenceId}`);
   await page.getByRole('button', { name: 'Save' }).click();
   await expectSuccessNotification({
     page,
@@ -218,6 +239,7 @@ export const editPLCreated = async ({ page, productData, referenceId }) => {
     page,
     notificationText: 'Notes are updated successfully',
   });
+  return { referenceId };
 };
 
 export const searchAndVerifyByStatus = async ({ container, statusToVerify }) => {
@@ -233,21 +255,21 @@ export const searchAndVerifyByStatus = async ({ container, statusToVerify }) => 
   return firstRowStatus;
 };
 
-export const searchAndVerifyByPLId = async ({ container }) => {
-  const firstRecord = await container.locator('tbody tr').first();
-  const paymentLinkId = await firstRecord.locator('a').textContent();
-
-  await container.locator('input[name="id"]').fill(paymentLinkId);
+export const searchAndVerifyByPLId = async ({ container, paymentLinksId }) => {
+  await container.locator('input[name="id"]').fill(paymentLinksId);
   await container.getByRole('button', { name: 'Search' }).click();
   const firstRow = await container.locator('tbody tr').first();
-  await expect(await firstRow.locator(`td:has-text("${paymentLinkId}")`)).toBeVisible();
+  const paymentLinkCell = await firstRow.locator(`td:has-text("${paymentLinksId}")`);
+  await expect(paymentLinkCell).toBeVisible();
 };
 
 export const searchAndVerifyByPLReferenceId = async ({ container, referenceId }) => {
   await container.locator('input[name="receipt"]').fill(referenceId);
   await container.getByRole('button', { name: 'Search' }).click();
   const firstRow = await container.locator('tbody tr').first();
-  await expect(await firstRow.locator(`td:has-text("${referenceId}")`)).toBeVisible();
+
+  const referenceCell = await firstRow.locator(`td:has-text("${referenceId}")`);
+  await expect(referenceCell).toBeVisible();
 };
 
 export const navigateToPaymentHistory = async ({ page, container, isPartialPaid }) => {
@@ -266,8 +288,12 @@ export const navigateToPaymentHistory = async ({ page, container, isPartialPaid 
   await paymentLink.click();
 
   const paymentDetails = await page.getByTestId('payment-details');
-  await expect(await paymentDetails.getByText(paymentId)).toBeVisible();
-  await expect(await paymentDetails.getByText('Captured')).toBeVisible();
+  const paymentIdElement = await paymentDetails.getByText(paymentId);
+  await expect(paymentIdElement).toBeVisible();
+
+  const capturedElement = await paymentDetails.getByText('Captured');
+  await expect(capturedElement).toBeVisible();
+
   return paymentDetails;
 };
 
@@ -293,7 +319,9 @@ export const verifyInvoicePaymentHistory = async ({ page, container, isPartialPa
   await invocieLink.click();
 
   const txnDetails = await page.locator('.txn-details');
-  await expect(await txnDetails.getByText(isPartialPaid ? 'Partially Paid' : 'Paid')).toBeVisible();
+  const paymentStatus = isPartialPaid ? 'Partially Paid' : 'Paid';
+  const statusElement = await txnDetails.getByText(paymentStatus);
+  await expect(statusElement).toBeVisible();
 };
 
 export const statusToKey = {
@@ -433,7 +461,6 @@ export function getPLv1MockResponse({ status }) {
 }
 
 export const mockFetchPaymentLinkApi = async ({ targetUrl, mockRespose, page }) => {
-  // eslint-disable-next-line require-await
   await page.route(targetUrl, async (route) => {
     console.log('Intercepted URL:', route.request().url());
     const modifiedResponseBody = {
@@ -448,4 +475,8 @@ export const mockFetchPaymentLinkApi = async ({ targetUrl, mockRespose, page }) 
       body: JSON.stringify(modifiedResponseBody),
     });
   });
+};
+
+export const openPaymentLinkDetailsView = async ({ page, linkId }) => {
+  await page.goto(`${routes.PAYMENT_LINKS}/${linkId}`);
 };

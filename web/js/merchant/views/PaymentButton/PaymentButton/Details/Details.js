@@ -340,7 +340,7 @@ export default class PaymentButtonEntity extends React.Component {
                 <EntityDetailRow
                   label="Button Status"
                   value={() => (
-                    <div>
+                    <div data-testid="payment-button-status-label">
                       <PaymentPagesStatusLabel status={paymentButtonEntity.status} />
 
                       <Button.Transparent

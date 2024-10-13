@@ -12,7 +12,7 @@ import {
   cloneTest,
   openBtnDetailsView,
 } from './utils';
-import { expectSuccessNotification, generateRandomText } from '../../utils';
+import { expectSuccessNotification, generateRandomText, waitForLoader } from '../../utils';
 
 test.describe
   .parallel('Test Payments Buttons @flow=payment-buttons @project=no-code-stable', () => {
@@ -82,7 +82,7 @@ test.describe
     });
   });
 
-  test.describe.serial('Edit and clone Payment button', () => {
+  test.describe.parallel('Edit and clone Payment button', () => {
     let testButtonId = editTest.buttonId;
 
     test('should edit payment button @priority=critical', async ({ page }) => {
@@ -113,7 +113,7 @@ test.describe
 
     test('should update and verify stock @priority=critical', async ({ page }) => {
       openBtnDetailsView({ page, buttonId: testButtonId });
-      await page.waitForTimeout(10 * 1000);
+      await waitForLoader({ page, selector: '.page-spinner-container' });
       await page.getByRole('button', { name: 'Update Stock' }).click();
       const isDisabled = await page.getByPlaceholder('Total Stock').isDisabled();
 
@@ -198,8 +198,13 @@ test.describe
 
     test('should active and deactivate payment button @priority=critical', async ({ page }) => {
       openBtnDetailsView({ page, buttonId: testButtonId });
-      await page.waitForTimeout(10 * 1000);
-      const isActiveVisible = await page.getByText('Active', { exact: true }).isVisible();
+      await waitForLoader({ page, selector: '.page-spinner-container' });
+      const statusElement = await page
+        .getByTestId('payment-button-status-label')
+        .getByText('Active', {
+          exact: true,
+        });
+      const isActiveVisible = await statusElement.isVisible();
       if (isActiveVisible) {
         await page.getByRole('button', { name: 'Deactivate', exact: true }).click();
         await page.getByRole('button', { name: 'Yes, deactivate' }).click();

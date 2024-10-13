@@ -4,6 +4,7 @@ import { clickSkipAndStartBtn } from 'utils';
 import { COMMON_SELECTORS } from 'utils/selectors';
 
 import { searchAndVerifyByPLId } from './utils';
+import { waitForLoader } from '../../utils';
 
 [
   {
@@ -37,7 +38,6 @@ import { searchAndVerifyByPLId } from './utils';
       await page.getByRole('link', { name: 'Batch Uploads' }).click();
     });
 
-    // roast test verifyv2BatchStatus verifyUPILinkBatchStatus verifyCompatBatchStatus
     test(`should verify status for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
@@ -55,7 +55,6 @@ import { searchAndVerifyByPLId } from './utils';
       await expect(await firstRow.getByText('Processed')).toBeVisible();
     });
 
-    // roast test downloadReportInv2Batch downloadReportInUPIBatch downloadReportInCompatBatch
     test(`should verify report download for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
@@ -75,13 +74,15 @@ import { searchAndVerifyByPLId } from './utils';
       expect(downloadFileId).toBe(parsedBatchId);
     });
 
-    // roast test searchByBatchID
     test(`should search and verify by batch Id for Batch uploads PL ${context.plType} @priority=critical @suite=nocode-P1-automation`, async ({
       page,
     }) => {
-      const container = page.locator(COMMON_SELECTORS.tabbedContainer);
-      await container.waitFor();
-      await searchAndVerifyByPLId({ container });
+      const container = await page.locator(COMMON_SELECTORS.tabbedContainer);
+      await waitForLoader({ page, selector: '[data-testid="spinner"]' });
+      const firstRow = await page.locator('[data-testid*="entity-item-row"]').first();
+      const firstCell = await firstRow.getByRole('cell').first();
+      const batchId = await firstCell.textContent();
+      await searchAndVerifyByPLId({ container, paymentLinksId: batchId });
     });
   });
 });
