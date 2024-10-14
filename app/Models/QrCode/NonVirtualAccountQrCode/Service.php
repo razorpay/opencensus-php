@@ -138,6 +138,8 @@ class Service extends QrCode\Service
 
             $qrCreateReq = $this->getInputForPartnerSqrCreate($input);
 
+            $this->validateQrStringCreateRequest($input);
+
             (new Validator)->validateQrOnDedicatedTerminal($qrCreateReq);
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($qrCreateReq, $input) {
@@ -189,6 +191,37 @@ class Service extends QrCode\Service
         $this->mode            = Mode::LIVE;
     }
 
+    public function validateQrStringCreateRequest($input)
+    {
+        if (isset($input['qrString']) === true)
+        {
+            $tr = (new Core)->getTransactionReferenceFromQrString($input['qrString']);
+            $this->trace->info(TraceCode::QR_CODE_EXTRACTED_TR, [
+                'message'           => 'QR_CODE_EXTRACTED_TR',
+                'tr for validation' => $tr,
+            ]);
+
+            if (empty($tr) === true)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_STRING_TR_EMPTY_ERROR);
+            }
+
+            [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
+
+            if (empty($mode) === false)
+            {
+                $this->trace->info(TraceCode::QR_CODE_ALREADY_EXIST, [
+                    'message' => 'QR_CODE_ALREADY_EXIST',
+                    'qrCode'  => $qrCode,
+                    'mode'    => $mode,
+                ]);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST);
+            }
+
+        }
+
+    }
+
     public function addPosQrCodeFeaturesOnPosActivation($input)
     {
 
@@ -237,6 +270,15 @@ class Service extends QrCode\Service
          ];
 
         $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = RequestSource::API;
+
+        if (isset($input[NonVAQrCodeEntity::REQUEST_SOURCE]) === true)
+        {
+            $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = $input[NonVAQrCodeEntity::REQUEST_SOURCE];
+        }
+        if (isset($input[NonVAQrCodeEntity::DEVICE_ID]) === true)
+        {
+            $qrCreateReq[NonVAQrCodeEntity::DEVICE_ID] = $input[NonVAQrCodeEntity::DEVICE_ID];
+        }
 
         return $qrCreateReq;
     }

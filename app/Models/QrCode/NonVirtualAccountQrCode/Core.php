@@ -91,15 +91,15 @@ class Core extends QrCode\Core
 
         $customer = $this->getCustomerIfGiven($input);
 
-        $terminal = $this->validateAndFetchTerminalIfAvailable($input);
+        $terminal = $this->validateAndFetchTerminalIfAvailable($input, $additionalData);
 
         $qrCode->customer()->associate($customer);
 
         $qrCode->merchant()->associate($this->merchant);
 
 
-        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($terminal, $qrCode) {
-            return $this->build($qrCode, $terminal);
+        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($terminal, $qrCode, $additionalData) {
+            return $this->build($qrCode, $terminal, $additionalData);
         });
         // Creates entity origin when QR code is created
         // QR code creation won't be failed even if origin is not set.
@@ -112,11 +112,18 @@ class Core extends QrCode\Core
 
     }
 
-    private function build(Entity $qrCode, $terminal = null)
+    private function build(Entity $qrCode, $terminal = null, $additionalData = null)
     {
-        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function () use ($terminal, $qrCode)
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function() use ($terminal, $qrCode, $additionalData)
         {
-            $qrCode->generateQrString($terminal);
+            if (isset($additionalData['qrString']) === true)
+            {
+                $this->setQrStringFromRequest($qrCode, $additionalData);
+            }
+            else
+            {
+                $qrCode->generateQrString($terminal);
+            }
         });
 
         Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_SET_SHORT_URL], function () use ($qrCode)
@@ -132,6 +139,57 @@ class Core extends QrCode\Core
         $this->addStaticQRinQRCodeConfig($qrCode, $terminal);
 
         return $qrCode;
+    }
+
+    public function setQrStringFromRequest(Entity $qrCode, $additionalData = null)
+    {
+        if (isset($additionalData['qrString']) === true)
+        {
+            $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE, [
+                'message'  => 'QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE',
+                'qrString' => $additionalData['qrString'],
+            ]);
+            $qrCode->setQrString($additionalData['qrString']);
+
+            $gateway  = $qrCode->getGatewayFromQrString();
+
+            $variant = $this->app->razorx->getTreatment(
+                $gateway,
+                RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
+                $this->mode);
+
+            if ((empty($gateway) === true) or
+                (strtolower($variant) !== RazorxTreatment::RAZORX_VARIANT_ON))
+            {
+                $this->trace->info(TraceCode::QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED, [
+                    'message' => 'QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED',
+                    'gateway' => $gateway ?? null,
+                    'experiment' => RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY,
+                    'variant' => $variant,
+                ]);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_REFACTOR_EXPERIMENT_NOT_ENABLED_FOR_GATEWAY);
+            }
+
+            $tr = $this->getTransactionReferenceFromQrString($additionalData['qrString']);
+
+            $qrCode->setReference($tr);
+            $qrCode->setQrString($additionalData['qrString']);
+
+            $this->trace->info(TraceCode::QR_CODE_EXTRACTED_TR, [
+                'message' => 'QR_CODE_EXTRACTED_TR',
+                '$tr'     => $tr,
+            ]);
+
+            return $additionalData['qrString'];
+        }
+        return null;
+    }
+
+    public function getTransactionReferenceFromQrString($qrString)
+    {
+        $queryString = parse_url($qrString, PHP_URL_QUERY);
+        parse_str($queryString, $params);
+        return $params['tr'] ?? null;
     }
 
     public function addStaticQRinQRCodeConfig($qrCode, $inputTerminal = null)
@@ -422,7 +480,7 @@ class Core extends QrCode\Core
         return false;
     }
 
-    protected function validateAndFetchTerminalIfAvailable(array $input)
+    protected function validateAndFetchTerminalIfAvailable(array $input, $additionalData = null)
     {
 
         if ((isset($input['vpa']) === false) or
@@ -432,6 +490,16 @@ class Core extends QrCode\Core
                 'message' => 'Terminal not available for the input',
                 'usage' =>  $input['usage'],
             ]);
+            return null;
+        }
+
+        if (empty($additionalData['qrString']) === false)
+        {
+            $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED, [
+                'message'  => 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED',
+                'qrString' => $additionalData['qrString'],
+            ]);
+
             return null;
         }
 
@@ -451,11 +519,16 @@ class Core extends QrCode\Core
         {
             $gateway = 'upi_mindgate';
         }
+        elseif (isset($vpaSplit[1]) === true && ($vpaSplit[1] === 'jkbank'))
+        {
+            $gateway = 'upi_jkbank';
+        }
         if ($gateway === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
-
+//Jkbank expected to fail terminal fetch as  gateway_merchant_id2 is empty.
+//QR string is expected in JKbank additional data and code execution should not reach here
         $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
         $terminalDetails[TerminalEntity::MERCHANT_ID]          = $this->merchant->getId();
 

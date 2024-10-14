@@ -1322,6 +1322,28 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDedicatedUpiJkTerminal($attributes)
+    {
+        $defaultValues = [
+            'id'                        => '102JkbanDedTml',
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => 'upi_jkbank',
+            'gateway_merchant_id'       => '1357901',
+            'vpa'                       => 'rzp.qrTest@jkbank',
+            'upi'                       => true,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::COLLECT           => '1',
+                Type::OFFLINE            => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDedicatedUpiMindgateTerminal($attributes)
     {
         $termId = Shared::UPI_MINDGATE_TERMINAL_DEDICATED;

@@ -18127,6 +18127,7 @@ class Route
 
         'pgos' => [
             'pricing_fetch_plan_internal',
+            'qr_code_merchant_create',
             'internal_fetch_merchant_users',
             'merchant_entities_info',
             'merchant_submit_internal',
