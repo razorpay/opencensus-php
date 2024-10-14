@@ -14,12 +14,14 @@ import { useBreakpoint } from '@razorpay/blade/utils';
 import ErrorLoadingImage from 'assets/transactions/error-loading.svg';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { bindActionCreators, compose } from 'redux';
 
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import User from 'common/typings/User';
 import { getErrorMessageFromResponse, deepClone, getURLQueryParams } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
@@ -75,6 +77,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   } = props;
   const { isConfigTagEnabled } = useI18Service();
 
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [paymentIdDetails, setPaymentIdDetails] = useState<IPaymentDetails | null>(null);
   const [applicationDetails, setApplicationDetails] = useState<ApplicationDetails | null>(null);
@@ -96,6 +99,9 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     dashboardFlag.push('upi_payer_name');
   }
   const splitz = useSplitzService();
+  const isDetailHyperlinkVisible = isExperimentEnabled(
+    splitz?.abExperiments?.toggle_payments_v2_revamp,
+  );
 
   const fetchDetails = async () => {
     setError(null);
@@ -242,10 +248,20 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
       </div>
     );
 
+  /**
+   * Incase the payment details page is opened in a new tab, navigate(-1) will not work
+   * as the history stack is empty. To deal with this case, we explicitly pass navigate('/payments')
+   * to the <GoBack /> component
+   */
+  const goBackHandler =
+    location.key === 'default' && isDetailHyperlinkVisible
+      ? () => navigate('/payments')
+      : (undefined as any);
+
   return (
     <div className="tabbed-container" data-testid="payments-details">
       <StyledGoBackBtn>
-        <GoBack />
+        <GoBack onClickCb={goBackHandler} />
       </StyledGoBackBtn>
       <Box display="flex" gap="spacing.5" flexDirection={flexDirectionSettings}>
         <>

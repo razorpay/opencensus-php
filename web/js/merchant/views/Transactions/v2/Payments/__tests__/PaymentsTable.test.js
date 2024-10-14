@@ -5,6 +5,14 @@ import {
 } from 'merchant/views/Transactions/v2/Payments/__tests__/mocks/fixtures/PaymentsTable';
 import { screen, waitFor } from 'test-utils';
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {
+      toggle_payments_v2_revamp: false,
+    },
+  }),
+}));
+
 describe('PaymentsTable', () => {
   test('should renders correct column for desktop', () => {
     const items = mockFetchPaymentItems();

@@ -877,6 +877,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'toggle_payments_v2_revamp',
+          experimentId: {
+            beta: 'P1gh8ZzFhi2HaN',
+            production: 'P1k7grrysydwUw',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {
