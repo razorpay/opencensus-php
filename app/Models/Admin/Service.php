@@ -279,7 +279,7 @@ class Service extends Base\Service
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, $this->repo->payment->getPaymentFetchReplicaConnection());
         }
-        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN OR $entity === Entity::TRANSFER)
+        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN OR $entity === Entity::TRANSACTION OR $entity === Entity::TRANSFER)
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
@@ -611,7 +611,7 @@ class Service extends Base\Service
         {
             $entities = $this->repo->$entity->fetch($input, null, $this->repo->payment->getPaymentFetchReplicaConnection());
         }
-        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
+        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TRANSACTION )
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }

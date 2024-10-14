@@ -6858,7 +6858,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             and $this->getCurrency()!== Currency\Currency::INR
             and $this->isFeeBearerCustomer())
         {
-            $data[self::FEE] = $this->transaction->getFee();
+
+            if ($this->getTransactionReadCLSSplitzResponse($this->getMerchantId()) === 'enable'
+                and $this->merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                $txn = (new Transaction\Repository())->findByEntityIdWithoutMerchantTidb($this->getId());
+                $data[self::FEE] = $txn->getFee();
+            }
+            else
+            {
+                $data[self::FEE] = $this->transaction->getFee();
+            }
         }
 
         // This is to populate rrn from cps authorization table for hdfc gateway as we were storing incorrect rrn in api table from MIS file. This check has to be removed after the database is fixed ,otherwise increases latency
@@ -6879,6 +6889,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setConvenienceFeeAttributesForDashboard($data);
 
         return $data;
+    }
+
+    public function getTransactionReadCLSSplitzResponse($merchantId)
+    {
+        $app = \App::getFacadeRoot();
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $app['config']->get('app.transaction_read_experiment'),
+        ];
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     /**

@@ -2545,6 +2545,56 @@ class Service extends Base\Service
 
         (new Payment\Validator())->validateExpandsForPaymentFetch($input, $showSettlementHoldStatus);
 
+        $ledgerDualWrite = false;
+
+        $txn = null;
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) : false;
+
+        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
+
+        $readExp = $this->getTransactionReadSplitzResponse($requestId) === 'enable';
+
+        if($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $ledgerDualWrite = true;
+
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array(Payment\Entity::TRANSACTION, $input[Base\Repository::EXPAND]) === true
+                    or in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete(Payment\Entity::TRANSACTION, $input['expand']);
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id);
+
+                if (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true
+                    and empty($txn) === false)
+                {
+                    array_delete('transaction.settlement', $input['expand']);
+
+                    if (empty($txn->getSettlementId()) === false)
+                    {
+                        $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                        if (empty($settlement) === false)
+                        {
+                            $txn['settlement'] = $settlement->toArrayPublic();
+                        }
+                        else
+                        {
+                            $txn['settlement'] = null;
+                        }
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+            }
+        }
+
         $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, $input);
 
         $paymentMerchantId = $payment->getMerchantId();
@@ -2618,12 +2668,32 @@ class Service extends Base\Service
 
         if ($showSettlementHoldStatus === true)
         {
-            $paymentTxn = $payment->transaction;
+            $paymentTxn =  $ledgerDualWrite ? $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id) : $payment->transaction;
 
             $entity[PaymentsConstants::SETTLEMENT_ONHOLD] = empty($paymentTxn) ? true : $paymentTxn->isOnHold();
         }
 
+        if ($txn != null)
+        {
+            $entity['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $entity['transaction'] = null;
+        }
+
         return $entity;
+    }
+
+    public function getTransactionReadSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.transaction_read_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function getPaymentTimeline(string $id, array $input = []): array
@@ -2655,6 +2725,48 @@ class Service extends Base\Service
     public function fetchById(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
+
+        $txn = null;
+
+        $requestId = $this->app['request']->getTaskId();
+
+        $readExp = $this->getTransactionReadSplitzResponse($requestId) === 'enable';
+
+        if($readExp === true)
+        {
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array(Payment\Entity::TRANSACTION, $input[Base\Repository::EXPAND]) === true
+                    or in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete(Payment\Entity::TRANSACTION, $input['expand']);
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id);
+
+                if (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true
+                        and empty($txn) === false)
+                {
+                    array_delete('transaction.settlement', $input['expand']);
+
+                    if (empty($txn->getSettlementId()) === false)
+                    {
+                        $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                        if (empty($settlement) === false)
+                        {
+                            $txn['settlement'] = $settlement->toArrayPublic();
+                        }
+                        else
+                        {
+                            $txn['settlement'] = null;
+                        }
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+            }
+        }
 
         $payment = $this->repo
                         ->payment
@@ -2704,6 +2816,15 @@ class Service extends Base\Service
                 $entity[Payment\Entity::EMI][Payment\Entity::PROCESSING_FEE] = max($percentageFee, $processingFeePlan[ProcessingFeePlan::AMOUNT]);
             }
 
+        }
+
+        if ($txn != null)
+        {
+            $entity['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($readExp === true)
+        {
+            $entity['transaction'] = null;
         }
 
         return $entity;

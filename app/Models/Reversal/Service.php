@@ -7,16 +7,81 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Feature\Constants as Features;
 
 class Service extends Base\Service
 {
     public function fetch(string $id, array $input): array
     {
+        $txn = null;
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) : false;
+
+        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
+
+        $readExp = $this->getReversalReadSplitzResponse($requestId) === 'enable';
+
+        if($isReverseShadowMerchant === true and $readExp === true)
+        {
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete('transaction.settlement', $input['expand']);
+
+                //Doing this as strip sign uses pointer
+                $reversalId = $id;
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb(Entity::stripSignWithoutValidation($reversalId));
+
+                if(empty($txn) === false and empty($txn->getSettlementId()) === false)
+                {
+                    $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                    if (empty($settlement) === false)
+                    {
+                        $txn['settlement'] = $settlement->toArrayPublic();
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+                else
+                {
+                    $txn['settlement'] = null;
+                }
+            }
+        }
+
         $reversal = $this->repo
                          ->reversal
                          ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        return $reversal->toArrayPublicWithExpand();
+        $response = $reversal->toArrayPublicWithExpand();
+
+        if ($txn != null)
+        {
+            $response['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $response['transaction'] = null;
+        }
+
+        return $response;
+    }
+
+    public function getReversalReadSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.reversal_read_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function fetchMultiple(array $input): array

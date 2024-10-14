@@ -58,6 +58,48 @@ class Service extends Base\Service
     {
         $transferTypeFilter = $this->getTransferTypeFilter($input);
 
+        $txn = null;
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) : false;
+
+        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
+
+        $readExp = $this->getTransferReadSplitzResponse($requestId) === 'enable';
+
+        if($isReverseShadowMerchant === true and $readExp === true)
+        {
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete('transaction.settlement', $input['expand']);
+
+                //Doing this as strip sign uses pointer
+                $transferId = $id;
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb(Entity::stripSignWithoutValidation($transferId));
+
+                if(empty($txn) === false and empty($txn->getSettlementId()) === false)
+                {
+                    $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                    if (empty($settlement) === false)
+                    {
+                        $txn['settlement'] = $settlement->toArrayPublic();
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+                else
+                {
+                    $txn['settlement'] = null;
+                }
+            }
+        }
+
         $transfer = Tracer::inSpan(['name' => 'transfer.fetch'], function() use ($id, $input)
         {
             return $this->repo
@@ -72,7 +114,27 @@ class Service extends Base\Service
             $transfer = $this->setPartnerDetailsForTransfer($transfer);
         }
 
+        if ($txn != null)
+        {
+            $transfer['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $response['transaction'] = null;
+        }
+
         return $transfer;
+    }
+
+    public function getTransferReadSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function fetchMultiple(array $input)
