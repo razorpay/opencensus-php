@@ -6020,15 +6020,12 @@ trait Authorize
                     $currency !== $merchant->getCurrency() and
                     $payment->isInternational() and
                     $payment->isCard() and
-                    $this->evaluateSplitzExperimentforMCCParityCheck($payment) === true and
+                    $this->evaluateSplitzExperimentforMCCParityCheck($merchant) === true and
                     $this->mode !== Mode::TEST)
                     {
                     $body = [
                         'amount' => $payment->getAmount(),
                         'currency' => $input['currency'],
-                        'conversion_currency' => Currency\Currency::INR,
-                        'entity_id' => $payment->getId(),
-                        'entity_type' => Entity::PAYMENT,
                         'merchant_id' => $payment->getMerchantId(),
                         'org_id' => $payment->getMerchantOrgId(),
                         'filters' => [
@@ -6043,6 +6040,7 @@ trait Authorize
                         'mcc_mark_down_percent' => $input['mcc_mark_down_percent'],
                         'mcc_forex_rate'        => $input['mcc_forex_rate'],
                         'payment_id'            => $payment->getId(),
+                        'merchant_id'           => $merchant->getId(),
                         'base_amount'           => $baseAmount
                     ];
                     $payload = [
