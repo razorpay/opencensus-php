@@ -37,7 +37,7 @@ describe('TncUpdateModal', () => {
     render(<TncUpdateModal />);
 
     expect(screen.getByText(/Razorpay terms and conditions/i)).toBeInTheDocument();
-    expect(screen.getByText(/please accept our/i)).toBeInTheDocument();
+    expect(screen.getByText(/please review our updated/i)).toBeInTheDocument();
     expect(screen.getByText(/read and understand them/i)).toBeInTheDocument();
   });
 
@@ -59,7 +59,7 @@ describe('TncUpdateModal', () => {
   it('calls onAccept and saves T&C acceptance', async () => {
     render(<TncUpdateModal />);
 
-    const acceptButton = screen.getByRole('button', { name: /Okay, Got it!/i });
+    const acceptButton = screen.getByRole('button', { name: /Okay, Got it/i });
 
     await userEvent.click(acceptButton);
 

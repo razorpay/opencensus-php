@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Heading, Text, Link, ArrowRightIcon } from '@razorpay/blade/components';
+import { Box, Button, Heading, Text, ArrowRightIcon } from '@razorpay/blade/components';
 import moment from 'moment';
 
 import { useMobile } from 'common/hooks/useMobile';
@@ -16,6 +16,7 @@ import {
 } from 'merchant/components/TncUpdateModal/types';
 
 import TncIcon from 'assets/tnc.svg';
+import { TermsLink } from './styled-components';
 
 const TncUpdateModal = () => {
   const isMobile = useMobile();
@@ -93,24 +94,18 @@ const TncUpdateModal = () => {
           </Box>
           <Box>
             <Heading as="h3" size="small">
-              Razorpay terms and conditions
+              Razorpay Terms and Conditions
             </Heading>
-            <Text size="medium">
-              To proceed, please accept our{' '}
-              <Link
+            <Text as="span" size="medium">
+              To proceed, please review our updated{' '}
+              <TermsLink
                 href="https://razorpay.com/terms/"
                 rel="noreferrer noopener"
                 target="_blank"
-                variant="anchor"
-                color="primary"
-                size="medium"
-                font-weight="600"
               >
-                Terms and conditions.
-              </Link>
-            </Text>
-            <Text size="medium">
-              It is important that you read and understand them before continuing to use our
+                Terms and Conditions
+              </TermsLink>
+              . It is important that you read and understand them before continuing to use our
               services.
             </Text>
           </Box>
@@ -128,7 +123,7 @@ const TncUpdateModal = () => {
             onClick={onAccept}
             isLoading={isLoading}
           >
-            Okay, Got it!
+            Okay, Got it
           </Button>
         </Box>
       </ModalFooter>
