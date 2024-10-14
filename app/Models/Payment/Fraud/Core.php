@@ -110,13 +110,19 @@ class Core extends Base\Core
         $tableData = [];
 
         foreach ($fraudEntity as $payment){
-            $tableRow = array();
-            $tableRow[CyberHelpdeskConstants::PAYMENT_ID]       = $payment[CyberHelpdeskConstants::PAYMENT_ID];
-            $tableRow[CyberHelpdeskConstants::AMOUNT]           = $payment[CyberHelpdeskConstants::AMOUNT];
-            $tableRow[CyberHelpdeskConstants::SOURCE]           = $payment[CyberHelpdeskConstants::SOURCE_OF_NOTIFICATION];
-            $tableRow[CyberHelpdeskConstants::CREATED_DATE]     = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
-            $tableRow[CyberHelpdeskConstants::RESPOND_BY]       = $payment[CyberHelpdeskConstants::RESPOND_BY];
-            $tableData[] = $tableRow;
+            $createdDate = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
+            $createdTimestamp = strtotime($createdDate);
+            $currentTimestamp = time();
+
+            if (($currentTimestamp - $createdTimestamp) < 86400) {
+                $tableRow = array();
+                $tableRow[CyberHelpdeskConstants::PAYMENT_ID] = $payment[CyberHelpdeskConstants::PAYMENT_ID];
+                $tableRow[CyberHelpdeskConstants::AMOUNT] = $payment[CyberHelpdeskConstants::AMOUNT];
+                $tableRow[CyberHelpdeskConstants::SOURCE] = $payment[CyberHelpdeskConstants::SOURCE_OF_NOTIFICATION];
+                $tableRow[CyberHelpdeskConstants::CREATED_DATE] = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
+                $tableRow[CyberHelpdeskConstants::RESPOND_BY] = $payment[CyberHelpdeskConstants::RESPOND_BY];
+                $tableData[] = $tableRow;
+            }
         }
         return $tableData;
     }

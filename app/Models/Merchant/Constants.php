@@ -43,6 +43,14 @@ final class Constants
     const BANK_ACCOUNT_ID                         = 'bank_account_id';
     const PARAMS                                  = 'params';
     const IS_CTA_TEMPLATE                         = 'is_cta_template';
+    const BUSINESS_ACCOUNT                        = 'business_account';
+    const FRAUD_BUSINESS_ACCOUNT_NAME             = 'fraud';
+    const DESTINATION                             = 'destination';
+    const HEADER                                  = 'header';
+    const TEXT                                    = 'text';
+    const IS_MULTIMEDIA_TEMPLATE                  = 'is_multimedia_template';
+    const MULTIMEDIA_PAYLOAD                      = 'multimedia_payload';
+    const ATTACHMENT                              = 'attachment';
     const BUTTON_URL_PARAM                        = 'button_url_param';
     const REPO                                    = 'repo';
     const RECEIVER                                = 'receiver';

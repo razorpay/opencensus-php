@@ -3,18 +3,11 @@
 namespace RZP\Models\CyberCrimeHelpDesk;
 
 use RZP\Constants\Timezone;
-use RZP\Exception\BadRequestException;
-use RZP\Models\CyberCrimeHelpDesk\Constants;
-use RZP\Models\CyberCrimeHelpDesk\Constants as CyberHelpdeskConstants;
 use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Models\Merchant\Constants as MerchantConstants;
-use RZP\Models\Settlement\Merchant;
 use RZP\Notifications\Dashboard\Constants as DashboardConstants;
 use RZP\Models\PaperMandate\FileUploader as FileUploader;
-use RZP\Models\Dispute\Constants as DisputeConstants;
-use RZP\Models\VirtualAccount\Receiver;
 use RZP\Services\Stork;
-use RZP\Tests\Functional\Payment\ConstantsStub;
 use View;
 use RZP\Exception;
 use Carbon\Carbon;
@@ -661,15 +654,22 @@ class Service extends Base\Service
         foreach ($paymentsDetails as $details) {
             $payment = $details['details']['payment'];
 
-            $tableRow = array();
-            $tableRow[Constants::PAYMENT_ID]        = $payment[Constants::ID];
-            $tableRow[Constants::METHOD]            = $payment[Constants::METHOD];
-            $tableRow[Constants::BASE_AMOUNT]       = $payment[Constants::BASE_AMOUNT];
-            $tableRow[Constants::SOURCE]            = Constants::CYBER_HELPDESK;
-            $tableRow[Constants::CREATED_DATE]      = date('Y-m-d H:i:s', $payment[Constants::CREATED_DATE]); // Convert Unix timestamp to readable format
-            $tableRow[Constants::RESPOND_BY]        = 'Within 24 hrs.';
-            // Add formatted payment to the list
-            $tableData[] = $tableRow;
+            $createdDate = date('Y-m-d H:i:s', $payment[Constants::CREATED_DATE]);
+            $createdTimestamp = strtotime($createdDate);
+            $currentTimestamp = time();
+
+            if (($currentTimestamp - $createdTimestamp) < 86400){
+                $tableRow = array();
+                $tableRow[Constants::PAYMENT_ID]        = $payment[Constants::ID];
+                $tableRow[Constants::METHOD]            = $payment[Constants::METHOD];
+                $tableRow[Constants::BASE_AMOUNT]       = $payment[Constants::BASE_AMOUNT];
+                $tableRow[Constants::SOURCE]            = Constants::CYBER_HELPDESK;
+                $tableRow[Constants::CREATED_DATE]      = $createdDate;
+                $tableRow[Constants::RESPOND_BY]        = 'Within 24 hrs.';
+
+                $tableData[] = $tableRow;
+            }
+
         }
 
         return $tableData;
@@ -677,6 +677,35 @@ class Service extends Base\Service
 
     public function sendWhatsappMessageWithPDF($merchant, $whatsappTemplateName, $whatsappTemplate, $params, $attachmentData = [], $receiver)
     {
+
+        $receiver = isset($contact) === true
+            ? $contact
+            : (new DisputeCore())->getChargebackPOCMobile($merchant);
+
+        $attachment = [
+            DashboardConstants::PUBLIC_FILE_URL         => $attachmentData[DashboardConstants::PUBLIC_FILE_URL],
+            MerchantConstants::MSG_TYPE                 => $attachmentData[MerchantConstants::MSG_TYPE],
+            DashboardConstants::DISPLAY_NAME            => $attachmentData[DashboardConstants::DISPLAY_NAME],
+            DashboardConstants::EXTENSION               => $attachmentData[DashboardConstants::EXTENSION],
+        ];
+
+        $multimedia_payload     = [
+            MerchantConstants::BUSINESS_ACCOUNT         => MerchantConstants::FRAUD_BUSINESS_ACCOUNT_NAME,
+            MerchantConstants::DESTINATION              => $receiver,
+            MerchantConstants::TEXT                     => $whatsappTemplate,
+            MerchantConstants::IS_CTA_TEMPLATE          => $attachmentData[DashboardConstants::IS_CTA_TEMPLATE],
+            MerchantConstants::BUTTON_URL_PARAM         => $attachmentData[DashboardConstants::BUTTON_URL_PARAM],
+            MerchantConstants::ATTACHMENT               => $attachment,
+        ];
+
+        $this->app['trace']->info(
+            TraceCode::DEBUG_LOGGING,
+            [
+                '$multimedia_payload'=> $multimedia_payload,
+                'attachment'   => $attachment,
+                'receiver'       => $receiver
+            ]);
+
         if (count($attachmentData) > 0)
         {
             $whatsAppPayload = [
@@ -684,13 +713,9 @@ class Service extends Base\Service
                 MerchantConstants::OWNER_TYPE               => MerchantConstants::MERCHANT,
                 MerchantConstants::TEMPLATE_NAME            => $whatsappTemplateName,
                 MerchantConstants::PARAMS                   => $params,
+                MerchantConstants::IS_MULTIMEDIA_TEMPLATE   => true,
                 MerchantConstants::IS_ATTACHMENT            => true,
-                DashboardConstants::PUBLIC_FILE_URL         => $attachmentData[DashboardConstants::PUBLIC_FILE_URL],
-                DashboardConstants::DISPLAY_NAME            => $attachmentData[DashboardConstants::DISPLAY_NAME],
-                DashboardConstants::EXTENSION               => $attachmentData[DashboardConstants::EXTENSION],
-                MerchantConstants::MSG_TYPE                 => $attachmentData[MerchantConstants::MSG_TYPE],
-                MerchantConstants::IS_CTA_TEMPLATE          => $attachmentData[DashboardConstants::IS_CTA_TEMPLATE],
-                MerchantConstants::BUTTON_URL_PARAM         => $attachmentData[DashboardConstants::BUTTON_URL_PARAM]
+                MerchantConstants::MULTIMEDIA_PAYLOAD       => $multimedia_payload,
             ];
 
         }
@@ -701,6 +726,7 @@ class Service extends Base\Service
                 MerchantConstants::OWNER_TYPE           => MerchantConstants::MERCHANT,
                 MerchantConstants::TEMPLATE_NAME        => $whatsappTemplateName,
                 MerchantConstants::PARAMS               => $params,
+                MerchantConstants::BUSINESS_ACCOUNT     => MerchantConstants::FRAUD_BUSINESS_ACCOUNT_NAME
             ];
         }
 
