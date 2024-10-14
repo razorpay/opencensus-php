@@ -13032,6 +13032,27 @@ trait Authorize
             // the terminal should be selected with the USD
             unset($inputDetails['gateway_input']['selected_terminals_ids']);
 
+            try{
+                $parameters = [
+                    'method' => $payment[Payment\Entity::METHOD],
+                    'international' => $payment[Payment\Entity::INTERNATIONAL]
+                ];
+                if (empty($payment[Payment\Entity::WALLET]) === false) {
+                    $parameters['wallet'] = $payment[Entity::WALLET];
+                }
+                if ($payment->isCard() === true && empty($payment->card->getNetwork()) === false) {
+                    $parameters['card_network'] = $payment->card->getNetwork();
+                }
+                $this->trace->count(Payment\Metric::CROSS_BORDER_UPDATE_AND_REDIRECT_COUNT, $parameters);
+            }catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::CROSS_BORDER_METRICS_PUSH_FAILED,
+                    [
+                        'error' => $e->getMessage(),
+                    ]);
+            }
+
             $this->trace->info(
                 TraceCode::INTERNATIONAL_TERMINAL_DESELECT_FOR_DCC,
                 [

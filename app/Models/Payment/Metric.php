@@ -138,6 +138,8 @@ class Metric extends Base\Core
 
     const CURRENCY_EXCHANGE_RATE_REQUEST_VS_TIME_KEY       = 'currency_exchange_rates_request_vs_time';
 
+    const CROSS_BORDER_UPDATE_AND_REDIRECT_COUNT = 'cross_border_update_and_redirect_count';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);
