@@ -430,6 +430,7 @@ class Validator extends Base\Validator
         Methods\Entity::INTL_BANK_TRANSFER  => 'sometimes|sequential_array',
         Methods\Entity::UPI      => 'sometimes|bool',
         Methods\Entity::SODEXO  => 'sometimes|bool',
+        Methods\Entity::COD     => 'sometimes|bool',
     ];
 
     protected static $resetSettlementScheduleRules = [

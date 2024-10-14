@@ -17608,7 +17608,8 @@ class Route
             'internal_feature_bulk_remove',
             'internal_merchant_fetch',
             'merchant_fetch_keys',
-            'feature_get_multiple_internal'
+            'feature_get_multiple_internal',
+            'merchant_methods_edit_internal'
         ],
 
         //
