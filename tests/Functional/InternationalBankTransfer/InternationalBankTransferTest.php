@@ -454,7 +454,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('ach',$paymentEntity['wallet']);
         // As the total payment amount is 32000, the last payment should be of 5000 USD
-        $this->assertEquals(500000,$paymentEntity['amount']);
+        $this->assertEquals(300000,$paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);

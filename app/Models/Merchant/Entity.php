@@ -3171,12 +3171,12 @@ class Entity extends Base\PublicEntity
     private function getConfigValues(array $keys, array $config): array
     {
         $response = ['config_key' => null,'fallback_config_key' => null];
-        if( empty($config[$keys['config_key']]) === false)
+        if( isset($config[$keys['config_key']]) === true)
         {
             $response['config_key'] = $config[$keys['config_key']];
         }
 
-        if( empty($config[$keys['fallback_config_key']]) === false)
+        if( isset($config[$keys['fallback_config_key']]) === true)
         {
             $response['fallback_config_key'] = $config[$keys['fallback_config_key']];
         }
