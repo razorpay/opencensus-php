@@ -2512,18 +2512,30 @@ class Service extends Base\Service
         }
         // In other instances when get function gets called we will always fetch user's owner signup's campaign
         $merchantId =  $input[Constants::MERCHANT_ID];
+        $shouldGetMerchantSignupCampaign = $input['merchant_signup_campaign'] === 'true';
 
         if (empty($merchantId) === false)
         {
             $merchant = $this->repo->merchant->findOrFail($merchantId);
-            $user = $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
-                             ->first();
+
+            if ($shouldGetMerchantSignupCampaign) {
+                $user = $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
+                    ->where(Entity::ID, '=', $id)
+                    ->first();
+            } else {
+                $user = $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
+                    ->first();
+            }
 
             $ownerUserId = $user[Merchant\OwnerDetail\Entity::ID] ?? null;
 
             if (empty($ownerUserId) === false)
             {
-                $deviceDetail = $this->repo->user_device_detail->fetchByUserId($ownerUserId);
+                if ($shouldGetMerchantSignupCampaign) {
+                    $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserId($merchantId, $ownerUserId);
+                } else {
+                    $deviceDetail = $this->repo->user_device_detail->fetchByUserId($ownerUserId);
+                }
 
                 if (empty($deviceDetail) === false)
                 {

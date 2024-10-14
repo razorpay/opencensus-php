@@ -10413,6 +10413,53 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetUserSignupCampaignWithUserAndMerchantId()
+    {
+        $signupCampaign = 'sg_signup';
+        $firstUser = $this->fixtures->create('user');
+        $secondUser = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchant->getId(),
+            'user_id'       => $firstUser[Entity::ID],
+            'role'          => Role::OWNER,
+            'product'       => Product::PRIMARY,
+        ]);
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchant->getId(),
+            'user_id'       => $secondUser[Entity::ID],
+            'role'          => Role::OWNER,
+            'product'       => Product::PRIMARY,
+        ]);
+
+        // Add signup campaign with easy onboarding with the first user
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchant->getId(),
+            'user_id' => $firstUser[Entity::ID],
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+        // Add signup campaign with sg signup with the second user
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchant->getId(),
+            'user_id' => $secondUser[Entity::ID],
+            'signup_campaign' => $signupCampaign
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        // Query with second user's id
+        $testData['request']['url'] = '/users/' . $secondUser[Entity::ID] . '?merchant_id=' . $merchant->getId() . '&merchant_signup_campaign=true';
+        // Receive merchant's signup campaign wrt the second user
+        $testData['response']['content']['signup_campaign'] = $signupCampaign;
+
+        $this->ba->dashboardGuestAppAuth();
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $secondUser['id']]);
+
+        $this->startTest();
+    }
+
     public function testGetForUsersWithBusinessBankingEnabledForRblCA()
     {
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);

@@ -6208,6 +6208,16 @@ return [
         ],
     ],
 
+    'testGetUserSignupCampaignWithUserAndMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetForUsersWithBusinessBankingEnabledForRblCA' => [
         'request'  => [
             'url'     => '/users/30000000000000',
