@@ -5479,7 +5479,30 @@ return [
             ],
         ],
     ],
-
+  
+    'testVerifyOtpAndUpdateContactMobileAlreadyExistingForActivatedMerchantUsers' => [
+        'request' => [
+            'url'     => '/users/verify/update/new/mobile',
+            'method'  => 'POST',
+            'content' => [
+                'receiver' => '9123456789',
+                'otp'      => '000007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                  'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
+        ],
+    ],
+    
     'testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
@@ -5498,7 +5521,7 @@ return [
         ],
     ],
 
-    'testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphan' => [
+    'testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphanForNonActivatedMerchant' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
             'method'  => 'POST',
@@ -5507,17 +5530,12 @@ return [
                 'otp'      => '000007',
             ],
         ],
-        'response' => [
+        'response'  => [
             'content' => [
-                'error' => [
-                    'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
-                ],
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '9123456789',
+                'contact_mobile_verified' => true,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
         ],
     ],
 

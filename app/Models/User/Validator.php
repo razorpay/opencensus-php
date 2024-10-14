@@ -1329,7 +1329,12 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
         }
     }
-
+    
+    /**
+     * @throws NumberParseException
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     */
     public function validateUniqueNumberExcludingCurrentUser(Entity $user, $number)
     {
         $validContactMobileNumberFormats = (new PhoneBook($number))->getMobileNumberFormats();
@@ -1342,48 +1347,25 @@ class Validator extends Base\Validator
         }
 
         $existingUserIds = (new Repository())->findUserWithContactNumbersExcludingUser($user->getId(), numbers: $validContactMobileNumberFormats);
-
-        $app = App::getFacadeRoot();
+        
         $expResult = (new UserCore())->splitzExperimentEvaluatorMobileUpdate($user->getId());
-
-        if($expResult === true){
-            $orphanUserIds = array();
-            if (empty($existingUserIds) === false)
+        
+        if($expResult === true) {
+            
+            if ((empty($existingUserIds) === false) and
+                (count($existingUserIds) > 0))
             {
-                foreach ($existingUserIds as $userId) {
-                    $mids = (new MerchantUser\Repository)->returnMerchantIdsForUserId($userId);
-                    if(count($mids) === 0)
-                    {
-                        array_push($orphanUserIds, $userId);
-                        continue;
-                    }
-
-                    $activatedMids = (new Merchant\Repository)->fetchActivatedMids($mids);
-                    if (count($activatedMids) > 0) {
-                        $app['trace']->info(TraceCode::EDIT_MOBILE_REQUEST_USER_MERCHANT_ACTIVATED, [
-                            "count" => count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $app['trace']->count(ConstantMetric::EDIT_MOBILE_REQUEST_USER_MERCHANT_ACTIVATED);
-                    }
-                    if (count($activatedMids) !== count($mids)){
-                        $app['trace']->info(TraceCode::EDIT_MOBILE_REQUEST_USER_MERCHANT_DEACTIVATED, [
-                            "count" => count($mids) - count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $app['trace']->count(ConstantMetric::EDIT_MOBILE_REQUEST_USER_MERCHANT_DEACTIVATED);
-                    }
+                $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
+    
+                if (count($userIdsToNullify) === 0) {
+                    throw new Exception\BadRequestException(
+                      ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
                 }
-            }
-
-            if (count($orphanUserIds) !== count($existingUserIds)){
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
-            }else{
                 return;
             }
         }
 
-        if (isset($existingUserIds) === true)
+        if (isset($existingUserIds) === true and (count($existingUserIds) > 0))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN);

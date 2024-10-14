@@ -9334,6 +9334,48 @@ class UserTest extends TestCase
         $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 1);
     }
 
+    public function testVerifyOtpAndUpdateContactMobileAlreadyExistingForActivatedMerchantUsers()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+    
+        $userDb1 = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
+    
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+    
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            $this->fixtures->merchant_detail->createAssociateMerchant([
+                'merchant_id' => $primaryMids[$i],
+                'contact_mobile' => '123456789' . $i,
+                'contact_email' => 'user'. $i. '@email.com',
+            ]);
+        }
+    
+        $this->ba->proxyAuth('rzp_test_10000000000000', UserFixture::MERCHANT_USER_ID);
+    
+        $user2Attributes = [
+            'contact_mobile'            => '9123456789',
+            'contact_mobile_verified'   => true,
+        ];
+    
+        $user2 = $this->fixtures->create('user', $user2Attributes);
+    
+        $merchant2 = $this->fixtures->create('merchant', [
+            'activated'  => 1
+        ]);
+        
+        $merchantId2 = $merchant2->getId();
+    
+        $mappingData2 = [
+            'user_id'     => $user2->getId(),
+            'merchant_id' => $merchantId2,
+            'role'        => 'owner',
+        ];
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData2);
+    
+        $this->startTest();
+    }
+    
     public function testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
@@ -9381,7 +9423,7 @@ class UserTest extends TestCase
         $this->assertNull($duplicateUser->getContactMobile());
     }
 
-    public function testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphan()
+    public function testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphanForNonActivatedMerchant()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
 
@@ -14557,6 +14599,16 @@ class UserTest extends TestCase
 
     public function testUserContactMobileAlreadyTakenFailureNonOrphanUser()
     {
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant',
+                ]
+            ]
+        ];
+        
+        $this->mockAllSplitzTreatment($splitzOutput);
+        
         $user1Attributes = [
             'contact_mobile'            => '1234567890',
             'contact_mobile_verified'   => true,
@@ -14583,7 +14635,9 @@ class UserTest extends TestCase
 
         $user2 = $this->fixtures->create('user', $user2Attributes);
 
-        $merchant2 = $this->fixtures->create('merchant');
+        $merchant2 = $this->fixtures->create('merchant', [
+            'activated'  => 1
+        ]);
 
         $merchantId2 = $merchant2->getId();
 

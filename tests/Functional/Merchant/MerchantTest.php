@@ -6927,10 +6927,20 @@ Team Razorpay',
             return true;
         });
     }
-
-    public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExistNonOrphan()
+    
+    public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExistNonOrphanWithNonActivatedMerchant()
     {
         Mail::fake();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
 
         $merchant = $this->fixtures->create('merchant');
 
@@ -6939,7 +6949,52 @@ Team Razorpay',
         $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
 
         $user2 = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
+        
         $merchant2 = $this->fixtures->create('merchant');
+        
+        $this->createMerchantUserMapping($user2->getId(), $merchant2->getId(), 'owner');
+
+        $testData = $this->testData['testMerchantEmailGetUserStatus'];
+
+        $testData['response']['content'] = [
+            'is_user_exist'  => false,
+            'is_team_member' => false,
+            'is_owner'       => true,
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+        
+        $this->startTest();
+    }
+    
+    public function testMerchantEmailUpdateUserStatusForEmailUserAlreadyExistNonOrphanWithActivatedMerchant()
+    {
+        Mail::fake();
+        
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant',
+                ]
+            ]
+        ];
+    
+        $this->mockSplitzTreatment($splitzOutput);
+        
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user', ['email' => 'abctest@gmail.com']);
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $user2 = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
+        
+        $merchant2 = $this->fixtures->create('merchant', [
+            'activated'  => 1
+        ]);
+        
         $this->createMerchantUserMapping($user2->getId(), $merchant2->getId(), 'owner');
 
         $testData = $this->testData['testMerchantEmailGetUserStatus'];

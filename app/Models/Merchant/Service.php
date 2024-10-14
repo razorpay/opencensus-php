@@ -1871,40 +1871,29 @@ class Service extends Base\Service
 
         $expResult = $this->splitzUserEmailUpdateEvaluate($merchant->getId());
 
-        if($expResult === true){
+        if($expResult === true) {
             $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $ownerUser->getId());
-
-            $mids = array_unique($this->repo->merchant_user->fetchMerchantIdsForUserIds($existingUserIds));
-
-            if(count($mids) > 0)
-            {
-                $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
-                if (count(value: $activatedMids) > 0) {
-                    $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED, [
-                        "count" => count($activatedMids),
-                        "email" => $input[Entity::EMAIL],
-                    ]);
-                    $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED);
+            
+            if ((empty($existingUserIds) === false) and
+                (count($existingUserIds) > 0)) {
+                
+                $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
+    
+                if (count($userIdsToNullify) > 0) {
+    
+                    $status[Constants::IS_USER_EXIST] = false;
+    
+                    $this->saveMerchantEmailUpdateData($ownerUser->getEmail(), $merchant->getId(), $input);
+    
+                    $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
+    
+                    $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, ["status" => $status]);
+    
+                    return $status;
                 }
-                if (count($activatedMids) !== count($mids)){
-                    $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED, [
-                        "count" => count($mids) - count($activatedMids),
-                        "email" => $input[Entity::EMAIL],
-                    ]);
-                    $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED);
-                }
+                
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
-            }else{
-                // If all users are Oprhan users
-                $status[Constants::IS_USER_EXIST] = false;
-
-                $this->saveMerchantEmailUpdateData($ownerUser->getEmail(), $merchant->getId(), $input);
-
-                $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
-
-                $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, ["status" => $status]);
-
-                return $status;
+    
             }
         }
 
@@ -1956,20 +1945,23 @@ class Service extends Base\Service
 
     }
 
-    public function setEmailAsNullForOrphanUser(array $orphanUserIds) {
+    public function setEmailAsNullForUserIds(array $userIds) {
         // Set email as null for Orphan user ids
-        $this->repo->transactionOnLiveAndTest(function () use ($orphanUserIds) {
-            foreach ($orphanUserIds as $orphanUserId){
-
-                $user = $this->repo->user->findOrFail($orphanUserId);
-
+        $this->repo->transactionOnLiveAndTest(function () use ($userIds) {
+            foreach ($userIds as $userId){
+            
+                $user = $this->repo->user->findOrFail($userId);
+            
                 $user->email = null;
-
+            
                 $this->repo->user->saveOrFail($user);
             }
         });
     }
-
+    
+    /**
+     * @throws BadRequestException
+     */
     public function editMerchantEmailCreateNewUserAndTransferOwnerShip($input)
     {
         (new Validator())->validateInput('changeEmailToken', $input);
@@ -1998,43 +1990,20 @@ class Service extends Base\Service
 
         $expResult = $this->splitzUserEmailUpdateEvaluate($merchantId);
 
-        if($expResult === true){
+        if($expResult === true) {
             $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $currentOwnerUser->getId());
-            $orphanUserIds = array();
-            if (empty($existingUserIds) === false)
+            
+            if ((empty($existingUserIds) === false) and
+                (count($existingUserIds) > 0))
             {
-                foreach ($existingUserIds as $userId) {
-                    $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
-                    if(count(value: $mids) === 0)
-                    {
-                        array_push($orphanUserIds, $userId);
-                        continue;
-                    }
-
-                    $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
-                    if (count($activatedMids) > 0) {
-                        $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED, [
-                            "count" => count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED);
-                    }
-                    if (count($activatedMids) !== count($mids)){
-                        $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED, [
-                            "count" => count($mids) - count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED);
-                    }
+                $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
+        
+                if (count($userIdsToNullify) === 0) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
                 }
+    
+                $this->setEmailAsNullForUserIds($userIdsToNullify);
             }
-
-            if (count($orphanUserIds) !== count($existingUserIds)){
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
-            }
-
-            // Set email as null for Orphan user ids
-            $this->setEmailAsNullForOrphanUser($orphanUserIds);
         }
 
         // using merchant_id from cache
