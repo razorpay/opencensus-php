@@ -8438,6 +8438,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_CHARGEBACK_PINOT_RESPONSE                       = 'DISPUTE_CHARGEBACK_PINOT_RESPONSE';
 
     const DATALAKE_PRESTO_QUERY                                   = 'DATALAKE_PRESTO_QUERY';
+    const DATALAKE_PRESTO_QUERY_REAL_TIME_API                     = 'DATALAKE_PRESTO_QUERY_REAL_TIME_API';
     const DATALAKE_PRESTO_REQUEST_FAILURE                         = 'DATALAKE_PRESTO_REQUEST_FAILURE';
 
     const APACHE_PINOT_QUERY                                   = 'APACHE_PINOT_QUERY';

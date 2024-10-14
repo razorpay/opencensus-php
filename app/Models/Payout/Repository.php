@@ -2790,7 +2790,7 @@ class Repository extends Base\Repository
 
         $dataLakeQuery .= "group by payouts.merchant_id,  merchants.name, merchant_users.user_id, users.name, users.email, role";
 
-        return  $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+        return  $this->app['datalake.presto']->getDataFromDataLakeUsingRealTimeApi($dataLakeQuery);
     }
 
     public function fetchPendingPayoutsToDisplay($merchantId, $userRole)

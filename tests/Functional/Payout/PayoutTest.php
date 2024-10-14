@@ -5885,7 +5885,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('datalake.presto', $prestoService);
 
-        $prestoService->shouldReceive('getDataFromDataLake')
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
                       ->andReturnUsing(function (string $query)
                       {
                           $approveList[0]['user_id'] = "RazorpyUserId1";
@@ -5977,7 +5977,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('datalake.presto', $prestoService);
 
-        $prestoService->shouldReceive('getDataFromDataLake')
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
                       ->andReturnUsing(function (string $query)
                       {
                           $approveList[0]['user_id'] = "RazorpyUserId1";
@@ -6085,7 +6085,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('datalake.presto', $prestoService);
 
-        $prestoService->shouldReceive('getDataFromDataLake')
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
                       ->andReturnUsing(function (string $query)
                       {
                           $approveList[0]['user_id'] = "RazorpyUserId1";
@@ -6181,7 +6181,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('datalake.presto', $prestoService);
 
-        $prestoService->shouldReceive('getDataFromDataLake')
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
                       ->andReturnUsing(function (string $query)
                       {
                           $approveList[0]['user_id'] = "RazorpyUserId1";
@@ -41112,6 +41112,16 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          return [];
+                      });
+
         $this->storkMock
             ->shouldNotReceive('requestAndGetParsedBody'); // No PN fired, since the given merchant has no pending payouts
 
@@ -41146,7 +41156,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('datalake.presto', $prestoService);
 
-        $prestoService->shouldReceive('getDataFromDataLake')
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
                       ->andReturnUsing(function (string $query)
                       {
                           $approveList[0]['user_id'] = "RazorpyUserId1";
@@ -41239,6 +41249,17 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
+                      ->andReturnUsing(function (string $query)
+                      {
+                          return [];
+                      });
+
+
         $splitzResp = [
             "response" => [
                 'variant' => [
@@ -41285,7 +41306,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('datalake.presto', $prestoService);
 
-        $prestoService->shouldReceive('getDataFromDataLake')
+        $prestoService->shouldReceive('getDataFromDataLakeUsingRealTimeApi')
                       ->andReturnUsing(function (string $query)
                       {
                           $approveList[0]['user_id'] = "RazorpyUserId1";
