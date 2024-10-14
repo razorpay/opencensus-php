@@ -37,7 +37,6 @@ class Validator extends Base\Validator
         Util\Constants::REFUND          => 'sometimes|array',
         Util\Constants::PAYMENT_METHODS => 'sometimes|array',
         Util\Constants::OTP             => 'sometimes|array',
-        Util\Constants::IP              => 'sometimes|ip',
     ];
 
     protected static $routeProductRules   = [
