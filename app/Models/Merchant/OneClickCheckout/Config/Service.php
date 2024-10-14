@@ -984,6 +984,17 @@ class Service extends Base\Service
 
         }
 
+        if($merchantPlatform === Constants::MAGENTO)
+        {
+            $result[Constants::COD_ENGINE_TYPE] = $codEngineType;
+            foreach ($configFlagsResponse as $config => $value) {
+                if (in_array($config, Constants::MAGENTO_SPECIFIC_CONFIGS) === true) {
+                    $result[$config] = $value;
+                }
+            }
+        }
+
+
         if ($merchantPlatform === Constants::NATIVE)
         {
             $orderStatusUpdateUrlConfig = $this->merchant->getFetchOrderStatusUpdateUrlConfig();

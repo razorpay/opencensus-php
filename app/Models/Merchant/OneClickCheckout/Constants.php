@@ -281,6 +281,10 @@ class Constants
         self::TERRA_WALLET,
     ];
 
+    const MAGENTO_SPECIFIC_CONFIGS = [
+        self::COD_ENGINE,
+    ];
+
     const CONFIG_CUM_FEATURE_FLAGS = [
         self::ONE_CLICK_CHECKOUT,
         self::ONE_CC_GA_ANALYTICS,
