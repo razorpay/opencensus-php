@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use Database\Connection;
 use Razorpay\Trace\Logger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\Jobs\SyncJob;
@@ -18,11 +19,17 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Job implements ShouldQueue
 {
-    use Extended\Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Extended\Dispatchable, InteractsWithQueue, Queueable;
+    use SerializesModels {
+        restoreModel as SerializesRestoreModel;
+    }
+
 
     protected const MAX_RETRY_ATTEMPT = 1;
     /**
@@ -474,4 +481,34 @@ class Job implements ShouldQueue
             }
         }
     }
+
+
+    public function restoreModel($value)
+    {
+        $migratedEntities = ['RZP\Models\Merchant\Entity'];
+        if (!in_array($value->class, $migratedEntities, true)) {
+            return $this->SerializesRestoreModel($value);
+        }
+
+        try {
+            if ((new AsvRouter())->shouldRouteFilterToAsv("restoreModel")) {
+                return $this->restoreAsvModel($value);
+            }
+        } catch (\Exception $ex) {
+            app('trace')->traceException($ex, Trace::ERROR, TraceCode::ASV_RESTORE_MODEL_EXCEPTION, []);
+        }
+         return $this->SerializesRestoreModel($value);
+    }
+
+    public function restoreAsvModel($value)
+    {
+        $oldConnection = $value->connection;
+        $model =  $this->getQueryForModelRestoration(
+            (new $value->class)->setConnection(Connection::ASV_WRITER), $value->id
+        )->useWritePdo()->firstOrFail();
+
+        $model->setConnection($oldConnection);
+        return $model->load($value->relations ?? []);
+    }
+
 }

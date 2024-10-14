@@ -3269,6 +3269,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_DEBUG_TOTAL_COUNT                                  = 'ES_DEBUG_TOTAL_COUNT';
     const ES_DEBUG_INPUT                                        = 'ES_DEBUG_INPUT';
     const ES_DEBUG_INPUT_ASV                                    = 'ES_DEBUG_INPUT_ASV';
+    const ASV_RESTORE_MODEL_EXCEPTION                           = 'ASV_RESTORE_MODEL_EXCEPTION';
 
 
     const RECON_ALERT                                           = 'RECON_ALERT';
