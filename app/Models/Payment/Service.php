@@ -5462,6 +5462,12 @@ class Service extends Base\Service
 
         $response = $this->app['card.payments']->fetchEntity('authorization', $paymentId);
 
+        if ((isset($response["gateway"]) && $response["gateway"] === "fulcrum") &&
+            (isset($response['status']) && ($response['status'] === Payment\Status::AUTHORIZED ||
+                    $response['status'] === Payment\Status::CAPTURED))) {
+            $response["reason_code"] = "00";
+        }
+
         if ((isset($response['success']) === true) and ($response['success'] === false))
         {
             throw new Exception\BadRequestException(

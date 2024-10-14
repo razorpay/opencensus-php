@@ -21,11 +21,16 @@ use RZP\Models\Reminders;
 use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
+use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Card\IIN\MandateHub;
+use RZP\Models\Payment\RecurringType;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\CardMandate\MandateHubs;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\CardRecurringNotificationProcess;
+use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class Core extends Base\Core
 {
@@ -820,6 +825,28 @@ class Core extends Base\Core
         $payment['id'] = $cardMandateNotification->getOrderId();
 
         $terminal = $this->repo->terminal->findOrFail($token->getTerminalId());
+
+        if ($payment->getMethod() === Method::CARD and $payment->isRecurring() === true and
+            $payment->getRecurringType() === RecurringType::AUTO) {
+            $variant = $this->app['splitzService']->getTreatment($payment->getMerchantId(),
+                RazorxTreatment::ALLOW_FULCRUM_RECURRING_SUBSEQUENT,
+                Mode::LIVE);
+
+            if ($variant === 'on'){
+                $chargeAccountMerchant = $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] ?? null;
+
+                $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $chargeAccountMerchant,
+                    null);
+
+                foreach ($selectedTerminals as $term){
+                    if ($term->getGateway() === EntityConstants::FULCRUM){
+                        $terminal = $term;
+                        break;
+                    }
+                }
+            }
+        }
+
         $payment->terminal()->associate($terminal);
 
         $card = $this->repo->card->findOrFail($token->getCardId());

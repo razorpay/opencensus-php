@@ -1248,4 +1248,7 @@ final class RazorxTreatment
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT  = 'mandate_idempotency_key_experiment';
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW = "mandate_idempotency_key_experiment_new";
     const DCS_MERGE_FIX = 'dcs_merge_fix';
+
+    const ALLOW_FULCRUM_RECURRING_INITIAL = 'fulcrum_recurring_initial';
+    const ALLOW_FULCRUM_RECURRING_SUBSEQUENT = 'fulcrum_recurring_subsequent';
 }

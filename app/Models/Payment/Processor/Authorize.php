@@ -24,6 +24,7 @@ use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Constants\Entity as Constants2;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp as MagicDecomp;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
@@ -428,6 +429,22 @@ trait Authorize
             if (is_null($paymentEvent->getTerminalId()) === true)
             {
                 $currentTerminal = $this->selectedTerminals[0];
+
+                if ($paymentEvent->getMethod() === Method::CARD and $paymentEvent->isRecurring() === true and
+                    $paymentEvent->getRecurringType() === RecurringType::INITIAL) {
+                    $variant = $this->app['splitzService']->getTreatment($paymentEvent->getMerchantId(),
+                        RazorxTreatment::ALLOW_FULCRUM_RECURRING_INITIAL,
+                        Mode::LIVE);
+
+                    if ($variant === 'on') {
+                        foreach ($this->selectedTerminals as $terminal) {
+                            if ($terminal->getGateway() == Constants2::FULCRUM) {
+                                $currentTerminal = $terminal;
+                            }
+                        }
+
+                    }
+                }
 
                 $paymentEvent->associateTerminal($currentTerminal);
             }
