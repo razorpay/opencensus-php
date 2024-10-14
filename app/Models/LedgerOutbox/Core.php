@@ -1022,8 +1022,7 @@ class Core extends Base\Core
                 $resource,
                 function () use ($transfer,$journal, $journalId)
                 {
-                    $this->repo->transaction(function () use ($transfer,$journal, $journalId) {
-
+                    return $this->repo->transaction(function () use ($transfer,$journal, $journalId) {
                         $txnCore = new Transaction\Core();
 
                         list($txn, $feeSplit) = $txnCore->createFromTransfer($transfer, $journalId, false);

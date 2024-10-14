@@ -9,13 +9,13 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\AsyncBalanceUpdateForTransfer;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Feature;
 use RZP\Models\Currency;
-use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -486,6 +486,23 @@ class Core extends Base\Core
 
         $additionalParams = $this->fetchRulesForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
 
+        $resultingBalance = floatval($merchantAccountBalances[LedgerConstants::MERCHANT_BALANCE]) - floatval($moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]);
+
+        $maxNegativeLimit = $this->getMaxNegativeLimitForTransfer($transfer);
+
+        if ($resultingBalance <= $maxNegativeLimit * -1)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+                Transaction\Entity::BALANCE,
+                [
+                    'amount' => $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT],
+                    'balance' => $merchantAccountBalances[LedgerConstants::MERCHANT_BALANCE],
+                    'negative_limit' => $maxNegativeLimit
+                ]
+            );
+        }
+
         $journalData = array(
             Constants::TRANSACTOR_ID                 => $transfer->getPublicId(),
             Constants::TRANSACTOR_EVENT              => Constants::CUSTOMER_WALLET_LOADING,
@@ -554,7 +571,7 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    public function generateMoneyParamsForCustomerWalletLoadingDebitV2(Transfer\Entity $transfer, $merchantAccountBalances, $transferCommission, $tax): array
+    public function generateMoneyParamsForCustomerWalletLoadingDebitV2(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax): array
     {
         $moneyParams = [];
 
@@ -564,31 +581,67 @@ class Core extends Base\Core
 
         $amount = $transfer->getAmount();
 
+        $transferCommission = $fee - $tax;
+
         $moneyParams[Constants::AMOUNT]                         = strval($amount);
 
         $moneyParams[Constants::BASE_AMOUNT]                    = strval($amount);
 
-        if($amountCredits > 0)
+        if($amountCredits >= $amount)
         {
             $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
-            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
-            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
+
+            $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::RAZORPAY_REWARDS]           = strval($amount);
+
+            $moneyParams[LedgerConstants::AMOUNT_CREDITS]             = strval($amount);
         }
-        else if ($this->isFeeCredits($feeCredits, $transferCommission + $tax))
+        else if ($this->isFeeCredits($feeCredits, $transferCommission + $tax) === true)
         {
             $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
             $moneyParams[Constants::TAX]                        = strval($tax);
+
             $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($transferCommission);
+
             $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $transferCommission);
+        }
+        else if($this->isTransferPostpaid($transfer) === true)
+        {
+            $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::TAX]                        = strval($tax);
+
+            $moneyParams[LedgerConstants::TRANSFER_COMMISSION]        = strval($transferCommission);
+
+            $moneyParams[LedgerConstants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $transferCommission);
+
+            $moneyParams[LedgerConstants::CUSTOMER_WALLET_AMOUNT]    = strval($amount);
         }
         // Normal transfer debit scenario (commissions considered)
         else
         {
             $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $transferCommission + $tax);
+
             $moneyParams[Constants::TAX]                        = strval($tax);
+
             $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($transferCommission);
+        }
+
+        $maxNegativeLimit = $this->getMaxNegativeLimitForTransfer($transfer);
+
+        if ($maxNegativeLimit !== 0)
+        {
+            $moneyParams[LedgerConstants::MERCHANT_BALANCE_LIMIT] = strval($maxNegativeLimit);
         }
 
         return $moneyParams;

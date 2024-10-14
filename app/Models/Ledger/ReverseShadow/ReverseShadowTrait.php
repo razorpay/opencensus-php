@@ -1080,6 +1080,10 @@ trait ReverseShadowTrait
 
         $baseTransactionEntity->sourceAssociate($transfer);
 
+        $baseTransactionEntity->setReconciledAt($settledAt);
+
+        $baseTransactionEntity->setReconciledType(Transaction\ReconciledType::NA);
+
         return $baseTransactionEntity;
     }
 
@@ -1162,7 +1166,14 @@ trait ReverseShadowTrait
 
     private function getTransactionAmountForTransactionTypeFromJournal($journalResponse, $transactorType)
     {
-        if ($transactorType === Transaction\Type::TRANSFER)
+        if ($transactorType == Transaction\Type::TRANSFER &&
+        $journalResponse[Constants::TRANSACTOR_EVENT] == Constants::CUSTOMER_WALLET_LOADING)
+        {
+            $transactionAmountLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::FUND_ACCOUNT_TYPE_CUSTOMER_WALLET);
+
+            return $transactionAmountLedgerEntry['amount'];
+        }
+        else if ($transactorType === Transaction\Type::TRANSFER)
         {
             $transactionAmountLedgerEntry = $this->getSpecificLedgerEntryFromJournal($journalResponse, Constants::PAYABLE, Constants::MERCHANT_VA_MERCHANT);
 
