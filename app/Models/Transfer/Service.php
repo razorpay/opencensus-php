@@ -2206,6 +2206,29 @@ class Service extends Base\Service
 
                 break;
             }
+            case 'update_dcs_features':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'update_dcs_features',
+                        'input'  => $input,
+                    ]
+                );
+                $data = $input['data'];
+                // make request to micro service
+                $resp = App::getFacadeRoot()['route']->updateFeatures($data);
+
+                $this->trace->info(
+                    TraceCode::RESPONSE,
+                    [
+                        'input'      => $input,
+                        'response'   => $resp,
+                    ]
+                );
+
+                return $resp;
+            }
 
             default:
             {

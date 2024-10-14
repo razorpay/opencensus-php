@@ -157,6 +157,16 @@ class Api extends Base
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }
 
+    /**
+     * To save the DCS Features
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function updateFeatures(array $input) : array
+    {
+        return $this->sendRequest(Constant::UPDATE_FEATURE_ENDPOINT, Requests::POST, $input);
+    }
+
     private function forceFillTransferFromResponse($response)
     {
         if (empty($response) === false)
