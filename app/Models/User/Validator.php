@@ -910,7 +910,8 @@ class Validator extends Base\Validator
             }
             else if(array_key_exists('score', (array)$output) === true)
             {
-                $threshold = 0.9;
+                $threshold = 0.6;
+
                 if ($output->score < $threshold)
                 {
                     throw new BadRequestException(
