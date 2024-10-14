@@ -319,7 +319,7 @@ class Service extends Base\Service
      * @param  array $merchantDetailInputData
      * @return array
      */
-    public function create(array $input, array $merchantDetailInputData = []): array
+    public function create(array $input, array $merchantDetailInputData = [], array $createMerchantMetadata = []): array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -346,7 +346,7 @@ class Service extends Base\Service
         }
 
         /** @var Entity $merchant */
-        $merchant = $this->core()->create($input, $merchantDetailInputData);
+        $merchant = $this->core()->create($input, $merchantDetailInputData, $createMerchantMetadata);
 
         unset($merchantDetailInputData['token_data']);
 

@@ -218,7 +218,7 @@ class Core extends Base\Core
         return $this->merchantOnboardingProxyController;
     }
 
-    public function create($input, $merchantDetailInputData = [])
+    public function create($input, $merchantDetailInputData = [], array $createMerchantMetadata = [])
     {
         (new UserCore())->validateAccountCreation(array_merge($input, $merchantDetailInputData));
 
@@ -248,9 +248,13 @@ class Core extends Base\Core
 
         if (isset($input['email']) === true)
         {
-            (new Merchant\Validator())->validateUniqueEmailExceptLinkedAccount(
-                $input[Entity::EMAIL], $input[Entity::ORG_ID]
-            );
+            $shouldSkipEmailUniquenessCheck = $createMerchantMetadata[Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK] === true;
+
+            if ($shouldSkipEmailUniquenessCheck === false) {
+                (new Merchant\Validator())->validateUniqueEmailExceptLinkedAccount(
+                    $input[Entity::EMAIL], $input[Entity::ORG_ID]
+                );
+            }
         }
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);

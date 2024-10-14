@@ -122,7 +122,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                        = 'website';
     const EXTERNAL_ID                    = 'external_id';
     const PRODUCT_INTERNATIONAL          = 'product_international';
-
+    const SKIP_EMAIL_UNIQUENESS_CHECK    = 'SKIP_EMAIL_UNIQUENESS_CHECK';
 
 
 

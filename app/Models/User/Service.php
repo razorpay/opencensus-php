@@ -1111,6 +1111,7 @@ class Service extends Base\Service
                         DeviceDetail\Constants::ORG_ID          => $orgId,
                         DeviceDetail\Constants::VERSION_ID      => DeviceDetail\Constants::DEFAULT_VERSION,
                     ];
+
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
@@ -1610,7 +1611,10 @@ class Service extends Base\Service
         array $merchantDetailInputData = []
     )
     {
-        $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData);
+        $createMerchantMetadata = [
+            Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK    =>  $inputData[Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK],
+        ];
+        $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData, $createMerchantMetadata);
 
         unset($merchantDetailInputData['token_data']);
 
@@ -2298,6 +2302,52 @@ class Service extends Base\Service
     }
 
     /**
+     * Create a merchant by prefilling the user data.
+     * This is so that the redundant data is not asked in the onboarding flow again
+     * @param array $user
+     * @param array $input
+     * @return array
+     */
+    function createMerchantWithPrefillData(array $user, array $input)
+    {
+        $merchantInputData = [
+            Merchant\Entity::NAME          => $input[Merchant\Entity::NAME] ?? '',
+            Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
+                $this->auth->getRequestOriginProduct(),
+            Merchant\Entity::COUNTRY_CODE  => $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN',
+            Merchant\Entity::ORG_ID        => $this->auth->getOrgId(),
+        ];
+
+        $merchantDetailInputData = [];
+
+        if (isset($user[Entity::EMAIL]) === true)
+        {
+            $merchantInputData[Merchant\Entity::EMAIL]            = $user[Entity::EMAIL];
+        }
+
+        if (isset($user[Entity::CONTACT_MOBILE]))
+        {
+            $merchantDetailInputData[Entity::CONTACT_MOBILE]      = $user[Entity::CONTACT_MOBILE];
+        }
+
+        $merchantInputData[Merchant\Entity::SIGNUP_VIA_EMAIL] = $user[Entity::SIGNUP_VIA_EMAIL] === 1 ? 1 : 0;
+
+        $inputData = [
+            Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK    =>  true,
+        ];
+
+        return $this->createMerchantFromUser(
+            $merchantInputData,
+            $user,
+            '',
+            false,
+            $inputData,
+            false,
+            $merchantDetailInputData
+        );
+    }
+
+    /**
      * Creates a new merchant for a user
      *
      * @param array $input {
@@ -2322,17 +2372,10 @@ class Service extends Base\Service
         $merchants = $user->merchants()->take(1)->get();
 
         if ($merchants->count() > 0) {
-            // User already has a merchant so we don't need user's details here
-            $merchantData = [
-                Merchant\Entity::NAME           => $input[Merchant\Entity::NAME] ?? '',
-                Merchant\Entity::COUNTRY_CODE   => $countryCode,
-                Merchant\Entity::SIGNUP_SOURCE  => $signupSource,
-                Merchant\Entity::ORG_ID         => $this->auth->getOrgId(),
-            ];
-
-            $data = $this->createMerchantFromUser($merchantData, $user->toArray());
+            // User already has a merchant so we need to prefill any data the user has
+            $data = $this->createMerchantWithPrefillData($user->toArray(), $input);
         } else {
-            // User doesn't have a merchant and is signing up so we can use the user's email or mobile details
+            // User doesn't have a merchant and is signing up so we do the usual signup
             $merchantInputData = [
                 Merchant\Entity::SIGNUP_SOURCE  => $signupSource,
             ];

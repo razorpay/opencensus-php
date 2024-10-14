@@ -1098,8 +1098,8 @@ class UserTest extends TestCase
         $secondMerchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->where('merchant_id', '!=', $firstMerchant->merchant_id)->first();
         $secondMerchant = DB::table('merchants')->where('id', '=', $secondMerchantUserEntry->merchant_id)->first();
 
-        // If user already has a merchant we don't use the user's email to create a merchant
-        $this->assertEmpty($secondMerchant->email);
+        // If user already has a merchant we copy the email to the merchant
+        $this->assertEquals($user['email'], $secondMerchant->email);
 
         // Payload assertion
         $this->assertEquals($response['user_id'], $user['id']);
@@ -1108,7 +1108,7 @@ class UserTest extends TestCase
 
     public function testCreateMerchantForExistingUserWithMobile()
     {
-        $user = $this->fixtures->create('user', ['contact_mobile' => '9000000001', 'email'  => null]);
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919000000001', 'email'  => null]);
         $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
 
         $testData = & $this->testData[__FUNCTION__];
@@ -1127,8 +1127,8 @@ class UserTest extends TestCase
         $secondMerchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->where('merchant_id', '!=', $firstMerchant->merchant_id)->first();
         $secondMerchant = DB::table('merchant_details')->where('merchant_id', '=', $secondMerchantUserEntry->merchant_id)->first();
 
-        // If user already has a merchant we don't use the user's contact mobile to create a merchant
-        $this->assertEmpty($secondMerchant->contact_mobile);
+        // If user already has a merchant we copy the mobile to the merchant
+        $this->assertEquals($user['contact_mobile'], $secondMerchant->contact_mobile);
 
         // Payload assertion
         $this->assertEquals($response['user_id'], $user['id']);
