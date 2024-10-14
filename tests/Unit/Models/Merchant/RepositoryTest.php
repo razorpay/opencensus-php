@@ -7,6 +7,7 @@ use RZP\Exception\DbQueryException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Request\Entity as MEREQEntity;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
 use RZP\Models\Merchant\Repository;
@@ -624,6 +625,91 @@ class RepositoryTest extends RepositoryTestHelper
         $merchantEntity2 = $repo->findOrFail($id);
 
         assertNotEquals(1234, $merchantEntity2->getUpdatedAt());
+    }
+
+    public function testVerifyEagerLoadRelation()
+    {
+        $id = PublicEntity::generateUniqueId();
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', $id);
+
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id3]);
+        $this->fixtures->create('merchant_request', ['id' => $id, "merchant_id" => $id3, "name"  => "test", "status" => "activated", "type" => "123"]);
+
+        $relations = [
+            'states',
+            'states.rejectionReasons',
+            'merchant',
+            'merchant.merchantDetail'
+        ];
+
+
+        $this->setSplitzWithOutput("false", 2);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+        $this->setSplitzWithOutput("true", 2);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
+        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
+        // in this case merchant detail is null
+        $relations = [
+            'states',
+            'states.rejectionReasons',
+            'merchant',
+            'merchant.merchantDetail.merchant'
+        ];
+
+
+        $this->setSplitzWithOutput("false", 2);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+        $this->setSplitzWithOutput("true", 3);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
+
+
+        // relations with nesting level more than 2 should also not fail, in this case we will fallback to parent
+        // in this case merchant detail is not null
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $id3]);
+
+
+        $this->setSplitzWithOutput("false", 3);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOff = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+        $this->setSplitzWithOutput("true", 4);
+        $entityObj = new MEREQEntity();
+        $merchantRequestsWithSplitzOn = $entityObj->newQuery()
+            ->where(MEREQEntity::ID, $id)
+            ->with($relations)
+            ->get();
+
+
+        $this->assertEquals($merchantRequestsWithSplitzOff, $merchantRequestsWithSplitzOn);
     }
 
 

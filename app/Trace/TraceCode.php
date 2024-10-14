@@ -9913,6 +9913,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE                = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE';
     const ASV_READ_SHADOW_EXCEPTION                             = 'ASV_READ_SHADOW_EXCEPTION';
     const ASV_REVERSE_SHADOW_EXCEPTION                          = 'ASV_REVERSE_SHADOW_EXCEPTION';
+
+    const ASV_EAGER_LOAD_EXCEPTION                              = 'ASV_EAGER_LOAD_EXCEPTION';
+    const ASV_EAGER_LOAD_IMPLEMENTATION                         = 'ASV_EAGER_LOAD_IMPLEMENTATION';
     const RECORDED_ACCOUNT_ID                                   = 'RECORDED_ACCOUNT_ID';
     const ASV_SYNC_ACCOUNT_DEVIATION_REQUEST                    = 'ASV_SYNC_ACCOUNT_DEVIATION_REQUEST';
     const ASV_SYNC_ACCOUNT_DEVIATION_RESPONSE                   = 'ASV_SYNC_ACCOUNT_DEVIATION_RESPONSE';
