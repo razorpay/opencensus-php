@@ -1594,7 +1594,7 @@ trait Capture
 
     public function isDualWriteFlowEnabled($payment)
     {
-        $isDualWriteFlow = ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true);
+        $isDualWriteFlow = ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true);
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),Merchant\RazorxTreatment::PG_LEDGER_ASYNC_TRANSACTION_CREATION, $this->app['rzp.mode']);
 
