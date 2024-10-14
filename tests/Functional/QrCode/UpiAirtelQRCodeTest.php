@@ -1861,7 +1861,9 @@ class UpiAirtelQRCodeTest extends TestCase
 
     protected function getRefundEventPayload($payment , $refund, $event,$createdAt)
     {
-        $refundId = 'rfnd_'.$refund['id'];
+        $refundId = $refund['id'];
+        $paymentId = $payment['id'];
+        $this->fixtures->stripSign($paymentId);
         $payload = [
             "name" => $event,
             "data" => [
@@ -1869,13 +1871,13 @@ class UpiAirtelQRCodeTest extends TestCase
                     'id'             => $refundId,
                     'amount'         => $payment['amount'],
                     'currency'       => 'INR',
-                    'payment_id'     => $payment['id'],
+                    'payment_id'     => $paymentId,
                     'created_at'     => $createdAt,
                     'updated_at'     => $createdAt,
-                    'deleted_at'     => null,
+                    'source_channel' => 'in_person',
                 ],
                 'payment'  => [
-                    'id'            => $payment['id'],
+                    'id'            => $paymentId,
                     'amount'        => $payment['amount'],
                     'captured_at'   => $payment['captured_at'],
                     'created_at'    => $payment['created_at'],
@@ -1883,7 +1885,8 @@ class UpiAirtelQRCodeTest extends TestCase
                 ],
                 'metadata' => [
                     'timestamp'          => $createdAt,
-                    'taskId'             => 'taskId',
+                    'task_id'             => 'task_id',
+                    'idempotency_key'     => 'idempotency_key',
                     'publishing_service' => 'scrooge',
                 ]
             ],

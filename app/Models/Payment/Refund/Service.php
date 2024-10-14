@@ -4260,7 +4260,8 @@ class Service extends Base\Service
         ]);
 
         $refundId = $input['data']['refund']['id'];
-        $refund = $this->repo->refund->findByPublicId($refundId);
+        Entity::silentlyStripSign($refundId);
+        $refund = $this->repo->refund->find($refundId);
         $this->publishInPersonRefundEvent($refund, $input['name']);
     }
 
