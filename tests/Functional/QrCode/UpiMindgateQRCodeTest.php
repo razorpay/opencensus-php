@@ -139,7 +139,6 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->setMockRazorxTreatment(
             [
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
             ]
         );
 
@@ -164,35 +163,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $this->assertEquals($expiryTime, $qrCode['close_by']);
         $this->assertStringContainsString('@hdfcbank', $qrCode['qr_string']);
-    }
-
-    public function testSingleUseQrCodeWithCloseByWithExperimentOff()
-    {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::HDFC_QR_EXPIRY => 'control',
-            ]
-        );
-
-        $this->expectException(BadRequestException::class);
-
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_HDFC);
-
-        $days = 3;
-
-        $expiryTime = Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60);
-
-        $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'upi_qr',
-                'fixed_amount'   => true,
-                'payment_amount' => 300,
-                'close_by'       => $expiryTime,
-            ],
-            'live',
-            'LiveAccountMer');
     }
 
     // If the expiry is greater than 7 days, then an HDFC terminal is not picked up at all
@@ -746,13 +716,13 @@ class UpiMindgateQRCodeTest extends TestCase
     public function testSingleUseQrCodeWithCloseByForEzetap()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
-
-        $days =1;
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => 'control',
             ]
         );
+
+        $days =1;
         $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
         $qrCode = $this->createQrCode(
             [

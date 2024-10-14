@@ -413,23 +413,18 @@ class Generator extends QrCode\Generator
         {
             $amount    = $qrCode->getAmount() / 100;
             $rawAmount = $qrCode->getRawAmount();
+            $formatedAmountToRupees = $this->formatAmountToRupees($rawAmount);
 
             $this->trace->info(TraceCode::QR_CODE_FIXED_AMOUNT_DETAILS, [
                 'id'                      => $qrCode->getId(),
                 'qr_code_amount'          => $qrCode->getAmount(),
                 'qr_code_amount(Rs.)'     => $amount,
                 'qr_code_raw_amount'      => $rawAmount,
-                'qr_code_raw_amount(Rs.)' => $this->formatAmountToRupees($qrCode->getRawAmount()),
+                'qr_code_raw_amount(Rs.)' => $formatedAmountToRupees,
             ]);
 
-            if ($this->checkIfExperimentEnabledforAmountMismatchFix($qrCode->getMerchantId()) === true)
-            {
-                $content[Base\IntentParams::TXN_AMOUNT] = $this->formatAmountToRupees($qrCode->getRawAmount());
-            }
-            else
-            {
-                $content[Base\IntentParams::TXN_AMOUNT] = $amount;
-            }
+            $content[Base\IntentParams::TXN_AMOUNT] = $formatedAmountToRupees;
+
         }
 
         if((str_contains($vpa, '@kotak') === true) and ($qrCode->getUsageType() === UsageType::SINGLE_USE))
@@ -446,20 +441,6 @@ class Generator extends QrCode\Generator
         $content = array_merge($content, InvoiceDetails::getTaxDetails($qrCode));
 
         return 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
-    }
-
-    public function checkIfExperimentEnabledforAmountMismatchFix($merchantId)
-    {
-        $variant = $this->app['razorx']->getTreatment($merchantId,
-                                                      RazorxTreatment::QR_AMOUNT_MISMATCH_FIX,
-                                                      $this->mode);
-
-        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function fetchDedicatedTerminalFromQrString($qrCode)
@@ -1297,18 +1278,6 @@ class Generator extends QrCode\Generator
      */
     protected function checkCloseBySupportForUpiMindgate(int $closeBy): bool
     {
-        $variantForExpiry = $this->app->razorx
-            ->getTreatment(
-                $this->merchant->getId(),
-                RazorxTreatment::HDFC_QR_EXPIRY,
-                $this->mode
-            );
-
-        if ($variantForExpiry !== strtolower(RazorxTreatment::RAZORX_VARIANT_ON))
-        {
-            return false;
-        }
-
         $timeAfter7Days = Carbon::now(Timezone::IST)->addDays(7)->timestamp;
 
         return ($closeBy < $timeAfter7Days);

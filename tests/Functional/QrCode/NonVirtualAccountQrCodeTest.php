@@ -2669,8 +2669,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
          *This change is not being made during setup because there are tests that involve cases without a dedicated terminal.
          */
         $this->fixtures->on('live')->edit('terminal', $this->bqrTerminal->getId(), ['merchant_id' => 'LiveAccountMer']);
-        $this->setMockRazorxTreatment([RazorxTreatment::QR_AMOUNT_MISMATCH_FIX => RazorxTreatment::RAZORX_VARIANT_ON]);
-
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr', 'payment_amount'=>27071, 'fixed_amount'=> true], 'live', 'LiveAccountMer');
 
         $qrCodeId = $qrCode['id'];

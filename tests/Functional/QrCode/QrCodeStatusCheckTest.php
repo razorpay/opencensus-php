@@ -1496,11 +1496,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->config['gateway.mock_upi_mozart'] = true;
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_mindgate_terminal',
             [
@@ -1612,12 +1607,6 @@ class QrCodeStatusCheckTest extends TestCase
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiMindgateWithEzetapSource()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
-
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
-            ]
-        );
 
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_mindgate_terminal',

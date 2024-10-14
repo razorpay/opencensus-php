@@ -981,8 +981,6 @@ final class RazorxTreatment
 
     const ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK = 'enable_yes_bank_terminal_for_6_0_stack';
 
-    const HDFC_QR_EXPIRY = 'hdfc_qr_expiry';
-
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
 
@@ -1145,11 +1143,6 @@ final class RazorxTreatment
     * Razorx flag is used to control versions(old/new) of otp unification for acs page
     */
     const OTP_UNIFICATION_ACS_PAGE  = 'otp_unification_acs_page';
-    /**
-     * Razorx flag to ramp up experiment to fix the bug of converting amount to rupee from paise
-     */
-    const QR_AMOUNT_MISMATCH_FIX = 'qr_amount_mismatch_fix';
-
     /*
      * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
      */

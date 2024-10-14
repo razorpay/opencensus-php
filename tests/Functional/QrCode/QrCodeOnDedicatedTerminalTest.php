@@ -1834,8 +1834,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->mockSplitzTreatment($output);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::QR_AMOUNT_MISMATCH_FIX => RazorxTreatment::RAZORX_VARIANT_ON]);
-
         $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $this->createQrCode(

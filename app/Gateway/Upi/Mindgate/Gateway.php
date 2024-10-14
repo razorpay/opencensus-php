@@ -2592,19 +2592,6 @@ class Gateway extends Base\Gateway
             return $merchantReference;
         }
 
-        if (
-            strtolower(
-                $this->app->razorx->getTreatment(
-                    $input['merchant']->getId(),
-                    RazorxTreatment::HDFC_QR_EXPIRY,
-                    $this->getMode()
-                )
-            ) !== RazorxTreatment::RAZORX_VARIANT_ON
-        )
-        {
-            return $merchantReference;
-        }
-
         $request = $this->buildQrRequest($input, $merchantReference);
 
         $this->trace->info(TraceCode::CREATE_QR_MOZART_REQUEST, [

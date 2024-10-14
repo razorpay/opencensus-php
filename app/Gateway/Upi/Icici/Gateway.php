@@ -865,18 +865,13 @@ class Gateway extends Base\Gateway
         $qrCode = $input['qr_code'];
 
         $input = [
-            Fields::AMOUNT      => $this->formatAmount($input['qr_code']['amount']),
+            Fields::AMOUNT      => (new Generator())->formatAmountToRupees($this->input[Fields::AMOUNT]),
             Fields::MERCHANT_ID => $this->getMerchantId(),
             Fields::TERMINAL_ID => $this->getTerminalId($this->input),
             Fields::BILL_NUMBER => '1234',
             Fields::MERCHANT_TRAN_ID => $qrCode['id'] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
             Fields::UPDATE => self::QR_NOT_UPDATE,
         ];
-
-        if ((new Generator())->checkIfExperimentEnabledforAmountMismatchFix($this->input['merchant']->getId()) === true)
-        {
-            $input[Fields::AMOUNT] = (new Generator())->formatAmountToRupees($this->input[Fields::AMOUNT]);
-        }
 
         if (isset($qrCode[QrEntity::CLOSE_BY]) === true)
         {
