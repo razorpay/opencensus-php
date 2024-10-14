@@ -5,9 +5,6 @@ namespace RZP\Models\Merchant\Balance;
 use App;
 use Mail;
 use RZP\Models\Base;
-use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Ledger\Constants;
-use RZP\Models\Ledger\ReverseShadow\Refunds\Core as ReverseShadowRefundsCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -329,20 +326,11 @@ class Core extends Base\Core
         int $amount,
         string $txnType,
         bool $negativeBalanceEnabled = false,
-        string $balanceType = Type::PRIMARY,
-        bool $useClsBalance = false) : bool
+        string $balanceType = Type::PRIMARY) : bool
     {
+        $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
-        if ($useClsBalance === true && $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW))
-        {
-            $balanceAmount = $this->getClsBalanceForFundAccountType($merchant->getId(),Constants::MERCHANT_BALANCE);
-        }
-        else
-        {
-            $balance = $merchant->getBalanceByTypeOrFail($balanceType);
-
-            $balanceAmount = $balance->getBalance();
-        }
+        $balanceAmount = $balance->getBalance();
 
         $this->trace->info(TraceCode::CHECK_MERCHANT_BALANCE,
             [
@@ -415,8 +403,7 @@ class Core extends Base\Core
         int $amount,
         string $txnType,
         bool $negativeBalanceEnabled = false,
-        string $balanceType = Type::PRIMARY,
-        bool $useClsBalance = false) : bool
+        string $balanceType = Type::PRIMARY) : bool
     {
 
         $mode = $this->app['rzp.mode'] ?? 'live';
@@ -432,22 +419,15 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
             ]);
 
-        if ($useClsBalance === true && $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW))
+        if(strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON)
         {
-            $refundCredits = $this->getClsBalanceForFundAccountType($merchant->getId(),Constants::MERCHANT_REFUND_CREDITS);
+            $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
         }
         else
         {
-            if(strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON)
-            {
-                $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
-            }
-            else
-            {
-                $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+            $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
-                $refundCredits = $balance->getRefundCredits();
-            }
+            $refundCredits = $balance->getRefundCredits();
         }
 
         $this->trace->info(TraceCode::CHECK_MERCHANT_BALANCE,
@@ -497,18 +477,6 @@ class Core extends Base\Core
         }
 
         return true;
-    }
-
-    protected function getClsBalanceForFundAccountType(string $merchantId, string $fundAccountType)
-    {
-        $ledgerService = $this->app['ledger'];
-
-        $core = (new ReverseShadowRefundsCore());
-
-        $merchantAccountBalances = $core->getMerchantAccountBalances($ledgerService, $merchantId);
-
-        return $merchantAccountBalances[$fundAccountType];
-
     }
 
     /**

@@ -4401,11 +4401,13 @@ class Service extends Base\Service
                 if(isset($mapForSettlementService[$mid]) === false)
                 {
                     $mapForSettlementService[$mid] = false;
-                }
 
-                if($bucketCore->shouldProcessViaNewService($mid) === true)
-                {
-                    $mapForSettlementService[$mid] = true;
+                    $balance = $txn->accountBalance;
+
+                    if($bucketCore->shouldProcessViaNewService($mid, $balance) === true)
+                    {
+                        $mapForSettlementService[$mid] = true;
+                    }
                 }
 
                 if ($mapForSettlementService[$mid] === true)

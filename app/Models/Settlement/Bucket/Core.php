@@ -193,18 +193,6 @@ class Core extends Base\Core
      */
     public function addMerchantToSettlementBucket(string $transactionId, string $merchantId, $settlementTime): bool
     {
-        // adding this before any reads and writes happen on txn/balance etx. To terminate redudant processing earlier
-        if (in_array($merchantId, SettlementServiceMigration::INTER_NODAL_API_MIDS) === false)
-        {
-            $this->trace->info(
-                TraceCode::SETTLEMENT_BUCKETING_NOT_ALLOWED,
-                [
-                    'merchant_id' => $merchantId,
-                    'message'     => 'Cannot push this merchant to bucket as settlement not allowed for it from API.',
-                ]);
-            return false;
-        }
-
         $balanceType = $this->repo->transaction->getTransactionBalanceType($transactionId);
 
         if (Balance\Type::isSettleableBalanceType($balanceType) === false)
@@ -229,6 +217,17 @@ class Core extends Base\Core
 
         if ($status === true)
         {
+            return false;
+        }
+
+        if (in_array($merchantId, SettlementServiceMigration::INTER_NODAL_API_MIDS) === false)
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_BUCKETING_NOT_ALLOWED,
+                [
+                    'merchant_id' => $merchantId,
+                    'message'     => 'Cannot push this merchant to bucket as settlement not allowed for it from API.',
+                ]);
             return false;
         }
 

@@ -126,7 +126,7 @@ class Core extends Base\Core
         if ($journal ===  null)
         {
             // use refund transaction if journal is not available to determine the source of refund
-            $refundTransaction = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($refund->getId());
+            $refundTransaction = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
 
             if($refundTransaction === null)
             {

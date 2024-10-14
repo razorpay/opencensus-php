@@ -27,7 +27,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Services\Ledger as LedgerService;
 
 use RZP\Models\Reversal;
-use RZP\Models\Merchant\Balance;
+
 use RZP\Models\Reversal\Constants as ReversalConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -1019,8 +1019,7 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($merchant->getId(), Balance\Type::PRIMARY);
-
+                                $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
                                 $negativeAllowedFlows = (new BalanceConfig\Core)->getNegativeFlowsForBalance($balance->getId());
@@ -2522,10 +2521,8 @@ class Service extends Base\Service
                     $refund = $this->repo->refund->findOrFailPublic($refundId);
 
                     $processor = $this->getNewProcessor($refund->merchant);
-
-                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchantPaymentFetchReplica($refundId);
-                    $refund->setFee($txn->getFee());
-                    $refund->setTax($txn->getTax());
+                    $refund->setFee($refund->transaction->getFee());
+                    $refund->setTax($refund->transaction->getTax());
 
                     switch ($input['event'])
                     {

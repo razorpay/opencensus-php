@@ -21,9 +21,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Ledger\ReverseShadow\Refunds\Core as RefundReverseShadowCore;
-use RZP\Models\Ledger\ReverseShadow\Transfers as ReverseShadowTransfer;
 use function Clue\StreamFilter\append;
-
 
 class Core extends Base\Core
 {
@@ -87,17 +85,6 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    public function getReversalDebitJournalPayloadBalanceSplitzResponse($merchantId)
-    {
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.reversal_debit_journal_payload_harvester_balance_experiment'),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        return $response['response']['variant']['name'] ?? '';
-    }
-
     public function generateMoneyParamsForReversalDebit(RefundEntity $refund): array
     {
         $moneyParams = [];
@@ -119,17 +106,7 @@ class Core extends Base\Core
 
         $txnType = Transaction\Type::REFUND;
 
-        $harvesterBalanceFetch = $this->getReversalDebitJournalPayloadBalanceSplitzResponse($refund->merchant->getId()) === 'enable';
-
-        if ($harvesterBalanceFetch === true)
-        {
-            $balance = (new Balance\Repository())->getMerchantBalanceByTypeHarvesterOrFail($refund->merchant->getId(), RefundConstants::PRIMARY);
-        }
-        else
-        {
-            $balance = $refund->merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
-        }
-
+        $balance = $refund->merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
 
         $balanceConfigCore = new Balance\BalanceConfig\Core();
 

@@ -4,8 +4,6 @@ namespace RZP\Models\Merchant\Balance;
 
 use Carbon\Carbon;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Feature;
@@ -345,31 +343,6 @@ class Repository extends Base\Repository
 
         return $query->merchantIdAndType($merchantId, $balanceType)
                      ->first();
-    }
-
-    public function getMerchantBalanceByTypeHarvester(string $merchantId, string $balanceType)
-    {
-        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA));
-
-        return $query->merchantIdAndType($merchantId, $balanceType)
-                     ->first();
-    }
-
-    public function getMerchantBalanceByTypeHarvesterOrFail(string $merchantId, string $balanceType)
-    {
-        $balance = $this->getMerchantBalanceByTypeHarvester($merchantId, $balanceType);
-        if ($balance === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
-                null,
-                [
-                    Entity::MERCHANT_ID => $merchantId,
-                    Entity::TYPE => $balanceType,
-                ]);
-        }
-
-        return $balance;
     }
 
     public function getMerchantBalanceByTypeFromDataLake(string $merchantId, string $balanceType)
