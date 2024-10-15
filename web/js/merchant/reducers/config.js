@@ -441,7 +441,11 @@ const normalizeConfig = (config) => {
    * API is currently returning invalid logo urls
    * so we need to translate it into a valid URL
    */
-  if (logoUrl !== null && (!/^http/.test(logoUrl) || !/^https:\/\/cdn-sg/.test(logoUrl))) {
+  if (
+    logoUrl !== null &&
+    !/^https:\/\/cdn\.razorpay\.com/.test(logoUrl) &&
+    (!/^http/.test(logoUrl) || !/^https:\/\/cdn-sg/.test(logoUrl))
+  ) {
     logoUrl = `https://cdn.razorpay.com${logoUrl.replace(/\.([^.]+$)/, '_medium.$1')}`;
   }
   config.logo_url = logoUrl;

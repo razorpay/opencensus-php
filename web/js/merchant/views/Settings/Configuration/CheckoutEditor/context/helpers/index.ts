@@ -12,16 +12,15 @@ import {
   EmailLessCheckoutConfigOptions,
   getEmailConfigFlags,
 } from 'merchant/reducers/config';
-
+import {
+  CHECKOUT_EDITOR_FIELDS,
+  CHECKOUT_EDITOR_INITIAL_VALUES,
+  EMPTY_LOGO,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import {
   flashCheckoutProps,
   skipCardMandateSummaryProps,
 } from 'merchant/views/Settings/Configuration/settings-config-constants';
-
-import {
-  CHECKOUT_EDITOR_FIELDS,
-  CHECKOUT_EDITOR_INITIAL_VALUES,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 
 export const mapCheckoutEmailConfig = (
   email_config: string,
@@ -356,7 +355,7 @@ export const createPayloadToSaveConfig = (
     };
   }
 
-  if (accountConfig?.logo_url && !values.logoRaw && !values.logo) {
+  if (accountConfig?.logo_url && !values.logoRaw && values.logo === EMPTY_LOGO) {
     payload.removeLogo = {
       ...accountConfig,
       logo_url: null,

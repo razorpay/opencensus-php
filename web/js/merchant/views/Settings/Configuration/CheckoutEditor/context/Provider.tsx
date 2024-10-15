@@ -25,15 +25,14 @@ import {
   INITIAL_STATE,
   CHECKOUT_EDITOR_FIELDS,
   CUSTOM_MESSAGE_BANNER_SCREEN_LABELS,
+  EMPTY_LOGO,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import { checkoutEditorContext } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/createContext';
 import {
   createPayloadToSaveConfig,
   hasValuesChanged,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
-
 import { createTitleModalPayloadToSaveConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers/brandConfigHelper';
-
 import { checkoutFeatureReducer } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/reducer';
 import {
   flashCheckoutProps,
@@ -127,13 +126,13 @@ const CheckoutEditorProvider = ({
   const handleLogoChange = (value: File | null) => {
     setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RAW, value);
     if (value === null) {
-      setValue(CHECKOUT_EDITOR_FIELDS.LOGO, '');
+      setValue(CHECKOUT_EDITOR_FIELDS.LOGO, EMPTY_LOGO);
     }
   };
 
-  const handleEditLogoModalDiscard = (logValue: string, logoRawVal: File | null) => {
+  const handleEditLogoModalDiscard = (logoValue: string, logoRawVal: File | null) => {
     setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RAW, logoRawVal);
-    setValue(CHECKOUT_EDITOR_FIELDS.LOGO, logValue);
+    setValue(CHECKOUT_EDITOR_FIELDS.LOGO, logoValue);
   };
 
   const handleSidebarGraphicToggle = (value: boolean) => {
@@ -232,7 +231,7 @@ const CheckoutEditorProvider = ({
             accountConfig?.features,
           ),
           [CHECKOUT_EDITOR_FIELDS.COLOR]: accountConfig.brand_color,
-          [CHECKOUT_EDITOR_FIELDS.LOGO]: accountConfig.logo_url,
+          [CHECKOUT_EDITOR_FIELDS.LOGO]: accountConfig.logo_url ?? EMPTY_LOGO,
           [CHECKOUT_EDITOR_FIELDS.LOGO_RAW]: null,
           [CHECKOUT_EDITOR_FIELDS.LOGO_RECT]: accountConfig.rect_logo_url,
           [CHECKOUT_EDITOR_FIELDS.LOGO_RECT_RAW]: null,

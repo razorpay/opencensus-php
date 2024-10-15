@@ -8,6 +8,7 @@ import uploadedSvg from 'assets/checkout-editor/title-style/uploaded-image.svg';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { UploadLogoProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { EMPTY_LOGO } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 
 const BRAND_LOGO_SIZE_LIMIT = 5;
 
@@ -50,7 +51,7 @@ const UploadLogo: React.FC<UploadLogoProps> = ({ logo, logoRaw, fileName, setFil
 
   return (
     <>
-      {logo || logoRaw ? (
+      {logo !== EMPTY_LOGO || logoRaw ? (
         <Box width="100%">
           <Text
             weight="semibold"
@@ -73,7 +74,7 @@ const UploadLogo: React.FC<UploadLogoProps> = ({ logo, logoRaw, fileName, setFil
             <IconButton
               icon={() => <TrashIcon size="large" color="interactive.icon.gray.muted" />}
               onClick={() => {
-                handleEditLogoModalDiscard('', null);
+                handleEditLogoModalDiscard(EMPTY_LOGO, null);
               }}
               accessibilityLabel="delete-logo"
             />
