@@ -12373,6 +12373,14 @@ class Core extends Base\Core
                     unset($data["activation_form_milestone"]);
                 }
 
+                if (empty($data["bank_account_number"]) === true) {
+                    unset($data["bank_account_number"]);
+                }
+
+                if (empty($data["bank_branch_ifsc"]) === true) {
+                    unset($data["bank_branch_ifsc"]);
+                }
+
                 $merchantDetails->edit($data);
 
                 if ($data["business_category"] === "") {
