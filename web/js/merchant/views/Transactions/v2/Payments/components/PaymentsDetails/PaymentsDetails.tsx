@@ -21,7 +21,6 @@ import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import User from 'common/typings/User';
 import { getErrorMessageFromResponse, deepClone, getURLQueryParams } from 'common/utils/rzp-utils';
 import * as PaymentActions from 'merchant/reducers/payments/details';
@@ -41,7 +40,10 @@ import {
   trackDetailsClick,
   trackDetailsPageLoad,
 } from 'merchant/views/Transactions/v2/common/tracking';
-import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isPaymentV2RevampEnabled,
+  isRefundRevampEnabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -99,9 +101,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     dashboardFlag.push('upi_payer_name');
   }
   const splitz = useSplitzService();
-  const isDetailHyperlinkVisible = isExperimentEnabled(
-    splitz?.abExperiments?.toggle_payments_v2_revamp,
-  );
+  const isDetailHyperlinkVisible = isPaymentV2RevampEnabled(splitz?.abExperiments);
 
   const fetchDetails = async () => {
     setError(null);

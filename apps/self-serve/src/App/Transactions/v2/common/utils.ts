@@ -8,7 +8,10 @@ import qs from 'query-string';
 
 import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
 import { SpiltzContextState } from '@dashboard/shared-utils/splitz/types';
-import { isExperimentEnabled } from '@dashboard/shared-utils/splitz-utils';
+import {
+  isExperimentEnabled,
+  isInternalTestingEnabled,
+} from '@dashboard/shared-utils/splitz-utils';
 import { User } from '@dashboard/shared-utils/typings';
 import { getDateFormat } from '@dashboard/shared-utils/date-utils';
 import {
@@ -264,3 +267,10 @@ export const i18nifyConvertToMinorUnit = (
   }
   return minorAmt;
 };
+
+export function isPaymentV2RevampEnabled(abExperiments) {
+  return (
+    isExperimentEnabled(abExperiments?.toggle_payments_v2_revamp) ||
+    isInternalTestingEnabled(abExperiments)
+  );
+}

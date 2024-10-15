@@ -305,3 +305,10 @@ export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {
   if (!abExperiments?.bounce_memo) return false;
   return isExperimentEnabled(abExperiments.bounce_memo);
 };
+
+export function isPaymentV2RevampEnabled(abExperiments) {
+  return (
+    isExperimentEnabled(abExperiments?.toggle_payments_v2_revamp) ||
+    isInternalTestingEnabled(abExperiments)
+  );
+}

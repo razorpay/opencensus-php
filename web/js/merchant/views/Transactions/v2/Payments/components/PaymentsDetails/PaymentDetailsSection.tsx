@@ -22,12 +22,12 @@ import { useI18Service } from 'common/i18';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { withSplitzService } from 'common/splitz';
 import { SpiltzContextState } from 'common/splitz/types';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { noop } from 'common/utils/rzp-utils';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 import { fetchEncodedPaymentReceipt } from 'merchant/views/Transactions/model';
+import { isPaymentV2RevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationAction } from 'merchant_common/reducers/notifications';
 
@@ -148,9 +148,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   } = paymentDetails;
   const { isConfigTagEnabled } = useI18Service();
   const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
-  const isPaymentV2RevampEnabled = isExperimentEnabled(
-    splitz?.abExperiments?.toggle_payments_v2_revamp,
-  );
+  const isRevampEnabled = isPaymentV2RevampEnabled(splitz?.abExperiments);
   const isOmniChannelMerchant =
     isPosTransaction(source_channel) &&
     (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
@@ -241,7 +239,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     id,
                   )}
                 />
-                {isPaymentV2RevampEnabled ? <PaymentPageDetails id={order_id} /> : null}
+                {isRevampEnabled ? <PaymentPageDetails id={order_id} /> : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Bank RRN" value={acquirer_data.rrn || '--'} tooltip />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />

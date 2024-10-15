@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { useMobile } from 'common/hooks/useMobile';
 import { useSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import PaymentDownloadSwiftCopy from 'merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy';
@@ -15,6 +14,7 @@ import {
   TransactionsEntityRoute,
 } from 'merchant/views/Transactions/v2/common/constants';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
+import { isPaymentV2RevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 import { RouterLink } from './styled';
 import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
@@ -93,8 +93,7 @@ const Details = ({ isDisabled, itemId, baseUrl, initiatePage }: DetailsProps): J
   };
 
   const shouldShowHyperlink =
-    baseUrl === TransactionsEntityRoute.PAYMENTS &&
-    isExperimentEnabled(abExperiments.toggle_payments_v2_revamp);
+    baseUrl === TransactionsEntityRoute.PAYMENTS && isPaymentV2RevampEnabled(abExperiments);
 
   const url = makeUrl({ baseUrl, itemId, initiatePage });
 

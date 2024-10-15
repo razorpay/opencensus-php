@@ -54,3 +54,8 @@ export const getBaseUrl = (urlString: string): string => {
 export const isExperimentEnabled = (experiment: ExperimentType): boolean => {
   return experiment?.variables?.['result'] === 'on';
 };
+
+export const isInternalTestingEnabled = (experiment): boolean => {
+  const isRazorpayMerchant = window.rzp_user?.email?.endsWith('@razorpay.com');
+  return isRazorpayMerchant && isExperimentEnabled(experiment?.internal_testing_whitelisting);
+};

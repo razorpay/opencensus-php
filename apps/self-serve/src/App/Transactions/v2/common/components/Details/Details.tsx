@@ -4,7 +4,6 @@ import qs from 'query-string';
 import { useNavigate } from 'react-router-dom';
 
 import { useMobile } from '@dashboard/shared-ui/hooks';
-import { isExperimentEnabled } from '@dashboard/shared-utils/splitz-utils';
 import ShowWhen from 'shell/components/ShowWhen';
 import { SpiltzContext } from 'shell/SpiltzServiceContext';
 import PaymentDownloadSwiftCopy from 'shell/Transactions/v1/DownloadSwiftCopy';
@@ -15,6 +14,7 @@ import {
   TransactionsEntityRoute,
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { track } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { isPaymentV2RevampEnabled } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
 
 import { RouterLink } from './styled';
 import { DetailsProps, HandleDetailsClickParams, RouterParams } from './types';
@@ -93,8 +93,7 @@ const Details = ({ isDisabled, itemId, baseUrl, initiatePage }: DetailsProps): J
   };
 
   const shouldShowHyperlink =
-    baseUrl === TransactionsEntityRoute.PAYMENTS &&
-    isExperimentEnabled(splitz?.abExperiments?.toggle_payments_v2_revamp);
+    baseUrl === TransactionsEntityRoute.PAYMENTS && isPaymentV2RevampEnabled(splitz?.abExperiments);
 
   const url = makeUrl({ baseUrl, itemId, initiatePage });
 
