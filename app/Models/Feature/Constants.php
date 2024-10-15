@@ -628,6 +628,11 @@ class Constants
     const VAS_LINK_WALLETS= 'vas_link_wallets';
 
     /**
+     * Feature flag to hide settlement time from merchant dashboard
+     */
+    const HIDE_SETTLEMENT_TIME= 'hide_settlement_time';
+
+    /**
      * Custom Paypal credentials for org
      */
     const ORG_SPECIFIC_CREDENTIALS = 'org_specific_credentials';
@@ -3174,6 +3179,7 @@ class Constants
         self::AMAZON_GC_VALIDATIONS                  => true,
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
+        self::HIDE_SETTLEMENT_TIME                   => true,
         self::HIDE_INVOICE_REPORT                    => true,
         self::SHOW_INVOICE_REPORT                   => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
