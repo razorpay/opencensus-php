@@ -2093,10 +2093,7 @@ export default class User {
   }
 
   get isPayerNameEnabled() {
-    return (
-      this.isOrgFeatureEnabled('display_upi_payer_name') &&
-      getSplitzExperimentVariant('display_upi_payer_name')?.variables?.result === 'on'
-    );
+    return this.isOrgFeatureEnabled('display_upi_payer_name');
   }
 }
 
