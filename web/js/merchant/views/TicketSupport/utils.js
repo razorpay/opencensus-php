@@ -80,7 +80,7 @@ export function getResponseArrivalType(ticket, workflow = {}) {
     return 'waiting-for-customer';
   }
 
-  return '';
+  return STATUS;
 }
 
 export function getExpiryTime(awsURL) {
