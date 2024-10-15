@@ -6,6 +6,7 @@ use DB;
 use Cache;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -924,6 +925,30 @@ class Repository extends Base\Repository
         $txn = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
                     ->first();
+
+        if ($txn !== null){
+
+            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+            $txn->setConnection($mode);
+        }
+
+
+        return $txn;
+    }
+
+    public function findByEntityIdWithoutMerchantPaymentFetchReplica($entityId)
+    {
+        $txn = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::PAYMENT_FETCH_REPLICA))
+            ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+            ->first();
+
+        if ($txn !== null){
+
+            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+            $txn->setConnection($mode);
+        }
 
         return $txn;
     }

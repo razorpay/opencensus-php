@@ -849,6 +849,17 @@ class Core extends Base\Core
         return;
     }
 
+    public function getRefundReversalTxnFetchSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.refund_reversal_txn_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     /**
      * Create a full reversal for a refund
      *
@@ -874,7 +885,15 @@ class Core extends Base\Core
         $reversal->entity()->associate($refund);
 
         // Todo: remove null balance check after backfilling is done
-        $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
+        if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
+        {
+            $balance = $this->repo->balance->getMerchantBalanceByTypeHarvester($refund->merchant->getId(), Balance\Type::PRIMARY);
+            $reversal->balance()->associate($balance);
+        }
+        else
+        {
+            $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
+        }
 
         $txnCore = new Transaction\Core;
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Cache;
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -24,6 +25,7 @@ use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransferCore;
 
 class Processor extends Base\Core
 {
@@ -1227,7 +1229,7 @@ class Processor extends Base\Core
 
             $isAggregateSettlement = $input['type'] === Feature\Constants::AGGREGATE_SETTLEMENT;
 
-            $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $input['balance_type']);
+            $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithoutFail($merchant, $input['balance_type']);
 
             $merchantSettler = new SetlMerchant(
                 $merchant,

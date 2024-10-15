@@ -27,7 +27,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Services\Ledger as LedgerService;
 
 use RZP\Models\Reversal;
-
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Reversal\Constants as ReversalConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -72,6 +72,7 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\Transaction\Processor\Refund as RefundTransactionProcessor;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransferCore;
 
 const TRANSACTION_NOT_FOUND = 'TRANSACTION_NOT_FOUND';
 const REFUND_REVERSAL_MUTEX_KEY = 'refund_reversal_create_';
@@ -1019,7 +1020,8 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
                                 $negativeAllowedFlows = (new BalanceConfig\Core)->getNegativeFlowsForBalance($balance->getId());
@@ -2509,6 +2511,17 @@ class Service extends Base\Service
         return $refund;
     }
 
+    public function getRefundReversalTxnFetchSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.refund_reversal_txn_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     public function createRefundReversal(string $refundId, array $input)
     {
         try
@@ -2521,8 +2534,18 @@ class Service extends Base\Service
                     $refund = $this->repo->refund->findOrFailPublic($refundId);
 
                     $processor = $this->getNewProcessor($refund->merchant);
-                    $refund->setFee($refund->transaction->getFee());
-                    $refund->setTax($refund->transaction->getTax());
+
+                    if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
+                    {
+                        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantPaymentFetchReplica($refundId);
+                        $refund->setFee($txn->getFee());
+                        $refund->setTax($txn->getTax());
+                    }
+                    else
+                    {
+                        $refund->setFee($refund->transaction->getFee());
+                        $refund->setTax($refund->transaction->getTax());
+                    }
 
                     switch ($input['event'])
                     {

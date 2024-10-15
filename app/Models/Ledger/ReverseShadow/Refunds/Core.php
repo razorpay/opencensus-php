@@ -90,6 +90,17 @@ class Core extends Base\Core
         return $journalResponse;
     }
 
+    public function getRefundJournalPayloadBalanceSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.refund_journal_payload_harvester_balance_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     public function createRefundJournalPayload(RefundEntity $refund, PaymentEntity $payment)
     {
 
@@ -100,8 +111,16 @@ class Core extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+        $harvesterBalanceFetch = $this->getRefundJournalPayloadBalanceSplitzResponse($refund->merchant->getId()) === 'enable';
 
+        if ($harvesterBalanceFetch === true)
+        {
+            $balance = (new Balance\Repository())->getMerchantBalanceByTypeHarvesterOrFail($merchant->getId(), RefundConstants::PRIMARY);
+        }
+        else
+        {
+            $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+        }
 
         $balanceConfigCore = new Balance\BalanceConfig\Core();
         $negativeAllowedFlows = $balanceConfigCore->getNegativeFlowsForBalance($balance->getId());
