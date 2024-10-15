@@ -273,8 +273,6 @@ class BharatQrPaymentTest extends TestCase
 
     public function testMakeTestPaymentsViaScService()
     {
-        $this->enableRazorXTreatmentForRoutingFromApiToScService();
-
         $this->fixtures->terminal->disableTerminal($this->t1['id']);
 
         $this->fixtures->terminal->disableTerminal($this->t2['id']);
@@ -317,27 +315,6 @@ class BharatQrPaymentTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals('', $card['name']);
-    }
-
-    protected function enableRazorXTreatmentForRoutingFromApiToScService()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function($mid, $feature, $mode) {
-                    if ($feature === RazorxTreatment::SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK)
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
     }
 
     public function testMakeTestPaymentSuccess()

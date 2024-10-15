@@ -213,13 +213,6 @@ class Core extends QrCode\Core
             return null;
         }
 
-        $midVariant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS, $this->mode);
-
-        if (strtolower($midVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return null;
-        }
-
         if ($inputTerminal === null)
         {
             return null;

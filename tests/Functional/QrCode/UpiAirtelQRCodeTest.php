@@ -64,8 +64,6 @@ class UpiAirtelQRCodeTest extends TestCase
             [
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON
             ]
         );
@@ -1317,9 +1315,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
@@ -1382,9 +1378,7 @@ class UpiAirtelQRCodeTest extends TestCase
 
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
@@ -1573,9 +1567,7 @@ class UpiAirtelQRCodeTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,
@@ -1618,9 +1610,7 @@ class UpiAirtelQRCodeTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
                 'api_upi_airtel_pre_process_v1' => 'upi_airtel',
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON,

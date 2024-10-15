@@ -2032,9 +2032,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
             ]
         );
@@ -2096,9 +2094,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     {
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
             ]
         );
@@ -2160,9 +2156,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->getDedicatedTerminalSplitzResponseForVariantON();
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
             ]
         );
@@ -2204,9 +2198,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->getDedicatedTerminalSplitzResponseForVariantON();
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS     => RazorxTreatment::RAZORX_VARIANT_ON,
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP    => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::RECON_UNEXPECTED_QR_PAYMENT_VIA_UPI_ROUTE   => RazorxTreatment::RAZORX_VARIANT_ON,
             ]
         );

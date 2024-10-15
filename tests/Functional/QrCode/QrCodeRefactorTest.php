@@ -1054,8 +1054,6 @@ class QrCodeRefactorTest extends TestCase
                 RazorxTreatment::QR_CODE_CREATE_REFACTOR_GATEWAY => 'on',
                 RazorxTreatment::QR_PAYMENT_REFACTOR_GATEWAY => 'on',
                 RazorxTreatment::QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS => 'on',
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS => 'on',
-                RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP => 'on',
             ]
         );
 

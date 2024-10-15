@@ -747,8 +747,6 @@ final class RazorxTreatment
 
     public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';
 
-    public const SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK = 'smartcollect_service_qr_payments_callback';
-
     /* Experiment to enable self serve workflow */
     public const RX_SELF_SERVE_WORKFLOW = "rx_self_serve_workflow";
 
@@ -972,10 +970,6 @@ final class RazorxTreatment
     const CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER  = "card_subscriptions_international_handler";
 
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
-
-    const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS = 'qrv2_static_qr_unrecognised_payment_process';
-
-    const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP = 'qrv2_static_qr_unrecognised_payment_ramp';
 
     const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
