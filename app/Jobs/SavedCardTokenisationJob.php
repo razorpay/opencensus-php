@@ -243,7 +243,7 @@ class SavedCardTokenisationJob extends Job
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
             $this->delete();
-       //     (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
+//            (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
             return;
         }
         catch (Throwable $e)
@@ -265,7 +265,7 @@ class SavedCardTokenisationJob extends Job
 
             $this->checkRetry($e);
 
-           //(new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
+//           (new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
         }
     }
 
