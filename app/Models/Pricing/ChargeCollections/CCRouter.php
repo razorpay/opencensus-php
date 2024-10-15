@@ -95,7 +95,7 @@ class CCRouter
         );
     }
 
-    public function route($fqcn, $ccRequest, $legacyCallable, $sourceInput = null)
+    public function route($fqcn, $ccRequest, $legacyCallable, $sourceInput = null, $buyPricing = false)
     {
         $planId = $ccRequest['plan_id'] ?? $ccRequest['id'];
         if($planId == null) $planId = '';
@@ -104,6 +104,11 @@ class CCRouter
 
         // Modify the legacyCallable to pass rampPhase only if the legacy method accepts it
         $legacyCallableWithPhase = $this->getLegacyCallableBasedOnParameterCount($legacyCallable, $rampPhase, $sourceInput);
+
+        // skip decomp for buy pricing
+        if ($buyPricing){
+            return call_user_func($legacyCallableWithPhase);
+        }
 
         if ($rampPhase == CCRouter::DISABLE || $rampPhase == CCRouter::SHADOW) {
             // Legacy request

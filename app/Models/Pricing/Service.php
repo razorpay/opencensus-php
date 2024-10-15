@@ -65,7 +65,7 @@ class Service extends Base\Service
             return $this->createPlanLegacy($sourceInput, $type, $planAndRuleIds);
         };
 
-        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $type == Type::BUY_PRICING);
     }
 
     public function transformCreatePlanRequest($input, $planAndRuleIds) {
@@ -1003,7 +1003,7 @@ class Service extends Base\Service
             return $this->updatePlanRuleLegacy($planId, $ruleId, $sourceInput, $isBuyPricingRule, $planAndRuleIds);
         };
 
-        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $isBuyPricingRule);
     }
 
     public function transformUpdatePlanRequest($input, $planId, $ruleId, $planAndRuleIds) {
