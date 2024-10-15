@@ -447,6 +447,13 @@ class Stork
                         'button_url_param' => $input['button_url_param'],
                     ]));
                 }
+                elseif (isset($input['business_account']) == true) {
+                    $whatsappChannels = json_decode(json_encode([
+                        'destination' => $receiver,
+                        'text' => $text,
+                        'business_account' => $input['business_account']
+                    ]));
+                }
                 else {
                     $whatsappChannels = json_decode(json_encode([
                         'destination' => $receiver,
