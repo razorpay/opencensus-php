@@ -1528,10 +1528,19 @@ class Gateway
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
+
+        $username = $this->config['airtel_wallet_username'];
+        $password = $this->config['airtel_wallet_password'];
+        $auth = base64_encode($username . ':' . $password);
+
         $request = array(
             'url'       => $this->getUrl($type),
             'method'    => $method,
             'content'   => $content,
+            'headers'   => array(
+                'Authorization' => 'Basic ' . $auth,
+                'Content-Type'  => 'application/json'
+            )
         );
 
         return $request;

@@ -23,4 +23,5 @@ class VerifyFields
     const HASH                      = 'hash';
     const TRANSACTION_REFERENCE_NO  = 'txnRefNO';
     const TRANSACTION_DATE          = 'txnDate';
+    const LANG_ID                   = 'langId';
 }
