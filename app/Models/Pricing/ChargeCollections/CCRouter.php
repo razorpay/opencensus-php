@@ -5,6 +5,7 @@ namespace RZP\Models\Pricing\ChargeCollections;
 use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Pricing\Plan as PlanCollection;
 use RZP\Models\Pricing\Entity as PricingEntity;
@@ -44,12 +45,14 @@ class CCRouter
         'pricing_create_plan' => true,
         'pricing_update_plan_rule' => true,
         'pricing_delete_plan_rule_force' => true,
+        'pricing_add_plan_rule_bulk' => true,
         );
 
     private const FUNCTION_MAP = array(
         'RZP\\Models\\Pricing\\Service\\createPlan' => true,
         'RZP\\Models\\Pricing\\Service\\updatePlanRule' => true,
         'RZP\\Models\\Pricing\\Service\\deletePlanRuleForce' => true,
+        'RZP\\Models\\Pricing\\Service\\postAddBulkPricingRules' => true,
         'RZP\\Models\\Pricing\\Repository\\getPlan' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => true,
@@ -92,19 +95,26 @@ class CCRouter
         );
     }
 
-    public function route($fqcn, $ccRequest, $legacyCallable)
+    public function route($fqcn, $ccRequest, $legacyCallable, $sourceInput = null)
     {
         $planId = $ccRequest['plan_id'] ?? $ccRequest['id'];
         if($planId == null) $planId = '';
         $rampPhase = $this->shouldRouteRequestToChargeCollections($fqcn, $planId);
         $methodName = Utils::extractMethodFromFunction($fqcn);
 
+        // Modify the legacyCallable to pass rampPhase only if the legacy method accepts it
+        $legacyCallableWithPhase = $this->getLegacyCallableBasedOnParameterCount($legacyCallable, $rampPhase, $sourceInput);
+
         if ($rampPhase == CCRouter::DISABLE || $rampPhase == CCRouter::SHADOW) {
             // Legacy request
-            $legacyResponse = call_user_func($legacyCallable);
+            $legacyResponse = call_user_func($legacyCallableWithPhase);
+
+            if ($methodName == 'postAddBulkPricingRules'){
+                list($legacyResponse, $ccRequest) = $this->modifyBulkRequestBasedOnLegacyResponse($legacyResponse, $ccRequest);
+            }
 
             if ($rampPhase == CCRouter::SHADOW) {
-                $ccResponse = $this->sendChargeCollectionsRequest($fqcn, $ccRequest);
+                $ccResponse = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
                 $this->trace->info(TraceCode::CC_ROUTER_SERVICE_RESPONSE, [
                     'method' => $methodName,
                     'mode' => CCRouter::SHADOW,
@@ -116,11 +126,16 @@ class CCRouter
 
         } else if ($rampPhase == CCRouter::REVERSE_SHADOW || $rampPhase == CCRouter::ENABLE) {
             // Route to ChargeCollections
-            $response = $this->sendChargeCollectionsRequest($fqcn, $ccRequest);
+            $response = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
+
+            if ($methodName == 'postAddBulkPricingRules'){
+                list($response, $sourceInput) = $this->modifyBulkRequestBasedOnCCResponse($response, $sourceInput);
+                $legacyCallableWithPhase = $this->getLegacyCallableBasedOnParameterCount($legacyCallable, $rampPhase, $sourceInput);
+            }
 
             if ($rampPhase == CCRouter::REVERSE_SHADOW) {
                 try {
-                    $legacyResponse = call_user_func($legacyCallable);
+                    $legacyResponse = call_user_func($legacyCallableWithPhase);
                     $this->trace->info(TraceCode::API_PRICING_LEGACY_RESPONSE, [
                         'method' => $methodName,
                         'mode' => CCRouter::REVERSE_SHADOW,
@@ -149,9 +164,22 @@ class CCRouter
         ], 500);
     }
 
-    private function sendChargeCollectionsRequest($fqcn, $input) {
+    public function getLegacyCallableBasedOnParameterCount($legacyCallable, $rampPhase, $sourceInput) {
+        return function () use ($legacyCallable, $rampPhase, $sourceInput) {
+            $reflection = new \ReflectionFunction($legacyCallable);
+            if ($reflection->getNumberOfParameters() > 0) {
+                return call_user_func($legacyCallable, $rampPhase, $sourceInput);  // Pass rampPhase
+            } else {
+                return call_user_func($legacyCallable);  // Do not pass rampPhase
+            }
+        };
+    }
+
+    private function sendChargeCollectionsRequest($fqcn, $input, $rampPhase = null) {
 
         $routeName = null;
+
+        $headers = [ChargeCollections::X_PRICING_DECOMP_PHASE => $rampPhase ?? ''];
 
         try {
             $routeName = app('request.ctx')->getRoute();
@@ -178,11 +206,13 @@ class CCRouter
             }
 
             if ($methodName == 'createPlan'){
-                $response = $this->app->charge_collections->createPricingPlan($input);
+                $response = $this->app->charge_collections->createPricingPlan($input, $headers);
             }else if ($methodName == 'updatePlanRule'){
-                $response = $this->app->charge_collections->updatePricingPlanRule($input);
+                $response = $this->app->charge_collections->updatePricingPlanRule($input, $headers);
             }else if ($methodName == 'deletePlanRuleForce'){
                 $response = $this->app->charge_collections->deletePricingPlanRule($input);
+            }else if ($methodName == 'postAddBulkPricingRules'){
+                $response = $this->app->charge_collections->addBulkPricingPlanRule($input, $headers);
             }else{
                 $this->trace->info(TraceCode::CC_ROUTER_EXCEPTION,
                     [
@@ -198,7 +228,12 @@ class CCRouter
         }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
             $this->monitorChargeCollectionsRequestNotRouted($routeName, $fqcn ,self::EXCEPTION);
-            return null;
+
+            if ($rampPhase == self::REVERSE_SHADOW || $rampPhase == self::ENABLE){
+                throw $e;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -235,6 +270,10 @@ class CCRouter
             }
 
             $experimentID = $this->splitzExperimentID;
+            // generate a random ID to randomly assign experiment variant
+            if (empty($planID)) {
+                $planID = UniqueIdEntity::generateUniqueId();
+            }
 
             $result = $this->checkSplitzExperiment($planID, $experimentID);
             if($result[self::VALID] === false) {
@@ -323,6 +362,38 @@ class CCRouter
         }
         return $this->transformToPlanModel($responseForPlanMap);
     }
+
+    public function modifyBulkRequestBasedOnLegacyResponse($legacyResponse, $ccRequest){
+        $inputCount = count($legacyResponse['items']);
+
+        for ($i = 0; $i < $inputCount; $i++) {
+            if (isset($legacyResponse['items'][$i]['plan_replicated'])) {
+                $ccRequest['items'][$i]['plan_replicated'] =  $legacyResponse['items'][$i]['plan_replicated'];
+                unset($legacyResponse['items'][$i]['plan_replicated']);
+            }
+        }
+
+        return [$legacyResponse, $ccRequest];
+    }
+
+    public function modifyBulkRequestBasedOnCCResponse($ccResponse, $legacyRequest){
+
+        if (!isset($ccResponse['items']) || !is_array($ccResponse['items'])) {
+            return [$ccResponse, $legacyRequest];
+        }
+
+        $inputCount = count($ccResponse['items']);
+
+        for ($i = 0; $i < $inputCount; $i++) {
+            if (isset($ccResponse['items'][$i]['plan_replicated']) && isset($legacyRequest[$i])) {
+                $legacyRequest[$i]['plan_replicated'] = $ccResponse['items'][$i]['plan_replicated'];
+                unset($ccResponse['items'][$i]['plan_replicated']);
+            }
+        }
+
+        return [$ccResponse, $legacyRequest];
+    }
+
     private function transformToPlanModel($response)
     {
         if(!isset($response['rules']) || count($response['rules']) == 0) {

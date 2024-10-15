@@ -2958,6 +2958,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const API_PRICING_LEGACY_RESPONSE                           = 'API_PRICING_LEGACY_RESPONSE';
     const API_PRICING_LEGACY_ERROR                              = 'API_PRICING_LEGACY_ERROR';
     const CC_ROUTING_TRANSFORMED_REQUEST                        = 'CC_ROUTING_TRANSFORMED_REQUEST';
+    const CC_ROUTING_TRANSFORMATION_EXCEPTION                   = 'CC_ROUTING_TRANSFORMATION_EXCEPTION';
+
     const CC_ROUTER_ROUTE_ERROR                                 = 'CC_ROUTER_ROUTE_ERROR';
     const CC_ROUTER_EXCEPTION                                   = 'CC_ROUTER_EXCEPTION';
     const CC_ROUTER_SPLITZ_ERROR                                = 'CC_ROUTER_SPLITZ_ERROR';

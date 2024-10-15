@@ -35,6 +35,7 @@ use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Pricing\Constants as PricingConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
+use function PHPUnit\Framework\isEmpty;
 
 class Service extends Base\Service
 {
@@ -248,30 +249,146 @@ class Service extends Base\Service
         return $rule->toArray();
     }
 
+    public function generatePlanIdsAndRuleIdsForBulkUpdateRequest($input, $orgId) {
+        $route =  app('request.ctx')->getRoute() ?? null;
+
+        foreach ($input as &$item) {
+            try {
+                $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
+
+                if ($orgId == null) {
+                    $orgId = $merchant->getOrgId();
+                    $orgId = Org\Entity::getSignedId($orgId);
+                }
+
+                $planId = $merchant->getPricingPlanId();
+
+                $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId, $orgId);
+
+                $ruleCount = $plan->count();
+
+                $newPlanId = UniqueIdEntity::generateUniqueId();
+                $newPlanName = UniqueIdEntity::generateUniqueId();
+
+                // Generate rule IDs based on the rule count
+                $ruleIds = [];
+                for ($i = 0; $i < $ruleCount; $i++) {
+                    $ruleIds[] = UniqueIdEntity::generateUniqueId();
+                }
+
+                $item['initial_pricing_plan_id'] = $planId;
+                $item['generated_ids'] = [
+                    'plan_id' => $newPlanId,
+                    'plan_name' => $newPlanName,
+                    'new_rule_id' => UniqueIdEntity::generateUniqueId(),
+                    'ids' => $ruleIds,
+                ];
+            } catch (\Throwable $e) {
+                $item['initial_pricing_plan_id'] = '';
+                $item['generated_ids'] = null;
+
+                $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMATION_EXCEPTION,
+                    [
+                        'method' => 'generatePlanIdsAndRuleIdsForBulkUpdateRequest',
+                        'route' => $route,
+                        'exception|throwable' => $e,
+                        'merchantID' => $item[Entity::MERCHANT_ID],
+                        'pricing_plan_id' => $planId ?? null,
+                    ]);
+                continue;
+            }
+        }
+        return $input;
+    }
+
+
     public function postAddBulkPricingRules($input, $orgId = null)
+    {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $input = $this->generatePlanIdsAndRuleIdsForBulkUpdateRequest($input, $orgId);
+        $sourceInput = $input;
+
+        $ccRequest = $this->transformAddBulkPricingRulesRequest($input);
+
+        $legacyCallable = function ($rampPhase, $input) use ($orgId) {
+            return $this->postAddBulkPricingRulesLegacy($input, $orgId, $rampPhase);
+        };
+
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, $sourceInput);
+    }
+
+    public function transformAddBulkPricingRulesRequest($input) {
+        // if input is directly passed as array without 'items' key, modify the request according to charge-collections request
+        if (array_keys($input) === range(0, count($input) - 1)) {
+            $input = ['items' => $input];
+        }
+
+        $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
+            [
+                'method' => 'createPlan',
+                'request' => $input,
+            ]);
+
+        return $input;
+    }
+
+    // Checks if plan replication is needed based on rampPhase and CC call response
+    // calls the replicatePlanAndAssign method for replication
+    public function replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $rampPhase): array
+    {
+        // replicates the pricing plan if more than one merchants are using it.
+        // make this decision based on CC-Response if Reverse-Shadow phase
+        if ($rampPhase == CCRouter::REVERSE_SHADOW){
+            $shouldReplicatePlan = $ccPlanReplicated ?? true;
+        }else{
+            $planId = $plan->getId();
+            $shouldReplicatePlan = $this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId);
+        }
+
+        if ($shouldReplicatePlan)
+        {
+            $plan = $this->replicatePlanAndAssign($merchant, $plan, $generatedPlanAndRuleId, $rampPhase);
+            return [true, $plan];
+        }else{
+            return [false, $plan];
+        }
+    }
+
+    public function postAddBulkPricingRulesLegacy($input, $orgId = null, $rampPhase = '')
     {
         $this->trace->info(
             TraceCode::BATCH_ADD_PRICING_RULE_REQUEST,
             [
                 'request body' => $input,
-                'org id'        => $orgId
+                'org id'        => $orgId,
+                'rampPhase' => $rampPhase,
             ]);
 
         $pricingRulesCollection = new PublicCollection;
+        $processedMerchants = [];
 
-        foreach ($input as $item)
-        {
+        $inputCount = count($input);
+        for ($i = 0; $i < $inputCount; $i++) {
+            $item = $input[$i];
+
+            $generatedPlanAndRuleId = $item['generated_ids'];
+            unset($item['generated_ids']);
+            $apiPlanReplicated = false;
+
             $idempotencyKey = $item['idempotency_key'];
             $shouldUpdate = isset($item['update']) ? $item['update'] : false;
             try
             {
                 $mutex = App::getFacadeRoot()['api.mutex'];
                 $mutexKey = sprintf(self::MERCHANT_PRICING_UPDATE_MUTEX, $item[Entity::MERCHANT_ID]);
-                $pricingRulesCollection = $mutex->acquireAndRelease($mutexKey, function () use ($idempotencyKey, $shouldUpdate, $item, $pricingRulesCollection, $orgId)
+                $pricingRulesCollection = $mutex->acquireAndRelease($mutexKey, function () use ($idempotencyKey, $shouldUpdate, $item, $pricingRulesCollection, $orgId,
+                    $generatedPlanAndRuleId, $rampPhase, &$apiPlanReplicated, &$processedMerchants)
                 {
-                $result = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($item, $idempotencyKey, $shouldUpdate, $orgId)
+                $result = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($item, $idempotencyKey, $shouldUpdate, $orgId,
+                    $generatedPlanAndRuleId, $rampPhase, &$apiPlanReplicated, &$processedMerchants)
                 {
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
+                    $merchantID = $item[Entity::MERCHANT_ID];
 
                     // If orgId is not passed, get it from merchant entity.
                     // Get signed orgId for verification checks
@@ -282,6 +399,12 @@ class Service extends Base\Service
 
                     unset($item[Entity::MERCHANT_ID], $item['idempotency_key'], $item['update']);
 
+                    $initialPricingPlanId = $item['initial_pricing_plan_id'] ?? '';
+                    unset($item['initial_pricing_plan_id']);
+
+                    $ccPlanReplicated = $item['plan_replicated'] ?? '';
+                    unset($item['plan_replicated']);
+
                     $item = $this->setFeeBearerIfApplicable($item, $merchant);
 
                     array_walk($item, function (&$value, &$key)
@@ -289,8 +412,15 @@ class Service extends Base\Service
                         $value = $value === '' ? null : $value;
                     });
 
-                    $planId = $merchant->getPricingPlanId();
-
+                    // fetch the planID on which to run updates
+                    // In reverse-shadow phase, primary call to CC will already override the merchant's pricing plan
+                    // just redo the update in API DB similar to CC DB based on initial plan_id of the merchant IF this is the first time merchant is coming.
+                    // If the plan was already replicated, don't fetch initial_plan_id. Go instead with the live merchant's plan_id
+                    if ($rampPhase == CCRouter::REVERSE_SHADOW && !in_array($merchantID, $processedMerchants) && !empty($initialPricingPlanId)){
+                        $planId = $initialPricingPlanId;
+                    }else{
+                        $planId = $merchant->getPricingPlanId();
+                    }
                     $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId, $orgId);
 
                     $ruleOrgId = $plan->getOrgId();
@@ -331,12 +461,15 @@ class Service extends Base\Service
 
                     if ($existingRule === null)
                     {
-                        // replicates pricing plan if more than one merchants are using it.
-                        if (($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId)))
-                        {
-                            $plan = $this->replicatePlanAndAssign($merchant, $plan);
+                        [$apiPlanReplicated, $plan] = $this->replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $rampPhase);
+                        if ($apiPlanReplicated){
+                            $processedMerchants[] = $merchantID;
+                        }
+                        $planId = $plan->getId();
 
-                            $planId = $plan->getId();
+                        // set new rule id
+                        if (!empty($generatedPlanAndRuleId['new_rule_id'])){
+                            $item[Entity::ID] = $generatedPlanAndRuleId['new_rule_id'];
                         }
 
                         (new Pricing\Core)->addPlanRule($plan, $item, $ruleOrgId);
@@ -370,12 +503,12 @@ class Service extends Base\Service
                         // so that plans aren't replicated unnecessarily
                         if(empty(array_diff_assoc($rule, $existingRule->toArray())) === false)
                         {
-                            if (($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($planId)))
-                            {
-                                $plan = $this->replicatePlanAndAssign($merchant, $plan);
-
-                                $planId = $plan->getId();
+                            [$apiPlanReplicated, $plan] = $this->replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $rampPhase);
+                            if ($apiPlanReplicated){
+                                $processedMerchants[] = $merchantID;
                             }
+                            $planId = $plan->getId();
+
                             $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParams(
                                 $planId,
                                 $item[Entity::PRODUCT],
@@ -393,6 +526,11 @@ class Service extends Base\Service
                                 $feeBearer
                             );
 
+                            // set new rule id
+                            if (!empty($generatedPlanAndRuleId['new_rule_id'])){
+                                $rule[Entity::ID] = $generatedPlanAndRuleId['new_rule_id'];
+                            }
+
                             (new Pricing\Core)->editPlanRule($planId, $existingRule->getId(), $rule, $orgId);
                         }
                         else
@@ -408,7 +546,7 @@ class Service extends Base\Service
                         throw new BadRequestException(ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
                     }
 
-                    return [Entity::PLAN_ID => $planId, 'success' => true, 'idempotency_key' => $idempotencyKey];
+                    return [Entity::PLAN_ID => $planId, 'success' => true, 'idempotency_key' => $idempotencyKey, 'plan_replicated' => $apiPlanReplicated];
                 });
 
                 $pricingRulesCollection->push($result);
@@ -426,7 +564,8 @@ class Service extends Base\Service
                     'error'             => [
                         Error::DESCRIPTION       => $e->getMessage(),
                         Error::PUBLIC_ERROR_CODE => $e->getCode(),
-                    ]
+                    ],
+                    'plan_replicated' => $apiPlanReplicated,
                 ]);
             }
         }
@@ -618,7 +757,7 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function replicatePlanAndAssign($merchant, $plan)
+    public function replicatePlanAndAssign($merchant, $plan, $generatedPlanAndRuleId = null, $rampPhase = '')
     {
         // Get merchants existig plan ID
         $planId = $merchant->getPricingPlanId();
@@ -635,7 +774,11 @@ class Service extends Base\Service
         $rules = $plan->toArray();
 
         // Generate a new plan id
-        $planName = UniqueIdEntity::generateUniqueId();
+        if ($generatedPlanAndRuleId == null || empty($generatedPlanAndRuleId['plan_name']) ){
+            $planName = UniqueIdEntity::generateUniqueId();
+        }else{
+            $planName = $generatedPlanAndRuleId['plan_name'];
+        }
 
         // Make array consumable for create plan
         for ($i = 0; $i < count($rules); $i++)
@@ -650,6 +793,18 @@ class Service extends Base\Service
                               Entity::UPDATED_AT,
                               Entity::DELETED_AT,
                               Entity::EXPIRED_AT]);
+
+
+            // fill plan_id and rule_id if passed in input
+            if ($generatedPlanAndRuleId != null){
+                if ( !empty($generatedPlanAndRuleId['plan_id']) ) {
+                    $rules[$i][Entity::PLAN_ID] = $generatedPlanAndRuleId['plan_id'];
+                }
+
+                if ( !empty($generatedPlanAndRuleId['ids']) && $i < count($generatedPlanAndRuleId['ids']) && !empty($generatedPlanAndRuleId['ids'][$i])) {
+                    $rules[$i][Entity::ID] = $generatedPlanAndRuleId['ids'][$i];
+                }
+            }
 
             $rules[$i][Entity::INTERNATIONAL] = $rules[$i][Entity::INTERNATIONAL] === true ? '1' : '0';
 
@@ -675,9 +830,12 @@ class Service extends Base\Service
         // Create new plan with copied rules
         $newplan = (new Pricing\Core)->create([Entity::PLAN_NAME => $planName, Entity::RULES => $rules], $ruleOrgId);
 
-        // Assign plan to merchant
-        (new Merchant\Service)->assignPricingPlan($merchant->getId(),
-                                                 [Merchant\Entity::PRICING_PLAN_ID => $newplan->getId()]);
+        // Assign plan to merchant, only when pricing decomp ramp phase is not enable or reverse_shadow
+        // as same action will be taken by Charge-collections service
+        if ($rampPhase != CCRouter::ENABLE && $rampPhase != CCRouter::REVERSE_SHADOW ){
+            (new Merchant\Service)->assignPricingPlan($merchant->getId(),
+                [Merchant\Entity::PRICING_PLAN_ID => $newplan->getId()]);
+        }
 
         // Return the new plan
         return $newplan;

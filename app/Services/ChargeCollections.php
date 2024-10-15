@@ -54,6 +54,7 @@ class ChargeCollections
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
     const TENANT            = 'tenant';
     const X_DASHBOARD_USER_ID = 'X-Dashboard-User-id';
+    const X_PRICING_DECOMP_PHASE = 'X-Pricing-Decomp-Phase';
 
     const DEFAULT_REQUEST_TIMEOUT   = 60;
 
@@ -64,6 +65,7 @@ class ChargeCollections
     const CreatePricingPlanURL = 'v1/mdr/pricing';
     const UpdatePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}';
     const DeletePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}/force';
+    const AddBulkPlanRulesURL = 'v1/mdr/pricing/rules/bulk';
     const OrgPricingURL = 'v1/org_pricing';
     const FetchOrgPricingURL = 'v1/org_pricing/fetch_multiple';
     const FetchOrgPricingAccessControl = 'v1/org_pricing_access_control/fetch_multiple';
@@ -233,7 +235,12 @@ class ChargeCollections
         if (isset($headers[self::X_DASHBOARD_USER_ID]) === true)
         {
             $this->headers[self::X_DASHBOARD_USER_ID] = $headers[self::X_DASHBOARD_USER_ID];
-         }
+        }
+
+        if (isset($headers[self::X_PRICING_DECOMP_PHASE]) === true)
+        {
+            $this->headers[self::X_PRICING_DECOMP_PHASE] = $headers[self::X_PRICING_DECOMP_PHASE];
+        }
 
         // Adds rzp-context-dev-serve header
         $this->headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
@@ -489,4 +496,10 @@ class ChargeCollections
 
         return $this->sendRequest($endpoint, Requests::DELETE, $input, $requestHeaders);
     }
+
+    public function addBulkPricingPlanRule(array $input, $requestHeaders = [])
+    {
+        return $this->sendRequest(self::AddBulkPlanRulesURL, Requests::POST, $input, $requestHeaders);
+    }
+
 }
