@@ -1854,20 +1854,21 @@ class UpiAirtelQRCodeTest extends TestCase
         $refundId = $refund['id'];
         $paymentId = $payment['id'];
         $this->fixtures->stripSign($paymentId);
-        $payload = [
+
+        $decodedPayloadArray['event'] = [
             "name" => $event,
             "data" => [
                 'refund'   => [
                     'id'             => $refundId,
                     'amount'         => $payment['amount'],
                     'currency'       => 'INR',
-                    'payment_id'     => $paymentId,
+                    'payment_id'     => $payment['id'],
                     'created_at'     => $createdAt,
                     'updated_at'     => $createdAt,
-                    'source_channel' => 'in_person',
+                    'deleted_at'     => null,
                 ],
                 'payment'  => [
-                    'id'            => $paymentId,
+                    'id'            => $payment['id'],
                     'amount'        => $payment['amount'],
                     'captured_at'   => $payment['captured_at'],
                     'created_at'    => $payment['created_at'],
@@ -1875,12 +1876,31 @@ class UpiAirtelQRCodeTest extends TestCase
                 ],
                 'metadata' => [
                     'timestamp'          => $createdAt,
-                    'task_id'             => 'task_id',
-                    'idempotency_key'     => 'idempotency_key',
+                    'taskId'             => 'taskId',
                     'publishing_service' => 'scrooge',
                 ]
             ],
         ];
+
+        $encodedPayload = base64_encode(json_encode($decodedPayloadArray));
+
+        $payload = [
+            "name" => $event,
+            "data" => [
+                "id" =>  "randomId123456",
+                "entity_id" => $refundId,
+                "entity_type" => "refund",
+                "payload_name" => $event,
+                "payload" => $encodedPayload,
+                "is_deleted" => 0,
+                "deleted_at" => 0,
+                "created_at" => $createdAt,
+                "updated_at" => $createdAt,
+                "retry_count" => 0,
+                "priority" => 0,
+            ],
+        ];
+
 
         return $payload;
     }

@@ -3111,6 +3111,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const POS_QR_CODE_FEATURE_ENABLE_PAYLOAD                    = 'POS_QR_CODE_FEATURE_ENABLE_PAYLOAD';
     const POS_QR_CODE_FEATURE_ENABLE_RESPONSE                   = 'POS_QR_CODE_FEATURE_ENABLE_RESPONSE';
     const REFUND_EVENT_PAYLOAD                                  = 'REFUND_EVENT_PAYLOAD';
+    const REFUND_PAYLOAD_DECODING_FAILED                        = 'REFUND_PAYLOAD_DECODING_FAILED';
+    const REFUND_PAYLOAD_JSON_DECODING_FAILED                   = 'REFUND_PAYLOAD_JSON_DECODING_FAILED';
     const CAPTCHA_DISABLE                                       = 'CAPTCHA_DISABLE';
     const REFUND_TRANSACTION_FAILED                             = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                            = 'CREDITS_TRANSACTION_FAILED';

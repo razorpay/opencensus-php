@@ -4281,11 +4281,35 @@ class Service extends Base\Service
             'message' => 'REFUND_EVENT_PAYLOAD',
             'featureParams' =>  $input,
         ]);
+        $decodedPayload = base64_decode($input['data']['payload']);
 
-        $refundId = $input['data']['refund']['id'];
+        if($decodedPayload === false)
+        {
+            $this->trace->info(TraceCode::REFUND_PAYLOAD_DECODING_FAILED, [
+                'message' => 'REFUND_PAYLOAD_DECODING_FAILED',
+                'payload' =>  $input['data']['payload'],
+            ]);
+
+            return;
+        }
+
+        $payload = json_decode($decodedPayload,true) ;
+
+        if($payload === null)
+        {
+            $this->trace->info(TraceCode::REFUND_PAYLOAD_JSON_DECODING_FAILED, [
+                'message' => 'REFUND_PAYLOAD_JSON_DECODING_FAILED',
+                'payload' =>  $input['data']['payload'],
+                'decoded_payload' => $decodedPayload
+            ]);
+
+            return;
+        }
+
+        $refundId = $payload['event']['data']['refund']['id'];
         Entity::silentlyStripSign($refundId);
         $refund = $this->repo->refund->find($refundId);
-        $this->publishInPersonRefundEvent($refund, $input['name']);
+        $this->publishInPersonRefundEvent($refund, $payload['event']['name']);
     }
 
     public function publishInPersonRefundEvent($entity, $event)
