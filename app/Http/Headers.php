@@ -36,4 +36,6 @@ class Headers
     const ONBOARDING_SIGNATURE          = 'x-onboarding-signature';
 
     const X_PAYOUT_IDEMPOTENCY          = 'X-Payout-Idempotency';
+
+    const APOLLOGRAPHQL_CLIENT_NAME     = 'apollographql-client-name';
 }

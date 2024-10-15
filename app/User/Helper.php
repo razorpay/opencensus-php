@@ -28,19 +28,40 @@ class Helper
     {
         $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
     }
-    
-    public function selectMerchantConditionally($merchants, $shouldConditionallyLoginOnlyToUser = false)
-    {
-        // If user has only one merchant to log into we use that merchant
-        // If not then we check if the conditional merchant login is off
-        if (count($merchants) === 1 || $shouldConditionallyLoginOnlyToUser !== true) {
-            return $merchants->first();
+
+    /**
+     * Select a merchant for login only if the user doesn't have multiple
+     * @param GenericUser $user
+     * @return mixed
+     */
+    public function selectMerchantForMultiAccount(GenericUser $user) {
+        // Only PG role for now. We'll add the other roles as they get onboarded
+        $productRole = 'role';
+
+        // Select owner if it exists on given product
+        $ownerMerchants = $user->merchants->filter(function ($item) use ($productRole)
+        {
+            return ($item->$productRole === 'owner');
+        });
+
+        if (count($ownerMerchants) === 1) {
+            return $ownerMerchants->first();
+        }
+
+        // If owner doesn't exist, check if user is associated to any merchant on given product
+        $productRoleMerchants = $user->merchants->filter(function ($item) use ($productRole)
+        {
+            return ($item->$productRole !== null);
+        });
+
+        if (count($productRoleMerchants) === 1) {
+            return $productRoleMerchants->first();
         }
 
         return null;
     }
 
-    public function selectMerchantToLogin(GenericUser $user, $shouldConditionallyLoginOnlyToUser) {
+    public function selectMerchantToLogin(GenericUser $user, $shouldConditionallyLoginOnlyToUser = false) {
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
         // Primary role
@@ -56,37 +77,36 @@ class Helper
             $switchProductRole = 'role';
         }
 
+        if ($shouldConditionallyLoginOnlyToUser) {
+          return $this->selectMerchantForMultiAccount($user);
+        }
+
+        // Below logic to select merchant is the same as it was before
         // Select owner if it exists on given product
-        $ownerMerchants = $user->merchants->filter(function ($item) use ($productRole)
+        $currentMerchant = $user->merchants->filter(function ($item) use ($productRole)
         {
             return ($item->$productRole === 'owner');
-        });
-
-        $currentMerchant = $this->selectMerchantConditionally($ownerMerchants, $shouldConditionallyLoginOnlyToUser);
+        })->first();
 
         if ($currentMerchant !== null) {
             return $currentMerchant;
         }
 
         // If owner doesn't existing on product, check switch prioduct, if it exists we'll allow switch-product
-        $switchProductRoleMerchants = $user->merchants->filter(function ($item) use ($switchProductRole)
+        $currentMerchant = $user->merchants->filter(function ($item) use ($switchProductRole)
         {
             return ($item->$switchProductRole === 'owner');
-        });
-
-        $currentMerchant = $this->selectMerchantConditionally($switchProductRoleMerchants, $shouldConditionallyLoginOnlyToUser);
+        })->first();
 
         if ($currentMerchant !== null) {
             return $currentMerchant;
         }
 
         // If owner doesn't exist, check if user is associated to any merchant on given product
-        $productRoleMerchants = $user->merchants->filter(function ($item) use ($productRole)
+        return $user->merchants->filter(function ($item) use ($productRole)
         {
             return ($item->$productRole !== null);
-        });
-
-        return $this->selectMerchantConditionally($productRoleMerchants, $shouldConditionallyLoginOnlyToUser);
+        })->first();
     }
 
     public function getCurrentMerchant(GenericUser $user, $shouldConditionallyLoginOnlyToUser = false)

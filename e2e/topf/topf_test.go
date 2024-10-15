@@ -97,7 +97,7 @@ func (s TopfAPISuite) TestLoginVerifyOtp() {
 	e.DoRequestTests(requestLoginOtpVerify)
 }
 
-func (s TopfAPISuite) TestUserOnlyLoginToUserWithhSingleMerchant() {
+func (s TopfAPISuite) TestUserOnlyLoginToUserWithhSingleMerchantOnDashboard() {
 	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
 		e2e.DevstackLabelHeader: e2e.DevServeHeader,
 		"X-XSRF-TOKEN":          decodeXsrf,
@@ -119,7 +119,30 @@ func (s TopfAPISuite) TestUserOnlyLoginToUserWithhSingleMerchant() {
 	response.JSON().Object().Path("$.data").Object().ContainsKey("currentMerchantId")
 }
 
-func (s TopfAPISuite) TestUserOnlyLoginToUserWithMultipleMerchants() {
+func (s TopfAPISuite) TestUserOnlyLoginToUserWithhSingleMerchantOnUsl() {
+	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
+		e2e.DevstackLabelHeader:     e2e.DevServeHeader,
+		"X-XSRF-TOKEN":              decodeXsrf,
+		"Cookie":                    "rzp_usr_session=" + session,
+		"apollographql-client-name": "frontend-auth",
+	})
+
+	userOnly := true
+
+	response := e.POST("/user/signin").
+		WithJSON(&LoginSignUpUserRequest{
+			Email:    "userWithSingleMerchant@razorpay.com",
+			Password: "1p1p1p1p1p@",
+			Captcha:  "Faked",
+			UserOnly: &userOnly,
+		}).
+		Expect()
+
+	// Since there is only one merchant for the user, login is successful and currentMerchantId is present in the response
+	response.JSON().Object().Path("$.data").Object().ContainsKey("currentMerchantId")
+}
+
+func (s TopfAPISuite) TestUserOnlyLoginToUserWithMultipleMerchantsOnDashboard() {
 	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
 		e2e.DevstackLabelHeader: e2e.DevServeHeader,
 		"X-XSRF-TOKEN":          decodeXsrf,
@@ -137,7 +160,32 @@ func (s TopfAPISuite) TestUserOnlyLoginToUserWithMultipleMerchants() {
 		}).
 		Expect()
 
+	// Even though there are multiple merchants for the user, login is successful and currentMerchantId is present in the response
+	// This is because the mutli account flow is only available from USL
+	response.JSON().Object().Path("$.data").Object().ContainsKey("currentMerchantId")
+}
+
+func (s TopfAPISuite) TestUserOnlyLoginToUserWithMultipleMerchantsOnUsl() {
+	e := httpexpect.NewWithHeaders(s.T(), e2e.Config.App.Hostname, map[string]string{
+		e2e.DevstackLabelHeader:     e2e.DevServeHeader,
+		"X-XSRF-TOKEN":              decodeXsrf,
+		"Cookie":                    "rzp_usr_session=" + session,
+		"apollographql-client-name": "frontend-auth",
+	})
+
+	userOnly := true
+
+	response := e.POST("/user/signin").
+		WithJSON(&LoginSignUpUserRequest{
+			Email:    "userWithMultipleMerchants@razorpay.com",
+			Password: "1p1p1p1p1p@",
+			Captcha:  "Faked",
+			UserOnly: &userOnly,
+		}).
+		Expect()
+
 	// Since there are multiple merchants for the user, login is unsuccessful and currentMerchantId is not present in the response
+	// And the request is coming from USL
 	response.JSON().Object().Path("$.data").Object().NotContainsKey("currentMerchantId")
 }
 

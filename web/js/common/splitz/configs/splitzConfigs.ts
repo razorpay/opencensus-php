@@ -507,8 +507,8 @@ export const splitzConfig: SplitzInitConfig = {
       {
         uniqueHashKey: 'create_merchant_cta',
         experimentId: {
-          beta: 'P1LKVIbCQYMgPZ',
-          production: 'P1LLv2j5lxR5JZ',
+          beta: 'OoExDczJEroNZ0',
+          production: 'OtOSbDPEDN8KFg',
         },
         defaultVariant: {
           name: 'variables',

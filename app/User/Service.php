@@ -806,7 +806,7 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
-    public function isUserAllowedSegregatedLoginSignup(): bool
+    public function isUserOrgAllowedSegregatedLoginSignup(): bool
     {
         $adminService = new AdminService;
         // Org ids will be added as they adopt USL
@@ -841,6 +841,32 @@ class Service extends Base\Service
         ]);
 
         return false;
+    }
+
+    public function isClientAllowedSegregatedLoginSignup(): bool
+    {
+        $allowedClients = ['frontend-auth'];
+
+        $apollographqlClientName = \Request::header(Headers::APOLLOGRAPHQL_CLIENT_NAME);
+
+        if (in_array($apollographqlClientName, $allowedClients)) {
+            $this->trace->info(TraceCode::USER_CLIENT_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP, [
+                "clientName"          => $apollographqlClientName,
+            ]);
+
+            return true;
+        }
+
+        $this->trace->info(TraceCode::USER_CLIENT_NOT_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP, [
+            "clientName"          => $apollographqlClientName,
+        ]);
+
+        return false;
+    }
+
+    public function isUserAllowedSegregatedLoginSignup(): bool
+    {
+        return $this->isClientAllowedSegregatedLoginSignup() && $this->isUserOrgAllowedSegregatedLoginSignup();
     }
 
     public function isUserAllowedSegregatedLoginViaExperiment($userId): bool
@@ -932,7 +958,7 @@ class Service extends Base\Service
         $user = Auth::user();
         $userOnly = $input[Constants::USER_ONLY] ?? false;
 
-        $shouldConditionallyLoginOnlyToUser = ($userOnly === true && $this->isUserAllowedSegregatedLoginSignup()) || $this->isUserAllowedSegregatedLoginViaExperiment($user->id);
+        $shouldConditionallyLoginOnlyToUser = $this->isUserAllowedSegregatedLoginSignup() && ($userOnly === true || $this->isUserAllowedSegregatedLoginViaExperiment($user->id));
 
         $currentMerchant = $user->currentMerchant($shouldConditionallyLoginOnlyToUser);
         $currentMerchantId = $currentMerchant ? $currentMerchant->id : null;
@@ -1043,7 +1069,7 @@ class Service extends Base\Service
 
         $userOnly = $input[Constants::USER_ONLY] ?? false;
 
-        $shouldConditionallyLoginOnlyToUser = ($userOnly === true && $this->isUserAllowedSegregatedLoginSignup()) || $this->isUserAllowedSegregatedLoginViaExperiment($user->id);
+        $shouldConditionallyLoginOnlyToUser = $this->isUserAllowedSegregatedLoginSignup() && ($userOnly === true || $this->isUserAllowedSegregatedLoginViaExperiment($user->id));
 
         $currentMerchant = $user->currentMerchant($shouldConditionallyLoginOnlyToUser);
         $currentMerchantId = $currentMerchant ? $currentMerchant->id : null;
