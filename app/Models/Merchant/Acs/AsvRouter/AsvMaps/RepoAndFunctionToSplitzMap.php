@@ -167,6 +167,26 @@ final class RepoAndFunctionToSplitzMap
         "fetchLinkedAccountsForParentMerchantId",
     );
 
+    public const SPLITZ_REMOVED_TIDB_FILTER = array(
+        "fetchFeeBearersForPlanId",
+        "findMerchantWithContactNumbersExcludingMerchant",
+        "findMerchantByActivationStatusAndActivationFormMileStone",
+        "fetchMerchantIdsByActivationStatus",
+        "fetchTransactedMerchants",
+        "fetchMerchantIdsInChunk",
+        "fetchActivatedMerchantsBeforeTimestamp",
+        "filterL1MilestoneSubmittedMerchantsOfOrg",
+        "filterNullAndInitiatedFieldStatusMerchants",
+        "filterLiveMerchants",
+        "filterNonBusinessBankingMerchants",
+        "fetchReferredMerchants",
+        "buildQueryToFetchSubmerchantDetailsByAppIds",
+        "getMerchantListForWebsiteCheckerPeriodic",
+        "getMerchantListForAppCheckerPeriodic",
+        "buildQueryToFetchSubmerchantsByAppIds",
+        "getAllPartnerBankAccountsForSubmerchants",
+    );
+
     public const ROUTE_WRITE_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_WRITE_TO_ASV;
     public const ROUTE_FILTER_REQUEST_TO_ASV = SplitzConstant::SPLITZ_SEND_FILTER_TO_ASV;
     public const ROUTE_TRANSACTION_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_TRANSACTION_FLOW_TO_ASV;

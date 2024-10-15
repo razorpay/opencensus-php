@@ -3927,6 +3927,17 @@ class Repository extends Base\Repository
                             "identifier" => __FUNCTION__
                         ]);
                     }
+
+                    if($this->asvRouter->shouldFallbackToAsvDB('GetNonSuspendedMerchantsFromIds'))
+                    {
+                        $results = $this->newQueryWithConnection(
+                            $this->getConnectionFromType(Connection::ASV_WRITER)
+                        )->findMany($ids)->where(Entity::SUSPENDED_AT, null);
+
+                        $this->resetConnectionOnModels($results);
+                        return $results;
+                    }
+
                     return $this->newQuery()->findMany($ids)->where(Entity::SUSPENDED_AT, null);
                 }
             }
