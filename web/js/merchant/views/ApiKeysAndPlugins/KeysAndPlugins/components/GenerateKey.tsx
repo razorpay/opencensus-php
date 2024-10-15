@@ -200,6 +200,7 @@ const GenerateKey = ({
 
     if (shouldTrigger2Fa) {
       return context.criticalFlow({
+        enforceVerifyOtp: true,
         modes: ['live', 'test'],
         onUserTwoFaVerified: () => {
           showRollKeyModal({ id: latestKey?.id });
