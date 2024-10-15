@@ -6872,6 +6872,8 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT_DETAIL][Constants::TOTAL_LEAD_SCORE] = optional($merchant->merchantBusinessDetail)->getTotalLeadScore() ?? 0;
 
+        $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::ACQUISITION_MODEL] = optional($businessDetails)->getAcquisitionModel();
+
         if($merchantDetail != null) {
 
             $merchantAov = $merchantDetail->avgOrderValue;

@@ -12630,6 +12630,13 @@ Team Razorpay',
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
 
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => '100ghi000ghi00',
+            'metadata' => [
+                'acquisition_model' => 'aggregator',
+            ]
+        ]);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants/100ghi000ghi00';
 
         $this->startTest();

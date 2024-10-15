@@ -59,6 +59,9 @@ class Constants
     const TXN_PLAYSTORE_URLS = 'txn_playstore_urls';
 
     const KEY_LESS_ACTIVATION_ENABLE = "key_less_activation_enable";
+
+    const ACQUISITION_MODEL = 'acquisition_model';
+
     const APP_URLS_FIELDS = [
         self::PLAYSTORE_URL,
         self::APPSTORE_URL

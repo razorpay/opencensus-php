@@ -8296,7 +8296,10 @@ return [
                     'feature'   => ['upi_otm', 'override_hitachi_blacklst']
                 ],
                 'merchant_detail' => [
-                    'contact_email' => 'test@gmail.com'
+                    'contact_email' => 'test@gmail.com',
+                    'metadata' => [
+                        'acquisition_model' => 'aggregator'
+                    ]
                 ],
                 'website_details' => [
                     'about' => null,
