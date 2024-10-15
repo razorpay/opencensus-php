@@ -23,9 +23,11 @@ use RZP\Jobs\TransferProcessDedicatedQueueFour;
 use RZP\Jobs\TransferProcessDedicatedQueueFive;
 use RZP\Jobs\TransferProcessDedicatedQueueMalaysia;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Order;
 use RZP\Models\Admin;
+use RZP\Models\QrPayment\Constants as QRConstant;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -230,6 +232,7 @@ class Core extends Base\Core
     public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Base\PublicCollection
     {
         $this->validateMerchantForTransfer($merchant);
+        $this->validateOfflinePaymentOmniEnabled($payment, $merchant);
 
         if ($this->partner?->getId() && $this->isvalidateTransferOauthExpEnabled($this->partner->getId())) {
             $this->validateUsingOauth($payment);
@@ -1158,6 +1161,76 @@ class Core extends Base\Core
 
         }
     }
+    protected function validateOfflinePaymentOmniEnabled(Payment\Entity $payment, Merchant\Entity $merchant): void
+    {
+        if($this->isMerchantActivationPosActivationTransfersSupportedViaSplitz($merchant->getId()) === false)
+        {
+            return;
+        }
+
+
+        if (!empty($payment->getSourceChannel()) && $payment->getSourceChannel() === QRConstant::PAYMENT_TYPE_IN_PERSON) {
+
+            if (!$merchant->isOmniEnabled() === true) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, null,
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+
+            } else {
+                $this->trace->info(
+                    TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
+                    [
+                        'merchant_id'     => $this->merchant->getId(),
+                        'payment'           => $payment,
+                    ]
+                );
+            }
+        }
+        else if (!$merchant->isActivated()) {
+
+            if ($this->mode === Constants\Mode::TEST)
+            {
+                return;
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+        }
+
+    }
+
+    public function isMerchantActivationPosActivationTransfersSupportedViaSplitz(string $merchantId)
+    {
+        try
+        {
+            $experimentName = 'app.merchant_activation_pos_activation_check_for_transfers_splitz_exp_id';
+
+            $variant = (new Payment\Service())->getSplitzResponse($merchantId,$experimentName);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_RESPONSE,
+                [
+                    'variant'     => $variant,
+                ]
+            );
+
+            if (strtolower($variant) === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_FAILURE,
+            );
+        }
+        return false;
+    }
+
     protected function validateMerchantForTransfer(Merchant\Entity $merchant)
     {
         $isOnHold = $merchant->getHoldFunds();
