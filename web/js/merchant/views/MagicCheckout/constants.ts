@@ -35,3 +35,4 @@ export const MAGIC_DOC_LINK =
   'https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/magic-checkout/';
 
 export const MAGIC_DASHBOARD_REVAMP_EXPERIMENT = 'magic_dashboard_revamp';
+export const MAGICX_PUBLICAPP_COD_EXPERIMENT = 'magicx_publicapp_cod';
