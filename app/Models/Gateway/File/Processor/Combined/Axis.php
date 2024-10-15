@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Combined;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Models\Gateway\File\SlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
@@ -116,7 +117,7 @@ class Axis extends Base
                 ];
                 $mailInfo = [
                     'fileInfo'  => $refundfileInfo,
-                    'channel'   => 'tech_alerts',
+                    'channel'   => 'tech_payments_nbplus_alerts',
                     'filetype'  => self::BEAM_FILE_TYPE,
                     'subject'   => 'Axis Refund File send failure',
                     'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
@@ -138,7 +139,7 @@ class Axis extends Base
                 ];
                 $mailInfo = [
                     'fileInfo'  => $claimfileInfo,
-                    'channel'   => 'tech_alerts',
+                    'channel'   => 'tech_payments_nbplus_alerts',
                     'filetype'  => self::BEAM_FILE_TYPE,
                     'subject'   => 'Axis Claim File send failure',
                     'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
@@ -166,12 +167,17 @@ class Axis extends Base
                     'id' => $this->gatewayFile->getId()
                 ]);
 
+            $operation = $mailInfo['filetype'] .' file send failed through Beam @nbplus-oncall';
+            $username = "NB_CLAIM_FILE";
+            (new SlackNotification)->send($operation, $mailInfo, null, 1,$mailInfo['channel'], $username);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
                     'id'        => $this->gatewayFile->getId(),
                 ],
                 $e);
+
         }
     }
 }

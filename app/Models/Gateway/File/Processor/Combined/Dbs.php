@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Encryption;
 use RZP\Error\ErrorCode;
+use RZP\Models\Gateway\File\SlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -313,7 +314,7 @@ class Dbs extends Base
 
             $mailInfo = [
                 'fileInfo'  => $fileInfo,
-                'channel'   => 'tech_alerts',
+                'channel'   => 'tech_payments_nbplus_alerts',
                 'filetype'  => self::BEAM_FILE_TYPE,
                 'subject'   => 'DBS Combined File send failure',
                 'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
@@ -342,6 +343,10 @@ class Dbs extends Base
                 [
                     'id' => $this->gatewayFile->getId()
                 ]);
+
+            $operation = $mailInfo['filetype'] .' file send failed through Beam @nbplus-oncall';
+            $username = "NB_CLAIM_FILE";
+            (new SlackNotification)->send($operation, $mailInfo, null, 1,$mailInfo['channel'], $username);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
