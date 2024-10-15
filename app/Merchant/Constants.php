@@ -321,4 +321,7 @@ class Constants
     const EASY_ONBOARDING = 'easy_onboarding';
     const ORG_ID = 'id';
 
+    const PG_ONBOARDING_WORKFLOW_TYPE = 'pg_onboarding_workflow_type';
+    const MODULAR_ONBOARDING = "MODULAR_ONBOARDING";
+
 }

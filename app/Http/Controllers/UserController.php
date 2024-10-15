@@ -2259,6 +2259,15 @@ class UserController extends Controller
                 return false;
             }
 
+            $workflowType = array_get($details, 'workflow_type');
+            $workflowDetails = array_get($details, 'workflow_details');
+
+            if((isset($workflowType) === true and $workflowType === MerchantConstants::MODULAR_ONBOARDING) or
+                (is_array($workflowDetails) and isset($workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING))
+            {
+                return false;
+            }
+
             $signupCampaign = $details['user']['signup_campaign'] ?? null;
 
             if ($signupCampaign !== MerchantConstants::EASY_ONBOARDING)
