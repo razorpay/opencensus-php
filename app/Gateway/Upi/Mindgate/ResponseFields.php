@@ -42,6 +42,7 @@ class ResponseFields
     const MERCHANT_REFERENCE        = 'merchant_reference';
     const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
     const NPCI_REFERENCE_ID         = 'npci_reference_id';
+    const CUSTOMER_NAME             = 'customer_name';
 
     // Recurring fields
     const MANDATE_TYPE              = 'mandateType';
@@ -120,6 +121,7 @@ class ResponseFields
         self::REFERENCE_6,
         self::REFERENCE_7,
         self::PAYER_ACCOUNT_TYPE,
+        self::PAYER_NAME,
     ];
 
     const VALIDATE_VPA  = [

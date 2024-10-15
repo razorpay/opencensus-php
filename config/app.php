@@ -643,6 +643,8 @@ return array(
 
     'upi_rrn_search_experiment_id' => env('UPI_RRN_SEARCH_EXPERIMENT_ID'),
 
+    'display_upi_payer_name_experiment_id' => env('DISPLAY_UPI_PAYER_NAME_EXPERIMENT_ID'),
+
     'allow_order_transfers_on_rearch_ups_splitz_experiment_id' => env('ALLOW_ORDER_TRANSFERS_ON_REARCH_UPS_SPLITZ_EXPERIMENT_ID'),
 
     'validate_vpa_splitz_experiment_id' => env('VALIDATE_VPA_SPLITZ_EXPERIMENT_ID'),

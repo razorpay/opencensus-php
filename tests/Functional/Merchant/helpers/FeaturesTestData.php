@@ -558,7 +558,7 @@ return [
                         'value' => true,
                         'display_name' => 'View onboarding cards',
                     ],
-                    202 => [
+                    203 => [
                         'feature'      => 'payout_service_enabled',
                         'value'        => false,
                         'display_name' => 'Payouts Service',

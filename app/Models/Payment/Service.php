@@ -2929,6 +2929,54 @@ class Service extends Base\Service
         $this->getNewProcessor($this->merchant)->getRefundCreationDataForDashboard($payment, $entity);
     }
 
+    protected function addDashboardFlagupiPayerName(array &$entity, $payment)
+    {
+        if (empty($this->merchant) === true)
+        {
+            return;
+        }
+
+        $experimentResult = $this->isDisplayPayerNameExperimentEnabled();
+
+        if ($experimentResult === false)
+        {
+            return;
+        }
+
+        $featureResult = $this->merchant->org->isFeatureEnabled(Feature\Constants::DISPLAY_UPI_PAYER_NAME);
+
+        if ($featureResult === false)
+        {
+            return;
+        }
+
+        $upi = $this->repo->upi->fetchByPaymentId($payment->id);
+
+        if (isset($upi['name']) === true)
+        {
+            $entity['upi']['payer_name'] = $upi['name'];
+        }
+    }
+
+    private function isDisplayPayerNameExperimentEnabled()
+    {
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.display_upi_payer_name_experiment_id'),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+        if ($variant === 'display_upi_payer_name')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     //qr_device_detail: Frontend needs to send this flag in the input inside dashboard_flag array
     protected function addDashboardFlagQrDeviceDetail(array &$entity, $payment)
     {

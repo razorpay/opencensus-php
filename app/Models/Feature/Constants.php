@@ -1759,6 +1759,8 @@ class Constants
 
     const FILE_UPLOAD_PP = 'file_upload_pp';
 
+    const DISPLAY_UPI_PAYER_NAME = 'display_upi_payer_name';
+
     // udf additional fields
 
     const ENABLE_ADDITIONAL_INFO_UPI = 'enable_addtl_info_upi';
@@ -2975,6 +2977,7 @@ class Constants
         self::DISABLE_TC_DASHBOARD                         => true,
         self::CYBERSOURCE_SI_TXN_LIVE                      => true,
         self::DISABLE_QR_V2                                => true,
+        self::DISPLAY_UPI_PAYER_NAME                       => true,
         self::AUTHORIZE_VIA_AUTHZ                          => true,
         self::SR_SENSITIVE_BUCKET_1                        => true,
         self::SR_SENSITIVE_BUCKET_2                        => true,
@@ -4104,6 +4107,11 @@ class Constants
             'feature'       => self::FILE_UPLOAD_PP,
             'display_name'  => 'Feature to enable file upload functionality on payment pages',
             'description'   => 'Feature to enable file upload functionality on payment pages.This flag should be enabled at merchant level.',
+        ],
+        self::DISPLAY_UPI_PAYER_NAME => [
+            'feature'       => self::DISPLAY_UPI_PAYER_NAME,
+            'display_name'  => 'Feature to display payer name for QR payments',
+            'description'   => 'Feature to display payer name for QR payments in transactions tab.This flag should be enabled at org level.',
         ],
         self::ACCEPT_ONLY_3DS_PAYMENTS =>[
             'feature'       => self::ACCEPT_ONLY_3DS_PAYMENTS,

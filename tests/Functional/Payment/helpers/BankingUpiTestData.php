@@ -273,4 +273,95 @@ return [
         ]
     ],
 
+    'createQRCode' => [
+        "usage"=> "multiple_use",
+        "description"=> "QR Description",
+        'amount_expected' => 1 ,
+        "name"=> "TestName",
+        "notes"=> [
+            "test"=> "Notes",
+            "test2"=> "Notes2"
+        ],
+        "receivers"=> [
+            "types"=> [
+                "qr_code"
+            ],
+            "qr_code"=> [
+                "method"=> [
+                    "card"=> false,
+                    "upi"=> true,
+                ]
+            ]
+        ]
+    ],
+
+    'testPayerNameForPaymentOnDynamicQRCode' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'GET',
+            'content' => [
+                'dashboard_flag' => [
+                    'upi_payer_name',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'sampleSpltizOutputUpiPayerName' => [
+        'status_code' => 200,
+        'response' => [
+            'id' => 'OhUK4RTNhdS0R3',
+            'project_id' => 'Nqtt4y5giP28ml',
+            'experiment' => [
+                'id' => 'OkJiGY1kFo8JOg',
+                'name' => 'Display UPI Payer Name',
+                'exclusion_group_id' => ''
+            ],
+            'variant' => [
+                'id' => 'OkJiGYJSO5ZhXv',
+                'name' => 'display_upi_payer_name',
+                'variables' => [
+                    [
+                        'key' => 'result',
+                        'value' => 'on'
+                    ]
+                ],
+                'experiment_id' => 'OkJiGY1kFo8JOg',
+                'weight' => 100
+            ],
+            'Reason' => 'bucketer',
+            'steps' => ['sampler', 'exclusion', 'audience', 'assign_bucket']
+        ]
+    ],
+
+    'sampleSpltizOutput' => [
+        'status_code' => 200,
+        'response' => [
+            'id' => 'OhUK4RTNhdS0R3',
+            'project_id' => 'Nqtt4y5giP28ml',
+            'experiment' => [
+                'id' => 'OkJiGY1kFo8JOg',
+                'name' => 'UPI RRN search whitelist',
+                'exclusion_group_id' => ''
+            ],
+            'variant' => [
+                'id' => 'OkJiGYJSO5ZhXv',
+                'name' => 'vas_rrn_search',
+                'variables' => [
+                    [
+                        'key' => 'result',
+                        'value' => 'upi_rrn_search_enabled'
+                    ]
+                ],
+                'experiment_id' => 'OkJiGY1kFo8JOg',
+                'weight' => 100
+            ],
+            'Reason' => 'bucketer',
+            'steps' => ['sampler', 'exclusion', 'audience', 'assign_bucket']
+        ]
+    ]
 ];

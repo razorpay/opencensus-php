@@ -19,4 +19,5 @@ class GatewayResponseParams
     const TRANSACTION_TIME      = 'transaction_time';
     const PAYER_ACCOUNT_TYPE    = 'payer_account_type';
     const PAYEE_VPA             = 'payee_vpa';
+    const PAYER_NAME            = 'payer_name';
 }

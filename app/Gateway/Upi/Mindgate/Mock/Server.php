@@ -340,8 +340,14 @@ class Server extends Base\Mock\Server
             'NA',
             'NA',
             'NA',
-            'PNB!10000000000!PNBI1111111!8966829290'
+            'PNB!10000000000!PNBI1111111!8966829290',
+            'PAY!NA!NA!AXL262348db65f14092ad60160ba203f27d!NA',
+            'akemibusinessschool.70500005@hdfcbank!NA!NA',
+            'SAVINGS!NA!NA!NA!NA',
+            'SANKETH B K!NA!NA!NA!NA'
         ];
+
+
 
         $this->content($content,'callback');
 
@@ -455,7 +461,11 @@ class Server extends Base\Mock\Server
             'NA',
             'NA',
             'NA',
-            'PNB!10000000000!PNBI1111111!8966829290'
+            'PNB!10000000000!PNBI1111111!8966829290',
+            'PAY!NA!NA!AXL262348db65f14092ad60160ba203f27d!NA',
+            'akemibusinessschool.70500005@hdfcbank!NA!NA',
+            'SAVINGS!NA!NA!NA!NA',
+            'SANKETH B K!NA!NA!NA!NA'
         ];
     }
 
@@ -487,6 +497,7 @@ class Server extends Base\Mock\Server
             'PAY!https://upi.hdfcbank.com!NA!HDF14f1d39e1029466a900e8da219065806!NA!',
             'akemibusinessschool.70500005@hdfcbank!NA!NA',
 		    'SAVINGS!NA!NA!NA!NA',
+            'SANKETH B K!NA!NA!NA!NA'
         ];
     }
 

@@ -779,6 +779,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PAYMENT_ID], 3),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+            BharatQr\GatewayResponseParams::PAYER_NAME            => $input[ResponseFields::PAYER_NAME],
         ];
 
         $payerAccountType = $this->getInternalPayerAccountType($input);
@@ -808,6 +809,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $inputFields['terminal'][ResponseFields::GATEWAY_MERCHANT_ID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][ResponseFields::MERCHANT_REFERENCE]),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][ResponseFields::NPCI_REFERENCE_ID],
+            BharatQr\GatewayResponseParams::PAYER_NAME            => $inputFields['upi'][ResponseFields::CUSTOMER_NAME],
         ];
 
         if(empty($inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE]) === false)
@@ -947,7 +949,19 @@ class Gateway extends Base\Gateway
 
             foreach ($fields as $index => $key)
             {
-                $result[$key] = $values[$index];
+                if ($key === ResponseFields::PAYER_NAME)
+                {
+                    $res = explode('!', $values[$index]);
+
+                    if (count($res) > 0)
+                    {
+                        $result[$key] = $res[0];
+                    }
+                }
+                else
+                {
+                    $result[$key] = $values[$index];
+                }
             }
         }
         catch (Exception\GatewayErrorException $e)
@@ -2371,6 +2385,7 @@ class Gateway extends Base\Gateway
                 ResponseFields::ACCOUNT_NUMBER  => $inputFields['upi'][ResponseFields::ACCOUNT_NUMBER],
                 ResponseFields::IFSC_CODE       => $inputFields['upi']['ifsc'],
                 ResponseFields::RESPCODE        => $inputFields['upi']['npci_response_code'],
+                ResponseFields::PAYER_NAME      => $inputFields['upi'][ResponseFields::CUSTOMER_NAME]
             ];
 
             return $attrs;
@@ -2386,6 +2401,7 @@ class Gateway extends Base\Gateway
             ResponseFields::ACCOUNT_NUMBER  => $input[ResponseFields::ACCOUNT_NUMBER],
             ResponseFields::IFSC_CODE       => $input[ResponseFields::IFSC_CODE],
             ResponseFields::RESPCODE        => $input[ResponseFields::RESPCODE],
+            ResponseFields::PAYER_NAME      => $input[ResponseFields::PAYER_NAME]
         ];
 
         return $attrs;
