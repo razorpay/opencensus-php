@@ -32,11 +32,24 @@ function Pitch({ components }) {
     redirectToProductUrl,
   } = useGetD2CPitchData(components);
 
-  const { screen, selectedStepIndex, selectedStepTitle, suggestedProduct, pitchingType } =
-    useSteppedSplitPaneContext();
+  const {
+    screen,
+    selectedStepIndex,
+    selectedStepTitle,
+    suggestedProduct,
+    pitchingType,
+    isWidgetVisibleOnce,
+  } = useSteppedSplitPaneContext();
 
   useEffect(() => {
-    if (screen && selectedStepIndex && selectedStepTitle && suggestedProduct && pitchingType) {
+    if (
+      screen &&
+      selectedStepIndex &&
+      selectedStepTitle &&
+      suggestedProduct &&
+      pitchingType &&
+      isWidgetVisibleOnce
+    ) {
       let objectName = '';
       let title = '';
       if (selectedViewId === pitchingProblemComponent.id) {
@@ -72,6 +85,7 @@ function Pitch({ components }) {
     selectedStepTitle,
     suggestedProduct,
     pitchingType,
+    isWidgetVisibleOnce,
   ]);
 
   return (

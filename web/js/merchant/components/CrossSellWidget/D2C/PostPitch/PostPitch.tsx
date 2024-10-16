@@ -14,13 +14,26 @@ function PostPitch({ components }) {
   const { postPitchCrossSellWidgetData, postPitchComponent, postPitchChartData } =
     useGetD2CPostPitchData(components);
 
-  const { screen, selectedStepIndex, selectedStepTitle, suggestedProduct, pitchingType } =
-    useSteppedSplitPaneContext();
+  const {
+    screen,
+    selectedStepIndex,
+    selectedStepTitle,
+    suggestedProduct,
+    pitchingType,
+    isWidgetVisibleOnce,
+  } = useSteppedSplitPaneContext();
 
   useEffect(() => {
-    if (screen && selectedStepIndex && selectedStepTitle && suggestedProduct && pitchingType) {
+    if (
+      screen &&
+      selectedStepIndex &&
+      selectedStepTitle &&
+      suggestedProduct &&
+      pitchingType &&
+      isWidgetVisibleOnce
+    ) {
       analyticsTrack({
-        objectName: 'Product Recommendation Insights Page',
+        objectName: 'Cooling Period VR Banner',
         actionName: 'Loaded',
         screen,
         properties: {

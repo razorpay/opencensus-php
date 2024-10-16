@@ -202,6 +202,7 @@ function SteppedSplitPane({
         setSelectedStepTitle,
         suggestedProduct,
         pitchingType,
+        isWidgetVisibleOnce,
       }}
     >
       <Box marginX="spacing.6">

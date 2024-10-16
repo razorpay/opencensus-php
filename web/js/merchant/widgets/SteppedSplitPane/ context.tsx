@@ -10,6 +10,7 @@ interface SteppedSplitPaneContext {
   setSelectedStepTitle: React.Dispatch<React.SetStateAction<string | null>>;
   suggestedProduct: string | null;
   pitchingType: string | null;
+  isWidgetVisibleOnce: boolean;
 }
 
 export const SteppedSplitPaneContext = React.createContext({} as SteppedSplitPaneContext);
