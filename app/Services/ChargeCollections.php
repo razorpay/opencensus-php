@@ -66,6 +66,7 @@ class ChargeCollections
     const UpdatePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}';
     const DeletePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}/force';
     const AddBulkPlanRulesURL = 'v1/mdr/pricing/rules/bulk';
+    const AddPricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule';
     const OrgPricingURL = 'v1/org_pricing';
     const FetchOrgPricingURL = 'v1/org_pricing/fetch_multiple';
     const FetchOrgPricingAccessControl = 'v1/org_pricing_access_control/fetch_multiple';
@@ -495,6 +496,17 @@ class ChargeCollections
         unset($input['plan_id'], $input['rule_id']);
 
         return $this->sendRequest($endpoint, Requests::DELETE, $input, $requestHeaders);
+    }
+
+    public function addPricingPlanRule(array $input, $requestHeaders = [])
+    {
+        $planId = $input['plan_id'];
+
+        $endpoint = str_replace(['{plan_id}'], [$planId], self::AddPricingPlanRuleURL);
+
+        unset($input['plan_id']);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input, $requestHeaders);
     }
 
     public function addBulkPricingPlanRule(array $input, $requestHeaders = [])

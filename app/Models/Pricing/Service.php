@@ -212,6 +212,40 @@ class Service extends Base\Service
 
     public function addPlanRule($id, $input, $orgId = null, $isBuyPricingRule = false)
     {
+        $sourceInput = $input;
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $ruleId = UniqueIdEntity::generateUniqueId();
+
+        $ccRequest = $this->transformAddPlanRule($input, $ruleId, $id);
+        $sourceInput['id'] = $ruleId;
+
+        $legacyCallable = function () use ($id, $sourceInput, $orgId, $isBuyPricingRule) {
+            return $this->addPlanRuleLegacy($id, $sourceInput, $orgId, $isBuyPricingRule);
+        };
+
+        return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable, null, $isBuyPricingRule);
+    }
+
+    public function transformAddPlanRule($input, $ruleId, $id)
+    {
+        if ( is_string($input) === true) {
+            $input = json_decode($input, true);
+        }
+
+        $input['id'] = $ruleId;
+        $input['plan_id']= $id;
+
+        $this->trace->info(TraceCode::CC_ROUTING_TRANSFORMED_REQUEST,
+            [
+                'method' => 'addPlanRule',
+                'request' => $input,
+            ]);
+
+        return $input;
+    }
+
+    public function addPlanRuleLegacy($id, $input, $orgId = null, $isBuyPricingRule = false)
+    {
         if ($isBuyPricingRule === true)
         {
             $this->repo->pricing->onlyBuyPricing();

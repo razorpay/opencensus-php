@@ -46,6 +46,7 @@ class CCRouter
         'pricing_update_plan_rule' => true,
         'pricing_delete_plan_rule_force' => true,
         'pricing_add_plan_rule_bulk' => true,
+        'pricing_add_plan_rule' => true,
         );
 
     private const FUNCTION_MAP = array(
@@ -53,6 +54,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Service\\updatePlanRule' => true,
         'RZP\\Models\\Pricing\\Service\\deletePlanRuleForce' => true,
         'RZP\\Models\\Pricing\\Service\\postAddBulkPricingRules' => true,
+        'RZP\\Models\\Pricing\\Service\\addPlanRule' => true,
         'RZP\\Models\\Pricing\\Repository\\getPlan' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithProductAndFeatureFilter' => true,
@@ -218,6 +220,8 @@ class CCRouter
                 $response = $this->app->charge_collections->deletePricingPlanRule($input);
             }else if ($methodName == 'postAddBulkPricingRules'){
                 $response = $this->app->charge_collections->addBulkPricingPlanRule($input, $headers);
+            }else if($methodName == 'addPlanRule'){
+                $response = $this->app->charge_collections->addPricingPlanRule($input);
             }else{
                 $this->trace->info(TraceCode::CC_ROUTER_EXCEPTION,
                     [
