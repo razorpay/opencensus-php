@@ -38,6 +38,8 @@ export interface Item {
   acquirer_data: AcquirerData;
   created_at: number;
   source_channel: null | 'online' | 'in_person';
+  optimizer_provider: null | string;
+  settled_by: null | string;
 }
 
 export interface AcquirerData {

@@ -2,10 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'shell/deprecated/withRouter';
 import { withZustand } from 'shell/commonStore';
-import { compose } from 'redux';
+import { bindActionCreators, compose } from 'redux';
 
 import { ListContainer } from '@dashboard/shared-ui/containers';
 import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
+import { SpiltzContext } from 'shell/SpiltzServiceContext';
+import { isExperimentEnabled } from '@dashboard/shared-utils/splitz-utils';
 import { fetchMerchantColumnPreferences, fetchPaymentNotesKeys } from './model';
 import {
   ERROR_MESSAGES,
@@ -13,6 +15,7 @@ import {
   OPTIONAL_COLUMNS_TRANSACTIONS_V2,
 } from './constants';
 import { PaymentsEditColumnsModal } from './PaymentsEditColumnsModal';
+import { fetchTerminalProviders } from 'apps/self-serve/src/bootstrap/Store/reducers/navigatorReducer';
 import { fetchPayments as fetchAll } from 'apps/self-serve/src/bootstrap/Store/reducers/paymentsReducer';
 import PaymentsListFilter from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter';
 import PaymentsTable from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable';
@@ -31,14 +34,22 @@ class PaymentsList extends ListContainer {
     isEditColumnsModalOpen: false,
   };
 
+  static contextType = SpiltzContext;
+
   componentDidMount() {
     const {
       store: {
         session: {
-          user: { isCustomTransactionTabView },
+          user: { isCustomTransactionTabView, isOptimizerEnabled, isSingleReconEnabled },
         },
       },
+      fetchProviders,
     } = this.props;
+
+    if (isSingleReconEnabled && isOptimizerEnabled) {
+      fetchProviders();
+    }
+
     if (isCustomTransactionTabView) {
       this.fetchColumns();
       this.fetchMerchantColumns();
@@ -108,10 +119,16 @@ class PaymentsList extends ListContainer {
           pos_activation_status,
           isOmniEnabledMerchant,
           isCustomTransactionTabView,
+          isSingleReconEnabled,
+          isOptimizerEnabled,
         },
       },
     } = store;
 
+    const shouldDisplayOptimizerColumn =
+      isSingleReconEnabled &&
+      isOptimizerEnabled &&
+      isExperimentEnabled(this.context.splitz?.abExperiments?.toggle_payments_v2_revamp);
     const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
 
     return (
@@ -147,6 +164,7 @@ class PaymentsList extends ListContainer {
           isDisabled={({ status }) => !paymentStatusVariantMap[status]}
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
+          shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
           isOmniView={isOmniView}
           onRowClick={({ id, paymentMethod, sourceChannel }) =>
             handleDetailsClick({
@@ -165,13 +183,23 @@ class PaymentsList extends ListContainer {
   }
 }
 
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(
+    {
+      fetchAll,
+      fetchProviders: fetchTerminalProviders,
+    },
+    dispatch,
+  );
+}
+
 export default compose(
   withRouter,
   connect(
     (state) => ({
       ...state.payments,
     }),
-    { fetchAll },
+    mapDispatchToProps,
   ),
   (component) => withZustand(component, ['session', 'showNotification']),
 )(PaymentsList);

@@ -2,7 +2,9 @@ import { BadgeProps } from '@razorpay/blade/components';
 import { Payments, Item } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import { ListContainerProps } from 'apps/self-serve/src/App/Transactions/v2/common/types';
 
-export type PaymentsTableProps = ListContainerProps<Payments['items']>;
+export type PaymentsTableProps = ListContainerProps<Payments['items']> & {
+  shouldDisplayOptimizerColumn: boolean;
+};
 
 export type StatusProps = {
   variant: BadgeProps['color'];

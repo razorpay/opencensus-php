@@ -16,13 +16,19 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
     isOmniView,
     shouldShowCustomTransactionTabView,
     selectedColumnsList,
+    shouldDisplayOptimizerColumn,
   } = props;
   const isMobile = useMobile(mobileBreakoints);
   const { user, app } = useStore((state) => ({ user: state.session.user, app: state.app }));
 
   const columns = isMobile
     ? mobileColumns
-    : getDesktopColumns(isOmniView, shouldShowCustomTransactionTabView, selectedColumnsList);
+    : getDesktopColumns(
+        isOmniView,
+        shouldShowCustomTransactionTabView,
+        selectedColumnsList,
+        shouldDisplayOptimizerColumn,
+      );
 
   return (
     <StyledTable loading={isLoading}>

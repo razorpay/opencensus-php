@@ -7,6 +7,7 @@ import { User } from '@dashboard/shared-utils/typings';
 import { Item } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import CreatedOn from 'apps/self-serve/src/App/Transactions/v2/common/components/CreatedOn';
 import Details from 'apps/self-serve/src/App/Transactions/v2/common/components/Details';
+import PaymentOptimizerProvider from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentOptimizerProvider';
 // eslint-disable-next-line
 import CustomClipboard from '@dashboard/shared-ui/Clipboard/Custom';
 
@@ -204,6 +205,15 @@ export const generateDynamicComponent = (columnName: string) => ({
   },
 });
 
+export const optimizer = {
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Payment provider
+    </Text>
+  ),
+  value: (item: Item) => <PaymentOptimizerProvider item={item} />,
+};
+
 export const mobileColumns = [mobileAmount, status, actions];
 export const desktopColumns = [
   paymentId,
@@ -219,10 +229,17 @@ export const getDesktopColumns = (
   isOmniView: boolean,
   shouldShowCustomTransactionTabView: boolean,
   selectedColumnsList: string[],
+  shouldDisplayOptimizerColumn: boolean,
 ) => {
   let updatedDesktopColumns = desktopColumns;
   if (isOmniView) {
     updatedDesktopColumns = [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
+  }
+
+  if (shouldDisplayOptimizerColumn) {
+    updatedDesktopColumns = updatedDesktopColumns
+      .slice(0, 1)
+      .concat(optimizer, updatedDesktopColumns.slice(1));
   }
 
   if (shouldShowCustomTransactionTabView) {

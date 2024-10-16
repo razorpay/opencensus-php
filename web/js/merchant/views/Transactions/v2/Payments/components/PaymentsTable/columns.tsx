@@ -12,6 +12,7 @@ import {
 import Amount from 'common/ui/Amount';
 import MaskedContact from 'merchant/components/Mask/Contact';
 import { createCustomColumnView } from 'merchant/views/Transactions/utils';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v2/Payments/components/PaymentOptimizerProvider';
 import { FailureCategoryMapping } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/utils';
 import { Item } from 'merchant/views/Transactions/v2/Payments/types';
 import CreatedOn from 'merchant/views/Transactions/v2/common/components/CreatedOn';
@@ -242,6 +243,15 @@ export const actions = {
   },
 };
 
+export const optimizer = {
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      Payment provider
+    </Text>
+  ),
+  value: (item: Item) => <PaymentOptimizerProvider item={item} />,
+};
+
 export const generateDynamicComponentV2 = (columnName: string) => ({
   title: (
     <Text size="medium" weight="semibold" color="surface.text.gray.normal">
@@ -279,6 +289,7 @@ export const getDesktopColumns = (
   isOmniView: boolean,
   shouldShowCustomTransactionTabView: boolean,
   selectedColumnsList: string[],
+  shouldDisplayOptimizerColumn: boolean,
 ) => {
   const isFailedPaymentView = window.location.pathname.includes(FAILED_PAYMENTS);
   let updatedDesktopColumns = isFailedPaymentView ? failedPaymentDesktopColumns : desktopColumns;
@@ -287,6 +298,12 @@ export const getDesktopColumns = (
     updatedDesktopColumns = updatedDesktopColumns.map((column) =>
       column.title?.props?.children === PAYMENT_ID ? omniPaymentId : column,
     );
+  }
+
+  if (shouldDisplayOptimizerColumn) {
+    updatedDesktopColumns = updatedDesktopColumns
+      .slice(0, 1)
+      .concat(optimizer, updatedDesktopColumns.slice(1));
   }
 
   if (shouldShowCustomTransactionTabView) {

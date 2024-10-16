@@ -1,10 +1,14 @@
 import React from 'react';
 import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import {
   FIXED_COLUMNS_TRANSACTIONS_V2,
   OPTIONAL_COLUMNS_TRANSACTIONS_V2,
@@ -35,8 +39,13 @@ class PaymentsList extends ListContainer {
 
   componentDidMount() {
     const {
-      user: { isCustomTransactionTabView },
+      user: { isCustomTransactionTabView, isOptimizerEnabled, isSingleReconEnabled },
+      fetchProviders,
     } = this.props;
+    if (isSingleReconEnabled && isOptimizerEnabled) {
+      fetchProviders();
+    }
+
     if (isCustomTransactionTabView) {
       this.fetchColumns();
       this.fetchMerchantColumns();
@@ -93,13 +102,21 @@ class PaymentsList extends ListContainer {
       history,
       location: { pathname },
       navigate,
+      splitz,
       user: {
         isOmniChannelMerchant,
         pos_activation_status,
         isOmniEnabledMerchant,
         isCustomTransactionTabView,
+        isSingleReconEnabled,
+        isOptimizerEnabled,
       },
     } = this.props;
+
+    const shouldDisplayOptimizerColumn =
+      isSingleReconEnabled &&
+      isOptimizerEnabled &&
+      isExperimentEnabled(splitz?.abExperiments?.toggle_payments_v2_revamp);
     const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
 
     return (
@@ -136,6 +153,7 @@ class PaymentsList extends ListContainer {
           isDisabled={({ status }) => !paymentStatusVariantMap[status]}
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
+          shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
           isOmniView={isOmniView}
           onRowClick={({ id, rowData }) =>
             handleDetailsClick({
@@ -153,12 +171,25 @@ class PaymentsList extends ListContainer {
   }
 }
 
-export default withRouter(
-  connect(
-    (state) => ({
-      ...state.payments,
-      user: state.session.user,
-    }),
-    { fetchAll, showNotification },
-  )(PaymentsList),
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(
+    {
+      fetchAll,
+      showNotification,
+      fetchProviders: fetchTerminalProviders,
+    },
+    dispatch,
+  );
+}
+
+export default withSplitzService(
+  withRouter(
+    connect(
+      (state) => ({
+        ...state.payments,
+        user: state.session.user,
+      }),
+      mapDispatchToProps,
+    )(PaymentsList),
+  ),
 );
