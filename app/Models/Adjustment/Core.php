@@ -106,7 +106,12 @@ class Core extends Base\Core
         }
         else
         {
-            $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+            if ($balanceType === Balance\Type::PRIMARY)
+            {
+                $balance = (new Balance\Repository())->getMerchantBalanceByTypeHarvesterOrFail($merchant->getId(), Balance\Type::PRIMARY);
+            }else{
+                $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+            }
         }
 
         $adj = new Adjustment\Entity;
