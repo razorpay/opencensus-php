@@ -2145,7 +2145,9 @@ class BankingAccountServiceTest extends TestCase
             'account_number'    => '2224440041626905',
             'account_currency'  => 'INR',
             'metadata'        => [
-                'bank_account_open_date' => 1690000123
+                'bank_account_open_date' => 1690000123,
+                'rzpx_migration' => true,
+                'setup_form_file_id' => 'file_id'
             ],
             'bank_status'                   => 'dummy-bank-status',
             'application_number'            => 'dummy-application-number',
@@ -2200,7 +2202,9 @@ class BankingAccountServiceTest extends TestCase
             Entity::ID                          => 'randomBaAccId8',
             Entity::STATUS                      => 'activated',
             Entity::MERCHANT_ID                 => $merchant->getId(),
-            Entity::BALANCE_ID                  => $balance->getId()
+            Entity::BALANCE_ID                  => $balance->getId(),
+            Entity::RZPX_MIGRATION              => true,
+            ENTITY::SETUP_FORM_FILE_ID          => 'file_id'
         ];
 
         $ba = (new \RZP\Models\BankingAccountService\Core())->generateInMemoryBankingAccount($merchant->getId(), $input);

@@ -378,7 +378,6 @@ class Service extends Base\Service
         try
         {
             $bankingAccountsFromBas = $this->bankingAccountService->fetchMultipleBankingAccountsFromBas($merchantId);
-
             $bankingAccounts = $this->core()->attachBasBankingAccount($merchantId, $bankingAccountsFromBas, $bankingAccounts);
         }
         catch (\Throwable $e)

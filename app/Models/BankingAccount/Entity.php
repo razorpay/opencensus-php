@@ -56,6 +56,9 @@ class Entity extends Base\PublicEntity
     const GATEWAY_BALANCE                   = 'gateway_balance';
     const BALANCE_LAST_FETCHED_AT           = 'balance_last_fetched_at';
 
+    const RZPX_MIGRATION                    = 'rzpx_migration';
+    const SETUP_FORM_FILE_ID                ='setup_form_file_id';
+
     const ACCOUNT_STATEMENT_LAST_UPDATED_AT = 'account_statement_last_updated_at';
     const STATUS_LAST_UPDATED_AT            = 'status_last_updated_at';
 
@@ -331,6 +334,8 @@ class Entity extends Base\PublicEntity
         self::OPS_MX_POCS,
         self::PASSWORD,
         self::MASTER_BANKING_ACCOUNT,
+        self::RZPX_MIGRATION,
+        self::SETUP_FORM_FILE_ID,
     ];
 
     protected $public = [
@@ -361,6 +366,8 @@ class Entity extends Base\PublicEntity
         self::USING_NEW_STATES,
         self::FASTER_DOC_COLLECTION_ENABLED,
         self::MASTER_BANKING_ACCOUNT,
+        self::RZPX_MIGRATION,
+        self::SETUP_FORM_FILE_ID,
     ];
 
     protected $relations = [
@@ -481,7 +488,14 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::BALANCE_LAST_FETCHED_AT, $time);
     }
-
+    public function setRzpxMigration(bool $val)
+    {
+        $this->setAttribute(self::RZPX_MIGRATION, $val);
+    }
+    public function setSetupFormFileId(string $fileId)
+    {
+        $this->setAttribute(self::SETUP_FORM_FILE_ID, $fileId);
+    }
     // -------------------------- Getters ------------------------------------ //
 
     public function getChannel()
