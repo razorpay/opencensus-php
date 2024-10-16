@@ -15,12 +15,14 @@ use App\User\Identity;
 use App\Trace\SpanTrace;
 use GuzzleHttp\Psr7\Utils;
 use App\Metrics\Constants;
+use Illuminate\Support\Str;
 use Lcobucci\JWT\Token\Parser;
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Promise\Promise;
 use Razorpay\Api\Errors as RZPErrors;
 use App\Admin\Service as AdminService;
 use Lcobucci\JWT\Encoding\JoseEncoder;
+use App\Splitz\Service as SplitzService;
 use Razorpay\Api\Errors\BadRequestError;
 use App\User\Constants as UserConstants;
 use GuzzleHttp\Exception\GuzzleException;
@@ -45,6 +47,8 @@ class ApiRequestAny
     protected $path;
 
     protected $routeMap;
+    
+    protected $refineUrlPathExpEnable  = false;
 
     protected $shouldProcessInput       = true;
 
@@ -61,6 +65,8 @@ class ApiRequestAny
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data';
 
     const ADMIN_AS_MERCHANT             = 'admin_as_merchant';
+    
+    const URL_PATH_REFINEMENT_EXPERIMENT_NAME = "URL_PATH_REFINEMENT_EXPERIMENT_NAME";
 
     // field passed by the API in case of errors are exposed
     // dashboard handles these error in a custom way
@@ -131,6 +137,8 @@ class ApiRequestAny
     {
         // Increase the time limit
         set_time_limit(600);
+    
+        $this->refineUrlPathExpEnable = array_get($options, 'refine_url_path_exp', false);
 
         // === Mode
 
@@ -614,7 +622,30 @@ class ApiRequestAny
     {
         return round(microtime(true) * 1000);
     }
-
+    
+    // Security Issue - https://razorpay.slack.com/archives/C07RF2PL03C/p1728638407016769
+    public function getRefinedPath(string $path): string
+    {
+        $parsed = parse_url($path);
+        
+        if (is_array($parsed))
+        {
+            $host = array_get($parsed, 'host', "");
+            $startPath = array_get($parsed, 'path', "");
+            
+            if ((empty($host) === false) and
+                (Str::startsWith($startPath, '/') === false))
+            {
+                $startPath = "/". $startPath;
+            }
+            
+            $path = $host.$startPath;
+        }
+        
+        return $path;
+    }
+    
+    
     /**
      * Fires the request to the API
      * @return array standard response
@@ -637,14 +668,22 @@ class ApiRequestAny
         $apiPathName = $apiRouteCircuitBreaker->getApiPathName();
 
         $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$path);
-
+    
         // In some cases (for instance dashboard merchant searches)
         // $path ends up having URLs which triggers `cURL error 6: Could not resolve host`
         // because Guzzle doesn't attach $path to the base_url set above
         // if it contains `://`
-        $path = str_replace('://', '', $path);
-
-
+        if ($this->refineUrlPathExpEnable === true)
+        {
+            $path = $this->getRefinedPath($path);
+            Trace::info(TraceCode::REFINED_URL_REQUEST, [
+                'path' => $path,
+            ]);
+            
+        } else {
+            $path = str_replace('://', '', $path);
+        }
+        
         $input = Request::all();
 
         $path = $this->updatePathWithQueryParams($path, $method, $input);
