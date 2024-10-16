@@ -245,6 +245,11 @@ class GifuFile extends Base\BaseGifuFile
 
                 $narration = $this->getNarration($value['settlements'] ?? [],$mid);
 
+                if(empty($narration) === true)
+                {
+                    continue;
+                }
+
                 $brCode = $this->getBrCode($accountNumber);
             }
             catch (Exception $exception)
@@ -405,8 +410,15 @@ class GifuFile extends Base\BaseGifuFile
                 'Terminals Fetch Params' => $params,
                 'Terminals Count'        => $terminals->count(),
                 'Terminal picked'        => $terminals,
+                'Gateway Terminal Id'    => $tId,
+                'Merchant Id'            => $mid,
             ]
         );
+
+        if(str_starts_with($tId, "19"))
+        {
+            return '';
+        }
 
         $setlId = !empty($data) ? $data[0]->id : '';
 

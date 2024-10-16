@@ -643,6 +643,7 @@
             <file>./tests/Functional/VirtualAccount/VirtualAccountTest.php</file>
             <file>./tests/Functional/VirtualAccount/VirtualAccountForOrderTestBanking.php</file>
             <file>./tests/Functional/Merchant/MerchantDetailsTestBanking.php</file>
+            <file>./tests/Functional/Settlement/BankingSettlementTest.php</file>
         </testsuite>
         <testsuite name="UT_NoCode_Test_Suite">
             <directory>./tests/Functional/Invoice/</directory>
