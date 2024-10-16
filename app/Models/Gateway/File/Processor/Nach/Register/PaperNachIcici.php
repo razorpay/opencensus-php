@@ -17,6 +17,7 @@ use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Customer\Token;
 use RZP\Exception\RuntimeException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Holidays;
@@ -394,7 +395,16 @@ class PaperNachIcici extends Base
             }
             else
             {
-                throw $e;
+                $this->trace->traceException($e,
+                    Trace::CRITICAL,
+                    TraceCode::GENERATE_IMAGE_PAYMENT_FAILURE,
+                    [
+                        'payment_id' => $paymentId,
+                        'token' => $token
+                    ]
+                );
+
+                return [$formGenerationDate, false];
             }
         }
 
