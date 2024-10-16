@@ -4381,6 +4381,28 @@ class Base extends BaseCore
                         return false;
                     }
                 }
+
+                if ($this->balance->getAccountType() === AccountType::SHARED)
+                {
+                    if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
+                        (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
+                        (empty($this->batchId) === false))
+                    {
+                        $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
+                            RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+
+                        $this->trace->info(TraceCode::PAYOUT_SERVICE_MIGRATED_MERCHANTS_VA_BULK_PAYOUT_VIA_API_MONOLITH,
+                            [
+                                'merchant_id' => $this->merchant->getMerchantId(),
+                                'variant' => $variant,
+                            ]);
+
+                        if ($variant === 'on')
+                        {
+                            return false;
+                        }
+                    }
+                }
                 if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
                     (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
                     (empty($this->batchId) === false))
