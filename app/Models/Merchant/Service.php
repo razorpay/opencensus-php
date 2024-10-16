@@ -1873,27 +1873,27 @@ class Service extends Base\Service
 
         if($expResult === true) {
             $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $ownerUser->getId());
-            
+
             if ((empty($existingUserIds) === false) and
                 (count($existingUserIds) > 0)) {
-                
+
                 $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
-    
+
                 if (count($userIdsToNullify) > 0) {
-    
+
                     $status[Constants::IS_USER_EXIST] = false;
-    
+
                     $this->saveMerchantEmailUpdateData($ownerUser->getEmail(), $merchant->getId(), $input);
-    
+
                     $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
-    
+
                     $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, ["status" => $status]);
-    
+
                     return $status;
                 }
-                
+
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
-    
+
             }
         }
 
@@ -1949,16 +1949,16 @@ class Service extends Base\Service
         // Set email as null for Orphan user ids
         $this->repo->transactionOnLiveAndTest(function () use ($userIds) {
             foreach ($userIds as $userId){
-            
+
                 $user = $this->repo->user->findOrFail($userId);
-            
+
                 $user->email = null;
-            
+
                 $this->repo->user->saveOrFail($user);
             }
         });
     }
-    
+
     /**
      * @throws BadRequestException
      */
@@ -1992,16 +1992,16 @@ class Service extends Base\Service
 
         if($expResult === true) {
             $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $currentOwnerUser->getId());
-            
+
             if ((empty($existingUserIds) === false) and
                 (count($existingUserIds) > 0))
             {
                 $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
-        
+
                 if (count($userIdsToNullify) === 0) {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
                 }
-    
+
                 $this->setEmailAsNullForUserIds($userIdsToNullify);
             }
         }
@@ -13950,7 +13950,7 @@ class Service extends Base\Service
         $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant, true);
     }
 
-    public function rizePaymentsCallback(array $input, string $traceCode, string $pgosRoute): void
+    public function rizePaymentsCallback($input, string $traceCode, string $pgosRoute): void
     {
 
         $this->trace->info(
