@@ -189,7 +189,9 @@ class CreateOfferWizard extends React.Component {
           />
         )}
 
-        <Form {...props} onSubmit={this.onSubmit} isFormLocked={state.isFormLocked} />
+        {!showSelectionView ? (
+          <Form {...props} onSubmit={this.onSubmit} isFormLocked={state.isFormLocked} />
+        ) : null}
       </StyledOfferModal>
     );
   }
