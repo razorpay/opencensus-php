@@ -93,10 +93,6 @@ class Service extends Base\Service
                         $txn['settlement'] = null;
                     }
                 }
-                else
-                {
-                    $txn['settlement'] = null;
-                }
             }
         }
 
@@ -120,7 +116,7 @@ class Service extends Base\Service
         }
         else if ($isReverseShadowMerchant === true and $readExp === true)
         {
-            $response['transaction'] = null;
+            $transfer['transaction'] = null;
         }
 
         return $transfer;

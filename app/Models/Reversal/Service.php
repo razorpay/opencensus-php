@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Payment\Refund;
+use RZP\Http\BasicAuth\Type as AuthType;
 use RZP\Models\Feature\Constants as Features;
 
 class Service extends Base\Service
@@ -23,7 +24,8 @@ class Service extends Base\Service
 
         $readExp = $this->getReversalReadSplitzResponse($requestId) === 'enable';
 
-        if($isReverseShadowMerchant === true and $readExp === true)
+        if($isReverseShadowMerchant === true and $readExp === true
+            and $this->app['basicauth']->getAuthType() === AuthType::PROXY_AUTH)
         {
             if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
                 and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
@@ -47,10 +49,6 @@ class Service extends Base\Service
                     {
                         $txn['settlement'] = null;
                     }
-                }
-                else
-                {
-                    $txn['settlement'] = null;
                 }
             }
         }
