@@ -7187,15 +7187,11 @@ class Service extends Base\Service
                     [
                         'success'                    => $isSuccess,
                         'gateway'                    => $payment->getGateway(),
-                        'gateway_fee'                => $paymentRecon->getPaymentTransaction()->getGatewayFee(),
-                        'gateway_service_tax'        => $paymentRecon->getPaymentTransaction()->getGatewayServiceTax()
 
                     ]);
         return  [
             'success'              => $isSuccess,
             'payment_id'           => $payment->getId(),
-            'gateway_fee'          => $paymentRecon->getPaymentTransaction()->getGatewayFee(),
-            'gateway_service_tax'  => $paymentRecon->getPaymentTransaction()->getGatewayServiceTax(),
             'art_request_id'       => $input['art_request_id'] ?? '',
         ];
 
@@ -7685,12 +7681,23 @@ class Service extends Base\Service
         {
             $this->repo->transaction(function () use ($payment)
             {
-                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true){
 
-                $this->repo->saveOrFail($txn);
-                // This is required to save the association of the transaction with the payment.
+
+                    $reverseShadowPaymentsCore = new LedgerReverseShadow\Payments\Core();
+
+                    $reverseShadowPaymentsCore->createLedgerEntryForGatewayCaptureReverseShadow($payment);
+
+                }
+                else {
+
+                    list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                    $this->repo->saveOrFail($txn);
+
+                }
                 $this->repo->saveOrFail($payment);
-
+                
                 return true;
             });
 

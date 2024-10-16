@@ -14,6 +14,7 @@ use RZP\Base\Common;
 use RZP\Base\BuilderEx;
 use RZP\Models\Adjustment;
 use RZP\Models\Payment;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
@@ -87,6 +88,31 @@ class Repository extends Base\Repository
         $txn->source()->associate($entity);
 
         $txn->merchant()->associate($entity->merchant);
+
+        return $txn;
+    }
+
+    public function fetchBySourceAndAssociateMerchantForConnectionType($entity, $connectionType)
+    {
+        $connection = $this->getConnectionFromType($connectionType);
+
+        $txn = $this->newQueryWithConnection($connection)
+            ->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
+            ->first();
+
+        if ($txn === null)
+        {
+            return null;
+        }
+
+        $entity->transaction()->associate($txn);
+        $txn->source()->associate($entity);
+
+        $txn->merchant()->associate($entity->merchant);
+
+        $mode = empty($this->app['rzp.mode']) ? EnvMode::TEST : $this->app['rzp.mode'];
+
+        $txn->setConnection($mode);
 
         return $txn;
     }
