@@ -1056,6 +1056,8 @@ return array(
 
     'merchant_activation_pos_activation_check_for_transfers_splitz_exp_id' => env('MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_EXP_ID'),
 
+    'splitz_merchant_cls_balance_read_experiment_id' => env('SPLITZ_MERCHANT_CLS_BALANCE_READ_EXPERIMENT_ID'),
+
     'qr_code_v1_failed_payment_experiment' => env('QRCODEV1_FAILED_PAYMENT_EXPERIMENT'),
 
     'transaction_read_experiment' => env('TRANSACTION_READ_EXPERIMENT_ID'),

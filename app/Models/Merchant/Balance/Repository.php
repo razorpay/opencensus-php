@@ -94,11 +94,52 @@ class Repository extends Base\Repository
         return $this->getBalanceLockForUpdate($merchant->getKey());
     }
 
-    public function getMerchantBalance($merchant): Entity
+    public function getMerchantBalance($merchant, string $connectionType = null): Entity
     {
-        $balance = $this->findOrFailPublic($merchant->getId());
+        $balance = $this->findOrFailPublic($merchant->getId(), ['*'], $connectionType);
 
         $balance->merchant()->associate($merchant);
+
+        if($connectionType !== null && $balance !== null)
+        {
+            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+            $balance->setConnection($mode);
+        }
+
+        return $balance;
+    }
+
+
+    //Returns a Balance Entity from the DATA WAREHOUSE
+    public function fetchBalanceByMerchantIdAndTypeFromWarehouse($merchant, string $balanceType)
+    {
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+
+        //Here merchant and balance is in hasOne() relation, hence fetching using first() method
+        $balance = $query->where(Entity::MERCHANT_ID, $merchant->getId())
+            ->where(Entity::TYPE, $balanceType)
+            ->first();
+
+        if($balance !== null)
+        {
+            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+            $balance->setConnection($mode);
+        }
+
+        return $balance;
+    }
+
+
+    //Returns a public collection of balance Entity from the DATA WAREHOUSE
+    public function getBalanceByMerchantIdFromWarehouse($merchantId)
+    {
+        $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $balance = $this->newQueryWithConnection($connection)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->get();
 
         return $balance;
     }
@@ -344,8 +385,17 @@ class Repository extends Base\Repository
             $this->newQueryWithConnection($connection) :
             $this->newQuery();
 
-        return $query->merchantIdAndType($merchantId, $balanceType)
-                     ->first();
+        $entity = $query->merchantIdAndType($merchantId, $balanceType)
+            ->first();
+
+        if($entity !== null)
+        {
+            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+            $entity->setConnection($mode);
+        }
+
+        return $entity;
     }
 
     public function getMerchantBalanceByTypeHarvester(string $merchantId, string $balanceType)

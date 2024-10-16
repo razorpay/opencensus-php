@@ -29,6 +29,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\LedgerOutbox\Entity as LedgerOutboxEntity;
+use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
 use RZP\Models\Transfer;
@@ -931,7 +932,22 @@ trait ReverseShadowTrait
 
         $payment = $this->repo->payment->findOrFail($baseTransactionEntity->getEntityId());
 
-        $primaryBalance = $this->repo->balance->getMerchantBalance($payment->merchant);
+        $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled($payment->merchant);
+
+        if ($enableCLSBalanceReads === true)
+        {
+            $primaryBalance = $this->repo->balance->fetchBalanceByMerchantIdAndTypeFromWarehouse($payment->merchant, Balance\Type::PRIMARY);
+
+            if ($primaryBalance === null)
+            {
+                $primaryBalance = $this->repo->balance->getMerchantBalance($payment->merchant);
+            }
+            $primaryBalance->merchant()->associate($payment->merchant);
+        }
+        else
+        {
+            $primaryBalance = $this->repo->balance->getMerchantBalance($payment->merchant);
+        }
 
         $baseTransactionEntity->setFee($aggregateFees + $aggregateTax);
 

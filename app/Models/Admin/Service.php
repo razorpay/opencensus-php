@@ -43,17 +43,19 @@ use RZP\Models\User\Service as UserService;
 use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
-use RZP\Models\
-{Admin\Permission\Name,
+use RZP\Models\{Admin\Permission\Name,
     Base,
     Base\EsRepository,
     Base\UniqueIdEntity,
     Batch,
     Admin\Org,
+    Merchant\Core as MerchantCore,
     Merchant\Document\Type,
     Pricing\Feature};
 
@@ -282,6 +284,19 @@ class Service extends Base\Service
         else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER OR $entity === Entity::TOKEN OR $entity === Entity::TRANSACTION OR $entity === Entity::TRANSFER)
         {
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
+        else if($entity === Entity::BALANCE)
+        {
+            $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled(null, true);
+
+            if ($enableCLSBalanceReads === true)
+            {
+                $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
+            }
+            else
+            {
+                $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
+            }
         }
         else
         {
@@ -629,6 +644,19 @@ class Service extends Base\Service
         }
         else if (in_array($entity, E::ACS_SYNCED_ENTITIES) === true && (new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
+        else if($entity === Entity::BALANCE)
+        {
+            $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled(null, true);
+
+            if ($enableCLSBalanceReads === true)
+            {
+                $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
+            }
+            else
+            {
+                $entities = $this->repo->$entity->fetch($input, null, ConnectionType::REPLICA);
+            }
         }
         else
         {
