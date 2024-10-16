@@ -17920,7 +17920,8 @@ class Route
             'token_fetch_cryptogram_internal',
             'token_fetch_card_internal',
             'internal_token_create',
-            'update_token_on_authorized'
+            'update_token_on_authorized',
+            'internal_transactions'
         ],
 
         'otpelf' => [
