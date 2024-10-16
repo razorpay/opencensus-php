@@ -174,7 +174,7 @@ class Repository extends Base\Repository
 
     public function saveOrFailNew($entity, array $options = array())
     {
-        if($entity->exists === false)
+        if($entity->getId() === null && $entity->exists === false)
         {
             $entity->setId(Base\UniqueIdEntity::generateUniqueId());
         }
