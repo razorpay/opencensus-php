@@ -640,7 +640,7 @@ class Entity extends Base\PublicEntity
             return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'to', 'getToId');
         }
 
-        return $this->to()->first();
+        return parent::getRelationValue('to');
     }
 
     /** unset the ParentPaymentId attribute based on the feature flag.

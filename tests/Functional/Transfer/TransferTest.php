@@ -184,6 +184,25 @@ class TransferTest extends TestCase
         $this->runRequestResponseFlow($data);
     }
 
+    public function testTransferToRelation()
+    {
+        $balance = $this->fixtures->create('balance');
+        $transferEntry = $this->fixtures->create('transfer', [
+            'id' => 'LhV9fg1fXagWCN',
+            'status' => 'processed',
+            'merchant_id' => '10000000000000',
+            'source_id' => 'abacad',
+            'to_id' => $balance->getId(),
+            'to_type' => 'balance',
+            'amount' => 1000,
+        ]);
+
+        $transfer = $this->getDbEntityById('transfer', $transferEntry->getId());
+
+        $this->assertNotNull($transfer->to);
+        $this->assertTrue($transfer->relationLoaded('to'));
+    }
+
 
     public function testTransferToAccount()
     {

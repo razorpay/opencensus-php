@@ -86,6 +86,6 @@ class Entity extends Base\PublicEntity
         {
             return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'origin', 'getOriginId');
         }
-        return $this->origin()->first();
+        return parent::getRelationValue('origin');
     }
 }
