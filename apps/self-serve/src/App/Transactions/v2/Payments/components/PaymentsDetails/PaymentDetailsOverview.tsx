@@ -1,8 +1,21 @@
 // TODO: Fix the imports, currently out of scope
 // @ts-nocheck
 
-import React, { useEffect } from 'react';
-import { Badge, Box, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
+import React, { useEffect, useState } from 'react';
+import {
+  Badge,
+  Box,
+  Card,
+  CardBody,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
+  Divider,
+  Link,
+  Text,
+  useTheme,
+  Amount as BladeAmount,
+} from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
 import { withRouter } from 'shell/deprecated/withRouter';
@@ -19,7 +32,19 @@ import * as ModalActions from '@dashboard/shared-utils/reducers/modals';
 
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import Tooltip from './Tooltip';
-import { OverviewIconWrapper, OverviewSubtextWrapper, StyledAmountWrapper } from './styled';
+import {
+  BoxContainer,
+  CardWrapper,
+  CollapsibleContainer,
+  DashedDivider,
+  OverviewIconWrapper,
+  OverviewSubtextWrapper,
+  RowsWrapper,
+  SectionFooter,
+  StyledAmountContainer,
+  StyledAmountWrapper,
+  StyledChevron,
+} from './styled';
 import { IPaymentDetails, IPaymentIdRefundDetails, ApplicationDetails } from './types';
 
 import {
@@ -30,6 +55,10 @@ import {
   getDisputesOverviewDetails,
 } from './utils';
 import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
+import { useLocation } from 'react-router-dom';
+import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import SettlementScheduleV2 from 'shell/SettlementCycle';
+import { i18nifyConvertToMajorUnit } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
 
 const OverviewIcon = ({ status }: { status: IPaymentDetails['status'] }) => {
   const Icon = getBadgeIcon(status);
@@ -43,6 +72,7 @@ interface IPaymentDetailsOverview extends RouteComponentProps {
   fetchHolidayList: () => Promise<Record<string, string>>;
   fetchSchedule: () => Promise<Record<string, string>>;
   fetchSettlementConfig: () => Promise<Record<string, string>>;
+  openModal: (args) => void;
 }
 
 function PaymentDetailsOverview({
@@ -52,12 +82,20 @@ function PaymentDetailsOverview({
   fetchHolidayList,
   fetchSchedule,
   fetchSettlementConfig,
+  openModal,
   history,
 }: IPaymentDetailsOverview) {
-  const { currency, amount, created_at, status } = paymentDetails;
+  const [isDeductionBreakdownOpen, setIsDeductionBreakdownOpen] = useState(false);
+  const toggleDeductions = () => {
+    setIsDeductionBreakdownOpen((prevValue) => !prevValue);
+  };
+  const { currency, fee, tax, amount, created_at, status } = paymentDetails;
+  const totalDeductions = fee + tax;
+  const netAmount = amount - totalDeductions;
   const settlementId = paymentDetails?.transaction?.settlement_id;
   const [createdDay, createdTime] = useTime(created_at);
 
+  const { pathname } = useLocation();
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -74,6 +112,14 @@ function PaymentDetailsOverview({
   }, [settlementId]);
 
   const viewDisputeCallback = (route: string) => history.push(route);
+
+  const viewSettlementSchedule = () => {
+    trackDetailsClick({ objectName: 'View Settlement Cycle' });
+    openModal({
+      size: 'medium',
+      component: <SettlementScheduleV2 />,
+    });
+  };
 
   return (
     <Box testID="payment-details-overview">
@@ -199,14 +245,13 @@ function PaymentDetailsOverview({
           ) : null}
         </CardBody>
       </Card>
-      {/* TODO: keep it back once tax and fee currency value is fixed for international payments
       <BoxContainer disableMarginTop>
         <CardWrapper enableBorderTopRadius>
           <Card padding="spacing.5" elevation="none">
             <CardBody>
               <RowsWrapper>
                 <Box display="flex" justifyContent="space-between" paddingY="spacing.3">
-                  <Text type="subtle" size="medium" weight="bold">
+                  <Text size="medium" weight="medium">
                     Gross amount
                   </Text>
                   <StyledAmountWrapper
@@ -214,22 +259,22 @@ function PaymentDetailsOverview({
                     type="positive"
                     fontSize={theme.typography.fonts.size[100]}
                   >
-                    <Amount
-                      size="body-medium-bold"
+                    <BladeAmount
+                      size="medium"
                       value={amount}
                       isAffixSubtle={false}
-                      currency={currency}
-                      intent="positive"
+                      currency={currency || 'INR'}
+                      color="feedback.text.positive.intense"
                     />
                   </StyledAmountWrapper>
                 </Box>
                 <DashedDivider />
                 <Box position="relative" paddingY="spacing.3">
                   <CollapsibleContainer onClick={toggleDeductions}>
-                    <Text type="subtle" size="medium" weight="bold">
+                    <Text size="medium" weight="medium">
                       Deductions{' '}
                       <StyledChevron>
-                        {!isOpen ? (
+                        {!isDeductionBreakdownOpen ? (
                           <ChevronDownIcon
                             size="medium"
                             color="feedback.icon.neutral.intense"
@@ -245,7 +290,7 @@ function PaymentDetailsOverview({
                       </StyledChevron>
                     </Text>
                   </CollapsibleContainer>
-                  {isOpen && (
+                  {isDeductionBreakdownOpen && (
                     <>
                       <Box
                         display="flex"
@@ -263,7 +308,11 @@ function PaymentDetailsOverview({
                             size="small"
                           />
                         </Text>
-                        <Amount value={fee} />
+                        <BladeAmount
+                          value={i18nifyConvertToMajorUnit(fee, currency)}
+                          currency={currency || 'INR'}
+                          isAffixSubtle={false}
+                        />
                       </Box>
                       <Box
                         display="flex"
@@ -274,7 +323,11 @@ function PaymentDetailsOverview({
                         <Text>
                           GST <Tooltip type="gst" size="small" />
                         </Text>
-                        <Amount value={tax} />
+                        <BladeAmount
+                          value={i18nifyConvertToMajorUnit(tax, currency)}
+                          currency={currency || 'INR'}
+                          isAffixSubtle={false}
+                        />
                       </Box>
                     </>
                   )}
@@ -283,13 +336,18 @@ function PaymentDetailsOverview({
                       type="negative"
                       fontSize={theme.typography.fonts.size[100]}
                     >
-                      <Amount value={totalDeductions} currency={currency} />
+                      <BladeAmount
+                        value={i18nifyConvertToMajorUnit(totalDeductions, currency)}
+                        currency={currency || 'INR'}
+                        isAffixSubtle={false}
+                        color="feedback.text.negative.intense"
+                      />
                     </StyledAmountWrapper>
                   </StyledAmountContainer>
                 </Box>
                 <Divider dividerStyle="solid" thickness="thick" variant="normal" />
                 <Box display="flex" justifyContent="space-between" paddingY="spacing.3">
-                  <Text type="normal" size="medium" weight="bold">
+                  <Text size="medium" weight="medium">
                     Net amount
                   </Text>
                   <StyledAmountWrapper
@@ -297,7 +355,11 @@ function PaymentDetailsOverview({
                     type="regular"
                     fontSize={theme.typography.fonts.size[100]}
                   >
-                    <Amount value={netAmount} currency={currency} />
+                    <BladeAmount
+                      value={i18nifyConvertToMajorUnit(netAmount, currency)}
+                      currency={currency || 'INR'}
+                      isAffixSubtle={false}
+                    />
                   </StyledAmountWrapper>
                 </Box>
               </RowsWrapper>
@@ -306,7 +368,7 @@ function PaymentDetailsOverview({
         </CardWrapper>
         <SectionFooter>
           {paymentDetails?.transaction?.settlement_id ? (
-            <Text type="subtle" variant="body" size="small" weight="regular" contrast="low">
+            <Text variant="body" size="small" weight="regular">
               Net amount deposited in your bank account{' '}
               <Link
                 size="small"
@@ -322,7 +384,7 @@ function PaymentDetailsOverview({
               </Link>
             </Text>
           ) : (
-            <Text type="subtle" variant="body" size="small" weight="regular" contrast="low">
+            <Text variant="body" size="small" weight="regular">
               Net amount is deposited in your bank account as per your{' '}
               <Link
                 size="small"
@@ -335,7 +397,7 @@ function PaymentDetailsOverview({
             </Text>
           )}
         </SectionFooter>
-      </BoxContainer> */}
+      </BoxContainer>
     </Box>
   );
 }

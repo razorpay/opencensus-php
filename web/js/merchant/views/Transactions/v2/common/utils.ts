@@ -312,3 +312,14 @@ export function isPaymentV2RevampEnabled(abExperiments) {
     isInternalTestingEnabled(abExperiments)
   );
 }
+
+export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: string }) => {
+  switch (countryCode) {
+    case 'MY':
+      return 'Tax';
+    case 'IN':
+    case 'SG':
+    default:
+      return 'GST';
+  }
+};

@@ -21,6 +21,18 @@ import {
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { render, screen, userEvent, waitFor } from 'test-utils';
 
+const mockAbExperiments = {
+  toggle_payments_v2_revamp: {
+    variables: {
+      result: 'on',
+    },
+  },
+};
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
+
 describe('Payment Details Overview component', () => {
   const App = ({ props }) => {
     return <PaymentDetailsOverview {...props} />;
@@ -73,11 +85,19 @@ describe('Payment Details Overview component', () => {
       expect(screen.getByText(`${titleCase(paymentStatus)}`)).toBeInTheDocument();
     });
 
-    test.skip('should render payment amount', () => {
+    test('should render payment amount', () => {
       render(<App props={capturedPaymentProps} />, { initialState });
       const paymentAmount = capturedPaymentProps.paymentDetails.amount;
-      expect(screen.getAllByLabelText('amount-info')).toHaveLength(4);
-      expect(screen.getAllByText(`${paymentAmount / 100}`)).toHaveLength(2);
+      expect(screen.getAllByLabelText('amount-info')).toHaveLength(1);
+      expect(screen.getByTestId('gross-amount')).toBeInTheDocument();
+      expect(screen.getByTestId('net-amount')).toBeInTheDocument();
+      expect(screen.getByTestId('deductions')).toBeInTheDocument();
+
+      //for total amount shown like a header
+      expect(screen.getByText(`${paymentAmount / 100}`)).toBeInTheDocument();
+
+      //for gross amount
+      expect(screen.getByText(`${paymentAmount / 100}.00`)).toBeInTheDocument();
     });
 
     test('should render payment timestamp', () => {
@@ -91,7 +111,7 @@ describe('Payment Details Overview component', () => {
       expect(screen.getByText(`${createdDay}, ${createdTime}`)).toBeInTheDocument();
     });
 
-    test.only('should render the badge with application name', () => {
+    test('should render the badge with application name', () => {
       render(<App props={refundedPaymentProps} />, { initialState });
       expect(screen.getByText(`Payment initiated via:`)).toBeInTheDocument();
       expect(
@@ -100,7 +120,7 @@ describe('Payment Details Overview component', () => {
     });
   });
 
-  describe.skip('Render deductions details', () => {
+  describe('Render deductions details', () => {
     test('should render deduction, net amount & gross amount labels', () => {
       render(<App props={capturedPaymentProps} />, { initialState });
       expect(screen.getByText('Gross amount')).toBeInTheDocument();
@@ -114,8 +134,8 @@ describe('Payment Details Overview component', () => {
 
       const totalDeductions = Number(tax) + Number(fee);
 
-      expect(screen.getByText(`${totalDeductions / 100}`)).toBeInTheDocument();
-      expect(screen.getByText(`${(amount - totalDeductions) / 100}`)).toBeInTheDocument();
+      expect(screen.getByText(`${totalDeductions / 100}.00`)).toBeInTheDocument();
+      expect(screen.getByText(`${(amount - totalDeductions) / 100}.00`)).toBeInTheDocument();
     });
 
     test('should toggle deductions view', async () => {
@@ -129,7 +149,7 @@ describe('Payment Details Overview component', () => {
     });
   });
 
-  describe.skip('Render footer correctly', () => {
+  describe('Render footer correctly', () => {
     test('should render settlement cycle cta', () => {
       render(<App props={capturedPaymentProps} />, { initialState });
       expect(screen.getByText('settlement cycle')).toBeInTheDocument();

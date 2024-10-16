@@ -22,6 +22,7 @@ export const tooltipContent = {
   rrnARN: 'A unique identifier (Reference Number) which serves as a proof of the refund',
   platformFees: 'Platform fees charged by Razorpay',
   gst: 'Goods and Service Tax (GST)',
+  tax: 'Tax',
   partnerApplicationFees: 'The fees has been charged for a transaction via partner:',
   transfer:
     'You can’t create a transfer for this payment because the entire amount is already transfered',

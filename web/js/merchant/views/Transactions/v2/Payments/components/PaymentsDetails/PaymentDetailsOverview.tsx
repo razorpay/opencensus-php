@@ -1,18 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Badge,
   Box,
   Card,
   CardBody,
+  CloseIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
   Divider,
+  Link,
   Text,
   useTheme,
-  CloseIcon,
+  Amount as BladeAmount,
 } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { bindActionCreators, compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
@@ -22,11 +27,11 @@ import {
   fetchHolidayList,
   fetchSettlementConfig,
 } from 'merchant/reducers/settlements/details';
+import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 import Tooltip from './Tooltip';
 import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
-import { OverviewIconWrapper, StyledAmountWrapper } from './styled';
 import {
   IPaymentDetails,
   IPaymentIdRefundDetails,
@@ -34,6 +39,20 @@ import {
   IQuestionDetails,
   PaymentStatus,
 } from './types';
+import {
+  OverviewIconWrapper,
+  DashedDivider,
+  SectionFooter,
+  CollapsibleContainer,
+  CardWrapper,
+  RowsWrapper,
+  BoxContainer,
+  StyledChevron,
+  StyledAmountContainer,
+  StyledAmountWrapper,
+} from './styled';
+
+import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
 import {
   getBadgeIcon,
   getBaseVariant,
@@ -47,6 +66,12 @@ import {
 } from './utils';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import {
+  i18nifyConvertToMajorUnit,
+  isPaymentV2RevampEnabled,
+  getCountryTaxDefinition,
+} from 'merchant/views/Transactions/v2/common/utils';
+import { useSplitzService } from 'common/splitz';
 
 export const OverviewIcon = ({ status, isCountryIndia = true }) => {
   const Icon = getBadgeIcon(status, isCountryIndia);
@@ -144,10 +169,17 @@ function PaymentDetailsOverview({
   fetchHolidayList,
   fetchSchedule,
   fetchSettlementConfig,
+  openModal,
   history,
   user,
 }: IPaymentDetailsOverview) {
-  const { currency, amount, created_at, status } = paymentDetails;
+  const [isDeductionBreakdownOpen, setIsDeductionBreakdownOpen] = useState(false);
+  const toggleDeductions = () => {
+    setIsDeductionBreakdownOpen((prevValue) => !prevValue);
+  };
+  const { currency, fee, tax, amount, created_at, status } = paymentDetails;
+  const totalDeductions = fee + tax;
+  const netAmount = amount - totalDeductions;
   const settlementId = paymentDetails?.transaction?.settlement_id;
   const [createdDay, createdTime] = useTime(created_at);
 
@@ -159,6 +191,14 @@ function PaymentDetailsOverview({
     breakpoints: theme.breakpoints,
   });
   const isMobile = matchedDeviceType === 'mobile';
+
+  const viewSettlementSchedule = () => {
+    trackDetailsClick({ objectName: 'View Settlement Cycle' });
+    openModal({
+      size: 'medium',
+      component: <SettlementScheduleV2 />,
+    });
+  };
 
   useEffect(() => {
     if (!settlementId) {
@@ -176,6 +216,15 @@ function PaymentDetailsOverview({
     createdTime,
     applicationDetails,
   });
+
+  const splitz = useSplitzService();
+
+  const { abExperiments } = splitz || { abExperiments: { toggle_payments_v2_revamp: undefined } };
+  const isTxnV2ParityFeaturesEnabled = isPaymentV2RevampEnabled(abExperiments);
+
+  const navigate = useNavigate();
+
+  const { country_code: countryCode } = user || {};
 
   return (
     <Box testID="payment-details-overview">
@@ -295,143 +344,171 @@ function PaymentDetailsOverview({
           )}
         </CardBody>
       </Card>
-      {/* TODO: keep it back once tax and fee currency value is fixed for international payments
-      <BoxContainer disableMarginTop>
-        <CardWrapper enableBorderTopRadius>
-          <Card padding="spacing.5" elevation="none">
-            <CardBody>
-              <RowsWrapper>
-                <Box display="flex" justifyContent="space-between" paddingY="spacing.3">
-                  <Text type="subtle" size="medium" weight="bold">
-                    Gross amount
-                  </Text>
-                  <StyledAmountWrapper
-                    data-testid="gross-amount"
-                    type="positive"
-                    fontSize={theme.typography.fonts.size[100]}
-                  >
-                    <Amount
-                      size="body-medium-bold"
-                      value={amount}
-                      isAffixSubtle={false}
-                      currency={currency}
-                      intent="positive"
-                    />
-                  </StyledAmountWrapper>
-                </Box>
-                <DashedDivider />
-                <Box position="relative" paddingY="spacing.3">
-                  <CollapsibleContainer onClick={toggleDeductions}>
-                    <Text type="subtle" size="medium" weight="bold">
-                      Deductions{' '}
-                      <StyledChevron>
-                        {!isOpen ? (
-                          <ChevronDownIcon
-                            size="medium"
-                            color="feedback.icon.neutral.intense"
-                            data-testid="chevron-down"
-                          />
-                        ) : (
-                          <ChevronUpIcon
-                            size="medium"
-                            color="feedback.icon.neutral.intense"
-                            data-testid="chevron-up"
-                          />
-                        )}
-                      </StyledChevron>
+      {isTxnV2ParityFeaturesEnabled ? (
+        <BoxContainer disableMarginTop>
+          <CardWrapper enableBorderTopRadius>
+            <Card padding="spacing.5" elevation="none">
+              <CardBody>
+                <RowsWrapper>
+                  <Box display="flex" justifyContent="space-between" paddingY="spacing.3">
+                    <Text size="medium" weight="medium">
+                      Gross amount
                     </Text>
-                  </CollapsibleContainer>
-                  {isOpen && (
-                    <>
-                      <Box
-                        display="flex"
-                        justifyContent="space-between"
-                        paddingTop="spacing.3"
-                        paddingLeft="spacing.3"
-                      >
-                        <Text>
-                          Razorpay platform fees{' '}
-                          <Tooltip
-                            type={
-                              applicationDetails?.name ? 'partnerApplicationFees' : 'platformFees'
-                            }
-                            partnerApplicationName={applicationDetails?.name}
-                            size="small"
-                          />
-                        </Text>
-                        <Amount value={fee} />
-                      </Box>
-                      <Box
-                        display="flex"
-                        justifyContent="space-between"
-                        paddingTop="spacing.3"
-                        paddingLeft="spacing.3"
-                      >
-                        <Text>
-                          GST <Tooltip type="gst" size="small" />
-                        </Text>
-                        <Amount value={tax} />
-                      </Box>
-                    </>
-                  )}
-                  <StyledAmountContainer>
                     <StyledAmountWrapper
-                      type="negative"
+                      data-testid="gross-amount"
+                      type="positive"
                       fontSize={theme.typography.fonts.size[100]}
                     >
-                      <Amount value={totalDeductions} currency={currency} />
+                      <BladeAmount
+                        size="medium"
+                        value={i18nifyConvertToMajorUnit(amount, currency)}
+                        isAffixSubtle={false}
+                        currency={currency || 'INR'}
+                        color="feedback.text.positive.intense"
+                      />
                     </StyledAmountWrapper>
-                  </StyledAmountContainer>
-                </Box>
-                <Divider dividerStyle="solid" thickness="thick" variant="normal" />
-                <Box display="flex" justifyContent="space-between" paddingY="spacing.3">
-                  <Text type="normal" size="medium" weight="bold">
-                    Net amount
-                  </Text>
-                  <StyledAmountWrapper
-                    data-testid="net-amount"
-                    type="regular"
-                    fontSize={theme.typography.fonts.size[100]}
-                  >
-                    <Amount value={netAmount} currency={currency} />
-                  </StyledAmountWrapper>
-                </Box>
-              </RowsWrapper>
-            </CardBody>
-          </Card>
-        </CardWrapper>
-        <SectionFooter>
-          {paymentDetails?.transaction?.settlement_id ? (
-            <Text type="subtle" variant="body" size="small" weight="regular" contrast="low">
-              Net amount deposited in your bank account{' '}
-              <Link
-                size="small"
-                icon={ChevronRightIcon}
-                iconPosition="right"
-                onClick={() => {
-                  history.push(`/settlements/${paymentDetails?.transaction?.settlement_id}`, {
-                    prevPath: pathname,
-                  });
-                }}
-              >
-                View details
-              </Link>
-            </Text>
-          ) : (
-            <Text type="subtle" variant="body" size="small" weight="regular" contrast="low">
-              Net amount is deposited in your bank account as per your{' '}
-              <Link
-                size="small"
-                icon={ChevronRightIcon}
-                iconPosition="right"
-                onClick={viewSettlementSchedule}
-              >
-                settlement cycle
-              </Link>
-            </Text>
-          )}
-        </SectionFooter>
-      </BoxContainer> */}
+                  </Box>
+                  <DashedDivider />
+                  <Box position="relative" paddingY="spacing.3">
+                    <CollapsibleContainer onClick={toggleDeductions}>
+                      <Text size="medium" weight="medium" testID="deductions">
+                        Deductions{' '}
+                        <StyledChevron>
+                          {!isDeductionBreakdownOpen ? (
+                            <ChevronDownIcon
+                              size="medium"
+                              color="feedback.icon.neutral.intense"
+                              data-testid="chevron-down"
+                            />
+                          ) : (
+                            <ChevronUpIcon
+                              size="medium"
+                              color="feedback.icon.neutral.intense"
+                              data-testid="chevron-up"
+                            />
+                          )}
+                        </StyledChevron>
+                      </Text>
+                    </CollapsibleContainer>
+                    {isDeductionBreakdownOpen && (
+                      <>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          paddingTop="spacing.3"
+                          paddingLeft="spacing.3"
+                        >
+                          <Text>
+                            Razorpay platform fees{' '}
+                            <Tooltip
+                              type={
+                                applicationDetails?.name ? 'partnerApplicationFees' : 'platformFees'
+                              }
+                              partnerApplicationName={applicationDetails?.name}
+                              size="small"
+                            />
+                          </Text>
+                          <BladeAmount
+                            value={i18nifyConvertToMajorUnit(fee, currency)}
+                            isAffixSubtle={false}
+                            currency={currency || 'INR'}
+                          />
+                        </Box>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          paddingTop="spacing.3"
+                          paddingLeft="spacing.3"
+                        >
+                          <Text>
+                            {getCountryTaxDefinition({ countryCode })}
+                            <Tooltip
+                              type={
+                                getCountryTaxDefinition({ countryCode }).toLowerCase() as
+                                  | 'tax'
+                                  | 'gst'
+                              }
+                              size="small"
+                            />
+                          </Text>
+                          <BladeAmount
+                            value={i18nifyConvertToMajorUnit(tax, currency)}
+                            isAffixSubtle={false}
+                            currency={currency || 'INR'}
+                          />
+                        </Box>
+                      </>
+                    )}
+                    <StyledAmountContainer>
+                      <StyledAmountWrapper
+                        type="negative"
+                        fontSize={theme.typography.fonts.size[100]}
+                      >
+                        <BladeAmount
+                          color="feedback.text.negative.intense"
+                          value={i18nifyConvertToMajorUnit(totalDeductions, currency)}
+                          currency={currency || 'INR'}
+                          isAffixSubtle={false}
+                        />
+                      </StyledAmountWrapper>
+                    </StyledAmountContainer>
+                  </Box>
+                  <Divider dividerStyle="solid" thickness="thick" variant="normal" />
+                  <Box display="flex" justifyContent="space-between" paddingY="spacing.3">
+                    <Text size="medium" weight="medium">
+                      Net amount
+                    </Text>
+                    <StyledAmountWrapper
+                      data-testid="net-amount"
+                      type="regular"
+                      fontSize={theme.typography.fonts.size[100]}
+                    >
+                      <BladeAmount
+                        value={i18nifyConvertToMajorUnit(netAmount, currency)}
+                        currency={currency || 'INR'}
+                        isAffixSubtle={false}
+                      />
+                    </StyledAmountWrapper>
+                  </Box>
+                </RowsWrapper>
+              </CardBody>
+            </Card>
+          </CardWrapper>
+          <SectionFooter>
+            {paymentDetails?.transaction?.settlement_id ? (
+              <Text variant="body" size="small" weight="regular">
+                Net amount deposited in your bank account{' '}
+                <Link
+                  size="small"
+                  icon={ChevronRightIcon}
+                  iconPosition="right"
+                  onClick={() => {
+                    navigate(`/settlements/${paymentDetails?.transaction?.settlement_id}`, {
+                      state: {
+                        prevPath: pathname,
+                      },
+                    });
+                  }}
+                >
+                  View details
+                </Link>
+              </Text>
+            ) : (
+              <Text variant="body" size="small" weight="regular">
+                Net amount is deposited in your bank account as per your{' '}
+                <Link
+                  size="small"
+                  icon={ChevronRightIcon}
+                  iconPosition="right"
+                  onClick={viewSettlementSchedule}
+                >
+                  settlement cycle
+                </Link>
+              </Text>
+            )}
+          </SectionFooter>
+        </BoxContainer>
+      ) : null}
     </Box>
   );
 }
