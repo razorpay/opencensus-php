@@ -811,7 +811,7 @@ class Gateway extends Base\Gateway
                 if ($attempt < 3)
                 {
                     $errorCode = ErrorCode::GATEWAY_ERROR_BANK_OFFLINE;
-                    $remindAt  = Carbon::now()->addSeconds(3600)->getTimestamp();
+                    $remindAt  = Carbon::now()->addSeconds(60)->getTimestamp();
                 }
                 else if ($attempt === 3)
                 {
