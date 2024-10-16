@@ -14,7 +14,7 @@ const InvoiceActions = ({
   showNotification,
   updateExportPayment,
 }: InvoiceActionProps): JSX.Element => {
-  const { b2b_export_invoice: invoiceId, status } = item;
+  const { id, b2b_export_invoice: invoiceId, status } = item;
   const isPaymentAuthorized = status === PaymentStatus.AUTHORIZED;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +56,19 @@ const InvoiceActions = ({
     }
   };
 
+  const onInvoiceUploadSuccess = (exportInvoiceId: string) => {
+    updateExportPayment({ ...item, b2b_export_invoice: exportInvoiceId });
+  };
+
+  const onDismiss = () => {
+    //close popup
+  };
+
+  const onAddInvoiceClick = () => {
+    //open Add Invoice Modal
+    console.log(id, onDismiss, showNotification, onInvoiceUploadSuccess);
+  };
+
   return (
     <Box>
       {invoiceId ? (
@@ -75,7 +88,7 @@ const InvoiceActions = ({
         </Box>
       ) : (
         isPaymentAuthorized && (
-          <Link variant="button" icon={BillIcon} size="medium">
+          <Link variant="button" icon={BillIcon} size="medium" onClick={onAddInvoiceClick}>
             Add Invoice
           </Link>
         )
