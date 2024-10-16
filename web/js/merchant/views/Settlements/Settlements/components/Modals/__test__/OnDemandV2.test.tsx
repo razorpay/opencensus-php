@@ -277,7 +277,7 @@ describe('Capital/OnDemandV2', () => {
       screen.getByRole('textbox', {
         name: /amount pending to be settled\?/i,
       }),
-    ).toHaveValue('45,690');
+    ).toHaveValue('45,690.00');
     await user.click(
       screen.getByRole('button', {
         name: /confirm settlement/i,

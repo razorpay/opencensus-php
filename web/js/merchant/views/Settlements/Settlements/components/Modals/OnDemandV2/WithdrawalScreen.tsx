@@ -302,11 +302,6 @@ const WithdrawalScreen = ({
   const showDailyLimit = isODSRestricted || hasMIDLevelLimit;
   const currentBalance = pgBalanceQuery.data?.balance || 0;
   const linkedAccountBalance = Number(linkedAccountBalanceQuery.data?.balance) || 0;
-  /** Must be rounded eg:= 12000.12 -> 12300 */
-  const linkedAccountBalanceRsRounded = convertToMajorUnit(linkedAccountBalance, {
-    currency,
-    keepDecimal: false,
-  });
 
   const errorMessage = ((): string => {
     // Linked Account
@@ -314,7 +309,7 @@ const WithdrawalScreen = ({
       if (linkedAccountBalanceQuery.isError) {
         return 'Unable to retrieve balance. Please try again later.';
       }
-      return !linkedAccountBalanceRsRounded
+      return !linkedAccountBalance
         ? 'Your linked accounts don’t have any pending settlements.'
         : '';
     }
@@ -367,7 +362,7 @@ const WithdrawalScreen = ({
 
   const settleNowPayload = isLinkedAccountTabActive
     ? {
-        amount: convertToMinorUnit(linkedAccountBalanceRsRounded, { currency }),
+        amount: linkedAccountBalance,
         type: SETTLEMENT_TYPES.ROUTE,
       }
     : { amount: amountInPaise, type: SETTLEMENT_TYPES.ODS };
@@ -560,7 +555,7 @@ const WithdrawalScreen = ({
       <Box padding={MODAL_PADDING}>
         <Text weight="semibold">Amount pending to be settled</Text>
         <TextInput
-          value={formatAmount(linkedAccountBalance, currency, false, false)}
+          value={formatAmount(linkedAccountBalance, currency, true, false)}
           marginTop="spacing.3"
           marginBottom="spacing.11"
           prefix={getCurrencySymbol(currency)}
