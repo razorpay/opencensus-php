@@ -120,44 +120,16 @@ class ApiUrl
         $originDomain = self::getRequestOriginUrl();
         $originHost = parse_url($originDomain, PHP_URL_HOST);
 
-        $app = \App::getFacadeRoot();
-        $trace = $app['trace'];
-        $merchantId = Session::get('current_merchant_id') ?? '';
-
         $requestDomain = Request::url();
         $requestHost = parse_url($requestDomain, PHP_URL_HOST);
-
-
-        $trace->info(TraceCode::ORIGIN_DOMAIN_AND_HOST, [
-            'originDomain' => $originDomain,
-            'orginHost' => $originHost,
-            'requestDomain' => $requestDomain,
-            'requestHost' => $requestHost,
-        ]) ;
 
         if ($shouldUseBankingOriginRequestV2 === true)
         {
             $bankingUrls = explode(',', config('app.banking_service_url_v2'));
 
-            $trace->info(TraceCode::BANKING_ORIGIN_REQUEST_V2, [
-                'originDomain' => $originDomain,
-                'originHost' => $originHost,
-                'merchantId' => $merchantId,
-                'requestDomain' => $requestDomain,
-                'bankingUrls' => $bankingUrls,
-            ]);
-
             foreach($bankingUrls as $bankingUrl) {
                 $bankingHost = parse_url(trim($bankingUrl), PHP_URL_HOST);
                 if ($originHost === $bankingHost || $requestHost === $bankingHost) {
-                    $trace->info(TraceCode::BANKING_ORIGIN_REQUEST_V2_INSIDE_LOOP, [
-                        'requestHost' => $requestHost,
-                        'originHost' => $originHost,
-                        'bankingUrl' => $bankingUrl,
-                        'bankingHost' => $bankingHost,
-                        'merchantId' => $merchantId,
-                    ]);
-
                     return true;
                 }
             }
@@ -166,15 +138,6 @@ class ApiUrl
         $bankingHost = parse_url(config('app.banking_service_url'), PHP_URL_HOST);
 
         $bankLmsBankingHost = parse_url(config('app.bank_lms_banking_service_url'), PHP_URL_HOST);
-
-        $trace->info(TraceCode::BANKING_ORIGIN_REQUEST_V1, [
-            'originDomain' => $originDomain,
-            'originHost' => $originHost,
-            'bankingHost' => $bankingHost,
-            'bankLmsBankingHost' => $bankLmsBankingHost,
-            'isBankingOriginRequest' => ($originHost === $bankingHost or $originHost === $bankLmsBankingHost),
-            'merchantId' => $merchantId,
-        ]);
 
         return ($originHost === $bankingHost or $originHost === $bankLmsBankingHost);
     }

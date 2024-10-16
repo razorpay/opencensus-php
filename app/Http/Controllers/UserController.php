@@ -1064,7 +1064,6 @@ class UserController extends Controller
             'merchantId' => $merchantId,
             'experimentId' => $experimentId,
             'userId' => $userId,
-            'details' => $details,
             'splitzExperimentResult' => $redirectionSplitzExperimentData['variables'][0]['value'] ?? null,
             'redirectionSplitzExperimentData' => $redirectionSplitzExperimentData
         ]);
@@ -1079,16 +1078,11 @@ class UserController extends Controller
         $shouldUseBankingOriginRequestV2 = $this->isRedirectionExptEnabled($details);
 
         $this->trace->info(TraceCode::SHOULD_USE_BANKING_ORIGIN_REQUEST_V2, [
-            'shouldUseBankingOriginRequestV2' => $shouldUseBankingOriginRequestV2,
-            'details' => $details
+            'shouldUseBankingOriginRequestV2' => $shouldUseBankingOriginRequestV2
         ]);
 
         if ($isAdminAsMerchant === true || ApiUrl::isBankingOriginRequest($shouldUseBankingOriginRequestV2) === true)
         {
-            $this->trace->info(TraceCode::RETURN_FALSE_IS_REDIRECT_APPLICABLE, [
-                'isAdminAsMerchant' => $isAdminAsMerchant,
-                'isBankingOriginRequest' => ApiUrl::isBankingOriginRequest($shouldUseBankingOriginRequestV2)
-            ]);
             return false;
         }
 
