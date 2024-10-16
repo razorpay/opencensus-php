@@ -2393,4 +2393,67 @@ return [
             ]
         ]
     ],
+
+    'testCreateOndemandInternalPgLedgerReverseShadow' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/internal',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'settle_full_balance' => true,
+                'description'         => 'pg_ledger_reverse_shadow',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'settlement.ondemand',
+                'amount_requested'     => 20030000,
+                'fees'                 => 472708,
+                'tax'                  => 72108,
+                'amount_pending'       => 19557292,
+                'amount_settled'       => 0,
+                'amount_reversed'      => 0,
+                'settle_full_balance'  => true,
+                'currency'             => 'INR',
+                'status'               => 'created',
+                'description'          => 'pg_ledger_reverse_shadow',
+            ]
+        ]
+    ],
+
+    'testOndemandFeesPgLedgerReverseShadow' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/fees',
+            'method'  => 'get',
+            'content' => [
+                'amount' => 20030000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'name'            => 'settlement_ondemand',
+                        'amount'          => 400600,
+                        'percentage'      => null,
+                        'pricing_rule_id' => '1GuENK6Hl2BWGg',
+                        'pricing_rule' => [
+                            'percent_rate' => 200,
+                            'fixed_rate'   => 0,
+                        ],
+                    ],
+                    [
+                        'name'            => 'tax',
+                        'amount'          => 72108,
+                        'percentage'      =>  1800,
+                        'pricing_rule_id' => null,
+                    ],
+                ],
+            ]
+        ]
+    ],
 ];

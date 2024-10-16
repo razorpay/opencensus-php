@@ -461,14 +461,23 @@ class Core extends Base\Core
 
     public function getSettlementAmount($input, $merchant)
     {
-        if (isset($input['settle_full_balance']) === true && boolval($input['settle_full_balance']) === true)
+        if (isset($input['settle_full_balance']) === true && (bool) $input['settle_full_balance'] === true)
         {
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+                $ledgerService = $this->app['ledger'];
+
+                $merchantAccountBalance = $reverseShadowCapital->getMerchantAccountBalance($ledgerService, $merchant->getMerchantId());
+
+                return (int) $merchantAccountBalance[LedgerConstants::MERCHANT_BALANCE];
+            }
+
             return $merchant->primaryBalance->getBalance();
         }
-        else
-        {
-            return $input[Entity::AMOUNT];
-        }
+
+        return $input[Entity::AMOUNT];
     }
 
     public function getSettlementAmountAndSettleableAmount($input, $amount, $featureConfig, $scheduled = false): array
