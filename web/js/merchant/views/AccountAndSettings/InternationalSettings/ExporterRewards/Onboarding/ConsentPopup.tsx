@@ -22,7 +22,7 @@ const ConsentPopup = ({ isVisible, onClose }: ActionProps) => {
   };
 
   return (
-    <Modal isOpen={isVisible} onDismiss={onClose} size="small" zIndex={9999}>
+    <Modal isOpen={isVisible} onDismiss={onClose} size="small">
       <ModalHeader
         title="Terms of Use and Privacy Policy"
         subtitle="Rewards program for Cross Border Exporters"

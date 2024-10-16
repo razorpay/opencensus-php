@@ -80,13 +80,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
     setActiveField(missingPagesKeys[currentIndex + 1]);
   };
   return (
-    <Modal
-      isOpen={isOpen}
-      onDismiss={onDismiss}
-      snapPoints={snapPoints}
-      size="large"
-      zIndex={99999}
-    >
+    <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="large">
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box

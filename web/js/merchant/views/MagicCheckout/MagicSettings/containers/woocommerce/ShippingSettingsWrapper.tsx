@@ -11,7 +11,7 @@ import {
   Heading,
   Divider,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import ShippingSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/ShippingSettingsTab';
 import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingWrapper';
 
@@ -84,7 +84,7 @@ const ShippingSettingsWrapper = ({ abExperiments }): JSX.Element => {
                   value={settingType}
                   testID="shipping-type"
                 />
-                <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+                <DropdownOverlay>
                   <ActionList
                     children={WOOCOMMERCE_SHIPPING_SETTINGS_TYPE.map((option) => {
                       return (

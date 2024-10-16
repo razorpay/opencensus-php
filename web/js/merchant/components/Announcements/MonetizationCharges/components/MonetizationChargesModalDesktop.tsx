@@ -69,7 +69,6 @@ const MonetizationChargesModalDesktop: React.FC<MonetizationChargesModalDesktopP
       isOpen={isOpen}
       onDismiss={modalCloseHandler}
       size={showCustomPricing ? 'large' : 'medium'}
-      zIndex={1500}
     >
       <ModalHeader />
       <ModalBody>

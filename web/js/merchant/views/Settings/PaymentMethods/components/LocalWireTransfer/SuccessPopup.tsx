@@ -79,7 +79,7 @@ const SuccessPopup = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} zIndex={10000}>
+    <Modal isOpen={isOpen} onDismiss={onDismiss}>
       <ModalHeader title={`Request for ${account} Currency Bank Account`} />
       <ModalBody>
         <Box display="flex" flexDirection="column" alignItems="center">

@@ -114,8 +114,7 @@ const InviteMerchantModal = ({
 
   return (
     <ErrorBoundary team={Teams?.PARTNERSHIP} rank={Ranks.P0} resetOnProps>
-      {/* // Note: zIndex for sidenav in the dashboard is 1111 */}
-      <Modal zIndex={1112} isOpen={isOpen} onDismiss={onDismissModal} size="small">
+      <Modal isOpen={isOpen} onDismiss={onDismissModal} size="small">
         <ModalBody>
           {/* Note: Current ModalHeader from blade doesn't support hiding the divider */}
           <ModalHeader

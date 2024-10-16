@@ -87,9 +87,9 @@ const ClientProductsWrapper = ({
 
   const handleShareReferralLink = () => {
     trackShareReferralLinkClicked(productType, partnerId);
-
     openModal({
       size: 'med-large',
+      isNew: true,
       component: <ShareReferralLink referralData={referralData} initialProductType={productType} />,
     });
   };

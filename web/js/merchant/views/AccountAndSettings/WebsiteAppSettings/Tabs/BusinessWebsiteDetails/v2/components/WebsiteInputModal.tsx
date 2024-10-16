@@ -98,13 +98,7 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onDismiss={onDismiss}
-      snapPoints={snapPoints}
-      size="medium"
-      zIndex={99999}
-    >
+    <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="medium">
       <ModalHeader title="Submit details for verification" />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box display="flex" flexDirection="row" minHeight={isMobile ? 'none' : '400px'}>

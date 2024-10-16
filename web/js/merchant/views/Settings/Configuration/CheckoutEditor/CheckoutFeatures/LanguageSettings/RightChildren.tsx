@@ -11,7 +11,6 @@ import {
 
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
 
-import { COMMON_Z_INDEX } from 'common/constant';
 import { LANGUAGE_OPTIONS } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/constants/DefaultValue';
 
 const getLanguageNameByCode = (code: string) => {
@@ -35,7 +34,7 @@ const RightChildren = () => {
       >
         {getLanguageNameByCode(values.locale.languageCode)}
       </DropdownLink>
-      <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+      <DropdownOverlay>
         <ActionList>
           {LANGUAGE_OPTIONS.map((config) => (
             <ActionListItem

@@ -76,8 +76,7 @@ const OnDemandModalEntry = (props: Record<string, any>) => {
   }, []);
 
   return shouldUseV2 ? (
-    // zIndex={1111} - used to put modal above sidenav - should be in sync with MODAL_ZINDEX - OnDemandV2/helpers.ts
-    <Modal zIndex={1111} isOpen onDismiss={() => {}}>
+    <Modal isOpen onDismiss={() => {}}>
       <ModalBody padding="spacing.0">
         <ErrorBoundary resetOnProps rank={Ranks.P0} team={Teams.CAPITAL}>
           <Suspense fallback={<Loader />}>

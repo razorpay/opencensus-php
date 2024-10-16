@@ -619,13 +619,7 @@ function UpdateWebsiteDetails(props) {
     'Make sure your app has about us, privacy policy, terms and conditions, refund policy pages. Your app will not be approved without these pages';
 
   return props.shouldShowV2 ? (
-    <Modal
-      isOpen={props.isOpen}
-      onDismiss={props.onDismiss}
-      size="medium"
-      snapPoints={snapPoints}
-      zIndex={99999}
-    >
+    <Modal isOpen={props.isOpen} onDismiss={props.onDismiss} size="medium" snapPoints={snapPoints}>
       <BladeModalHeader title="Update Website/App" />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <form onSubmit={save}>

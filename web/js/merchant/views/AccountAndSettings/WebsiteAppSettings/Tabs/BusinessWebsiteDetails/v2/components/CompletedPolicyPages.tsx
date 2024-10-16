@@ -46,13 +46,7 @@ function CompletedPolicyPages({
   }, [isOpen]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onDismiss={onDismiss}
-      snapPoints={snapPoints}
-      size="medium"
-      zIndex={99999}
-    >
+    <Modal isOpen={isOpen} onDismiss={onDismiss} snapPoints={snapPoints} size="medium">
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box

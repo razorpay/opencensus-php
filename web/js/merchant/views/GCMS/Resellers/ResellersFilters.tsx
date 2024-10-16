@@ -9,7 +9,7 @@ import {
   ActionListItem,
   ActionList,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { StyledFilterDiv } from 'merchant/views/GCMS/shared/StyledDiv';
 import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 
@@ -75,7 +75,7 @@ const ResellersFilter = ({ onSearch }: ResellersFilterProps) => {
                 testID="status"
                 defaultValue={status}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList>
                   {Object.values(RESELLERS_STATUS).map((status) => (
                     <ActionListItem

@@ -21,13 +21,7 @@ const Loader: React.FC<LoaderProps> = ({ isMobile, onClick, variant, isOpen, onD
   const { Content, lottieAnimation } = loaderVariant[variant];
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onDismiss={onDismiss}
-      zIndex={99999}
-      size="medium"
-      snapPoints={snapPoints}
-    >
+    <Modal isOpen={isOpen} onDismiss={onDismiss} size="medium" snapPoints={snapPoints}>
       <ModalBody>
         <Box
           display="flex"

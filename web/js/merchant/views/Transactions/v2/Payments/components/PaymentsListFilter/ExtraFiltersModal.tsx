@@ -16,7 +16,7 @@ import {
 import { connect } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { bindActionCreators, compose } from 'redux';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { Option } from 'common/components/Dropdown/types';
 import { useMobile } from 'common/hooks/useMobile';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -84,7 +84,7 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
               defaultValue={method}
               onChange={onPaymentMethodChange}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {(paymentMethodOptions as Option[]).map(({ title, value }) => (
                   <ActionListItem key={value} title={title} value={value} />
@@ -105,7 +105,7 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
               defaultValue={channel}
               onChange={onChannelSelect}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {(paymentChannelOptions as Option[]).map(({ title, value }) => (
                   <ActionListItem key={value} title={title} value={value} />

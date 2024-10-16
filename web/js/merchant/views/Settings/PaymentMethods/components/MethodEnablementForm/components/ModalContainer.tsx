@@ -182,7 +182,7 @@ const ModalContainer = ({
   }, [isOpen]);
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} size="large" zIndex={10000}>
+    <Modal isOpen={isOpen} onDismiss={onDismiss} size="large">
       <ModalHeader
         title="Request to activate other international payment methods"
         subtitle="Share the details listed below for our team to verify "

@@ -57,7 +57,7 @@ const RequestPopup = (): React.ReactElement => {
   }, [isOpen, type]);
 
   return (
-    <Modal isOpen={isPopupOpen} onDismiss={onDismiss} size="small" zIndex={10000}>
+    <Modal isOpen={isPopupOpen} onDismiss={onDismiss} size="small">
       <ModalHeader title={PopupTitle[PopupType.INTERNAL_FIRS]} />
       <ModalBody>
         <Box display="flex" flexDirection="column" alignItems="center">

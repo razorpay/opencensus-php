@@ -1,4 +1,4 @@
-$line-top = 0px
+$line-top = 0
 $trapezoid-top = -18px
 $info-top = 9px
 
@@ -7,16 +7,18 @@ $payment-pages-offset = 50px
 @keyframes fadein
   from
     opacity 0
+
   to
     opacity 1
 
 .highlight-test-mode-container
-  z-index 1112
+  z-index 101
   position absolute
   width 100%
   animation fadein 2s
-  @media (max-width: 768px)
-    z-index 1000
+
+  @media (max-width 768px)
+    z-index 101
     position relative
 
   .horizontal-line
@@ -25,7 +27,8 @@ $payment-pages-offset = 50px
     height 5px
     position fixed
     top $line-top
-    @media (max-width: 768px)
+
+    @media (max-width 768px)
       position relative
 
     &.shift-line
@@ -36,7 +39,8 @@ $payment-pages-offset = 50px
     display flex
     justify-content center
     position relative
-    @media (max-width: 768px)
+
+    @media (max-width 768px)
       top -5px
 
     .trapezoid
@@ -52,12 +56,13 @@ $payment-pages-offset = 50px
       padding-left 15px
       color #2D3242
       font-size 12px
-      @media (max-width: 768px)
+
+      @media (max-width 768px)
         position relative
 
       &.shift-trapezoid
         top $trapezoid-top + 45px
-      
+
       .test-mode-switch
         margin-left 5px
         position relative
@@ -69,7 +74,8 @@ $payment-pages-offset = 50px
       top $info-top
       margin-left 3px
       cursor pointer
-      @media (max-width: 768px)
+
+      @media (max-width 768px)
         position absolute
         top 27px
 
@@ -87,11 +93,12 @@ $payment-pages-offset = 50px
       padding 10px
       margin-right 35px
       background-color #515461
-      color #FFFFFF
+      color #FFF
       font-size 12px
       border-radius 4px
       animation fadein 1s
-      @media (max-width: 768px)
+
+      @media (max-width 768px)
         position absolute
 
       &.shift-info-content
@@ -103,7 +110,7 @@ $payment-pages-offset = 50px
         cursor pointer
 
       &::after
-        content ''
+        content ""
         position absolute
         width 0
         height 0
@@ -112,8 +119,8 @@ $payment-pages-offset = 50px
         border-bottom 15px solid #515461
         top -10px
         left 25px
-  &.hide-test-mode 
+
+  &.hide-test-mode
     visibility: hidden;
     opacity: 0;
     transition: visibility 0s 2s, opacity 2s linear;
-

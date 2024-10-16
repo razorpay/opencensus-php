@@ -100,7 +100,7 @@ const ActionPopup = ({ popupType }: ActionPopupPropsT) => {
   };
 
   return (
-    <Modal isOpen={isPopupOpen} onDismiss={onDismiss} size="small" zIndex={10000}>
+    <Modal isOpen={isPopupOpen} onDismiss={onDismiss} size="small">
       <ModalHeader title={PopupTitle[popupType]} />
       <ModalBody>{getModalBody(popupType, month, year, customMessage)}</ModalBody>
       <ModalFooter>

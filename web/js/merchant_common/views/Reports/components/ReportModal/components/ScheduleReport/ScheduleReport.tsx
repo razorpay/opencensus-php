@@ -19,7 +19,7 @@ import {
   Box,
   MultiSelectDropdown,
 } from 'merchant_common/views/Reports/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import {
   ModalFooter,
   ReportModalHeader,
@@ -372,7 +372,7 @@ export const ScheduleReportModal = ({
                   .toString()}
                 isDisabled={actionViaModal === 'Edit'}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList
                   options={allReportConfigs}
                   itemComponent={({ data: { id, name }, index }) => (
@@ -408,7 +408,7 @@ export const ScheduleReportModal = ({
                   .findIndex((format) => format.value === selectedFormat?.value)
                   .toString()}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList
                   options={availableFormat}
                   itemComponent={({ data: { label }, index }) => (
@@ -490,7 +490,7 @@ export const ScheduleReportModal = ({
                     )
                     .toString()}
                 />
-                <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+                <DropdownOverlay>
                   <ActionList
                     options={getDataDurations(isCustomEnabled)}
                     itemComponent={({ data: { label }, index }) => (
@@ -531,7 +531,7 @@ export const ScheduleReportModal = ({
                     .findIndex((refRepetition) => refRepetition.label === selectedRepetition?.label)
                     .toString()}
                 />
-                <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+                <DropdownOverlay>
                   <ActionList
                     options={
                       selectedDataDuration

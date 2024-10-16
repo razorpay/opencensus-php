@@ -121,7 +121,6 @@ interface TncModalText {
 }
 interface TncModal extends TncModalText {
   isOpenTncModal: boolean;
-  zIndex?: 9999;
 }
 interface TrackingObjectType {
   toggle_switch?: string;
@@ -178,7 +177,7 @@ interface PaymentCheckoutFlowType extends checkoutPaymentType {
   plans: PlansType;
   type: typeof PAYMENT_TYPE.INTERNAL | typeof PAYMENT_TYPE.PG;
 }
-type PaymentType = typeof PAYMENT_TYPE[keyof typeof PAYMENT_TYPE];
+type PaymentType = (typeof PAYMENT_TYPE)[keyof typeof PAYMENT_TYPE];
 
 export type {
   PricingSubscriptionProps,

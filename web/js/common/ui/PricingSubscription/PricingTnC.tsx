@@ -9,8 +9,9 @@ import {
   ModalHeader,
   Box,
 } from '@razorpay/blade/components';
+
 import { TncModal } from './PricingSubscriptionProps.type';
-import { TNC_CONTENT, TNC_DETAILS_CREDIT_LINK, modalZindex } from './constants';
+import { TNC_CONTENT, TNC_DETAILS_CREDIT_LINK } from './constants';
 
 const TncContent = (): JSX.Element => (
   <>
@@ -46,13 +47,9 @@ const TncContent = (): JSX.Element => (
   </>
 );
 const TncContentMemo = memo(TncContent);
-const TncDesktop = ({
-  isOpenTncModal,
-  toggleTncModal,
-  zIndex = modalZindex,
-}: TncModal): JSX.Element => {
+const TncDesktop = ({ isOpenTncModal, toggleTncModal }: TncModal): JSX.Element => {
   return (
-    <Modal zIndex={zIndex} isOpen={isOpenTncModal} onDismiss={toggleTncModal} size="large">
+    <Modal isOpen={isOpenTncModal} onDismiss={toggleTncModal} size="large">
       <ModalHeader title="" />
       <ModalBody>
         <TncContentMemo />

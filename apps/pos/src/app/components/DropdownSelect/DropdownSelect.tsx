@@ -13,7 +13,6 @@ import { ControllerRenderProps } from 'react-hook-form';
 import { SelectDropdownOptions } from 'apps/pos/src/app/types/common';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import { FieldRules } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
-import { COMMON_Z_INDEX } from '@dashboard/shared-utils/constants';
 
 interface DropdownSelectProps {
   field: ControllerRenderProps;
@@ -82,9 +81,7 @@ const DropdownSelect = ({
           <BottomSheetBody>{renderBody(selectOptions)}</BottomSheetBody>
         </BottomSheet>
       ) : (
-        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
-          {renderBody(selectOptions)}
-        </DropdownOverlay>
+        <DropdownOverlay>{renderBody(selectOptions)}</DropdownOverlay>
       )}
     </Dropdown>
   );

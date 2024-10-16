@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Box, Heading } from '@razorpay/blade/components';
 import { DownloadsPropsType } from 'merchant_common/views/Reports/features/Downloads/types';
 import { connect } from 'react-redux';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 import { openModal } from 'merchant_common/reducers/modals';
 import {
@@ -125,7 +125,7 @@ const DownloadsSection = connect(
                       .findIndex((refFilter) => refFilter.value === logTableFilterType)
                       .toString()}
                   />
-                  <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+                  <DropdownOverlay>
                     <ActionList
                       options={downloadsFilterDropdown}
                       itemComponent={({ data: { label }, index }) => (

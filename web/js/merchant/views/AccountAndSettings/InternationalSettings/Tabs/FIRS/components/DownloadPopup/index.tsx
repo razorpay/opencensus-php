@@ -32,7 +32,7 @@ const DownloadPopup = (): React.ReactElement => {
   }, [isPopupOpen]);
 
   return (
-    <Modal isOpen={isPopupOpen} onDismiss={onDismiss} size="small" zIndex={10000}>
+    <Modal isOpen={isPopupOpen} onDismiss={onDismiss} size="small">
       <ModalHeader title={PopupTitle[PopupType.DOWNLOAD_FIRS]} />
       <ModalBody>
         <Box>

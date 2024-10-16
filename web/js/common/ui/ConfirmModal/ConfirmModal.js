@@ -3,12 +3,13 @@ import AsyncButton from 'react-async-button';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
 
+import { zIndicesMap } from 'common/constant';
 import { delay } from 'common/utils/timeout';
 
 const MODAL_CLOSE_TIMEOUT_MS = 300;
 const ConfirmModal = (props) => {
   const confirmModelStyle = {
-    overlay: { ...Modal.defaultStyles.overlay, zIndex: 10000 },
+    overlay: { ...Modal.defaultStyles.overlay, zIndex: zIndicesMap.dropdownOverlay },
     content: { ...Modal.defaultStyles.content, width: '325px' },
   };
   const { header, message, className } = props.options;

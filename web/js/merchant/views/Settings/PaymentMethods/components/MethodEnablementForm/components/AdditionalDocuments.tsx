@@ -18,7 +18,7 @@ import {
 import { useFormikContext } from 'formik';
 import React from 'react';
 import { connect } from 'react-redux';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import Input from 'common/new-ui/Input';
 import {
   FORMIK_FORM_KEYS,
@@ -80,7 +80,7 @@ const AdditionalDocuments = ({ user, showNotification }: AdditionalDocumentsProp
                 necessityIndicator="required"
                 onChange={({ values }) => handleSelect(values[0], index)}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList>
                   {filterOtherSelectOptions(index, doc.options).map(({ label, name }) => (
                     <ActionListItem key={label} title={label} value={name} />

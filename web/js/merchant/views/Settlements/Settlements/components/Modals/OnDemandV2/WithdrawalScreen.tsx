@@ -56,9 +56,9 @@ import {
   convertToMinorUnit,
   convertToMajorUnit,
   SCREENS,
-  MODAL_ZINDEX,
   midLimitGTMViewedStatus,
 } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
+import { zIndicesMap } from 'common/constant';
 
 const GtmModalContent = lazy(
   () =>
@@ -115,7 +115,7 @@ const KeyValuePair = ({
           <Tooltip
             placement="bottom"
             onOpenChange={onTooltipOpen}
-            zIndex={MODAL_ZINDEX}
+            zIndex={zIndicesMap.tooltip}
             content={tooltip.content}
           >
             <Box marginLeft="spacing.2" display="inline-flex" alignItems="center">
@@ -185,7 +185,7 @@ const ConfirmScreen = ({
   };
 
   return (
-    <Modal zIndex={MODAL_ZINDEX} isOpen={isOpen} onDismiss={() => {}}>
+    <Modal isOpen={isOpen} onDismiss={() => {}}>
       <ModalBody padding="spacing.0">
         <Box padding={MODAL_PADDING}>
           <Box display="flex" alignItems="center" justifyContent="space-between" gap="spacing.4">

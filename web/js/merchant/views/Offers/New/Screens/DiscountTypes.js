@@ -10,7 +10,7 @@ import {
   RupeeIcon,
   PercentIcon,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   DISCOUNT_TYPES,
@@ -118,7 +118,7 @@ export default function DiscountType({
               }
               errorText={errors?.redemption_type}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {Object.values(REDEMPTION_TYPE_OPTIONS).map((type) => (
                   <ActionListItem
@@ -171,7 +171,7 @@ export default function DiscountType({
               validationState={touched.discount_type && errors?.discount_type ? 'error' : 'none'}
               errorText={errors?.discount_type}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {Object.values(DISCOUNT_TYPES_OPTIONS).map((type) => (
                   <ActionListItem

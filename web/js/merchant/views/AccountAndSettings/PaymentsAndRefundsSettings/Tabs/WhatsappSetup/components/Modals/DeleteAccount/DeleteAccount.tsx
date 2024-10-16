@@ -87,7 +87,7 @@ const DeleteAccount = ({
       };
 
   return (
-    <Modal zIndex={1112} isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
+    <Modal isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
       <ModalHeader title="Are you sure you want delete?" />
       <ModalBody>
         <Text size="large" color="surface.text.gray.muted">

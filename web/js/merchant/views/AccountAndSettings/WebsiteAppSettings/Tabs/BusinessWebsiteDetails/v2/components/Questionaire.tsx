@@ -164,13 +164,7 @@ function Questionare({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onDismiss={onGoBack}
-      snapPoints={snapPoints}
-      size="medium"
-      zIndex={99999}
-    >
+    <Modal isOpen={isOpen} onDismiss={onGoBack} snapPoints={snapPoints} size="medium">
       <ModalHeader />
       <ModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>
         <Box paddingX={isMobile ? 'none' : 'spacing.8'} paddingY={isMobile ? 'none' : 'spacing.7'}>

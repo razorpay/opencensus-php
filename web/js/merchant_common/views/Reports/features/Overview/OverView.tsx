@@ -9,7 +9,7 @@ import {
   Divider,
   Text,
 } from 'merchant_common/views/Reports/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { OverViewPropsType } from 'merchant_common/views/Reports/features/Overview/types';
 import { OverviewCard as Card } from 'merchant_common/views/Reports/features/Overview/components/Card/OverviewCard';
 import { CardSkeleton } from 'merchant_common/views/Reports/features/Overview/components/Card/Skeleton';
@@ -201,7 +201,7 @@ export const OverviewSection = ({
                 .findIndex((refFilter) => refFilter.value === filter)
                 .toString()}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList
                 options={overviewFilterDropdownOptions}
                 itemComponent={({ data: { label, value }, index }) => (

@@ -507,7 +507,7 @@ const IntegrationTesting = ({
   }
 
   return (
-    <Modal isOpen={isModalOpen} onDismiss={closeIntegrationTestingModal} size="large" zIndex={9999}>
+    <Modal isOpen={isModalOpen} onDismiss={closeIntegrationTestingModal} size="large">
       <ModalHeader
         title="Optimizer Integration Testing"
         subtitle="The terminal would go live once all tests are performed and the issues resolved"

@@ -77,7 +77,7 @@ export const CreateBureauLink = ({
   };
 
   return (
-    <Modal zIndex={10000} isOpen={true} onDismiss={closeModal}>
+    <Modal isOpen={true} onDismiss={closeModal}>
       <ModalHeader
         title="Line Of Credit Bureau"
         subtitle="We can send out the link to the client as an SMS on your behalf or copy the link and send it out manually"

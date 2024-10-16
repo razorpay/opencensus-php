@@ -7,10 +7,11 @@ import { withZustand } from 'shell/commonStore';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { zIndicesMap } from 'common/constant';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
-  zIndex: 9999,
+  zIndex: zIndicesMap.modalOverlay,
   overflowY: 'auto',
   display: 'flex',
   justifyContent: 'center',

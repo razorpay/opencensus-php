@@ -9,7 +9,7 @@ import {
   Checkbox,
 } from '@razorpay/blade/components';
 import { useStore } from 'shell/commonStore';
-import { ERROR_MESSAGES, modalZindex } from './constants';
+import { ERROR_MESSAGES } from './constants';
 import { saveMerchantColumnPreferences } from './model';
 
 interface PaymentsEditColumnsModalProps {
@@ -92,7 +92,7 @@ export const PaymentsEditColumnsModal = ({
   );
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onClose} size="large" zIndex={modalZindex}>
+    <Modal isOpen={isOpen} onDismiss={onClose} size="large">
       <ModalHeader title="Edit Columns" />
       <ModalBody>
         <Box

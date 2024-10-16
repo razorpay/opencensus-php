@@ -8,7 +8,7 @@ import {
   ActionListItem,
   ListIcon,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 const RecurringType = ({ currentMethodType, selectedRecurringType, handleRecurringTypeChange }) => {
   const { viewType } = currentMethodType;
   if (viewType === 'btn-group') {
@@ -49,7 +49,7 @@ const RecurringType = ({ currentMethodType, selectedRecurringType, handleRecurri
             icon={ListIcon}
             value={selectedRecurringType}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList testID="recurring-types-container">
               {currentMethodType?.recurringTypes.map(({ name, value, shouldRender }) =>
                 shouldRender() ? (

@@ -13,7 +13,7 @@ import { OPTIMIZER_SVGS } from 'merchant/views/Optimizer/utils';
 
 export const RaiseTicketSuccess = ({ isModalOpen, closeRaiseTicketSuccessModal }): JSX.Element => {
   return (
-    <Modal isOpen={isModalOpen} onDismiss={closeRaiseTicketSuccessModal} size="small" zIndex={9999}>
+    <Modal isOpen={isModalOpen} onDismiss={closeRaiseTicketSuccessModal} size="small">
       <ModalHeader title="Optimizer Integration Testing" />
       <ModalBody>
         <Box textAlign="center" marginBottom="spacing.5">

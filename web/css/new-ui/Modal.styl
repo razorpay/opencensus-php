@@ -1,11 +1,15 @@
+// stylelint-disable no-descending-specificity
+// stylelint-disable declaration-no-important
+// stylelint-disable stylus/no-eol-whitespace
+
 .Modal-mask
   position: fixed
-  background-color: rgba(17, 30, 60, 0.6)
-  top:0
+  background-color: rgb(17 30 60 / 0.6)
+  top: 0
   left: 0
   width: 100%
   height: 100%
-  z-index: 9999
+  z-index $z-index-modal-mask;
   overflow: scroll
   transition: opacity 250ms ease-in-out
 
@@ -17,7 +21,7 @@
 
 .Modal-container
   position: absolute
-  background: #fff
+  background: #FFF
   border-radius: 2px
   overflow: hidden
   left: 50%
@@ -32,11 +36,11 @@
     height: 100%
 
     .Modal-close
-      background: #fff
+      background: #FFF
       border-radius: 50%
 
   .Modal-close-faded
-     color: rgba(22, 47, 86, 0.24) !important
+    color: rgb(22 47 86 / 0.24) !important
 
   .Modal-close
     position: absolute
@@ -59,7 +63,7 @@
 
 .Modal-content
   & > header
-    border-bottom: 2px solid #eee
+    border-bottom: 2px solid #EEE
     padding: 12px 44px 16px 20px
     font-size: 20px
 
@@ -79,20 +83,26 @@
 .blur
   overflow: hidden
 
-  .main-content, .sidebar, .navbar, .tether-element, .page-nav-container, #wysiwyg-root
+  .main-content, 
+  .sidebar, 
+  .navbar, 
+  .tether-element, 
+  .page-nav-container, 
+  #wysiwyg-root
     filter: blur(4px)
 
 .Modal-container--top-40
-  top:40%
+  top: 40%
 
 .SendLink--Modal
   .Input
     margin-top: 8px
+
     .Input-inlineLabel
       font-weight: 600
 
   .alert
-    margin: 16px 0 0 0
+    margin: 16px 0 0
 
   .Button
     margin-top: 16px
@@ -104,7 +114,7 @@
       bottom: -64px
       font-size: 12px
       font-weight: 600
-      color: #fff
+      color: #FFF
       margin: 0
 
       span
@@ -115,42 +125,50 @@
         font-size: 20px
         border-radius: 2px
         color: $primary-color
-        border: 1px solid rgba(82,143,240,0.77)
+        border: 1px solid rgb(82 143 240 / 0.77)
         margin-bottom: 4px
         line-height: 30px
 
     .Cancel-btn
       right: 60px
+
       &:hover
-        color: #fff
-        opacity: .8
+        color: #FFF
+        opacity: 0.8
+
       span
-        background-color:#fff
+        background-color: #FFF
 
     .Save-btn
       right: 12px
+
       &:hover
-        color: #fff
-        opacity: .8
+        color: #FFF
+        opacity: 0.8
+
       span
-        color: #fff
+        color: #FFF
         background-color: $primary-color
 
-@media screen and (max-width: $screen-xs-max)
+@media screen and (max-width $screen-xs-max)
   .mobile-full-width-modal
     width 100%
     height 100%
+
     .Modal-content
       > header,
       > .Modal-body
         padding 0 24px
+
       > header
         font-weight bold
         font-size 18px
         height 62px
         display flex
         align-items center
+
       > .Modal-body
-        background #fafafa
+        background #FAFAFA
+
         footer
           padding 14px 20px

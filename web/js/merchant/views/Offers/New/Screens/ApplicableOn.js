@@ -13,7 +13,6 @@ import {
   Divider,
 } from '@razorpay/blade/components';
 
-import { COMMON_Z_INDEX } from 'common/constant';
 import { withSplitzService } from 'common/splitz';
 import {
   validatePaymentMethod,
@@ -184,7 +183,7 @@ class ApplicableOn extends React.Component {
               validationState={touched?.type && errors?.type ? 'error' : 'none'}
               errorText={errors?.type}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {Object.values(OFFER_TYPES_OPTIONS).map((type) => (
                   <ActionListItem
@@ -211,7 +210,7 @@ class ApplicableOn extends React.Component {
             validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
             errorText={errors?.payment_method}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList>
               {Object.values(PaymentMethodsOptions).map((type) => (
                 <ActionListItem
@@ -238,7 +237,7 @@ class ApplicableOn extends React.Component {
                 this.handleFormChange(name, values[0]);
               }}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {Object.values(WalletIssuersOptions).map((type) => (
                   <ActionListItem
@@ -267,7 +266,7 @@ class ApplicableOn extends React.Component {
                 this.handleFormChange(name, values[0]);
               }}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {Object.values(CardLessEmiIssuersOptions).map((type) => (
                   <ActionListItem
@@ -293,7 +292,7 @@ class ApplicableOn extends React.Component {
                 validationState="none"
                 value={values.payment_method_type}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList>
                   {Object.values(PaymentMethodTypeOptions).map((type) => (
                     <ActionListItem
@@ -319,7 +318,7 @@ class ApplicableOn extends React.Component {
                   this.handleFormChange(name, values[0]);
                 }}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList>
                   {Object.values(bankOptions).map((type) => (
                     <ActionListItem
@@ -345,7 +344,7 @@ class ApplicableOn extends React.Component {
                   this.handleFormChange(name, values[0]);
                 }}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList>
                   {Object.values(PaymentNetworksOptions).map((type) => (
                     <ActionListItem
@@ -412,7 +411,7 @@ class ApplicableOn extends React.Component {
                 this.handleFormChange(name, values[0]);
               }}
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 {Object.values(PaymentIssuersOptions).map((type) => (
                   <ActionListItem

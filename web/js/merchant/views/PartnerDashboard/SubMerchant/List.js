@@ -175,6 +175,7 @@ class SubMerchantsList extends Component {
     }
     this.props.openModal({
       size: 'med-large',
+      isNew: true,
       component: (
         <ShareReferralLink referralData={this.state.referralData} initialProductType={product} />
       ),

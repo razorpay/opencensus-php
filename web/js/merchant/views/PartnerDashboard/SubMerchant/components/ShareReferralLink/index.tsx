@@ -79,7 +79,7 @@ const ShareReferralLink = ({
   };
   return (
     <ErrorBoundary team={Teams?.PARTNERSHIP} rank={Ranks.P1} resetOnProps>
-      <Modal zIndex={10000} size="small" isOpen={true} onDismiss={handleModalClose}>
+      <Modal size="small" isOpen={true} onDismiss={handleModalClose}>
         <ModalHeader title="Share Referral Link" />
         <ModalBody>
           <RadioGroup

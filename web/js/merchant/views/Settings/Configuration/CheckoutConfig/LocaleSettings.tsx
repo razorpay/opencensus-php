@@ -8,7 +8,7 @@ import {
   ActionList,
   ActionListItem,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { useCheckoutConfig } from 'merchant/views/Settings/Configuration/CheckoutConfig/context';
@@ -50,7 +50,7 @@ const LocaleSettings = () => {
             value={values.locale.languageCode}
             onChange={handleSelectChange}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList>
               {languageOptions.map((config) => (
                 <ActionListItem key={config.code} title={config.name} value={config.code} />

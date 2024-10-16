@@ -13,12 +13,7 @@ const FAQModal = ({ getTriggerComponent, inviteFlow, productType }: FAQModalProp
   return (
     <>
       {getTriggerComponent({ onClick: () => setFaqModalOpen(true) })}
-      <Modal
-        zIndex={1112}
-        isOpen={isFaqModalOpen}
-        onDismiss={() => setFaqModalOpen(false)}
-        size="small"
-      >
+      <Modal isOpen={isFaqModalOpen} onDismiss={() => setFaqModalOpen(false)} size="small">
         <ModalHeader title="Perform KYC on behalf of your client" />
         <ModalBody>
           <FAQContent inviteFlow={inviteFlow} productType={productType} noTopMargin />

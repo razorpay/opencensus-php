@@ -11,8 +11,6 @@ interface TncContentType {
   };
 }
 
-const modalZindex = 9999;
-
 const LS_LABELS = {
   NOT_INTERESTED: 'NOT_INTERESTED',
   IMPRESSION_COUNT: 'IMPRESSION_COUNT',
@@ -102,7 +100,6 @@ const supportedPaymentMode = (balance: number) => {
   ];
 };
 export {
-  modalZindex,
   LS_LABELS,
   IMPRESSION_TIME_INTERVAL,
   TOUCH_SPEED,

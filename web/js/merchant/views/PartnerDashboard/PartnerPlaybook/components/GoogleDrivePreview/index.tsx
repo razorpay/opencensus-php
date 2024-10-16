@@ -10,8 +10,7 @@ type GoogleDriveModalProps = {
 };
 const GoogleDrivePreview = ({ item, isOpen, closePreview }: GoogleDriveModalProps): JSX.Element => {
   return (
-    // Note: zIndex for sidenav in the dashboard is 1111
-    <Modal zIndex={1112} size="large" isOpen={isOpen} onDismiss={closePreview}>
+    <Modal size="large" isOpen={isOpen} onDismiss={closePreview}>
       <ModalHeader title={item?.title} />
       <ModalBody>
         <Box display="flex" alignItems="center" flexDirection="column">

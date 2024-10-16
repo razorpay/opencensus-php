@@ -13,7 +13,7 @@ import {
   ActionList,
   ActionListItem,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import SeamlessNote from 'merchant/views/Navigator/components/Provider/SeamlessNote';
 import {
   SEAMLESS_CONTENT,
@@ -185,7 +185,7 @@ const IntegrationType = (props) => {
                       value={[gatewayDetails?.[PROVIDER_KEYS.GATEWAY_ACQUIRER]]}
                       onChange={onBankChange}
                     />
-                    <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+                    <DropdownOverlay>
                       <ActionList>
                         {bankList.map((bank) => (
                           <ActionListItem key={bank.value} title={bank.name} value={bank.value} />

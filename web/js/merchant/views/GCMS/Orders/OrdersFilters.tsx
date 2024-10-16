@@ -11,7 +11,7 @@ import {
   Text,
 } from '@razorpay/blade/components';
 import qs from 'query-string';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { DATE_RANGE_PRESETS, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 
 import { StyledFilterDiv } from './StyledDiv';
@@ -165,7 +165,7 @@ const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterP
                 testID="status"
                 defaultValue={status}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList>
                   {Object.values(ORDERS_STATUS).map((status) => (
                     <ActionListItem

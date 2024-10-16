@@ -26,7 +26,7 @@ import {
 } from '@razorpay/blade/components';
 import moment from 'moment';
 import { useParams } from 'react-router-dom';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
@@ -288,7 +288,7 @@ export default function ProcessTransactions({ activeProcess }) {
           <BladeDropdownWrapper>
             <Dropdown marginRight="spacing.4">
               <SelectInput value={activeRun} prefix="Run: " onChange={handleRunChange} />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList>
                   <ActionListItem title="All" value="all" />
                   {runsList.map((run) => (

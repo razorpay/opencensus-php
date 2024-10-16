@@ -35,7 +35,6 @@ interface PaymentOptionCardProps {
 interface MultiPaymentModalProp {
   isOpen: boolean;
   togglePaymentOptionModal: () => void;
-  zIndex?: 9999;
   setSelectedPaymentMode: (paymentMethod: PaymentType) => void;
 }
 interface MultiPaymentOptionsPropsType {
@@ -169,11 +168,10 @@ export const MultiPaymentOptions = ({
 const MultiPaymentModal = ({
   isOpen,
   togglePaymentOptionModal,
-  zIndex = 9999,
   setSelectedPaymentMode,
 }: MultiPaymentModalProp): JSX.Element => {
   return (
-    <Modal zIndex={zIndex} isOpen={isOpen} onDismiss={togglePaymentOptionModal} size="small">
+    <Modal isOpen={isOpen} onDismiss={togglePaymentOptionModal} size="small">
       <ModalHeader title="" />
       <ModalBody padding="spacing.0">
         <MultiPaymentOptions setSelectedPaymentMode={setSelectedPaymentMode} />

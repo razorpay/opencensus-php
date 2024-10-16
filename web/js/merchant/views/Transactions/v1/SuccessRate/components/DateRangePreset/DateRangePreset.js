@@ -9,7 +9,7 @@ import {
   SelectInput,
 } from '@razorpay/blade/components';
 import moment from 'moment';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { SuccessRateDateFilterContainer } from 'merchant/views/Transactions/v1/SuccessRate/styles';
 
@@ -66,7 +66,7 @@ function DateRangePreset(props) {
           testID="sr-dashboard-date-presets"
           onChange={handleOnPresetChange}
         />
-        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+        <DropdownOverlay>
           <ActionList>
             {presets.map((preset) => (
               <ActionListItem

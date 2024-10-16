@@ -70,7 +70,7 @@ body {
 }
 
 .layout--rtux--background {
-  background: linear-gradient(180deg, #E3EAF3 11.98%, #F8FAFC 99.9%);;
+  background: linear-gradient(180deg, #E3EAF3 11.98%, #F8FAFC 99.9%);
   background-attachment: fixed;
   min-height: 100vh;
 }
@@ -169,7 +169,7 @@ body {
   bottom: 0;
   background-color: $sidebar-bg-color;
   width: $sidebar-width;
-  z-index: 1111;
+  z-index: $z-index-sidebar;
 
   .nav .Collapsible--body.open {
     max-height: 100%;
@@ -721,6 +721,7 @@ body.ReactModal__Body--open {
 .ReactModal__Overlay {
   transition: opacity 250ms ease-in-out;
   opacity: 0;
+  z-index: $z-index-modal-overlay;
 
   &--after-open {
     opacity: 1;

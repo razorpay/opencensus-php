@@ -22,7 +22,7 @@ import {
   MailIcon,
   UserIcon,
 } from 'merchant_common/views/Reports/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import {
   ModalFooter,
   ReportModalHeader,
@@ -479,7 +479,7 @@ export const DownloadReportModal = ({
                 value={allReportConfigs.findIndex((e) => e.id === selectedConfig?.id).toString()}
                 errorText="Mandatory Field: Select report you want to receive report about."
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList
                   itemComponent={({ data: { id, name }, index }) => (
                     <ActionListItem key={id} title={name} value={index.toString()} />
@@ -680,7 +680,7 @@ export const DownloadReportModal = ({
                       .findIndex((e) => e.value === selectedPredefinedDurationRange?.value)
                       .toString()}
                   />
-                  <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+                  <DropdownOverlay>
                     <ActionList
                       options={preDefinedDurations}
                       itemComponent={({ data, index }) => (

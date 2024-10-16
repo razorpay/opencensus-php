@@ -16,7 +16,7 @@ import {
   BottomSheetBody,
   BottomSheetFooter,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { useMobile } from 'common/hooks/useMobile';
 import {
   SERVICE_PROVIDER_LOGIN_HREF,
@@ -88,7 +88,7 @@ const AccountLink = ({ modalState: { isOpen }, onClose, setModalState }): JSX.El
             onChange={handleSelect}
             defaultValue={selectedProvider}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList>
               {BusinessServiceProvider.map(({ title, value }) => (
                 <ActionListItem title={title} value={value} key={value} />

@@ -16,4 +16,3 @@ export const ERROR_MESSAGES = {
   FETCH_PREFERENCES: 'Failed to fetch merchant column preferences',
   FETCH_COLUMNS: 'Failed to fetch notes columns list',
 };
-export const modalZindex = 9999;

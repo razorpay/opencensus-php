@@ -8,7 +8,7 @@ import {
   ActionList,
   ActionListItem,
 } from '@razorpay/blade/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import Input from 'common/new-ui/Input';
 import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
@@ -113,7 +113,7 @@ class ApplicableOn extends React.Component {
             validationState={touched.issuer && errors?.issuer ? 'error' : 'none'}
             errorText={errors?.issuer}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList>
               {Object.values(this.ISSUERS_OPTIONS).map((type) => (
                 <ActionListItem

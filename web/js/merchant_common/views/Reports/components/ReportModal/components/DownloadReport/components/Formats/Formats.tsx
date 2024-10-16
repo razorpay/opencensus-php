@@ -6,7 +6,7 @@ import {
   DropdownOverlay,
   SelectInput,
 } from 'merchant_common/views/Reports/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import {
   DELIMITER_ERROR_TEXT,
   DELIMITER_PLACEHOLDER,
@@ -56,7 +56,7 @@ export function Formats({
           necessityIndicator="optional"
           value={availableFormats.findIndex((e) => e.label === selectedFormat?.label).toString()}
         />
-        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+        <DropdownOverlay>
           <ActionList
             options={availableFormats}
             itemComponent={({ data: { label }, index }) => (
@@ -85,7 +85,7 @@ export function Formats({
               .findIndex((e) => e.label === selectedDelimiter?.label)
               .toString()}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList
               options={availableDelimiters}
               itemComponent={({ data: { label }, index }) => (

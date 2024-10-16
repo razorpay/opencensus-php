@@ -46,7 +46,6 @@ interface CongratulatoryModalContentType {
 }
 interface CongratulatoryModalType extends CongratulatoryModalContentType {
   isCongModalOpen: boolean;
-  zIndex?: number;
 }
 export const getBalanceMode = (balanceType: string): string => {
   switch (balanceType) {
@@ -137,7 +136,7 @@ const CongratulatoryModal = ({
   isCongModalOpen,
   setCongratulatoryModal,
   type,
-  zIndex = 9999,
+
   trackInstrumentation,
   selectedPlan,
   selectedPaymentMode,
@@ -170,7 +169,7 @@ const CongratulatoryModal = ({
   }, []);
 
   return (
-    <Modal zIndex={zIndex} isOpen={isCongModalOpen} onDismiss={handleClose} size="medium">
+    <Modal isOpen={isCongModalOpen} onDismiss={handleClose} size="medium">
       <ModalHeader title="" />
       <ModalBody>
         <CongratulatoryModalContent

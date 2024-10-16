@@ -5,7 +5,7 @@ import { DisputeDataResponse } from 'apps/self-serve/src/App/Transactions/v2/Ana
 import { GraphSection } from 'apps/self-serve/src/App/Transactions/v2/Disputes/styled';
 import { getGraphValues } from 'apps/self-serve/src/App/Transactions/v2/Disputes/utils';
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import { COMMON_Z_INDEX } from '@dashboard/shared-utils/constants';
+import { zIndicesMap } from '@dashboard/shared-utils/constants';
 
 type DisputeDistributionGraphProps = {
   data: DisputeDataResponse;
@@ -43,11 +43,7 @@ const DisputeDistributionGraph = ({ data }: DisputeDistributionGraphProps): JSX.
       >
         {graphValues.map((graphValue) => {
           return graphValue.count ? (
-            <Tooltip
-              content={graphValue.content}
-              placement="bottom"
-              zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}
-            >
+            <Tooltip content={graphValue.content} placement="bottom" zIndex={zIndicesMap.tooltip}>
               <GraphSection
                 status={graphValue.status}
                 distributionPercentage={graphValue.percent}

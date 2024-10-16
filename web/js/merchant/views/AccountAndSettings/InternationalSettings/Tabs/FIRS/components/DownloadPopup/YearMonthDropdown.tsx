@@ -17,7 +17,7 @@ import {
   getListOfYears,
   isMonthValid,
 } from 'merchant/views/AccountAndSettings/InternationalSettings/utils';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 const YearMonthDropdown = (): React.ReactElement => {
   const { popupData, setPopupData, getFirsData } = useFirsContext();
   const { month, year } = popupData;
@@ -49,7 +49,7 @@ const YearMonthDropdown = (): React.ReactElement => {
             value={year.toString()}
             onChange={onYearChange}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList>
               {getListOfYears(FIRS_START_YEAR).map(({ title, value }) => (
                 <ActionListItem key={title} title={title} value={value} />
@@ -68,7 +68,7 @@ const YearMonthDropdown = (): React.ReactElement => {
             value={month}
             onChange={onMonthChange}
           />
-          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+          <DropdownOverlay>
             <ActionList>
               {monthList
                 .slice()

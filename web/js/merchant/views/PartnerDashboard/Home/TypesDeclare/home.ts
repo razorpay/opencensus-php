@@ -60,6 +60,7 @@ export interface ProductListItemT {
 interface openModalArgs {
   size: string;
   className?: string;
+  isNew?: boolean;
   component: JSX.Element;
 }
 export type OpenModalT = (arg: openModalArgs) => void;

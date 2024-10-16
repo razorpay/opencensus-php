@@ -10,7 +10,6 @@ import {
 
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
-import { COMMON_Z_INDEX } from 'common/constant';
 import {
   FONT_OPTIONS,
   getFontNameByCode,
@@ -34,7 +33,7 @@ const RightChildren = () => {
       >
         {getFontNameByCode(values[CHECKOUT_EDITOR_FIELDS.FONT_FAMILY])}
       </DropdownLink>
-      <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+      <DropdownOverlay>
         <ActionList>
           {FONT_OPTIONS.map((config) => (
             <ActionListItem

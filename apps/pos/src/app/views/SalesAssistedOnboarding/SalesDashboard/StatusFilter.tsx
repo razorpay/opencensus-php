@@ -12,7 +12,7 @@ import {
 } from '@razorpay/blade/components';
 import { STATUS_FILTERS as STATUS_FILTERS_TYPE } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
-import { COMMON_Z_INDEX } from '@dashboard/shared-utils/constants';
+
 interface StatusFilter {
   label: string;
   value: STATUS_FILTERS_TYPE;
@@ -84,7 +84,7 @@ const StatusFilter = ({ defaultValue, value, onChange }: StatusFilterProps): JSX
           <BottomSheetBody>{renderBody()}</BottomSheetBody>
         </BottomSheet>
       ) : (
-        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>{renderBody()}</DropdownOverlay>
+        <DropdownOverlay>{renderBody()}</DropdownOverlay>
       )}
     </Dropdown>
   );

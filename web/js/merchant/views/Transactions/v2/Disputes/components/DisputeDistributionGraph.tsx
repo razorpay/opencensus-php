@@ -3,7 +3,7 @@ import { Box, Tooltip } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 
-import { COMMON_Z_INDEX } from 'common/constant';
+import { zIndicesMap } from 'common/constant';
 import { Store } from 'common/typings';
 import { DisputeDataResponse } from 'merchant/views/Transactions/v2/Analytics/types';
 import { GraphSection } from 'merchant/views/Transactions/v2/Disputes/styled';
@@ -44,11 +44,7 @@ const DisputeDistributionGraph = ({ data, user }: DisputeDistributionGraphProps)
       >
         {graphValues.map((graphValue) => {
           return graphValue.count ? (
-            <Tooltip
-              content={graphValue.content}
-              placement="bottom"
-              zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}
-            >
+            <Tooltip content={graphValue.content} placement="bottom" zIndex={zIndicesMap.tooltip}>
               <GraphSection
                 status={graphValue.status}
                 distributionPercentage={graphValue.percent}

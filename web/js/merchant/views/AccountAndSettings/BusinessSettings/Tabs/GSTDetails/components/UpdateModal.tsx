@@ -24,7 +24,6 @@ import {
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { COMMON_Z_INDEX } from 'common/constant';
 import { useMobile } from 'common/hooks/useMobile';
 import { fetchGST } from 'merchant/reducers/profile';
 import { submitGSTDetails } from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/model';
@@ -111,8 +110,7 @@ const UpdateModal = ({
   };
 
   return (
-    // zIndex is required to render the Modal on top of the left sidebar with z-index as 1111
-    <Modal zIndex={1112} isOpen={isOpen} onDismiss={dismissModal} snapPoints={defaultSnapPoints}>
+    <Modal isOpen={isOpen} onDismiss={dismissModal} snapPoints={defaultSnapPoints}>
       <ModalHeader title="Edit GST detail" />
       <ModalBody>
         <Box display="flex" flexDirection="column" gap="spacing.7">
@@ -130,7 +128,7 @@ const UpdateModal = ({
                 {...commonProps}
                 onChange={({ values }) => setSelectedGSTIn(values[0])}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 {/* Ignoring TS check for Blade ActionList as its chilren type is not correctly defined to
                 accept a single child */}
                 {/* @ts-ignore:next-line */}

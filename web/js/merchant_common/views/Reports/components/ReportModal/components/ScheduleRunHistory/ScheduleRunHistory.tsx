@@ -27,7 +27,6 @@ import { FlexCentered } from 'merchant_common/views/Reports/components/styled';
 import { RunHistoryTable } from './components/RunHistoryTable';
 import { useRunHistoryReducer } from './hooks/useRunHistoryReducer';
 import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
-import { COMMON_Z_INDEX } from 'common/constant';
 
 const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
@@ -116,10 +115,7 @@ const ScheduleRunHistory = connect(
                     .findIndex((refFilter) => refFilter.value === logsHistoryReducer?.filter?.value)
                     .toString()}
                 />
-                <DropdownOverlay
-                  zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}
-                  key={logsHistoryReducer?.filter.value}
-                >
+                <DropdownOverlay key={logsHistoryReducer?.filter.value}>
                   <ActionList
                     options={downloadsFilterDropdown}
                     itemComponent={({ data: { label }, index }) => (

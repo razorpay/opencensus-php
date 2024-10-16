@@ -10,7 +10,6 @@ import {
   Button,
 } from '@razorpay/blade/components';
 import { UPI_APP_PROVIDERS } from '../../constants';
-import { COMMON_Z_INDEX } from 'common/constant';
 
 interface Props {
   onChangeHandler: Function;
@@ -93,7 +92,7 @@ const UPISelector: React.FC<Props> = React.memo(
           errorText={errorText}
           testID="upi-selector"
         />
-        <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+        <DropdownOverlay>
           <ActionList>
             {UPI_APPS_SELECT_OPTIONS.slice(1).map((opt) => (
               <ActionListItem title={opt.label} value={opt.name} key={opt.name} />

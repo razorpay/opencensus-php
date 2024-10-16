@@ -14,10 +14,7 @@ import {
   CloseIcon,
 } from '@razorpay/blade/components';
 
-import {
-  MODAL_ZINDEX,
-  formatAmount,
-} from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
+import { formatAmount } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
 
 const TIPS = [
   'Maintain daily payment gateway transactions',
@@ -41,7 +38,7 @@ const ODSRestrictedInfoModal = ({
   };
 
   return (
-    <Modal zIndex={MODAL_ZINDEX} isOpen={isOpen} onDismiss={handleDismiss}>
+    <Modal isOpen={isOpen} onDismiss={handleDismiss}>
       <ModalBody padding="spacing.0">
         {/* Header */}
         <Box

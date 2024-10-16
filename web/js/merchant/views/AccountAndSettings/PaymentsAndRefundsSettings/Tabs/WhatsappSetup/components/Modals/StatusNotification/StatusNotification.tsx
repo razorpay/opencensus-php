@@ -69,7 +69,7 @@ const StatusNotification = ({
       };
 
   return (
-    <Modal zIndex={1112} isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
+    <Modal isOpen={isOpen} onDismiss={handleDismiss} snapPoints={defaultSnapPoints}>
       <ModalHeader />
       <ModalBody>
         <Box

@@ -12,7 +12,7 @@ import {
   ActionList,
   ActionListItem,
 } from 'merchant_common/views/Reports/components';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import {
   ModalFooter,
@@ -126,7 +126,7 @@ const DownloadCustomReport = connect(
                   ?.findIndex((customConfig) => customConfig.id === selectedConfig?.id)
                   .toString()}
               />
-              <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+              <DropdownOverlay>
                 <ActionList
                   options={customConfigs ?? ([] as CustomConfigType[])}
                   itemComponent={({ data: { name, id }, index }) => {

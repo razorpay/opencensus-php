@@ -12,7 +12,7 @@ import {
   Spinner,
 } from '@razorpay/blade/components';
 import { getCurrencySymbol } from '@razorpay/i18nify-js/currency';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { merchantFetch } from 'merchant/utils/ajax';
 import { loadCheckoutScript } from 'merchant/views/Capital/utils';
 import { storeAuditData } from 'merchant/views/Optimizer/AddProvider/service';
@@ -144,7 +144,7 @@ export const PaymentTesting = ({
               isDisabled={true}
               defaultValue="test"
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 <ActionListItem title="Test payment" value="test" />
               </ActionList>
@@ -158,7 +158,7 @@ export const PaymentTesting = ({
               isDisabled={true}
               defaultValue="upi_intent"
             />
-            <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+            <DropdownOverlay>
               <ActionList>
                 <ActionListItem title="UPI (Intent)" value="upi_intent" />
               </ActionList>

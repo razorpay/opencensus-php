@@ -146,7 +146,7 @@ export const UploadBankStatement = ({
     setUploadedFiles(updatedFiles);
   };
   return (
-    <Modal zIndex={10000} isOpen={true} onDismiss={closeModal}>
+    <Modal isOpen={true} onDismiss={closeModal}>
       <ModalHeader title="Upload bank account statement" />
       <ModalBody>
         <Text>Share the current account statements for the last 6 months for your client</Text>

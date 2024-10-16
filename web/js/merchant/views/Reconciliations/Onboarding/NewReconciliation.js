@@ -26,7 +26,7 @@ import {
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { compose } from 'redux';
-import { COMMON_Z_INDEX } from 'common/constant';
+
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { FileUploadStatus } from 'merchant/views/Reconciliations/commonComponents';
@@ -357,7 +357,7 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
                             }}
                             value={filesUploadData[isOpen]?.userEditedMapping?.[field.name] || ''}
                           />
-                          <DropdownOverlay zIndex={COMMON_Z_INDEX.DROPDOWN_OVERLAY}>
+                          <DropdownOverlay>
                             <ActionList>
                               {filesUploadData[isOpen]?.mappingData?.file_schema?.map((value) => (
                                 <ActionListItem key={value} title={value} value={value} />
