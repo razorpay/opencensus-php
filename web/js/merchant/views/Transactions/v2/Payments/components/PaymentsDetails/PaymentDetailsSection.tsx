@@ -47,8 +47,10 @@ import {
 } from './styled';
 import { IPaymentDetails, ApplicationDetails } from './types';
 import { imageDownload, isChargeSlipForPosEnabled, isPosTransaction, onCopy } from './utils';
+import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
 
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+
 const PaymentReceipt = lazy(
   () =>
     import(
@@ -147,8 +149,12 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
     upi,
   } = paymentDetails;
   const { isConfigTagEnabled } = useI18Service();
+
+  const { abExperiments } = splitz || { abExperiments: { toggle_payments_v2_revamp: undefined } };
+
   const isChargeSlipExperimentEnabled = isChargeSlipForPosEnabled(splitz);
-  const isRevampEnabled = isPaymentV2RevampEnabled(splitz?.abExperiments);
+  const isTxnV2ParityFeaturesEnabled = isPaymentV2RevampEnabled(abExperiments);
+
   const isOmniChannelMerchant =
     isPosTransaction(source_channel) &&
     (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
@@ -198,6 +204,22 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   };
 
   const hash = location.hash;
+
+  const isPaymentReceiptSectionAllowed = () => {
+    if (hash) {
+      const module = hash.substring(1);
+      const allowedModules = [
+        'paymentpages',
+        'paymentbuttons',
+        'subscription_buttons',
+        'batchpaymentpages',
+      ];
+
+      return allowedModules.indexOf(module) > -1;
+    }
+    return false;
+  };
+
   return (
     <Box testID="payment-details-section">
       <SectionHeader enableBorderBottomRadius={!isOpen}>
@@ -239,7 +261,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     id,
                   )}
                 />
-                {isRevampEnabled ? <PaymentPageDetails id={order_id} /> : null}
+                {isTxnV2ParityFeaturesEnabled ? <PaymentPageDetails id={order_id} /> : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow label="Bank RRN" value={acquirer_data.rrn || '--'} tooltip />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
@@ -274,6 +296,15 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     />
                   }
                 />
+                {isPaymentReceiptSectionAllowed() && isTxnV2ParityFeaturesEnabled ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Payment Receipt"
+                      value={<PaymentPagePaymentReceipt paymentId={id} />}
+                    />
+                  </>
+                ) : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Customer details"

@@ -299,3 +299,25 @@ export interface IPaymentTransferNew {
   fetchTransfers: (arg: { fetchTransfers: () => void }) => void;
   id: string;
 }
+
+export type NotificationArg = {
+  type: 'success' | 'error';
+  message: string;
+};
+
+export type PaymentPagePaymentReceiptProps = {
+  paymentId: string;
+  showNotification: (args: NotificationArg) => void;
+};
+
+export type ReceiptDetails = {
+  receipt?: string;
+  invoiceId?: string;
+  downloadUrl?: string;
+};
+
+export type GetReceiptDetailsResponse = {
+  receipt?: string;
+  invoice_id?: string;
+  receipt_download_url?: string;
+};

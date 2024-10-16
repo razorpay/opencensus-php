@@ -40,6 +40,7 @@ import Tooltip from './Tooltip';
 import { ApplicationDetails, IPaymentDetails } from './types';
 import { isPosTransaction, onCopy } from './utils';
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
+import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
 
 const PaymentReceipt = lazy(
   () =>
@@ -168,6 +169,21 @@ function PaymentDetailsSection({
     });
   };
 
+  const isPaymentReceiptSectionAllowed = () => {
+    if (location.hash) {
+      const module = location.hash.substring(1);
+      const allowedModules = [
+        'paymentpages',
+        'paymentbuttons',
+        'subscription_buttons',
+        'batchpaymentpages',
+      ];
+
+      return allowedModules.indexOf(module) > -1;
+    }
+    return false;
+  };
+
   const posGatewayId = gateway_terminal_id || payee_vpa;
   const posDeviceSerialNumber = device_id || device_detail;
   return (
@@ -245,6 +261,15 @@ function PaymentDetailsSection({
                     />
                   }
                 />
+                {isPaymentReceiptSectionAllowed() ? (
+                  <>
+                    <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                    <DetailRow
+                      label="Payment Receipt"
+                      value={<PaymentPagePaymentReceipt paymentId={id} />}
+                    />
+                  </>
+                ) : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Customer details"
