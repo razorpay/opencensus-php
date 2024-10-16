@@ -63,8 +63,19 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountNonFreePayouDefaultPricingRules' => true,
         'RZP\\Models\\Pricing\\Repository\\getPlanByName' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => true,
-        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlansSummary' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithoutOrgId' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingRuleIdsByMerchant' => true,
+        'RZP\\Models\\Pricing\\Repository\\getZeroPricingPlanRuleForMethod' => true,
+        'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountNonFreePayoutDefaultPricingRules' => true,
+        'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountFreePayoutDefaultPricingRules' => true,
+        'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountFreePayoutDefaultPricingRules' => true,
+        'RZP\\Models\\Pricing\\Repository\\getBankingAccountChargeCollectionDefaultPricingRules' => true,
+        'RZP\\Models\\Pricing\\Repository\\getBankingAccountRzpFeesDefaultPricingRules' => true,
+        'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPlanRule' => true,
+        'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => true,
     );
 
     private array $FunctionToCCRouteMap;
@@ -94,6 +105,17 @@ class CCRouter
             'RZP\\Models\\Pricing\\Repository\\getPricingRuleByMultipleParams' => ChargeCollections::GetPricingPlanURL,
             'RZP\\Models\\Pricing\\Repository\\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId' => ChargeCollections::GetPricingPlanURL,
             'RZP\\Models\\Pricing\\Repository\\getPricingPlansSummary' => ChargeCollections::GetPricingPlansSummaryURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdWithoutOrgId' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingRuleIdsByMerchant' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getZeroPricingPlanRuleForMethod' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountNonFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getBankingSharedAccountFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getBankingDirectAccountFreePayoutDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getBankingAccountChargeCollectionDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getBankingAccountRzpFeesDefaultPricingRules' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => ChargeCollections::GetPricingPlanURL,
+            'RZP\\Models\\Pricing\\Repository\\getPlanRule' => ChargeCollections::GetPricingRuleURL,
+            'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => ChargeCollections::GetPricingRuleURL,
         );
     }
 
@@ -199,6 +221,7 @@ class CCRouter
                 $this->trace->count(Metric::CC_REQUEST_ROUTED, [
                     'route' => $routeName,
                     'function' => $fqcn,
+                    'ramp_phase' => $rampPhase,
                 ]);
             }
 
@@ -210,6 +233,11 @@ class CCRouter
             if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingPlanURL) {
                 $response = $this->app->charge_collections->getPricingPlan($input);
                 return $this->transformToPlanModel($response);
+            }
+
+            if ($this->FunctionToCCRouteMap[$fqcn] == ChargeCollections::GetPricingRuleURL) {
+                $response = $this->app->charge_collections->getPricingRule($input);
+                return $this->transformToPricingModel($response);
             }
 
             if ($methodName == 'createPlan'){
@@ -403,6 +431,24 @@ class CCRouter
         }
 
         return [$ccResponse, $legacyRequest];
+    }
+    private function transformToPricingModel($response)
+    {
+        $pricingEntity = new PricingEntity;
+        if(!isset($response['rule'])) {
+            return $pricingEntity;
+        } else {
+            try {
+                $entityClass = PricingEntity::class;
+                $entityClass::unguard();
+                $pricingEntity = new PricingEntity($response['rule']);
+            } catch (\Throwable $e) {
+                throw new \Exception('Could not map charge collections response to entity');
+            } finally {
+                $entityClass::reguard();
+            }
+        }
+        return $pricingEntity;
     }
 
     private function transformToPlanModel($response)

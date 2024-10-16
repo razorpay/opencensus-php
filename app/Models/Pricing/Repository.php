@@ -4,6 +4,7 @@ namespace RZP\Models\Pricing;
 
 use App;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
@@ -348,6 +349,21 @@ class Repository extends Base\Repository
     // called in pricing fee calculation flow
     public function getPricingPlanByIdWithoutOrgId($id, $merchant = null)
     {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($id, $merchant) {
+            return $this->getPricingPlanByIdWithoutOrgIdLegacy($id, $merchant);
+        };
+        $ccRequest = [
+            'id' => $id,
+            'type' => Pricing\Type::PRICING,
+        ];
+        $ccResponseCollection = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $ccResponseCollection;
+
+    }
+
+    public function getPricingPlanByIdWithoutOrgIdLegacy($id, $merchant = null)
+    {
         return $this->repo->useSlave(function() use ($merchant, $id)
         {
             $cacheTags = Entity::getCacheTags($this->entity, $id);
@@ -435,10 +451,27 @@ class Repository extends Base\Repository
         return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
-    public function getPricingRuleIdsByMerchant($merchant)
-    {
+    public function getPricingRuleIdsByMerchant($merchant) {
         $pricingPlanId = $merchant->getPricingPlanId();
+        $legacyCallable = function () use ($pricingPlanId, $merchant) {
+            return $this->getPricingRuleIdsByMerchantLegacy($pricingPlanId);
+        };
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $ccRequest = [
+            'id' => $pricingPlanId,
+        ];
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if ($ccResponse instanceof Plan) {
+            return array_filter($ccResponse->toArray(), function($k) {
+                return $k == 'id';
+            }, ARRAY_FILTER_USE_KEY);
+        } else {
+            return $ccResponse;
+        }
+    }
 
+    public function getPricingRuleIdsByMerchantLegacy($pricingPlanId)
+    {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
                     ->where(Pricing\Entity::PLAN_ID, '=', $pricingPlanId)
                     ->pluck('id')
@@ -518,6 +551,32 @@ class Repository extends Base\Repository
 
     public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
     {
+        $legacyCallable = function () use ($feature, $method, $merchant, $product) {
+            return $this->getZeroPricingPlanRuleForMethodLegacy($feature, $method, $merchant, $product);
+        };
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $ccRequest = [
+            'id' => Pricing\Entity::ZERO_PRICING,
+            'product' => $product,
+            'feature' => $feature,
+            'payment_method' => $method,
+            'org_id' => $merchant->org->getId(),
+            'type' => Pricing\Type::PRICING,
+        ];
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if ($ccResponse instanceof Plan) {
+            if($ccResponse->count() == 0) {
+                throw new ModelNotFoundException("");
+            } else {
+                return $ccResponse->first();
+            }
+        } else {
+            return $ccResponse;
+        }
+    }
+
+    public function getZeroPricingPlanRuleForMethodLegacy($feature, $method, $merchant, $product = Product::PRIMARY)
+    {
         $orgId = $merchant->org->getId();
 
         return $this->newQuery()
@@ -531,6 +590,27 @@ class Repository extends Base\Repository
     }
 
     public function getInstantRefundsDefaultPricingPlanForMethod(
+        $feature,
+        $method,
+        $product = Product::PRIMARY,
+        $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID)
+    {
+        $legacyCallable = function () use ($feature, $method, $product, $planId) {
+            return $this->getInstantRefundsDefaultPricingPlanForMethodLegacy($feature, $method, $product, $planId);
+        };
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $ccRequest = [
+            'id' => $planId,
+            'product' => $product,
+            'feature' => $feature,
+            'payment_method' => $method,
+            'type' => Pricing\Type::PRICING,
+            'payment_method_default_fallback' => true,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function getInstantRefundsDefaultPricingPlanForMethodLegacy(
         $feature,
         $method,
         $product = Product::PRIMARY,
@@ -631,7 +711,26 @@ class Repository extends Base\Repository
      * only non app pricing rules from the default plan are fetched
      *
      */
-    public function getBankingDirectAccountNonFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant, array $channels)
+    public function getBankingDirectAccountNonFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant, array $channels) {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($feature, $merchant, $channels) {
+            return $this->getBankingDirectAccountNonFreePayoutDefaultPricingRulesLegacy($feature, $merchant, $channels);
+        };
+        $ccRequest = [
+            'id' => Fee::DEFAULT_BANKING_PLAN_ID,
+            'product' => Product::BANKING,
+            'feature' => $feature,
+            'account_type' => AccountType::DIRECT,
+            'org_id' => $merchant->getOrgId(),
+            'type' => Pricing\Type::PRICING,
+            'app_name' => 'null',
+            'payouts_filter' => 'null',
+            'channels' => $channels,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function getBankingDirectAccountNonFreePayoutDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant, array $channels)
     {
         $orgId = $merchant->getOrgId();
 
@@ -692,6 +791,25 @@ class Repository extends Base\Repository
      */
     public function getBankingSharedAccountFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($feature, $merchant) {
+            return $this->getBankingSharedAccountFreePayoutDefaultPricingRulesLegacy($feature, $merchant);
+        };
+        $ccRequest = [
+            'id' => Fee::DEFAULT_BANKING_PLAN_ID,
+            'product' => Product::BANKING,
+            'feature' => $feature,
+            'account_type' => AccountType::SHARED,
+            'org_id' => $merchant->getOrgId(),
+            'type' => Pricing\Type::PRICING,
+            'app_name' => 'null',
+            'payouts_filter' => Payout\Entity::FREE_PAYOUT,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function getBankingSharedAccountFreePayoutDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
+    {
         $orgId = $merchant->getOrgId();
 
         $cacheTags = Entity::getCacheTagsForAccountType($this->entity, $orgId, Fee::DEFAULT_BANKING_PLAN_ID, $feature, AccountType::SHARED, Payout\Entity::FREE_PAYOUT);
@@ -749,6 +867,25 @@ class Repository extends Base\Repository
      *
      */
     public function getBankingDirectAccountFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($feature, $merchant) {
+            return $this->getBankingDirectAccountFreePayoutDefaultPricingRulesLegacy($feature, $merchant);
+        };
+        $ccRequest = [
+            'id' => Fee::DEFAULT_BANKING_PLAN_ID,
+            'product' => Product::BANKING,
+            'feature' => $feature,
+            'account_type' => AccountType::DIRECT,
+            'org_id' => $merchant->getOrgId(),
+            'type' => Pricing\Type::PRICING,
+            'app_name' => 'null',
+            'payouts_filter' => Payout\Entity::FREE_PAYOUT,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+
+    }
+    public function getBankingDirectAccountFreePayoutDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
 
@@ -808,6 +945,24 @@ class Repository extends Base\Repository
     public function getBankingAccountChargeCollectionDefaultPricingRules(string $feature,
                                                                          Merchant\Entity $merchant)
     {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($feature, $merchant) {
+            return $this->getBankingAccountChargeCollectionDefaultPricingRulesLegacy($feature, $merchant);
+        };
+        $ccRequest = [
+            'id' => Fee::DEFAULT_BANKING_PLAN_ID,
+            'product' => Product::BANKING,
+            'feature' => $feature,
+            'org_id' => $merchant->getOrgId(),
+            'type' => Pricing\Type::PRICING,
+            'app_name' => 'null',
+            'payouts_filter' => Payout\Purpose::RZP_CHARGE_COLLECTIONS,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+    public function getBankingAccountChargeCollectionDefaultPricingRulesLegacy(string $feature,
+                                                                         Merchant\Entity $merchant)
+    {
         $orgId = $merchant->getOrgId();
 
         $cacheTags = Entity::getCacheTagsForAccountType($this->entity, $orgId, Fee::DEFAULT_BANKING_PLAN_ID, $feature, '', Payout\Purpose::RZP_CHARGE_COLLECTIONS);
@@ -856,6 +1011,25 @@ class Repository extends Base\Repository
 
     // Fetches the default pricing rules for Fee Recovery payout
     public function getBankingAccountRzpFeesDefaultPricingRules(string $feature,
+                                                                Merchant\Entity $merchant)
+    {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($feature, $merchant) {
+            return $this->getBankingAccountRzpFeesDefaultPricingRulesLegacy($feature, $merchant);
+        };
+        $ccRequest = [
+            'product' => Product::BANKING,
+            'id' => Fee::DEFAULT_BANKING_PLAN_ID,
+            'account_type' => AccountType::DIRECT,
+            'feature' => $feature,
+            'org_id' => $merchant->getOrgId(),
+            'type' => Pricing\Type::PRICING,
+            'payouts_filter' => Payout\Purpose::RZP_FEES,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+        public function getBankingAccountRzpFeesDefaultPricingRulesLegacy(string $feature,
                                                                          Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
@@ -913,6 +1087,23 @@ class Repository extends Base\Repository
      *
      */
     public function getAppPayoutPricingRules(string $feature, Merchant\Entity $merchant)
+    {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($feature, $merchant) {
+            return $this->getAppPayoutPricingRulesLegacy($feature, $merchant);
+        };
+        $ccRequest = [
+            'product' => Product::BANKING,
+            'id' => Fee::DEFAULT_BANKING_PLAN_ID,
+            'feature' => $feature,
+            'app_name' => 'not_null',
+            'org_id' => $merchant->getOrgId(),
+            'type' => Pricing\Type::PRICING,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function getAppPayoutPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
 
@@ -1056,6 +1247,30 @@ class Repository extends Base\Repository
 
     public function getPlanRule($planId, $ruleId, $orgId = null)
     {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($planId, $ruleId, $orgId) {
+            return $this->getPlanRuleLegacy($planId, $ruleId, $orgId);
+        };
+        $orgId = $this->getOrgIdForQuery($orgId);
+        $ccRequest = [
+            'id' => $ruleId,
+            'plan_id' => $planId,
+            'org_id' => $orgId,
+        ];
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        if (empty($ccResponse->getId())) {
+            $data = array(
+                'model' => 'Pricing\Entity',
+                'operation' => 'find');
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $data);
+        } else {
+            return $ccResponse;
+        }
+    }
+
+    public function getPlanRuleLegacy($planId, $ruleId, $orgId = null)
+    {
         return $this->newQueryWithOrgIdParam($orgId)
                      ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
@@ -1178,6 +1393,7 @@ class Repository extends Base\Repository
             return $ccResponseCollection->first();
         }
     }
+
     public function getPricingRuleByMultipleParamsLegacy(
         $planId,
         $product,
@@ -1260,7 +1476,19 @@ class Repository extends Base\Repository
     // In case of Current Account Payouts, fees is deducted at a later stage. There is a chance that a Pricing Rule
     // might have been deleted sometime between payout creation and transaction creation (which happens much later).
     // We use withTrashed to get pricingRules if they have been soft deleted so that feesBreakup remains consistent.
-    public function getPricingFromPricingId($pricingRuleId, $withTrashed = false)
+    public function getPricingFromPricingId($pricingRuleId, $withTrashed = false) {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($pricingRuleId, $withTrashed) {
+            return $this->getPricingFromPricingIdLegacy($pricingRuleId, $withTrashed);
+        };
+        $ccRequest = [
+            'id' => $pricingRuleId,
+            'with_trashed' => $withTrashed,
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+    }
+
+    public function getPricingFromPricingIdLegacy($pricingRuleId, $withTrashed = false)
     {
         $idColumn = $this->dbColumn(Entity::ID);
 

@@ -61,7 +61,8 @@ class ChargeCollections
     // Charge Collections APIs
     const GetReceiptForInvoiceURL = 'v1/subscription/getReceiptForInvoice';
     const GetPricingPlanURL = 'v1/mdr/pricing/plans';
-    const GetPricingPlansSummaryURL = '/v1/mdr/pricing/plans_summary';
+    const GetPricingRuleURL = 'v1/mdr/pricing/rule';
+    const GetPricingPlansSummaryURL = 'v1/mdr/pricing/plans_summary';
     const CreatePricingPlanURL = 'v1/mdr/pricing';
     const UpdatePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}';
     const DeletePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}/force';
@@ -457,6 +458,15 @@ class ChargeCollections
     public function getPricingPlan(array $input, $requestHeaders = [])
     {
         $url = self::GetPricingPlanURL;
+        if (isset($input["id"]) && strlen($input["id"]) > 0) {
+            $url = $url .'/'. $input["id"];
+        }
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders);
+    }
+
+    public function getPricingRule(array $input, $requestHeaders = [])
+    {
+        $url = self::GetPricingRuleURL;
         if (isset($input["id"]) && strlen($input["id"]) > 0) {
             $url = $url .'/'. $input["id"];
         }
