@@ -271,8 +271,10 @@ class CCRouter
                 return self::DISABLE;
             }
 
-            // skip transaction active check for workflow checker route
-            if ($this->isTransactionActive() && $routeName != 'action_checker_create') {
+            // skip transaction active check for workflow checker route and for get calls
+            if ($this->isTransactionActive() &&
+                !isset($this->FunctionToCCRouteMap[$functionName]) &&
+                $routeName != 'action_checker_create'){
                 $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::REPO_TRANSACTION_ACTIVE);
 
                 return self::DISABLE;
