@@ -4,6 +4,8 @@ namespace RZP\Models\BankTransfer;
 
 use Config;
 use App;
+use Queue;
+use RZP\Constants\Mode;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
@@ -1230,6 +1232,40 @@ class Core extends Base\Core
         $payment->setAuthorizeTimestamp();
 
         $this->repo->payment->saveOrFail($payment);
+
+        $this->sendInvoiceToSqs($payment);
+    }
+
+    // Send payment details to cross border SQS queue
+    protected function sendInvoiceToSqs($payment): void
+    {
+        try {
+            $queueName = $this->app['config']->get('queue.cross_border_document_queue.' . Mode::LIVE);
+
+            $data = [
+                'payment_id' => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
+            ];
+
+            $this->trace->info(TraceCode::PROCESS_CB_SQS_TASK,[
+                'payment_id' => $payment->getId(),
+                'merchant_id'   => $payment->getMerchantId()
+            ]);
+
+            Queue::connection('sqs')->pushRaw(json_encode($data), $queueName);
+
+        } catch (\Exception $e)
+        {
+            $errMsg = $e->getMessage() ?? '';
+            $errCode = $e->getCode() ?? '';
+
+            $this->trace->error(
+                TraceCode::SQS_PUSH_FAILED_FOR_CROSS_BORDER_TASK_QUEUE,
+                [
+                    'err_msg'     => $errMsg,
+                    'err_code'    => $errCode,
+                ]);
+        }
 
     }
 
