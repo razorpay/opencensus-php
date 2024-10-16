@@ -134,6 +134,8 @@ use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\Payment\Processor\App as PaymentApp;
 use RZP\Models\Card\TokenisedIIN;
 use RZP\Models\Card\Core as APPCardCore;
+use RZP\Models\Settlement\Processor\OPGSPImportICICI\Constants as OPGSPImportConstants;
+
 trait Authorize
 {
     /**
@@ -4294,6 +4296,11 @@ trait Authorize
 
             if(in_array($library, Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === false)
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    ErrorCode::BAD_REQUEST_INVALID_LIBRARY
+                );
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_LIBRARY,
                     [
@@ -4307,6 +4314,11 @@ trait Authorize
              */
             if (in_array($payment->getMethod(), Method::OPGSP_IMPORT_SUPPORTED_METHODS) === false)
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
+                );
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
                     [
@@ -4317,10 +4329,16 @@ trait Authorize
             //Validate if invoice number is present in notes
             if (empty($payment->getNotes()))
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    OPGSPImportConstants::BAD_REQUEST_PAYMENT_NOTES_MISSING
+                );
+
                 $this->trace->error(
                     TraceCode::INVALID_NOTES_FOR_OPGSP_IMPORT,
                     ['payment_id' => $payment->getId()]
                 );
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Notes field is required with invoice_number.', 'notes');
             }
@@ -4330,6 +4348,11 @@ trait Authorize
             // Validate invoice number is present in notes
             if (empty($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]))
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    OPGSPImportConstants::BAD_REQUEST_PAYMENT_INVOICE_NUMBER_NOT_FOUND
+                );
+
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
                         'payment_id' => $payment->getId(),
@@ -4343,6 +4366,11 @@ trait Authorize
             // Validate length of invoice number
             if (strlen($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]) > InvoiceConstants::INVOICE_NUMBER_LENGTH)
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    OPGSPImportConstants::BAD_REQUEST_PAYMENT_INVOICE_LENGTH_NOT_VALID
+                );
+
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
                         'message' => 'Length of invoice number is greater than expected'
@@ -4366,6 +4394,11 @@ trait Authorize
                     !($existingPayment->getStatus() === Status::REFUNDED && !$existingPayment->hasBeenCaptured()))
             )
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    OPGSPImportConstants::BAD_REQUEST_PAYMENT_ALREADY_EXIST_WITH_SAME_INVOICE_NUMBER
+                );
+
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
                         'payment_id' => $payment->getId(),
@@ -4379,6 +4412,11 @@ trait Authorize
             // validate if payment has order
             if ($payment->hasOrder() === false)
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID
+                );
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
                         'merchant_id' => $payment->merchant->getId(),
@@ -4391,6 +4429,11 @@ trait Authorize
             if ((empty($payment->order->getCustomerId()) === true) &&
                 (empty($payment->customer) === true))
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'icici',
+                    OPGSPImportConstants::BAD_REQUEST_PAYMENT_CUSTOMER_ID_NOT_FOUND
+                );
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment does not have a customer_id.', 'customer_id');
             }
@@ -4410,6 +4453,11 @@ trait Authorize
 
         if(in_array($library, Analytics\Metadata::JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                ErrorCode::BAD_REQUEST_INVALID_LIBRARY
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_LIBRARY,
                 [
@@ -4421,6 +4469,11 @@ trait Authorize
         // validate if jpmc supported payment methods
         if (in_array($payment->getMethod(), Method::JPMC_IMPORT_FLOW_SUPPORTED_METHODS) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
                 [
@@ -4431,12 +4484,21 @@ trait Authorize
 
         if ($payment->merchant->isInternational() === true)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED
+            );
             throw new Exception\BadRequestValidationFailureException(
                 'Payment method request not allowed as international is enabled on the merchant.');
         }
 
         if ($payment->isInternational() === true)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED, [
                     'merchant_id' => $payment->merchant->getId(),
@@ -4457,6 +4519,11 @@ trait Authorize
         // validate if invoice_number is present in notes
         if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) === true)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_INVOICE_NUMBER_NOT_FOUND
+            );
+
             throw new Exception\BadRequestValidationFailureException(
                 'Invoice number field is required within the notes.', 'notes.invoice_number');
         }
@@ -4464,6 +4531,11 @@ trait Authorize
         // Validate length of invoice number
         if (strlen($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) > InvoiceConstants::INVOICE_NUMBER_LENGTH)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_INVOICE_LENGTH_NOT_VALID
+            );
+
             $this->trace->error(
                 TraceCode::INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW, [
                     'message' => 'Length of invoice number is greater than expected'
@@ -4483,6 +4555,11 @@ trait Authorize
         // validate if payment has order
         if ($payment->hasOrder() === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
                     'merchant_id' => $payment->merchant->getId(),
@@ -4495,6 +4572,11 @@ trait Authorize
         if ((empty($payment->order->getCustomerId()) === true) &&
             (empty($payment->customer) === true))
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_CUSTOMER_ID_NOT_FOUND
+            );
+
             throw new Exception\BadRequestValidationFailureException(
                 'Payment does not have a customer_id.', 'customer_id');
         }
@@ -4502,6 +4584,11 @@ trait Authorize
         // validate if order has customer shipping address
         if(($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false) && ($this->mode === Mode::LIVE))
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_ORDER_CUSTOMER_SHIPPING_ADDRESS_NOT_FOUND
+            );
+
             throw new Exception\BadRequestValidationFailureException(
                 'Payment order does not have a customer shipping address.', 'order.customer_details');
         }
@@ -4509,6 +4596,11 @@ trait Authorize
         // validate if payment raised in jpmc supported currencies
         if (Currency\Currency::isJPMCImportFlowSupportedCurrency($payment->getCurrency()) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                 'currency');
@@ -4516,6 +4608,11 @@ trait Authorize
 
         if (($payment->getCurrency() !== Currency\Currency::INR) && ($payment->isCard() === false))
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                 'currency');
@@ -4525,6 +4622,11 @@ trait Authorize
         if ((empty($payment->merchant->getPurposeCode()) === true) or
             (in_array($payment->merchant->getPurposeCode(), PurposeCodeList::JPMC_IMPORT_FLOW_PURPOSE_CODES) === false))
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                OPGSPImportConstants::BAD_REQUEST_INVALID_PURPOSE_CODE
+            );
+
             throw new Exception\BadRequestValidationFailureException(
                 'Merchant Purpose Code is invalid', 'merchant.purpose_code');
         }
@@ -4536,6 +4638,11 @@ trait Authorize
            (isset($hsCodeData['hs_code']) === false) or
            (HsCodeList::isBlacklistedHSCodeForJPMCImportFlow($hsCodeData['hs_code']) === true))
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'jpmc',
+                OPGSPImportConstants::BAD_REQUEST_INVALID_HS_CODE
+            );
+
             throw new Exception\BadRequestValidationFailureException(
                 'Merchant HSCode is invalid', 'merchant.hs_code');
         }
@@ -4557,6 +4664,11 @@ trait Authorize
                     !($existingPayment->getStatus() === Status::REFUNDED && !$existingPayment->hasBeenCaptured()))
             )
             {
+                $this->pushMetricForImportFlowPaymentValidation(
+                    'jpmc',
+                    OPGSPImportConstants::BAD_REQUEST_PAYMENT_ALREADY_EXIST_WITH_SAME_INVOICE_NUMBER
+                );
+
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW, [
                         'payment_id'            => $payment->getId(),
@@ -4582,6 +4694,11 @@ trait Authorize
         // TPV feature flag is required for all LRS merchants
         if ($payment->merchant->isTPVRequired() === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrs',
+                OPGSPImportConstants::LRS_ORDER_WITHOUT_TPV
+            );
+
             $this->trace->error(
                 TraceCode::LRS_ORDER_WITHOUT_TPV, [
                     'merchant_id' => $payment->merchant->getId()
@@ -4595,6 +4712,11 @@ trait Authorize
         $library = (new Payment\Service)->getLibraryFromPayment($payment);
         if(Analytics\Metadata::isLRSSupportedLibrary($library) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrs',
+                ErrorCode::BAD_REQUEST_INVALID_LIBRARY
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_LIBRARY, [
                     'merchant_id' => $payment->merchant->getId(),
@@ -4605,6 +4727,11 @@ trait Authorize
         // Validate supported payment methods
         if (Method::isLRSSupportedMethod($payment->getMethod()) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrs',
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD, [
                     'merchant_id' => $payment->merchant->getId(),
@@ -4615,6 +4742,11 @@ trait Authorize
         // Validate supported currencies
         if (Currency\Currency::isLRSSupportedCurrency($payment->getCurrency()) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrs',
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                 'currency');
@@ -4623,6 +4755,11 @@ trait Authorize
         // Validate if payment has order
         if ($payment->hasOrder() === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrs',
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
                     'merchant_id' => $payment->merchant->getId(),
@@ -4643,6 +4780,11 @@ trait Authorize
         $library = (new Payment\Service)->getLibraryFromPayment($payment);
         if(in_array($library, Analytics\Metadata::LRS_TRAVEL_CITI_SUPPORTED_LIBRARIES) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                ErrorCode::BAD_REQUEST_INVALID_LIBRARY
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_LIBRARY,
                 [
@@ -4653,6 +4795,11 @@ trait Authorize
 
         if (in_array($payment->getMethod(), Method::LRS_TRAVEL_CITI_SUPPORTED_METHODS) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
                 [
@@ -4664,6 +4811,11 @@ trait Authorize
         // Validate supported currencies
         if (Currency\Currency::isLRSTravelCitiSupportedCurrency($payment->getCurrency()) === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                 'currency');
@@ -4672,6 +4824,11 @@ trait Authorize
         // Validate if payment has order
         if ($payment->hasOrder() === false)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
                     'merchant_id' => $payment->merchant->getId(),
@@ -4682,6 +4839,11 @@ trait Authorize
         //Validate if invoice number is present in notes
         if (empty($payment->getNotes()))
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_NOTES_MISSING
+            );
+
             $this->trace->error(
                 TraceCode::INVALID_NOTES_FOR_CITI_LRS_TRAVEL,
                 ['payment_id' => $payment->getId()]
@@ -4695,6 +4857,11 @@ trait Authorize
         // Validate invoice number is present in notes
         if (empty($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]))
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_INVOICE_NUMBER_NOT_FOUND
+            );
+
             $this->trace->error(
                 TraceCode::INVALID_INVOICE_FOR_CITI_LRS_TRAVEL, [
                     'payment_id' => $payment->getId(),
@@ -4708,6 +4875,11 @@ trait Authorize
         // Validate length of invoice number
         if (strlen($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]) > InvoiceConstants::INVOICE_NUMBER_LENGTH)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_INVOICE_LENGTH_NOT_VALID
+            );
+
             $this->trace->error(
                 TraceCode::INVALID_INVOICE_FOR_CITI_LRS_TRAVEL, [
                     'message' => 'Length of invoice number is greater than expected'
@@ -4727,6 +4899,11 @@ trait Authorize
         $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
         if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
         {
+            $this->pushMetricForImportFlowPaymentValidation(
+                'lrsCiti',
+                OPGSPImportConstants::BAD_REQUEST_PAYMENT_ALREADY_EXIST_WITH_SAME_INVOICE_NUMBER
+            );
+
             $this->trace->error(
                 TraceCode::INVALID_INVOICE_FOR_CITI_LRS_TRAVEL, [
                     'payment_id' => $payment->getId(),
@@ -15130,5 +15307,22 @@ trait Authorize
                 TraceCode::TURBO_SET_GATEWAY_TXN_IN_REDIS_FAILED,
                 []);
         }
+    }
+
+    protected function pushMetricForImportFlowPaymentValidation($flow, $errorCode)
+    {
+        try {
+            $this->trace->count(Payment\Metric::IMPORT_PAYMENT_VALIDATION_FAILURE, [
+                'flow' => $flow,
+                'error' => $errorCode,
+            ]);
+        } catch (\Exception $e) {
+            $this->trace->error(
+                TraceCode::ERROR_ADDING_METRIC_IMPORT_PAYMENT, [
+                'message'       => 'Error in adding metric',
+                'error_message' => $e->getMessage(),
+            ]);
+        }
+
     }
 }
