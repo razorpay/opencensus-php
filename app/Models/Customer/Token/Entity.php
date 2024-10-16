@@ -839,14 +839,39 @@ class Entity extends Base\PublicEntity
 
     public function getCardAttribute()
     {
+        $cardAttribute = $this->attributes['card'] ?? [];
+
         if ($this->relationLoaded('card') === true)
         {
             return $this->getRelation('card');
         }
 
-        if ($this->hasCard() === true)
+        //for external token or token created in the token service will skip the findOrFail here as the data already provided by token service
+        if ($this->hasCard() === true && (!(method_exists($this, 'isExternal') and $this->isExternal() === true)))
         {
             $card = (new Card\Repository)->findOrFail($this->getCardId());
+
+            $this->card()->associate($card);
+
+            return $card;
+        }
+
+        //the card data is coming from token service as we save card entity there during the creation
+        if ((empty($cardAttribute) === false) && ($this->hasCard() === true) && ((method_exists($this, 'isExternal') and $this->isExternal() === true)))
+        {
+
+            $card = (new Card\Entity());
+
+            $card[UniqueIdEntity::ID] = $this->getCardId();
+
+            $repo = App::getFacadeRoot()['repo'];
+
+            $merchant = $repo->merchant->findorFail($this->getMerchantId());
+
+            $card->forceFill( $cardAttribute);
+
+            // associate the merchant into card
+            $card->merchant()->associate($merchant);
 
             $this->card()->associate($card);
 

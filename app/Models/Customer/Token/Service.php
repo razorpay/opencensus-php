@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Token;
 
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
@@ -2649,5 +2650,42 @@ class Service extends Base\Service
         $card = $this->repo->card->fetchForToken($token);
 
         return $card->toArray();
+    }
+  
+    //Splitz Experiment for save card
+    public function isSaveTokenViaTokenService(): bool
+    {
+        $isMalaysianMerchant = Country::matches($this->merchant->getCountry(), Country::MY);
+
+        if ($isMalaysianMerchant )
+        {
+            try
+            {
+                $properties = [
+                    'id' => $this->app['request']->getTaskId(),
+                    'experiment_id' => $this->app['config']->get('app.my_save_card_splitz_experiment_id'),
+                    'request_data' => json_encode(['mid' => $this->merchant->getId(), 'mode' => $this->mode]),
+                ];
+
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['name'] ?? 'control';
+
+                $this->trace->info(TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_RESPONSE, [
+                    'merchant_id' => $properties,
+                    'variant' => $response['response']['variant']['name'],
+                ]);
+
+                return $variant === 'variant_on';
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->traceException(
+                    $e,
+                    null,
+                    TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_FAILURE);
+            }
+        }
+        return false;
     }
 }
