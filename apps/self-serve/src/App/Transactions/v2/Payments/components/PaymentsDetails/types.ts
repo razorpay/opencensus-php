@@ -279,6 +279,21 @@ export interface IPaymentTransferNew {
   id: string;
 }
 
+export interface IBankTransferDetails {
+  virtual_account: {
+    id: string;
+  };
+  payer_bank_account: {
+    name: string;
+    ifsc: string;
+    account_number: string;
+  };
+}
+
+export interface IBankTransferDetailsProps {
+  paymentID: string;
+}
+
 export type NotificationArg = {
   type: 'success' | 'error';
   message: string;

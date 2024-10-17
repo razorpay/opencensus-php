@@ -255,3 +255,11 @@ export const StyledAmountWrapper = styled.div<{ type: string; fontSize }>`
     }
   }
 `;
+
+export const StyledBankTransferCollapser = styled.div`
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  align-items: center;
+  cursor: pointer;
+`;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CurrencyCodeType } from '@razorpay/i18nify-js/currency';
 
-import { Store } from 'common/typings';
+import { ShowNotificationType, Store } from 'common/typings';
 
 export enum PaymentStatus {
   CREATED = 'created',
@@ -298,6 +298,22 @@ export interface IPaymentTransferNew {
   user: Store['session']['user'];
   fetchTransfers: (arg: { fetchTransfers: () => void }) => void;
   id: string;
+}
+
+export interface IBankTransferDetails {
+  virtual_account: {
+    id: string;
+  };
+  payer_bank_account: {
+    name: string;
+    ifsc: string;
+    account_number: string;
+  };
+}
+
+export interface IBankTransferDetailsProps {
+  paymentID: string;
+  showNotification: ShowNotificationType;
 }
 
 export type NotificationArg = {

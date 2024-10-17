@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Text } from '@razorpay/blade/components';
 
+import BankTransferDetails from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/BankTransferDetails';
+
 import { titleCase } from '@dashboard/shared-utils/rzp-utils';
 import { IPaymentDetails } from './types';
 import CardIcon from 'apps/self-serve/src/assets/card.svg';
@@ -82,6 +84,14 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
             ( <img src={WalletIcon} alt="wallet-icon" style={{ marginLeft: '4px' }} /> {walletName}{' '}
             )
           </span>
+        </>
+      );
+    }
+
+    if (method === 'bank_transfer') {
+      return (
+        <>
+          <BankTransferDetails paymentID={payment?.id} />
         </>
       );
     }

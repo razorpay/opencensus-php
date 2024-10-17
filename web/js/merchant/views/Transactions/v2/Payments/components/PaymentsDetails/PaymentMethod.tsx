@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Text } from '@razorpay/blade/components';
 
+import BankTransferDetails from './BankTransferDetails';
+
 import CardIcon from 'assets/transactions/card.svg';
 import UpiIcon from 'assets/transactions/upi.svg';
 import TurboUpiIcon from 'assets/transactions/turbo-upi.svg';
@@ -10,6 +12,8 @@ import WalletIcon from 'assets/transactions/wallet.svg';
 import { titleCase } from 'common/utils/rzp-utils';
 
 import { IPaymentDetails } from './types';
+import { useSplitzService } from 'common/splitz';
+import { isPaymentV2RevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
 
 interface IPaymentMethod {
   payment: any;
@@ -21,6 +25,11 @@ interface IPaymentMethod {
 }
 
 function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMethod): JSX.Element {
+  const splitz = useSplitzService();
+
+  const { abExperiments } = splitz || { abExperiments: { toggle_payments_v2_revamp: undefined } };
+  const isTxnV2ParityFeaturesEnabled = isPaymentV2RevampEnabled(abExperiments);
+
   const getPaymentMethod = () => {
     if (method === 'card') {
       return (
@@ -87,6 +96,14 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
             ( <img src={WalletIcon} alt="wallet-icon" style={{ marginLeft: '4px' }} /> {walletName}{' '}
             )
           </span>
+        </>
+      );
+    }
+
+    if (method === 'bank_transfer' && isTxnV2ParityFeaturesEnabled) {
+      return (
+        <>
+          <BankTransferDetails paymentID={payment?.id} />
         </>
       );
     }
