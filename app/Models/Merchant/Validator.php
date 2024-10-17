@@ -431,6 +431,7 @@ class Validator extends Base\Validator
         Methods\Entity::UPI      => 'sometimes|bool',
         Methods\Entity::SODEXO  => 'sometimes|bool',
         Methods\Entity::COD     => 'sometimes|bool',
+        Methods\Entity::DUITNOW_PAY  => 'sometimes|bool',
     ];
 
     protected static $resetSettlementScheduleRules = [

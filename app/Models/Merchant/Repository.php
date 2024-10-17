@@ -723,6 +723,9 @@ class Repository extends Base\Repository
                     } else if ($method === Methods\Entity::SODEXO)
                     {
                         $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::CARD . '->' . Methods\Entity::SODEXO,'=', $value);
+                    } else if ($method === Methods\Entity::DUITNOW_PAY)
+                    {
+                        $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::DUITNOW_PAY . '->' . Methods\Entity::DUITNOW_PAY,'=', $value);
                     } else
                     {
                         $join->where($method, '=', $queryValue);

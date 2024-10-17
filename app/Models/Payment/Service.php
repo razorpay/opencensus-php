@@ -5782,6 +5782,16 @@ class Service extends Base\Service
                 return;
             }
 
+            if($payment->isDuitNowPay() && $payment->isFailed() &&
+                ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
+                    $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                    $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                $this->trace->info(TraceCode::DUITNOW_PAY_EMAIL_SUPPRESS, [
+                    'payment_id' => $payment['id'],
+                ]);
+                return;
+            }
+
             (new Notify($payment))->trigger($event);
         }
     }
@@ -5895,6 +5905,16 @@ class Service extends Base\Service
                         $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_WALLET_PAYMENT_PENDING ||
                         $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
                     $this->trace->info(TraceCode::WALLET_EMAIL_SUPPRESS, [
+                        'payment_id' => $payment['id'],
+                    ]);
+                    return;
+                }
+
+                if($payment->isDuitNowPay() && $payment->isFailed() &&
+                    ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
+                        $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                        $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                    $this->trace->info(TraceCode::DUITNOW_PAY_EMAIL_SUPPRESS, [
                         'payment_id' => $payment['id'],
                     ]);
                     return;

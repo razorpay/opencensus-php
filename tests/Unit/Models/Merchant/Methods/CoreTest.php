@@ -217,5 +217,26 @@ class CoreTest extends TestCase
         ]);
     }
 
+    public function testDuitNowPayIsEnabled()
+    {
+        $methods = [
+            'merchant_id'   => '8vUslVi0uFOSoy',
+            'disabled_banks'=> [],
+            'banks'         => '[]',
+            'addon_methods' => [
+                'duitnow_pay' => [
+                    'duitnow_pay' => true,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('merchant', ['id' => '8vUslVi0uFOSoy']);
+        $methods = $this->fixtures->create('methods', $methods);
+
+        $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
+
+        $this->assertTrue($data['duitnow_pay']);
+    }
+
 
 }

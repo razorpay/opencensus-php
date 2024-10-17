@@ -2843,6 +2843,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::FPX);
     }
 
+    public function isDuitNowPay()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::DUITNOW_PAY);
+    }
+
     public function isEmandate()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
