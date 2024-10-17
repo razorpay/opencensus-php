@@ -19,7 +19,6 @@ export default class CreateOfferWizard extends React.Component {
   };
 
   IS_MODAL_VIEW = !!this.props.onClose;
-  zIndex = this.props.zIndex;
   // TODO: Refactor this
   TABS_DATA = this.props.tabsData;
 
@@ -126,12 +125,7 @@ export default class CreateOfferWizard extends React.Component {
     };
 
     return (
-      <Modal
-        isOpen={true}
-        onDismiss={this.props.onClose ?? noop}
-        zIndex={this.props.zIndex}
-        size="large"
-      >
+      <Modal isOpen={true} onDismiss={this.props.onClose ?? noop} size="large">
         <ModalBody padding="spacing.0">
           <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
             <ModalAsideNav

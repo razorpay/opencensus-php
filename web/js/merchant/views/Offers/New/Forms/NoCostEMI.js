@@ -188,7 +188,6 @@ class NoCostEMIForm extends BaseForm {
         onSubmit={this.onSubmit}
         offersData={this.state.offersData}
         isLowCostExperimentEnabled={isLowCostEnabled}
-        zIndex={9999}
         values={this.props.values}
         errors={this.props.errors}
         setErrors={this.props.setErrors}

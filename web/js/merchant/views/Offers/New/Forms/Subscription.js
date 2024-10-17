@@ -142,7 +142,6 @@ export default class SubscriptionOffersForm extends BaseForm {
         onChange={this.onFieldChange}
         onClose={this.props.onClose}
         onSubmit={this.onSubmit}
-        zIndex={9999}
         values={this.props.values}
         errors={this.props.errors}
         setErrors={this.props.setErrors}
