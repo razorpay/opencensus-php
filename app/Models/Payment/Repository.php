@@ -5314,6 +5314,7 @@ EOT;
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::GATEWAY, $gateway)
             ->status($status)
+            ->whereNotNull(Entity::REFERENCE2)
             ->whereNull(Entity::REFERENCE16)
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->limit($limit)

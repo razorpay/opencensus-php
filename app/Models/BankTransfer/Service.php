@@ -16,7 +16,6 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Services\PaymentsCrossBorderClient;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant\RazorxTreatment;
 use Symfony\Component\HttpFoundation\File\File;
@@ -1856,23 +1855,7 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->getPaymentsWithReferenceId(Constants\Entity::CURRENCY_CLOUD, Payment\Status::AUTHORIZED, $limit);
 
-        //For transaction having referenceId null/empty make a request to pxb
         foreach ($payments as $payment) {
-            if (empty($payment->reference2)) {
-                $response = $this->getDocument($payment);
-                if ($response !== null && isset($response['success']) && $response['success'] === true) {
-                    if (isset($response['items'][0]['file_id'])) {
-                        $payment->reference2 = $response['items'][0]['file_id'];
-                    }
-                }
-            }
-        }
-
-        foreach ($payments as $payment) {
-            //if the reference2 is not set then skip the payment
-            if (empty($payment->reference2)) {
-                continue;
-            }
             try {
                 $merchantId = $payment->getMerchantId();
 
@@ -2758,38 +2741,4 @@ class Service extends Base\Service
         }
     }
 
-    public function getDocument($input)
-    {
-        // Extract merchant ID and payment IDs from the input array
-        $merchantId = $input['merchant_id'];
-        $paymentIds = $input['payment_id'];
-
-        try
-        {
-            // Prepare the request body for the cross-border service
-            $pxbDocumentInput = [
-                'merchant_id' => $merchantId,
-                'type'        => 'einvoice',
-                'payment_ids' => $paymentIds,
-            ];
-
-            // Create an instance of the PaymentsCrossBorderClient class
-            $paymentsCrossBorderClient = new PaymentsCrossBorderClient();
-
-            // Call the getDocuments method with the prepared request body
-            $documents = $paymentsCrossBorderClient->getDocuments($pxbDocumentInput);
-
-            // Use the $documents as needed
-            return $documents;
-        }
-        catch (\Throwable $e)
-        {
-            // Log the error and rethrow it
-            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_DOCUMENT_FETCH_ERROR, [
-                'error' => $e,
-            ]);
-
-            throw $e;
-        }
-    }
 }
