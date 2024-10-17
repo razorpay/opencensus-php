@@ -76,3 +76,5 @@ export const isInternalTestingEnabled = (experiment): boolean => {
   const isRazorpayMerchant = window.rzp_user?.email?.endsWith('@razorpay.com');
   return isRazorpayMerchant && isExperimentEnabled(experiment?.internal_testing_whitelisting);
 };
+
+export const isRBACEnabled = (experiment): boolean => isExperimentEnabled(experiment?.rbacEnabled);

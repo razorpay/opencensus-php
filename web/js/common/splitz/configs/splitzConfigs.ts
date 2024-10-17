@@ -297,6 +297,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'rbacEnabled',
+        experimentId: {
+          beta: 'O85moJtATjSxPO',
+          production: 'O85pnkikiVaF5N',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'internal_testing_whitelisting',
         experimentId: {
           beta: 'OzGYt2mDFeu00i',

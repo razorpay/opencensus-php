@@ -237,8 +237,13 @@ export default class User {
     return true; // By default it's allowed if not restricted
   }
 
-  isAllowedEdit(moduleName) {
-    let isEditAllowed = _isAllowed(this.userRole, moduleName, roleEditPermissions);
+  isAllowedEdit(moduleName, shouldSkipRoleCheck = false) {
+    let isEditAllowed = _isAllowed(
+      this.userRole,
+      moduleName,
+      roleEditPermissions,
+      shouldSkipRoleCheck,
+    );
 
     if (this.isEditRestrictedByRazorX(moduleName)) {
       isEditAllowed = false;
@@ -251,8 +256,13 @@ export default class User {
     return isEditAllowed;
   }
 
-  isAllowedView(moduleName) {
-    let isViewAllowed = _isAllowed(this.userRole, moduleName, roleViewPermissions);
+  isAllowedView(moduleName, shouldSkipRoleCheck = false) {
+    let isViewAllowed = _isAllowed(
+      this.userRole,
+      moduleName,
+      roleViewPermissions,
+      shouldSkipRoleCheck,
+    );
 
     if (this.isViewRestrictedByRazorX(moduleName)) {
       isViewAllowed = false;
@@ -279,13 +289,13 @@ export default class User {
    * isAllowedMultiple is for grouped tabs, example: Settings in side bar.
    * If any route is present in moduleNames, it will be treated for view only mode and will make parent group(hood) visible.
    * */
-  isAllowedMultiple(moduleNames) {
+  isAllowedMultiple(moduleNames, shouldSkipRoleCheck = false) {
     let isHoodAllowed = false;
     moduleNames = moduleNames.split(' ');
 
     for (let key = 0; key < moduleNames.length; key++) {
       const m = moduleNames[key];
-      isHoodAllowed = this.isAllowedView(m);
+      isHoodAllowed = this.isAllowedView(m, shouldSkipRoleCheck);
 
       if (isHoodAllowed) {
         break;
@@ -2097,7 +2107,7 @@ export default class User {
   }
 }
 
-function _isAllowed(userRole, moduleName, permissionsMap) {
+function _isAllowed(userRole, moduleName, permissionsMap, shouldSkipRoleCheck = false) {
   if (!moduleName) return false;
 
   const restrictedModulesForOrg = antiOrgsModules[getOrg().custom_code];
@@ -2108,6 +2118,8 @@ function _isAllowed(userRole, moduleName, permissionsMap) {
       return false; // Module not allowed for Org
     }
   }
+
+  if (shouldSkipRoleCheck) return true;
 
   const allowedRoles = permissionsMap[moduleName.toLowerCase()];
   if (!allowedRoles) {

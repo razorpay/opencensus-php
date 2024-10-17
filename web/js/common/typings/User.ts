@@ -162,6 +162,7 @@ type UserProperties = {
   logo_url?: string;
   playstore_url: string;
   has_key_access: boolean;
+  permissions?: Array<string>;
 };
 
 // as user properties are not available initially
