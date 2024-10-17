@@ -10986,6 +10986,8 @@ class Processor
         //
         $this->repo->reload($order);
 
+        [$captureConfig, $captureSettings]  = $this->shouldAutoCapturePaymentConfigAndSetRefundAt($payment);
+
         // If order status is not paid yet and if the payment is direct settlement then capture
         if (($order->isPaid() === false) and
             ($payment->isDirectSettlement()))
@@ -11030,8 +11032,6 @@ class Processor
 
             return $response;
         }
-
-        [$captureConfig, $captureSettings]  = $this->shouldAutoCapturePaymentConfig($payment);
 
         if ($captureConfig === true)
         {
@@ -11115,7 +11115,7 @@ class Processor
         return $response;
     }
 
-    protected function shouldAutoCapturePaymentConfig(Payment\Entity $payment)
+    protected function shouldAutoCapturePaymentConfigAndSetRefundAt(Payment\Entity $payment)
     {
         $lateAuthConfig = $this->getLateAuthPaymentConfig($payment);
 
@@ -11149,7 +11149,7 @@ class Processor
 
         $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
 
-        $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
+        $this->setPaymentRefundAtForConfig($payment,$manualTimeoutDuration);
 
         if ($captureValue === 'automatic')
         {
