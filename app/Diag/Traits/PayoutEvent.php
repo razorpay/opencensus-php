@@ -79,4 +79,25 @@ trait PayoutEvent
 
         return false;
     }
+
+    public function trackPayoutPropertiesEvent(
+        array $eventData,
+        Payout\Entity $payout = null,
+        array $customProperties = [],
+        \Throwable $ex = null,
+    ) {
+        $requestId = $this->app['request']->getTaskId();
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $customProperties +=
+            [
+                'timestamp'     => $timestamp,
+                'requestId'     => $requestId
+            ];
+
+        $event = new PE($payout, $ex, $customProperties);
+        $properties = $event->getProperties();
+        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
+    }
 }

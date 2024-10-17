@@ -5,6 +5,7 @@ namespace RZP\Models\Payout\Processor;
 use App;
 use Closure;
 use Razorpay\Api\VirtualAccount;
+use RZP\Diag\EventCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use Carbon\Carbon;
@@ -434,6 +435,13 @@ class Base extends BaseCore
                 null,
                 PublicErrorDescription::BAD_REQUEST_SUSPICIOUS_TRANSACTION
             );
+        }
+
+        $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
+            RazorxTreatment::PAYOUT_PROPERTIES_EVENT,  $this->app['rzp.mode'] ?? 'live');
+
+        if ($variant === 'on') {
+            $this->trackPayoutPropertiesEvent($payout);
         }
 
         $this->setQueuedFeeRecoveryPayoutsFlag($payout);
@@ -5029,5 +5037,48 @@ class Base extends BaseCore
 
             return [false, null, null, null];
         }
+    }
+
+    protected function trackPayoutPropertiesEvent(Payout\Entity $payout)
+    {
+        if (empty($this->merchant) || empty($this->app['basicauth'])) {
+            return;
+        }
+
+        $auth = $this->app['basicauth'];
+        $internalApp = $auth->getInternalApp();
+
+        if (!empty($internalApp)) {
+            return;
+        }
+
+        $merchantId = $this->merchant->getId();
+        $user = $auth->getUser();
+        $role = $auth->getUserRole();
+
+        // Initialize userId based on user existence (for OAuth scenarios)
+        $userId = $user ? $user->getId() : null;
+        $routeName = $this->app['api.route']->getCurrentRouteName()
+            ?? $this->app['request.ctx']->getRoute()
+            ?? $this->app['worker.ctx']->getJobName();
+
+        $eventAttributes = [
+            'merchant_id' => $merchantId,
+            'request'     => $routeName,
+            'user_id'     => $userId,
+            'user_role'   => $role,
+            'app_name'    => $internalApp
+        ];
+
+        $this->app['diag']->trackPayoutPropertiesEvent(
+            EventCode::PAYOUT_PROPERTIES,
+            $payout,
+            $eventAttributes
+        );
+
+        $this->trace->info(TraceCode::PAYOUT_PROPERTIES_EVENT_SUCCESS,[
+            "payout_id" => $payout->getId(),
+            "event_attributes" => $eventAttributes
+        ]);
     }
 }

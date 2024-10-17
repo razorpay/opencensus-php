@@ -1238,4 +1238,6 @@ final class RazorxTreatment
 
     const ALLOW_FULCRUM_RECURRING_INITIAL = 'fulcrum_recurring_initial';
     const ALLOW_FULCRUM_RECURRING_SUBSEQUENT = 'fulcrum_recurring_subsequent';
+
+    const PAYOUT_PROPERTIES_EVENT = 'payout_properties_event';
 }
