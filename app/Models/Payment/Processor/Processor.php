@@ -8541,6 +8541,8 @@ class Processor
         $internalCode = $error->getInternalErrorCode();
 
         $updatedPayment = null;
+        //have added falg to ensure that netbanking hdfc corp payments are not updated to failed status
+        $shouldUpdateForNetbankigHdfcCorpPayments=false;
 
         try
         {
@@ -8561,6 +8563,35 @@ class Processor
         if($payment->isUpiRecurring())
         {
             $method = 'upi_autopay';
+        }
+
+
+        $orgFeatureFlag = $this->merchant->org->isFeatureEnabled(Feature::VAS_NB_CORP_ORG);
+
+        $merchantFeatureFlag = $this->merchant->isFeatureEnabled(Feature::VAS_NB_CORP_MER);
+
+        if(($payment->getMethod() === Method::NETBANKING) and
+            ($payment->getBank() === Payment\Processor\Netbanking::HDFC_C) and
+            (($merchantFeatureFlag === true) OR ($orgFeatureFlag === true)))
+        {
+            $this->trace->info(TraceCode::CORPORATE_NETBANKING_PAYMENT_HDFC_PAYMENT_CHECK, [
+                'Payment_Id' => $payment->getId(),
+                'Merchant_Id' => $payment->getMerchantId(),
+            ]);
+
+            $data = [
+                'payment' => $payment->toArrayGateway(),
+                'merchant' => $this->merchant,
+            ];
+
+            $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+            //only set error as Payment pending if we recieve   same response from gateway
+            if ($data['gateway']['error']['internal_error_code'] === 'BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION'){
+
+                $internalCode=$data['gateway']['error']['internal_error_code'];
+                $shouldUpdateForNetbankigHdfcCorpPayments=true;     
+            }
+
         }
 
         $error->setDetailedError($internalCode, $method);
@@ -8610,6 +8641,10 @@ class Processor
                     'payment_id'    => $payment->getId(),
                     'status'        => $status
                 ]);
+        }
+        if ($shouldUpdateForNetbankigHdfcCorpPayments){
+            //setting status as created again to ensure payment doesn't move to failed state
+            $payment->setStatus(Payment\Status::CREATED);
         }
 
         $payment->setStatus(Payment\Status::FAILED);
