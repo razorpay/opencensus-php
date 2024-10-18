@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Transfer;
 
+use App;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
 use Throwable;
 use Carbon\Carbon;
 use Monolog\Logger;
@@ -10,16 +12,22 @@ use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Models\Admin;
+use RZP\Models\Key;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Transaction;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use RZP\Jobs\TransferProcess;
+use RZP\Jobs\Transfers\TransferReversalCreateTransaction;
+use RZP\Jobs\AsyncBalanceUpdateForTransfer;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Listeners\ApiEventSubscriber;
@@ -50,6 +58,44 @@ class Service extends Base\Service
     {
         $transferTypeFilter = $this->getTransferTypeFilter($input);
 
+        $txn = null;
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) : false;
+
+        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
+
+        $readExp = $this->getTransferReadSplitzResponse($requestId) === 'enable';
+
+        if($isReverseShadowMerchant === true and $readExp === true)
+        {
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete('transaction.settlement', $input['expand']);
+
+                //Doing this as strip sign uses pointer
+                $transferId = $id;
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb(Entity::stripSignWithoutValidation($transferId));
+
+                if(empty($txn) === false and empty($txn->getSettlementId()) === false)
+                {
+                    $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                    if (empty($settlement) === false)
+                    {
+                        $txn['settlement'] = $settlement->toArrayPublic();
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+            }
+        }
+
         $transfer = Tracer::inSpan(['name' => 'transfer.fetch'], function() use ($id, $input)
         {
             return $this->repo
@@ -64,7 +110,27 @@ class Service extends Base\Service
             $transfer = $this->setPartnerDetailsForTransfer($transfer);
         }
 
+        if ($txn != null)
+        {
+            $transfer['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $transfer['transaction'] = null;
+        }
+
         return $transfer;
+    }
+
+    public function getTransferReadSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.transfer_read_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function fetchMultiple(array $input)
@@ -116,9 +182,18 @@ class Service extends Base\Service
                 );
             }
 
-            return $this->repo
-                        ->transfer
-                        ->fetch($input, $merchantId);
+            if ($this->isRouteTidbFetchExpEnabled($merchantId))
+            {
+                return $this->repo
+                    ->transfer
+                    ->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                return $this->repo
+                    ->transfer
+                    ->fetch($input, $merchantId,);
+            }
         });
 
         $this->trace->info(
@@ -189,9 +264,27 @@ class Service extends Base\Service
     {
         try
         {
-            $transfer = $this->core->createForMerchant($input, $this->merchant);
-
             $merchantId = $this->merchant->getId();
+
+            $isExpEnabled = $this->isRouteRearchExpEnabled($merchantId);
+
+            if ($isExpEnabled === true)
+            {
+                // make request to micro service
+                $resp = App::getFacadeRoot()['route']->createDirectTransfer($input);
+
+                $this->trace->info(
+                    TraceCode::DIRECT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
+                    [
+                        'input'      => $input,
+                        'response'   => $resp,
+                    ]
+                );
+
+                return $resp;
+            }
+
+            $transfer = $this->core->createForMerchant($input, $this->merchant);
 
             if ($this->shouldLogRoutePartnershipV1Guard($merchantId) === true)
             {
@@ -299,11 +392,23 @@ class Service extends Base\Service
             ]
         );
 
+        $parentMerchant = $this->merchant->getParentId();
+
         try
         {
-            $transfer = $this->repo
-                             ->transfer
-                             ->fetchByPublicIdAndLinkedAccountMerchant($id, $this->merchant);
+            if ($this->isRouteTidbFetchExpEnabled($parentMerchant))
+            {
+                $transfer = $this->repo
+                    ->transfer
+                    ->fetchByPublicIdAndLinkedAccountMerchant(
+                        $id, $this->merchant, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                $transfer = $this->repo
+                    ->transfer
+                    ->fetchByPublicIdAndLinkedAccountMerchant($id, $this->merchant);
+            }
 
             $reversal = (new Reversal\Core)->linkedAccountReverseForTransfer($transfer, $input, $this->merchant);
 
@@ -327,7 +432,17 @@ class Service extends Base\Service
 
         $relations = ['transfer', 'transfer.recipientSettlement'];
 
-        $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
+        $parentMerchant = $this->merchant->getParentId();
+
+        if ($this->isRouteTidbFetchExpEnabled($parentMerchant))
+        {
+            $payment = $this->repo->payment->findByTransferIdAndMerchant(
+                $id, $merchantId, $relations, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+        else
+        {
+            $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
+        }
 
         return $this->createTransferResponseFromPayment($payment);
     }
@@ -420,10 +535,21 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
+        $parentMerchant = $this->merchant->getParentId();
+
+        $isRouteTidbFetchEnabled = $this->isRouteTidbFetchExpEnabled($parentMerchant);
+
         if ($transId == null)
         {
-
-            $paymentTransfers =  $this->repo->transfer->getTransfersByPayments($parentPaymentId, $merchantId);
+            if ($isRouteTidbFetchEnabled)
+            {
+                $paymentTransfers =  $this->repo->transfer->getTransfersByPayments(
+                    $parentPaymentId, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                $paymentTransfers =  $this->repo->transfer->getTransfersByPayments($parentPaymentId, $merchantId);
+            }
 
             if ($paymentTransfers->count() == 0)
             {
@@ -431,13 +557,30 @@ class Service extends Base\Service
 
                 $orderId = $payment->getApiOrderId();
 
-                $paymentTransfers =  $this->repo->transfer->getTransfersByPayments($orderId, $merchantId);
+                if ($isRouteTidbFetchEnabled)
+                {
+                    $paymentTransfers =  $this->repo->transfer->getTransfersByPayments(
+                        $orderId, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+                }
+                else
+                {
+                    $paymentTransfers =  $this->repo->transfer->getTransfersByPayments($orderId, $merchantId);
+                }
             }
 
         }
         else
         {
-            $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId($parentPaymentId, $merchantId,$transId);
+            if ($isRouteRearchEnabled)
+            {
+                $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId(
+                    $parentPaymentId, $merchantId,$transId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId(
+                    $parentPaymentId, $merchantId,$transId);
+            }
 
             if ($paymentTransfers->count() == 0)
             {
@@ -445,9 +588,17 @@ class Service extends Base\Service
 
                 $orderId = $payment->getApiOrderId();
 
-                $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId($orderId, $merchantId,$transId);
+                if ($isRouteRearchEnabled)
+                {
+                    $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId(
+                        $orderId, $merchantId, $transId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+                }
+                else
+                {
+                    $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId(
+                        $orderId, $merchantId, $transId);
+                }
             }
-
         }
 
         foreach ($paymentTransfers as  $trans)
@@ -501,30 +652,37 @@ class Service extends Base\Service
 
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
-        $limit = (int) ($input['limit'] ?? 300);
+        if (isset($input['order_ids']) === false)
+        {
+            $limit = (int) ($input['limit'] ?? 300);
 
-        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+            $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
 
-        $merchantIds = $this->getMerchantIdsFromCronApiInputIfPresent($input);
+            $merchantIds = $this->getMerchantIdsFromCronApiInputIfPresent($input);
 
-        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
+            $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
 
-        $startTime = microtime();
+            $startTime = microtime();
 
-        $orderIds = $this->repo->transfer->fetchPendingOrderTransfers($merchantIds, $keyMerchantIds, $limit, $olderThanMinutes);
+            $orderIds = $this->repo->transfer->fetchPendingOrderTransfers($merchantIds, $keyMerchantIds, $limit, $olderThanMinutes);
 
-        $endTime = microtime();
+            $endTime = microtime();
 
-        $this->trace->info(
-            TraceCode::PENDING_ORDER_TRANSFERS_FETCHED,
-            [
-                'order_ids'      => $orderIds,
-                'time_taken'     => ($endTime - $startTime),
-                'count'          => count($orderIds),
-                'sync'           => $syncProcessing,
-                'older_than_min' => $olderThanMinutes
-            ]
-        );
+            $this->trace->info(
+                TraceCode::PENDING_ORDER_TRANSFERS_FETCHED,
+                [
+                    'order_ids'      => $orderIds,
+                    'time_taken'     => ($endTime - $startTime),
+                    'count'          => count($orderIds),
+                    'sync'           => $syncProcessing,
+                    'older_than_min' => $olderThanMinutes
+                ]
+            );
+        }
+        else
+        {
+            $orderIds = $input['order_ids'];
+        }
 
         return $this->processOrderTransfers($orderIds, $syncProcessing);
     }
@@ -648,30 +806,37 @@ class Service extends Base\Service
 
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
-        $limit = (int) ($input['limit'] ?? 300);
+        if (isset($input['payment_ids']) === false)
+        {
+            $limit = (int) ($input['limit'] ?? 300);
 
-        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+            $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
 
-        $merchantIds = $this->getMerchantIdsFromCronApiInputIfPresent($input);
+            $merchantIds = $this->getMerchantIdsFromCronApiInputIfPresent($input);
 
-        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
+            $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
 
-        $startTime = microtime();
+            $startTime = microtime();
 
-        $paymentIds = $this->repo->transfer->fetchPendingTransfers(EntityConstant::PAYMENT, $merchantIds, $keyMerchantIds, $limit, $olderThanMinutes);
+            $paymentIds = $this->repo->transfer->fetchPendingTransfers(EntityConstant::PAYMENT, $merchantIds, $keyMerchantIds, $limit, $olderThanMinutes);
 
-        $endTime = microtime();
+            $endTime = microtime();
 
-        $this->trace->info(
-            TraceCode::PENDING_PAYMENT_TRANSFERS_FETCHED,
-            [
-                'payment_ids'    => $paymentIds,
-                'time_taken'     => ($endTime - $startTime),
-                'count'          => count($paymentIds),
-                'sync'           => $syncProcessing,
-                'older_than_min' => $olderThanMinutes
-            ]
-        );
+            $this->trace->info(
+                TraceCode::PENDING_PAYMENT_TRANSFERS_FETCHED,
+                [
+                    'payment_ids'    => $paymentIds,
+                    'time_taken'     => ($endTime - $startTime),
+                    'count'          => count($paymentIds),
+                    'sync'           => $syncProcessing,
+                    'older_than_min' => $olderThanMinutes
+                ]
+            );
+        }
+        else
+        {
+            $paymentIds = $input['payment_ids'];
+        }
 
         if ($syncProcessing === true)
         {
@@ -684,7 +849,7 @@ class Service extends Base\Service
     public function processPendingPaymentTransfersForKeyMerchants(array $input)
     {
         $this->increaseAllowedSystemLimits();
-        
+
         $syncProcessing = (bool) ($input['sync'] ?? false);
 
         $limit = (int) ($input['limit'] ?? 300);
@@ -1146,12 +1311,12 @@ class Service extends Base\Service
             ]
         );
 
-        if ($transaction->source->getEntityName() !== EntityConstant::PAYMENT)
+        if ($transaction->getType() !== EntityConstant::PAYMENT)
         {
             return [null, null];
         }
 
-        $payment = $transaction->source;
+        $payment = $this->repo->payment_method_transfer->findOrFail($transaction->getEntityId());
 
         if ($payment->transfer === null)
         {
@@ -1171,7 +1336,7 @@ class Service extends Base\Service
 
         $transfer->setRecipientSettlementId($settlementId);
 
-        $this->repo->saveOrFail($transfer);
+        $this->repo->transfer->saveOrFail($transfer);
 
         $this->trace->info(
             TraceCode::TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED,
@@ -1628,27 +1793,67 @@ class Service extends Base\Service
 
                 foreach ($transferIds as $transferId)
                 {
-                    $transfer = $this->repo->transfer->findOrFail($transferId);
+                    $this->repo->transaction(function () use ($transferId) {
+                        $transfer = $this->repo->transfer->findOrFail($transferId);
 
-                    if (($transfer->getStatus() === Status::PENDING) or ($transfer->getStatus() === Status::FAILED))
-                    {
-                        if ($transfer->getStatus() === Status::FAILED)
+                        if (($transfer->getStatus() === Status::PENDING) or ($transfer->getStatus() === Status::FAILED))
                         {
-                            $transfer->setErrorCode(null);
+                            if ($transfer->getStatus() === Status::FAILED)
+                            {
+                                $transfer->setErrorCode(null);
 
-                            $transfer->setMessage(null);
+                                $transfer->setMessage(null);
 
-                            $transfer->setAttempts(1);
+                                $transfer->setAttempts(1);
+                            }
+
+                            $totalTransferAmount = $transfer->getAmount();
+
+                            $sourcePayment = null;
+
+                            if ($transfer->getSourceType() === Constant::PAYMENT)
+                            {
+                                $sourcePayment = $transfer->source;
+                            }
+                            else if ($transfer->getSourceType() === Constant::ORDER)
+                            {
+                                $sourceOrderId = $transfer->getSourceId();
+
+                                $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($sourceOrderId, $transfer->getMerchantId());
+
+                                $rearchPayments = $this->app['pg_router']->fetchOrderPayments($sourceOrderId, $transfer->getMerchantId());
+
+                                $allPayments = $apiPayments->merge($rearchPayments);
+
+                                $sourcePayment = null;
+
+                                foreach ($allPayments as $singlePayment)
+                                {
+                                    if ($singlePayment->getStatus() === Payment\Status::CAPTURED || $singlePayment->getStatus() === Payment\Status::REFUNDED)
+                                    {
+                                        $sourcePayment = $singlePayment;
+
+                                        break;
+                                    }
+                                }
+
+                                // fetching payment again to get from sources configured for archived entity
+                                // As of now, archived payment fetch with findOrFail happens on fallback replica
+                                // This will also prevent columns like _record_source from warm storage to be present in entity attributes
+                                $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
+                            }
+
+                            (new Core())->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
+
+                            $transfer->setStatus(Status::PROCESSED);
+
+                            $transfer->saveOrFail();
+
+                            (new Core())->eventTransferProcessed($transfer);
+
+                            $this->core->createTransactionForTransferViaCron([$transferId]);
                         }
-
-                        $transfer->setStatus(Status::PROCESSED);
-
-                        $transfer->saveOrFail();
-
-                        (new Core())->eventTransferProcessed($transfer);
-
-                        $this->core->createTransactionForTransferViaCron([$transferId]);
-                    }
+                    });
                 }
 
                 break;
@@ -1764,7 +1969,7 @@ class Service extends Base\Service
                     {
                         $sourcePayment = $transfer->source;
 
-                        $transferProcessor = new OrderTransfer($sourcePayment);
+                        $transferProcessor = new PaymentTransfer($sourcePayment);
                     }
                     else if ($transfer->getSourceType() === Constant::ORDER)
                     {
@@ -1780,7 +1985,7 @@ class Service extends Base\Service
 
                         foreach ($allPayments as $singlePayment)
                         {
-                            if ($singlePayment->getStatus() === Payment\Status::CAPTURED || $singlePayment->getStatus === Payment\Status::REFUNDED)
+                            if ($singlePayment->getStatus() === Payment\Status::CAPTURED || $singlePayment->getStatus() === Payment\Status::REFUNDED)
                             {
                                 $sourcePayment = $singlePayment;
 
@@ -1793,10 +1998,12 @@ class Service extends Base\Service
                         // This will also prevent columns like _record_source from warm storage to be present in entity attributes
                         $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
 
-                        $transferProcessor = new PaymentTransfer($sourcePayment);
+                        $transferProcessor = new OrderTransfer($sourcePayment);
                     }
 
-                    $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment);
+                    $transferPaymentId = (new \RZP\Models\LedgerOutbox\Core())->findTransferPaymentFromNotes($transfer);
+
+                    $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment, $transferPaymentId);
 
                     $this->trace->info(
                         TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
@@ -1805,6 +2012,30 @@ class Service extends Base\Service
                             'transfer_payment_id' => $transferPayment->getId(),
                         ]
                     );
+                }
+
+                break;
+            }
+
+            case 'fail_la_payment':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'input' => $input,
+                        'option' => 'fail_la_payment',
+                    ]
+                );
+
+                $paymentIds = $input['data'];
+
+                foreach ($paymentIds as $paymentId)
+                {
+                    $payment = $this->repo->payment->findOrFail($paymentId);
+
+                    $payment->setStatus(Payment\Status::FAILED);
+
+                    $this->repo->saveOrFail($payment);
                 }
 
                 break;
@@ -1917,6 +2148,144 @@ class Service extends Base\Service
                 }
 
                 break;
+            }
+
+            case 'update_transfer_bal':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'update_trf',
+                        'input'  => $input,
+                    ]
+                );
+
+                $transferIds = $input['data'];
+
+                foreach ($transferIds as $transferId)
+                {
+                    $transfer = $this->repo->transfer->findOrFail($transferId);
+
+                    (new AsyncBalanceUpdateForTransfer($this->mode, $transfer->getId()))->handle();
+                }
+
+                break;
+            }
+
+            case 'set_key':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'set_k',
+                        'input'  => $input,
+                    ]
+                );
+
+                $key = $input['data'][0]['key'];
+
+                $value = $input['data'][0]['value'];
+
+                (new Admin\Service)->setConfigKeys([$key => $value]);
+
+                break;
+            }
+
+            case 'fetch_key':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'fetch_k',
+                        'input'  => $input,
+                    ]
+                );
+
+                $key = $input['data'][0]['key'];
+
+                $value = (new Admin\Service)->getConfigKey(['key' => $key]);
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'fetch_k',
+                        'input'  => $input,
+                        'output' => $value,
+                    ]
+                );
+
+                return $value;
+            }
+
+            case 'linked_account_alias':
+            {
+
+                // To trigger the account_code updation
+                // Data should be array of JSON of linked account ID and account_code
+                // Sample payload:
+                //  {
+                //      "option": "linked_account_alias",
+                //      "data": [
+                //                  {"linked_account_id": "NPBxWRRn778Om9", "account_code": "X2xpdmU6d29hM1"}
+                //              ]
+                //  }
+
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'linked_account_alias',
+                        'input'  => $input,
+                    ]
+                );
+
+                $linkedAccountsData = $input['data'];
+
+                foreach ($linkedAccountsData as $linkedAccountData)
+                {
+                    $linkedAccountId = $linkedAccountData['linked_account_id'];
+
+                    $accountCode = $linkedAccountData['account_code'];
+
+                    $linkedAccount = $this->repo->merchant->find($linkedAccountId);
+
+                    if ($linkedAccount->isActivated() === false)
+                    {
+                        continue;
+                    }
+
+                    $this->repo->transactionOnLiveAndTestAndAsv(function () use ($accountCode, $linkedAccountId) {
+                        $linkedAccount = $this->repo->merchant->find($linkedAccountId);
+
+                        $linkedAccount->setAttribute(\RZP\Models\Merchant\Entity::ACCOUNT_CODE,$accountCode);
+
+                        $this->repo->merchant->saveOrFail($linkedAccount);
+                    });
+                }
+
+                break;
+            }
+            case 'update_dcs_features':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'update_dcs_features',
+                        'input'  => $input,
+                    ]
+                );
+                $data = $input['data'];
+                // make request to micro service
+                $resp = App::getFacadeRoot()['route']->updateFeatures($data);
+
+                $this->trace->info(
+                    TraceCode::RESPONSE,
+                    [
+                        'input'      => $input,
+                        'response'   => $resp,
+                    ]
+                );
+
+                return $resp;
             }
 
             default:
@@ -2310,5 +2679,77 @@ class Service extends Base\Service
         RuntimeManager::setTimeLimit(600);
 
         RuntimeManager::setMaxExecTime(600);
+    }
+
+    public function isRouteRearchExpEnabled(string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => Base\UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.route_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::ROUTE_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
+    public function isRouteTidbFetchExpEnabled(string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_tidb_fetch_exp_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::ROUTE_TIDB_FETCH_SPLITZ_EXP_RESULT, [
+                'splitz_output' => $variant,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_tidb_fetch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 }

@@ -110,6 +110,7 @@ class Route
         'fetch_payment_config_admin'               => ['get',      'admin/payment/config/{type}',                    'ConfigController@fetchPaymentConfig'                               ],
         'create_payment_config'                    => ['post',     'payment/config',                                 'ConfigController@createPaymentConfig'                              ],
         'create_payment_config_bulk'               => ['post',     'payment/config/bulk',                            'ConfigController@createPaymentConfigBulk'                          ],
+        'create_checkout_config_bulk_internal'     => ['post',     'internal/payment/config/checkout/bulk',          'ConfigController@createCheckoutConfigBulkInternal'                 ],
         'create_payment_config_bulk'.
         '_via_batch'                               => ['post',     'payment/config/bulk/batch',                      'ConfigController@createPaymentConfigBulk'                          ],
         'create_payment_config_admin'              => ['post',     'admin/payment/config',                           'ConfigController@createPaymentConfig'                              ],
@@ -525,6 +526,7 @@ class Route
         'merchant_methods_edit_internal'           => ['patch',    'merchants/{mid}/methods',                        'MerchantController@editMerchantMethods'                            ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_fetch_methods_internal'          => ['get',      'merchant/methods/{id}',                          'MerchantController@getPaymentMethodsById'                          ],
+        'merchant_fetch_all_methods_internal'      => ['get',      'merchant/methods/all/{id}',                      'MerchantController@getAllPaymentMethodsById'                       ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_enable_internal'            => ['post',     'merchants/{id}/live/enable/internal',            'MerchantController@postLiveEnable'                                 ],
@@ -816,6 +818,7 @@ class Route
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'qr_code_fetch'                            => ['get',      'payments/qr_codes/{id}',                         'QrCodeController@get'                                              ],
         'qr_code_close'                            => ['post',     'payments/qr_codes/{id}/close',                   'QrCodeController@closeQrCode'                                      ],
+        'close_qr_codes_bulk'                      => ['post',     'payments/qr_codes/close/bulk',                   'QrCodeController@closeQrCodesBulk'                              ],
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
         'qr_code_merchant_create'                  => ['post',     'payments/merchant/qr_codes',                     'QrCodeController@createQrForMerchant'                              ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
@@ -1525,7 +1528,8 @@ class Route
         'merchant_policy_preview_v2'                        => ['get',      'pg/onboarding/merchant_policy_preview/v2',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'fetch_sales_assisted_merchants'                    => ['get',      'pg/onboarding/fetch_sales_assisted_merchants',                 'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_website_policy_verify'                    => ['put',      'merchant/website/policy/verify',                               'MerchantController@verifyMerchantWebsitePolicy'                    ],
-
+        'fetch_brand_dealer_details'                        => ['get',      'pg/onboarding/fetch_brand_dealer_details',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'update_brand_dealer_details'                       => ['put',      'pg/onboarding/update_brand_dealer_details',                    'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'rize_marketplace_dashboard'               => ['post',       'rize/dashboard/{path?}',                       'RizeMarketplaceProxyController@handleDashboardProxyRequest'        ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
@@ -2688,6 +2692,7 @@ class Route
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_resend_verification'                 => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
         'user_resend_verification_otp'             => ['post',     'users/resend-verification-otp',                  'UserController@postResendVerificationOtp'                          ],
+        'user_resend_verification_otp_internal'    => ['post',     'users/resend-verification-otp-internal',         'UserController@postResendVerificationOtp'                          ],
         'co_created_reset_password_admin'          => ['post',     'users/co_created/reset-password',                'UserController@postResetPasswordByEmailForCoCreated'               ],
         'user_reset_password_create'               => ['post',     'users/reset-password',                           'UserController@postResetPassword'                                  ],
         'user_reset_password_token'                => ['post',     'users/reset-password-token',                     'UserController@postChangePasswordByToken'                          ],
@@ -2786,6 +2791,7 @@ class Route
         'user_otp_create'                          => ['post',     'users/otp/send',                                 'UserController@sendOtp'                                            ],
         'user_verify_contact'                      => ['post',     'users/verify_contact',                           'UserController@verifyContactWithOtp'                               ],
         'user_verify_email'                        => ['post',     'users/verify_email',                             'UserController@verifyEmailWithOtp'                                 ],
+        'user_verify_email_internal'               => ['post',     'users/verify_email_internal',                    'UserController@verifyEmailWithOtp'                                 ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMapping'                                   ],
@@ -3246,6 +3252,7 @@ class Route
         'settlement_ondemand_blocked'              => ['get',       'settlements/ondemand/merchant/config',          'SettlementOndemandController@isOndemandBlocked'                    ],
         'settlement_ondemand_linked_account'       => ['post',      'settlements/ondemand/linked_account_settlements','SettlementOndemandController@linkedAccountSettlement'             ],
         'settlement_ondemand_reverse'              => ['post',      'settlements/ondemand/reverse',                   'SettlementOndemandController@reverseOndemandSettlement'           ],
+        'settlement_ondemand_sync_txn'             => ['post',      'settlements/ondemand/transaction/sync',          'SettlementOndemandController@syncOdsTransaction'                  ],
         'settlement_ondemand_create_internal'      => ['post',      'settlements/ondemand/internal',                 'SettlementOndemandController@postSettlementOndemand'               ],
 
 
@@ -4707,6 +4714,8 @@ class Route
         'token_create'                            => ['post',        'tokens',                                                   'TokenController@create'                                   ],
         'token_fetch'                             => ['post',        'tokens/fetch',                                             'TokenController@fetch'                                    ],
         'token_fetch_cryptogram'                  => ['post',        'tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGram'                          ],
+        'token_fetch_cryptogram_internal'         => ['post',        'internal/tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGramInternal'         ],
+        'token_fetch_card_internal'               => ['post',        'internal/tokens/card',                                      'TokenController@fetchTokenCardInternal'                   ],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
         'update_token_on_authorized'              => ['post',        'internal/tokens/update_on_authorized',                     'TokenController@updateTokenOnAuthorized'                  ],
@@ -5909,6 +5918,8 @@ class Route
         'cps_iin_flow_disable',
         'add_token_iin',
         'fetch_iin_by_token_iin',
+        'token_fetch_cryptogram_internal',
+        'token_fetch_card_internal',
         'payment_calculate_fees_with_gateway',
         'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
@@ -6080,6 +6091,8 @@ class Route
         'user_change_password_with_otp_verification',
         'user_confirm_by_data',
         'user_access',
+        'user_verify_email_internal',
+        'user_resend_verification_otp_internal',
         'user_fetch',
         'user_create_merchant',
         'user_login',
@@ -6357,6 +6370,7 @@ class Route
         'vendor_payment_gst_input_credit_sync_cron',
         'tax_payments_add_penalty_cron',
         'create_payment_config_bulk_via_batch',
+        'create_checkout_config_bulk_internal',
         'payment_meta_search',
         'bulk_create_fund_accounts',
         'add_ondemand_pricing_if_absent',
@@ -6756,6 +6770,8 @@ class Route
 
         'merchant_fetch_methods_internal',
 
+        'merchant_fetch_all_methods_internal',
+
         'terminal_sync_internal',
 
         'terminal_compare_and_sync_internal',
@@ -6860,6 +6876,8 @@ class Route
         'user_login_2fa_setup_mobile',
         'user_patch_password',
         'user_access',
+        'user_verify_email_internal',
+        'user_resend_verification_otp_internal',
         'user_fetch',
         'user_create_merchant',
         'user_change_password',
@@ -8348,6 +8366,7 @@ class Route
         'setl_ondemand_transfer_processed',
         'setl_ondemand_transfer_trigger',
         'setl_ondemand_transfer_payout_update',
+        'settlement_ondemand_sync_txn',
         'banking_account_statement_process_admin',
         'banking_account_statement_insert_missing',
         'correct_merchant_owners_products',
@@ -9668,6 +9687,10 @@ class Route
 
         'get_mozart_audit_logs',
         'get_mozart_audit_logs_by_params',
+
+        'fetch_brand_dealer_details',
+        'update_brand_dealer_details',
+        'close_qr_codes_bulk',
     ];
 
     protected static $splitPaymentRoutes = [
@@ -9736,6 +9759,8 @@ class Route
         'pgos_verify_otp'                                 => Permission::EDIT_MERCHANT,
         'onboarding_order_create'                         => Permission::EDIT_MERCHANT,
         'fetch_sales_assisted_merchants'                  => Permission::VIEW_MERCHANT,
+        'fetch_brand_dealer_details'                      => Permission::POS_VALIDATE_BRAND_DETAILS,
+        'update_brand_dealer_details'                     => Permission::POS_VALIDATE_BRAND_DETAILS,
         'onboarding_order_verify'                         => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
@@ -9818,6 +9843,7 @@ class Route
         'setl_ondemand_transfer_trigger'           => Permission::SETTLEMENT_ONDEMAND_TRANSFER_RETRY,
         'setl_ondemand_transfer_payout_update'     => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_feature_enable'       => Permission::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        'settlement_ondemand_sync_txn'             => Permission::CAPITAL_DEVELOPER,
         'merchant_tags_batch'                      => Permission::CAPITAL_DEVELOPER,
         'early_settlement_feature_period_create'   => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,
@@ -10559,6 +10585,7 @@ class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'qr_code_create'                           => Permission::CREATE_QR_CODE,
         'qr_code_close'                            => Permission::CREATE_QR_CODE,
+        'close_qr_codes_bulk'                   => Permission::BULK_CLOSE_MULTIPLE_QR,
         'qr_configs_create'                        => Permission::CREATE_QR_CODE_CONFIG,
         'qr_configs_update'                        => Permission::CREATE_QR_CODE_CONFIG,
         'qr_configs_delete'                        => Permission::CREATE_QR_CODE_CONFIG,
@@ -12322,6 +12349,10 @@ class Route
             'vendor_payment_get_tds_categories_internal',
             'contact_update_internal',
             'fund_account_update_internal',
+            'fund_account_list_internal',
+            'contact_list_internal',
+            'contact_get_internal',
+            'fund_account_get_internal',
         ],
 
         'master_onboarding' => [
@@ -14676,6 +14707,8 @@ class Route
             'fetch_batch_actions',
             'fetch_instrument_comment_list',
             'fetch_instrument_previous_status',
+            'fetch_brand_dealer_details',
+            'update_brand_dealer_details',
             'terminal_enable_bulk',
             'terminal_sync',
             'update_template_mappings',
@@ -16732,6 +16765,8 @@ class Route
             'pos_fetch_all_device_orders',
             'pos_fetch_latest_order',
             'get_non_3ds_details',
+            'user_update_name',
+            'close_qr_codes_bulk'
         ],
 
         //
@@ -16802,6 +16837,8 @@ class Route
             'user_change_password',
             'user_change_password_with_otp_verification',
             'user_access',
+            'user_verify_email_internal',
+            'user_resend_verification_otp_internal',
             'user_fetch',
             'user_create_merchant',
             'invitation_action',
@@ -17440,7 +17477,12 @@ class Route
             'internal_balances_fetch_by_merchant_ids',
             'merchant_la_fetch',
             'feature_get_merchants_internal',
-            'settlement_ondemand_create_internal'
+            'settlement_ondemand_create_internal',
+            'internal_feature_get_all',
+            'internal_feature_bulk_assign',
+            'internal_feature_bulk_remove',
+            'pricing_fetch_plan_internal',
+            'pricing_add_plan_rule_bulk'
         ],
 
         'leegality' => [
@@ -17566,7 +17608,8 @@ class Route
             'internal_feature_bulk_remove',
             'internal_merchant_fetch',
             'merchant_fetch_keys',
-            'feature_get_multiple_internal'
+            'feature_get_multiple_internal',
+            'merchant_methods_edit_internal'
         ],
 
         //
@@ -17821,6 +17864,10 @@ class Route
             'qr_code_merchant_create',
         ],
 
+        'payment_methods' => [
+            'merchant_fetch_all_methods_internal',
+        ],
+
         'pos_app' => [
             'merchant_create_terminal_internal_app',
             'merchant_bank_account_create',
@@ -17869,7 +17916,12 @@ class Route
             'api_entity_fetch',
             'internal_payment_pricing',
             'internal_pricing',
-            'payment_calculate_fees_with_gateway'
+            'payment_calculate_fees_with_gateway',
+            'token_fetch_cryptogram_internal',
+            'token_fetch_card_internal',
+            'internal_token_create',
+            'update_token_on_authorized',
+            'internal_transactions'
         ],
 
         'otpelf' => [
@@ -17894,6 +17946,7 @@ class Route
             'pricing_fetch_plan',
             'qr_code_merchant_create',
             'internal_payments_upi_action',
+            'recon_update_data',
         ],
 
         'emandate_service' => [
@@ -18075,6 +18128,7 @@ class Route
 
         'pgos' => [
             'pricing_fetch_plan_internal',
+            'qr_code_merchant_create',
             'internal_fetch_merchant_users',
             'merchant_entities_info',
             'merchant_submit_internal',
@@ -18232,6 +18286,9 @@ class Route
             'contact_get_checkout',
             'merchant_policy_details',
             'fetch_payment_config_checkout_internal',
+            'create_payment_config',
+            'create_checkout_config_bulk_internal',
+            'update_payment_config',
             'payments_downtime',
             'feature_get_all_internal',
             'internal_1cc_configs_get',
@@ -18336,6 +18393,32 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
+            'email_user_status_for_email_update',
+            'merchant_edit_email_self_serve',
+            'fetch_users_internal',
+            'settlement_ondemand_fees',
+            'merchant_activation_business_categories',
+            'merchant_activation_save',
+            'merchant_business_types',
+            'la_fetch',
+            'partner_activation_details',
+            'merchant_sub_create',
+            'feature_get_status',
+            'merchant_billing_label_suggestions',
+            'merchant_billing_label_update',
+            'merchant_toggle_fee_bearer',
+            'merchant_edit_config',
+            'merchant_edit_config_logo',
+            'merchant_fetch_config',
+            'merchant_create_key',
+            'user_update_name',
+            'merchant_edit',
+            'merchant_fetch_schedule_tasks',
+            'setl_fetch_schedule',
+            'schedule_assign',
+            'user_verify_second_factor_auth',
+            'user_trigger_2fa_otp',
+            'admin_authentication',
             'merchant_nc_revamp_eligibility',
             'merchant_activation_clarifications_fetch',
             'merchant_activation_business_categories',
@@ -18383,7 +18466,8 @@ class Route
         ],
 
         'route' => [
-            'payment_transfer'
+            'payment_transfer',
+            'transfer_transaction_create',
         ]
     ];
 

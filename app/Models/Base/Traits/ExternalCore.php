@@ -3,18 +3,28 @@
 namespace RZP\Models\Base\Traits;
 
 use App;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
-use RZP\Models\Merchant;
+use RZP\Jobs\Transfers\PaymentUpdate;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 
 trait ExternalCore
 {
     private function saveExternalEntity($entity)
     {
+        if ($entity->getEntity() === Entity::PAYMENT && $entity->hasTransfer())
+        {
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($entity)
+            {
+                PaymentUpdate::dispatchNow($entity);
+            }));
+
+            return;
+        }
+
         $class = Entity::getexternalRepoSingleton($entity->getEntity());
 
         try
@@ -46,7 +56,6 @@ trait ExternalCore
 
             throw $e;
         }
-
     }
-
 }
+

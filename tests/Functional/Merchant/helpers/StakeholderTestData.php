@@ -377,6 +377,102 @@ return [
         ],
     ],
 
+    'testCreateStakeholderForNonStringCity' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/stakeholders',
+            'method'  => 'POST',
+            'content' => [
+                'percentage_ownership'=> 40.3,
+                'name'=> 'Rahul Sharma',
+                'email'=> 'rahul@acme.org',
+                'relationship'=> [
+                    'director'=> true,
+                    'executive'=> true,
+                ],
+                'phone'=> [
+                    'primary'=> '7474747474',
+                    'secondary'=> '7474747474'
+                ],
+                'addresses'=> [
+                    'residential'=> [
+                        'street'=> '506, Koramangala 1st block',
+                        'city'=> ['Bengaluru'],
+                        'state'=> 'Karnataka',
+                        'postal_code'=> '560034',
+                        'country'=> 'IN'
+                    ]
+                ],
+                'kyc'=> [
+                    'pan'=> 'AVOPB1111K'
+                ],
+                'notes'=> [
+                    'random_key_by_partner'=> 'random_value'
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The city must be a string.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateStakeholderForNonStringCity' => [
+        'request' => [
+            'url'     => '/v2/accounts/{account_id}/stakeholders',
+            'method'  => 'PATCH',
+            'content' => [
+                'percentage_ownership'=> 20,
+                'name'=> 'Rahul SharmaJi',
+                'email'=> 'rahul@acme.com',
+                'relationship'=> [
+                    'director'=> false,
+                    'executive'=> false,
+                ],
+                'phone'=> [
+                    'primary'=> '7474757474',
+                    'secondary'=> '7474757474'
+                ],
+                'addresses'=> [
+                    'residential'=> [
+                        'street'=> '507, Koramangala 1st block',
+                        'city'=> ['Bangalore'],
+                        'state'=> 'Andhra Pradesh',
+                        'postal_code'=> '518501',
+                        'country'=> 'BD'
+                    ]
+                ],
+                'kyc'=> [
+                    'pan'=> 'AVOPB1111J'
+                ],
+                'notes'=> [
+                    'random_key_by_partner'=> 'random_value_2'
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The city must be a string.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testUpdateStakeholderWithAccessDenied' => [
         'request' => [
             'url'     => '/v2/accounts/{account_id}/stakeholders',

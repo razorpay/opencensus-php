@@ -2545,6 +2545,56 @@ class Service extends Base\Service
 
         (new Payment\Validator())->validateExpandsForPaymentFetch($input, $showSettlementHoldStatus);
 
+        $ledgerDualWrite = false;
+
+        $txn = null;
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) : false;
+
+        $requestId = empty($merchant) === false ? $merchant->getId() : $this->app['request']->getTaskId();
+
+        $readExp = $this->getTransactionReadSplitzResponse($requestId) === 'enable';
+
+        if($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $ledgerDualWrite = true;
+
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array(Payment\Entity::TRANSACTION, $input[Base\Repository::EXPAND]) === true
+                    or in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete(Payment\Entity::TRANSACTION, $input['expand']);
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id);
+
+                if (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true
+                    and empty($txn) === false)
+                {
+                    array_delete('transaction.settlement', $input['expand']);
+
+                    if (empty($txn->getSettlementId()) === false)
+                    {
+                        $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                        if (empty($settlement) === false)
+                        {
+                            $txn['settlement'] = $settlement->toArrayPublic();
+                        }
+                        else
+                        {
+                            $txn['settlement'] = null;
+                        }
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+            }
+        }
+
         $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, $input);
 
         $paymentMerchantId = $payment->getMerchantId();
@@ -2618,12 +2668,32 @@ class Service extends Base\Service
 
         if ($showSettlementHoldStatus === true)
         {
-            $paymentTxn = $payment->transaction;
+            $paymentTxn =  $ledgerDualWrite ? $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id) : $payment->transaction;
 
             $entity[PaymentsConstants::SETTLEMENT_ONHOLD] = empty($paymentTxn) ? true : $paymentTxn->isOnHold();
         }
 
+        if ($txn != null)
+        {
+            $entity['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $entity['transaction'] = null;
+        }
+
         return $entity;
+    }
+
+    public function getTransactionReadSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.transaction_read_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function getPaymentTimeline(string $id, array $input = []): array
@@ -2655,6 +2725,48 @@ class Service extends Base\Service
     public function fetchById(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
+
+        $txn = null;
+
+        $requestId = $this->app['request']->getTaskId();
+
+        $readExp = $this->getTransactionReadSplitzResponse($requestId) === 'enable';
+
+        if($readExp === true)
+        {
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array(Payment\Entity::TRANSACTION, $input[Base\Repository::EXPAND]) === true
+                    or in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete(Payment\Entity::TRANSACTION, $input['expand']);
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($id);
+
+                if (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true
+                        and empty($txn) === false)
+                {
+                    array_delete('transaction.settlement', $input['expand']);
+
+                    if (empty($txn->getSettlementId()) === false)
+                    {
+                        $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                        if (empty($settlement) === false)
+                        {
+                            $txn['settlement'] = $settlement->toArrayPublic();
+                        }
+                        else
+                        {
+                            $txn['settlement'] = null;
+                        }
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+            }
+        }
 
         $payment = $this->repo
                         ->payment
@@ -2704,6 +2816,15 @@ class Service extends Base\Service
                 $entity[Payment\Entity::EMI][Payment\Entity::PROCESSING_FEE] = max($percentageFee, $processingFeePlan[ProcessingFeePlan::AMOUNT]);
             }
 
+        }
+
+        if ($txn != null)
+        {
+            $entity['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($readExp === true)
+        {
+            $entity['transaction'] = null;
         }
 
         return $entity;
@@ -2806,6 +2927,54 @@ class Service extends Base\Service
     protected function addDashboardFlagRefundCreateData(array &$entity, $payment)
     {
         $this->getNewProcessor($this->merchant)->getRefundCreationDataForDashboard($payment, $entity);
+    }
+
+    protected function addDashboardFlagupiPayerName(array &$entity, $payment)
+    {
+        if (empty($this->merchant) === true)
+        {
+            return;
+        }
+
+        $experimentResult = $this->isDisplayPayerNameExperimentEnabled();
+
+        if ($experimentResult === false)
+        {
+            return;
+        }
+
+        $featureResult = $this->merchant->org->isFeatureEnabled(Feature\Constants::DISPLAY_UPI_PAYER_NAME);
+
+        if ($featureResult === false)
+        {
+            return;
+        }
+
+        $upi = $this->repo->upi->fetchByPaymentId($payment->id);
+
+        if (isset($upi['name']) === true)
+        {
+            $entity['upi']['payer_name'] = $upi['name'];
+        }
+    }
+
+    private function isDisplayPayerNameExperimentEnabled()
+    {
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.display_upi_payer_name_experiment_id'),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+        if ($variant === 'display_upi_payer_name')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     //qr_device_detail: Frontend needs to send this flag in the input inside dashboard_flag array
@@ -2947,72 +3116,83 @@ class Service extends Base\Service
 
     public function getPaymentFlows(array $input)
     {
-        $merchant = $this->merchant;
+        $data = [];
+        try {
+            $merchant = $this->merchant;
 
-        Locale::setLocale($input, $merchant->getId());
+            Locale::setLocale($input, $merchant->getId());
 
-        if (isset($input['token']) === true)
-        {
-            $tokenId = $input['token'];
-
-            $token = $this->repo->token->findByPublicId($tokenId);
-
-            if (($token !== null) and
-                ($token->hasCard() === true))
+            if (isset($input['token']) === true)
             {
-                $input['iin'] = $token->card->getIin();
+                $tokenId = $input['token'];
+
+                $token = $this->repo->token->findByPublicId($tokenId);
+
+                if (($token !== null) and
+                    ($token->hasCard() === true))
+                {
+                    $input['iin'] = $token->card->getIin();
+                }
             }
-        }
 
-        (new Payment\Validator)->validateInput('get_flows', $input);
+            (new Payment\Validator)->validateInput('get_flows', $input);
 
-        if (isset($input['iin']) === true)
-        {
-            $iinEntity = $this->repo->iin->find($input['iin']);
-        }
-        else
-        {
-            $iinEntity = null;
-        }
-
-        $data = $merchant->getPaymentFlows($iinEntity);
-
-        $library = '';
-        if(isset($input['_']) === true and isset($input['_']['source']) === true)
-        {
-            $library = $input['_']['source'];
-        }
-        elseif (isset($input['source']) === true)
-        {
-            $library = $input['source'];
-        }
-
-        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
-
-        $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
-
-        $data['address_name_required'] = $this->isAddressWithNameRequired($library,$input, $merchant);
-
-        $this->updateCurrencyWrapperIfApplicable($input, $merchant,$data);
-
-        $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $data);
-
-        $this->updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $data);
-
-        if (isset($input['order_id']) === true)
-        {
-            $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
-
-            if ($order->hasOffers() === true)
+            if (isset($input['iin']) === true)
             {
-                $payment = $this->getDummyPayment($order, $iinEntity);
-
-                $applicableOffers = (new Offer\Core)->getApplicableOffersForPayment($order, $payment);
-
-                $data['offers'] = $applicableOffers;
+                $iinEntity = $this->repo->iin->find($input['iin']);
             }
-        }
+            else
+            {
+                $iinEntity = null;
+            }
 
+            $data = $merchant->getPaymentFlows($iinEntity);
+
+            $library = '';
+            if(isset($input['_']) === true and isset($input['_']['source']) === true)
+            {
+                $library = $input['_']['source'];
+            }
+            elseif (isset($input['source']) === true)
+            {
+                $library = $input['source'];
+            }
+
+            $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
+
+            $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
+
+            $data['address_name_required'] = $this->isAddressWithNameRequired($library,$input, $merchant);
+
+            $this->updateCurrencyWrapperIfApplicable($input, $merchant,$data);
+
+            $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $data);
+
+            $this->updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $data);
+
+            if (isset($input['order_id']) === true)
+            {
+                $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+                if ($order->hasOffers() === true)
+                {
+                    $payment = $this->getDummyPayment($order, $iinEntity);
+
+                    $applicableOffers = (new Offer\Core)->getApplicableOffersForPayment($order, $payment);
+
+                    $data['offers'] = $applicableOffers;
+                }
+            }
+            $this->trace->count(Metric::GET_PAYMENT_FLOWS_COUNT, [
+                'success' => "true",
+                'error'   => ""
+            ]);
+        } catch (\Exception $e) {
+            $this->trace->count(Metric::GET_PAYMENT_FLOWS_COUNT, [
+                'success' => "false",
+                'error'   => $e->getCode()
+            ]);
+        }
         return $data;
     }
 
@@ -3254,13 +3434,23 @@ class Service extends Base\Service
         {
             (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID, $baseCurrency, $baseAmount, $markupPercent, $method, $isZeroExponentCurrencySupported, $dccInfo);
         }
-        else
-        {
-            $currencyRequestId = UniqueIdEntity::generateUniqueId();
+        else {
+            try {
+                $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-            $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method, $isZeroExponentCurrencySupported);
+                $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method, $isZeroExponentCurrencySupported);
 
-            $dccInfo['currency_request_id'] = $currencyRequestId;
+                $dccInfo['currency_request_id'] = $currencyRequestId;
+                $this->trace->count(Metric::GET_DCC_INFO_COUNT, [
+                    'success' => "true",
+                    'error' => ""
+                ]);
+            } catch (\Exception $e) {
+                $this->trace->count(Metric::GET_DCC_INFO_COUNT, [
+                    'success' => "false",
+                    'error' => $e->getCode()
+                ]);
+            }
         }
 
         return $dccInfo;
@@ -3557,100 +3747,98 @@ class Service extends Base\Service
          * Rejecting all the disputed payments
          * as the query only depends on refund_at column
          */
-        try
+
+        $payments = $payments->reject(function ($payment) use ($input, &$updatedRefundAt)
         {
-            $payments = $payments->reject(function ($payment) use ($input, &$updatedRefundAt)
+            /**
+             * @var $payment Payment\Entity
+             */
+            if ($payment->isDisputed() === true)
             {
-                /**
-                 * @var $payment Payment\Entity
-                 */
-                if ($payment->isDisputed() === true)
+                return true;
+            }
+
+            if (isset($input['block_order_mismatch']) === true){
+
+                $paymentHasOrder = $payment->hasOrder() && !empty($payment->getAttribute(Payment\Entity::ORDER_ID));
+
+                $orderMismatch =  $input['block_order_mismatch'];
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG,
+                    [
+                        'payment_id'             => $payment->getId(),
+                        'cron_request'           => $orderMismatch,
+                        'payment_has_Order'      => $paymentHasOrder,
+                    ]);
+
+                if ($orderMismatch === true and $paymentHasOrder === true)
                 {
-                    return true;
-                }
-
-                if (isset($input['block_order_mismatch']) === true){
-
-                    $orderMismatch =  $input['block_order_mismatch'];
+                    $order = $payment->order;
 
                     $this->trace->info(
-                        TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG,
+                        TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG_STATUS_MISMATCH,
                         [
-                            'payment_id'             => $payment->getId(),
-                            'cron_request'           => $orderMismatch,
-                            'payment_has_Order'      => $payment->hasOrder(),
+                            'payment_id'                => $payment->getId(),
+                            'order_status'              => $order->getStatus(),
+                            'order_attempt'             => $order->getAttempts(),
+                            'payment_authorized'        => $payment->isAuthorized(),
                         ]);
 
-                    if ($orderMismatch === true and $payment->hasOrder() === true)
+                    if (($order->getStatus() === Order\Status::PAID) and
+                        ($order->getAttempts() === 1) and ($payment->isAuthorized() === true))
                     {
-                        $order = $payment->order;
-
                         $this->trace->info(
-                            TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG_STATUS_MISMATCH,
+                            TraceCode::ORDER_STATUS_MISMATCHED,
                             [
-                                'payment_id'                => $payment->getId(),
-                                'order_status'              => $order->getStatus(),
-                                'order_attempt'             => $order->getAttempts(),
-                                'payment_authorized'        => $payment->isAuthorized(),
+                                'payment_id'         => $payment->getId(),
+                                'order_id'           => $order->getId(),
                             ]);
 
-                        if (($order->getStatus() === Order\Status::PAID) and
-                            ($order->getAttempts() === 1) and ($payment->isAuthorized() === true))
-                        {
-                            $this->trace->info(
-                                TraceCode::ORDER_STATUS_MISMATCHED,
-                                [
-                                    'payment_id'         => $payment->getId(),
-                                    'order_id'           => $order->getId(),
-                                ]);
-
-                            return true;
-                        }
+                        return true;
                     }
-
                 }
 
-                $isRefundRequired = $this->isRefundRequiredForPayment($payment);
+            }
 
-                if ($payment->merchant->isFeatureEnabled(Features::DISABLE_AUTO_REFUNDS))
-                {
-                    return true;
-                }
+            $isRefundRequired = $this->isRefundRequiredForPayment($payment);
 
-                /**
-                 * Check that if the refund is not required , then unset the refund_at
-                 * for the payment.
-                 * Ideally, This should not happen.But there are old payments which have refund_at
-                 * set and have a failed or refunded state. This will eventually clean all
-                 * payments where refund_at shouldn't be set.
-                 */
-                if ($isRefundRequired === false)
-                {
-                    $previousRefundAt = $payment->getRefundAt();
+            if ($payment->merchant->isFeatureEnabled(Features::DISABLE_AUTO_REFUNDS))
+            {
+                return true;
+            }
 
-                    $this->core->updateRefundAt($payment->getPublicId(), null);
+            /**
+             * Check that if the refund is not required , then unset the refund_at
+             * for the payment.
+             * Ideally, This should not happen.But there are old payments which have refund_at
+             * set and have a failed or refunded state. This will eventually clean all
+             * payments where refund_at shouldn't be set.
+             */
+            if ($isRefundRequired === false)
+            {
+                $previousRefundAt = $payment->getRefundAt();
 
-                    $this->trace->info(
-                        TraceCode::PAYMENTS_UPDATE_REFUND_AT,
-                        [
-                            'payment_id'         => $payment->getId(),
-                            'payment_status'     => $payment->getStatus(),
-                            'previous_refund_at' => $previousRefundAt,
-                            'current_refund_at'  => null,
-                        ]);
+                $this->core->updateRefundAt($payment->getPublicId(), null);
 
-                    $updatedRefundAt++;
+                $this->trace->info(
+                    TraceCode::PAYMENTS_UPDATE_REFUND_AT,
+                    [
+                        'payment_id'         => $payment->getId(),
+                        'payment_status'     => $payment->getStatus(),
+                        'previous_refund_at' => $previousRefundAt,
+                        'current_refund_at'  => null,
+                    ]);
 
-                    return true;
-                }
+                $updatedRefundAt++;
 
-                return false;
-            });
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION, ["message" => "mutex lock not acquired"]);
-        }
+                return true;
+            }
+
+            return false;
+        });
+
+
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -4382,13 +4570,11 @@ class Service extends Base\Service
                 if(isset($mapForSettlementService[$mid]) === false)
                 {
                     $mapForSettlementService[$mid] = false;
+                }
 
-                    $balance = $txn->accountBalance;
-
-                    if($bucketCore->shouldProcessViaNewService($mid, $balance) === true)
-                    {
-                        $mapForSettlementService[$mid] = true;
-                    }
+                if($bucketCore->shouldProcessViaNewService($mid) === true)
+                {
+                    $mapForSettlementService[$mid] = true;
                 }
 
                 if ($mapForSettlementService[$mid] === true)
@@ -5443,6 +5629,12 @@ class Service extends Base\Service
 
         $response = $this->app['card.payments']->fetchEntity('authorization', $paymentId);
 
+        if ((isset($response["gateway"]) && $response["gateway"] === "fulcrum") &&
+            (isset($response['status']) && ($response['status'] === Payment\Status::AUTHORIZED ||
+                    $response['status'] === Payment\Status::CAPTURED))) {
+            $response["reason_code"] = "00";
+        }
+
         if ((isset($response['success']) === true) and ($response['success'] === false))
         {
             throw new Exception\BadRequestException(
@@ -5590,11 +5782,11 @@ class Service extends Base\Service
                 return;
             }
 
-            if($payment->isObw() && $payment->isFailed() &&
+            if($payment->isDuitNowPay() && $payment->isFailed() &&
                 ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
                     $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
                     $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
-                $this->trace->info(TraceCode::OBW_EMAIL_SUPPRESS, [
+                $this->trace->info(TraceCode::DUITNOW_PAY_EMAIL_SUPPRESS, [
                     'payment_id' => $payment['id'],
                 ]);
                 return;
@@ -5718,11 +5910,11 @@ class Service extends Base\Service
                     return;
                 }
 
-                if($payment->isObw() && $payment->isFailed() &&
+                if($payment->isDuitNowPay() && $payment->isFailed() &&
                     ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
                         $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
                         $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
-                    $this->trace->info(TraceCode::OBW_EMAIL_SUPPRESS, [
+                    $this->trace->info(TraceCode::DUITNOW_PAY_EMAIL_SUPPRESS, [
                         'payment_id' => $payment['id'],
                     ]);
                     return;
@@ -6818,8 +7010,16 @@ class Service extends Base\Service
 
         if (($input['meta']['force_auth_payment'] === true) and
             ($this->isForceAuthAllowed($gateway) ===true) and
-            ($payment->isUpiRecurring() === false))
+            ($this->isUpiAutopayForceAuthAllowed($payment) === true))
         {
+            if($payment->isUpiRecurring() === true)
+            {
+                // skipping verify call and doing force authorization for recon
+                // need to add some details as we are skipping verify call and some flow
+                $input['upi']['internal_status'] = UpiMetadata\InternalStatus::AUTHORIZED;
+                $input['upi_mandate'] = [];
+            }
+
             $resource = $this->getNewProcessor($payment->merchant)->getCallbackMutexResource($payment);
 
             return $this->mutex->acquireAndRelease($resource,
@@ -6834,6 +7034,43 @@ class Service extends Base\Service
             return $this->verifyAuthorizeFailedPayment($payment, $input);
         }
 
+    }
+
+    private function isUpiAutopayForceAuthAllowed($payment)
+    {
+        if($payment['recurring'] === false)
+        {
+            return true;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.enable_force_auth_on_upi_autopay')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::UPI_AUTOPAY_SPLITZ_FAILURE,
+                [
+                    'error' => $ex->getMessage(),
+                    'experiment' => "enable_force_auth_on_upi_autopay"
+                ]
+            );
+        }
+
+        return false;
     }
 
     public function getPaymentIdFromInput($input)
@@ -6878,6 +7115,7 @@ class Service extends Base\Service
             EntityConstants::NETBANKING,
             EntityConstants::CARDLESS_EMI,
             EntityConstants::PAYMENT,
+            EntityConstants::PAYLATER,
             Entity::META,
         ];
 
@@ -6893,6 +7131,9 @@ class Service extends Base\Service
                 break;
             case Payment\Method::CARDLESS_EMI:
                 (new Payment\Validator)->validateInput('authorize_failed_cardless_emi_payment', $input);
+                break;
+            case Payment\Method::PAYLATER:
+                (new Payment\Validator)->validateInput('authorize_failed_paylater_payment', $input);
                 break;
             default:
                 throw new Exception\BadRequestValidationFailureException(
@@ -6966,15 +7207,11 @@ class Service extends Base\Service
                     [
                         'success'                    => $isSuccess,
                         'gateway'                    => $payment->getGateway(),
-                        'gateway_fee'                => $paymentRecon->getPaymentTransaction()->getGatewayFee(),
-                        'gateway_service_tax'        => $paymentRecon->getPaymentTransaction()->getGatewayServiceTax()
 
                     ]);
         return  [
             'success'              => $isSuccess,
             'payment_id'           => $payment->getId(),
-            'gateway_fee'          => $paymentRecon->getPaymentTransaction()->getGatewayFee(),
-            'gateway_service_tax'  => $paymentRecon->getPaymentTransaction()->getGatewayServiceTax(),
             'art_request_id'       => $input['art_request_id'] ?? '',
         ];
 
@@ -7464,12 +7701,23 @@ class Service extends Base\Service
         {
             $this->repo->transaction(function () use ($payment)
             {
-                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true){
 
-                $this->repo->saveOrFail($txn);
-                // This is required to save the association of the transaction with the payment.
+
+                    $reverseShadowPaymentsCore = new LedgerReverseShadow\Payments\Core();
+
+                    $reverseShadowPaymentsCore->createLedgerEntryForGatewayCaptureReverseShadow($payment);
+
+                }
+                else {
+
+                    list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                    $this->repo->saveOrFail($txn);
+
+                }
                 $this->repo->saveOrFail($payment);
-
+                
                 return true;
             });
 
@@ -8861,22 +9109,7 @@ class Service extends Base\Service
             return false;
         }
 
-        $variant = \App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            self::TRANSACTION_ON_HOLD_WRITE_REMOVAL,
-            $this->mode ?? Mode::LIVE
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::TRANSACTION_ON_HOLD_WRITE_REMOVAL_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-                'type'                   => "payment"
-            ]);
-
-        return $isExperimentEnabled;
+        return true;
     }
 
     /** showMarkupExperimentEnabled(string $merchantId string $network) checks

@@ -218,7 +218,7 @@ class Core extends Base\Core
         return $this->merchantOnboardingProxyController;
     }
 
-    public function create($input, $merchantDetailInputData = [])
+    public function create($input, $merchantDetailInputData = [], array $createMerchantMetadata = [])
     {
         (new UserCore())->validateAccountCreation(array_merge($input, $merchantDetailInputData));
 
@@ -248,9 +248,13 @@ class Core extends Base\Core
 
         if (isset($input['email']) === true)
         {
-            (new Merchant\Validator())->validateUniqueEmailExceptLinkedAccount(
-                $input[Entity::EMAIL], $input[Entity::ORG_ID]
-            );
+            $shouldSkipEmailUniquenessCheck = $createMerchantMetadata[Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK] === true;
+
+            if ($shouldSkipEmailUniquenessCheck === false) {
+                (new Merchant\Validator())->validateUniqueEmailExceptLinkedAccount(
+                    $input[Entity::EMAIL], $input[Entity::ORG_ID]
+                );
+            }
         }
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
@@ -4819,6 +4823,8 @@ class Core extends Base\Core
 
             $response = app('settlements_api')->merchantConfigGet($req, $this->mode);
 
+            $response['holiday_list'] = (object) $response['holiday_list']; // adding manual conversion of options from the data
+
             $this->trace->info(TraceCode::AGGREGATE_SETTLEMENT_SUBMERCHANT_LINKING_REQUEST,[
                 'submerchant_id'    => $submerchant->getId(),
                 'merchant_config'   => $response
@@ -4938,6 +4944,8 @@ class Core extends Base\Core
             ];
 
             $response =  app('settlements_api')->merchantConfigGet($req, $this->mode);
+
+            $response['holiday_list'] = (object) $response['holiday_list']; // adding manual conversion of options from the data
 
             if($response['config']['types']['aggregate']['enable'] === true and
                $response['config']['types']['aggregate']['settle_to'] === $partner->getId())
@@ -9990,6 +9998,8 @@ class Core extends Base\Core
             ];
 
             $response =  app('settlements_api')->merchantConfigGet($req, $this->mode);
+
+            $response['holiday_list'] = (object) $response['holiday_list']; // adding manual conversion of options from the data
 
             $isAggregateSettlement = $response['config']['preferences']['aggregate_settlement_parent'];
 

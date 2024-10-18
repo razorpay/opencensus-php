@@ -1211,6 +1211,11 @@ class EventCode
         'name'    => 'external_payouts.approve.reject.request'
     ];
 
+    const PAYOUT_PROPERTIES = [
+        'group'   => 'external_payouts',
+        'name'    => 'external_payouts.properties'
+    ];
+
     const PAYOUT_FETCH_REQUESTS = [
         'group'   => 'external_payouts',
         'name'    => 'external_payouts.fetch.request'

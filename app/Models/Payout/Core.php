@@ -7927,24 +7927,30 @@ class Core extends Base\Core
 
         //User wise grouping the merchant - user information.
         // We will be sending separate emails to a user for different merchants on whom user has payouts awaiting their approval.
-        $dataGroupedByUserId = $approverList->groupBy(Merchant\MerchantUser\Entity::USER_ID);
+        $dataGroupedByUserId = [];
+        foreach ($approverList as  $approver){
+            $dataGroupedByUserId[$approver['user_id']][] = $approver;
+        }
 
         //picking a user one by one
         foreach ($dataGroupedByUserId as $userData) {
             //Merchant wise grouping the information for the picked up user.
-            $dataGroupedByMerchantId = $userData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID);
+            $dataGroupedByMerchantId = [];
+            foreach ($userData as  $user){
+                $dataGroupedByMerchantId[$user['merchant_id']][] = $user;
+            }
 
             //Picking information specific to the selected merchant-user combination.
             foreach ($dataGroupedByMerchantId as $merchantId => $data) {
                 $input = [
-                    'user_id'       => $data->first()['user_id'],
-                    'merchant_id'   => $data->first()['merchant_id'],
-                    'email'         => $data->first()['email'],
-                    'name'          => $data->first()['name'],
-                    'business_name' => $data->first()['business_name'],
-                    'role'          => $data->first()['role'],
-                    'amount_total'  => $data->first()['payout_total'],
-                    'total_count'   => $data->first()['payout_count'],
+                    'user_id'       => $data[0]['user_id'],
+                    'merchant_id'   => $data[0]['merchant_id'],
+                    'email'         => $data[0]['email'],
+                    'name'          => $data[0]['name'],
+                    'business_name' => $data[0]['business_name'],
+                    'role'          => $data[0]['role'],
+                    'amount_total'  => $data[0]['payout_total'],
+                    'total_count'   => $data[0]['payout_count'],
                     'data'          => [],
                     'payoutIds'     => [],
                 ];
@@ -7993,12 +7999,16 @@ class Core extends Base\Core
     {
         $count = 0;
 
-        if (($approverList->isEmpty() === false) or ($payoutLinksApproverList->isEmpty() === false))
+        if ((sizeof($approverList) > 0) or ($payoutLinksApproverList->isEmpty() === false))
         {
             //User wise grouping the merchant - user information
             //We will be sending separate emails to a user for different merchants on whom user has payouts awaiting their approval
-            $payoutsDataGroupedByUserId = ($approverList->isEmpty() === false) ?
-                $approverList->groupBy(Merchant\MerchantUser\Entity::USER_ID) : new Base\PublicCollection();
+            $dataGroupedByUserId = [];
+            foreach ($approverList as  $approver){
+                $dataGroupedByUserId[$approver['user_id']][] = $approver;
+            }
+            $payoutsDataGroupedByUserId = sizeof($approverList) > 0 ?
+                $dataGroupedByUserId : new Base\PublicCollection();
 
             $payoutLinksDataGroupedByUserId = ($payoutLinksApproverList->isEmpty() === false) ?
                 $payoutLinksApproverList->groupBy(Merchant\MerchantUser\Entity::USER_ID) : new Base\PublicCollection();
@@ -8007,12 +8017,15 @@ class Core extends Base\Core
 
             foreach ($uniqueUserIds as $userId)
             {
-                $pendingPayoutsData = $payoutsDataGroupedByUserId->get($userId);
+                $pendingPayoutsData = $payoutsDataGroupedByUserId[$userId];
 
                 $pendingPayoutLinksData = $payoutLinksDataGroupedByUserId->get($userId);
-
+                $dataGroupedByMerchantId = [];
+                foreach ($pendingPayoutsData as  $user){
+                    $dataGroupedByMerchantId[$user['merchant_id']][] = $user;
+                }
                 $pendingPayoutsGroupedByMerchantId = ($pendingPayoutsData !== null) ?
-                    $pendingPayoutsData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID) : new Base\PublicCollection();
+                    $dataGroupedByMerchantId : new Base\PublicCollection();
 
                 $pendingPayoutLinksGroupedByMerchantId = ($pendingPayoutLinksData !== null) ?
                     $pendingPayoutLinksData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID) : new Base\PublicCollection();
@@ -8025,7 +8038,7 @@ class Core extends Base\Core
 
                     $payoutLinksMailData = array();
 
-                    $pendingPayoutsUserMerchantData = $pendingPayoutsGroupedByMerchantId->get($merchantId);
+                    $pendingPayoutsUserMerchantData = $pendingPayoutsGroupedByMerchantId[$merchantId];
 
                     if ($pendingPayoutsUserMerchantData !== null)
                     {
@@ -9476,14 +9489,14 @@ class Core extends Base\Core
     private function preparePendingPayoutMailData($merchantId, $data): array
     {
         $input = [
-            'user_id'       => $data->first()['user_id'],
-            'merchant_id'   => $data->first()['merchant_id'],
-            'email'         => $data->first()['email'],
-            'name'          => $data->first()['name'],
-            'business_name' => $data->first()['business_name'],
-            'role'          => $data->first()['role'],
-            'amount_total'  => $data->first()['payout_total'],
-            'total_count'   => $data->first()['payout_count']
+            'user_id'       => $data[0]['user_id'],
+            'merchant_id'   => $data[0]['merchant_id'],
+            'email'         => $data[0]['email'],
+            'name'          => $data[0]['name'],
+            'business_name' => $data[0]['business_name'],
+            'role'          => $data[0]['role'],
+            'amount_total'  => $data[0]['payout_total'],
+            'total_count'   => $data[0]['payout_count']
         ];
 
         $startAt = millitime();

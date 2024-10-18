@@ -291,4 +291,16 @@ class Entity extends Base\PublicEntity
             self::TESTING_CREDENTIALS_DATE => $this->getAttribute(self::TESTING_CREDENTIALS_DATE),
         ];
     }
+
+    public function getAcquisitionModel()
+    {
+        $metadata = $this->getMetadata();
+
+        if (!empty($metadata) and isset($metadata[Constants::ACQUISITION_MODEL]))
+        {
+            return $metadata[Constants::ACQUISITION_MODEL];
+        }
+
+        return null;
+    }
 }

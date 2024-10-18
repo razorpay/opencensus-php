@@ -16,6 +16,7 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Admin\Service;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Services\RazorXClient;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
@@ -5838,4 +5839,5 @@ class BankTransferRxTest extends TestCase
 
         Mail::assertQueued(FundLoadingFailed::class, 0);
     }
+
 }

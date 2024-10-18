@@ -270,6 +270,7 @@ class PayoutController extends Controller
                 Trace::ERROR,
                 TraceCode::PENDING_PAYOUT_APPROVAL_EMAILS_FAILED
                 );
+            return ApiResponse::json([], 500);
         }
     }
 
@@ -290,11 +291,14 @@ class PayoutController extends Controller
                 Trace::ERROR,
                 TraceCode::PENDING_PAYOUT_APPROVAL_REMINDER_FAILED
             );
+            return ApiResponse::json([], 500);
         }
+
     }
 
     public function pendingPayoutPushNotification()
     {
+
         try
         {
             $input = Request::all();
@@ -310,6 +314,7 @@ class PayoutController extends Controller
                 Trace::ERROR,
                 TraceCode::PENDING_PAYOUT_APPROVAL_REMINDER_FAILED
             );
+            return ApiResponse::json([], 500);
         }
     }
 

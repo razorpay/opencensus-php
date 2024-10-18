@@ -677,7 +677,8 @@ class Service extends Base\Service
 
                     $payment = $this->repo->payment->findByPublicId($currentPaymentId);
 
-                    if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    if((isset($input['bypass_reverse_shadow']) === false) and
+                        ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
                     {
                        array_push($failureIds, [ $currentPaymentId => "Transaction creation blocked for reverse shadow mode" ]);
 

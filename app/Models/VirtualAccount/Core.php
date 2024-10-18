@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
@@ -307,7 +308,16 @@ class Core extends Base\Core
 
             $virtualAccount->entity()->associate($order);
 
-            $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
+            $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled($virtualAccount->merchant);
+
+            if ($balance === null && $enableCLSBalanceReads === true)
+            {
+                $balance = $this->repo->balance->fetchBalanceByMerchantIdAndTypeFromWarehouse($virtualAccount->merchant, Balance\Type::PRIMARY);
+            }
+            else
+            {
+                $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
+            }
 
 //            To be Uncommented once CollectX is live with both UPI and Bank Account, currently routed this to VPA receiver generation ONLY
 //            if (($virtualAccount->merchant !== null) and $this->isCollectXMerchant($virtualAccount))

@@ -44,8 +44,8 @@ class Sbi extends Base
 
     const S3_PATH = 'sbi_emi/';
 
-    // 24 hours = 24 * 60 * 60 = 86400
-    const REDIS_KEY_TTL = 86400;
+    // 10 days = 240 * 60 * 60 = 864000
+    const REDIS_KEY_TTL = 864000;
 
     // Starting from this date (29/08/2023), SKU ID will be generated using SKU_PREFIX_V2(GG0003).
     // Hence will be sending the same if creation date of the terminal is after this

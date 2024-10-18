@@ -215,6 +215,18 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testWebhookCreationWithRequestHeaderMerchantFlag()
+    {
+        $this->fixtures->merchant->addFeatures(['add_webhook_headers_mx']);
+
+        $this->startTest();
+    }
+
+    public function testWebhookCreationWithoutRequestHeader()
+    {
+        $this->startTest();
+    }
+
     public function testWebhookEventWithExpressTranslationEnabled()
     {
         $translatedWebhookBody = 'sample translated webhook body';

@@ -37,6 +37,7 @@ class Entity extends Base\Entity
     const VPA                   = 'vpa';
     const RECONCILED_AT         = 'reconciled_at';
     const GATEWAY_TIMESTAMP     = 'gateway_timestamp';
+    const CUSTOMER_NAME         = 'customer_name';
 
     const GATEWAY_DATA          = 'gateway_data';
     const GATEWAY_ERROR         = 'gateway_error';

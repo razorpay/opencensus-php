@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\QrPayment;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
@@ -127,7 +128,8 @@ class Processor extends VirtualAccount\Processor
                 return $payment;
             });
 
-        if ($this->shouldCapturePayment === true and $this->merchant->isFeatureEnabled(Feature\Constants::UPIQR_V1_HDFC) === false)
+        if (($this->shouldCapturePayment === true) and
+            ((new QrPayment\Core)->checkPaymentViaQRv1($this->merchant) === false))
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
@@ -208,7 +210,7 @@ class Processor extends VirtualAccount\Processor
             return true;
         }
 
-        if($this->merchant->isFeatureEnabled(Feature\Constants::UPIQR_V1_HDFC) === true)
+        if((new \RZP\Models\QrPayment\Core)->checkPaymentViaQRv1($this->merchant) === true)
         {
             return false;
         }

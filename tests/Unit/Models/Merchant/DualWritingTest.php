@@ -129,7 +129,9 @@ class DualWritingTest extends TestCase
                     "company_pan"      => "ABCCD1235B",
                     "promoter_pan"     => "ABCPD1234A",
                     "company_pan_name" => "CHIZRINZ INFOWAY PRIVATE",
-                    "promoter_pan_name"=> "Promoter Pan Name"
+                    "promoter_pan_name"=> "Promoter Pan Name",
+                    "bank_account_number" => null,
+                    "bank_branch_ifsc" => null
                 ],
                 "payment_preference" => [
                     "others"              => "Others",
@@ -224,6 +226,8 @@ class DualWritingTest extends TestCase
                     "company_pan"      => "ABCCD1235B",
                     "promoter_pan"     => "ABCPD1234A",
                     "company_pan_name" => "CHIZRINZ INFOWAY PRIVATE",
+                    "bank_account_number" => null,
+                    "bank_branch_ifsc" => null
                 ],
                 "payment_preference" => [
                     "others"              => "Others",

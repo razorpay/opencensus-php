@@ -1884,7 +1884,8 @@ class Gateway extends Base\Gateway
          * use success as status code to make sure we do not force auth already auth txns.
          */
         if (($gatewayPayment[Entity::STATUS_CODE] === Status::COLLECT_SUCCESS) and
-            ($gatewayPayment[Entity::RECEIVED] === true))
+            ($gatewayPayment[Entity::RECEIVED] === true) and
+            ($input['payment']['recurring'] !== true))
         {
             return true;
         }
@@ -1897,6 +1898,7 @@ class Gateway extends Base\Gateway
             $attr = [
                 Entity::NPCI_REFERENCE_ID => $input['gateway']['upi']['npci_reference_id'],
                 Entity::VPA               => $input['gateway']['upi'][Entity::VPA],
+                Entity::GATEWAY_PAYMENT_ID => $input['gateway']['upi']['npci_reference_id'],
             ];
 
         }

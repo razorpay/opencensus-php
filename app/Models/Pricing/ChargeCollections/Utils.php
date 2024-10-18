@@ -2,8 +2,12 @@
 
 namespace RZP\Models\Pricing\ChargeCollections;
 
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Pricing\Entity;
+use RZP\Trace\TraceCode;
 
 class Utils {
 

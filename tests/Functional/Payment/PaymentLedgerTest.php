@@ -4,6 +4,8 @@ namespace Functional\Payment;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order\Entity as Order;
@@ -175,6 +177,109 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
         $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
+
+    public function testDSPaymentWithOptimizerConvenienceFeeMerchantBalanceDeduction()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'subscriptions', 'recurring_auto', 'raas', 'es_automatic', 'optimizer_cfb_custom']);
+        $pricingPlanId = 'Nwq0KnbB6zptpM';
+        $this->fixtures->pricing->createPricingPlanWithOptimizerConvenienceFee($pricingPlanId);
+        $this->fixtures->merchant->editPricingPlanId($pricingPlanId);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $payment = $this->createDirectSettlementPayment(true);
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => "0",
+                "merchant_balance_amount" => "5900",
+                "tax" => "900",
+                "commission" => "500",
+                "upi_inapp_commission" => '0',
+                "recurring_commission" => '0',
+                "magic_checkout_commission" => '0',
+                "esautomatic_commission" => '2000',
+                "optimizer_commission" => '2500',
+                "partner_commission" => '0',
+                "partner_tax" => '0'
+            ],
+            "additional_params" => [
+                "direct_settlement_accounting" =>  "direct_settlement",
+                "fee_breakup" => "true"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($payment['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+    }
+
 
     public function testNormalCapturePaymentWithFeeGreaterThanFeeCredits()
     {
@@ -3291,10 +3396,16 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
     }
 
-    protected function createDirectSettlementPayment()
+    protected function createDirectSettlementPayment($isOptimizerPayment = false)
     {
-        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+        if($isOptimizerPayment) {
+            $this->fixtures->create('terminal:netbanking_optimizer_terminal');
+        }
+        else {
+            $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+            $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+        }
+
 
         $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
 
@@ -3302,8 +3413,11 @@ class PaymentLedgerTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
-        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        if($isOptimizerPayment == false)
+        {
+            $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+            $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        }
 
         return $payment;
     }
@@ -5100,7 +5214,101 @@ class PaymentLedgerTest extends TestCase
 
     }
 
+    public function testKafkaSuccessForPaymentMerchantCaptureEventSuccessScenario()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
 
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+
+        $this->assertNotNull($txn['fee']);
+        $this->assertNotNull($txn['tax']);
+        $this->assertNotNull($txn['credit']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertTrue($txn->isBalanceUpdated());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+
+        $this->assertEquals($journalId, $payment['transaction_id']);
+        $this->assertEquals($journal['ledger_entry'][0]['amount'], $payment['fee']);
+        $this->assertEquals($journal['ledger_entry'][1]['amount'], $payment['tax']);
+    }
+
+    public function testKafkaSuccessForPaymentMerchantCaptureEventFailureScenario()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        $mock = $this->getMockBuilder('\RZP\Models\LedgerOutbox\Core')
+            ->onlyMethods(array('createTransactionFromJournal'))
+            ->getMock();
+
+        $mockException = new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, "");
+
+        $mock->method('createTransactionFromJournal')->willReturn($mockException);
+
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($txn);
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($payment['fee'], null);
+        $this->assertEquals($payment['tax'], null);
+    }
 
     public function testKafkaRetryLogicForAckWorker()
     {

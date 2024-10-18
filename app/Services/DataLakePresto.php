@@ -11,6 +11,7 @@ class DataLakePresto
     protected $trace;
     protected $app;
     protected $prestoClient;
+    protected $prestoClientForApiHudi;
 
     public function __construct()
     {
@@ -37,6 +38,16 @@ class DataLakePresto
             'catalog'=> 'hive',
             'schema' => 'default',
         ]);
+
+        $this->prestoClientForApiHudi = new Presto();
+
+        $this->prestoClientForApiHudi->addConnection([
+           'host'   => $host,
+           'user'   => $config['user'],
+           'catalog'=> 'hive',
+           'schema' => 'realtime_hudi_api',
+       ]);
+
     }
 
     public function getDataFromDataLake($query, $associate = true)
@@ -46,6 +57,33 @@ class DataLakePresto
         try
         {
             $result = $this->prestoClient->connection()->query($query);
+
+            if ($associate === true)
+            {
+                return $result->getAssoc();
+            }
+
+            return  $result->get();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::DATALAKE_PRESTO_REQUEST_FAILURE, [
+                'message' => $e->getMessage(),
+                'code'    => $e->getCode(),
+                'trace'   => $e->getTrace(),
+            ]);
+
+            throw $e;
+        }
+    }
+
+    public function getDataFromDataLakeUsingRealTimeApi($query, $associate = true)
+    {
+        $this->trace->info(TraceCode::DATALAKE_PRESTO_QUERY_REAL_TIME_API, ["query"=>$query]);
+
+        try
+        {
+            $result = $this->prestoClientForApiHudi->connection()->query($query);
 
             if ($associate === true)
             {

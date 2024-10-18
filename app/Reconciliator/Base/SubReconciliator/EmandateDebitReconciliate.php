@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Transaction\ReconciledType;
@@ -328,12 +329,26 @@ class EmandateDebitReconciliate extends PaymentReconciliate
      */
     protected function persistReconciledAt($entity, string $reconciledType = ReconciledType::MIS)
     {
-        $transaction = $entity->transaction;
         $time = time();
+
+        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) {
+
+            $data = [
+                BaseReconciliate::RECONCILED_AT => $time,
+                BaseReconciliate::RECONCILED_TYPE => $reconciledType,
+            ];
+
+            $this->sendPaymentReconNFCDataToCLS($entity, $data);
+
+            $this->pushSuccessReconMetrics($entity);
+
+            return;
+        }
+
+        $transaction = $entity->transaction;
         $transaction->setReconciledAt($time);
         $transaction->saveOrFail();
 
-        $this->sendPaymentReconNFCDataToCLS($time, $reconciledType, $entity);
 
         $this->pushSuccessReconMetrics($entity);
     }
@@ -373,14 +388,13 @@ class EmandateDebitReconciliate extends PaymentReconciliate
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
-    public function recordGatewayFeeAndServiceTax($rowDetails)
+    public function recordGatewayFeeAndServiceTax($rowDetails, array &$data = [])
     {
         // check failure case, for failed payments this function should not execute
         if (($this->payment->isFailed() === true) or ($this->payment->isCreated() === true))
         {
             return;
         }
-
         parent::recordGatewayFeeAndServiceTax($rowDetails);
     }
 }

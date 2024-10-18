@@ -250,6 +250,51 @@ class Service extends Base\Service
         return $summary;
     }
 
+    public function createCheckoutConfigInBulk(array  $input)
+    {
+        $this->trace->info(TraceCode::CHECKOUT_CONFIG_CREATE_BULK_REQUEST, $input);
+
+        (new Validator())->validateCreateCheckoutConfigBulk($input);
+
+        $configs = $input['configs'];
+
+        $result = [];
+        $failures = [];
+
+        foreach ($configs as $config)
+        {
+            try
+            {
+                $name = 'checkout_'.$config['merchant_id'];
+
+                $merchant = $this->repo->merchant->findOrFailPublic($config['merchant_id']);
+
+                $bulkCreateInput = array(
+                    'type'       => 'checkout',
+                    'config'     => $config['config'],
+                    'name'       => $config['name'] ?? $name,
+                    'is_default' => $config['is_default'],
+                );
+
+                $config = $this->core->withMerchant($merchant)->create($bulkCreateInput);
+
+                $result[] = $config->toArrayPublic();
+            }
+            catch(\Exception $e)
+            {
+                $failures[] = $config;
+                $this->trace->traceException($e);
+            }
+        }
+
+        $this->trace->info(TraceCode::CHECKOUT_CONFIG_CREATE_BULK_RESPONSE, $result);
+
+        return [
+            "configs" => $result,
+            "failures" => $failures,
+        ];
+    }
+
     public function delete($input)
     {
         $this->trace->info(TraceCode::CONFIG_DELETE_REQUEST, $input);

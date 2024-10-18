@@ -269,6 +269,7 @@ class Gateway
     //
     const NPCI      = 'NPCI';
     const PAYPAL    = 'paypal';
+    const ATOME     = 'atome';
 
     // tokenisation gateways
     const TOKENISATION_VISA        = 'tokenisation_visa';
@@ -2083,6 +2084,7 @@ class Gateway
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::JAKA,
+        IFSC::JIOP,
         IFSC::JSFB,
         IFSC::JUCX,
         IFSC::KARB,
@@ -2117,7 +2119,6 @@ class Gateway
 
     // disabled for all auth types
     const EMANDATE_REGISTRATION_DISABLED_BANKS = [
-        IFSC::JIOP,
     ];
 
     const NB_EMANDATE_REGISTRATION_DISABLED_BANKS = [

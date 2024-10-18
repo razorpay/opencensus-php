@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card as Card;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Service extends Base\Service
 {
@@ -64,7 +65,18 @@ class Service extends Base\Service
         $exception = null;
         foreach ($merchantIds as $merchantId) {
             try {
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                $merchant = null;
+
+                if ($merchantId === Constants::PLATFORM_AD_PUBLISHER)
+                {
+                    $merchant = new MerchantEntity();
+
+                    $merchant->setId(Constants::PLATFORM_AD_PUBLISHER);
+                }
+                else
+                {
+                    $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                }
 
                 $offers_array = $this->core->withMerchant($merchant)->create($input_offer);
 

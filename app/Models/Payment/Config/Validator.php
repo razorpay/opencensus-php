@@ -98,6 +98,13 @@ class Validator extends Base\Validator
         'merchant_ids.*'       => 'filled|string|unsigned_id',
     ];
 
+    protected static $createCheckoutConfigBulkRules = [
+        Entity::CONFIG         => 'required|array',
+        Entity::IS_DEFAULT     => 'required|boolean',
+        'merchant_id'          => 'required|string',
+        Entity::NAME           => 'sometimes|string',
+    ];
+
     protected static $createValidators = [
         Self::CONFIG_JSON,
     ];
@@ -1139,6 +1146,23 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Language code is not supported');
+        }
+    }
+
+    public function validateCreateCheckoutConfigBulk($input)
+    {
+        $configs = $input['configs'];
+
+        if (isset($configs) === false ||
+            (isset($configs) === true && !is_array($configs)))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Configs are required to create checkout config bulk');
+        }
+
+        foreach ($configs as $configReq)
+        {
+            $this->validateInput('create_checkout_config_bulk', $configReq);
         }
     }
 }

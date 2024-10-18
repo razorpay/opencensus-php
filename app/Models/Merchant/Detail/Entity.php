@@ -21,7 +21,9 @@ use RZP\Exception\InvalidPermissionException;
 use RZP\Models\Merchant\Acs\Traits\AsvReload;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use RZP\Models\Merchant\Acs\Traits\AsvUpdateTimeStamp;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 
 /**
@@ -39,7 +41,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
  */
 class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
-    use Cacheable, AsvReload, AsvLoad;
+    use Cacheable, AsvReload, AsvLoad, AsvUpdateTimeStamp;
     use TransactionalModelEvents\TransactionalAwareEvents;
 
     const MERCHANT_ID                        = 'merchant_id';
@@ -728,6 +730,14 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         if (empty($activationStatus) === false)
         {
             $allowedNextActivationStatuses = ((new Validator())->checkIfKQUStateExperimentEnabled($this->merchant->getId()) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU[$activationStatus] : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
+        }
+
+        $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
+
+        if ($merchantOnboardingProxyController->isIndiaPgModularMerchant($this->merchant) === true)
+        {
+            $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
+            $allowedNextActivationStatuses = $allowedNextActivationStatusMap[$activationStatus];
         }
 
         $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;

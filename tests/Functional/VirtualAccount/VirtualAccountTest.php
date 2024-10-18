@@ -22,6 +22,7 @@ use RZP\Models\Payout\Metric;
 use RZP\Models\VirtualAccount;
 use RZP\Services\RazorXClient;
 use RZP\Gateway\Mozart\Action;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Customer\Entity;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\SmartRouting;
@@ -45,6 +46,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\RblVirtualAccountForBanking;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Helpers\Heimdall;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Gateway\Mozart\BTRblBanking\ErrorCode;
 use RZP\Models\QrCode\Repository as QrCodeRepo;
@@ -60,6 +62,7 @@ class VirtualAccountTest extends TestCase
 {
     protected $t1;
     protected $t2;
+    protected $fixtures;
     private $vpaTerminal;
     use PaymentTrait;
     use TestsMetrics;
@@ -117,10 +120,6 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->on('test');
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
-
-
-
-        $this->enableRazorXTreatmentForTokenizeQrStringMpans();
     }
 
     public function testCreateHdfcEcmsVirtualAccount()
@@ -365,6 +364,115 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountForCollectWithReceiverBankAccount()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        (new AdminService())->setConfigKeys([ConfigKey::COLLECTX_SERIES_PREFIX => [
+            '10000000000000' => 'COLLECTX'
+        ]]);
+
+        $this->fixtures->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 0,
+                'account_type'     => 'direct'
+            ]);
+
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_AXIS,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'COLLECTX',
+            'gateway_merchant_id2'  => 'TKES',
+            'type'                  => [
+                Type::NON_RECURRING       => '1',
+                Type::NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::COLLECTX_LIVE_ON_BANK_ACCOUNTS))
+                {
+                    return 'on';
+                }
+
+                return 'control';
+            });
+
+        $response = $this->startTest();
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $accountNumber = $response['receivers'][0]['account_number'];
+
+        $this->assertTrue(strpos($accountNumber, 'COLLECTX') == 0);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountForCollectWithReceiverVpa()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        $this->fixtures->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 0,
+                'account_type'     => 'direct'
+            ]);
+
+        $terminalAttributes = [
+            'id'                            => '10000000000001',
+            'gateway'                       => Gateway::BT_AXIS,
+            'merchant_id'                   => '10000000000000',
+            'gateway_merchant_id'           => 'COLLECTX',
+            'gateway_merchant_id2'          => 'TKES',
+            'virtual_upi_root'              => 'test.',
+            'virtual_upi_merchant_prefix'   => 'vpatest',
+            'virtual_upi_handle'            => 'axis',
+            'type'                          => [
+                Type::NON_RECURRING       => '1',
+                Type::NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $this->fixtures->create('virtual_vpa_prefix', [
+            'merchant_id'   => '10000000000000',
+            'prefix'        => 'COLLECTX',
+            'terminal_id'    => '10000000000001']);
+
+        $response = $this->startTest();
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $vpaAddress = $response['receivers'][0]['address'];
+
+        $vpaHandle = $response['receivers'][0]['handle'];
+
+        $this->assertTrue(strpos($vpaAddress, 'test.collectx') == 0);
+
+        $this->assertEquals('axis', $vpaHandle);
 
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
@@ -3216,23 +3324,6 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
-    }
-
-    protected function enableRazorXTreatmentForTokenizeQrStringMpans()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::TOKENIZE_QR_STRING_MPANS))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
     }
 
     public function testVaCoreGetVaName()

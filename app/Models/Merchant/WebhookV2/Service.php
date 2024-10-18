@@ -58,6 +58,7 @@ class Service extends Base\Service
     const APPLICATION_ID    = 'application_id';
     const CREATED_BY_EMAIL  = 'created_by_email';
     const UPDATED_BY_EMAIL  = 'updated_by_email';
+    const REQUEST_HEADERS   = 'request_headers';
 
     /**
      * minor optimization to avoid an extra call to db. Good to have under assumption
@@ -173,6 +174,8 @@ class Service extends Base\Service
     {
         $this->setUserIdForInputAndKey($input, self::CREATED_BY);
 
+        $this->addCustomRequestHeaders($input);
+
         $res = (new Stork($this->mode, $this->product))->create($input);
 
         $merchantId = ($input[self::OWNER_TYPE] === self::MERCHANT) ? $input[self::OWNER_ID] : $this->merchant->getId();
@@ -181,6 +184,31 @@ class Service extends Base\Service
                                                               AccountEntity::MERCHANT_ID => $merchantId]);
 
         return $this->storkToApiFormat($res);
+    }
+
+    protected function addCustomRequestHeaders(array &$input)
+    {
+        $merchant = $this->merchant;
+
+        if($merchant->isFeatureEnabled(Feature\Constants::ADD_WEBHOOK_HEADERS_MX) === true or
+            $merchant->org->isFeatureEnabled(Feature\Constants::ADD_WEBHOOK_HEADERS_ORG) === true) {
+
+            /*
+             * We're adding headers value in the format as it's stored in this format
+             * Org<org-id><stripped header name>
+             * */
+
+            $input[self::REQUEST_HEADERS] = [
+                [
+                   'header_key' => 'X-IBM-Client-Secret',
+                   'header_value' => '{{.Org' . $merchant->org->getId() . 'XIBMClientSecret}}',
+                ],
+                [
+                    'header_key' => 'X-IBM-Client-Id',
+                    'header_value' => '{{.Org' . $merchant->org->getId() . 'XIBMClientID}}',
+                ]
+            ];
+        }
     }
 
     public function updateWithOtpVerification(string $webhookId, array $input, string $merchantId = null): array

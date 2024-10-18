@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
+use RZP\Models\QrPayment;
 use RZP\Models\QrPaymentRequest;
 
 class Service extends Base\Service
@@ -41,7 +42,8 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
 
-        if(isset($qrCode) === true and $qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+        if(isset($qrCode) === true and
+            ((new QrPayment\Core)->checkPaymentViaQRv1($qrCode->merchant) === true))
         {
             $terminal = $terminal->toArrayWithPassword();
 

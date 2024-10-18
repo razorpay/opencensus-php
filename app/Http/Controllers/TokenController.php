@@ -37,6 +37,15 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchCryptoGramInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchCryptoGramInternal($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchParValue()
     {
         $input = Request::all();
@@ -224,5 +233,14 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
 
+    }
+
+    public function fetchTokenCardInternal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchTokenCardInternal($input);
+
+        return ApiResponse::json($data);
     }
 }

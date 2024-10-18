@@ -131,7 +131,7 @@ class Service extends Base\Service
                     ($gatewayData['terminal']['gateway'] === 'upi_rzpapb'))
                 {
                     (new \RZP\Models\QrPayment\Service())->processQrPaymentForNewGatewayFlow(
-                        $qrCode, $gatewayData, $gatewayData['terminal']['gateway'], true);
+                        $qrCode, $gatewayData, $gatewayData['terminal']['gateway'], true, true);
                 }
                 else
                 {

@@ -1078,14 +1078,23 @@ class Entity extends Base\PublicEntity
 
     public function setPublicProductsAttribute(array & $array)
     {
-        if (($this->products !== null) and (is_array($this->products) === false) and
-            (count($this->products) > 0))
+        $pgRouterProductsArray = $this->getAttribute('products_data');
+
+        if (isset($pgRouterProductsArray) && is_array($pgRouterProductsArray) && count($pgRouterProductsArray) > 0)
         {
-            $array[self::PRODUCTS] = $this->products->toArrayPublic()['items'];
+                $array[self::PRODUCTS] = $pgRouterProductsArray;
         }
         else
         {
-            unset($array[self::PRODUCTS]);
+            if (($this->products !== null) and (is_array($this->products) === false) and
+                (count($this->products) > 0))
+            {
+                $array[self::PRODUCTS] = $this->products->toArrayPublic()['items'];
+            }
+            else
+            {
+                unset($array[self::PRODUCTS]);
+            }
         }
     }
 

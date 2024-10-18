@@ -4825,6 +4825,32 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED
         ],
     ],
+    'testCreateOrgPricingAndCloseAction' => [
+        'request'  => [
+            'content' => [
+                'organization_id'=> '100000razorpay',
+                'org_name'=> 'Razorpay',
+                'merchant_id'=> '1Ndi8daddpafdq',
+                'merchant_name'=> 'tdst',
+                'category'=> 'Finance',
+                'sub_category'=> 'Mutual Funds',
+                'mcc'=> '6211',
+                'payment_method'=> 'Debit Card',
+                'issuer_bank'=> 'Axis Bank',
+                'payment_feature'=> 'Description',
+                'international'=> false,
+                'percent_rate'=> 10.2
+            ],
+            'url'     => '/org_pricing',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
     'testCreateOrgPricing' => [
         'request'  => [
             'content' => [

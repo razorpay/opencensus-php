@@ -136,6 +136,10 @@ class CareProxyController extends Controller
     const DASHBOARD_HOME_PAGE_MERCHANT_SETTLEMENT_OVERVIEW = 'twirp/rzp.care.dashboard.home.v1.HomeService/GetMerchantSettlementOverview';
     const DASHBOARD_HOME_PAGE_MERCHANT_PAYMENT_YEARLY_RECAP = 'twirp/rzp.care.dashboard.home.v1.HomeService/GetMerchantPaymentYearlyRecap';
 
+    const DASHBOARD_HOME_PAGE_GET_MERCHANT_TNC_UPDATE = 'twirp/rzp.care.dashboard.home.v1.HomeService/GetMerchantTncUpdate';
+
+    const DASHBOARD_HOME_PAGE_SAVE_MERCHANT_TNC_ACCEPTANCE = 'twirp/rzp.care.dashboard.home.v1.HomeService/SaveMerchantTncAcceptance';
+
     // Single Agent View
     const SAV_FETCH_MERCHANT_WORKFLOWS = 'twirp/rzp.care.sav.v1.SavService/FetchWorkflows';
 
@@ -318,6 +322,8 @@ class CareProxyController extends Controller
         self::DASHBOARD_WEBSITE_MERCHANT_CONSENT_SAVE,
         self::RAY_GET_LANDING_PAGE_DATA,
         self::RAY_GET_SIGNED_URL,
+        self::DASHBOARD_HOME_PAGE_SAVE_MERCHANT_TNC_ACCEPTANCE,
+        self::DASHBOARD_HOME_PAGE_GET_MERCHANT_TNC_UPDATE
     ];
 
     const MERCHANT_GET_ROUTES = [

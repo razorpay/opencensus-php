@@ -5,6 +5,8 @@ namespace Functional\QrCode;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Exception\ServerErrorException;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
@@ -133,6 +135,205 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->runQrPaymentEntityAssertions();
     }
 
+    // Payment - Offline, POSActivated - false , Merchant Activated - false ,  Result =  Fail
+    public function testSkipCheckMerchantPermissionsForNonPOSActivatedMerchantForPaymentForStaticQrCode(): void
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => false
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'contact_email' => 'test@razorpay.com', 'contact_mobile' => '9876543210']);
+
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                'request_source' => 'ezetap',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->fixtures->merchant->removeFeatures(['omni_enabled']);
+
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+
+        $payment = $this->getLastEntity('payment', true);
+         // payment creation should fail as merchant does not have OMNI_ENABLED feature
+        $this->assertNull($payment);
+    }
+
+     // Payment - Offline, POSActivated - false , Merchant Activated - true ,  Result =  Fail
+    public function testSkipCheckMerchantPermissionsForNonPOSActivatedButActivatedMerchantForPaymentForStaticQrCode(): void
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'contact_email' => 'test@razorpay.com', 'contact_mobile' => '9876543210']);
+
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                "request_source" => "ezetap"
+            ],
+        );
+
+        $this->fixtures->merchant->removeFeatures(['omni_enabled']);
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment);
+    }
+
+    // Payment - Offline, POSActivated - true , Merchant Activated - false ,  Result =  Success
+    public function testSkipCheckMerchantPermissionsForPOSActivatedMerchantForPaymentForStaticQrCode(): void
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => false
+        ]);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::OMNI_ENABLED]);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                "request_source" => "ezetap"
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->createPricingForOffline();
+
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+
+        $payment = $this->getLastEntity('payment', true);
+
+         // payment creation should pass as merchant has OMNI_ENABLED feature
+        $this->assertNotNull($payment);
+        $this->assertEquals('in_person', $payment['reference13']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    // Payment - Offline, POSActivated - true , Merchant Activated - true ,  Result =  Success
+    public function testSkipCheckMerchantPermissionsForPOSAndMerchantActivatedForPaymentForStaticQrCode(): void
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => true
+        ]);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::OMNI_ENABLED]);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                "request_source" => "ezetap"
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->createPricingForOffline();
+
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+
+        $payment = $this->getLastEntity('payment', true);
+
+         // payment creation should pass as merchant has OMNI_ENABLED feature
+        $this->assertNotNull($payment);
+        $this->assertEquals('in_person', $payment['reference13']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    // Payment - Online, POSActivated - true , Merchant Activated - true ,  Result =  Success
+    public function testSkipCheckMerchantPermissionsForActivatedPOSAndMerchantForOnlinePaymentForStaticQrCode(): void
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => true
+        ]);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::OMNI_ENABLED]);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->createPricingForOffline();
+
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+
+        $payment = $this->getLastEntity('payment', true);
+
+         // payment creation should pass as payment is online
+        $this->assertNotNull($payment);
+        $this->assertEquals('online', $payment['reference13']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    // Payment - Online, POSActivated - false , Merchant Activated - true ,  Result =  Success
+    public function testSkipCheckMerchantPermissionsForPOSActivatedAndNonActivatedMerchantForOnlinePaymentForStaticQrCode(): void
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => true
+        ]);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->createPricingForOffline();
+
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+
+        $payment = $this->getLastEntity('payment', true);
+
+         // payment creation should pass as payment is online
+        $this->assertNotNull($payment);
+        $this->assertEquals('online', $payment['reference13']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function createPricingForOffline()
+    {
+        $posQRPricingPlan = [
+            'plan_id' => '1hDYlICobzOCYt',
+            'plan_name' => 'TestMerchantPosUPIPricingPlan1',
+            'payment_method' => 'upi',
+            'org_id' => '100000razorpay',
+            'type' => 'pricing',
+            'feature' => 'payment',
+            'receiver_type' => 'offline',
+            'fee_bearer' => 'platform',
+            'percent_rate' => 0,
+            'fixed_rate' => 0,
+            'channel' => 'in_person',
+        ];
+
+        $this->fixtures->create('pricing', $posQRPricingPlan);
+    }
     public function testPaymentForStaticQrCodeForYesbank60(): void
     {
         $this->setMockRazorxTreatment(
@@ -856,5 +1057,48 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
         $this->assertEquals(null, $payment['reference2']);
+    }
+
+    public function testCreateQrWithOnDemandFeatureFlagEnabledAndCloseQrOnDemandForYesBank()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->on('live')->merchant->addFeatures(['close_qr_on_demand']);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_QR_CODE_ON_DEMAND_CLOSE_FOR_YES_BANK);
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+                'name' => 'Mitasha']
+        );
+
+    }
+
+    public function testCreateSingleUseQrCodeWithServerErrorException() // Testing exception handling for QR Creation with yesbank dedicated terminal
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+
+        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway');
+        $this->expectException(BadRequestException::class);
+
+        $this->app['config']->set('gateway.mock_upi_yesbank', false);
+
+        $iciciGatewayMock = \Mockery::mock('RZP\Gateway\Upi\Yesbank\Gateway')->makePartial();
+
+        $iciciGatewayMock
+            ->shouldReceive('getQrRefId')
+            ->andThrow(
+                new ServerErrorException('test error', ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE)
+            );
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+                'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway']);
     }
 }

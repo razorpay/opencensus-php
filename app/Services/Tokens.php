@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Models\PaymentsUpi\Vpa\Entity as VpaEntity;
 use RZP\Trace\TraceCode;
@@ -284,12 +285,11 @@ class Tokens
 
             $token = (new TokenEntity());
 
-            $token->forceFill($response);
-
             $token->setExternal(true);
 
-            $token->generate($response);
+            $token->forceFill($response);
 
+            $token->generate($response);
 
             return $token;
         }
@@ -312,6 +312,37 @@ class Tokens
 
             $token->vpa()->associate($vpaEntity);
 
+            return $token;
+        }
+
+        //the token card is load early during the getCardAttribute which is happen when $token->forcefill() happen.
+        if(($token->relationLoaded('card') === false) && (isset($token['card'])) && is_array($token['card']))
+        {
+            $card = $token['card']->toArray();
+
+            unset($token['card']);
+
+            $cardEntity = (new CardEntity());
+
+            $card[UniqueIdEntity::ID] = $token['card_id'];
+
+            $repo = \App::getFacadeRoot()['repo'];
+
+            $merchant = $repo->merchant->findorFail($token['merchant_id']);
+
+            $cardEntity->forceFill($card);
+
+            //associate the merchant into card
+            $cardEntity->merchant()->associate($merchant);
+
+            $token->card()->associate($cardEntity);
+
+            return $token;
+        }
+
+        //the token card is load early during the getCardAttribute which is happen when $token->forcefill() happen
+        if (isset($token['card']))
+        {
             return $token;
         }
 

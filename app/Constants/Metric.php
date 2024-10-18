@@ -205,9 +205,22 @@ class Metric
     const SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND             = 'server_error_multiple_pricing_rules_found';
     const MERCHANT_ON_DEMAND_PRICING_FETCH_PLAN_MISMATCH        = 'merchant_on_demand_pricing_fetch_plan_mismatch';
 
+    const PRICING_WRITE_REQUEST      = 'pricing_write_request_result';
+    const PRICING_DELETE_REQUEST     = 'pricing_delete_request_result';
+
     //ChargeCollections
     const CC_REQUEST_NOT_ROUTED                                 = 'cc_request_not_routed';
     const CC_REQUEST_ROUTED                                     = 'cc_request_routed';
+
+    // External repo for Route
+    const EXTERNAL_TRANSFER_REPO_FETCH_FAILURE                  = 'ext_trf_repo_fetch_failure_count';
+    const EXTERNAL_TRANSFER_REPO_FETCH_FAILURE_TIME_TAKEN       = 'ext_trf_repo_fetch_failure_time_taken';
+    const EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS                  = 'ext_trf_repo_fetch_success_count';
+    const EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS_TIME_TAKEN       = 'ext_trf_repo_fetch_success_time_taken';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE                = 'ext_la_pay_repo_fetch_failure_count';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN     = 'ext_la_pay_repo_fetch_failure_time_taken';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS                = 'ext_la_pay_repo_fetch_success_count';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN     = 'ext_la_pay_repo_fetch_success_time_taken';
 
 
     const KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS                 = 'kafka_adjustment_api_txn_push_success';
@@ -253,4 +266,9 @@ class Metric
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_NOT_FOUND          = 'settlement_ondemand_feature_config_not_found';
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
+
+    const OPGSP_UFH_FILE_PUSH                                   = 'opgsp_ufh_file_push';
+    const OPGSP_BEAM_PUSH                                       = 'opgsp_beam_push';
+    const OPGSP_FILE_SEND_STARTED                               = 'opgsp_file_send_started';
+    const OPGSP_IMPORT_NO_SETTLEMENTS_FOUND                        = 'opgsp_import_no_settlements_found';
 }

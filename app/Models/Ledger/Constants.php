@@ -234,6 +234,8 @@ class Constants
     const MERCHANT_NEGATIVE_BALANCE  = 'merchant_negative_balance';
     const MERCHANT_VA_MERCHANT       = 'merchant_va_merchant';
 
+    const FUND_ACCOUNT_TYPE_CUSTOMER_WALLET = 'customer_wallet';
+
     const MERCHANT_VAS_ACCOUNT       = 'merchant_vas_account';
 
     const MERCHANT_GMV               = 'merchant_gmv';

@@ -55,6 +55,8 @@ class Service extends Base\Service
                 if ($publicIdPrefix == 'bundfee')
                 {
                     $bundleFee = new Entity;
+                    $tax = $input[Constants::TAX] ?? 0;
+
                     $bundleFeeInput = [
                         Entity::ID          => $entityId,
                         Entity::BASE_AMOUNT => $input[Constants::AMOUNT],
@@ -62,6 +64,7 @@ class Service extends Base\Service
                         Entity::AMOUNT      => $input[Constants::AMOUNT],
                         Entity::MERCHANT_ID => $input[Constants::MERCHANT_ID],
                         Entity::IS_REVERSAL => $input[Constants::IS_REVERSAL],
+                        Entity::TAX         => $input[Constants::TAX],
                     ];
                     $bundleFee->fill($bundleFeeInput);
                     $bundleFee->merchant()->associate($merchant);

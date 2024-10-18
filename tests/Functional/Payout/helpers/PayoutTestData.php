@@ -8079,7 +8079,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'Queued email count' => 7
+                'Queued email count' => 9
             ],
         ],
     ],

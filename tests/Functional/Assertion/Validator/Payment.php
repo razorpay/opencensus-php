@@ -88,7 +88,8 @@ class Payment extends Validator
         PaymentsConstants::ERROR_MERCHANT_DESC     => 'sometimes',
         PaymentsConstants::ERROR_RZP_ACTIONABLE    => 'sometimes',
         Entity::SETTLEMENT                         => 'sometimes',
-        PaymentsConstants::SETTLEMENT_ONHOLD       => 'sometimes'
+        PaymentsConstants::SETTLEMENT_ONHOLD       => 'sometimes',
+        PaymentsConstants::SOURCE_CHANNEL          => 'sometimes',
     );
 
     protected function validateMethod($attribute, $value)

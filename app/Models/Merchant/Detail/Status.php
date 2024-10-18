@@ -16,6 +16,7 @@ class Status
     const ACTIVATED_KYC_PENDING     = 'activated_kyc_pending';
     const KYC_QUALIFIED_UNACTIVATED = 'kyc_qualified_unactivated';
     const KYC_QUALIFIED_STB         = 'kyc_qualified_stb';
+    const EDD_PENDING               = 'edd_pending';
 
     /*
      * Allowed next activation statuses mapping
@@ -52,6 +53,17 @@ class Status
         self::ACTIVATED_MCC_PENDING     => [self::NEEDS_CLARIFICATION, self::KYC_QUALIFIED_UNACTIVATED, self::ACTIVATED],
         self::ACTIVATED_KYC_PENDING     => [self::NEEDS_CLARIFICATION, self::UNDER_REVIEW],
         self::KYC_QUALIFIED_UNACTIVATED => [self::ACTIVATED],
+        self::ACTIVATED                 => [],
+    ];
+
+    /*
+     * Allowed next activation statuses mapping with new state (EDD_PENDING)
+     */
+    const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_EDD_PENDING = [
+        self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::REJECTED, self::EDD_PENDING],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW],
+        self::REJECTED                  => [self::UNDER_REVIEW],
+        self::EDD_PENDING               => [self::ACTIVATED],
         self::ACTIVATED                 => [],
     ];
 

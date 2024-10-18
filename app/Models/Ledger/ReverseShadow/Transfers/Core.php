@@ -9,13 +9,13 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\AsyncBalanceUpdateForTransfer;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Feature;
 use RZP\Models\Currency;
-use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -263,6 +263,18 @@ class Core extends Base\Core
 
         $creditJournal = reset($filteredCreditJournal);
 
+
+        // dual write beginning and nss to push
+        $runningInQueue = app()->runningInQueue();
+        if ($runningInQueue === true)
+        {
+            app('worker.ctx')->setLedgerDualWriteFlow(true);
+        }
+        else
+        {
+            app('request.ctx')->setLedgerDualWriteFlow(true);
+        }
+
         // create txns without balance update and dispatch for settlement if experiment is enabled
         // balance update is done asynchronously via Kafka for sync journal creates
         $this->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
@@ -298,7 +310,9 @@ class Core extends Base\Core
             return 0;
         }
 
-        $balance = $transfer->merchant->getBalanceByTypeOrFail($balanceType);
+        $merchant = $transfer->merchant;
+
+        $balance= $this->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, $balanceType);
 
         $negativeAllowedFlows = (new BalanceConfig\Core())->getNegativeFlowsForBalance($balance->getId());
 
@@ -342,6 +356,63 @@ class Core extends Base\Core
         $maxNegative = (new BalanceConfig\Core())->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
         return $maxNegative;
+    }
+
+    public function getBalanceByTypeFromHarvesterForMerchantWithFail(Merchant\Entity $merchant, string $balanceType)
+    {
+        $expEnabled=$this->getBalanceConfigBalanceIDFetchHarvesterSplitzEnabled($merchant->getId());
+
+        if($expEnabled===true){
+                $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+                    'merchant_id' => $merchant->getId(),
+                    'balance_type' => $balanceType,
+                    'message'=> 'fetching merchant balance from harvester'
+                ]);
+
+            return $this->repo->balance->getMerchantBalanceByTypeHarvesterOrFail($merchant->getId(), $balanceType);
+        }else {
+            return $merchant->getBalanceByTypeOrFail($balanceType);
+        }
+
+    }
+
+    public function getBalanceByTypeFromHarvesterForMerchantWithoutFail(Merchant\Entity $merchant, string $balanceType)
+    {
+
+        $expEnabled=$this->getBalanceConfigBalanceIDFetchHarvesterSplitzEnabled($merchant->getId());
+
+        if($expEnabled===true){
+            // fetch balance for balance_id from harvester
+            $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+                'merchant_id' => $merchant->getId(),
+                'balance_type' => $balanceType,
+                'message'=> 'fetching merchant balance from harvester without fail'
+            ]);
+            return $this->repo->balance->getMerchantBalanceByTypeHarvester($merchant->getId(), $balanceType);
+
+        }else {
+            return $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
+        }
+
+    }
+
+    public function getBalanceConfigBalanceIDFetchHarvesterSplitzEnabled(string $merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.transfer_balance_config_balance_id_harvester_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $isExp=$response['response']['variant']['name'] === 'enable';
+
+        $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+            'merchant_id' => $merchantId,
+            'response' => $response,
+            'experiment_enabled'=> $isExp
+        ]);
+
+        return $isExp;
     }
 
 
@@ -474,6 +545,23 @@ class Core extends Base\Core
 
         $additionalParams = $this->fetchRulesForTransferDebit($transfer, $merchantAccountBalances, $fee, $tax);
 
+        $resultingBalance = floatval($merchantAccountBalances[LedgerConstants::MERCHANT_BALANCE]) - floatval($moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]);
+
+        $maxNegativeLimit = $this->getMaxNegativeLimitForTransfer($transfer);
+
+        if ($resultingBalance <= $maxNegativeLimit * -1)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+                Transaction\Entity::BALANCE,
+                [
+                    'amount' => $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT],
+                    'balance' => $merchantAccountBalances[LedgerConstants::MERCHANT_BALANCE],
+                    'negative_limit' => $maxNegativeLimit
+                ]
+            );
+        }
+
         $journalData = array(
             Constants::TRANSACTOR_ID                 => $transfer->getPublicId(),
             Constants::TRANSACTOR_EVENT              => Constants::CUSTOMER_WALLET_LOADING,
@@ -542,7 +630,7 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
-    public function generateMoneyParamsForCustomerWalletLoadingDebitV2(Transfer\Entity $transfer, $merchantAccountBalances, $transferCommission, $tax): array
+    public function generateMoneyParamsForCustomerWalletLoadingDebitV2(Transfer\Entity $transfer, $merchantAccountBalances, $fee, $tax): array
     {
         $moneyParams = [];
 
@@ -552,31 +640,67 @@ class Core extends Base\Core
 
         $amount = $transfer->getAmount();
 
+        $transferCommission = $fee - $tax;
+
         $moneyParams[Constants::AMOUNT]                         = strval($amount);
 
         $moneyParams[Constants::BASE_AMOUNT]                    = strval($amount);
 
-        if($amountCredits > 0)
+        if($amountCredits >= $amount)
         {
             $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
-            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
-            $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
+
+            $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::RAZORPAY_REWARDS]           = strval($amount);
+
+            $moneyParams[LedgerConstants::AMOUNT_CREDITS]             = strval($amount);
         }
-        else if ($this->isFeeCredits($feeCredits, $transferCommission + $tax))
+        else if ($this->isFeeCredits($feeCredits, $transferCommission + $tax) === true)
         {
             $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
             $moneyParams[Constants::TAX]                        = strval($tax);
+
             $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($transferCommission);
+
             $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $transferCommission);
+        }
+        else if($this->isTransferPostpaid($transfer) === true)
+        {
+            $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
+            $moneyParams[LedgerConstants::TAX]                        = strval($tax);
+
+            $moneyParams[LedgerConstants::TRANSFER_COMMISSION]        = strval($transferCommission);
+
+            $moneyParams[LedgerConstants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $transferCommission);
+
+            $moneyParams[LedgerConstants::CUSTOMER_WALLET_AMOUNT]    = strval($amount);
         }
         // Normal transfer debit scenario (commissions considered)
         else
         {
             $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $transferCommission + $tax);
+
             $moneyParams[Constants::TAX]                        = strval($tax);
+
             $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($transferCommission);
+        }
+
+        $maxNegativeLimit = $this->getMaxNegativeLimitForTransfer($transfer);
+
+        if ($maxNegativeLimit !== 0)
+        {
+            $moneyParams[LedgerConstants::MERCHANT_BALANCE_LIMIT] = strval($maxNegativeLimit);
         }
 
         return $moneyParams;
@@ -584,6 +708,7 @@ class Core extends Base\Core
 
     public function createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal)
     {
+
         $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
         $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
@@ -624,7 +749,16 @@ class Core extends Base\Core
 
         $merchant = $transfer->merchant;
 
-        $txn->sourceAssociate($transfer);
+        if ($transfer->isExternal() === false)
+        {
+            $txn->sourceAssociate($transfer);
+        }
+        else
+        {
+            $txn->setEntityId($transfer->getId());
+
+            $txn->setType($transfer->getEntity());
+        }
 
         $txn->merchant()->associate($merchant);
 
@@ -686,7 +820,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        $this->repo->saveOrFail($transfer);
+        if ($transfer->isExternal() === false)
+        {
+            $this->repo->saveOrFail($transfer);
+        }
 
         $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
             [
@@ -703,9 +840,15 @@ class Core extends Base\Core
     {
         $txn = $this->transformJournalResponseToTransactionEntityBase($journal);
 
-        if ($transferPayment->hasTransaction() === true)
+        if ($transferPayment->hasTransaction() === true && $transferPayment->isExternal() === false)
         {
             $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($transferPayment);
+        }
+        else if ($transferPayment->isExternal() === true)
+        {
+            $txn->setEntityId($transferPayment->getId());
+
+            $txn->setType($transferPayment->getEntity());
         }
         else
         {
@@ -771,7 +914,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
 
-        $this->repo->saveOrFail($transferPayment);
+        if ($transferPayment->isExternal() === false)
+        {
+            $this->repo->saveOrFail($transferPayment);
+        }
 
         $this->trace->info(TraceCode::TRANSFER_TXN_CREATED_IN_REVERSE_SHADOW,
             [

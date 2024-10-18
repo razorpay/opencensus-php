@@ -1439,6 +1439,38 @@ class UserTest extends TestCase
         $this->assertNotNull($response);
     }
 
+    public function testVerifyEmailWithOtpInternalAuth()
+    {
+        $input = [
+            Entity::OTP            => '0007',
+            Entity::TOKEN          => '43713134',
+            Entity::CONTACT_MOBILE => '9177278079',
+            Entity::CONFIRM_TOKEN  => false,
+        ];
+
+        $diagMock = Mockery::mock('RZP\Services\DiagClient');
+
+        $diagMock->shouldReceive('trackOnboardingEvent')->andReturn([]);
+
+        $this->app->instance('diag', $diagMock);
+
+        $this->userEntityMock->shouldReceive('getId')->withAnyArgs()->andReturn('100002Razorpay');
+
+        $this->userEntityMock->shouldReceive('getConfirmedAttribute')->withAnyArgs()->andReturn(false);
+
+        $this->userEntityMock->shouldReceive('getValidator')->withAnyArgs()->andReturn($this->userValidator);
+
+        $this->userValidator->shouldReceive('validateVerifyEmailWithOtpOperation')->withAnyArgs()->andReturn([]);
+
+        $this->userEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn(['name'  => 'rzp', 'email' => 'rzp@gmail.com',]);
+
+        $this->coreMock->shouldReceive('subscribeToMailingList')->andReturn([]);
+
+        $response = $this->userService->verifyEmailWithOtp($input);
+
+        $this->assertNotNull($response);
+    }
+
     public function testVerifyContactWithOtp()
     {
         $input = [

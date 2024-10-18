@@ -94,18 +94,18 @@ class Validator extends Base\Validator
 
     protected static $createResidentialAddressRules = [
         Constants::STREET      => 'required|string|between:10,255',
-        Constants::CITY        => 'required|alpha_space|between:2,32',
-        Constants::STATE       => 'required|alpha_space|between:2,32|custom',
+        Constants::CITY        => 'bail|required|string|alpha_space|between:2,32',
+        Constants::STATE       => 'bail|required|string|alpha_space|between:2,32|custom',
         Constants::POSTAL_CODE => 'required|string|between:2,10',
-        Constants::COUNTRY     => 'required|alpha_space|between:2,64|custom',
+        Constants::COUNTRY     => 'bail|required|string|alpha_space|between:2,64|custom',
     ];
 
     protected static $editResidentialAddressRules = [
         Constants::STREET      => 'sometimes|string|between:10,255',
-        Constants::CITY        => 'sometimes|alpha_space|between:2,32',
-        Constants::STATE       => 'sometimes|alpha_space|between:2,32|custom',
+        Constants::CITY        => 'bail|sometimes|string|alpha_space|between:2,32',
+        Constants::STATE       => 'bail|sometimes|string|alpha_space|between:2,32|custom',
         Constants::POSTAL_CODE => 'sometimes|string|between:2,10',
-        Constants::COUNTRY     => 'sometimes|alpha_space|between:2,64|custom',
+        Constants::COUNTRY     => 'bail|sometimes|string|alpha_space|between:2,64|custom',
     ];
 
     public static $activationRules = [

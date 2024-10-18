@@ -37,6 +37,8 @@ use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\PaymentLink;
 use Neves\Events\TransactionalClosureEvent;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\ClarificationDetail\Constants as ClarificationConstants;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\BusinessDetail;
@@ -447,11 +449,13 @@ class Core extends Base\Core
                         'response'                    => $response,
                     ]);
 
-                    $loggedInUserRole = $this->app['basicauth']->getUserRole();
+                    $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-                    //if l2 submission is done by sales then mark milestone as l2 but not submit activation form and not create cmma case as well
-                    if($loggedInUserRole === UserRole::RAZORPAY_SALES and
-                       $this->canSubmit($input, $response, $activationFormMilestone) === true)
+                    // If the signup campaign is 'assisted_onboarding' or `partner_assisted_onboarding, 
+                    // mark the milestone as L2 and submitted as true.
+                    // In such cases, do not submit the activation form and do not create a CMMA case.
+                    if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant() and
+                        $this->canSubmit($input, $response, $activationFormMilestone) === true)
                     {
                         $this->validateEmailVerificationIfApplicable($merchant);
                         // blacklisted merchant should not be allowed to submit l2 form
@@ -651,7 +655,7 @@ class Core extends Base\Core
 
             // Locking the activation form for Assisted Merchants when the merchants pos activation status moves to under review state
 
-            if($userDeviceDetail->isAssistedOnboardedMerchant()){
+            if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant()){
 
                 unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -671,9 +675,8 @@ class Core extends Base\Core
 
         $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
         $caseType = DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE;
-        $signupCampaign = $deviceDetail->getSignupCampaign();
 
-        if ($signupCampaign === DeviceDetailConstants::ASSISTED_ONBOARDING)
+        if (!empty($deviceDetail) && $deviceDetail->isAssistedOnboardedMerchant())
             $caseType = DEConstants::CMMA_POS_V2_ACTIVATION_CASE_TYPE;
 
         $cmmaCaseEventData = [
@@ -3800,7 +3803,8 @@ class Core extends Base\Core
             [
                 'business_website' => $merchantDetails->getWebsite(),
                 'has_key_access'   => $merchant->getHasKeyAccess(),
-                'merchant_id'      => $merchant->getId()
+                'merchant_id'      => $merchant->getId(),
+                'activation_status'=> $merchantDetails->getActivationStatus()
             ]);
 
         if ($this->hasBusinessWebsiteOrAppUrls($merchant) === false)
@@ -3809,7 +3813,9 @@ class Core extends Base\Core
         }
 
         // skip set has_key_access to true when merchant is enabled for key_less_activation
-        if ($this->isKLAEnabled($merchant) === true){
+        // on post-onboarding, has_key_access should only be provided if activation_status is set to 'activated'
+        if ($this->isKLAEnabled($merchant) === true && $merchantDetails->getActivationStatus() !== Status::ACTIVATED)
+        {
             return;
         }
 
@@ -4413,6 +4419,35 @@ class Core extends Base\Core
                 }
             }
 
+            if (($input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING) and
+                ($merchant->isLinkedAccount() === false))
+            {
+                $this->app['workflow']
+                    ->setEntity($merchantDetails->getEntity())
+                    ->setOriginal($oldMerchantDetails)
+                    ->setDirty($newMerchantDetails)
+                    ->handle();
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+                    $this->triggerRequestToBvs($merchant, Status::EDD_PENDING);
+
+                    $pgosPayload = [
+                        Entity::MERCHANT_ID                 => $merchant->getId(),
+                        DeviceDetailConstants::PRODUCT      =>  DeviceDetailConstants::PRODUCT_PG_ONBOARDING,
+                        DeviceDetailConstants::ORG_ID       =>  $merchant->getOrgId(),
+                        DeviceDetailConstants::PLATFORM     =>  DeviceDetailConstants::PLATFORM_PG,
+                        MerchantEntity::COUNTRY_CODE        =>  DetailConstants::INDIA_COUNTRY_CODE,
+                        ClarificationConstants::SUBMIT      => true,
+                        DeviceDetailConstants::FIELD_DATA => [
+                            DeviceDetailConstants::START_VKYC => true
+                        ]
+                    ];
+
+                    $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ONBOARDING_SAVE, $pgosPayload, $merchant, true);
+
+                }));
+            }
+
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING) and
                 ($merchant->isLinkedAccount() === false))
             {
@@ -4781,6 +4816,18 @@ class Core extends Base\Core
 
     }
 
+    public function getActivationStatusMappingForModularMerchants(): array
+    {
+        $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_EDD_PENDING;
+
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $allowedNextActivationStatusMap[Status::EDD_PENDING] = [];
+        }
+
+        return $allowedNextActivationStatusMap;
+    }
+
     public function shouldTriggerActivatedWebhook(string $merchantId, string $newStatus = null) : bool
     {
         if($newStatus === Status::ACTIVATED) {
@@ -5011,7 +5058,7 @@ class Core extends Base\Core
 
                             // Unlocking the activation form for Assisted Merchants when the merchants pos activation status moves to needs_clarification review state
 
-                            if($userDeviceDetail->isAssistedOnboardedMerchant()) {
+                            if(!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant()) {
 
                                 unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -5216,7 +5263,7 @@ class Core extends Base\Core
 
                         // Unlocking the activation form for Assisted Merchants when the merchants pos activation status moves to needs_clarification review state
 
-                        if($userDeviceDetail->isAssistedOnboardedMerchant()) {
+                        if (!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant()) {
 
                             unset($merchantDetails[DEConstants::POS_ACTIVATION_STATUS]);
 
@@ -5329,15 +5376,6 @@ class Core extends Base\Core
             $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
             $merchant        = $merchantDetails->merchant;
             $this->setMerchantForInternalApi($merchant);
-
-            //pg submission
-            $hasBusinessWebsiteOrAppurls = $this->hasBusinessWebsiteOrAppUrls($merchant);
-            $hasSocialMediaUrls          = $this->hasSocialMediaUrls($merchant);
-            if ($hasBusinessWebsiteOrAppurls === true or $hasSocialMediaUrls === true)
-            {
-                $input[Entity::ACTIVATION_FORM_MILESTONE] = DEConstants::L2_SUBMISSION;
-                $this->saveMerchantDetails($input, $merchant);
-            }
 
             //pos submission
             $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW], $merchant);
@@ -5999,8 +6037,15 @@ class Core extends Base\Core
 
         $merchant = $newMerchantDetails->merchant;
 
+        $connectionType = (new Merchant\Service)->isReadFromTiDBExpEnabled($merchant->getId()) ?
+            ConnectionType::DATA_WAREHOUSE_MERCHANT : null;
+
+        $this->app['trace']->info(TraceCode::TRIGGER_WORKFLOW_FOR_REJECTION_ACTIVATION_STATUS_CHANGE_CONNECTION_TYPE, [
+            'connection_type' => $connectionType,
+        ]);
+
         $balances = $this->repo->balance->getMerchantBalancesByType($merchant->getId(),
-                                                                   \RZP\Models\Merchant\Balance\Type::PRIMARY);
+                                                                   \RZP\Models\Merchant\Balance\Type::PRIMARY, $connectionType);
 
         if (count($balances) >0)
         {
@@ -12328,6 +12373,14 @@ class Core extends Base\Core
                     unset($data["activation_form_milestone"]);
                 }
 
+                if (empty($data["bank_account_number"]) === true) {
+                    unset($data["bank_account_number"]);
+                }
+
+                if (empty($data["bank_branch_ifsc"]) === true) {
+                    unset($data["bank_branch_ifsc"]);
+                }
+
                 $merchantDetails->edit($data);
 
                 if ($data["business_category"] === "") {
@@ -12820,10 +12873,10 @@ class Core extends Base\Core
             );
 
             $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
-            $asssitedOnboarding = $merchant->isSignupCampaign(DDConstants::ASSISTED_ONBOARDING);
 
-            if ($phantomOnboarding === true or $asssitedOnboarding === true)
-            {
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant->getId());
+
+            if ($phantomOnboarding === true or (!empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant())) {
                 return [
                     "fee_based_gating" => [
                         "is_eligible"    => false,
@@ -13408,7 +13461,7 @@ class Core extends Base\Core
 
     public function fetchPosActivationFlow(Merchant\Entity $merchant)
     {
-        $posActivationFlow = "whitelist";
+        $posActivationFlow = ActivationFlow::BLACKLIST;
 
         try
         {
@@ -13425,7 +13478,7 @@ class Core extends Base\Core
 
             $posActivationFlow =  $response["pos_activation_flow"];
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, ["error" => $ex]);
         }
@@ -13661,30 +13714,6 @@ class Core extends Base\Core
 
     public function pushKafkaEventOnPOSActivationFormSubmit($merchant, $eventType): array
     {
-        try
-        {
-            // Update the signup campaign based on the case creation.
-            // The signup campaign will later be used to determine the case type when pushing case events to CMMA.
-            if ($eventType == DetailConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA)
-            {
-                $this->changeSignupCampaign(DeviceDetailConstants::EASY_ONBOARDING, $merchant);
-            }
-            else
-            {
-                if ($eventType == DetailConstants::POS_V2_ACTIVATION_FORM_SUBMISSION_KAFKA)
-                {
-                    $this->changeSignupCampaign(DeviceDetailConstants::ASSISTED_ONBOARDING, $merchant);
-                }
-            }
-        } catch (\Throwable $ex){
-            $this->trace->traceException(
-                $ex,
-                500,
-                TraceCode::POS_ACTIVATION_SINGUP_CAMPAIGN_UPDATE_FAILED,
-                [
-                    "singup_campaign" => DeviceDetailConstants::EASY_ONBOARDING,
-                ]);
-        }
         $kafkaActivationFormSubmissionEventData = $this->constructEventDataForCMMACase($merchant, $eventType);
 
         $activationFormSubmissionEventTopic = env(DEConstants::ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
@@ -13855,6 +13884,5 @@ class Core extends Base\Core
 
         return [$type, $format];
     }
-
 }
 

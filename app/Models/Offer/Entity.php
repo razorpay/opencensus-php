@@ -118,6 +118,10 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_NETWORK
     ];
 
+    // This parameter stores the intent of the customer to save the card for
+    // tokenization when payment was initiated.
+    protected bool $isCardSaved = false;
+
     protected $entity      = 'offer';
 
     protected static $sign = 'offer';
@@ -312,7 +316,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT          => 'int',
         self::DEFAULT_OFFER       => 'boolean',
         self::MAX_ORDER_AMOUNT    => 'int',
-        self::UPI =>'array'
+        self::UPI                => 'array',
     ];
 
     /**
@@ -342,6 +346,43 @@ class Entity extends Base\PublicEntity
         $this->fill($input);
 
         return $this;
+    }
+
+    public function save(array $options = array())
+    {
+        $merchant = $this->stripMerchantRelationIfApplicable();
+
+        $save = parent::save($options);
+
+        $this->associateMerchantIfApplicable($merchant);
+
+        return $save;
+    }
+
+    protected function stripMerchantRelationIfApplicable()
+    {
+        if ($this->isPlatformOffer() === true)
+        {
+            $merchant = $this->merchant;
+
+            $this->merchant()->dissociate();
+
+            $this->setMerchantId($merchant->getId());
+
+            return $merchant;
+        }
+
+        return null;
+    }
+
+    protected function associateMerchantIfApplicable($merchant): void
+    {
+        if ($merchant === null)
+        {
+            return;
+        }
+
+        $this->merchant()->associate($merchant);
     }
 
     public function merchant()
@@ -512,6 +553,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT_TYPE);
     }
 
+    public function isCardSaved()
+    {
+        return ($this->isCardSaved === true);
+    }
+
     public function isNoCostEmi()
     {
         if ($this->getEmiSubvention() == true)
@@ -539,6 +585,11 @@ class Entity extends Base\PublicEntity
             return true;
         }
         return false;
+    }
+
+    public function setMerchantId(string $merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
     public function setUpiApps(array $upiApps)
@@ -700,6 +751,11 @@ class Entity extends Base\PublicEntity
     public function setErrorMessage(string $errorMessage)
     {
         $this->setAttribute(self::ERROR_MESSAGE, $errorMessage);
+    }
+
+    public function setIsCardSaved(bool $isCardSaved)
+    {
+        $this->isCardSaved = $isCardSaved;
     }
 
 // ------------------------Public Setters--------------------------------------------

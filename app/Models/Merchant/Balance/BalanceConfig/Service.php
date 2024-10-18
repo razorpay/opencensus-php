@@ -5,7 +5,9 @@ namespace RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 
 class Service extends Base\Service
 {
@@ -34,7 +36,18 @@ class Service extends Base\Service
             return $balanceConfigs->toArrayWithItems();
         }
 
-        $balances = $this->repo->balance->getMerchantBalances($merchant->getId());
+        $balances = new Base\PublicCollection();
+
+        $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled($merchant);
+
+        if ($enableCLSBalanceReads === true)
+        {
+            $balances = $this->repo->balance->getBalanceByMerchantIdFromWarehouse($merchant->getId());
+        }
+        else
+        {
+            $balances = $this->repo->balance->getMerchantBalances($merchant->getId());
+        }
 
         $balanceIds = $balances->getIds();
 

@@ -1739,6 +1739,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS                       = 'Set Default Methods is in progress for the merchant';
 
+    const BAD_REQUEST_PRODUCT_CONFIG_ALREADY_IN_PROGRESS                            = 'Product configuration create is in progress for the merchant';
+
     const BAD_REQUEST_FILE_HASH_MISSING_FOR_ATTACHMENT                              = 'file_hash missing for attachment';
     const BAD_REQUEST_INVALID_FILE_HASH_FOR_ATTACHMENT                              = 'Invalid file_hash for attachment';
 
@@ -1809,6 +1811,8 @@ class PublicErrorDescription
     const BAD_REQUEST_STATIC_QR_CODE_EXPIRY_FAILURE                                 = 'close_by for Multiple use QR code is not supported';
 
     const BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE                                  = 'Multiple use QR code cannot be closed';
+
+    const BAD_REQUEST_CLOSE_DYNAMIC_QR_CODE_FAILURE                                 = 'Single use QR code cannot be closed via this Admin route';
 
     const BAD_REQUEST_ACCOUNT_ALREADY_DELETED                                       = 'Bank account is already deleted';
 

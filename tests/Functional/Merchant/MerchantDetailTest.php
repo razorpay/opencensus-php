@@ -1918,6 +1918,159 @@ class MerchantDetailTest extends OAuthTestCase
 
          $this->startTest($testData);
     }
+    public function testSendSmsAndWhatsappOnPosActivationStatusUnderReviewWithoutDeviceOrder()
+    {
+        Mail::fake();
+
+        $MerchantOnboardingProxyControllerMock = $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                ->andReturn(true);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pgos_fetch_activation_status';
+                })->andReturn(["pos_activation_status"=>'']);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pgos_update_activation_status';
+                })->andReturn(["pos_activation_status"=>'under_review']);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pos_fetch_all_order';
+                })->andReturn(["order_list"=>[]]);
+        });
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedParams = [
+            'merchantName'      => $merchant->getTrimmedName(25, "..."),
+            'dashboardUrl'      => "http://betadashboard.razorpay.com/",
+            'subMerchantName'   => $merchant->getTrimmedName(25, "..."),
+            'subMerchantId'     => $merchant->getId()
+        ];
+
+        //Asserts the method sendSms should be called exactly once
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.in_person_under_review_without_device', $merchantDetail['contact_mobile'], $expectedParams);
+
+        // Expect the sendWhatsappMessage method to be called exactly once
+        $storkMock->shouldReceive('sendWhatsappMessage')
+            ->once()
+            ->withArgs(function($closure1, $closure2) {
+                return true;
+            })
+            ->andReturn(true);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $testData = $this->testData['testSendSmsAndWhatsappOnPosActivationStatusUnderReview'];
+
+        $testData['request']['url'] = "/merchant/pos_activation_status/$merchantId";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+    }
+
+    public function testSendSmsAndWhatsappOnPosActivationStatusUnderReviewWithDeviceOrder(){
+        Mail::fake();
+
+        $MerchantOnboardingProxyControllerMock = $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('shouldMerchantOnboardViaPGOS')
+                ->andReturn(true);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pgos_fetch_activation_status';
+                })->andReturn(["pos_activation_status"=>'']);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pgos_update_activation_status';
+                })->andReturn(["pos_activation_status"=>'under_review']);
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withArgs(function ($operation, $request, $additionalArgs) {
+                    return $operation === 'merchant_pos_fetch_all_order';
+                })->andReturn(["order_list"=>[
+                    ['order_id' => 'ORDER123', 'device_id' => 'DEVICE001']
+                ]]);
+        });
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedParams = [
+            'merchantName'      => $merchant->getTrimmedName(25, "..."),
+            'dashboardUrl'      => "http://betadashboard.razorpay.com/",
+            'subMerchantName'   => $merchant->getTrimmedName(25, "..."),
+            'subMerchantId'     => $merchant->getId()
+        ];
+
+        //Asserts the method sendSms should be called exactly once
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.pos.under_review.order_placed', $merchantDetail['contact_mobile'], $expectedParams);
+
+        // Expect the sendWhatsappMessage method to be called exactly once
+        $storkMock->shouldReceive('sendWhatsappMessage')
+            ->once()
+            ->withArgs(function($closure1, $closure2) {
+                return true;
+            })
+            ->andReturn(true);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $testData = $this->testData['testSendSmsAndWhatsappOnPosActivationStatusUnderReview'];
+
+        $testData['request']['url'] = "/merchant/pos_activation_status/$merchantId";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+    }
+
 
     public function testValidateClarificationDetail()
     {
@@ -5904,6 +6057,71 @@ Team Razorpay', '+911234567890');
         $this->startTest();
     }
 
+    public function testShopDetailsSubmissionChangesForAssistedOnboardingOfOwnerRole()
+    {
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+
+        // Ensure 'merchant_fetch_pos_activation_flow' is never called
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_fetch_pos_activation_flow';
+            })->never();
+
+
+        // Ensure 'merchant_pgos_update_activation_status' is never called
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_update_activation_status';
+            })->never();
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+        $merchantId = 'NBmMve28Nvwq12';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'          => FeatureConstants::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $salesUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $ezetapMerchantId,
+            'user_id' => $salesUser->getId()
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'owner');
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata'        => [
+                'service' => 'pgos'
+            ]
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['user_id']);
+
+        $this->startTest();
+    }
 
     public function testBlacklistActivationFlowEasyOnboarding()
     {
@@ -13992,5 +14210,71 @@ We look forward to transacting with you!
         $businessDetailMetadata = $merchantDetails->businessDetail;
 
         $this->assertEmpty($businessDetailMetadata);
+    }
+
+    public function testSaveMerchantDetailsForPartnerMerchant()
+    {
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $merchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+
+        // Ensure 'merchant_fetch_pos_activation_flow' is never called
+        $merchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_fetch_pos_activation_flow';
+            })->never();
+
+
+        // Ensure 'merchant_pgos_update_activation_status' is never called
+        $merchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_update_activation_status';
+            })->never();
+
+        $this->app->instance('MerchantOnboardingProxyController', $merchantOnboardingProxyControllerMock);
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+        $merchantId = 'NBmMve28Nvwq12';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('feature', [
+            'name' => FeatureConstants::SKIP_KYC_VERIFICATION,
+            'entity_id' => "100000razorpay",
+            'entity_type' => 'org',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $salesUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId, ['contact_mobile' => '9892818372', 'contact_mobile_verified' => true], 'partner_agent');
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $ezetapMerchantId,
+            'user_id' => $salesUser->getId()
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, ['contact_mobile' => '9891817372', 'contact_mobile_verified' => true], 'owner');
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'partner_assisted_onboarding',
+            'metadata' => [
+                'service' => 'pgos'
+            ]
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['user_id']);
+
+        $this->startTest();
     }
 }

@@ -388,6 +388,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onAccountEddPending($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onAccountActivatedKycPending($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
@@ -597,6 +604,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($payment->getMerchantId(), "payment", $payment->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
 
@@ -777,6 +786,7 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
 
         $this->dispatchPaymentCaptureEvent($payment);
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function isForNocodeApps(Payment\Entity $payment): bool
@@ -998,6 +1008,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function onQrCodeCreated(QrCode\Entity $qrCode)
@@ -1007,6 +1019,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function onQrCodeCredited(Payment\Entity $payment)
@@ -1018,6 +1032,8 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($qrCode->getMerchantId(), 'qr_code', $qrCode->getId());
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function onInvoicePartiallyPaid($payment)
@@ -1261,6 +1277,33 @@ class ApiEventSubscriber extends Base\Core
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
         $this->dispatchEventToStork($payload);
+    }
+
+    protected function onInPersonRefundCreated(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+        $this->event = 'refund.created';
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
+        $this->dispatchEventToEzetapNotification($payload);
+    }
+
+    protected function onInPersonRefundProcessed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+        $this->event = 'refund.processed';
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
+        $this->dispatchEventToEzetapNotification($payload);
+    }
+
+    protected function onInPersonRefundFailed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+        $this->event = 'refund.failed';
+        $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
+
+        $this->dispatchEventToEzetapNotification($payload);
     }
 
     protected function onRefundFailed(RefundEntity $refund)
@@ -2160,7 +2203,39 @@ class ApiEventSubscriber extends Base\Core
         return $merchant;
     }
 
+    public function getMerchantFromEntityPublic(Base\PublicEntity $entity): Merchant\Entity
+    {
+        $merchant = $this->getListeningMerchant($entity);
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant = $merchant->parent;
+        }
+
+        return $merchant;
+    }
+
     protected function getListeningMerchant(Base\PublicEntity $entity): Merchant\Entity
+    {
+        if ($this->listeningMerchant !== null)
+        {
+            return $this->listeningMerchant;
+        }
+
+        if ((($entity instanceof Merchant\Account\Entity) === true) or
+            (($entity instanceof Merchant\Entity) === true))
+        {
+            $merchant = $entity;
+        }
+        else
+        {
+            $merchant = $entity->merchant;
+        }
+
+        return $merchant;
+    }
+
+    public function getMerchantPublic(Base\PublicEntity $entity): Merchant\Entity
     {
         if ($this->listeningMerchant !== null)
         {
@@ -2274,6 +2349,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $event = $this->createEventEntity($payload);
         (new Stork($this->getMode(), $this->storkProduct))->processEventSafe($event, $ownerType);
+    }
+
+    /**
+     * Dispatches event to ezetap notification service
+     * @param array  $payload
+     */
+    protected function dispatchEventToEzetapNotification(array $payload)
+    {
+        $event = $this->createEventEntity($payload);
+        $this->app['ezetapNotification']->sendEzetapRequest($event);
     }
 
     /**

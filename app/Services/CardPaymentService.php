@@ -3,8 +3,11 @@
 namespace RZP\Services;
 
 use App;
+use Request;
+
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Paysecure\Constants;
+use RZP\Http\RequestHeader;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\Product;
 use RZP\Exception;
@@ -277,7 +280,11 @@ class CardPaymentService
             self::X_RAZORPAY_TRACKID       => $this->app['req.context']->getTrackId(),
         ];
 
-
+        $devServeLabel = Request::header(RequestHeader::DEV_SERVE_USER);
+        if ((empty($devServeLabel) === false) and ($this->app->isProduction() === false))
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = $devServeLabel;
+        }
 
         return $headers;
     }

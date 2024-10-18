@@ -565,12 +565,10 @@ class Validator extends Base\Validator
 
     protected function isPercentagePricingAllowedForEmandateOrNach($input): bool
     {
-        return ((empty($input[Entity::PAYMENT_ISSUER]) === false) and
-                ($input[Entity::PAYMENT_ISSUER] === Payment\RecurringType::AUTO) and
-                (empty($input[Entity::PAYMENT_METHOD]) === false) and
-                ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE) and
-                (empty($input[Entity::PAYMENT_METHOD_TYPE]) === false) and
-                ($input[Entity::PAYMENT_METHOD_TYPE] !== Payment\AuthType::AADHAAR));
+        return ((empty($input[Entity::PAYMENT_METHOD]) === false) and
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE) and
+            (empty($input[Entity::PAYMENT_METHOD_TYPE]) === false) and
+            ($input[Entity::PAYMENT_METHOD_TYPE] !== Payment\AuthType::AADHAAR));
     }
 
     protected function validateAddPlanRuleNB($input)

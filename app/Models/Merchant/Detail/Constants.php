@@ -297,6 +297,7 @@ class Constants
         DDConstants::EASY_ONBOARDING,
         DDConstants::PHANTOM_ONBOARDING,
         DDConstants::ASSISTED_ONBOARDING,
+        DDConstants::PARTNER_ASSISTED_ONBOARDING,
     ];
 
     const DOCUMENTS_LIST_FOR_NEEDS_CLARIFICATION_NOTIFICATION = [
@@ -455,6 +456,7 @@ class Constants
     const IFSC_PREFIX    = "ifsc_prefix";
 
     const FEE_BASED_GATING_FLOW  = "fee_based_gating_flow";
+    const MODULAR_MERCHANT_ACTIVATION  = "modular_merchant_activation";
     const SALES_ASSISTED_FORM_SUBMISSION  = "SALES_ASSISTED_FORM_SUBMISSION";
 
     const VIRTUAL_BANK_ACCOUNTS_PREFIX = [

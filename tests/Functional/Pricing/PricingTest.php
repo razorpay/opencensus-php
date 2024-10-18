@@ -762,6 +762,32 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrgPricingAndCloseAction()
+    {
+        $this->testCreateOrgPricing();
+
+        $orgPricing = [
+            'org_id'=> '100000razorpay',
+            'org_name'=> 'Razorpay',
+            'merchant_id'=> '100000raxorpay',
+            'category'=> 'Finance',
+            'sub_category'=> 'Mutual Funds',
+            'mcc'=> '6211',
+            'payment_method'=> 'All',
+            'issuer_bank'=> 'Axis Bank',
+            'payment_feature'=> 'Description',
+            'percent_rate'=> 10.2,
+            'workflow_id'=> '100000razorpay',
+            'admin_id'=> 'RzrpySprAdmnId'
+        ];
+
+        $this->mockChargeCollectionsOrgPricingAPI(ChargeCollections::OrgPricingURL, Requests::POST,  $orgPricing, []);
+
+        $this->mockChargeCollectionsGetAccessList('CREATE_MAKER');
+
+        $this->startTest();    
+    }
+
     public function testCreateOrgPricingWithoutAccess()
     {
         $this->ba->adminAuthWithPermission(Name::MANAGE_ORG_PRICING );

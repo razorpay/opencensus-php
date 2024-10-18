@@ -628,6 +628,11 @@ class Constants
     const VAS_LINK_WALLETS= 'vas_link_wallets';
 
     /**
+     * Feature flag to hide settlement time from merchant dashboard
+     */
+    const HIDE_SETTLEMENT_TIME= 'hide_settlement_time';
+
+    /**
      * Custom Paypal credentials for org
      */
     const ORG_SPECIFIC_CREDENTIALS = 'org_specific_credentials';
@@ -1730,6 +1735,8 @@ class Constants
 
     const ROUTING_INT_WIBMO_REARCH = 'routing_int_wibmo_rearch' ;
 
+    const  VAS_MS_MX_VCIP = 'vas_ms_mx_vcip';
+
     const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
 
     const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
@@ -1751,6 +1758,8 @@ class Constants
     // form builder
 
     const FILE_UPLOAD_PP = 'file_upload_pp';
+
+    const DISPLAY_UPI_PAYER_NAME = 'display_upi_payer_name';
 
     // udf additional fields
 
@@ -2245,6 +2254,8 @@ class Constants
 
     const PG_V3_ONBOARDING_COMPLETED = 'pg_v3_onboarding_complete';
 
+    const PG_V3_ONBOARDING_IN_PROGRESS = 'pg_v3_onboarding_progress';
+
     /**
      * Feature flag to make idempotency key mandatory for the merchant while creating payouts.
      */
@@ -2267,7 +2278,7 @@ class Constants
     const POS_CHANNEL_PARTNERSHIP = 'pos_channel_partnership';
 
     /**
-     * If this flag is enabled then finops admin will be able to customize the dates in the merchant configuration 
+     * If this flag is enabled then finops admin will be able to customize the dates in the merchant configuration
      * in admin dashboard to specify the dates when settlement should not happen for 365 day settlement product.
      */
     const CUSTOM_HOLIDAY_SETTLEMENT = 'custom_holiday_settlement';
@@ -2285,6 +2296,10 @@ class Constants
      * have a custom terminal procurement mapping
      */
     const VAS_ORG_IDENTIFIER = 'vas_org_identifier';
+
+    const ADD_WEBHOOK_HEADERS_ORG = 'add_webhook_headers_org';
+
+    const ADD_WEBHOOK_HEADERS_MX = 'add_webhook_headers_mx';
 
     /**
      * Feature flag will be enabled for HDFC corp payments
@@ -2942,6 +2957,7 @@ class Constants
         self::ENABLE_MERCHANT_EXPIRY_PL                    => true,
         self::ENABLE_MERCHANT_EXPIRY_PP                    => true,
         self::DYNAMIC_PL_OFFSET                            => true,
+        self::VAS_MS_MX_VCIP                               => true,
         self::CUSTOM_TXN_TAB_VIEW                          => true,
         self::EXTERNAL_PA_TOKENISATION                     => true,
         self::ROUTING_INT_WIBMO_REARCH                     => true,
@@ -2961,6 +2977,7 @@ class Constants
         self::DISABLE_TC_DASHBOARD                         => true,
         self::CYBERSOURCE_SI_TXN_LIVE                      => true,
         self::DISABLE_QR_V2                                => true,
+        self::DISPLAY_UPI_PAYER_NAME                       => true,
         self::AUTHORIZE_VIA_AUTHZ                          => true,
         self::SR_SENSITIVE_BUCKET_1                        => true,
         self::SR_SENSITIVE_BUCKET_2                        => true,
@@ -3123,6 +3140,8 @@ class Constants
         self::ONE_CC_ENABLE_NECTOR_COINS                   => true,
         self::ONE_CC_OPT_SHIPPING_TAX                      => true,
         self::VAS_ORG_IDENTIFIER                           => true,
+        self::ADD_WEBHOOK_HEADERS_ORG                      => true,
+        self::ADD_WEBHOOK_HEADERS_MX                       => true,
         self::ONE_CC_TAX_INCLUSION                   => true,
         self::OMNI_ENABLED                           => true,
         self::DEBIT_CARD_VALIDATION                  => true,
@@ -3163,6 +3182,7 @@ class Constants
         self::AMAZON_GC_VALIDATIONS                  => true,
         self::CUSTOM_ONBOARDING_EMAILS               => true,
         self::VAS_LINK_WALLETS                       => true,
+        self::HIDE_SETTLEMENT_TIME                   => true,
         self::HIDE_INVOICE_REPORT                    => true,
         self::SHOW_INVOICE_REPORT                   => true,
         self::ORG_SPECIFIC_CREDENTIALS              => true,
@@ -3188,6 +3208,7 @@ class Constants
         self::SHOW_TRUST_MARKERS                     => true,
         self::SHOW_PG_V3                             => true,
         self::PG_V3_ONBOARDING_COMPLETED             => true,
+        self::PG_V3_ONBOARDING_IN_PROGRESS            => true,
 
         self::PAYOUT_IDEM_KEY_REQUIRED        => true,
         self::BANKING_UPI_REARCH                     => true,
@@ -3668,6 +3689,11 @@ class Constants
             'display_name'  => 'Dynamic PL Offset',
             'documentation' => 'Feature allows the merchant to have a extra field in payment links'
         ],
+        self::VAS_MS_MX_VCIP => [
+            'feature' => self::VAS_MS_MX_VCIP,
+            'display_name' => 'Money Saver feature for Vas Merchant',
+            'documentation' => '',
+        ],
         self::RX_SHOW_PAYOUT_SOURCE => [
             'feature'       => self::RX_SHOW_PAYOUT_SOURCE,
             'display_name'  => 'Show payout source for RazorpayX dashboard',
@@ -4081,6 +4107,11 @@ class Constants
             'feature'       => self::FILE_UPLOAD_PP,
             'display_name'  => 'Feature to enable file upload functionality on payment pages',
             'description'   => 'Feature to enable file upload functionality on payment pages.This flag should be enabled at merchant level.',
+        ],
+        self::DISPLAY_UPI_PAYER_NAME => [
+            'feature'       => self::DISPLAY_UPI_PAYER_NAME,
+            'display_name'  => 'Feature to display payer name for QR payments',
+            'description'   => 'Feature to display payer name for QR payments in transactions tab.This flag should be enabled at org level.',
         ],
         self::ACCEPT_ONLY_3DS_PAYMENTS =>[
             'feature'       => self::ACCEPT_ONLY_3DS_PAYMENTS,
@@ -4609,6 +4640,11 @@ class Constants
             'display_name'  => 'merchant completes new onboarding flow',
             'documentation' => ''
         ],
+        self::PG_V3_ONBOARDING_IN_PROGRESS => [
+            'feature'       => self::PG_V3_ONBOARDING_IN_PROGRESS,
+            'display_name'  => 'merchant is in progress of new onboarding flow',
+            'documentation' => ''
+        ],
         self::PAYOUT_IDEM_KEY_REQUIRED => [
             'feature'       => self::PAYOUT_IDEM_KEY_REQUIRED,
             'display_name'  => 'Payout Idempotency Key Required',
@@ -4628,6 +4664,12 @@ class Constants
             'feature' => self::VAS_ORG_IDENTIFIER,
             'display_name' => "VAS ORG IDENTIFIER",
             'documentation' => "Feature flag for determining if the organization is a VAS/Banking Program Org",
+        ],
+        self::ADD_WEBHOOK_HEADERS_MX => [
+            'feature' => self::ADD_WEBHOOK_HEADERS_MX,
+            'display_name' => 'add_custom_additional_headers_in_webhooks_mx',
+            'documentation' => 'When enabled on merchants, pre-defined custom additional headers for their org will
+             be passed in the webhook to the merchant as per the compliance requirement of the bank.'
         ],
         self::MESSAGE_BANNER_DISABLED => [
             'feature'       => self::MESSAGE_BANNER_DISABLED,

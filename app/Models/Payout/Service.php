@@ -2481,6 +2481,19 @@ class Service extends Base\Service
         {
             $merchantID = $this->merchant->getId();
 
+
+            // Bulk Payout Creation for Current Account Merchant onboarded on Payout Service
+            $variant = $this->app->razorx->getTreatment(
+                $merchantID,
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
+                $this->mode);
+
+            if (strtolower($variant) === 'on')
+            {
+                return $this->handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant($input, $merchantID);
+
+            }
+
             $variant = $this->app->razorx->getTreatment(
                 $merchantID,
                 RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE,
@@ -6574,5 +6587,153 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+    private function handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant(array $input, $merchantID)
+    {
+        list($psInput, $apiInput) = $this->getPayoutServiceAndApiMonolithInput($input, $merchantID);
+
+        $this->trace->info(
+            TraceCode::BULK_PAYOUTS_CURRENT_ACCOUNT_SHARED_ACCOUNT_PS_API_INPUT,
+            [
+                'ps_current_account_input'  => $psInput,
+                'api_shared_account_input' => $apiInput,
+            ]);
+
+        $finalResponse = new Base\PublicCollection;
+
+        try
+        {
+            if (empty($psInput) === false)
+            {
+                $psResponse = $this->payoutServiceBulkPayoutsClient->
+                createBulkPayoutViaMicroservice($psInput);
+
+                if (isset($psResponse['items']) === true)
+                {
+                    $psPayouts = $psResponse['items'];
+
+                    foreach ($psPayouts as $psPayout)
+                    {
+                        $finalResponse->push($psPayout);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::BULK_PAYOUT_CREATION_FOR_CURRENT_ACCOUNT_VIA_PS_FAILED,
+                [
+                    'input'     => $input,
+                    'ps_input'  => $psInput,
+                    'api_input' => $apiInput,
+                ]);
+
+            throw $exception;
+        }
+
+        try
+        {
+            if (empty($apiInput) === false)
+            {
+                $apiResponse = $this->createBulkPayoutForAPI($apiInput);
+
+                if (isset($apiResponse['items']) === true)
+                {
+                    $apiPayouts = $apiResponse['items'];
+
+                    foreach ($apiPayouts as $apiPayout)
+                    {
+                        $finalResponse->push($apiPayout);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::BULK_PAYOUT_CREATION_FOR_SHARED_ACCOUNT_VIA_API_FAILED,
+                [
+                    'input'     => $input,
+                    'ps_input'  => $psInput,
+                    'api_input' => $apiInput,
+                ]);
+
+            /**
+             * If exception came while processing VA Payout Via API Monolith then
+             * we will not throw exception instead of that return the current account
+             * payoutS that were processed on Payout Service
+             */
+
+            if (empty($psInput) === true)
+            {
+                throw $exception;
+            }
+        }
+
+        try
+        {
+            return $finalResponse->toArrayWithItems();
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::BULK_PAYOUT_CA_VA_FAILED_POST_CREATION,
+                [
+                    'input'          => $input,
+                    'final_response' => $finalResponse,
+                ]);
+        }
+    }
+
+    private function getPayoutServiceAndApiMonolithInput(array $input, $merchantID)
+    {
+        $balances = $this->getBalancesForBulkInput($input, $merchantID);
+
+        $accountNumbersAccountTypeMap = [];
+
+        foreach ($balances as $balance)
+        {
+            $accountNumber = $balance->getAccountNumber();
+
+            $accountNumbersAccountTypeMap[$accountNumber] = $balance->getAccountType();
+        }
+
+        /**
+         * $apiInput : Contains the input for Shared/Lite Account Payouts
+         * $psInput  : Contains the input for Direct Account Payouts
+         */
+        $apiInput = [];
+
+        $psInput = [];
+
+        foreach($input as $item)
+        {
+            $accountNumber = trim($item[PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER]) ?? null;
+
+            if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::DIRECT)
+            {
+                $psInput[] = $item;
+            }
+            else if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::SHARED)
+            {
+                $apiInput[] = $item;
+            }
+            else
+            {
+                // Considering this as default case. In case of invalid account number we are going to send
+                // it to API for processing. This will add correct error response for corresponding invalid
+                // account number row and send it to batch service.
+                $apiInput[] = $item;
+            }
+        }
+
+        return array($psInput, $apiInput);
     }
 }

@@ -7,6 +7,7 @@ use Database\Connection;
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
 use Rzp\Accounts\Merchant\V1\MerchantWebsiteSaveRequest;
+use RZP\Models\Merchant\Website\Entity;
 use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -22,6 +23,7 @@ use RZP\Models\Merchant\Website\Entity as MerchantWebsiteEntity;
 use RZP\Models\Merchant\Website\Repository;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Services\SplitzService;
+use function PHPUnit\Framework\assertNotEquals;
 
 class RepositoryTest extends RepositoryTestHelper
 {
@@ -508,6 +510,33 @@ class RepositoryTest extends RepositoryTestHelper
         ];
 
         $this->runTestsForImplicitJoin($entitiesData);
+    }
+
+    public function testMerchantWebsiteUpdatedAt()
+    {
+        $repo = new Repository();
+        $websiteEntity = (new Entity());
+        $id = $websiteEntity->generateUniqueId();
+        $websiteEntity->setId($id);
+        $websiteEntity->fill([
+            Entity::MERCHANT_ID => $id,
+            Entity::AUDIT_ID => $id,
+            Entity::UPDATED_AT => 1234,
+        ]);
+        $repo->repo->transactionOnLiveAndTest(function() use ($websiteEntity, $repo){
+            $repo->saveOrFail($websiteEntity);
+        });
+        $websiteEntity1 = $repo->findOrFail($id);
+        assertNotEquals(1234, $websiteEntity1->getUpdatedAt());
+
+        $websiteEntity1->setUpdatedAt(1234);
+        $repo->repo->transactionOnLiveAndTest(function() use ($websiteEntity1, $repo){
+             $repo->saveOrFail($websiteEntity1);
+        });
+
+        $websiteEntity2 = $repo->findOrFail($id);
+
+        assertNotEquals(1234, $websiteEntity2->getUpdatedAt());
     }
 
     public function getMockAsvRouterInRepository($method, $count, $response, $error)

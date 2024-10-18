@@ -71,13 +71,14 @@ class Entity extends Base\PublicEntity
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
     const COD               = 'cod';
     const FPX               = 'fpx';
-    const OBW               = 'obw';
+    const DUITNOW_PAY       = 'duitnow_pay';
     const BAJAJPAY          = 'bajajpay';
     const GRABPAY           = 'grabpay';
     const TOUCHNGO          = 'touchngo';
     const BOOST             = 'boost';
     const MCASH             = 'mcash';
     const SODEXO            = 'sodexo';
+    const ATOME             = 'atome';
 
     const IN_APP             = 'in_app';
     const IN_APP_CREDIT_CARD = 'in_app_credit_card';
@@ -161,7 +162,7 @@ class Entity extends Base\PublicEntity
         self::BOOST,
         self::MCASH,
         self::GRABPAY,
-        self::TOUCHNGO
+        self::TOUCHNGO,
     ];
 
     protected $visible = [
@@ -225,7 +226,7 @@ class Entity extends Base\PublicEntity
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
-        self::OBW,
+        self::DUITNOW_PAY,
     ];
 
     protected $public = [
@@ -290,7 +291,7 @@ class Entity extends Base\PublicEntity
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
-        self::OBW,
+        self::DUITNOW_PAY,
     ];
 
     protected $appends = [
@@ -315,7 +316,12 @@ class Entity extends Base\PublicEntity
         self::GRABPAY,
         self::TOUCHNGO,
         self::SODEXO,
-        self::OBW,
+        self::DUITNOW_PAY,
+    ];
+
+    protected static $shouldAcceptSubMethods = [
+        self::UPI,
+        self::DUITNOW_PAY,
     ];
 
 
@@ -518,14 +524,15 @@ class Entity extends Base\PublicEntity
             Paylaterprovider::HDFC,
             PaylaterProvider::AMAZONPAY,
             Paylaterprovider::RZPXPOSTPAID,
+            Paylaterprovider::ATOME,
         ],
 
         self::CARD => [
             self::SODEXO
         ],
 
-        self::OBW => [
-            self::OBW
+        self::DUITNOW_PAY => [
+            self::DUITNOW_PAY
         ]
     ];
 
@@ -558,7 +565,6 @@ class Entity extends Base\PublicEntity
         self::COD,
         self::OFFLINE,
         self::FPX,
-        self::OBW,
     ];
 
     // Casts the attributes to native types
@@ -596,7 +602,6 @@ class Entity extends Base\PublicEntity
         self::OFFLINE       => 'bool',
         self::FPX           => 'bool',
         self::BAJAJPAY      => 'bool',
-        self::OBW           => 'bool',
     ];
 
     public function merchant()
@@ -609,6 +614,11 @@ class Entity extends Base\PublicEntity
         return (($this->isDebitCardEnabled()) or
                 ($this->isCreditCardEnabled()) or
                 ($this->isPrepaidCardEnabled()));
+    }
+
+    public function isAtomeEnabled()
+    {
+        return !empty($this->getAttribute(self::PAYLATER_PROVIDERS)[self::ATOME] ?? false);
     }
 
     public function isPaypalEnabled()
@@ -641,10 +651,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FPX);
     }
 
-    public function isObwEnabled(){
+    public function isDuitNowPayEnabled(){
         $addonMethods = $this->getAddonMethods();
 
-        return !empty($addonMethods[self::OBW][self::OBW]);
+        return !empty($addonMethods[self::DUITNOW_PAY][self::DUITNOW_PAY]);
     }
 
     public function isUpiEnabled()
@@ -1024,7 +1034,7 @@ class Entity extends Base\PublicEntity
 
     public static function shouldAcceptSubMethods(string $method): bool
     {
-        return in_array($method, [self::UPI], true);
+        return in_array($method, self::$shouldAcceptSubMethods, true);
     }
 
     // ----------------------- Getters --------------------------------------------
@@ -1354,6 +1364,18 @@ class Entity extends Base\PublicEntity
         return $this->getSodexo();
     }
 
+    public function getDuitNowPay()
+    {
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+        return $addonMethods[self::DUITNOW_PAY][self::DUITNOW_PAY] ?? false;
+    }
+
+
+    public function getDuitNowPayAttribute()
+    {
+        return $this->getDuitNowPay();
+    }
+
     public function getCcOnUpiAttribute()
     {
         return $this->getPaymentAddOnMethod(self::UPI, self::CC_ON_UPI);
@@ -1440,8 +1462,10 @@ class Entity extends Base\PublicEntity
 
         foreach ($all_addon_methods as $method => $sub_methods)
         {
+
             foreach ($sub_methods as $sub_method)
             {
+
                 if ($this->shouldAcceptSubMethods($method) and isset($input[$sub_method]) === true)
                 {
                     if(isset($addon_methods[$method]) === false)
@@ -1469,6 +1493,7 @@ class Entity extends Base\PublicEntity
                         $addon_methods[$method][$sub_method] = $input[$method][$sub_method];
                     }
                     unset($input[$method][$sub_method]);
+
                 }
             }
         }

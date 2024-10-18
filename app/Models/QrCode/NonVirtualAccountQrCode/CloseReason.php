@@ -9,6 +9,7 @@ class CloseReason
     const PAID      = 'paid';
     const EXPIRED   = 'expired';
     const ON_DEMAND = 'on_demand';
+    CONST COMPLIANCE = 'compliance';
 
     public static function isCloseReasonValid(string $closeReason): bool
     {

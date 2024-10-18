@@ -18,6 +18,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Trace\TraceCode;
 use RZP\lib\TemplateEngine;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Dispute\Core as DisputeCore;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Merchant\Risk as MerchantRiskEmailer;
 use RZP\Models\Workflow\Action\MakerType;
@@ -454,7 +455,7 @@ class Service extends Base\Service
     {
         $mode = $this->app['rzp.mode'];
 
-        $receiver = $merchant->merchantDetail->getContactMobile();
+        $receiver = (new DisputeCore())->getChargebackPOCMobile($merchant);
 
         [$templateName, $template, $params, $notificationType, $rasTriggerReason] = $content;
 
@@ -465,12 +466,25 @@ class Service extends Base\Service
             'params'        => $params,
         ];
 
-        (new Stork)->sendWhatsappMessage(
-            $mode,
-            $template,
-            $receiver,
-            $whatsAppPayload
-        );
+        // Whatsapp Experiment is applicable only for FOH template.
+        $isWhatsappEnabled = $templateName != Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME ||
+            (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            Merchant\RazorxTreatment::FRAUD_WHATSAPP_NOTIFICATIONS_MIDS);
+
+        $this->trace->info(TraceCode::RAS_SEND_WHATSAPP_MESSAGE_FOH_RAZORX_RESULT, [
+           "merchant_id" => $merchant->getId(),
+           "template_name" => $templateName,
+           "is_whatsapp_enabled" => $isWhatsappEnabled
+        ]);
+
+        if ($isWhatsappEnabled) {
+            (new Stork)->sendWhatsappMessage(
+                $mode,
+                $template,
+                $receiver,
+                $whatsAppPayload
+            );
+        }
     }
 
     private function sendEmail($merchant, array $content, array $input, bool $isNeedsClarificationFlow = false)
@@ -866,7 +880,8 @@ class Service extends Base\Service
                 }
 
                 $data = [
-                    'merchantName' => $merchant->getName(),
+                    'merchantName'  => $merchant->getName(),
+                    'merchantId'    => $merchant->getId(),
                 ];
             }
         }

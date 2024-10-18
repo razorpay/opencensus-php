@@ -423,14 +423,16 @@ class Service extends Base\Service
         // process non-existing payment callback
         if (empty($mode) === false)
         {
-            return $this->processQrPaymentForNewGatewayFlow($qrCode, $resp, $gateway);
+            // We are passing $success as true as failure cases are handled in the exceptions above already
+            // We assume that the integration with Mozart v2 throws an exception when the status is a failure
+            return $this->processQrPaymentForNewGatewayFlow($qrCode, $resp, $gateway, true);
         }
 
         return $this->processNonQrCallback($resp, $gateway);
     }
 
     // This function assumes that we are getting the response in the mozart holy grail format
-    public function processQrPaymentCallbackThroughNewGatewayAdapterForExistingGateways(string $gateway, array $resp)
+    public function processQrPaymentCallbackThroughNewGatewayAdapterForExistingGateways(string $gateway, array $resp, $success)
     {
         // get QR CodeID
         [$qrCode, $mode] = $this->findQrCodeForQrPayment($resp, $gateway);
@@ -438,13 +440,13 @@ class Service extends Base\Service
         // process non-existing payment callback
         if (empty($mode) === false)
         {
-            return $this->processQrPaymentForNewGatewayFlow($qrCode, $resp, $gateway);
+            return $this->processQrPaymentForNewGatewayFlow($qrCode, $resp, $gateway, $success);
         }
 
         return $this->processNonQrCallback($resp, $gateway);
     }
 
-    public function processQrPaymentForNewGatewayFlow($qrCode, $input, $gateway, $isQrStatusCheck = false)
+    public function processQrPaymentForNewGatewayFlow($qrCode, $input, $gateway, $success, $isQrStatusCheck = false)
     {
         $this->trace->info(
             TraceCode::QR_PAYMENT_PROCESS_REQUEST,
@@ -458,6 +460,23 @@ class Service extends Base\Service
 
         try
         {
+            if (boolval($success) === false)
+            {
+                $this->createQrPaymentRequestForFailureCallback($input, $gateway);
+
+                $this->trace->error(
+                    TraceCode::QR_PAYMENT_FAILED_TRANSACTION_CALLBACK,
+                    [
+                        'notification_request' => $input,
+                        'gateway'              => $gateway,
+                    ]);
+
+                return [
+                    'status' => 'FAILURE',
+                    'error_message' => 'received failure status in callback',
+                ];
+            }
+
             $terminal = $this->findTerminalByGatewayAndTerminalData($gateway, $input['terminal']);
 
             if (empty($terminal) === true)

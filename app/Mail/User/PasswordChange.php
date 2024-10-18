@@ -5,6 +5,7 @@ namespace RZP\Mail\User;
 use RZP\Mail\Base;
 use RZP\Models\User;
 use RZP\Constants\Product;
+use RZP\Mail\Base\EmailHelper;
 
 class PasswordChange extends Base\Mailable
 {
@@ -79,6 +80,32 @@ class PasswordChange extends Base\Mailable
         $this->view('emails.user.password_change');
 
         return $this;
+    }
+
+    public function shouldSendEmailViaStork(): bool
+    {
+        return  (new EmailHelper)->isStorkSupportedCheckViaSplitz($this->user['id'], $this->org['id'], 'password_change') ?? false;
+    }
+
+    public function getParamsForStork(): array
+    {
+        $data = 
+        [
+            'org'        => $this->org,
+            'changed_at' => $this->passwordChangedAt,
+            'product'    => $this->product,
+        ];
+
+        $storkParams = 
+        [
+            'template_name' => 'banking_mail_password_change',
+            'template_namespace' => 'payments_banking',
+            'params' => $data,
+        ];
+        $storkParams['params']['resetPasswordUrl'] = 'https://' . $this->org['hostname'] .'/#/access/forgotpwd';
+        $storkParams['params']['contactUsUrl'] = 'https://' . $this->org['hostname'] .'/#/app/dashboard#request';
+
+        return $storkParams;
     }
 }
 

@@ -54,14 +54,20 @@ class ChargeCollections
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
     const TENANT            = 'tenant';
     const X_DASHBOARD_USER_ID = 'X-Dashboard-User-id';
+    const X_PRICING_DECOMP_PHASE = 'X-Pricing-Decomp-Phase';
 
     const DEFAULT_REQUEST_TIMEOUT   = 60;
 
     // Charge Collections APIs
     const GetReceiptForInvoiceURL = 'v1/subscription/getReceiptForInvoice';
-    const GetPricingPlanURL = 'v1/mdr/pricing/plans/';
+    const GetPricingPlanURL = 'v1/mdr/pricing/plans';
+    const GetPricingRuleURL = 'v1/mdr/pricing/rule';
+    const GetPricingPlansSummaryURL = 'v1/mdr/pricing/plans_summary';
     const CreatePricingPlanURL = 'v1/mdr/pricing';
     const UpdatePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}';
+    const DeletePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}/force';
+    const AddBulkPlanRulesURL = 'v1/mdr/pricing/rules/bulk';
+    const AddPricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule';
     const OrgPricingURL = 'v1/org_pricing';
     const FetchOrgPricingURL = 'v1/org_pricing/fetch_multiple';
     const FetchOrgPricingAccessControl = 'v1/org_pricing_access_control/fetch_multiple';
@@ -231,7 +237,12 @@ class ChargeCollections
         if (isset($headers[self::X_DASHBOARD_USER_ID]) === true)
         {
             $this->headers[self::X_DASHBOARD_USER_ID] = $headers[self::X_DASHBOARD_USER_ID];
-         }
+        }
+
+        if (isset($headers[self::X_PRICING_DECOMP_PHASE]) === true)
+        {
+            $this->headers[self::X_PRICING_DECOMP_PHASE] = $headers[self::X_PRICING_DECOMP_PHASE];
+        }
 
         // Adds rzp-context-dev-serve header
         $this->headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
@@ -446,7 +457,26 @@ class ChargeCollections
 
     public function getPricingPlan(array $input, $requestHeaders = [])
     {
-        return $this->sendRequest(self::GetPricingPlanURL, Requests::GET, $input, $requestHeaders);
+        $url = self::GetPricingPlanURL;
+        if (isset($input["id"]) && strlen($input["id"]) > 0) {
+            $url = $url .'/'. $input["id"];
+        }
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders);
+    }
+
+    public function getPricingRule(array $input, $requestHeaders = [])
+    {
+        $url = self::GetPricingRuleURL;
+        if (isset($input["id"]) && strlen($input["id"]) > 0) {
+            $url = $url .'/'. $input["id"];
+        }
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders);
+    }
+
+    public function getPricingPlansSummary(array $input, $requestHeaders = [])
+    {
+        $url = self::GetPricingPlansSummaryURL;
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders);
     }
 
     public function createPricingPlan(array $input, $requestHeaders = [])
@@ -464,6 +494,34 @@ class ChargeCollections
         unset($input['plan_id'], $input['rule_id']);
 
         return $this->sendRequest($endpoint, Requests::PATCH, $input, $requestHeaders);
+    }
+
+    public function deletePricingPlanRule(array $input, $requestHeaders = [])
+    {
+        $planId = $input['plan_id'];
+        $ruleId = $input['rule_id'];
+
+        $endpoint = str_replace(['{plan_id}', '{rule_id}'], [$planId, $ruleId], self::DeletePricingPlanRuleURL);
+
+        unset($input['plan_id'], $input['rule_id']);
+
+        return $this->sendRequest($endpoint, Requests::DELETE, $input, $requestHeaders);
+    }
+
+    public function addPricingPlanRule(array $input, $requestHeaders = [])
+    {
+        $planId = $input['plan_id'];
+
+        $endpoint = str_replace(['{plan_id}'], [$planId], self::AddPricingPlanRuleURL);
+
+        unset($input['plan_id']);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input, $requestHeaders);
+    }
+
+    public function addBulkPricingPlanRule(array $input, $requestHeaders = [])
+    {
+        return $this->sendRequest(self::AddBulkPlanRulesURL, Requests::POST, $input, $requestHeaders);
     }
 
 }

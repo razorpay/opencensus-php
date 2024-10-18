@@ -23,6 +23,7 @@ use RZP\Constants as DefaultConstants;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Models\Ledger\ReverseShadow\Adjustments\Core as ReverseShadowAdjustmentsCore;
 
 
@@ -124,8 +125,24 @@ class Service extends Base\Service
                 try
                 {
                     /** @var Balance\Entity $balance */
-                    $balance = $this->repo->balance->getMerchantBalanceByType($adjustmentInput[Entity::MERCHANT_ID],
-                                                                    $adjustmentInput[Entity::TYPE]);
+                    $balanceType = $adjustmentInput[Entity::TYPE];
+
+                    $merchantId = $adjustmentInput[Entity::MERCHANT_ID];
+
+                    $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                    $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled($merchant);
+
+                    if($enableCLSBalanceReads === true && $balanceType === Balance\Type::PRIMARY)
+                    {
+                        $balance = $this->repo->balance->fetchBalanceByMerchantIdAndTypeFromWarehouse($merchant, $balanceType);
+                    }
+                    else
+                    {
+                        $balance = $this->repo->balance->getMerchantBalanceByType($adjustmentInput[Entity::MERCHANT_ID],
+                            $adjustmentInput[Entity::TYPE]);
+                    }
+
 
                     $balanceAmount = $balance->getBalance();
                 }

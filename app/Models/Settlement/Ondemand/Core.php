@@ -461,14 +461,23 @@ class Core extends Base\Core
 
     public function getSettlementAmount($input, $merchant)
     {
-        if (isset($input['settle_full_balance']) === true && boolval($input['settle_full_balance']) === true)
+        if (isset($input['settle_full_balance']) === true && (bool) $input['settle_full_balance'] === true)
         {
+            if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+                $ledgerService = $this->app['ledger'];
+
+                $merchantAccountBalance = $reverseShadowCapital->getMerchantAccountBalance($ledgerService, $merchant->getMerchantId());
+
+                return (int) $merchantAccountBalance[LedgerConstants::MERCHANT_BALANCE];
+            }
+
             return $merchant->primaryBalance->getBalance();
         }
-        else
-        {
-            return $input[Entity::AMOUNT];
-        }
+
+        return $input[Entity::AMOUNT];
     }
 
     public function getSettlementAmountAndSettleableAmount($input, $amount, $featureConfig, $scheduled = false): array
@@ -1033,5 +1042,36 @@ class Core extends Base\Core
         $keyDateSuffix = $year . '-' . $month . '-' . $day;
 
         return ['total_ods_settled_' . $keyDateSuffix, $keyTimeStamp];
+    }
+
+    public function syncOdsTransaction($input)
+    {
+        $journalId = $input["journal_id"];
+        $settlementOndemandId = $input["ods_id"];
+        $merchantId = $input["merchant_id"];
+        $accountAlreadyExistsForCapitalInNewLedger = true;
+
+        $this->trace->info(
+            TraceCode::ODS_TXN_CREATE,
+            [
+                LedgerConstants::JOURNAL_ID => $journalId,
+                LedgerConstants::TRANSACTOR_ID => $settlementOndemandId,
+                "merchant" => $merchantId,
+            ]);
+
+        return $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
+            $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
+            $resource = $this->getTransactionMutexresource($settlementOndemand);
+
+            list($txn, $feeSplit) = $this->app['api.mutex']->acquireAndRelease(
+                $resource,
+                function () use ($settlementOndemand, $journalId) {
+                    list($txn, $feeSplit) = (new Transaction\Processor\SettlementOndemand($settlementOndemand))
+                        ->createTransaction($journalId);
+                    $txn->setReference3("enabled");
+                    $this->repo->saveOrFail($txn);
+                });
+            return $txn;
+        });
     }
 }

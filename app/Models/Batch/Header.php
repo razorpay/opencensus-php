@@ -1671,10 +1671,14 @@ class Header
     const CREATE_BULK_GIFT_CARD_CONTACT = 'Contact (Optional)';
     const CREATE_BULK_GIFT_CARD_BUYER_USER_ID = 'Buyer User ID (Optional)';
 
-    // Wallet update Gift Cards expiry
+   // Wallet update Gift Cards expiry
     const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID = "Gift Card ID";
     const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER = "Gift Card Number";
     const UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT = "Expire At (YYYY-MM-DD)";
+    const UPDATE_GIFT_CARDS_EXPIRY_CONTACT = "Contact";
+    const UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK = "Ticket Link";
+    const UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP = "Timestamp";
+    const UPDATE_GIFT_CARDS_EXPIRY_SOURCE = "Source";
     const UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID = "Reference ID (Optional)";
     const UPDATE_GIFT_CARDS_EXPIRY_NOTES = "Notes (Optional)";
 
@@ -1959,7 +1963,11 @@ class Header
     const MANDATORY_HEADERS_FOR_UPDATE_GIFT_CARDS_EXPIRY = [
         Header::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID,
         Header::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER,
-        Header::UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT
+        Header::UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT,
+        Header::UPDATE_GIFT_CARDS_EXPIRY_CONTACT,
+        Header::UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK,
+        Header::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,
+        Header::UPDATE_GIFT_CARDS_EXPIRY_SOURCE
     ];
 
     // mandatory headers for email upload
@@ -6037,10 +6045,14 @@ class Header
                 self::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER,
                 self::UPDATE_GIFT_CARDS_EXPIRY_EXPIRE_AT,
                 self::UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID,
-                self::UPDATE_GIFT_CARDS_EXPIRY_NOTES
+                self::UPDATE_GIFT_CARDS_EXPIRY_NOTES,
+                self::UPDATE_GIFT_CARDS_EXPIRY_CONTACT,      
+                self::UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK,
+                self::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,     
+                self::UPDATE_GIFT_CARDS_EXPIRY_SOURCE    
             ],
-            self::OUTPUT => []
-        ],
+            self::OUTPUT => [],
+        ],        
 
         TYPE::GCMS_UPLOAD_BULK_EMAILS => [
             self::INPUT => [

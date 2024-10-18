@@ -299,6 +299,7 @@
             <!-- Suites are running in Cross Border UT Suite -->
             <exclude>/tests/Functional/Payment/PaymentCreateAVSTest.php</exclude>
             <exclude>/tests/Functional/Payment/PaymentCreateDCCTest.php</exclude>
+            <file>./tests/Functional/Order/Product/ProductDecompTest.php</file>
         </testsuite>
         <testsuite name="Payment Test Suite - 1">
             <exclude>./tests/Functional/Payment/TerminalSelectionTest.php</exclude>
@@ -607,6 +608,7 @@
         <testsuite name="UT_Rx_Test_Suite-1_Payouts">
             <directory>./tests/Functional/PayoutSource/</directory>
             <directory>./tests/Functional/PayoutDowntime/</directory>
+            <directory>./tests/Unit/Models/BankAccount/</directory>
         </testsuite>
         <testsuite name="UT_Rx_Test_Suite-2_Payouts">
             <directory>./tests/Functional/Counter/</directory>
@@ -635,12 +637,13 @@
         <testsuite name="UT_Banking_Test-1_Suite">
             <file>./tests/Functional/User/BankingUserTest.php</file>
             <file>./tests/Functional/Batch/MerchantUploadMiqBatchTest.php</file>
-            <file>./tests/Functional/Payment/UpiRrnPaymentFetchTest.php</file>
+            <file>./tests/Functional/Payment/BankingUpiTest.php</file>
             <file>./tests/Unit/Models/Merchant/Detail/BankingCoreTest.php</file>
             <file>./tests/Functional/Admin/BankingAdminLeadTest.php</file>
             <file>./tests/Functional/VirtualAccount/VirtualAccountTest.php</file>
             <file>./tests/Functional/VirtualAccount/VirtualAccountForOrderTestBanking.php</file>
             <file>./tests/Functional/Merchant/MerchantDetailsTestBanking.php</file>
+            <file>./tests/Functional/Settlement/BankingSettlementTest.php</file>
         </testsuite>
         <testsuite name="UT_NoCode_Test_Suite">
             <directory>./tests/Functional/Invoice/</directory>

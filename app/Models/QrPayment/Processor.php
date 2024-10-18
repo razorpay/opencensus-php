@@ -5,6 +5,7 @@ namespace RZP\Models\QrPayment;
 use App;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -139,9 +140,7 @@ class Processor extends Base\Core
 
     protected function processPayment(Entity $qrPayment)
     {
-        $paymentProcessor = $this->getPaymentProcessor();
-
-        $isUpiQrV1Hdfc = $this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC);
+        $isUpiQrV1Hdfc = $this->isUpiQRv1HDFCflow($this->merchant, $this->qrCode);
 
         $payment = null;
 
@@ -183,6 +182,8 @@ class Processor extends Base\Core
 
             $orderMutex =  'callback_order_id_' . $orderId;
         }
+
+        $paymentProcessor = $this->getPaymentProcessor(false, $paymentInput);
 
         $mutex = App::getFacadeRoot()['api.mutex'];
 
@@ -259,7 +260,7 @@ class Processor extends Base\Core
     {
         $paymentProcessor = $this->getPaymentProcessor();
 
-        if($this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC) === true)
+        if($this->isUpiQRv1HDFCflow($this->merchant, $this->qrCode) === true)
         {
             $payment = null;
 
@@ -319,7 +320,7 @@ class Processor extends Base\Core
     {
         try
         {
-            $this->getPaymentProcessor()->process($input, $gatewayData);
+            $this->getPaymentProcessor(false, $input)->process($input, $gatewayData);
         }
         catch (\Exception $e)
         {
@@ -504,12 +505,12 @@ class Processor extends Base\Core
         ];
     }
 
-    protected function getPaymentProcessor(bool $forceCreate = false): PaymentProcessor
+    protected function getPaymentProcessor(bool $forceCreate = false, $paymentInput = null): PaymentProcessor
     {
         if ((isset($this->paymentProcessor) === false) or
             ($forceCreate === true))
         {
-            $this->paymentProcessor = new PaymentProcessor($this->merchant);
+            $this->paymentProcessor = new PaymentProcessor($this->merchant, $paymentInput);
         }
 
         return $this->paymentProcessor;
@@ -548,20 +549,6 @@ class Processor extends Base\Core
         }
 
         return false;
-    }
-
-    public function checkIfExperimentEnabled($qrPayment)
-    {
-        $merchantId = $this->qrCode->merchant->getId();
-
-        $variant = $this->app->razorx->getTreatment($merchantId, RazorxTreatment::QR_CODE_CUTOFF_CONFIG, $this->mode);
-
-        if ($variant !== 'on')
-        {
-            return false;
-        }
-
-        return true;
     }
 
     private function checkPaymentExpectedAndSetQrCode($qrPayment)
@@ -669,14 +656,6 @@ class Processor extends Base\Core
                 $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH);
                 return;
             }
-        }
-
-        if (($this->checkIfExperimentEnabled($qrPayment) == true)
-            and ($this->checkIfCutoffTimeIsExceeded($qrPayment) == true))
-        {
-            $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_CODE_CUTOFF_TIME_EXCEEDED);
-
-            return;
         }
 
         $qrPayment->setExpected(true);
@@ -960,5 +939,15 @@ class Processor extends Base\Core
         }
 
         return $paymentContext;
+    }
+
+    protected function isUpiQRv1HDFCflow($merchant, $qrCode): bool
+    {
+        if(($qrCode->getEntityType() === EntityConstants::VIRTUAL_ACCOUNT) and
+            ((new Core)->checkPaymentViaQRv1($merchant) === true))
+        {
+            return true;
+        }
+        return false;
     }
 }

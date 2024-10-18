@@ -317,6 +317,6 @@ class Entity extends Base\Entity
             return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'maker', 'getMakerId');
         }
 
-        return $this->maker()->first();
+        return parent::getRelationValue('maker');
     }
 }

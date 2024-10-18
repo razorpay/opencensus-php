@@ -261,7 +261,7 @@ class TransferProcess extends Job
             return true;
         }
 
-        $transaction = $payment->transaction;
+        $transaction = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
 
         if ((empty($transaction) === true) or
             ($transaction->isBalanceUpdated() === false))

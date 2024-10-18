@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Reminders;
 
+use RZP\Base\ConnectionType;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Reminders\Status;
 use RZP\Models\Merchant\Reminders\Entity;
+use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Models\Merchant\Balance\NegativeReserveBalanceMailers;
 
 class NegativeBalanceReminderProcessor extends ReminderProcessor
@@ -45,7 +48,22 @@ class NegativeBalanceReminderProcessor extends ReminderProcessor
             return ['success' => true];
         }
 
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled($merchant);
+
+        if ($enableCLSBalanceReads === true)
+        {
+            $balance = $this->repo->balance->getMerchantBalance($merchant, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            if($balance === null || $balance->getType() !== Balance\Type::PRIMARY)
+            {
+                $balance = $this->repo->balance->getMerchantBalance($merchant);
+            }
+        }
+        else
+        {
+            $balance = $this->repo->balance->getMerchantBalance($merchant);
+        }
+
 
         $balanceAmount = $balance->getBalance();
 

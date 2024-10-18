@@ -402,7 +402,7 @@ class InternationalBankTransferTest extends TestCase
         // Test to increase txn limit for B2B intl_bank_transfer payments
         // Higher limit is now Rs 8.2L base amount
         // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
-        $this->mockMozartResponseForCurrencyCloud(82000);
+        $this->mockMozartResponseForCurrencyCloud(820);
 
         $this->ba->directAuth();
 
@@ -416,8 +416,45 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('ach',$paymentEntity['wallet']);
-        $this->assertEquals(80360000,$paymentEntity['base_amount']);
-        $this->assertEquals(8200000,$paymentEntity['amount']);
+        $this->assertEquals(803600,$paymentEntity['base_amount']);
+        $this->assertEquals(82000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+    }
+
+    public function testSplitPaymentsForCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        // Test to increase txn limit for B2B intl_bank_transfer payments
+        // Higher limit is now Rs 8.2L base amount
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        $this->mockMozartResponseForCurrencyCloud(32000);
+
+        $this->ba->directAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('ach',$paymentEntity['wallet']);
+        // As the total payment amount is 32000, the last payment should be of 5000 USD
+        $this->assertEquals(300000,$paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);
@@ -438,7 +475,7 @@ class InternationalBankTransferTest extends TestCase
         // Test to increase txn limit for B2B intl_bank_transfer payments
         // Higher limit is now Rs 8.2L base amount
         // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
-        $this->mockMozartResponseForCurrencyCloud(82000);
+        $this->mockMozartResponseForCurrencyCloud(820);
 
         $this->ba->directAuth();
         $request = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
@@ -449,8 +486,8 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('currency_cloud', $paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer', $paymentEntity['method']);
         $this->assertEquals('ach', $paymentEntity['wallet']);
-        $this->assertEquals(80360000, $paymentEntity['base_amount']);
-        $this->assertEquals(8200000, $paymentEntity['amount']);
+        $this->assertEquals(803600, $paymentEntity['base_amount']);
+        $this->assertEquals(82000, $paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9', $paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);
@@ -600,7 +637,7 @@ class InternationalBankTransferTest extends TestCase
         // Test to increase txn limit for B2B intl_bank_transfer payments
         // Higher limit is now Rs 8.2L base amount
         // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
-        $this->mockMozartResponseForCurrencyCloud(82000, 'GBP');
+        $this->mockMozartResponseForCurrencyCloud(820, 'GBP');
 
         $this->ba->directAuth();
 
@@ -613,8 +650,8 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('fps',$paymentEntity['wallet']);
-        $this->assertEquals(80360000,$paymentEntity['base_amount']);
-        $this->assertEquals(8200000,$paymentEntity['amount']);
+        $this->assertEquals(803600,$paymentEntity['base_amount']);
+        $this->assertEquals(82000,$paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);
@@ -636,7 +673,7 @@ class InternationalBankTransferTest extends TestCase
         // Test to increase txn limit for B2B intl_bank_transfer payments
         // Higher limit is now Rs 8.2L base amount
         // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
-        $this->mockMozartResponseForCurrencyCloud(82000, 'EUR');
+        $this->mockMozartResponseForCurrencyCloud(820, 'EUR');
 
         $this->ba->directAuth();
 
@@ -649,8 +686,8 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('sepa',$paymentEntity['wallet']);
-        $this->assertEquals(80360000,$paymentEntity['base_amount']);
-        $this->assertEquals(8200000,$paymentEntity['amount']);
+        $this->assertEquals(803600,$paymentEntity['base_amount']);
+        $this->assertEquals(82000,$paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);
@@ -1557,6 +1594,9 @@ class InternationalBankTransferTest extends TestCase
     // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
     public function testCashManagerTransactionNotificationForCurrencyCloudWithMaxPaymentAllowed()
     {
+        // Support for payments >10k USD had been added
+        $this->markTestSkipped();
+
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);

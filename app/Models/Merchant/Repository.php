@@ -723,6 +723,9 @@ class Repository extends Base\Repository
                     } else if ($method === Methods\Entity::SODEXO)
                     {
                         $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::CARD . '->' . Methods\Entity::SODEXO,'=', $value);
+                    } else if ($method === Methods\Entity::DUITNOW_PAY)
+                    {
+                        $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::DUITNOW_PAY . '->' . Methods\Entity::DUITNOW_PAY,'=', $value);
                     } else
                     {
                         $join->where($method, '=', $queryValue);
@@ -3872,6 +3875,14 @@ class Repository extends Base\Repository
                         $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
                             "identifier" => __FUNCTION__
                         ]);
+
+                        if($this->asvRouter->shouldFallbackToAsvDB('Find_Merchants_By_Ids')) {
+                            $results = $this->newQueryWithConnection(
+                                $this->getConnectionFromType(Connection::ASV_WRITER)
+                            )->findMany($ids, array('*'));
+                            $this->resetConnectionOnModels($results);
+                            return $results;
+                        }
                     }
                     return parent::findMany($ids);
                 }
@@ -3919,6 +3930,17 @@ class Repository extends Base\Repository
                             "identifier" => __FUNCTION__
                         ]);
                     }
+
+                    if($this->asvRouter->shouldFallbackToAsvDB('GetNonSuspendedMerchantsFromIds'))
+                    {
+                        $results = $this->newQueryWithConnection(
+                            $this->getConnectionFromType(Connection::ASV_WRITER)
+                        )->findMany($ids)->where(Entity::SUSPENDED_AT, null);
+
+                        $this->resetConnectionOnModels($results);
+                        return $results;
+                    }
+
                     return $this->newQuery()->findMany($ids)->where(Entity::SUSPENDED_AT, null);
                 }
             }

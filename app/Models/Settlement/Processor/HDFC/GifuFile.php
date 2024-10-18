@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Base\Constants;
 use RZP\Models\BankAccount\Type;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -170,7 +171,14 @@ class GifuFile extends Base\BaseGifuFile
                 'key' => ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
             ]);
 
-            $toForUpi = $manualGifuTimeRange['to_upi_ds_timestamp'] ?? Carbon::yesterday(Timezone::IST)->setTime(23, 0, 0)->getTimestamp(); // 11 pm yesterday
+            if($this->isGifuUpiDsSettlementExperimentEnabled($orgId) === true)
+            {
+                $toForUpi = $manualGifuTimeRange['to_upi_ds_timestamp'] ?? Carbon::today(Timezone::IST)->startOfDay()->getTimestamp(); // today's time at 12:00 AM in IST
+            }
+            else
+            {
+                $toForUpi = $manualGifuTimeRange['to_upi_ds_timestamp'] ?? Carbon::yesterday(Timezone::IST)->setTime(23, 0, 0)->getTimestamp(); // 11 pm yesterday
+            }
 
             $lastCapturedTimeForUpi = $this->repo->payment->fetchLastPaymentCaptureTimestampByMethodAndPeriodForMerchants($input,$beginForUpiFromCache,$toForUpi,['upi'])->first()->last_capture_timestamp;
 
@@ -236,6 +244,11 @@ class GifuFile extends Base\BaseGifuFile
                 $amount = $amount + $this->getAggregatedPaymentAmount($value['payments'] ?? []);
 
                 $narration = $this->getNarration($value['settlements'] ?? [],$mid);
+
+                if(empty($narration) === true)
+                {
+                    continue;
+                }
 
                 $brCode = $this->getBrCode($accountNumber);
             }
@@ -397,8 +410,15 @@ class GifuFile extends Base\BaseGifuFile
                 'Terminals Fetch Params' => $params,
                 'Terminals Count'        => $terminals->count(),
                 'Terminal picked'        => $terminals,
+                'Gateway Terminal Id'    => $tId,
+                'Merchant Id'            => $mid,
             ]
         );
+
+        if(str_starts_with($tId, "19"))
+        {
+            return '';
+        }
 
         $setlId = !empty($data) ? $data[0]->id : '';
 
@@ -439,6 +459,58 @@ class GifuFile extends Base\BaseGifuFile
     public function getUpiCutoffTimestamp()
     {
         return $this->upiCutoffTimestamp;
+    }
+
+    public function isGifuUpiDsSettlementExperimentEnabled($orgID): bool
+    {
+        try
+        {
+            // Experiment For Gifu UPI DS Settlement Timestamp
+            $experimentName = 'gifu_upi_ds_settlement_timestamp_exp_id';
+
+            $splitzResult = $this->getSplitzResponse($orgID, $experimentName);
+
+            if ((isset($splitzResult) === true) and (strtolower($splitzResult) === 'enable'))
+            {
+                return true;
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_FILE_CREATE_ERROR,
+            );
+        }
+        return false;
+    }
+
+    public function getSplitzResponse(string $orgId, string $experimentName)
+    {
+        try
+        {
+            $experimentId = $this->config->get('app.'.$experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $orgId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'org_id'            => $orgId,
+                'experiment_id'     => $experimentId,
+                'response'          => $response
+            ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'org_id'   => $orgId,
+                'experiment_id' => $this->config->get('app.'.$experimentName) ?? null
+            ]);
+        }
+        return $response['response']['variant']['name'] ?? '';
     }
 
 }

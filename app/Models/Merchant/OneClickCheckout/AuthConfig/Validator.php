@@ -22,7 +22,8 @@ class Validator extends Base\Validator
         Constants::OAUTH_TOKEN              => 'required|max:512',
         Constants::STOREFRONT_ACCESS_TOKEN  => 'sometimes|max:512',
         Constants::DELEGATE_ACCESS_TOKEN    => 'sometimes|max:512',
-        Constants::APP_NAME                 => 'sometimes|max:512|in:sopc,rcod'
+        Constants::APP_NAME                 => 'sometimes|max:512|in:sopc,rcod',
+        Constants::MULTIPASS_TOKEN          => 'sometimes|max:512'
     ];
 
     protected static $updateWoocommerceConfigRules = [

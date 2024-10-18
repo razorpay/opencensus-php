@@ -4,6 +4,8 @@ namespace RZP\Models\BankTransfer;
 
 use Config;
 use App;
+use Queue;
+use RZP\Constants\Mode;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
@@ -50,6 +52,33 @@ class Core extends Base\Core
     ];
 
     const IS_DUPLICATE = "is_duplicate";
+
+    const MAX_INTL_BANK_TRANSFER_AMOUNT_BY_CURRENCIES = [
+        Currency\Currency::USD => 29000,
+        Currency\Currency::AUD => 43000,
+        Currency\Currency::CAD => 40000,
+        Currency\Currency::HRK => 200000,
+        Currency\Currency::DKK => 198000,
+        Currency\Currency::CZK => 670000,
+        Currency\Currency::EUR => 26500,
+        Currency\Currency::HKD => 225000,
+        Currency\Currency::HUF => 106000,
+        Currency\Currency::ILS => 109000,
+        Currency\Currency::KES => 3745000,
+        Currency\Currency::MXN => 560000,
+        Currency\Currency::NZD => 47500,
+        Currency\Currency::NOK => 310000,
+        Currency\Currency::QAR => 105000,
+        Currency\Currency::RUB => 2775000,
+        Currency\Currency::SAR => 108000,
+        Currency\Currency::SGD => 37850,
+        Currency\Currency::ZAR => 505000,
+        Currency\Currency::SEK => 300000,
+        Currency\Currency::CHF => 24900,
+        Currency\Currency::THB => 960000,
+        Currency\Currency::GBP => 22200,
+        Currency\Currency::AED => 106000,
+    ];
 
     public function __construct()
     {
@@ -966,7 +995,7 @@ class Core extends Base\Core
     {
         try
         {
-            $payment = $this->createPaymentEntityForIntlBankTransfer($input,$merchantId,$webhookRequest);
+            $payments = $this->createPaymentEntitiesForIntlBankTransfer($input,$merchantId,$webhookRequest);
 
             // Merchants should add customer billing address from merchant dashboard
             // https://razorpay.slack.com/archives/C024U3B04LD/p1682496775025409?thread_ts=1681996740.555379&cid=C024U3B04LD
@@ -975,7 +1004,10 @@ class Core extends Base\Core
             // $this->createAddressEntityForB2B($input,$payment);
             //
             try {
-                $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
+                foreach ($payments as $payment) {
+                    $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
+                }
+
             }
             catch (\Throwable $e) {
                 $error = $e->getError();
@@ -991,12 +1023,13 @@ class Core extends Base\Core
                     ]);
 
             }
-            $this->authorizePaymentForIntlBankTransfer($payment);
 
-            $this->getNewProcessor($payment->merchant)->autoCapturePaymentIfApplicable($payment);
+            foreach ($payments as $payment)
+            {
+                $this->authorizePaymentForIntlBankTransfer($payment);
 
-
-
+                $this->getNewProcessor($payment->merchant)->autoCapturePaymentIfApplicable($payment);
+            }
         }
         catch (\Exception $e)
         {
@@ -1014,10 +1047,10 @@ class Core extends Base\Core
             ]);
         }
 
-        return $payment;
+        return $payments;
     }
 
-    protected function createPaymentEntityForIntlBankTransfer($response, $merchantId,$webhookRequest)
+    protected function createPaymentEntitiesForIntlBankTransfer($response, $merchantId,$webhookRequest)
     {
         // Get Mode For Intl Bank Transfer Payment from get_sender_details API Response
         $mode = $this->getIntlBankTransferModeFromResponse($response);
@@ -1037,8 +1070,13 @@ class Core extends Base\Core
             ]);
         }
 
+        $denomination = Currency\Currency::getDenomination(strtoupper($response['currency']));
+
+        $amount = ((float)$response['amount'])*$denomination;
+
+
         $input = [
-            Payment\Entity::AMOUNT              => ((float)$response['amount'])*Currency\Currency::getDenomination(strtoupper($response['currency'])),
+            Payment\Entity::AMOUNT              => $amount,
             Payment\Entity::CURRENCY            => $response['currency'],
             Payment\Entity::METHOD              => Payment\Method::INTL_BANK_TRANSFER,
             Payment\Entity::PROVIDER            => $mode
@@ -1048,6 +1086,38 @@ class Core extends Base\Core
 
         $this->merchant = $repo->merchant->find($merchantId);
 
+        $payments = [];
+
+        while($amount > 0)
+        {
+            if( ($amount > self::MAX_INTL_BANK_TRANSFER_AMOUNT_BY_CURRENCIES[$response['currency']] * $denomination) &&
+                ($amount - self::MAX_INTL_BANK_TRANSFER_AMOUNT_BY_CURRENCIES[$response['currency']] * $denomination > 100 * $denomination) )
+            {
+                $input[Payment\Entity::AMOUNT] = self::MAX_INTL_BANK_TRANSFER_AMOUNT_BY_CURRENCIES[$response['currency']] * $denomination;
+            }
+            else
+            {
+                $input[Payment\Entity::AMOUNT] = $amount;
+            }
+
+            $amount = $amount - $input[Payment\Entity::AMOUNT];
+
+            $payments[] = $this->buildPaymentForIntlBankTransfer($input, $webhookRequest);
+        }
+
+        $this->trace->info(TraceCode::INTERNATIONAL_BANK_TRANSFERS_SPLIT_PAYMENTS,[
+            'merchantId' => $merchantId,
+            'gateway'    => Payment\Gateway::CURRENCY_CLOUD,
+            'paymentIds' => array_map(function($payment){
+                return $payment->getId();
+            },$payments),
+        ]);
+
+        return $payments;
+    }
+
+    protected function buildPaymentForIntlBankTransfer($input, $webhookRequest)
+    {
         $payment = new \RZP\Models\Payment\Entity;
 
         $payment->generateId();
@@ -1162,6 +1232,40 @@ class Core extends Base\Core
         $payment->setAuthorizeTimestamp();
 
         $this->repo->payment->saveOrFail($payment);
+
+        $this->sendInvoiceToSqs($payment);
+    }
+
+    // Send payment details to cross border SQS queue
+    protected function sendInvoiceToSqs($payment): void
+    {
+        try {
+            $queueName = $this->app['config']->get('queue.cross_border_document_queue.' . Mode::LIVE);
+
+            $data = [
+                'payment_id' => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
+            ];
+
+            $this->trace->info(TraceCode::PROCESS_CB_SQS_TASK,[
+                'payment_id' => $payment->getId(),
+                'merchant_id'   => $payment->getMerchantId()
+            ]);
+
+            Queue::connection('sqs')->pushRaw(json_encode($data), $queueName);
+
+        } catch (\Exception $e)
+        {
+            $errMsg = $e->getMessage() ?? '';
+            $errCode = $e->getCode() ?? '';
+
+            $this->trace->error(
+                TraceCode::SQS_PUSH_FAILED_FOR_CROSS_BORDER_TASK_QUEUE,
+                [
+                    'err_msg'     => $errMsg,
+                    'err_code'    => $errCode,
+                ]);
+        }
 
     }
 

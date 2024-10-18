@@ -5,6 +5,7 @@ namespace RZP\Models\Payout\Processor;
 use App;
 use Closure;
 use Razorpay\Api\VirtualAccount;
+use RZP\Diag\EventCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use Carbon\Carbon;
@@ -77,7 +78,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
-use RZP\Services\PayoutService\Base as PaymentServiceBase;
+use RZP\Services\PayoutService\Base as PayoutServiceBase;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Shield as PayoutServiceShieldEvaluate;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
@@ -434,6 +435,13 @@ class Base extends BaseCore
                 null,
                 PublicErrorDescription::BAD_REQUEST_SUSPICIOUS_TRANSACTION
             );
+        }
+
+        $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
+            RazorxTreatment::PAYOUT_PROPERTIES_EVENT,  $this->app['rzp.mode'] ?? 'live');
+
+        if ($variant === 'on') {
+            $this->trackPayoutPropertiesEvent($payout);
         }
 
         $this->setQueuedFeeRecoveryPayoutsFlag($payout);
@@ -4381,6 +4389,28 @@ class Base extends BaseCore
                         return false;
                     }
                 }
+
+                if ($this->balance->getAccountType() === AccountType::SHARED)
+                {
+                    if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
+                        (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
+                        (empty($this->batchId) === false))
+                    {
+                        $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
+                            RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+
+                        $this->trace->info(TraceCode::PAYOUT_SERVICE_MIGRATED_MERCHANTS_VA_BULK_PAYOUT_VIA_API_MONOLITH,
+                            [
+                                'merchant_id' => $this->merchant->getMerchantId(),
+                                'variant' => $variant,
+                            ]);
+
+                        if ($variant === 'on')
+                        {
+                            return false;
+                        }
+                    }
+                }
                 if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
                     (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
                     (empty($this->batchId) === false))
@@ -4821,7 +4851,7 @@ class Base extends BaseCore
             Payout\Entity::PAYOUT_ID         => $payout->getId(),
             Payout\Entity::AMOUNT            => $payout->getAmount(),
             Payout\Entity::CURRENCY          => $payout->getCurrency(),
-            Payout\Entity::CREATED_AT        => millitime(),
+            Payout\Entity::CREATED_AT        => time(),
             Payout\Entity::MODE              => $payout->getMode(),
             Payout\Entity::NARRATION         => $payout->getNarration(),
             Payout\Entity::PURPOSE           => $payout->getPurpose(),
@@ -4916,24 +4946,43 @@ class Base extends BaseCore
 
             $app = App::getFacadeRoot();
 
+
             /** @var BasicAuth $ba */
             $ba = $app['basicauth'];
 
-            if ($ba->isPrivilegeAuth() === true)
-            {
-                $passport = $ba->getPassport();
+            $passport = $ba->getPassport();
 
-                if (array_key_exists( PaymentServiceBase::CONSUMER, $passport) === true)
+            if (array_key_exists( PayoutServiceBase::CONSUMER, $passport) === true)
+            {
+                if ($passport[PayoutServiceBase::CONSUMER][PayoutServiceBase::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
                 {
-                    if ($passport[PaymentServiceBase::CONSUMER][PaymentServiceBase::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
+
+                    $userId = $passport[PayoutServiceBase::CONSUMER][PayoutServiceBase::ID];
+
+                    $this->trace->info(
+                        TraceCode::PRICING_INFO_USER_ID_FOR_PAYOUT_SERVICE_CONSUMER_TYPE_USER,
+                        [
+                            'user_id' => $userId,
+                            Entity::MERCHANT_ID => $this->merchant->getId(),
+                        ]);
+                }
+            }
+
+            if ($userId === null && $ba->isPrivilegeAuth() === true)
+            {
+
+                if (array_key_exists( PayoutServiceBase::CONSUMER, $passport) === true)
+                {
+                    if ($passport[PayoutServiceBase::CONSUMER][PayoutServiceBase::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
                     {
 
                         $userId = $ba->getUser()->getId();
 
                         $this->trace->info(
-                            TraceCode::FETCH_PRICING_INFO_FOR_PAYOUT_SERVICE_USER_ID,
+                            TraceCode::PRICING_INFO_USER_ID_FOR_PAYOUT_SERVICE_CONSUMER_TYPE_APPLICATION,
                             [
-                                'user_id' => $userId
+                                'user_id' => $userId,
+                                Entity::MERCHANT_ID => $this->merchant->getId(),
                             ]);
                     }
                 }
@@ -4952,7 +5001,7 @@ class Base extends BaseCore
                 Entity::USER_ID => $userId?? null,
             ];
             $this->trace->info(
-                TraceCode::PAYOUT_SERVICE_FETCH_PRICING_INFO_REQUEST,
+                TraceCode::PAYOUT_SERVICE_FETCH_PRICING_REQUEST,
                 [
                     'params' => $params
                 ]);
@@ -4988,5 +5037,48 @@ class Base extends BaseCore
 
             return [false, null, null, null];
         }
+    }
+
+    protected function trackPayoutPropertiesEvent(Payout\Entity $payout)
+    {
+        if (empty($this->merchant) || empty($this->app['basicauth'])) {
+            return;
+        }
+
+        $auth = $this->app['basicauth'];
+        $internalApp = $auth->getInternalApp();
+
+        if (!empty($internalApp)) {
+            return;
+        }
+
+        $merchantId = $this->merchant->getId();
+        $user = $auth->getUser();
+        $role = $auth->getUserRole();
+
+        // Initialize userId based on user existence (for OAuth scenarios)
+        $userId = $user ? $user->getId() : null;
+        $routeName = $this->app['api.route']->getCurrentRouteName()
+            ?? $this->app['request.ctx']->getRoute()
+            ?? $this->app['worker.ctx']->getJobName();
+
+        $eventAttributes = [
+            'merchant_id' => $merchantId,
+            'request'     => $routeName,
+            'user_id'     => $userId,
+            'user_role'   => $role,
+            'app_name'    => $internalApp
+        ];
+
+        $this->app['diag']->trackPayoutPropertiesEvent(
+            EventCode::PAYOUT_PROPERTIES,
+            $payout,
+            $eventAttributes
+        );
+
+        $this->trace->info(TraceCode::PAYOUT_PROPERTIES_EVENT_SUCCESS,[
+            "payout_id" => $payout->getId(),
+            "event_attributes" => $eventAttributes
+        ]);
     }
 }

@@ -17,8 +17,16 @@
             $amountPaid = $payment['adjusted_amount'];
         }
         $amountDue = $invoice['amount'] - $amountPaid;
-        $amountPaidFormatted = number_format($amountPaid / 100, 2);
-        $amountDueFormatted  = number_format($amountDue / 100, 2);
+
+        // Check for 3 decimal currencies
+        if (in_array($invoice['currency'], ['BHD', 'KWD', 'OMR','IQD','JOD','TND']))
+        {
+            $amountPaidFormatted = number_format($amountPaid / 1000, 3);
+            $amountDueFormatted  = number_format($amountDue / 1000, 3);
+        } else {
+            $amountPaidFormatted = number_format($amountPaid / 100, 2);
+            $amountDueFormatted  = number_format($amountDue / 100, 2);
+        }
 
         $policy_expire = '';
         $bagic_des = '';

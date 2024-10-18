@@ -87,7 +87,7 @@ class Repository extends Base\Repository
             })
             ->where(Entity::EMAIL_NOTIFICATION_STATUS, EmailNotificationStatus::SCHEDULED)
             ->where(Entity::EXPIRES_ON, '>', $currentTimestamp)
-            ->with([Entity::PAYMENT, Entity::REASON, Entity::MERCHANT])
+            ->with([Entity::PAYMENT, Entity::REASON])
             ->get();
     }
 

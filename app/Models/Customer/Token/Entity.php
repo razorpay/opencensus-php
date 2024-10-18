@@ -30,6 +30,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\PaperMandate\FileUploader;
+use RZP\Models\Merchant\Acs\Traits\AsvLoad;
 use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntity;
 use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity;
 use RZP\Models\Customer;
@@ -47,6 +48,14 @@ use RZP\Models\Base\Traits\ExternalOwner;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner;
+
+    use AsvLoad;
+
+    // This is used in the RZP\Models\Merchant\Acs\Traits\AsvLoad trait
+    // to identify which relations are ASV relations
+    const ASV_RELATIONS = [
+        'merchant'
+    ];
 
     const MERCHANT_ID               = 'merchant_id';
     const CUSTOMER_ID               = 'customer_id';
@@ -433,6 +442,49 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_ERROR_CODE
     ];
 
+    public static $networkTokenUnsetAttributesSync = [
+        self::TOKEN,
+        self::BANK,
+        self::WALLET,
+        self::RECURRING,
+        self::RECURRING_DETAILS,
+        self::AUTH_TYPE,
+        self::MRN,
+        self::DCC_ENABLED,
+        self::BILLING_ADDRESS,
+        self::USED_AT,
+        self::RECURRING_DETAILS,
+        self::ERROR_DESCRIPTION,
+        self::INTERNAL_ERROR_CODE,
+        self::MERCHANT_ID,
+        self::TERMINAL_ID,
+        self::CARD_ID,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::BENEFICIARY_NAME,
+        self::IFSC,
+        self::AADHAAR_NUMBER,
+        self::AADHAAR_VID,
+        self::GATEWAY_TOKEN,
+        self::GATEWAY_TOKEN2,
+        self::RECURRING_STATUS,
+        self::RECURRING_FAILURE_REASON,
+        self::START_TIME,
+        self::CONFIRMED_AT,
+        self::REJECTED_AT,
+        self::INITIATED_AT,
+        self::ACKNOWLEDGED_AT,
+        self::UPDATED_AT,
+        self::MAX_AMOUNT,
+        self::USED_COUNT,
+        self::VPA_ID,
+        self::DEBIT_TYPE,
+        self::FREQUENCY,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::CARD_MANDATE_ID
+    ];
+
     public static $cryptogramDataServiceProviderTokensUnsetAttributes = [
         self::ID,
         self::ENTITY,
@@ -787,14 +839,39 @@ class Entity extends Base\PublicEntity
 
     public function getCardAttribute()
     {
+        $cardAttribute = $this->attributes['card'] ?? [];
+
         if ($this->relationLoaded('card') === true)
         {
             return $this->getRelation('card');
         }
 
-        if ($this->hasCard() === true)
+        //for external token or token created in the token service will skip the findOrFail here as the data already provided by token service
+        if ($this->hasCard() === true && (!(method_exists($this, 'isExternal') and $this->isExternal() === true)))
         {
             $card = (new Card\Repository)->findOrFail($this->getCardId());
+
+            $this->card()->associate($card);
+
+            return $card;
+        }
+
+        //the card data is coming from token service as we save card entity there during the creation
+        if ((empty($cardAttribute) === false) && ($this->hasCard() === true) && ((method_exists($this, 'isExternal') and $this->isExternal() === true)))
+        {
+
+            $card = (new Card\Entity());
+
+            $card[UniqueIdEntity::ID] = $this->getCardId();
+
+            $repo = App::getFacadeRoot()['repo'];
+
+            $merchant = $repo->merchant->findorFail($this->getMerchantId());
+
+            $card->forceFill( $cardAttribute);
+
+            // associate the merchant into card
+            $card->merchant()->associate($merchant);
 
             $this->card()->associate($card);
 
@@ -1378,6 +1455,156 @@ class Entity extends Base\PublicEntity
         $internalArray[self::TERMINAL_ID] = $this->getTerminalId();
 
         return $internalArray;
+    }
+
+
+    public function toArrayPublicTokenizedCardManualDisapatch($token = [] , $serviceProviderTokens = [], $cardEntity = [], $tokenIIN = null)
+    {
+        // Public Array - Flat Token Entity Without Relations
+
+        $publicArray = $token->attributesToArray();
+
+        // Set source if available
+        if (isset($publicArray[self::SOURCE])) {
+            $publicArray[self::SOURCE] = $this->getSourcePublic($token->getSource());
+        }
+
+        // Unset network token attributes
+        $this->unsetAttributes($publicArray, self::$networkTokenUnsetAttributesSync);
+        $publicArray[self::ID] = 'token_'.$token->id;
+        $publicArray[self::ENTITY] = 'token';
+
+        if (!empty($cardEntity)) {
+            $publicArray['card']['last4'] = $cardEntity['last4'] ?? null;
+            $publicArray['card']['network'] = $cardEntity['network'] ?? null;
+            $publicArray['card']['type'] = $cardEntity['type'] ?? null;
+            $publicArray['card']['cobranding_partner'] = $cardEntity->getCobrandingPartner() ?? null;
+            $publicArray['card']['issuer'] = $cardEntity['issuer'] ?? null;
+            $publicArray['card']['international'] = $cardEntity['international'] ?? null;
+            $publicArray['card']['emi'] = $cardEntity['emi'] ?? null;
+            $publicArray['card']['sub_type'] = $cardEntity['sub_type'] ?? null;
+            $publicArray['card']['token_iin'] = $tokenIIN ?? null;
+        }
+
+        // Unset card-specific attributes
+        if (isset($publicArray['card'])) {
+            $this->unsetAttributes($publicArray['card'], Card\Entity::$networkTokenCardUnsetAttributes);
+        }
+
+        if (!empty($token->getCustomerId())) {
+            $publicArray[self::CUSTOMER_ID] = 'cust_'.$token->getCustomerId();
+        }
+
+        $publicArray['compliant_with_tokenisation_guidelines'] = true;
+
+        // Process service provider tokens
+        if (!empty($serviceProviderTokens)) {
+            $publicArray[self::SERVICE_PROVIDER_TOKENS] = $this->processServiceProviderTokens($serviceProviderTokens, $publicArray);
+        }
+
+        // Set notes if available
+        $publicArray[self::NOTES] = $this->getNotes();
+
+        return $publicArray;
+    }
+
+    private function unsetAttributes(&$array, $attributes)
+    {
+        foreach ($attributes as $attribute) {
+            unset($array[$attribute]);
+        }
+    }
+
+    private function processServiceProviderTokens($serviceProviderTokens, &$publicArray)
+    {
+        $serviceProviderTokensArray = [];
+
+        foreach ($serviceProviderTokens as $provider) {
+            $this->processProviderStatus($provider);
+            $this->processProviderData($provider);
+
+            // Handle DICL network-specific logic
+            if ($this->isDICLNetwork($publicArray, $provider)) {
+                $provider[self::PROVIDER_DATA][self::TOKEN_REQUESTOR_ID] = $this->getTokenRequestorIdByTokenisedTerminalId($provider[self::TOKENISED_TERMINAL_ID]);
+            }
+
+            $this->unsetAttributes($provider[self::PROVIDER_DATA], self::$providerDataUnsetAttributes);
+            $this->unsetNullAttributes($provider[self::PROVIDER_DATA]);
+
+            // Remove card data if empty
+            if (empty($provider[self::PROVIDER_DATA][self::CARD])) {
+                unset($provider[self::PROVIDER_DATA][self::CARD]);
+            }
+
+            // Truncate token IIN based on network length
+            if (isset($provider[self::PROVIDER_DATA][self::TOKEN_IIN])) {
+                $provider[self::PROVIDER_DATA][self::TOKEN_IIN] = substr($provider[self::PROVIDER_DATA][self::TOKEN_IIN], 0, $this->getTokenLengthWithNetwork($provider[self::PROVIDER_NAME]));
+            }
+
+            // Remove 'tokenised_terminal_id' if present
+            unset($provider['tokenised_terminal_id']);
+
+            $serviceProviderTokensArray[] = $provider;
+
+            $app = App::getFacadeRoot();
+            $app['trace']->info(TraceCode::DEBUG_LOGGING, [
+                'line 1481' => $serviceProviderTokensArray
+            ]);
+        }
+
+        // Set overall status and token IIN
+        $publicArray[self::STATUS] = $serviceProviderTokensArray[0][self::STATUS];
+        $this->setCardTokenIIN($publicArray, $provider);
+
+        return $serviceProviderTokensArray;
+    }
+
+    private function processProviderStatus(&$provider)
+    {
+        if ($this->isExpired()) {
+            $provider[self::STATUS] = self::DEACTIVATED;
+            $provider[self::STATUS_REASON] = self::EXPIRED;
+        } elseif ($provider[self::STATUS] === self::DEACTIVATED) {
+            $provider[self::STATUS_REASON] = self::DEACTIVATED_BY_BANK;
+        }
+    }
+
+    private function processProviderData(&$provider)
+    {
+        if (isset($provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_MONTH])) {
+            $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_MONTH] = $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_MONTH];
+        }
+
+        if (isset($provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_YEAR])) {
+            $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_YEAR] = $provider[self::PROVIDER_DATA][self::TOKEN_EXPIRY_YEAR];
+        }
+    }
+
+    private function unsetNullAttributes(&$array)
+    {
+        foreach (self::$providerDataUnsetNullAttributes as $attribute) {
+            if (array_key_exists($attribute, $array) && $array[$attribute] === null) {
+                unset($array[$attribute]);
+            }
+        }
+    }
+
+    private function isDICLNetwork($publicArray, $provider)
+    {
+        return isset($publicArray[self::CARD][self::NETWORK])
+            && $publicArray[self::CARD][self::NETWORK] === NetworkName::DICL
+            && isset($provider[self::PROVIDER_TYPE], $provider[self::PROVIDER_NAME])
+            && $provider[self::PROVIDER_TYPE] === self::ISSUER
+            && $provider[self::PROVIDER_NAME] === 'hdfc';
+    }
+
+    private function setCardTokenIIN(&$publicArray, $provider)
+    {
+        if (isset($provider[self::PROVIDER_DATA][self::TOKEN_IIN])) {
+            $publicArray['card']['token_iin'] = $provider[self::PROVIDER_DATA][self::TOKEN_IIN];
+        } elseif (isset($publicArray['card']['token_iin'])) {
+            $publicArray['card']['token_iin'] = substr($publicArray['card']['token_iin'], 0, $this->getTokenLengthWithNetwork($provider[self::PROVIDER_NAME]));
+        }
     }
 
     public function toArrayPublicTokenizedCard($serviceProviderTokens)

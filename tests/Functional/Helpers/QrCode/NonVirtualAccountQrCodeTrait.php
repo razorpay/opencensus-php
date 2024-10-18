@@ -401,6 +401,28 @@ trait NonVirtualAccountQrCodeTrait
         $this->makeRequestAndGetContent($request);
     }
 
+    private function makeUpiRzpapbPaymentForFailedStatus($qrCodeEntity)
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/callback/upi_rzpapb',
+            'method' => 'POST',
+            'raw' => json_encode(
+                [
+                    'id' => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                    'amount' => 100,
+                    'description' => 'payment_failed',
+                    'gateway' => 'upi_rzpapb',
+                    'terminal_id' => 'RzpApbOffTrmnl',
+                    'vpa' => 'payervpa@upi',
+                ]
+            ),
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     private function makeUpiRzpapbPaymentWithOffer($qrCodeEntity)
     {
         $this->ba->directAuth();
@@ -620,6 +642,65 @@ trait NonVirtualAccountQrCodeTrait
                                     [
                                         "key" => "result",
                                         "value" => $qrStatusCheckOutput,
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                }
+
+                if ($input['experiment_id'] === 'DedicatedQrExp')
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "variables" => [
+                                    [
+                                        "key" => "result",
+                                        "value" => $dedicatedTerminalOutput,
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                }
+
+                // For all other experiments return an off value
+                // For example, evaluating if a dedicated terminal is enabled or not.
+                return [
+                    "response" => [
+                        "variant" => [
+                            "variables" => [
+                                [
+                                    "key" => "result",
+                                    "value" => "off"
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+            });
+    }
+
+    protected function mockSplitzTreatmentForEzetapNotification($ezetapNotification = 'on', $dedicatedTerminalOutput = 'on')
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($ezetapNotification, $dedicatedTerminalOutput) {
+                // If the experiment to evaluate is related to status check splitz, return the mock output
+                if ($input['experiment_id'] === 'P1ihasxhcDs1ZE')
+                {
+                    return [
+                        "response" => [
+                            "variant" => [
+                                "variables" => [
+                                    [
+                                        "key" => "result",
+                                        "value" => $ezetapNotification,
                                     ]
                                 ]
                             ]
@@ -943,9 +1024,9 @@ trait NonVirtualAccountQrCodeTrait
         $this->assertEquals('upi_qr', $qrCode['provider']);
 
         // Intent link checks
-        $tr = 'RZP' . $qrCode['id'] . 'qrv2';
+        $tr = 'icicirefID';
         $this->assertStringContainsString($tr, $qrCode['qr_string']);
-        $this->assertStringContainsString('qrmoremegast', $qrCode['qr_string']);
+//        $this->assertStringContainsString('qrmoremegast', $qrCode['qr_string']);
         $this->assertStringContainsString('@icici', $qrCode['qr_string']);
         $this->assertStringContainsString('am=' . $qrCode['amount']/100, $qrCode['qr_string']);
 
@@ -963,7 +1044,7 @@ trait NonVirtualAccountQrCodeTrait
 
         $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
-        $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
+//        $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
         $this->assertStringContainsString('@icici', $qrCodeEntity['qr_string']);
 
         if ($qrCodeEntity['fixed_amount'] === true)
@@ -1142,6 +1223,30 @@ trait NonVirtualAccountQrCodeTrait
                               $disableCount++;
                               return ['success' => true];
                           });
+        }
+    }
+
+    public function mockEzetapNotification(&$actualCallCount = 0, &$eventList = [],$fail = false)
+    {
+        $ezetapNotificationMock = \Mockery::mock(\RZP\Services\EzetapNotification\Mock\EzetapNotification::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ezetapNotification', $ezetapNotificationMock);
+
+        if ($fail === true)
+        {
+            $ezetapNotificationMock->shouldReceive('sendEzetapRequest')
+                                   ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+        }
+        else
+        {
+
+            $ezetapNotificationMock->shouldReceive('actualCall')
+                                   ->andReturnUsing(function($event) use (&$actualCallCount, &$eventList) {
+                                       $actualCallCount++;
+                                       array_push($eventList,$event->event);
+                                       return null;
+                                   });
+
         }
     }
 

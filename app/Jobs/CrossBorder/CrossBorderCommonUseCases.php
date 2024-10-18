@@ -1005,7 +1005,8 @@ class CrossBorderCommonUseCases extends Job
                 $team = "<@U03HU7A7TA5> <@U064QR4UTND> <@U079V6T4MAQ>"; // @jay-shah, @sai-prasad, @vikasdeep-jangra in order
                 $text = $team . " CREATE FOREX CHARGES MCC PARITY: ";
                 $data = [
-                    'payment_id' => $pxbResponse['entity_id'],
+                    'payment_id' => $input['payment_id'],
+                    'merchant_id' => $input['merchant_id'],
                     'pxb_markdown_percent' => floatval($pxbResponse['markdown_percent']),
                     'pxb_base_forex_rate' => $pxbResponse['base_forex_rate'],
                     'pxb_base_amount' => $pxbResponse['base_amount'],

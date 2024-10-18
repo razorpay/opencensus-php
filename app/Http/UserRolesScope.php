@@ -188,6 +188,8 @@ class UserRolesScope
             // settlements route
             'setl_fetch_multiple' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT, Role::SUPPORT, Role::PARTNER]),
+            'setl_fetch_multiple_proxy' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
+                [Role::RBL_SUPERVISOR, Role::AGENT, Role::SUPPORT, Role::PARTNER]),
             'setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
             'org_setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,

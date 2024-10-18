@@ -596,12 +596,16 @@ class FreshdeskTicketClient
 
         if (isset($responseBody['errors']) === true || $statusCode > 400)
         {
+            if ($statusCode === 429) {
+
+                $responseBody['errors'] = Constants::ERROR_TOO_MANY_REQUESTS_TO_FRESHDESK_SERVICE;
+            }
+
             $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE,
                                [
                                    'response' => $responseBody
                                ]
             );
-
 
         }
 

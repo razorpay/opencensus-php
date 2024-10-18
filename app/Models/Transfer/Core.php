@@ -23,9 +23,11 @@ use RZP\Jobs\TransferProcessDedicatedQueueFour;
 use RZP\Jobs\TransferProcessDedicatedQueueFive;
 use RZP\Jobs\TransferProcessDedicatedQueueMalaysia;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Order;
 use RZP\Models\Admin;
+use RZP\Models\QrPayment\Constants as QRConstant;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -230,8 +232,11 @@ class Core extends Base\Core
     public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Base\PublicCollection
     {
         $this->validateMerchantForTransfer($merchant);
+        $this->validateOfflinePaymentOmniEnabled($payment, $merchant);
 
-        $this->validateUsingOauth($payment);
+        if ($this->partner?->getId() && $this->isvalidateTransferOauthExpEnabled($this->partner->getId())) {
+            $this->validateUsingOauth($payment);
+        }
 
         $this->addAccountFromAccountCodeIfApplicable($input);
 
@@ -356,54 +361,56 @@ class Core extends Base\Core
 
         unset($transferInput[Order\Entity::PUBLIC_KEY]);
 
-        foreach ($transferInput as $input)
-        {
-            $input[Entity::STATUS] = Status::CREATED;
-
-            $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
-
-            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
-
-            if (isset($input[Entity::ACCOUNT_CODE]) === true)
+        $this->mutex->acquireAndReleaseStrict('trf_' . $order->getId(), function () use ($parentMerchant, $transfers, $transferInput, $order) {
+            foreach ($transferInput as $input)
             {
-                $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($input[Entity::ACCOUNT_CODE], $this->merchant->getId());
+                $input[Entity::STATUS] = Status::CREATED;
 
-                $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
-            }
+                $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
 
-            if (isset($input[ToType::BALANCE]) === true)
-            {
-                $description = 'Transfer for ' . $input[ToType::BALANCE];
-                if (isset($order->getNotes()['description']) === true) {
-                     $description = $order->getNotes()['description'];
+                $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
+
+                if (isset($input[Entity::ACCOUNT_CODE]) === true)
+                {
+                    $accountId = $this->repo->merchant->getIdByAccountCodeAndParent($input[Entity::ACCOUNT_CODE], $this->merchant->getId());
+
+                    $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
                 }
-                $input[Entity::NOTES]['description'] = $description;
-                $input[Entity::NOTES]['type'] = $input[ToType::BALANCE];
-                $to = $this->repo
-                    ->balance
-                    ->getMerchantBalance($this->merchant);
+
+                if (isset($input[ToType::BALANCE]) === true)
+                {
+                    $description = 'Transfer for ' . $input[ToType::BALANCE];
+                    if (isset($order->getNotes()['description']) === true) {
+                        $description = $order->getNotes()['description'];
+                    }
+                    $input[Entity::NOTES]['description'] = $description;
+                    $input[Entity::NOTES]['type'] = $input[ToType::BALANCE];
+                    $to = $this->repo
+                        ->balance
+                        ->getMerchantBalance($this->merchant);
+                }
+                else if (isset($input[ToType::ACCOUNT]) === true)
+                {
+                    $to = $this->repo->account->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $parentMerchant);
+
+                    // extracts linked account notes and validates.
+                    $this->getLinkedAccountNotes($input);
+                }
+                $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function() use ($order, $to, $input)
+                {
+                    return $this->buildTransferEntity($order, $to, $input, $this->merchant);
+                });
+
+                $this->repo->transfer->saveOrFail($transfer);
+
+                if($this->isValidPlatformTransfer() === true)
+                {
+                    (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
+                }
+
+                $transfers->push($transfer->toArrayPublic());
             }
-            else if (isset($input[ToType::ACCOUNT]) === true)
-            {
-                $to = $this->repo->account->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $parentMerchant);
-
-                // extracts linked account notes and validates.
-                $this->getLinkedAccountNotes($input);
-            }
-            $transfer = Tracer::inSpan(['name' => 'order.transfer.create.build'], function() use ($order, $to, $input)
-            {
-                return $this->buildTransferEntity($order, $to, $input, $this->merchant);
-            });
-
-            $this->repo->transfer->saveOrFail($transfer);
-
-            if($this->isValidPlatformTransfer() === true)
-            {
-                (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
-            }
-
-            $transfers->push($transfer->toArrayPublic());
-        }
+        }, 900, ErrorCode::BAD_REQUEST_TRANSFER_TXN_CREATION_PROCESS_IN_PROGRESS);
 
         return $transfers;
     }
@@ -658,7 +665,7 @@ class Core extends Base\Core
             ]);
 
         $payment = $this->repo
-                        ->payment
+                        ->payment_method_transfer
                         ->findByTransferIdAndMerchant(
                             $transfer->getId(),
                             $transfer->getToId());
@@ -1136,15 +1143,94 @@ class Core extends Base\Core
     }
     public function validateUsingOauth(Payment\Entity $payment)
     {
-        $entityOrigin = (new EntityOrigin\Core)->fetchEntityOriginV2($payment);
 
-        $paymentOAuth = optional($entityOrigin)->getOriginId();
+        if($this->app['basicauth']->isOAuth()) {
+            $entityOrigin = (new EntityOrigin\Core)->fetchEntityOriginV2($payment);
 
-        if($this->oauthApplicationId !== $paymentOAuth){
-            throw new Exception\BadRequestValidationFailureException(
-                'This transfer is not supported');
+            $paymentOAuth = optional($entityOrigin)->getOriginId();
+
+            $originType =optional($entityOrigin)->getOriginType();
+
+            $isOriginApplication = ($originType === EntityOrigin\Constants::MARKETPLACE_APPLICATION || $originType === EntityOrigin\Constants::APPLICATION);
+
+
+            if (($this->oauthApplicationId !== $paymentOAuth) or !$isOriginApplication) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'This transfer is not supported');
+            }
+
         }
     }
+    protected function validateOfflinePaymentOmniEnabled(Payment\Entity $payment, Merchant\Entity $merchant): void
+    {
+        if($this->isMerchantActivationPosActivationTransfersSupportedViaSplitz($merchant->getId()) === false)
+        {
+            return;
+        }
+
+
+        if (!empty($payment->getSourceChannel()) && $payment->getSourceChannel() === QRConstant::PAYMENT_TYPE_IN_PERSON) {
+
+            if (!$merchant->isOmniEnabled() === true) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, null,
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+
+            } else {
+                $this->trace->info(
+                    TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
+                    [
+                        'merchant_id'     => $this->merchant->getId(),
+                        'payment'           => $payment,
+                    ]
+                );
+            }
+        }
+        else if (!$merchant->isActivated()) {
+
+            if ($this->mode === Constants\Mode::TEST)
+            {
+                return;
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+        }
+
+    }
+
+    public function isMerchantActivationPosActivationTransfersSupportedViaSplitz(string $merchantId)
+    {
+        try
+        {
+            $experimentName = 'app.merchant_activation_pos_activation_check_for_transfers_splitz_exp_id';
+
+            $variant = (new Payment\Service())->getSplitzResponse($merchantId,$experimentName);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_RESPONSE,
+                [
+                    'variant'     => $variant,
+                ]
+            );
+
+            if (strtolower($variant) === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::MERCHANT_ACTIVATION_POS_ACTIVATION_CHECK_FOR_TRANSFERS_SPLITZ_FAILURE,
+            );
+        }
+        return false;
+    }
+
     protected function validateMerchantForTransfer(Merchant\Entity $merchant)
     {
         $isOnHold = $merchant->getHoldFunds();
@@ -1578,7 +1664,7 @@ class Core extends Base\Core
 
         foreach ($transferIds as $transferId)
         {
-            $transfer = $this->repo->transfer->find($transferId);
+            $transfer = $this->repo->transfer->findOrFail($transferId);
 
             $totalTransfersAmount += $transfer->getAmount();
 
@@ -1591,7 +1677,7 @@ class Core extends Base\Core
 
             $transfer->setSettlementStatus(SettlementStatus::SETTLED);
 
-            $transfer->saveOrFail();
+            $this->repo->transfer->saveOrFail($transfer);
         }
 
         $this->checkIfTransfersAmountMatchesSettlementAmount($settlementId, $totalTransfersAmount);
@@ -1897,9 +1983,9 @@ class Core extends Base\Core
 
                     $transfer = $this->repo->transfer->findByPublicId($transferPublicId);
 
-                    $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+                    $transferPayment = $this->repo->payment_method_transfer->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
-                    $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+                    $transferPayment = $this->repo->payment_method_transfer->findOrFail($transferPayment->getId());
 
                     $oldTransfer = clone $transfer;
 
@@ -2311,7 +2397,7 @@ class Core extends Base\Core
     {
         try
         {
-            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+            $transferPayment = $this->repo->payment_method_transfer->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
         }
         catch (\Exception $ex)
         {
@@ -2401,13 +2487,53 @@ class Core extends Base\Core
 
         $transfer = $this->repo->transfer->findOrFailPublic($transferId);
 
-        $input = [
-            LedgerConstants::DEBIT_TRANSACTION_ID  => $transferJournalId,
-            LedgerConstants::CREDIT_TRANSACTION_ID => $paymentJournalId,
-            LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
-        ];
+        [$creditJournal, ] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getToId());
 
-        $this->createTransferTransactionsInReverseShadow(null, $input);
+        [, $debitJournal] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getMerchantId());
+
+        $this->repo->transaction(
+            function () use ($transfer, $debitJournal, $creditJournal, $transferJournalId, $paymentJournalId) {
+                $transferPayment = $this->repo->payment_method_transfer->findByTransferIdAndMerchant(
+                    $transfer->getId(), $transfer->getToId());
+
+                $reverseShadowCore = new ReverseShadowTransfersCore();
+
+                $transferTxn = $reverseShadowCore->createTransferTransactionFromLedgerJournal(
+                    $debitJournal, $transfer);
+
+                $transferPaymentTxn = $reverseShadowCore->createTransferPaymentTransactionFromLedgerJournal(
+                    $creditJournal, $transferPayment);
+
+                if ($transferJournalId !== $transferTxn->getId())
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Debit journal ID does not match');
+                }
+
+                if ($paymentJournalId !== $transferPaymentTxn->getId())
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Credit journal ID does not match');
+                }
+
+                if ($this->isNssStreamingViaRouteMicroserviceEnabled($transfer->getMerchantId(), $this->mode))
+                {
+                    $txnCore = (new Transaction\Core());
+
+                    $txnCore->dispatchForSettlementBucketing($transferTxn);
+
+                    $txnCore->dispatchForSettlementBucketing($transferPaymentTxn);
+                }
+
+                (new Transfer\Core())->dispatchForAsyncBalanceUpdate($transfer);
+            }
+        );
+
+        $this->trace->info(TraceCode::TRANSFER_TXN_API_WRITE_SUCCESS, [
+            'transfer_id'     => $transferId,
+            'transfer_txn_id' => $transferJournalId,
+            'payment_txn_id'  => $paymentJournalId,
+        ]);
 
         return true;
     }
@@ -3099,5 +3225,44 @@ class Core extends Base\Core
                 'transfer_id'         => $transfer->getId(),
                 'merchant_id'         => $transfer->getMerchantId(),
             ]);
+    }
+
+    public function isNssStreamingViaRouteMicroserviceEnabled($merchantId, $mode): bool
+    {
+        $experimentId = $this->app['config']->get('app.route_linked_account_2fa_exp_id');
+
+        $properties = [
+            'id' => $merchantId,
+            'experiment_id' => $this->app['config']->get($experimentId),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        $experimentEnabled = false;
+
+        if ($variant === 'variant_on') {
+            $experimentEnabled = true;
+        }
+
+        $this->trace->info(TraceCode::ROUTE_MICROSERVICE_NSS_STREAMING_EXP_CHECK, [
+            'merchant_id' => $merchantId,
+            'experiment_id' => $experimentId,
+            'mode' => $mode,
+            'enabled' => $experimentEnabled,
+        ]);
+
+        return $experimentEnabled;
+    }
+
+    private function isvalidateTransferOauthExpEnabled(String $partnerMerchant) : bool
+    {
+        $properties = [
+            'id'            => $partnerMerchant,
+            'experiment_id' => $this->app['config']->get('app.validate_transfer_using_oauth_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

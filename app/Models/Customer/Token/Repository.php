@@ -61,6 +61,17 @@ class Repository extends Base\Repository
             return $this->getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas);
         }
 
+        //this is required to fetch token with method card from token service.
+        if ((new Token\Service())->isSaveTokenViaTokenService())
+        {
+            $tokenList = $this->getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas);
+
+            if($tokenList != null)
+            {
+                return $tokenList;
+            }
+        }
+
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(function($query) use ($isPassUnusedRejectedTokensExperimentEnabled)

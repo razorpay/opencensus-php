@@ -1136,23 +1136,6 @@ class CustomerTest extends TestCase
             'status'              => 'created',
         ]);
 
-        $splitzResp = [
-            "response" => [
-                "variant" => [
-                    "name" => "variant_on",
-                ]
-            ]
-        ];
-
-        $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.support_dashboard_tidb_splitz_experiment_id');
-        $splitzMock->shouldReceive('evaluateRequest')
-            ->zeroOrMoreTimes()
-            ->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))
-            ->andReturn($splitzResp);
-
-
         $response = $this->makeRequestAndGetContent($request);
 
         $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
@@ -1178,112 +1161,6 @@ class CustomerTest extends TestCase
         $this->assertEquals('created', $insuranceDetails[$payment2->getPublicId()]['status']);
 
         $this->assertNull($insuranceDetails[$payment2->getPublicId()]['claim_status']);
-
-        $this->assertEmpty($insuranceDetails[$payment3->getPublicId()]);
-    }
-
-    public function testSupportPageOTPVerifyWhenInsuranceIsPresentAndExperimentReturnFalse()
-    {
-        $this->ba->directAuth();
-
-        $this->mockRaven();
-
-        $contact = '+919988776655';
-
-        // send OTP
-        $response = $this->sendOtp($contact);
-
-        $content = [
-            'contact' => $contact,
-            'mode' => 'test',
-            'otp' => '0007',
-        ];
-
-        $this->fixtures->create('merchant', ['id' => '10000000000001']);
-        $this->fixtures->create('merchant', ['id' => Merchant\Account::DEMO_PAGE_ACCOUNT]);
-
-        $request = array(
-            'url' => '/support/otp/verify',
-            'method' => 'post',
-            'content' => $content
-        );
-
-        $order   = $this->fixtures->create('order', ['id' => 'A9byaSMscEvG1D']);
-
-        // Current Customer payments
-        $payment1 = $this->fixtures->create('payment', [
-            'contact'     => '+919988776655',
-            'merchant_id' => '10000000000000',
-            'status'      => 'captured',
-            'method'      => 'card',
-        ]);
-
-        $payment2 = $this->fixtures->create('payment', [
-            'contact'     => '9988776655',
-            'merchant_id' => '10000000000000',
-            'status'      => 'failed',
-            'method'      => 'card',
-            'order_id'    => $order->getId(),
-        ]);
-
-        $payment3 = $this->fixtures->create('payment', [
-            'contact'     => '9988776655',
-            'merchant_id' => '10000000000000',
-            'status'      => 'failed',
-            'method'      => 'card',
-        ]);
-
-        $this->fixtures->create('insurance', [
-            'insured_entity_id'   => $payment1->getId(),
-            'insured_entity_type' => 'payment',
-            'status'              => 'insured',
-            'claim_status'        => 'opened',
-        ]);
-
-        $this->fixtures->create('insurance', [
-            'insured_entity_id'   => $order->getId(),
-            'insured_entity_type' => 'order',
-            'status'              => 'created',
-        ]);
-
-        $splitzResp = [
-            "response" => [
-                "variant" => [
-                    "name" => "variant_off",
-                ]
-            ]
-        ];
-
-        $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.support_dashboard_tidb_splitz_experiment_id');
-        $splitzMock->shouldReceive('evaluateRequest')
-            ->zeroOrMoreTimes()
-            ->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))
-            ->andReturn($splitzResp);
-
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
-
-        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
-
-        $insuranceDetails = $this->getInsuranceDetailsFromSupportPageFetchPaymentResponse($response);
-
-        $this->assertContains($payment1->getPublicId(), $paymentIds);
-
-        $this->assertContains($payment2->getPublicId(), $paymentIds);
-
-        $this->assertEquals('card', $paymentDetails[$payment1->getPublicId()]['method']);
-
-        $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
-
-        $this->assertEquals('failed', $paymentDetails[$payment2->getPublicId()]['status']);
-
-        $this->assertEmpty($insuranceDetails[$payment1->getPublicId()]);
-
-        $this->assertEmpty($insuranceDetails[$payment2->getPublicId()]);
 
         $this->assertEmpty($insuranceDetails[$payment3->getPublicId()]);
     }
@@ -1564,22 +1441,6 @@ class CustomerTest extends TestCase
             'status'              => 'created',
         ]);
 
-        $splitzResp = [
-            "response" => [
-                "variant" => [
-                    "name" => "variant_on",
-                ]
-            ]
-        ];
-
-        $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.support_dashboard_tidb_splitz_experiment_id');
-        $splitzMock->shouldReceive('evaluateRequest')
-            ->zeroOrMoreTimes()
-            ->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))
-            ->andReturn($splitzResp);
-
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -1659,22 +1520,6 @@ class CustomerTest extends TestCase
             'status'              => 'created',
         ]);
 
-        $splitzResp = [
-            "response" => [
-                "variant" => [
-                    "name" => "variant_on",
-                ]
-            ]
-        ];
-
-        $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.support_dashboard_tidb_splitz_experiment_id');
-        $splitzMock->shouldReceive('evaluateRequest')
-            ->zeroOrMoreTimes()
-            ->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))
-            ->andReturn($splitzResp);
-
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -1697,97 +1542,6 @@ class CustomerTest extends TestCase
         $this->assertEquals('insured', $insuranceDetails[$payment1->getPublicId()]['status']);
 
         $this->assertEquals('opened', $insuranceDetails[$payment1->getPublicId()]['claim_status']);
-    }
-
-    public function testFetchPaymentByContactOnSupportPageWhenInsuranceIsPresentAndExperimentReturnFalse()
-    {
-        $this->ba->directAuth();
-
-        $this->mockSession();
-
-        $request = array(
-            'url' => '/apps/payments?mode=test',
-            'method' => 'get',
-        );
-
-        $order   = $this->fixtures->create('order', ['id' => 'A9byaSMscEvG1D']);
-
-        // Current Customer payments
-        $payment1 = $this->fixtures->create('payment', [
-            'contact'     => '+919988776655',
-            'merchant_id' => '10000000000000',
-            'status'      => 'captured',
-            'method'      => 'card',
-        ]);
-
-        $payment2 = $this->fixtures->create('payment', [
-            'contact'     => '9988776655',
-            'merchant_id' => '10000000000000',
-            'status'      => 'failed',
-            'method'      => 'card',
-            'order_id'    => $order->getId(),
-        ]);
-
-        $payment3 = $this->fixtures->create('payment', [
-            'contact'     => '9988776655',
-            'merchant_id' => '10000000000000',
-            'status'      => 'failed',
-            'method'      => 'card',
-        ]);
-
-        $this->fixtures->create('insurance', [
-            'insured_entity_id'   => $payment1->getId(),
-            'insured_entity_type' => 'payment',
-            'status'              => 'insured',
-            'claim_status'        => 'opened',
-        ]);
-
-        $this->fixtures->create('insurance', [
-            'insured_entity_id'   => $order->getId(),
-            'insured_entity_type' => 'order',
-            'status'              => 'created',
-        ]);
-
-        $splitzResp = [
-            "response" => [
-                "variant" => [
-                    "name" => "variant_off",
-                ]
-            ]
-        ];
-
-        $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.support_dashboard_tidb_splitz_experiment_id');
-        $splitzMock->shouldReceive('evaluateRequest')
-            ->zeroOrMoreTimes()
-            ->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))
-            ->andReturn($splitzResp);
-
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
-
-        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
-
-        $insuranceDetails = $this->getInsuranceDetailsFromSupportPageFetchPaymentResponse($response);
-
-        $this->assertContains($payment1->getPublicId(), $paymentIds);
-
-        $this->assertContains($payment2->getPublicId(), $paymentIds);
-
-        $this->assertEquals('card', $paymentDetails[$payment1->getPublicId()]['method']);
-
-        $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
-
-        $this->assertEquals('failed', $paymentDetails[$payment2->getPublicId()]['status']);
-
-        $this->assertEmpty($insuranceDetails[$payment1->getPublicId()]);
-
-        $this->assertEmpty($insuranceDetails[$payment2->getPublicId()]);
-
-        $this->assertEmpty($insuranceDetails[$payment3->getPublicId()]);
     }
 
     public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsWithCustomerContact()

@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission\Name;
 
@@ -119,6 +120,7 @@ class CmmaProxyController extends BaseProxyController
 
     protected function getHeadersForAdminRequest($body)
     {
+        
         return [
             'X-Admin-id'            => optional($this->ba->getAdmin())->getPublicId() ?? '',
             'X-Admin-Name'          => optional($this->ba->getAdmin())->getName() ?? '',
@@ -129,6 +131,7 @@ class CmmaProxyController extends BaseProxyController
             'X-Request-ID'          => Request::getTaskId(),
             'X-Client-ID'           => $this->serviceConfig['client_id'] ?? '',
             'x-razorpay-request-id' => $this->app['request']->header(RequestHeader::X_RAZORPAY_REQUEST_ID) ?? Request::getTaskId(),
+            'x-case-type'           => $this->app['request']->header(RequestHeader::X_CASE_TYPE) ?? "",
         ];
     }
 

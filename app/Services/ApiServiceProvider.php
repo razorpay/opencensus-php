@@ -48,6 +48,7 @@ use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Options;
 use RZP\Models\Payment;
+use RZP\Services\Route;
 use RZP\Services\Wallet;
 use RZP\Models\External;
 use RZP\Models\Customer;
@@ -680,6 +681,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerMozart();
 
+        $this->registerEzetapNotification();
+
         $this->registerHyperVerge();
 
         $this->registerMandateHQ();
@@ -906,6 +909,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerSlackClient();
 
         $this->registerTokens();
+
+        $this->registerRouteService();
     }
 
     protected function registerCacheManager()
@@ -970,6 +975,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'doppler',
             'diag',
             'mozart',
+            'ezetapNotification',
             'hubspot',
             'salesforce',
             'freshdesk_client',
@@ -1285,6 +1291,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $mock = $app['config']->get('applications.mozart.mock');
 
             $implementation = $mock ? Mock\Mozart::class : Mozart::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerEzetapNotification()
+    {
+        $this->app->bind('ezetapNotification', function($app)
+        {
+            $mock = $app['config']->get('applications.ezetap-notification.mock');
+
+            $implementation = $mock ? EzetapNotification\Mock\EzetapNotification::class : EzetapNotification\EzetapNotification::class;
 
             return new $implementation($app);
         });
@@ -2835,6 +2853,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                 return new Mock\Tokens($app);
             }
             return new Tokens($app);
+        });
+    }
+
+    protected function registerRouteService()
+    {
+        $this->app->singleton('route', function($app)
+        {
+            if ($app['config']->get('applications.route.mock') === true)
+            {
+                return new Mock\Route($app);
+            }
+            return new Route\Api($app);
         });
     }
 }

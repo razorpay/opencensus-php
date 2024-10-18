@@ -700,6 +700,9 @@ return [
             Permission::CREATE_QR_CODE_CONFIG => [
                 'description' => 'Create qr code configs for a merchant',
             ],
+            Permission::BULK_CLOSE_MULTIPLE_QR => [
+                'description' => 'Close multiple QR Codes in bulk',
+            ],
             Permission::BANK_TRANSFER_INSERT => [
                 'description' => 'Insert bank transfers for failed payments',
                 'assignable'  => true,

@@ -31,6 +31,7 @@ class Validator extends Base\Validator
         GatewayResponseParams::NOTES                 => 'sometimes|string',
         GatewayResponseParams::TRANSACTION_TIME      => 'sometimes|epoch',
         GatewayResponseParams::PAYER_ACCOUNT_TYPE    => 'sometimes|string',
+        GatewayResponseParams::PAYER_NAME            => 'nullable|string'
     ];
 
     protected static $upiYesbankGatewayResponseRules = [
@@ -62,6 +63,7 @@ class Validator extends Base\Validator
         GatewayResponseParams::PAYEE_VPA             => 'sometimes|string',
         GatewayResponseParams::PAYER_ACCOUNT_TYPE    => 'sometimes|string',
         GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'sometimes|string',
+        GatewayResponseParams::PAYER_NAME            => 'sometimes|string'
     ];
 
     public function validateGatewayResponseData($input, $gateway)

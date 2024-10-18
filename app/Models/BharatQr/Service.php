@@ -104,8 +104,6 @@ class Service extends Base\Service
 
             $path = "/v1/payment/callback/bharatqr/" . $gateway;
 
-            $this->forwardPaymentsCallBackToSCService($qrPaymentRequest, $path, $gatewayResponse);
-
             $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
 
             // before processing payment, we will call verify callback to check if the
@@ -310,8 +308,6 @@ class Service extends Base\Service
             }
 
             $path = "/v1/payment/callback/bharatqr/" . $gateway . "/internal";
-
-            $this->forwardPaymentsCallBackToSCService($qrPaymentRequest, $path, $gatewayResponse);
 
             $this->processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest);
 
@@ -586,39 +582,6 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setModeAndDbConnection($this->mode);
     }
-    protected function forwardPaymentsCallBackToSCService($qrPaymentRequest, $path, $gatewayResponse)
-    {
-        if (empty($qrPaymentRequest[Entity::QR_CODE_ID]) === false) {
-
-            $qrCode_id = $qrPaymentRequest->getQrCodeId();
-
-            if (($gatewayResponse['qr_data']['gateway'] === Gateway::SHARP)  and
-                ($this->isNonVAQrCodePayment($gatewayResponse)))
-            {
-                $qrCode_id = substr($qrCode_id, 0, 14);
-            }
-
-            $qrCode = $this->repo->qr_code->find($qrCode_id);
-
-            if($qrCode === null)
-            {
-                return;
-            }
-
-            $mid = $qrCode->merchant->getId();
-
-            //TODO : Need to remove this experiment after sometime
-            $variant = $this->app->razorx->getTreatment($mid,
-                RazorxTreatment::SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK,
-                $this->mode ?? Mode::LIVE);
-
-            if ($variant === 'on') {
-                $response = $this->smartCollectService->processQrCodePayment($path, $qrPaymentRequest->toArray());
-            }
-        }
-
-        return;
-    }
 
     protected function getTerminalForYesBank($gatewayResponse, $gateway)
     {
@@ -677,16 +640,6 @@ class Service extends Base\Service
                                                            $mode);
 
         if (strtolower($gatewayVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return null;
-        }
-
-        $merchantId = $terminal->getMerchantId();
-
-        $midVariant = $this->app->razorx->getTreatment($merchantId,
-                                                       RazorxTreatment::QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP, $mode);
-
-        if (strtolower($midVariant) !== RazorxTreatment::RAZORX_VARIANT_ON)
         {
             return null;
         }

@@ -1130,6 +1130,7 @@ return [
                 'contact'           => null,
                 'error_code'        => null,
                 'error_description' => null,
+                'source_channel'    => 'online',
             ]
         ],
     ],

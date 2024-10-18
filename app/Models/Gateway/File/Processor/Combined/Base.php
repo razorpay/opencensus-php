@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Combined;
 
 use Mail;
 use RZP\Error\ErrorCode;
+use RZP\Models\Gateway\File\SlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File\Type;
@@ -142,6 +143,10 @@ class Base extends BaseProcessor
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);
+
+            $operation = 'combined file send failed @nbplus-oncall';
+            $username = "NB_CLAIM_FILE";
+            (new SlackNotification)->send($operation, $mailData, null, 1,'tech_payments_nbplus_alerts', $username);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,

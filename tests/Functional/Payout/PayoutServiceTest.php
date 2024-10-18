@@ -8026,9 +8026,79 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
     }
+    public function testBulkPayout_CurrentAccountPayoutViaPayoutService_NotesAsEmptyArray()
+    {
+        $this->mockPayoutServiceCreateBulkPayout(2, false, false, [], true);
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'icici',
+                'account_number' => 2224440041626907,
+            ]
+        );
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
     public function testBulkPayout_SharedAccount_SinglePayout_SpacesInAccountNumber()
     {
         $this->mockPayoutServiceCreateBulkPayout(1);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+    public function testBulkPayout_CurrentAccountPayoutViaPayoutService_SinglePayout_SpacesInAccountNumber()
+    {
+        $this->mockPayoutServiceCreateBulkPayout(1);
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'icici',
+                'account_number' => 2224440041626907,
+            ]
+        );
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -8048,6 +8118,42 @@ class PayoutServiceTest extends TestCase
     public function testBulkPayout_SharedAccount_MultiplePayout_SpacesInAccountNumber()
     {
         $this->mockPayoutServiceCreateBulkPayout(2);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkPayout_CurrentAccountPayoutViaPayoutService_MultiplePayouts_SpacesInAccountNumber()
+    {
+        $this->mockPayoutServiceCreateBulkPayout(2);
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'icici',
+                'account_number' => 2224440041626907,
+            ]
+        );
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -8109,6 +8215,49 @@ class PayoutServiceTest extends TestCase
         $createBulkPayoutMock->shouldNotHaveReceived('createBulkPayoutViaMicroservice');
     }
 
+    public function testBulkPayout_SharedAccountPayoutViaAPIMonolith_MultiplePayouts_SpacesInAccountNumber()
+    {
+
+        $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+                'imps_mode_payout_filter' => 'control',
+            ]
+        );
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
+
+         $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'shared',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'yesbank',
+                'account_number' => 2224440041626905,
+            ]
+        );
+
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $createBulkPayoutMock->shouldNotHaveReceived('createBulkPayoutViaMicroservice');
+    }
+
     public function testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowTrue_FeatureEnabled()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
@@ -8138,6 +8287,50 @@ class PayoutServiceTest extends TestCase
             Details\Entity::CHANNEL        => Details\Channel::ICICI,
             Details\Entity::STATUS         => Details\Status::ACTIVE,
         ]);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $createBulkPayoutMock->shouldNotHaveReceived('createBulkPayoutViaMicroservice');
+    }
+
+    public function testBulkPayout_SharedAccountPayoutViaAPIMonolith_MultiplePayout_SkipWorkflowTrue_FeatureEnabled()
+    {
+
+        $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+
+        $this->fixtures->merchant->addFeatures(['bulk_payout_workflow']);
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+                'imps_mode_payout_filter' => 'control',
+            ]
+        );
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'shared',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'yesbank',
+                'account_number' => 2224440041626905,
+            ]
+        );
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -8380,6 +8573,57 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_MultiplePayout_SpacesInAccountNumber()
+    {
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+                'imps_mode_payout_filter' => 'control',
+            ]
+        );
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
+
+         $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'shared',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'yesbank',
+                'account_number' => 2224440041626905,
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => Channel::ICICI,
+                'account_number' => 2224440041626907,
+            ]
+        );
+
+        $this->mockPayoutServiceCreateBulkPayout(2);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
     public function testBulkPayout_SharedAccount_BalanceRecordNotAvailableForMerchant()
     {
         $balance1 = $this->getDbEntity('balance',
@@ -8429,6 +8673,36 @@ class PayoutServiceTest extends TestCase
 
         $createBulkPayoutMock->shouldNotHaveReceived('createBulkPayoutViaMicroservice');
     }
+
+    public function testBulkPayout_CurrentAccountPayoutViaPayoutService_InvalidAccountNumber()
+    {
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+                'imps_mode_payout_filter' => 'control',
+            ]
+        );
+
+        $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $createBulkPayoutMock->shouldNotHaveReceived('createBulkPayoutViaMicroservice');
+    }
+
 
     public function testBulkPayout_ValidSharedAccount_And_InvalidAccountNumber()
     {
@@ -8696,6 +8970,64 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payoutsCountBefore, $payoutsCountAfter);
     }
 
+    public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_ExceptionFromCurrentAccount()
+    {
+
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+                'imps_mode_payout_filter' => 'control',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'shared',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'yesbank',
+                'account_number' => 2224440041626905,
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => Channel::ICICI,
+                'account_number' => 2224440041626907,
+            ]
+        );
+
+        $this->mockPayoutServiceCreateBulkPayout(2, true);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountBefore = count($payouts);
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        $payoutsCountAfter = count($payouts);
+
+        $this->assertEquals($payoutsCountBefore, $payoutsCountAfter);
+    }
     public function testBulkPayout_SharedAndDirectAccount_TimeoutFromPayoutsService()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
@@ -8797,6 +9129,53 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_ExceptionFromSharedAccount()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
+                'imps_mode_payout_filter' => 'control',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'shared',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'yesbank',
+                'account_number' => 2224440041626905,
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => Channel::ICICI,
+                'account_number' => 2224440041626907,
+            ]
+        );
+
+        $this->mockPayoutServiceCreateBulkPayout(2);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
     public function testBulkPayout_SharedAndDirectAccounts_ExperimentOff()
     {
         $this->fixtures->on('live')->create(

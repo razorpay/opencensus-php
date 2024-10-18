@@ -27,6 +27,8 @@ final class Metric
 
     const TERMINALS_STOP_DUAL_WRITE                          =    'TERMINALS_STOP_DUAL_WRITE';
 
+    const CROSS_BORDER_NO_TERMINAL_FOUND_METRIC            = 'CROSS_BORDER_NO_TERMINAL_FOUND_METRIC';
+
     //Router Related Metric
     const ROUTER_FALLBACK = 'ROUTER_FALLBACK';
 }

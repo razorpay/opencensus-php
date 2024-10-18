@@ -1,6 +1,7 @@
 <?php
 
 namespace RZP\Models\Merchant\OneClickCheckout\Config;
+use Exception;
 use GuzzleHttp\Client;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Account;
@@ -110,7 +111,7 @@ class Service extends Base\Service
                             $this->app['rto_prediction_provider_service']->createJobExecutions($jobRequest);
 
                         }
-                        catch (\Exception $ex)
+                        catch (Exception $ex)
                         {
                             $this->trace->count(
                                 Metric::PRE_MAGIC_ORDER_JOB_CREATE_ERROR_COUNT,
@@ -223,7 +224,7 @@ class Service extends Base\Service
                         );
                         (new KafkaProducer($topic, stringify($message)))->Produce();
                     }
-                    catch (\Exception $e)
+                    catch (Exception $e)
                     {
                         $this->trace->error(TraceCode::ONE_CC_MERCHANT_CONFIG_KAFKA_UPLOAD_FAILED,
                             [
@@ -494,32 +495,28 @@ class Service extends Base\Service
 
             $shopId = $this->merchant->get1ccConfig(Constants::SHOP_ID);
 
-            if ($codEngine === true){
-                // mcs service to trigger post installation workflow
-                // creation of carrier service and payment customization
-                try
-                {
-                    (new MagicCheckoutService())->postPublicAppInstallationWorkflow([
-                        'shop_id' => $shopId,
-                        'app_type'  => 'sopc',
-                        'merchant_id'   => $this->merchant->getMerchantId()
-                    ]);
-                }
-                catch (\Exception $e)
-                {
-                    $this->trace->error(TraceCode::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_WORKFLOW_FAILED,
-                        [
-                            'error' => $e->getMessage(),
-                            'merchant_id' => $this->merchant->getId(),
-                            'shop_id' => $shopId
-                        ]
-                    );
+            // mcs service to trigger post installation workflow
+            // creation of carrier service and payment customization
+            try {
+                (new MagicCheckoutService())->postPublicAppInstallationWorkflow([
+                    'shop_id' => $shopId,
+                    'app_type' => 'sopc',
+                    'merchant_id' => $this->merchant->getMerchantId(),
+                    'cod_engine_enabled' => $codEngine,
+                ]);
+            } catch (Exception $e) {
+                $this->trace->error(
+                    TraceCode::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_WORKFLOW_FAILED, [
+                        'error' => $e->getMessage(),
+                        'merchant_id' => $this->merchant->getId(),
+                        'shop_id' => $shopId
+                    ]
+                );
 
-                    $this->trace->count(
-                        Metric::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_WORKFLOW_ERROR_COUNT,
-                        ['code' => $e->getCode()]
-                    );
-                }
+                $this->trace->count(
+                    Metric::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_WORKFLOW_ERROR_COUNT,
+                    ['code' => $e->getCode()]
+                );
             }
 
             if ($config === null)
@@ -672,7 +669,7 @@ class Service extends Base\Service
                     $message = array("merchant_id" => $this->merchant->getId());
                     (new KafkaProducer($topic, stringify($message)))->Produce();
                 }
-                catch (\Exception $e)
+                catch (Exception $e)
                 {
                     $this->trace->error(TraceCode::RTO_MLMODEL_ASSIGNMENT_KAFKA_UPLOAD_FAILED,
                         [
@@ -987,6 +984,17 @@ class Service extends Base\Service
 
         }
 
+        if($merchantPlatform === Constants::MAGENTO)
+        {
+            $result[Constants::COD_ENGINE_TYPE] = $codEngineType;
+            foreach ($configFlagsResponse as $config => $value) {
+                if (in_array($config, Constants::MAGENTO_SPECIFIC_CONFIGS) === true) {
+                    $result[$config] = $value;
+                }
+            }
+        }
+
+
         if ($merchantPlatform === Constants::NATIVE)
         {
             $orderStatusUpdateUrlConfig = $this->merchant->getFetchOrderStatusUpdateUrlConfig();
@@ -1022,7 +1030,7 @@ class Service extends Base\Service
         {
             $this->merchant = $this->repo->merchant->findOrFail($merchantId);
         }
-        catch (\Exception $ex)
+        catch (Exception $ex)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
         }
@@ -1053,7 +1061,7 @@ class Service extends Base\Service
         {
             $this->merchant = $this->repo->merchant->findOrFail($merchantId);
         }
-        catch (\Exception $ex)
+        catch (Exception $ex)
         {
             $this->trace->traceException(
                 $ex,
@@ -1083,7 +1091,7 @@ class Service extends Base\Service
         {
             $this->merchant = $this->repo->merchant->findOrFail($merchantId);
         }
-        catch (\Exception $ex)
+        catch (Exception $ex)
         {
             $this->trace->traceException(
                 $ex,
@@ -1105,7 +1113,7 @@ class Service extends Base\Service
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function reset1ccConfig($platform)
     {
@@ -1197,7 +1205,7 @@ class Service extends Base\Service
 
                 (new Merchant\OneClickCheckout\IntegrationService\Service())->clearMerchantConfigsFromCache($input);;
             }
-            catch (\Exception $e)
+            catch (Exception $e)
             {
                 $this->trace->info(TraceCode::ONE_CC_CLEAR_MERCHANT_CONFIGS_FAILED, $e->getMessage());
             }

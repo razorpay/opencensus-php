@@ -92,4 +92,6 @@ final class SplitzConstant
     const SPLITZ_ENABLE_EXCLUSION_FLOW = 'splitz_enable_exclusion_flow';
 
     const SPLITZ_HANDLE_OPEN_TRANSACTION = 'splitz_handle_open_transaction';
+
+    const SPLITZ_FALLBACK_TO_ASV_DB = 'splitz_fallback_to_asv_db';
 }

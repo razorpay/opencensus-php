@@ -75,11 +75,13 @@ trait RepositoryUpdateTestAndLiveAndAsv
 
                 list($liveEntity, $testEntity, $asvEntity) = $this->removeAsvFieldsFromEntity($liveEntity, $testEntity, $asvEntity);
                 // Persist the entity in both live and test databases.
+
+
+                $asvEntity->saveOrFail($options);
+
                 $liveEntity->saveOrFail($options);
 
                 $testEntity->saveOrFail($options);
-
-                $asvEntity->saveOrFail($options);
 
                 $this->validateEntitiesMatch($liveEntity, $testEntity);
 

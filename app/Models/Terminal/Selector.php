@@ -416,6 +416,29 @@ class Selector extends Base\Core
             }
             else
             {
+                try {
+                    if( $payment[Entity::INTERNATIONAL] === true || ($payment[Entity::METHOD]===Method::WALLET && $payment[Entity::WALLET] === "paypal")) {
+                        $parameters = [
+                            'method' => $payment[Entity::METHOD],
+                            'international' => $payment[Entity::INTERNATIONAL]
+                        ];
+                        if (empty($payment[Entity::WALLET]) === false) {
+                            $parameters['wallet'] = $payment[Entity::WALLET];
+                        }
+                        if ($payment->isCard() === true && empty($payment->card->getNetwork()) === false) {
+                            $parameters['card_network'] = $payment->card->getNetwork();
+                        }
+                        $this->trace->count(Terminal\Metric::CROSS_BORDER_NO_TERMINAL_FOUND_METRIC, $parameters);
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->error(
+                        TraceCode::CROSS_BORDER_METRICS_PUSH_FAILED,
+                        [
+                            'error' => $e->getMessage(),
+                        ]);
+                }
                 throw new Exception\RuntimeException(
                     'No terminal found.',
                     ['payment' => $this->input['payment']->toArrayAdmin()],

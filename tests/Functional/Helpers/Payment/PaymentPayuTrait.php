@@ -18,14 +18,14 @@ trait PaymentPayuTrait
 
             return $this->makeOtpCallback($url);
         }
-        
-        $request = $this->getPayuSuccessCallbackRequest($url,$method,$content);
+
+        $request = $this->getPayuSuccessCallbackRequest($url,$method, $content);
 
         return $this->submitPaymentCallbackRequest($request);
-        
-        
+
+
     }
-    
+
     protected function getPayuSuccessCallbackRequest($url, $method = 'get', $content = array())
     {
          $request = array(

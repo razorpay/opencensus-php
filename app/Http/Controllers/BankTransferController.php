@@ -36,7 +36,15 @@ class BankTransferController extends Controller
             Entity::GATEWAY         => Provider::YESBANK,
         ]);
 
-        $response = $this->service()->saveRequestAndProcess($input, null, false, $input);
+        $isCollectXYesbankCallback = $this->service()->checkForYesBankCollectxCallback($input);
+
+        $provider = null;
+
+        if ($isCollectXYesbankCallback === true) {
+            $provider = Provider::YESBANK;
+        }
+
+        $response = $this->service()->saveRequestAndProcess($input, $provider, false, $input);
 
         $this->trace->info(TraceCode::BANK_TRANSFER_YES_BANK_VA_RESPONSE, [
             Entity::GATEWAY         => Provider::YESBANK,
@@ -277,6 +285,15 @@ class BankTransferController extends Controller
             else
             {
                 $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+
+                if (array_key_exists("isCollectXResponse", $response) === true && $response['valid'] === false)
+                {
+                    return ApiResponse::json([
+                        'Stts_flg' =>  'F',
+                        'Err_cd'   =>  '002',
+                        'message'  =>  'Validation failed',
+                    ], 400);
+                }
             }
         }
         catch (BadRequestValidationFailureException $e)

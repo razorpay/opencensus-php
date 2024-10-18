@@ -129,6 +129,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Services\ThirdWatchService;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
+use RZP\Models\QrPayment\Constants as QrConstants;
 
 
 class Processor
@@ -669,6 +670,8 @@ class Processor
     /** @var RequestContextV2 */
     protected $requestContext;
 
+    protected $paymentInput = null;
+
     /**
      * Array of error codes upon which paypal maybe suggested as a backup option
      */
@@ -721,7 +724,7 @@ class Processor
         "enach_npci_netbanking_icici"         => "npci_icici",
     ];
 
-    public function __construct(Merchant\Entity $merchant)
+    public function __construct(Merchant\Entity $merchant, $paymentInput = null)
     {
         $this->app  = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
@@ -732,6 +735,8 @@ class Processor
         $this->methods = $merchant->getMethods();
 
         $this->paymentRepo = $this->repo->payment;
+
+        $this->paymentInput = $paymentInput;
 
         $this->checkMerchantPermissions();
 
@@ -869,13 +874,9 @@ class Processor
         return true;
     }
 
-    private function canRouteInternationalPaymentsViaRearchFlow($input, $merchant)
+    private function canRouteInternationalPaymentsViaRearchFlow($input, $merchant, $iin)
     {
         $result = false;
-
-        if($input['currency'] !== Currency\Currency::INR){
-            return false;
-        }
 
         if($merchant->isAddressRequiredEnabled() && !empty($input['billing_address'])){
             return false;
@@ -896,15 +897,140 @@ class Processor
             Payment\Analytics\Metadata::HOSTED
         ];
 
-        if(in_array($library,$internationalSupportedLibraries,true)) {
-            $result = $this->evaluateSplitzExperimentforCrossBorderRearchCheckoutJS($merchant);
-        }
+        if($input['currency'] !== Currency\Currency::INR){
+            if(in_array($library,$internationalSupportedLibraries,true) and
+                (isset($input['dcc_currency']) == false or $input['dcc_currency'] == $input['currency'])
+            ){
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchMCCCheckoutJS($merchant);
+            }
+            else if($library == Payment\Analytics\Metadata::S2S
+                    and ((new Payment\Service)->isDccEnabledIIN($iin, $merchant) === false or
+                    $merchant->isFeatureEnabled(Feature::DISABLE_NATIVE_CURRENCY) or
+                    $input['currency'] == Currency\Currency::getCurrencyForCountry($iin->getCountry()))
+            ){
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchMCCS2S($merchant);
+            }
+            $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
+                'canRouteInternationalMCCPaymentsViaRearchFlow'      =>  $result,
+                'mcc_input_currency' => $input['currency']
+            ]);
+        } else {
+            if(in_array($library,$internationalSupportedLibraries,true)) {
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchCheckoutJS($merchant);
+            }
 
-        if($library == Payment\Analytics\Metadata::S2S) {
-            $result = $this->evaluateSplitzExperimentforCrossBorderRearchS2S($merchant);
+            if($library == Payment\Analytics\Metadata::S2S) {
+                $result = $this->evaluateSplitzExperimentforCrossBorderRearchS2S($merchant);
+            }
         }
 
         return ($result == true);
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchMCCCheckoutJS($merchant){
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_mcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearchMCCS2S($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_s2s_mcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderMCCPaymentsViaRearch($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_mcc_payment_via_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     private function evaluateSplitzExperimentforCrossBorderRearchCheckoutJs($merchant)
@@ -999,6 +1125,23 @@ class Processor
         return $this->merchant->isJpmcImportFlowEnabled();
     }
 
+    private function isOptimizerCFBInternalFlow(): bool
+    {
+        $isOptimizerCFBFlow = $this->merchant->isAtLeastOneFeatureEnabled(Features::OPTIMIZER_CFB_FEATURES);
+        $isInternalFlow = $this->ba->isAppAuth();
+        $isPaymentCreateAjaxRoute = $this->route->getCurrentRouteName() === 'payment_create_ajax';
+
+        return $isOptimizerCFBFlow && $isInternalFlow && $isPaymentCreateAjaxRoute;
+    }
+
+    private function inputCurrencyNotINR($input): bool{
+        if((empty($input['currency']) === false and
+            $input['currency'] !== Currency\Currency::INR)){
+            return true;
+        }
+        return false;
+    }
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -1028,7 +1171,8 @@ class Processor
                 return $this->canRouteThroughRearchFlowForMY($input);
             }
 
-            if($this->merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
+            // Merchants with both v1 and v2 QR codes have to do re-arch separately
+            if((new QrPayment\Core)->checkPaymentViaQRv1($this->merchant) === true)
             {
                 return false;
             }
@@ -1369,15 +1513,30 @@ class Processor
                 return true;
             }
 
-            if ((empty($input['currency']) === false) and
-                ($input['currency'] !== Currency\Currency::INR) and
-                $this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === false)
+            $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+            $iinId = substr($card_number, 0, 6);
+            $iin = $this->repo->iin->find($iinId);
+
+            if ((empty($input['currency']) === false and
+                $input['currency'] !== Currency\Currency::INR) and
+                ($this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === false))
             {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "non_inr_currency",
-                    'merchant_id' => $merchant->getId(),
-                ]);
-                return false;
+                if($this->evaluateSplitzExperimentforCrossBorderMCCPaymentsViaRearch($merchant) === false) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "non_inr_currency",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
+                if($iin->isAmex() === true or
+                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === false)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "domestic_non_inr_currency_payment",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
             }
 
             //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from CPS re-arch traffic
@@ -1507,6 +1666,9 @@ class Processor
                                             'token_id' => $input[Payment\Entity::TOKEN],
                                             'card_number' => $input[Payment\Entity::CARD],
                                         ]);
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     return true;
                                 }
 
@@ -1558,6 +1720,9 @@ class Processor
                                     {
                                         $input["cryptogram_source"] = "cps";
                                     }
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     return true;
                                 }
                                 else {
@@ -1566,6 +1731,9 @@ class Processor
                                     //modify input for cards
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::TOKEN] = $token->getId();
+                                    if($this->inputCurrencyNotINR($input)){
+                                        return false;
+                                    }
                                     return true;
                                 }
                             }
@@ -1601,23 +1769,26 @@ class Processor
             // route all point payments requests via cps
             if (isset($input['card']['reward']) === true)
             {
+                if($this->inputCurrencyNotINR($input)){
+                    return false;
+                }
                 return true;
             }
 
             //transaction from cryptogram value
             $input[Payment\Entity::CARD][Card\Entity::NUMBER] = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
-            $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
             if ($this->isPaymentViaTokenisedCard($input))
             {
                 $tokenIin = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 9);
                 $iinId = Card\IIN\IIN::getTransactingIinforRange($tokenIin) ?? $iinId;
             }
 
-            $iin = $this->repo->iin->find($iinId);
-
             if ($this->isExternalAltIdPayment($input)) {
                 $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
                 $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
+                if($this->inputCurrencyNotINR($input)){
+                    return false;
+                }
                 return true;
             }
 
@@ -1653,10 +1824,11 @@ class Processor
                 return true;
             }
 
-            if ((($iin->isAmex() === false) and
-                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true))
+            if (($iin->isAmex() === false) and
+                (IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true) and
+                ($this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === false))
             {
-                $result = $this->canRouteInternationalPaymentsViaRearchFlow($input,$merchant);
+                $result = $this->canRouteInternationalPaymentsViaRearchFlow($input,$merchant, $iin);
 
                 $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
                     'canRouteThroughCrossBorderRearchFlow'      =>  $result,
@@ -3532,6 +3704,9 @@ class Processor
             if ($this->shouldValidateCheckoutSignature($input)) {
                 $this->validateCheckoutSignature($input);
             }
+
+            $this->validateMerchantActivationStatusForPaymentCreate($input);
+
             $this->convertNewFormatToOldFormatIfRequired($input);
 
             $this->validatePaymentForOptimizerOnlyMerchants();
@@ -3582,6 +3757,7 @@ class Processor
                 ($isPaCbPartnerPayment === false) and
                 ($this->isLRSTravelCitiMerchant() === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and
+                ($this->isOptimizerCFBInternalFlow() === false ) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or
@@ -6490,9 +6666,14 @@ class Processor
 
         $experiments = $core->bulkCalltoSplitz($payment->getMerchantId());
 
-        $this->setOfferForPaymentFromOrderOrInput($payment, $input, $experiments);
+        $valid = $this->setOfferForPaymentFromOrderOrInput($payment, $input, $experiments);
 
-        if (($this->offer !== null) and
+        if ($valid === false)
+        {
+            $this->offer = null;
+        }
+
+        if ($valid and ($this->offer !== null) and
             ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
             $orderAmount = $this->order->getAmount();
@@ -6545,8 +6726,10 @@ class Processor
         }
     }
 
-    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input, array $experiments)
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input, array $experiments): bool
     {
+        $valid = false;
+
         $order = $payment->order;
 
         $offer = null;
@@ -6568,15 +6751,23 @@ class Processor
 
         if ($offer === null)
         {
-            return;
+            return $valid;
         }
+
+        // Set the save attribute of offer model from $input array
+        $isCardSaved = ((isset($input[self::SAVE]) === true) and
+                        (boolval($input[self::SAVE]) === true));
+
+        $offer->setIsCardSaved($isCardSaved);
 
         $this->offer = $offer;
 
         if (!$this->validateOffersViaOffersEngine($payment, $offer, $experiments))
         {
-             return;
+             return $valid;
         }
+
+        $valid = true;
 
         $payment->associateOffer($this->offer);
 
@@ -6589,6 +6780,7 @@ class Processor
             'payment_id' => $payment->getPublicId(),
             'order_id'   => $order_id ?? null,
         ]);
+        return $valid;
 
     }
 
@@ -6934,30 +7126,33 @@ class Processor
 
         $route = $this->app['request.ctx']->getRoute();
 
-        $offlineRefundSkipRoutes = ['scrooge_entities_fetch','refund_scrooge_payment_update','refund_fetch_discount','refund_verify_call','refund_gateway_call','refund_update_status'];
+        $routeName = $this->app['api.route']?->getCurrentRouteName();
 
-        $offlineCardSkipRoutes = ['payment_notify'];
+        $this->trace->info(
+            TraceCode::MERCHANT_PERMISSIONS_CHECK_IN_PERSON_PAYMENT,
+            [
+                'merchant_id'                   => $merchant->getId(),
+                'route_name'                    => $routeName,
+                'omni_enabled feature enabled'  => $merchant->isOmniEnabled(),
+                'merchant actiavted'            => $merchant->getActivated(),
+                'payment_input'                 => $this->paymentInput
+            ]
+        );
 
-        //Temporary change to skip activation flag for offline refunds
-        if ($route === 'payment_refund' && $merchant->isOmniEnabled() === true)
-        {
-            $paymentId = $this->app['request.ctx']->getRequest()->route('id');
-            $payment = $this->paymentRepo->findByPublicId($paymentId);
-            if ($payment->getSourceChannel() === Payment\Constant::IN_PERSON)
-            {
-                return;
-            }
-        }
+        $offlineCardSkipRoutes = ['payment_notify','internal_transactions'];
 
-        if ((in_array($route, $offlineRefundSkipRoutes) || in_array($route, $offlineCardSkipRoutes)) && $merchant->isOmniEnabled() === true) {
+        if ((in_array($route, $offlineCardSkipRoutes)) && $merchant->isOmniEnabled() === true) {
             return;
         }
+
 
         // early return on basic checks to avoid complex computations
         if ($merchant->isActivated())
         {
             return;
-        } else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true) {
+        }
+        else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true)
+        {
             //This is fix is for skipping permissions on pricing route only for omni enabled offline payments
             $request = $this->app['request.ctx']->getRequest();
             $entityId = $request->route('entityId');
@@ -6975,6 +7170,18 @@ class Processor
                   (new MerchantCore())->isXVaActivated($merchant)))
         {
             // TODO: remove this condition once PG onboarding & VA-activation are resumed.
+            return;
+        }
+
+        if ($merchant->isOmniEnabled() === true)
+        {
+            $this->trace->info(
+                TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
+                [
+                    'merchant_id'     => $merchant->getId(),
+                ]
+            );
+
             return;
         }
 
@@ -8334,6 +8541,8 @@ class Processor
         $internalCode = $error->getInternalErrorCode();
 
         $updatedPayment = null;
+        //have added falg to ensure that netbanking hdfc corp payments are not updated to failed status
+        $shouldUpdateForNetbankigHdfcCorpPayments=false;
 
         try
         {
@@ -8354,6 +8563,35 @@ class Processor
         if($payment->isUpiRecurring())
         {
             $method = 'upi_autopay';
+        }
+
+
+        $orgFeatureFlag = $this->merchant->org->isFeatureEnabled(Feature::VAS_NB_CORP_ORG);
+
+        $merchantFeatureFlag = $this->merchant->isFeatureEnabled(Feature::VAS_NB_CORP_MER);
+
+        if(($payment->getMethod() === Method::NETBANKING) and
+            ($payment->getBank() === Payment\Processor\Netbanking::HDFC_C) and
+            (($merchantFeatureFlag === true) OR ($orgFeatureFlag === true)))
+        {
+            $this->trace->info(TraceCode::CORPORATE_NETBANKING_PAYMENT_HDFC_PAYMENT_CHECK, [
+                'Payment_Id' => $payment->getId(),
+                'Merchant_Id' => $payment->getMerchantId(),
+            ]);
+
+            $data = [
+                'payment' => $payment->toArrayGateway(),
+                'merchant' => $this->merchant,
+            ];
+
+            $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+            //only set error as Payment pending if we recieve   same response from gateway
+            if ($data['gateway']['error']['internal_error_code'] === 'BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION'){
+
+                $internalCode=$data['gateway']['error']['internal_error_code'];
+                $shouldUpdateForNetbankigHdfcCorpPayments=true;     
+            }
+
         }
 
         $error->setDetailedError($internalCode, $method);
@@ -8403,6 +8641,10 @@ class Processor
                     'payment_id'    => $payment->getId(),
                     'status'        => $status
                 ]);
+        }
+        if ($shouldUpdateForNetbankigHdfcCorpPayments){
+            //setting status as created again to ensure payment doesn't move to failed state
+            $payment->setStatus(Payment\Status::CREATED);
         }
 
         $payment->setStatus(Payment\Status::FAILED);
@@ -10744,6 +10986,8 @@ class Processor
         //
         $this->repo->reload($order);
 
+        [$captureConfig, $captureSettings]  = $this->shouldAutoCapturePaymentConfigAndSetRefundAt($payment);
+
         // If order status is not paid yet and if the payment is direct settlement then capture
         if (($order->isPaid() === false) and
             ($payment->isDirectSettlement()))
@@ -10779,7 +11023,15 @@ class Processor
             return $response;
         }
 
-        [$captureConfig, $captureSettings]  = $this->shouldAutoCapturePaymentConfig($payment);
+        if (($payment->isLateAuthorized() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::SILENT_REFUND_LATE_AUTH) === true))
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::MERCHANT_SILENT_REFUND_LATE_AUTH_TRUE;
+
+            return $response;
+        }
 
         if ($captureConfig === true)
         {
@@ -10863,7 +11115,7 @@ class Processor
         return $response;
     }
 
-    protected function shouldAutoCapturePaymentConfig(Payment\Entity $payment)
+    protected function shouldAutoCapturePaymentConfigAndSetRefundAt(Payment\Entity $payment)
     {
         $lateAuthConfig = $this->getLateAuthPaymentConfig($payment);
 
@@ -10897,7 +11149,7 @@ class Processor
 
         $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
 
-        $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
+        $this->setPaymentRefundAtForConfig($payment,$manualTimeoutDuration);
 
         if ($captureValue === 'automatic')
         {
@@ -12049,11 +12301,10 @@ class Processor
 
         // it is s2s call, the response is return immediately. no verify needed for failed payment except for pending
 
-        if($payment->isWalletAutoRecurring() === true and  $payment->getGateway() === Payment\Gateway::TNGD and $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_WALLET_PAYMENT_PENDING)
+        if($payment->isWalletAutoRecurring() === true and  $payment->getGateway() === Payment\Gateway::TNGD and $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE)
         {
             $isReminderVerifyPayment = false;
             $isReminderTimeoutPayment = false;
-
         }
 
         if (in_array($method, Payment\Method::$timeoutDisabledMethods) === true)
@@ -13203,5 +13454,85 @@ class Processor
 
         return false;
     }
+    protected function validateMerchantActivationStatusForPaymentCreate(array $input)
+    {
+        if($this->isPosActivationCheckForOfflinePaymentsSupportedViaSplitz() === false)
+        {
+            return;
+        }
+
+        if ((empty($input[Payment\Entity::SOURCE_CHANNEL]) === false) and
+        ($input[Payment\Entity::SOURCE_CHANNEL] === QrConstants::PAYMENT_TYPE_IN_PERSON))
+        {
+            // check pos_activation feature flag for in person payments
+            if($this->merchant->isOmniEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
+                    [
+                        'merchant_id'     => $this->merchant->getId(),
+                        'input'           => $input,
+                    ]
+                );
+
+                return;
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, null,
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+            }
+        }
+
+        //check merchant's activation status for online payments
+        if ($this->merchant->isActivated())
+        {
+            return;
+        }
+
+
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR, null, null,
+            PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
+    }
+
+    public function isPosActivationCheckForOfflinePaymentsSupportedViaSplitz()
+    {
+        try
+        {
+            $experimentName = 'app.pos_activation_check_for_offline_payments_splitz_exp_id';
+
+            $variant = (new Payment\Service())->getSplitzResponse(UniqueIdEntity::generateUniqueId(),$experimentName);
+
+            $this->trace->info(
+                TraceCode::POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENT_SPLITZ_RESPONSE,
+                [
+                    'variant'     => $variant,
+                ]
+            );
+
+            if (strtolower($variant) === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::POS_ACTIVATION_CHECK_FOR_OFFLINE_PAYMENT_SPLITZ_FAILURE,
+            );
+        }
+
+        return false;
+    }
+
 
 }

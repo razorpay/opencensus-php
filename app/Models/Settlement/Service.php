@@ -87,6 +87,8 @@ class Service extends Base\Service
             ]
         );
 
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         if(isset($input['rearch_flow']) === true && $input['rearch_flow'] === true){
             return (new Processor)->createSettlementEntryForRearch($input);
         }
@@ -100,35 +102,7 @@ class Service extends Base\Service
 
         if ($reverseShadowFlag === true)
         {
-            $experimentVariable = $this->merchant->getId();
-            // shadow mode experiment
-            $shadow = $this->app->razorx->getTreatment($experimentVariable,
-                Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_SHADOW,
-                $this->mode
-            );
-
-            if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
-            {
-                $nssResponse = app('settlements_dashboard')->settlementAmount($input);
-
-                $experimentVariable = $this->merchant->getId();
-                // reverse shadow mode experiment
-                $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
-                    Settlement\Constants::RAZORX_SETL_AMOUNT_FROM_NSS_REVERSE_SHADOW,
-                    $this->mode
-                );
-
-                if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
-                {
-                    return $nssResponse;
-                }
-
-                $apiResponse = $this->getMerchantSettlementAmountOld($input);
-
-                $this->compareSettlementEntityAndLogDifference($apiResponse, $nssResponse, false, ['method_name' => __FUNCTION__]);
-
-                return $apiResponse;
-            }
+            return app('settlements_dashboard')->settlementAmount($input);
         }
 
         return $this->getMerchantSettlementAmountOld($input);
@@ -1108,6 +1082,9 @@ class Service extends Base\Service
 
     public function getSettlementTransactionsSourceDetails($id, $input)
     {
+        //enabling context to remove alerts for these as fetched from tidb
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
         $shadow = $this->app->razorx->getTreatment($experimentVariable,
@@ -1430,6 +1407,10 @@ class Service extends Base\Service
 
     public function getSettlementSourceDetails($input)
     {
+
+        // enabling context to remve from metric, fetched from tidb
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         // Maps the transaction source to the entities to be fetched for it
         $txnToRelationFetchMap = [
             // Maps transaction source to entities that need to be fetched
@@ -1608,6 +1589,9 @@ class Service extends Base\Service
 
     public function settlementTimeline(array $input) : array
     {
+        // fetched from tidb or nss, enabling dual write context to remove from metric
+        app('request.ctx')->setLedgerDualWriteFlow(true);
+
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
         $shadow = $this->app->razorx->getTreatment($experimentVariable,
@@ -2051,6 +2035,11 @@ class Service extends Base\Service
     public function triggerFileGeneration(array $input) : array
     {
         return app('settlements_api')->triggerFileGeneration($input);
+    }
+
+    public function updateSchedule(array $input) : array
+    {
+        return app('settlements_api')->updateSchedule($input);
     }
 
     public function migrateConfigurations(array $input)

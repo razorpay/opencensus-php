@@ -263,6 +263,10 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
+        $rzpxMigrationFlag =false;
+
+        $fileId="";
+
         $channel = strtolower($basBankingAccount['partner_bank']);
 
         switch($channel)
@@ -301,6 +305,14 @@ class Core extends Base\Core
                 {
                     $input[BankingAccountEntity::ACCOUNT_ACTIVATION_DATE] = $basBankingAccount['metadata']['bank_account_open_date'];
                 }
+                if(isset($basBankingAccount['metadata']['rzpx_migration']))
+                {
+                    $rzpxMigrationFlag= $basBankingAccount['metadata']['rzpx_migration'];
+                }
+                if(isset($basBankingAccount['metadata']['setup_form_file_id']))
+                {
+                    $fileId= $basBankingAccount['metadata']['setup_form_file_id'];
+                }
 
                 break;
             default:
@@ -328,6 +340,10 @@ class Core extends Base\Core
         }
 
         $ba->setId($basBankingAccount['id']);
+
+        $ba->setRzpxMigration($rzpxMigrationFlag);
+
+        $ba->setSetupFormFileId($fileId);
 
         $ba->setBasCaStatus($status);
 

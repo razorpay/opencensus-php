@@ -73,10 +73,7 @@ class Service extends QrCode\Service
         {
             $input[Entity::REQUEST_SOURCE] = $input[Entity::REQUEST_SOURCE] ?? $this->getRequestSourceViaAuth();
 
-            if ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($this->merchant->getId()) === true)
-            {
-                (new Validator)->validateQrOnDedicatedTerminal($input);
-            }
+            (new Validator)->validateQrOnDedicatedTerminal($input);
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
                 return (new Core)->buildQrCode($input);
@@ -141,6 +138,8 @@ class Service extends QrCode\Service
 
             $qrCreateReq = $this->getInputForPartnerSqrCreate($input);
 
+            $this->validateQrStringCreateRequest($input);
+
             (new Validator)->validateQrOnDedicatedTerminal($qrCreateReq);
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($qrCreateReq, $input) {
@@ -192,6 +191,37 @@ class Service extends QrCode\Service
         $this->mode            = Mode::LIVE;
     }
 
+    public function validateQrStringCreateRequest($input)
+    {
+        if (isset($input['qrString']) === true)
+        {
+            $tr = (new Core)->getTransactionReferenceFromQrString($input['qrString']);
+            $this->trace->info(TraceCode::QR_CODE_EXTRACTED_TR, [
+                'message'           => 'QR_CODE_EXTRACTED_TR',
+                'tr for validation' => $tr,
+            ]);
+
+            if (empty($tr) === true)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_STRING_TR_EMPTY_ERROR);
+            }
+
+            [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
+
+            if (empty($mode) === false)
+            {
+                $this->trace->info(TraceCode::QR_CODE_ALREADY_EXIST, [
+                    'message' => 'QR_CODE_ALREADY_EXIST',
+                    'qrCode'  => $qrCode,
+                    'mode'    => $mode,
+                ]);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST);
+            }
+
+        }
+
+    }
+
     public function addPosQrCodeFeaturesOnPosActivation($input)
     {
 
@@ -223,6 +253,7 @@ class Service extends QrCode\Service
         return $response;
     }
 
+
     protected function getInputForPartnerSqrCreate($input)
     {
 
@@ -239,6 +270,15 @@ class Service extends QrCode\Service
          ];
 
         $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = RequestSource::API;
+
+        if (isset($input[NonVAQrCodeEntity::REQUEST_SOURCE]) === true)
+        {
+            $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = $input[NonVAQrCodeEntity::REQUEST_SOURCE];
+        }
+        if (isset($input[NonVAQrCodeEntity::DEVICE_ID]) === true)
+        {
+            $qrCreateReq[NonVAQrCodeEntity::DEVICE_ID] = $input[NonVAQrCodeEntity::DEVICE_ID];
+        }
 
         return $qrCreateReq;
     }
@@ -636,6 +676,71 @@ class Service extends QrCode\Service
 
             (new Metric())->pushCloseMetrics($closeReason, $errorMessage, $requestSource);
         }
+    }
+    public function closeQrCodesBulk(array $input, $closeReason = CloseReason::COMPLIANCE)
+    {
+        $this->trace->info(TraceCode::QR_CODES_CLOSE_BULK_REQUEST,
+            [
+                'count' => count($input[Constants::IDS])
+            ]);
+
+        $errorMessage = null;
+
+        (new Validator())->validateInput('closeQrCodesBulk', $input);
+
+        $failed_ids = [];
+        $failure_details = [];
+        $success = 0;
+        $failure = 0;
+
+        foreach($input[Constants::IDS] as $id)
+        {
+            try
+            {
+                $qrCode = $this->repo->qr_code->findOrFailPublic(Entity::silentlyStripSign($id));
+
+                if($qrCode->getStatus() === Status::CLOSED)
+                {
+                    $success++;
+                    continue;
+                }
+
+                (new Core)->closeQrCodeAdmin($qrCode, $closeReason);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::QR_CODE_CLOSE_REQUEST_FAILED,
+                    [
+                        'id' => $id,
+                    ]);
+
+                $errorMessage = $ex->getMessage();
+
+                $failed_ids[] = $id;
+
+                $failure_details[$id] = $errorMessage;
+                $failure++;
+            }
+            finally
+            {
+                $requestSource = $qrCode ? $qrCode->getRequestSource() : null;
+
+                (new Metric())->pushCloseMetrics($closeReason, $errorMessage, $requestSource);
+            }
+        }
+
+        return [
+            'failed_ids' => $failed_ids,
+            'failure_details' => $failure_details,
+            'success' => $success,
+            'failure' => $failure
+        ];
+
     }
 
     public function fetchMultiple($input)

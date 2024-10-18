@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Settlement;
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
 {
     use LinkedAccountNotesTrait, AsvGetAttribute;
     use NotesTrait;
+    use ExternalOwner;
 
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
@@ -638,7 +640,7 @@ class Entity extends Base\PublicEntity
             return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, 'to', 'getToId');
         }
 
-        return $this->to()->first();
+        return parent::getRelationValue('to');
     }
 
     /** unset the ParentPaymentId attribute based on the feature flag.
@@ -686,10 +688,12 @@ class Entity extends Base\PublicEntity
         //
         $app = \App::getFacadeRoot();
 
-        if (($app['basicauth']->isProxyOrPrivilegeAuth() === false && $app['basicauth']->isDashboardApp() === false))
+        if (($app['basicauth']->isProxyOrPrivilegeAuth() === true && $app['basicauth']->isDashboardApp() === true))
         {
-            unset($attributes[self::RECIPIENT_DETAILS]);
+            return;
         }
+
+        unset($attributes[self::RECIPIENT_DETAILS]);
     }
 
     public function setPublicTransactionIdAttribute(array & $attributes)

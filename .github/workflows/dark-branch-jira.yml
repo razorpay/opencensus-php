@@ -1,0 +1,48 @@
+name: Dark branch jira check
+
+on:
+  pull_request:
+    types: [ labeled, unlabeled, opened, synchronize, reopened ]
+
+jobs:
+  dark-branch-jira:
+    name: Dark branch jira check
+    runs-on:
+      - api-public
+      - X64
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Fetch Github Users
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: githubUsers
+        run: |
+          USER_CHECK=$(sh ./.github/actions/getGithubusers.sh ${{github.actor}})
+          echo "::set-output name=flaguser::$USER_CHECK"
+
+      - name: Fetch Jira Id
+        uses: actions/github-script@0.9.0
+        id: jiraIssueId
+        with:
+          result-encoding: string
+          script: |
+            jiraIssueIdStr = context.payload.pull_request.body.toLowerCase()
+            console.log(jiraIssueIdStr)
+            var jiraIssueIdValueRow = (jiraIssueIdStr.substring(jiraIssueIdStr.indexOf("lightjiraid"))).split("\n")
+            var jiraId = jiraIssueIdValueRow[0].split("|")
+            var jiraIssueId = jiraId[1].trim()
+            console.log(jiraIssueId)
+            return jiraIssueId
+
+      - name: Check Issue status
+        env:
+          JIRA_ISSUE_ID: ${{steps.jiraIssueId.outputs.result}}
+          BASE_URL: ${{secrets.JIRA_BASE_URL}}
+          USER_EMAIL: ${{secrets.JIRA_USER_EMAIL}}
+          API_TOKEN: ${{secrets.JIRA_API_TOKEN}}
+        run: |
+          bash ./.github/actions/checkLightJira.sh
+
+

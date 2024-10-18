@@ -319,7 +319,7 @@ class Service extends Base\Service
      * @param  array $merchantDetailInputData
      * @return array
      */
-    public function create(array $input, array $merchantDetailInputData = []): array
+    public function create(array $input, array $merchantDetailInputData = [], array $createMerchantMetadata = []): array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -346,7 +346,7 @@ class Service extends Base\Service
         }
 
         /** @var Entity $merchant */
-        $merchant = $this->core()->create($input, $merchantDetailInputData);
+        $merchant = $this->core()->create($input, $merchantDetailInputData, $createMerchantMetadata);
 
         unset($merchantDetailInputData['token_data']);
 
@@ -912,7 +912,9 @@ class Service extends Base\Service
             throw $e;
         }
 
-        $this->repo->reload($linkedAccount);
+        if($linkedAccount !=null) {
+            $linkedAccount->reload();
+        }
 
         $accountStatus = $merchantDetailCore->getCombinedActivationStatusForLinkedAccounts($linkedAccount->merchantDetail);
 
@@ -1020,7 +1022,9 @@ class Service extends Base\Service
                         throw $e;
                     }
 
-                    $this->repo->reload($linkedAccount);
+                    if($linkedAccount !=null) {
+                        $linkedAccount->reload();
+                    }
 
                     $accountStatus = $merchantDetailCore->getCombinedActivationStatusForLinkedAccounts($linkedAccount->merchantDetail);
 
@@ -1867,33 +1871,29 @@ class Service extends Base\Service
 
         $expResult = $this->splitzUserEmailUpdateEvaluate($merchant->getId());
 
-        if($expResult === true){
+        if($expResult === true) {
             $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $ownerUser->getId());
 
-            $mids = array_unique($this->repo->merchant_user->fetchMerchantIdsForUserIds($existingUserIds));
+            if ((empty($existingUserIds) === false) and
+                (count($existingUserIds) > 0)) {
 
-            if(count($mids) > 0)
-            {
-                $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
-                if (count(value: $activatedMids) > 0) {
-                    $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED, [
-                        "count" => count($activatedMids),
-                        "email" => $input[Entity::EMAIL],
-                    ]);
-                    $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED);
+                $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
+
+                if (count($userIdsToNullify) > 0) {
+
+                    $status[Constants::IS_USER_EXIST] = false;
+
+                    $this->saveMerchantEmailUpdateData($ownerUser->getEmail(), $merchant->getId(), $input);
+
+                    $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
+
+                    $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, ["status" => $status]);
+
+                    return $status;
                 }
-                if (count($activatedMids) !== count($mids)){
-                    $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED, [
-                        "count" => count($mids) - count($activatedMids),
-                        "email" => $input[Entity::EMAIL],
-                    ]);
-                    $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED);
-                }
+
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
-            }else{
-                // If all users are Oprhan users
-                $status[Constants::IS_USER_EXIST] = false;
-                return $status;
+
             }
         }
 
@@ -1945,6 +1945,23 @@ class Service extends Base\Service
 
     }
 
+    public function setEmailAsNullForUserIds(array $userIds) {
+        // Set email as null for Orphan user ids
+        $this->repo->transactionOnLiveAndTest(function () use ($userIds) {
+            foreach ($userIds as $userId){
+
+                $user = $this->repo->user->findOrFail($userId);
+
+                $user->email = null;
+
+                $this->repo->user->saveOrFail($user);
+            }
+        });
+    }
+
+    /**
+     * @throws BadRequestException
+     */
     public function editMerchantEmailCreateNewUserAndTransferOwnerShip($input)
     {
         (new Validator())->validateInput('changeEmailToken', $input);
@@ -1973,42 +1990,20 @@ class Service extends Base\Service
 
         $expResult = $this->splitzUserEmailUpdateEvaluate($merchantId);
 
-        if($expResult === true){
+        if($expResult === true) {
             $existingUserIds = $this->core()->userIdsLinkedToEmail($input[Entity::EMAIL], $currentOwnerUser->getId());
-            $orphanUserIds = array();
-            if (empty($existingUserIds) === false)
+
+            if ((empty($existingUserIds) === false) and
+                (count($existingUserIds) > 0))
             {
-                foreach ($existingUserIds as $userId) {
-                    $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
-                    if(count(value: $mids) === 0)
-                    {
-                        array_push($orphanUserIds, $userId);
-                        continue;
-                    }
+                $userIdsToNullify = (new UserCore())->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
 
-                    $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
-                    if (count($activatedMids) > 0) {
-                        $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED, [
-                            "count" => count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_ACTIVATED);
-                    }
-                    if (count($activatedMids) !== count($mids)){
-                        $this->trace->info(TraceCode::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED, [
-                            "count" => count($mids) - count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $this->trace->count(ConstantMetric::EDIT_EMAIL_REQUEST_USER_MERCHANT_DEACTIVATED);
-                    }
+                if (count($userIdsToNullify) === 0) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
                 }
-            }
 
-            if (count($orphanUserIds) !== count($existingUserIds)){
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ASSOCIATED_WITH_NON_ORPHAN_USERS);
+                $this->setEmailAsNullForUserIds($userIdsToNullify);
             }
-            // Set email as null for Orphan user ids
-            $this->repo->user->setOrphanUserEmailNull($orphanUserIds);
         }
 
         // using merchant_id from cache
@@ -2105,6 +2100,8 @@ class Service extends Base\Service
 
             (new Methods\Core)->addIntlBankTransferMethodsIfApplicable($methods, $data['methods']);
         }
+
+        $data['is_submerchant'] = (new Merchant\AccessMap\Core())->isSubMerchant($merchantId);
 
         return $data;
     }
@@ -5670,8 +5667,45 @@ class Service extends Base\Service
         }
     }
 
+    private function isEnablementOfScheduledEsMigrated(): bool
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === false)
+        {
+            return false;
+        }
+
+        $request = [
+            'experiment_id' => $this->app['config']->get('app.scheduled_es_enablement_migration_experiment_id'),
+            'request_data'  => json_encode(['merchantId' => $this->merchant->getId()]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($request);
+
+        $variables = $response['response']['variant']['variables'] ?? [];
+        if (is_array($variables) === false)
+        {
+            return false;
+        }
+
+        foreach ($variables as $variable)
+        {
+            if (is_array($variable) === true && $variable['key'] === 'is_enabled' && $variable['value'] === 'true')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function enableScheduledEs($skipRoleCheck = false, $notify = true): array
     {
+        if ($this->isEnablementOfScheduledEsMigrated() === true)
+        {
+            $userRole = $this->app['basicauth']->getUserRole();
+            return $this->app['capital_early_settlements']->enableScheduledEs($this->merchant->getId(), $userRole, $skipRoleCheck);
+        }
+
+
         if($skipRoleCheck == false)
         {
             $userRole = $this->repo
@@ -6810,6 +6844,8 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT]['is_transacted'] = $isTransacted;
 
+        $data[EntityConstants::MERCHANT]['is_submerchant'] = (new Merchant\AccessMap\Core())->isSubMerchant($merchant->getId());
+
         $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
@@ -6835,6 +6871,8 @@ class Service extends Base\Service
         $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::PG_USE_CASE] = $businessDetails->getPgUseCase();
 
         $data[EntityConstants::MERCHANT_DETAIL][Constants::TOTAL_LEAD_SCORE] = optional($merchant->merchantBusinessDetail)->getTotalLeadScore() ?? 0;
+
+        $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::ACQUISITION_MODEL] = optional($businessDetails)->getAcquisitionModel();
 
         if($merchantDetail != null) {
 
@@ -8303,7 +8341,7 @@ class Service extends Base\Service
      *
      * @throws BadRequestException
      */
-    protected function mapSubmerchant(Merchant\Entity $partner, $submerchantId): array
+    public function mapSubmerchant(Merchant\Entity $partner, $submerchantId): array
     {
         // Using findOrFail here will not give a proper error code in the batch output.
         $submerchant = $this->repo->merchant->find($submerchantId);
@@ -10034,6 +10072,33 @@ class Service extends Base\Service
         ];
 
         return  $this->core()->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    public function isReadFromTiDBExpEnabled($merchantId): bool
+    {
+        if (is_array($merchantId) === true)
+        {
+            foreach ($merchantId as $id)
+            {
+                if ($this->checkTiDBExperiment($id) === true)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return $this->checkTiDBExperiment($merchantId);
+    }
+
+    public function checkTiDBExperiment($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.read_from_ti_db_experiment_id'),
+        ];
+
+        return $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 
     /**
@@ -13885,7 +13950,7 @@ class Service extends Base\Service
         $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant, true);
     }
 
-    public function rizePaymentsCallback(array $input, string $traceCode, string $pgosRoute): void
+    public function rizePaymentsCallback($input, string $traceCode, string $pgosRoute): void
     {
 
         $this->trace->info(

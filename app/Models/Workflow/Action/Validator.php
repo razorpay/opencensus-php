@@ -65,10 +65,10 @@ class Validator extends Base\Validator
                 $description = PublicErrorDescription::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS .
                     ' Id: ' . implode(',', $actionIds);
             }
-
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS,
                 null, $actionIds, $description);
+
         }
     }
 

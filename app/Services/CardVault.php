@@ -458,7 +458,7 @@ class CardVault
 
             list($action, $event) = $this->fetchActionAndEvent($isTokenisationRoute, $tokenizationUrl);
 
-          //  (new Token\Event())->pushEvents($request['content'], $event, "_REQUEST_SENT");
+            (new Token\Event())->pushEvents($request['content'], $event, "_REQUEST_SENT");
         }
 
         $response = $this->sendCardVaultRequest($request);
@@ -612,7 +612,7 @@ class CardVault
 
         if ($response->status_code >= 500)
         {
-            //$this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
+            $this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
 
             throw new Exception\RuntimeException(
                 'Vault request failed', [Error\Error::DATA => $responseBody]);
@@ -622,7 +622,7 @@ class CardVault
         {
             $error = $responseBody[self::ERROR];
 
-            //$this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
+            $this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
 
             // case where validate token return success false because of invalid token
             // error will be empty
@@ -636,7 +636,7 @@ class CardVault
             }
         }
 
-       // $this->pushVaultDimensions($request, Metric::SUCCESS, $response->status_code, $action);
+        $this->pushVaultDimensions($request, Metric::SUCCESS, $response->status_code, $action);
 
     }
 
@@ -834,9 +834,9 @@ class CardVault
 
             $this->checkForErrors($response, $errorClass);
 
-            //$this->pushDimensions($request, Metric::SUCCESS, $statusCode, $action);
+            $this->pushDimensions($request, Metric::SUCCESS, $statusCode, $action);
 
-            //(new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response);
+            (new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response);
         }
 
         catch(Throwable $e) {
@@ -844,7 +844,7 @@ class CardVault
                 $error = $e->getError();
                 $this->pushDimensions($request, Metric::FAILED, $statusCode, $action, $e, $errorClass);
 
-                //(new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response, $e);
+                (new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response, $e);
 
                 $internalErrorCode = $error->getInternalErrorCode();
                 $this->trace->info(TraceCode::INTERNAL_ERROR_CODE_FOR_VAULT_RESPONSE, ['internal_eroor_code' => $internalErrorCode]);

@@ -76,6 +76,14 @@ class QrCodeController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function closeQrCodesBulk()
+    {
+        $input = Request::all();
+        $response = (new NonVAQrCodeService())->closeQrCodesBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function get(string $id)
     {
         $entity = (new NonVAQrCodeService)->fetch($id);

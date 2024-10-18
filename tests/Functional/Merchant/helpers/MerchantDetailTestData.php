@@ -1450,6 +1450,19 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testSendSmsAndWhatsappOnPosActivationStatusUnderReview' => [
+        'request'  => [
+            'content' => [
+                'pos_activation_status' => 'under_review',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => null,
+            ],
+        ],
+    ],
     'testFormUnlockedWhenMakerRaiseRequestForNC' => [
         'request'  => [
             'content' => [
@@ -4094,6 +4107,22 @@ return [
         ],
     ],
 
+    'testShopDetailsSubmissionChangesForAssistedOnboardingOfOwnerRole' => [
+        'request'   => [
+            'content' => [
+                'is_pos_details_submitted' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'is_pos_details_submitted' => '1',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBlacklistActivationFlowEasyOnboarding' => [
         'request'   => [
             'content' => [
@@ -4131,7 +4160,7 @@ return [
                 'can_submit'   => true,
                 'submitted' => true,
                 'activation_form_milestone' => 'L2',
-                'activation_status' => 'under_review',
+                'activation_status' => null,
             ],
             'status_code' => 200,
         ],
@@ -6722,4 +6751,24 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSaveMerchantDetailsForPartnerMerchant' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_type' => '1',
+                'is_pos_details_submitted' => true,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'is_pos_details_submitted' => '1',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];
+
+

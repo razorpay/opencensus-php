@@ -3324,25 +3324,33 @@ EOT;
                      ->get();
     }
 
-    public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [])
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [], $connectionType = null)
     {
+        if ($connectionType !== null)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
         try
         {
-            return $this->newQuery()
-                        ->where(Entity::TRANSFER_ID, $transferId)
-                        ->merchantId($accountId)
-                        ->with($relations)
-                        ->firstOrFailPublic();
+            return $query->where(Entity::TRANSFER_ID, $transferId)
+                ->merchantId($accountId)
+                ->with($relations)
+                ->firstOrFailPublic();
         }
         catch (\Throwable $ex)
         {
             $connectionType = $this->getPaymentFetchReplicaConnection();
 
             return $this->newQueryWithConnection($connectionType)
-                        ->where(Entity::TRANSFER_ID, $transferId)
-                        ->merchantId($accountId)
-                        ->with($relations)
-                        ->firstOrFailPublic();
+                ->where(Entity::TRANSFER_ID, $transferId)
+                ->merchantId($accountId)
+                ->with($relations)
+                ->firstOrFailPublic();
         }
     }
 

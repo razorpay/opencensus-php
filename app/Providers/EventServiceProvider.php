@@ -24,6 +24,7 @@ use RZP\Modules\Acs;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Key;
+use RZP\Models\Pricing;
 
 
 class EventServiceProvider extends ServiceProvider
@@ -188,6 +189,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         Key\EventSaved::class => [
             Listeners\KeyEventListener::class . '@onSaved',
+        ],
+        Pricing\EventSaved::class => [
+            Listeners\PricingEventListener::class . '@onSaved',
+        ],
+        Pricing\EventDeleted::class => [
+            Listeners\PricingEventListener::class . '@onDeleted',
         ],
     ];
 

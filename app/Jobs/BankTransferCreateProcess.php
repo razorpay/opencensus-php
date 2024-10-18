@@ -15,11 +15,11 @@ use RZP\Constants\Metric as ConstantMetric;
 class BankTransferCreateProcess extends Job
 {
     protected $queueConfigKey = 'bank_transfer_create';
-    protected $isCollectXBankTransfer = 'is_collectx_bank_transfer';
+    protected $isCollectXBankTransfer;
 
     protected $bankTransferRequestId;
 
-    public function __construct(string $mode = null, $bankTransferRequestId, $isCollectXBankTransfer)
+    public function __construct(string $mode = null, $bankTransferRequestId, $isCollectXBankTransfer = false)
     {
         parent::__construct($mode);
         parent::setPassportTokenForJobs();
@@ -38,6 +38,7 @@ class BankTransferCreateProcess extends Job
             TraceCode::BANK_TRANSFER_PROCESS_QUEUE_INITIATED,
             [
                 'bankTransferRequestId' => $this->bankTransferRequestId,
+                'isCollectXBankTransfer' => $this->isCollectXBankTransfer,
             ]
         );
 
@@ -65,6 +66,7 @@ class BankTransferCreateProcess extends Job
             {
                 $isDeleteFromQueue = false;
             }
+
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESS_QUEUE_COMPLETED,
                 [

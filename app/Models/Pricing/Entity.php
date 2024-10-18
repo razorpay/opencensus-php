@@ -240,6 +240,16 @@ class Entity extends Base\PublicEntity
 
     const ZERO_PRICING = '10ZeroPricingP';
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $dispatchesEvents = [
+        // Event 'saved' fires on insert or update from pricing table.
+        'saved'       => EventSaved::class,
+        // Event 'saved' fires on delete from pricing table.
+        'deleted'     => EventDeleted::class,
+    ];
+
     public function __construct(array $attributes = [])
     {
         $app = App::getFacadeRoot();

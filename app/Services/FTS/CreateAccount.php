@@ -2,15 +2,17 @@
 
 namespace RZP\Services\FTS;
 
-use Razorpay\Trace\Logger;
-use Razorpay\Trace\Logger as Trace;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Country;
 use RZP\Models\BankAccount;
 use RZP\Http\RequestHeader;
@@ -23,16 +25,22 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\NodalBeneficiary;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Services\BankingAccountService;
+use RZP\Services\Mozart as MozartCall;
 use RZP\Jobs\FTS\CreateAccount as Account;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Gateway\File\Processor\Emi\Rbl;
+use RZP\Models\BankingAccountStatement as BAS;
+use RZP\Models\BankingAccount\Gateway\Rbl\Action;
 use RZP\Models\FundTransfer\Attempt\Type as Product;
+use RZP\Models\BankingAccount\Service as BASService;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RBLProcessor;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields as RblGatewayFields;
 use RZP\Models\BankingAccount\Detail\Core as BankingAccountDetailCore;
-use RZP\Services\BankingAccountService;
-
+use RZP\Models\BankingAccountStatement\Processor\Rbl as BankingAccountGateway;
 class CreateAccount extends Base
 {
     /**
@@ -46,6 +54,9 @@ class CreateAccount extends Base
     const UPI_HANDLE1       = 'upi_handle1';
     const UPI_HANDLE2       = 'upi_handle2';
     const UPI_HANDLE3       = 'upi_handle3';
+
+    const VPA_VALIDATION_TIMEOUT = 10;
+    const VPA_VALIDATION_CONNECT_TIMEOUT = 5;
 
     const VPAS_DO_NOT_EXIST_ERROR = 'Banking Account Credentials are not generated';
     const VPAS_DO_NOT_MATCH_ERROR = 'Payer VPA does not match any of the generated VPAs';
@@ -711,6 +722,22 @@ class CreateAccount extends Base
                 ]
             );
 
+            $app = App::getFacadeRoot();
+            $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+                [
+                    'id'            =>  $input[RblGatewayFields::SOURCE_ACCOUNT][self::BANKING_ACCOUNT_ID],
+                    'experiment_id' =>  $app['config']->get('app.vpa_validation'),
+                ],
+                'variables'
+            );
+
+            if($isExpEnabled === true)
+            {
+                //Call to Mozart for validation of credentials before storing them in DB
+                $this->VPAValidationBySessionTokenApi($input);
+
+            }
+
             // Creating a transaction as updating banking account details and updating source account
             // should be one atomic operation
             return $this->repo->transaction(function () use ($input)
@@ -742,6 +769,149 @@ class CreateAccount extends Base
             parent::BULK_SOURCE_ACCOUNT_UPDATE_URI,
             Requests::PATCH,
             $input);
+    }
+
+    public function VPAValidationBySessionTokenApi(array $input) {
+
+        try {
+
+            $request = $this->formatDataForMozartForVpaValidation($input);
+
+            $app = App::getFacadeRoot();
+
+            $app['trace']->info(TraceCode::CIRCUIT_BREAKER_OPEN, [
+                "request" => $request
+            ]);
+
+            $credentials = $request[self::SOURCE_ACCOUNT_CONST][self::CREDENTIALS];
+
+            $tokenizedValues = (new RBLProcessor())->formatInputParametersIfRequired($credentials);
+
+            $this->trace->info(
+                TraceCode::VALUES_TOKENIZED_SUCCESSFULLY
+            );
+
+            $tokenizedValues[RblGatewayFields::CLIENT_SECRET] =  $credentials[RblGatewayFields::CLIENT_SECRET];
+
+            $request[self::SOURCE_ACCOUNT_CONST][self::CREDENTIALS] = $tokenizedValues;
+
+            $response =(new MozartCall($app))->sendMozartRequest('fts',
+                BankingAccount\Channel::RBL,
+                Action::GATEWAY_SESSION,
+                $request,
+                Mozart::DEFAULT_MOZART_VERSION,
+                false,
+                self::VPA_VALIDATION_TIMEOUT,
+                self::VPA_VALIDATION_CONNECT_TIMEOUT
+            );
+
+            $this->trace->info(
+                TraceCode::SUCCESS_MOZART_RESPONSE,
+                ['response' => $response]
+            );
+
+        } catch (Exception\GatewayErrorException $exception){
+
+            $this->trace->error(
+                TraceCode::VPA_VALIDATION_FAILED,
+                [
+                    'error' => $exception->getError(),
+                ]
+            );
+
+            $internalErrorCode = $exception->getError()->getInternalErrorCode();
+            $gatewayErrorCode = $exception->getError()->getGatewayErrorCode();
+
+            throw new Exception\BadRequestValidationFailureException(
+                $gatewayErrorCode." - ".$internalErrorCode,
+                $internalErrorCode." - ".$gatewayErrorCode,
+                [
+                    "error" => $exception->getError(),
+                    "error_message" => $exception->getMessage(),
+                ]
+            );
+
+        } catch (\Throwable $exception){
+
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::SERVICE_REQUEST_FAILED,
+                [
+                    'error_code'  => $exception->getCode(),
+                    'error_message' => $exception->getMessage(),
+                ]);
+
+            throw new Exception\ServerErrorException(
+                'VPA Validation Failed due to Server Error',
+                ErrorCode::SERVER_ERROR_SERVICE_UNAVAILABLE,
+                [
+                    'error_code'  => $exception->getCode(),
+                    'error_message' => $exception->getMessage(),
+                ]
+            );
+
+        }
+
+    }
+
+    protected function formatDataForMozartForVpaValidation($input): array|string
+    {
+
+        $this->trace->info(
+            TraceCode::FETCHING_CREDENTIALS
+        );
+
+        $this->appendBACCToIdIfApplicable($input);
+
+        $BASService = new BASService();
+        $bankingAccount = $BASService->fetch($input[RblGatewayFields::SOURCE_ACCOUNT][self::BANKING_ACCOUNT_ID]);
+        $accountNumber = $bankingAccount['account_number'];
+
+        $BASCore = new BAS\Core;
+        $basDetails = $BASCore->getBasDetails($accountNumber,Channel::RBL);
+
+        $version = null;
+        $credentials = (new BankingAccountGateway\Gateway(Channel::RBL,$accountNumber,$basDetails,$version))->getCredentialsForMozartSessionToken($input);
+
+        $data = [
+            RblGatewayFields::SOURCE_ACCOUNT => [
+                RblGatewayFields::CREDENTIALS => [
+                    RblGatewayFields::CLIENT_ID               => $credentials[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::CLIENT_ID],
+                    RblGatewayFields::CLIENT_SECRET           => $credentials[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::CLIENT_SECRET],
+                    RblGatewayFields::AUTH_USERNAME           => $credentials[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::AUTH_USERNAME],
+                    RblGatewayFields::AUTH_PASSWORD           => $credentials[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::AUTH_PASSWORD],
+                    RblGatewayFields::BCAGENT                 => $input[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::BCAGENT],
+                    RblGatewayFields::BCAGENT_USERNAME        => $input[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::BCAGENT_USERNAME],
+                    RBLGatewayFields::BCAGENT_PASSWORD        => $input[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::BCAGENT_PASSWORD],
+                    RBLGatewayFields::MRCH_ORG_ID             => $input[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::MRCH_ORG_ID],
+                    RBLGatewayFields::AGGR_ORG_ID             => $input[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::AGGR_ORG_ID],
+                    RBLGatewayFields::HMAC_KEY                => $input[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::HMAC_KEY],
+                    RblGatewayFields::CORP_ID                 => $credentials[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::CORP_ID],
+                    RblGatewayFields::PAYER_VPA               => $input[RblGatewayFields::SOURCE_ACCOUNT][RblGatewayFields::CREDENTIALS][RblGatewayFields::PAYER_VPA],
+                ],
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::CREDENTIALS_FETCHED_SUCCESSFULLY
+        );
+
+        return $input!==null ? $data : ' ';
+    }
+
+    public function appendBACCToIdIfApplicable(&$input)
+    {
+        if (isset($input[RblGatewayFields::SOURCE_ACCOUNT][self::BANKING_ACCOUNT_ID]) === false){
+            return;
+        }
+
+        $bankingAccountId = $input[RblGatewayFields::SOURCE_ACCOUNT][self::BANKING_ACCOUNT_ID];
+
+        if (substr($bankingAccountId, 0, 5) !== 'bacc_') {
+            $bankingAccountId = 'bacc_' . $bankingAccountId;
+            $input[RblGatewayFields::SOURCE_ACCOUNT][self::BANKING_ACCOUNT_ID] = $bankingAccountId;
+        }
     }
 
     public function getAccount()

@@ -14,7 +14,12 @@
         $is_test_mode = $is_test_mode ?? false;
 
         $amountPayable = $payment_link['amount'];
-        $amountPayableFormatted = number_format($amountPayable / 100, 2);
+        if (in_array($payment_link['currency'], ['BHD', 'KWD', 'OMR','IQD','JOD','TND']))
+        {
+            $amountPayableFormatted = number_format($amountPayable / 1000, 3);
+        } else {
+            $amountPayableFormatted = number_format($amountPayable / 100, 2);
+        }
     @endphp
 
 </p>

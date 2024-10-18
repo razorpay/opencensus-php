@@ -5,8 +5,11 @@ namespace RZP\Tests\Functional\FundTransfer\FTS;
 use Mail;
 use Carbon\Carbon;
 
+use Mockery;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Services\FTS\Transfer\Client;
@@ -266,6 +269,22 @@ class FtsTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->app['rzp.mode'] = 'test';
+
+        $createAccountMock = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $this->app->instance('fts_create_account', $createAccountMock);
+
+        $createAccountMock->shouldReceive('VPAValidationBySessionTokenApi')->andReturn('true');
+
+        $splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+        $this->app->instance('splitzService', $splitzMock);
+
+        $output["response"]["variant"]["name"] = "variables";
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
         $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
 
         $response = $this->makeRequestAndGetContent($request);
@@ -304,6 +323,43 @@ class FtsTest extends TestCase
         $this->assertEquals('payouts.puv27-2@rbl', $vpa[0]['address']);
     }
 
+    public function testGracefulUpdateOfExistingSourceAccountVPAValidationFailure()
+    {
+        $this->setUpForRblUpiCredsUpdateTest();
+
+        $this->mockBankingAccountService();
+
+        $this->ba->adminAuth();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $createAccountMock = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $this->app->instance('fts_create_account', $createAccountMock);
+
+        $splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+        $this->app->instance('splitzService', $splitzMock);
+
+        $output["response"]["variant"]["name"] = "variables";
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $createAccountMock->shouldReceive('VPAValidationBySessionTokenApi')->andReturn(false);
+
+        $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
+
+        try {
+            $response = $this->makeRequestAndGetContent($request);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->assertExceptionClass($exception, BadRequestValidationFailureException::class);
+            $this->assertEquals("VPA validation failed", $exception->getMessage());
+        }
+
+    }
+
     /**
      * To test the case where the VPA doesn't match
      */
@@ -314,6 +370,14 @@ class FtsTest extends TestCase
         $this->mockBankingAccountService();
 
         $this->ba->adminAuth();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $createAccountMock = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $this->app->instance('fts_create_account', $createAccountMock);
+
+        $createAccountMock->shouldReceive('VPAValidationBySessionTokenApi')->andReturn('true');
 
         $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
 
@@ -335,6 +399,14 @@ class FtsTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->app['rzp.mode'] = 'test';
+
+        $createAccountMock = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $this->app->instance('fts_create_account', $createAccountMock);
+
+        $createAccountMock->shouldReceive('VPAValidationBySessionTokenApi')->andReturn('true');
+
         $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
 
         $request['content']['source_account']['credentials'][RblGatewayFields::PAYER_VPA] = 'payouts.puv27-2@rbl';
@@ -354,6 +426,14 @@ class FtsTest extends TestCase
         $this->mockBankingAccountService();
 
         $this->ba->adminAuth();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $createAccountMock = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $this->app->instance('fts_create_account', $createAccountMock);
+
+        $createAccountMock->shouldReceive('VPAValidationBySessionTokenApi')->andReturn('true');
 
         $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
 

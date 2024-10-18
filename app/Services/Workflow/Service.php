@@ -55,7 +55,7 @@ class Service
     protected $imitateProxyAuth = false;
 
     protected $tags = [];
-    
+
     protected $uri;
 
     private $workflowMaker;
@@ -198,16 +198,16 @@ class Service
     public function setUri(string $uri)
     {
         $this->uri = $uri;
-    
+
         return $this;
     }
-    
+
     public function getUri()
     {
         return $this->uri;
     }
-    
-    public function trigger()
+
+    public function trigger($skipPreviousActionCheck = false)
     {
         // Main entity to act upon and calculate the diff
         $entity = $this->getEntity();
@@ -231,7 +231,7 @@ class Service
 
         // If any actions are in open/approved (not executed) state
         // on the main $entity then prevent new workflows from being created.
-        if (empty($entityId) === false)
+        if (empty($entityId) === false && $skipPreviousActionCheck === false)
         {
             (new Action\Validator)->validateLiveActionsOnEntity(
                 $entityId,
@@ -282,7 +282,7 @@ class Service
         {
             $makerName = $maker->getEmail();
         }
-        
+
         $differEntity = [
             Differ\Entity::ENTITY_NAME              => $entity,
             Differ\Entity::ENTITY_ID                => $entityId,
@@ -452,7 +452,7 @@ class Service
      *
      * @throws Exception\BadRequestException
      */
-    public function handle($originalData = null, $dirtyData = null, $nextWorkflowPresent = false, $allowWorkflowCreationDuringApproval = false )
+    public function handle($originalData = null, $dirtyData = null, $nextWorkflowPresent = false, $allowWorkflowCreationDuringApproval = false, $skipPreviousActionCheck = false )
     {
         // 0. If workflows need to be skipped for some reason, skip
         if ($this->skipWorkflow === true)
@@ -586,7 +586,7 @@ class Service
         $this->setDiff($diff);
 
         // Trigger the entity maker/checker (workflow) flow
-        $workflowAction = $this->trigger();
+        $workflowAction = $this->trigger($skipPreviousActionCheck);
 
         $workflowAction = json_encode($workflowAction);
 

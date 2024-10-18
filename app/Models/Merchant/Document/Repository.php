@@ -426,7 +426,13 @@ class Repository extends Base\Repository
 
     public function findDocumentsForMerchantIdAndDocumentTypesAndDate(string $merchantId, array $documentTypes, int $from, int $to)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        if ((new AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        return $query
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->whereIn(Entity::DOCUMENT_TYPE,$documentTypes)
                     ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])

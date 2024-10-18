@@ -88,7 +88,7 @@ class Validator extends Base\Validator
         Entity::INTL_BANK_TRANSFER => 'sometimes|array',
         Entity::INTL_BANK_TRANSFER.'.*' => 'sometimes|boolean',
         Entity::SODEXO             => 'sometimes|boolean',
-        Entity::OBW                => 'sometimes|boolean',
+        Entity::DUITNOW_PAY        => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

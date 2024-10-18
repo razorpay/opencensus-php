@@ -61,14 +61,24 @@ class Constants
 
 
     // Whatsapp template names
-    const FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME                = 'merchant_risk.generic.funds_on_hold.confirmation';
+    const FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME                = 'risk_foh_intimation';
     const FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME = 'merchant_risk.website_checker.funds_on_hold.needs_clarification';
     const FOH_APP_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME     = 'merchant_risk.app_checker.funds_on_hold.needs_clarification';
     const FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME        = 'merchant_risk.website_checker.funds_on_hold.confirmation';
     const FOH_APP_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME            = 'merchant_risk.app_checker.funds_on_hold.confirmation';
 
     // WhatsApp templates
-    const FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE                = 'Hi {merchantName}, we regret to inform you that your settlements are under review due to risk alert for non-compliance with regulatory guidelines as set by our partner banks. Please check your email ID registered with Razorpay and help us with clarification to re-enable settlements';
+    const FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE                = 'Dear Merchant,
+
+We are writing to inform you that the funds associated with your account have been placed on hold due to risk alerts received from one of our partner banks. Further details have been sent to you via email with the subject: Razorpay Account Review: {merchantId} | Funds Under Review.
+
+To expedite the resolution of this issue, we kindly request that you provide the required details in the same email thread. Your prompt cooperation and understanding in this matter would be greatly appreciated.
+
+Best Regards,
+
+Risk Team,
+Razorpay';
+
     const FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE = 'We have observed that your registered website(s) is(are) no longer operating at the moment. Please check your registered email ID with subject: Razorpay Account Website Clarification: {merchantName} | {merchantId} for more details.';
     const FOH_APP_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE     = 'We have observed that your registered mobile application(s) is(are) no longer operating at the moment. Please check your registered email ID with subject: Razorpay Account Mobile Application Clarification: {merchantName} | {merchantId} for more details.';
     const FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE        = 'We have put your settlement under review as we observed your registered website(s) is(are) no longer live. Please check your registered email ID for an email with subject: Razorpay Account Review: {merchantName} | {merchantId} and help us with clarification to re-enable settlements.';

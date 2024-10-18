@@ -11,8 +11,9 @@ use RZP\Models\Key\Entity as KeyEntity;
 class Validator extends Base\Validator
 {
     protected static $fetchRules = [
-        'key'        => 'required|size:23|custom',
-        'components' => 'required|array|custom'
+        'key'        => 'sometimes',
+        'components' => 'required|array|custom',
+        'merchantId' => 'sometimes|string',
     ];
 
     protected static $validComponents = [
@@ -39,32 +40,6 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_INVALID_AFFORDABILITY_COMPONENT,
                 $attribute,
                 $components
-            );
-        }
-    }
-
-    /**
-     * Validates if the key is a valid public key.
-     *
-     * @param string $attribute
-     * @param string $keyId
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    protected function validateKey(string $attribute, string $keyId): void
-    {
-        try {
-            app('repo')->key->findOrFailByPublicIdWithParams(
-                $keyId,
-                [
-                    KeyEntity::EXPIRED_AT => null,
-                ]
-            );
-        } catch (BadRequestException $exception) {
-            throw new BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
-                $attribute,
-                $keyId
             );
         }
     }

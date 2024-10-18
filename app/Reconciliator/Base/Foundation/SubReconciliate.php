@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Base\Foundation;
 use App;
 use Carbon\Carbon;
 use Neves\Events\TransactionalClosureEvent;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Jobs\Ledger\ReconNFCToCLS;
 use RZP\Models\Base;
@@ -446,8 +447,6 @@ class SubReconciliate extends Base\Core
 
             $transaction->saveOrFail();
 
-            $this->sendPaymentReconNFCDataToCLS($time, $reconciledType, $entity);
-
             $this->deleteCardMetaDataIfApplicable($entity);
 
             $this->pushSuccessReconMetrics($entity);
@@ -459,15 +458,18 @@ class SubReconciliate extends Base\Core
         $this->setRowReconStatusAndError(InfoCode::RECONCILED);
     }
 
-    public function sendPaymentReconNFCDataToCLS($reconciledAt, $reconciledType, $payment)
+    public function sendPaymentReconNFCDataToCLS($payment, $data = [])
     {
         $payload = [
             "event" => [
                 "name"=> "prod_live_art_events",
                 "data" => [
                     "dual_write_request"=> [
-                        "reconciled_at"  => $reconciledAt,
-                        "reconciled_type" => $reconciledType,
+                        "gateway_amount" => (string) $data[BaseReconciliate::GATEWAY_AMOUNT] ?? '',
+                        "gateway_fee" => (string) $data[BaseReconciliate::GATEWAY_FEE] ?? '',
+                        "gateway_service_tax" => (string) $data[BaseReconciliate::GATEWAY_SERVICE_TAX] ?? '',
+                        "reconciled_at"  => $data[BaseReconciliate::RECONCILED_AT] ?? '',
+                        "reconciled_type" => $data[BaseReconciliate::RECONCILED_TYPE] ?? '',
                         "entity_id"=> $payment->getId(),
                         "entity_type"=> "payment"
                     ]
@@ -578,6 +580,7 @@ class SubReconciliate extends Base\Core
             return;
         }
 
+        //Move to TiDB - txn read
         $transaction = $entity->transaction;
 
         // Since we might be running this before the actual recon process,
@@ -614,6 +617,7 @@ class SubReconciliate extends Base\Core
     {
         $gatewayAmount = $rowDetails[BaseReconciliate::GATEWAY_AMOUNT];
 
+        //Move to TiDB - txn read
         $transaction = $entity->transaction;
 
         if (($gatewayAmount === null) or

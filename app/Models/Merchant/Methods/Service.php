@@ -136,4 +136,30 @@ class Service extends Base\Service
             'country'     => $merchant->getCountry()
         ];
     }
+
+    public function getAllPaymentMethodsById($merchant): Entity
+    {   
+        if (!is_array($merchant)) {
+            $merchant = [$merchant];
+        }
+
+        $methods = $this->repo->methods->fetchMethodsBasedOnMerchantIds($merchant);
+
+        $method = $methods->first();
+
+        if (empty($method['intl_bank_transfer'])) {
+            $intl_methods = [
+                Merchant\Methods\Entity::INTL_BANK_TRANSFER => [
+                    'ach' => 0,
+                    'fps' => 0,
+                    'swift' => 0,
+                    'sepa' => 0,
+                ]
+            ];
+            $method->setMethods($intl_methods);
+        }
+
+        return $method;
+    }
+
 }

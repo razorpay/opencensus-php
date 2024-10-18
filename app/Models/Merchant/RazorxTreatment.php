@@ -300,8 +300,6 @@ final class RazorxTreatment
     // To skip generating QR image in the QR create flow in order to reduce latency.
     const QR_CODE_GENERATE_IMAGE = 'qr_code_generate_image';
 
-    const QR_CODE_CUTOFF_CONFIG = 'qr_code_cutoff_config';
-
     const QR_ON_EMAIL = 'qr_on_email';
 
 
@@ -312,8 +310,6 @@ final class RazorxTreatment
 
     // experiment for opting out of settlement notification
     const SETTLEMENT_NOTIFICATION_OPT_OUT = 'settlement_notification_opt_out';
-
-    const TOKENIZE_QR_STRING_MPANS = 'tokenize_qr_string_mpans';
 
     // experiment to enable webhooks on route gateway_payment_static_s2scallback_post/gateway_payment_static_s2scallback_get
     const ENABLE_WEBHOOKS = 'enable_webhooks';
@@ -407,6 +403,8 @@ final class RazorxTreatment
     // This experiment COLLECTX_LIVE_ON_BANK_ACCOUNTS would be enabled for merchants who are live on bank accounts for collectx
     // Since there could be merchants who are live on UPI but not on Bank Account, VAs should be created accordingly
     const COLLECTX_LIVE_ON_BANK_ACCOUNTS = "collectx_live_on_bank_accounts";
+
+    const COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP = "collectx_axis_payment_transfer_ramp_up";
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
@@ -749,8 +747,6 @@ final class RazorxTreatment
 
     public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';
 
-    public const SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK = 'smartcollect_service_qr_payments_callback';
-
     /* Experiment to enable self serve workflow */
     public const RX_SELF_SERVE_WORKFLOW = "rx_self_serve_workflow";
 
@@ -975,15 +971,9 @@ final class RazorxTreatment
 
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
-    const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_PROCESS = 'qrv2_static_qr_unrecognised_payment_process';
-
-    const QRV2_STATIC_QR_UNRECOGNISED_PAYMENT_RAMP = 'qrv2_static_qr_unrecognised_payment_ramp';
-
     const QR_GATEWAY_UNRECOGNISED_PAYMENT_PROCESS = 'qr_gateway_unrecognised_payment_process';
 
     const ENABLE_YES_BANK_TERMINAL_FOR_6_0_STACK = 'enable_yes_bank_terminal_for_6_0_stack';
-
-    const HDFC_QR_EXPIRY = 'hdfc_qr_expiry';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
@@ -1060,6 +1050,12 @@ final class RazorxTreatment
      * shadow mode for reversals
      */
     const EARLY_DISPATCH_OF_TXNS_FOR_SETTLEMENTS_USING_JOURNAL_REVERSALS = 'early_dispatch_of_txns_for_settlements_using_journal_reversals';
+
+    /**
+     * Experiment for payment fee and tax population from txn entity in pg ledger reverse shadow
+     */
+    const PG_LEDGER_ASYNC_TRANSACTION_CREATION = 'pg_ledger_async_transaction_creation';
+
 
     /**
      * Experiment to use the new flow for creating linked accounts via batch upload
@@ -1141,11 +1137,6 @@ final class RazorxTreatment
     * Razorx flag is used to control versions(old/new) of otp unification for acs page
     */
     const OTP_UNIFICATION_ACS_PAGE  = 'otp_unification_acs_page';
-    /**
-     * Razorx flag to ramp up experiment to fix the bug of converting amount to rupee from paise
-     */
-    const QR_AMOUNT_MISMATCH_FIX = 'qr_amount_mismatch_fix';
-
     /*
      * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
      */
@@ -1244,4 +1235,9 @@ final class RazorxTreatment
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT  = 'mandate_idempotency_key_experiment';
     const MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW = "mandate_idempotency_key_experiment_new";
     const DCS_MERGE_FIX = 'dcs_merge_fix';
+
+    const ALLOW_FULCRUM_RECURRING_INITIAL = 'fulcrum_recurring_initial';
+    const ALLOW_FULCRUM_RECURRING_SUBSEQUENT = 'fulcrum_recurring_subsequent';
+
+    const PAYOUT_PROPERTIES_EVENT = 'payout_properties_event';
 }

@@ -3196,8 +3196,70 @@ class Core extends Base\Core
 
         return $response;
     }
-
+    
+    public function setContactNumberAsNullForUserIds(array $UserIds) {
+        // Set contact number as null for Orphan user ids
+        $this->repo->transactionOnLiveAndTest(function () use ($UserIds) {
+            foreach ($UserIds as $userId){
+            
+                $user = $this->repo->user->findOrFail($userId);
+            
+                $user->contact_mobile = null;
+            
+                $this->repo->user->saveOrFail($user);
+            }
+        });
+    }
+    
+    public function getUserIdsToMakeFieldsNull(array $orphanUserIds, array $userIdsWithNoActivatedMerchant, array $existingUserIds): array{
+        $userIdsToNullify = array();
+        
+        if (count($orphanUserIds) === count($existingUserIds)) {
+            $userIdsToNullify = $orphanUserIds;
+        } elseif (count($userIdsWithNoActivatedMerchant) === count($existingUserIds)) {
+            $userIdsToNullify = $userIdsWithNoActivatedMerchant;
+        }
+        return $userIdsToNullify;
+    }
+    
+    public function getOrphanOrNonActivatedMerchantUserIds(array $existingUserIds): array{
+        $orphanUserIds = array();
+        $userIdsWithNoActivatedMerchant = array();
+        
+        foreach ($existingUserIds as $userId) {
+        
+            $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
+            if(count(value: $mids) === 0)
+            {
+                array_push($orphanUserIds, $userId);
+                $userIdsWithNoActivatedMerchant[] = $userId;
+                continue;
+            }
+        
+            $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
+        
+            $this->trace->info(TraceCode::EDIT_MOBILE_REQUEST_USER_NON_ORPHAN_USERS, [
+                "user_id"                 => $userId,
+                "count_activated_mids"    => count($activatedMids),
+                "total_mids"              => count($mids),
+            ]);
+        
+            if (count($activatedMids) === 0) {
+                // user_id is associated with merchant who is not activated.
+                $userIdsWithNoActivatedMerchant[] = $userId;
+            }
+        }
+    
+        return $this->getUserIdsToMakeFieldsNull($orphanUserIds, $userIdsWithNoActivatedMerchant, $existingUserIds);
+    }
+    
     //verify otp on the new added number
+    
+    /**
+     * @throws Throwable
+     * @throws NumberParseException
+     * @throws BadRequestException
+     */
     public function verifyOtpAndUpdateContactMobile(array $input, Merchant\Entity $merchant, Entity $user)
     {
         $input[Constants::UNIQUE_ID] = $user->getId();
@@ -3216,41 +3278,18 @@ class Core extends Base\Core
         $expResult = $this->splitzExperimentEvaluatorMobileUpdate($user->getId());
 
         if($expResult === true){
-            $orphanUserIds = array();
-            if (empty($existingUserIds) === false)
+            
+            if ((empty($existingUserIds) === false) and
+                (count($existingUserIds) > 0))
             {
-                foreach ($existingUserIds as $userId) {
-                    $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
-                    if(count(value: $mids) === 0)
-                    {
-                        array_push($orphanUserIds, $userId);
-                        continue;
-                    }
-
-                    $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
-                    if (count($activatedMids) > 0) {
-                        $this->trace->info(TraceCode::EDIT_MOBILE_REQUEST_USER_MERCHANT_ACTIVATED, [
-                            "count" => count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $this->trace->count(ConstantMetric::EDIT_MOBILE_REQUEST_USER_MERCHANT_ACTIVATED);
-                    }
-                    if (count($activatedMids) !== count($mids)){
-                        $this->trace->info(TraceCode::EDIT_MOBILE_REQUEST_USER_MERCHANT_DEACTIVATED, [
-                            "count" => count($mids) - count($activatedMids),
-                            "userId" => $userId,
-                        ]);
-                        $this->trace->count(ConstantMetric::EDIT_MOBILE_REQUEST_USER_MERCHANT_DEACTIVATED);
-                    }
+                $userIdsToNullify = $this->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
+                
+                if (count($userIdsToNullify) === 0) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
                 }
+                
+                $this->setContactNumberAsNullForUserIds($userIdsToNullify);
             }
-
-            if (count($orphanUserIds) !== count($existingUserIds)){
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
-            }
-
-            // Set email as null for Orphan user ids
-            $this->repo->user->setOrphanUserMobilelNull($orphanUserIds);
         }
 
         if($smsOtpAuth->is2faCredentialValid($input) == false)
@@ -5206,95 +5245,97 @@ class Core extends Base\Core
      * @param Entity          $user
      * @param string          $action
      */
-    public function verifyEmailWithOtp(array $input, Merchant\Entity $merchant, Entity $user, string $action = 'verify_email')
+    public function verifyEmailWithOtp(array $input, Entity $user, Merchant\Entity $merchant = null, string $action = 'verify_email')
     {
         $this->verifyOtp($input + ['action' => $action], $merchant, $user);
 
-        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
-        $signupCampaign = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
+        if ($merchant !== null) {
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+            $signupCampaign = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 
-        $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
-            [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.enable_unverified_email_check_for_easy_onboarding'),
-            ],
-            'variables'
-        );
+            $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
+                [
+                    'id'            => $merchant->getId(),
+                    'experiment_id' => $this->app['config']->get('app.enable_unverified_email_check_for_easy_onboarding'),
+                ],
+                'variables'
+            );
 
 
-        if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
-        {
-            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input) {
-                $user->setEmail($input[Merchant\Entity::EMAIL]);
-                $this->repo->saveOrFail($user);
-            });
+            if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
+            {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input) {
+                    $user->setEmail($input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($user);
+                });
 
-            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
-                $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
-                $this->repo->saveOrFail($merchant);
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
+                    $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchant);
 
-                try
-                {
-                    $pgosProxyController = new MerchantOnboardingProxyController();
-
-                    // send request to PGOS to save email
-                    $merchantId = $merchant->getId();
-
-                    $this->trace->debug(TraceCode::PGOS_CALL_TO_SAVE_VERIFIED_EMAIL, [
-                        'merchant_id' => $merchantId,
-                        'caller'      => 'verifyEmailWithOtp',
-                    ]);
-
-                    $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(
-                        $pgosProxyController::MERCHANT_ACTIVATION_SAVE,
-                        [
-                        'merchant_id' => $merchantId,
-                        'email'       => $input['email'],
-                        ],
-                        $merchant);
-
-                    if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                    try
                     {
-                        throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                        $pgosProxyController = new MerchantOnboardingProxyController();
+
+                        // send request to PGOS to save email
+                        $merchantId = $merchant->getId();
+
+                        $this->trace->debug(TraceCode::PGOS_CALL_TO_SAVE_VERIFIED_EMAIL, [
+                            'merchant_id' => $merchantId,
+                            'caller'      => 'verifyEmailWithOtp',
+                        ]);
+
+                        $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(
+                            $pgosProxyController::MERCHANT_ACTIVATION_SAVE,
+                            [
+                            'merchant_id' => $merchantId,
+                            'email'       => $input['email'],
+                            ],
+                            $merchant);
+
+                        if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                        {
+                            throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                        }
+
+                        if($pgosResponse === null)
+                        {
+                            $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
+                                'merchant_id'   => $merchantId,
+                                'pgos_response' => $pgosResponse,
+                                'caller'        => 'verifyEmailWithOtp',
+                            ]);
+                        }
                     }
-
-                    if($pgosResponse === null)
+                    catch (\Throwable $exception)
                     {
-                        $this->trace->info(TraceCode::PGOS_MERCHANT_ACTIVATION_SAVE, [
+                        $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                             'merchant_id'   => $merchantId,
-                            'pgos_response' => $pgosResponse,
-                            'caller'        => 'verifyEmailWithOtp',
+                            'error_message' => $exception->getMessage()
+                        ]);
+
+                        throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                            'error description' => 'submitted data could not be processed'
                         ]);
                     }
-                }
-                catch (\Throwable $exception)
-                {
-                    $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                        'merchant_id'   => $merchantId,
-                        'error_message' => $exception->getMessage()
-                    ]);
+                });
 
-                    throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                        'error description' => 'submitted data could not be processed'
-                    ]);
-                }
-            });
+                $merchantDetails = $this->merchant->merchantDetail;
 
-            $merchantDetails = $this->merchant->merchantDetail;
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
+                    $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchantDetails);
+                });
 
-            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
-                $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
-                $this->repo->saveOrFail($merchantDetails);
-            });
-
-            $user = $this->repo->user->findByEmail($input['email']);
+                $user = $this->repo->user->findByEmail($input['email']);
+            }
         }
-
 
         $this->trace->info(
             TraceCode::USER_EMAIL_VERIFY_WITH_OTP,
             [
-                'merchantId'      => $merchant->getId(),
+                'merchantId'      => $merchant?->getId(),
+                'userId'          => $user->getId(),
             ]);
 
         $this->confirm($user, Entity::OTP);
@@ -6702,7 +6743,7 @@ class Core extends Base\Core
             'sender'                => 'RZPAYX',
             'language'              => 'english',
             'contentParams'         => [
-                'app_link'  => 'https://bit.ly/RX-APP',
+                'app_link'  => 'https://rzp.io/rzp/MWf3LW4',
             ],
         ];
 

@@ -20,6 +20,7 @@ use RZP\Models\BharatQr;
 use RZP\Models\QrCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\QrPayment;
 use RZP\Models\BankAccount;
 use RZP\Models\UpiTransfer;
 use RZP\Gateway\Base\Verify;
@@ -513,12 +514,24 @@ class Gateway extends Base\Gateway
 
         $merchant = (new MerchantRepository())->find($terminal['merchant_id']);
 
-        if ($merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === false)
+        if(($this->isQRv2SuffixPresent($response['payment_id']) === true) or
+            ((new QrPayment\Core)->checkPaymentViaQRv1($merchant) === false))
         {
             return false;
         }
 
         return true;
+    }
+
+    protected function isQRv2SuffixPresent($merchantReference)
+    {
+        if(str_starts_with($merchantReference, QrCode\Constants::QR_CODE_V2_HDFC_PREFIX) === true)
+        {
+            $merchantReferenceDetails = explode('!', $merchantReference);
+            $merchantReference        = $merchantReferenceDetails[0];
+        }
+
+        return (str_ends_with($merchantReference, QrCode\Constants::QR_CODE_V2_TR_SUFFIX) === true);
     }
 
     /**
@@ -766,6 +779,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PAYMENT_ID], 3),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+            BharatQr\GatewayResponseParams::PAYER_NAME            => $input[ResponseFields::PAYER_NAME],
         ];
 
         $payerAccountType = $this->getInternalPayerAccountType($input);
@@ -795,6 +809,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $inputFields['terminal'][ResponseFields::GATEWAY_MERCHANT_ID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][ResponseFields::MERCHANT_REFERENCE]),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][ResponseFields::NPCI_REFERENCE_ID],
+            BharatQr\GatewayResponseParams::PAYER_NAME            => $inputFields['upi'][ResponseFields::CUSTOMER_NAME],
         ];
 
         if(empty($inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE]) === false)
@@ -934,7 +949,19 @@ class Gateway extends Base\Gateway
 
             foreach ($fields as $index => $key)
             {
-                $result[$key] = $values[$index];
+                if ($key === ResponseFields::PAYER_NAME)
+                {
+                    $res = explode('!', $values[$index]);
+
+                    if (count($res) > 0)
+                    {
+                        $result[$key] = $res[0];
+                    }
+                }
+                else
+                {
+                    $result[$key] = $values[$index];
+                }
             }
         }
         catch (Exception\GatewayErrorException $e)
@@ -2304,15 +2331,31 @@ class Gateway extends Base\Gateway
         // If it's already authorized on gateway side, there's nothing to do here. We just return back.
         if ((($gatewayPayment[Entity::STATUS_CODE] === Status::SUCCESS) or
             ($gatewayPayment[Entity::STATUS_CODE] === '00')) and
-            ($gatewayPayment[Entity::RECEIVED] === true))
+            ($gatewayPayment[Entity::RECEIVED] === true) and
+            ($input['payment']['recurring'] !== true))
+
         {
             return true;
         }
 
-        $attributes = [
-            Base\Entity::STATUS_CODE        => Status::SUCCESS,
-            Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
-        ];
+        $attributes = [];
+        if ((empty($input['gateway']['meta']['version']) === false) and
+            ($input['gateway']['meta']['version'] === 'api_v2'))
+        {
+            $attributes = [
+                Entity::NPCI_REFERENCE_ID => $input['gateway']['upi']['npci_reference_id'],
+                Entity::VPA               => $input['gateway']['upi'][Entity::VPA],
+                Entity::GATEWAY_PAYMENT_ID => $input['gateway']['upi']['npci_reference_id'],
+            ];
+        }
+        else
+        {
+            $attributes = [
+                Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
+            ];
+        }
+
+        $attr[Entity::STATUS_CODE] =  Status::SUCCESS;
 
         $gatewayPayment->fill($attributes);
 
@@ -2342,6 +2385,7 @@ class Gateway extends Base\Gateway
                 ResponseFields::ACCOUNT_NUMBER  => $inputFields['upi'][ResponseFields::ACCOUNT_NUMBER],
                 ResponseFields::IFSC_CODE       => $inputFields['upi']['ifsc'],
                 ResponseFields::RESPCODE        => $inputFields['upi']['npci_response_code'],
+                ResponseFields::PAYER_NAME      => $inputFields['upi'][ResponseFields::CUSTOMER_NAME]
             ];
 
             return $attrs;
@@ -2357,6 +2401,7 @@ class Gateway extends Base\Gateway
             ResponseFields::ACCOUNT_NUMBER  => $input[ResponseFields::ACCOUNT_NUMBER],
             ResponseFields::IFSC_CODE       => $input[ResponseFields::IFSC_CODE],
             ResponseFields::RESPCODE        => $input[ResponseFields::RESPCODE],
+            ResponseFields::PAYER_NAME      => $input[ResponseFields::PAYER_NAME]
         ];
 
         return $attrs;
@@ -2559,19 +2604,6 @@ class Gateway extends Base\Gateway
 
         // We won't call HDFC if there's no expiry time set
         if (empty($input[CoreEntity::QR_CODE][QrEntity::CLOSE_BY]) === true)
-        {
-            return $merchantReference;
-        }
-
-        if (
-            strtolower(
-                $this->app->razorx->getTreatment(
-                    $input['merchant']->getId(),
-                    RazorxTreatment::HDFC_QR_EXPIRY,
-                    $this->getMode()
-                )
-            ) !== RazorxTreatment::RAZORX_VARIANT_ON
-        )
         {
             return $merchantReference;
         }

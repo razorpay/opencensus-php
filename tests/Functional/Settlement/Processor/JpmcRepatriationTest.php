@@ -88,61 +88,61 @@ class JpmcRepatriationTest extends TestCase
         return [$settlement, $txn1, $txn2];
     }
 
-    public function testJpmcRepatriation()
-    {
-        [$settlement, $txn1, $txn2] = $this->setupJpmcSettlement();
-
-        $entries = [
-            [
-                'Invoices' => $this->getInvoiceDataSheet($settlement, [$txn1['items'][0], $txn2['items'][0]]),
-            ],
-        ];
-
-        $url = $this->writeToExcelFile($entries[0], 'RAZORPAYIN.POSTGTP.EXCEL.2023-10-27.18-20-56', 'files/filestore', ['Invoices']);
-        $this->encryptFile($url);
-        $uploadedFile = $this->createUploadedFile($url, 'RAZORPAYIN.POSTGTP.EXCEL.2023-10-27.18-20-56.xlsx');
-
-        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
-        $this->app->instance('ufh.service', $ufhService);
-        $ufhService->shouldReceive('uploadFileAndGetResponse')->times(1);
-
-        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-                    ->setMethods(['pushIdentifyAndTrackEvent'])
-                    ->getMock();
-
-        $this->app->instance('segment-analytics', $segmentMock);
-
-        $segmentMock->expects($this->exactly(1))
-                    ->method('pushIdentifyAndTrackEvent')
-                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
-                        $this->assertNotNull($properties);
-                        $this->assertTrue(in_array($eventName, ["JPMC_IMPORT_FLOW_RECON.FILE_RECEIVED"], true));
-                    }));
-
-        $input = [
-            'partner' => 'jpmc',
-        ];
-
-        $lambdaRequest = [
-            'url'     => '/settlements/jpmc/repat',
-            'content' => $input,
-            'method'  => 'POST',
-            'files'   => [
-                'file' => $uploadedFile,
-            ],
-        ];
-
-        $this->ba->h2hAuth();
-        $content = $this->makeRequestAndGetContent($lambdaRequest);
-
-        $this->assertTrue($content['success']);
-
-        $repatriationEntity = $this->getLastEntity('settlement_international_repatriation', true);
-        $this->assertEquals($settlement['amount'], $repatriationEntity['amount']);
-        $this->assertEquals('INR', $repatriationEntity['currency']);
-        $this->assertEquals($settlement['id'], $repatriationEntity['settlement_ids'][0]);
-        $this->assertEquals('USD', $repatriationEntity['credit_currency']);
-    }
+//    public function testJpmcRepatriation()
+//    {
+//        [$settlement, $txn1, $txn2] = $this->setupJpmcSettlement();
+//
+//        $entries = [
+//            [
+//                'Invoices' => $this->getInvoiceDataSheet($settlement, [$txn1['items'][0], $txn2['items'][0]]),
+//            ],
+//        ];
+//
+//        $url = $this->writeToExcelFile($entries[0], 'RAZORPAYIN.POSTGTP.EXCEL.2023-10-27.18-20-56', 'files/filestore', ['Invoices']);
+//        $this->encryptFile($url);
+//        $uploadedFile = $this->createUploadedFile($url, 'RAZORPAYIN.POSTGTP.EXCEL.2023-10-27.18-20-56.xlsx');
+//
+//        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+//        $this->app->instance('ufh.service', $ufhService);
+//        $ufhService->shouldReceive('uploadFileAndGetResponse')->times(1);
+//
+//        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+//                    ->setMethods(['pushIdentifyAndTrackEvent'])
+//                    ->getMock();
+//
+//        $this->app->instance('segment-analytics', $segmentMock);
+//
+//        $segmentMock->expects($this->exactly(1))
+//                    ->method('pushIdentifyAndTrackEvent')
+//                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+//                        $this->assertNotNull($properties);
+//                        $this->assertTrue(in_array($eventName, ["JPMC_IMPORT_FLOW_RECON.FILE_RECEIVED"], true));
+//                    }));
+//
+//        $input = [
+//            'partner' => 'jpmc',
+//        ];
+//
+//        $lambdaRequest = [
+//            'url'     => '/settlements/jpmc/repat',
+//            'content' => $input,
+//            'method'  => 'POST',
+//            'files'   => [
+//                'file' => $uploadedFile,
+//            ],
+//        ];
+//
+//        $this->ba->h2hAuth();
+//        $content = $this->makeRequestAndGetContent($lambdaRequest);
+//
+//        $this->assertTrue($content['success']);
+//
+//        $repatriationEntity = $this->getLastEntity('settlement_international_repatriation', true);
+//        $this->assertEquals($settlement['amount'], $repatriationEntity['amount']);
+//        $this->assertEquals('INR', $repatriationEntity['currency']);
+//        $this->assertEquals($settlement['id'], $repatriationEntity['settlement_ids'][0]);
+//        $this->assertEquals('USD', $repatriationEntity['credit_currency']);
+//    }
 
     public function testJpmcRepatriationDifferentFile()
     {

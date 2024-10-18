@@ -847,6 +847,8 @@ class Core extends Base\Core
         }
         catch (\Throwable $e){
             $response =  app('settlements_api')->merchantConfigGet($req, $mode);
+
+            $response['holiday_list'] = (object) $response['holiday_list']; // adding manual conversion of options from the data
         }
 
         $setSchedulesFromParentConfig = false;
@@ -864,6 +866,9 @@ class Core extends Base\Core
             ];
             try {
                 $parentConfig = app('settlements_api')->merchantConfigGet($parentReq, $mode);
+
+                $parentConfig['holiday_list'] = (object) $parentConfig['holiday_list']; // adding manual conversion of options from the data
+
                 $this->trace->debug(TraceCode::SETTING_SCHEDULES_FROM_PARENT, [
                     'merchant_id' => $merchant->getId(),
                     'parent_MID'  => $parentMerchantID,
@@ -1038,6 +1043,8 @@ class Core extends Base\Core
         $scheduleMapping = $this->getScheduleMappingForMethodNewService($merchant, $mode, $featureResult);
 
         $response =  app('settlements_api')->merchantConfigGet($req, $mode);
+
+        $response['holiday_list'] = (object) $response['holiday_list']; // adding manual conversion of options from the data
 
         unset($response['config']['active']);
 

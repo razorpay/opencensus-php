@@ -6,12 +6,15 @@ use App;
 
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate as BasePaymentReconciliate;
 
 class ManualReconciliate extends CombinedReconciliate
@@ -174,16 +177,30 @@ class ManualReconciliate extends CombinedReconciliate
             return false;
         }
 
-        $success = $this->savePaymentGatewayFeeAndTax($row, $paymentId);
+        $data = [];
+
+        $success = $this->savePaymentGatewayFeeAndTax($row, $paymentId, $data);
 
         if ($success === false)
         {
             return false;
         }
 
+        $this->repo->saveOrFail($this->payment);
+
+        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $time = time();
+            $data[BaseReconciliate::RECONCILED_AT] = $time;
+            $data[BaseReconciliate::RECONCILED_TYPE] = ReconciledType::MANUAL;
+
+            (new SubReconciliate())->sendPaymentReconNFCDataToCLS($this->payment, $data);
+
+            return true;
+        }
+
         $this->persistReconciledAt($this->payment, ReconciledType::MANUAL);
 
-        $this->repo->saveOrFail($this->payment);
 
         return true;
     }
@@ -272,9 +289,10 @@ class ManualReconciliate extends CombinedReconciliate
      *
      * @param array $row
      * @param string $paymentId
+     * @param array $data
      * @return bool
      */
-    protected function savePaymentGatewayFeeAndTax(array $row, string $paymentId)
+    protected function savePaymentGatewayFeeAndTax(array $row, string $paymentId, array &$data)
     {
         $row[Base\Reconciliate::GATEWAY_FEE] = $this->getGatewayFee($row);
 
@@ -284,7 +302,7 @@ class ManualReconciliate extends CombinedReconciliate
 
         $basePaymentRecon->setPaymentAndTransaction($row, $paymentId);
 
-        $success = $basePaymentRecon->recordGatewayFeeAndServiceTax($row);
+        $success = $basePaymentRecon->recordGatewayFeeAndServiceTax($row, $data);
 
         return $success;
     }

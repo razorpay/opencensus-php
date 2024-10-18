@@ -230,6 +230,15 @@ class SettlementOndemandController extends Controller
         }
 
         return ApiResponse::json(['success' => true]);
+    }
 
+    // Temporary API: to be removed after Ledger issues are completely resolved.
+    public function syncOdsTransaction()
+    {
+        $input = Request::all();
+
+        $response = $this->service(Entity::SETTLEMENT_ONDEMAND)->syncOdsTransaction($input);
+
+        return ApiResponse::json($response);
     }
 }

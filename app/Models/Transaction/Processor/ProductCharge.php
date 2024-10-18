@@ -22,8 +22,8 @@ class ProductCharge extends Base
 
     public function setFeeDefaults()
     {
-        $this->fees = 0;
-        $this->tax  = 0;
+        $this->fees = $this->source->getAmount();
+        $this->tax  = $this->source->getTax();
     }
 
     function updateTransaction()

@@ -2772,83 +2772,25 @@ class Repository extends Base\Repository
             group by `merchant_id`, `name`, `user_id`, `name`, `email`, `role`, `business_name`
         */
 
-
-        $workflowStateMapMerchantId               = $this->repo->workflow_state_map->dbColumn(WorkflowStateMap::MERCHANT_ID);
-        $workflowStateMapActorTypeValue           = $this->repo->workflow_state_map->dbColumn(WorkflowStateMap::ACTOR_TYPE_VALUE);
-
-        $userIdColumn               = $this->repo->user->dbColumn(User\Entity::ID);
-        $userNameColumn             = $this->repo->user->dbColumn(User\Entity::NAME);
-        $userEmailColumn            = $this->repo->user->dbColumn(User\Entity::EMAIL);
-
-        $merchantUserUserIdColumn            = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::USER_ID);
-        $merchantUserMerchantIdColumn        = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::MERCHANT_ID);
-        $merchantUserProductColumn           = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::PRODUCT);
-        $merchantUserRoleColumn              = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::ROLE);
-
-        $merchantIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-        $merchantNameColumn         = $this->repo->merchant->dbColumn(Merchant\Entity::NAME);
-
-        $payoutStatus         = $this->dbColumn(Entity::STATUS);
-        $payoutMerchantId     = $this->dbColumn(Entity::MERCHANT_ID);
-
-        $userAttrs = [
-            $merchantUserUserIdColumn,
-            $userNameColumn,
-            $userEmailColumn,
-            $merchantNameColumn.' AS business_name',
-            $payoutMerchantId,
-            $merchantUserRoleColumn
-        ];
-
-        if ((new Merchant\Acs\AsvRouter\AsvRouter())->shouldRouteBeMigratedToTiDB(__FUNCTION__))
-        {
-            $query = $this->newQueryWithConnection(
-                $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT)
-            );
-        }
-        else
-        {
-            $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
-        }
-
-        $query = $query->select($this->getTableName() . '.*')
-            ->select($userAttrs)
-            ->selectRaw('COUNT( payouts.' . Entity::ID . ') AS payout_count,
-                           SUM( payouts.' . Entity::AMOUNT . ') AS payout_total')
-            ->with(['merchant']);
-
-        //Workflow state map has only two status processed/created
-        $this->joinQueryWorkflowEntityMap($query);
-        $this->joinOnUniqueWorkflows($query, Status::CREATED);
-
-        $query->whereColumn($merchantUserRoleColumn, '=', 'unique_workflows.actor_type_value');
-
-        $query->join(Table::MERCHANT_USER, $payoutMerchantId, '=', $merchantUserMerchantIdColumn)
-            ->join(Table::MERCHANT, $payoutMerchantId, '=', $merchantIdColumn)
-            ->join(Table::USER, $merchantUserUserIdColumn, '=', $userIdColumn)
-            ->where($merchantUserProductColumn, Merchant\Balance\Type::BANKING)
-            ->where($payoutStatus, Status::PENDING);
+        $dataLakeQuery =  "select merchant_users.user_id, users.name, users.email, merchants.name as business_name, payouts.merchant_id, merchant_users.role,COUNT( payouts.id) AS payout_count, SUM( payouts.amount) AS payout_total ";
+        $dataLakeQuery .= "from payouts inner join workflow_entity_map on payouts.id = workflow_entity_map.entity_id and workflow_entity_map.entity_type = 'payout' inner join ";
+        $dataLakeQuery .= "(select distinct workflow_state_map.workflow_id, workflow_state_map.actor_type_value from workflow_state_map where workflow_state_map.status = 'created') as unique_workflows on workflow_entity_map.workflow_id = unique_workflows.workflow_id ";
+        $dataLakeQuery .= "inner join merchant_users on payouts.merchant_id = merchant_users.merchant_id inner join merchants on payouts.merchant_id = merchants.id inner join users on merchant_users.user_id = users.id ";
+        $dataLakeQuery .= "where merchant_users.role = unique_workflows.actor_type_value and merchant_users.product = 'banking' and payouts.status = 'pending' ";
 
         if (sizeof($includeMerchantIds) != 0)
         {
-            $query->whereIn($payoutMerchantId, $includeMerchantIds);
+            $dataLakeQuery .= "and payouts.merchant_id in ( " .$includeMerchantIds. ") ";
         }
 
         if (sizeof($excludeMerchantIds) != 0)
         {
-            $query->whereNotIn($payoutMerchantId, $excludeMerchantIds);
+            $dataLakeQuery .= "and payouts.merchant_id not in ( " .$excludeMerchantIds. ") ";
         }
 
-        $query->groupBy(
-                Entity::MERCHANT_ID,
-                Merchant\Entity::NAME,
-                Merchant\MerchantUser\Entity::USER_ID,
-                User\Entity::NAME, User\Entity::EMAIL,
-                Merchant\MerchantUser\Entity::ROLE,
-                'business_name'
-            );
+        $dataLakeQuery .= "group by payouts.merchant_id,  merchants.name, merchant_users.user_id, users.name, users.email, role";
 
-        return $query->get();
+        return  $this->app['datalake.presto']->getDataFromDataLakeUsingRealTimeApi($dataLakeQuery);
     }
 
     public function fetchPendingPayoutsToDisplay($merchantId, $userRole)

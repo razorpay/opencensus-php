@@ -7,6 +7,7 @@ use RZP\Services\Mutex;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\QrPayment;
 use RZP\Models\VirtualAccount;
 use RZP\Models\QrPaymentRequest;
 use Razorpay\Trace\Logger as Trace;
@@ -74,18 +75,20 @@ class Core extends Base\Core
         }
         finally
         {
+            $isQrV1Enabled = (new QrPayment\Core)->checkPaymentViaQRv1($terminal->merchant);
+
             if ($upiQr !== null and $upiQr->getPayment() !== null)
             {
                 $upi = $this->repo->upi->fetchByPaymentId($upiQr->getPayment()->getId());
 
-                if($terminal->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+                if($isQrV1Enabled === true)
                 {
                     $gatewayResponse['qr_data'] = $this->getQrPaymentParams($input,$data['payment'],
                         $terminal->getGateway(),$upiQr->getPayment()->getId());
                 }
             }
 
-            if($terminal->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+            if($isQrV1Enabled === true)
             {
                 $gatewayResponse['callback_data'] = [];
 

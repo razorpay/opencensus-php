@@ -4621,6 +4621,21 @@ return [
         ],
     ],
 
+    'testResendOtpVerificationMailInternalAuth' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp-internal',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "token" => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+    ],
+
     'testResendEmailOtpVerificationMailThresholdExhausted' => [
         'request' => [
             'url'     => '/users/resend-verification-otp',
@@ -4784,6 +4799,70 @@ return [
         'response' => [
             'content' => [
                 "success" => true,
+            ],
+        ],
+    ],
+
+    'testChangePasswordEmailViaStork' => [
+        'request' => [
+            'url'     => '/users/password',
+            'method'  => 'PUT',
+            'content' => [
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'old_password'          => '12345',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "email_verified" => true,
+            ],
+        ],
+    ],
+
+    'testChangePasswordEmailViaMailgun' => [
+        'request' => [
+            'url'     => '/users/password',
+            'method'  => 'PUT',
+            'content' => [
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'old_password'          => '12345',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "email_verified" => true,
+            ],
+        ],
+    ],
+
+    'testResendOtpVerificationMailViaStork' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "token" => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+    ],
+
+    'testResendOtpVerificationMailViaMailgun' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "token" => 'BUIj3m2Nx2VvVj',
             ],
         ],
     ],
@@ -5400,8 +5479,8 @@ return [
             ],
         ],
     ],
-
-    'testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphan' => [
+  
+    'testVerifyOtpAndUpdateContactMobileAlreadyExistingForActivatedMerchantUsers' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
             'method'  => 'POST',
@@ -5413,7 +5492,7 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
+                  'description' => PublicErrorDescription::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
                 ],
             ],
             'status_code' => 400,
@@ -5421,6 +5500,42 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
+        ],
+    ],
+    
+    'testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan' => [
+        'request' => [
+            'url'     => '/users/verify/update/new/mobile',
+            'method'  => 'POST',
+            'content' => [
+                'receiver' => '9123456789',
+                'otp'      => '000007',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '9123456789',
+                'contact_mobile_verified' => true,
+            ],
+        ],
+    ],
+
+    'testVerifyOtpAndUpdateContactMobileAlreadyExistingNonOrphanForNonActivatedMerchant' => [
+        'request' => [
+            'url'     => '/users/verify/update/new/mobile',
+            'method'  => 'POST',
+            'content' => [
+                'receiver' => '9123456789',
+                'otp'      => '000007',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '9123456789',
+                'contact_mobile_verified' => true,
+            ],
         ],
     ],
 
@@ -5587,6 +5702,25 @@ return [
                 'user' => [
                     'id'        => 'MerchantUser01',
                     'email'     => 'abc@rzp.com',
+                    'confirmed' => true,
+                ]
+            ],
+        ],
+    ],
+
+    'testVerifyEmailWithOtpInternalAuth' => [
+        'request'  => [
+            'url'     => '/users/verify_email_internal',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user' => [
+                    'email'     => 'user_verify_email_internal_auth@abc.com',
                     'confirmed' => true,
                 ]
             ],
@@ -6088,6 +6222,16 @@ return [
         'response' => [
             'content' => [
                 'id'    =>  '20000000000000'
+            ],
+        ],
+    ],
+
+    'testGetUserSignupCampaignWithUserAndMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],
@@ -8411,7 +8555,7 @@ return [
                 'captcha'               => 'faked',
                 'token'                 => 'token',
                 'otp'                   => '0007',
-                'signup_campaign'       => 'assisted_onboarding',
+                'signup_campaign'       => 'partner_assisted_onboarding',
             ],
         ],
         'response' => [
@@ -8421,7 +8565,7 @@ return [
                 'confirmed'                 => false,
                 'email_verified'            => false,
                 'contact_mobile_verified'   => true,
-                'signup_campaign'           => 'assisted_onboarding'
+                'signup_campaign'           => 'partner_assisted_onboarding'
             ]
         ]
     ],

@@ -22,6 +22,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstants;
 use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -133,6 +134,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const L2_SUBMIT_SHADOW                       = 'l2_submit_shadow';
     const FETCH_PGOS_MERCHANT_CONSENTS           = 'fetch_pgos_merchant_consents';
     const GET_APPLICABLE_ACTIVATION_STATUS       = 'get_applicable_activation_status';
+    const FETCH_BRAND_DEALER_DETAILS             = 'fetch_brand_dealer_details';
+    const UPDATE_BRAND_DEALER_DETAILS            = 'update_brand_dealer_details';
 
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
@@ -306,7 +309,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_ACTIVATION_DETAILS_SALES             => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchSalesAssistedMerchantActivationDetails',
         self::ONBOARDING_GET_SALES                          => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingGet',
         self::ONBOARDING_SAVE_SALES                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SalesAssistedOnboardingSave',
-        self::FETCH_PGOS_MERCHANT_CONSENTS                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantConsents'
+        self::FETCH_PGOS_MERCHANT_CONSENTS                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantConsents',
+        self::FETCH_BRAND_DEALER_DETAILS                    => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchBrandDealerDetails',
+        self::UPDATE_BRAND_DEALER_DETAILS                   => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateBrandDealerDetails',
     ];
 
     // timeout in seconds
@@ -325,6 +330,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => 15,
         self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2        => 15,
+        self::ONBOARDING_CREATE_OR_FETCH                => 30,
 
         // TODO: Revert back once the root cause for OBS latency is found and fixed.
         // This is temporarily being increased to unblock curlec signup flows.
@@ -669,10 +675,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
     }
     public function handleMerchantSignup($payload, $merchant)
     {
-        $merchantId = $merchant->getMerchantId();
-
+        $signupCampaign = $payload[DeviceDetailEntity::SIGNUP_CAMPAIGN];
         $routeKey = self::MERCHANT_SIGN_UP;
-        if ($payload[DeviceDetailEntity::SIGNUP_CAMPAIGN] === DeviceDetailConstants::ASSISTED_ONBOARDING)
+        if ((new UserService())->isAssistedOnboardingSignupCampaign($signupCampaign))
         {
             $routeKey = self::SALES_ASSISTED_MERCHANT_SIGN_UP;
         }

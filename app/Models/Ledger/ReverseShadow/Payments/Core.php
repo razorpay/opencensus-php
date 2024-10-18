@@ -16,6 +16,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Transaction\Entity;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Merchant\Balance\BalanceConfig;
@@ -182,6 +183,18 @@ class Core extends Base\Core
         $amountCredits = $merchantAccountBalances[Constants::MERCHANT_AMOUNT_CREDITS];
 
         $commission = $fee - $tax;
+
+        // for optimizer cfb with direct settlement,
+        // we need to split the convenience fee and tax
+        //
+        if ($payment->merchant->isAtLeastOneFeatureEnabled(Feature\Constants::OPTIMIZER_CFB_FEATURES) === true and
+            in_array(PricingFeature::OPTIMIZER_CONVENIENCE_FEE, array_column($feesSplit->toArray(), 'name')))
+        {
+            $optimizerConvenienceFee = $feesSplit->where('name',PricingFeature::OPTIMIZER_CONVENIENCE_FEE)->first()->amount;
+            $optimizerConvenienceTax = (int) round(($optimizerConvenienceFee/$commission) * $tax);
+            $commission = $commission - $optimizerConvenienceFee;
+            $tax = $tax - $optimizerConvenienceTax;
+        }
 
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true)
         {

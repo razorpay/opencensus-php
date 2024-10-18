@@ -122,6 +122,26 @@ class Metric extends Base\Core
     const VALIDATE_ACCOUNT_UPS_REQUEST_FAILED_COUNT        = 'validate_account_ups_request_failed_count';
     const VALIDATE_VPA_UPS_REQUEST_FAILED_COUNT            = 'validate_vpa_ups_request_failed_count';
 
+    const GET_DCC_INFO_COUNT                              = 'get_dcc_info_count';
+
+    const GET_PAYMENT_FLOWS_COUNT                         = 'get_payment_flows_count';
+
+    const DCC_INFO_ROUTE_COUNT                             = 'dcc_info_route_count';
+
+    const CACHE_MISS_COUNT                                 = 'cache_miss_count';
+
+    const CACHE_HIT_COUNT                                  = 'cache_hit_count';
+
+    const INTL_CARD_SHIELD_REQUEST_ONE_COUNT               = 'intl_card_shield_request_one_count';
+
+    const CURRENCY_EXCHANGE_RATE_CURRENCY_KEY              = 'currency_exchange_rates_currency';
+
+    const CURRENCY_EXCHANGE_RATE_REQUEST_VS_TIME_KEY       = 'currency_exchange_rates_request_vs_time';
+    const IMPORT_PAYMENT_VALIDATION_FAILURE                = 'import_payment_validation_failure';
+
+
+    const CROSS_BORDER_UPDATE_AND_REDIRECT_COUNT = 'cross_border_update_and_redirect_count';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);
@@ -200,7 +220,7 @@ class Metric extends Base\Core
     }
 
 
-  public function pushCallbackRequestTimeMetrics(Entity $payment, int $requestTime)
+    public function pushCallbackRequestTimeMetrics(Entity $payment, int $requestTime)
     {
         $route  = $this->app['api.route']->getCurrentRouteName();
 
@@ -388,7 +408,7 @@ class Metric extends Base\Core
         {
             $dimensions += [
                 self::LABEL_OFFER           => true,
-                ];
+            ];
         }
 
         if ($payment->hasCard() === true)
@@ -579,10 +599,39 @@ class Metric extends Base\Core
 
     protected function getPaymentAuthDimensions(Entity $payment)
     {
+        $protocolVersion = null;
+        $enrolled = null;
+
+        try {
+            if ($payment->hasCard() === true && $payment->isInternational()) {
+                $authorization_data = (new PaymentService())->getAuthorizationEntity($payment->getPublicId());
+                $protocolVersion = (new PaymentService())->getCardProtcolVersion($authorization_data);
+
+                if (isset($authorization_data['enrollment_status'])) {
+                    $enrolled = $authorization_data['enrollment_status'];
+                }
+
+                $dimensions = [
+                    self::LABEL_PAYMENT_LATE_AUTHORIZED => $payment->isLateAuthorized(),
+                    self::LABEL_CARD_ENROLLMENT_STATUS  => $enrolled ?? null,
+                    self::LABEL_CARD_PROTOCOL_VERSION   => $protocolVersion ?? null,
+                ];
+                return $dimensions;
+            }
+        } catch (\Throwable $e) {
+            $this->trace->info(
+                TraceCode::PAYMENTS_AUTH_DIMENSIONS_ERROR,
+                [
+                    'error_message' => $e->getMessage(),
+                    'protocol_version' => $protocolVersion,
+                    'card_enrollment_status' => $enrolled,
+                ]
+            );
+        }
+
         $dimensions = [
             self::LABEL_PAYMENT_LATE_AUTHORIZED => $payment->isLateAuthorized(),
         ];
-
         return $dimensions;
     }
 
@@ -714,5 +763,14 @@ class Metric extends Base\Core
         }
 
         $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER, $requestTime, $dimensions);
+    }
+
+    public function pushDccInfoRedirectMetrics(string $success, string $error)
+    {
+        $this->trace->count(
+            Metric::DCC_INFO_ROUTE_COUNT, [
+            "success" => $success,
+            "error" => $error
+        ]);
     }
 }

@@ -47,7 +47,6 @@ trait TestsWebhookEvents
             ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::on($argMatcher), 350)
             ->andReturn(new \WpOrg\Requests\Response);
     }
-
     /**
      * @param string        $name
      * @param callable|null $matcher

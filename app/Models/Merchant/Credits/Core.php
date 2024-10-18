@@ -12,6 +12,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Base\ConnectionType;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Metric;
 use RZP\Trace\TraceCode;
@@ -21,6 +22,7 @@ use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Transaction\Processor\Ledger;
+use RZP\Models\Ledger\ReverseShadow\Utility as ClsUtility;
 use RZP\Models\Ledger\ReverseShadow\CreditLoading as ReverseShadowCreditLoading;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForChurnedUsers;
@@ -89,7 +91,16 @@ class Core extends Base\Core
 
         if ($input['type'] !== Type::FEE_CREDIT)
         {
-            $balance = $this->repo->balance->getMerchantBalance($merchant);
+            $enableCLSBalanceReads = (new ClsUtility())->isBalanceReadFromClsExperimentEnabled($merchant);
+
+            if($enableCLSBalanceReads === true)
+            {
+                $balance = $this->repo->balance->getMerchantBalance($merchant, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                $balance = $this->repo->balance->getMerchantBalance($merchant);
+            }
 
             $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
 
@@ -138,7 +149,9 @@ class Core extends Base\Core
 
     public function updateCreditsInMerchantAccount($merchant, $credits, $type = Credits\Type::AMOUNT)
     {
-        if ($type === Credits\Type::AMOUNT)
+        $pgLedgerReverseShadow = $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+        if ($type === Credits\Type::AMOUNT && $pgLedgerReverseShadow !== true)
         {
             // Add the credits to merchant's main balance
             $merchantAmountCredits = $merchant->primaryBalance->reload()->getAmountCredits();
@@ -148,7 +161,7 @@ class Core extends Base\Core
             $this->repo->balance->editMerchantAmountCredits($merchant, $newCredits);
 
         }
-        else if ($type === Credits\Type::FEE)
+        else if ($type === Credits\Type::FEE && $pgLedgerReverseShadow !== true)
         {
             $merchantFeeCredits = $merchant->primaryBalance->reload()->getFeeCredits();
 
@@ -156,7 +169,7 @@ class Core extends Base\Core
 
             $this->repo->balance->editMerchantFeeCredits($merchant, $newCredits);
         }
-        else if ($type === Credits\Type::REFUND)
+        else if ($type === Credits\Type::REFUND && $pgLedgerReverseShadow !== true)
         {
             $merchantRefundCredits = $merchant->primaryBalance->reload()->getRefundCredits();
 

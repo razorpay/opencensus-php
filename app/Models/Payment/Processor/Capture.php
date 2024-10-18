@@ -683,9 +683,20 @@ trait Capture
 
         $this->notifyPaymentCaptured();
 
-        // temporarily disabling metric push for "api_payment_captured_v1_bucket"
-        //
-        //(new Payment\Metric)->pushCapturedMetrics($this->payment);
+         //temporarily disabling metric push for "api_payment_captured_v1_bucket"
+        try
+        {
+            (new Payment\Metric)->pushCapturedMetrics($this->payment);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYMENT_CAPTURE_FAILURE_EXCEPTION,[]
+            );
+        }
+
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -1086,7 +1097,8 @@ trait Capture
         try
         {
             if ((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)) or
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) and
+                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)) or
                 ($txn->isBalanceUpdated() === true))
             {
                 return;
@@ -1094,7 +1106,8 @@ trait Capture
 
             $asyncTxnEnabled = false;
 
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true or
+                $payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
                 $asyncTxnEnabled = true;
             }
@@ -1113,6 +1126,12 @@ trait Capture
                 ]);
 
             $asyncBalancePushedAt = time();
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                MerchantBalanceUpdateReverseShadowQueue::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return;
+            }
 
             if($this->pushedToMerchantsBasedBalanceUpdateQueue($input, $payment->getMerchantId(), $asyncBalancePushedAt) === true)
             {
@@ -1221,8 +1240,7 @@ trait Capture
 
             // If API Payment and merchant is on reverse shadow, that payment would have been dispatched to
             // settlement from ack worker, we need not to dispatch again after api transaction creation
-            if (($payment->isExternal() === false) and
-                ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
                 $shouldDispatchSettlementBucket = false;
             }
@@ -1564,11 +1582,25 @@ trait Capture
 
         $this->repo->saveOrFail($txn);
 
-        $this->repo->saveOrFail($payment);
+        if ($this->isDualWriteFlowEnabled($payment) === false)
+        {
+            $this->repo->saveOrFail($payment);
+        }
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
 
         return [$txn, $merchantBalance];
+    }
+
+    public function isDualWriteFlowEnabled($payment)
+    {
+        $isDualWriteFlow = ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true);
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),Merchant\RazorxTreatment::PG_LEDGER_ASYNC_TRANSACTION_CREATION, $this->app['rzp.mode']);
+
+        $isDualWriteFlow = $isDualWriteFlow && $this->isEnabledForPaymentFeeTaxPopulation($variant, $payment);
+
+        return $isDualWriteFlow;
     }
 
     protected function setVerifyPaymentIfApplicable(Payment\Entity & $payment)
@@ -2171,6 +2203,7 @@ trait Capture
             'SSL: Operation timed out',
             'Reason: Server is in script upgrade mode. Only administrator can connect at this time.',
             'Unknown $curl_error_code: 77',
+            'SQLSTATE[40001]: Serialization failure',
         ]);
     }
 
@@ -2233,11 +2266,6 @@ trait Capture
             else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'Queue3'))
             {
                 MerchantBasedBalanceUpdateV3::dispatch($input, $this->mode, $asyncBalancePushedAt);
-                return true;
-            }
-            else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'QueueReverseShadow'))
-            {
-                MerchantBalanceUpdateReverseShadowQueue::dispatch($input, $this->mode, $asyncBalancePushedAt);
                 return true;
             }
         }

@@ -44,6 +44,8 @@ class Fields
     const PRIORITY                          = 'priority';
     const GATEWAY_TOKEN                     = 'gateway_token';
     const EXPIRE_AT                         = 'expire_at';
+    const ENCODED_PUBLIC_KEY                = 'encoded_public_key';
+    const PUBLIC_KEY                        = 'pubKey';
 
     // --------------------------- CUSTOMER --------------- //
     const ID                                = 'id';

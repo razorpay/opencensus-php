@@ -13,5 +13,6 @@ class Validator extends Base\Validator
         Constants::JOURNAL_ID    => 'required|string|size:14',
         Constants::CURRENCY      => 'required|string',
         Constants::IS_REVERSAL   => 'sometimes|boolean',
+        Constants::TAX           => 'sometimes|integer',
     ];
 }

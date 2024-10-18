@@ -815,6 +815,8 @@ class Entity
 
     const INSURANCE = 'insurance';
 
+    const PAYMENT_METHOD_TRANSFER = 'payment_method_transfer';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -1551,6 +1553,8 @@ class Entity
         self::TRUECALLER_AUTH_REQUEST => \RZP\Models\Customer\Truecaller\AuthRequest::class,
 
         self::TRANSFER_PAYMENT              => \RZP\Models\Transfer\Payment::class,
+
+        self::PAYMENT_METHOD_TRANSFER       => \RZP\Models\Payment\Transfer::class,
     ];
 
     protected static $repository = [
@@ -1642,6 +1646,8 @@ class Entity
         self::EARLY_SETTLEMENT_FEATURE_PERIOD   => \RZP\Models\Settlement\EarlySettlementFeaturePeriod::class,
 
         self::MERCHANT_E_INVOICE                => \RZP\Models\Merchant\Invoice\EInvoice::class,
+
+        self::PAYMENT_METHOD_TRANSFER           => \RZP\Models\Payment\Transfer::class,
     ];
 
     protected static $externalRepoSingleton = [
@@ -1651,16 +1657,20 @@ class Entity
         self::REFUND  => 'scrooge',
         self::OFFER   => 'offers_engine',
         self::REWARD_POINT  => 'card.payments',
-        self::TOKEN   => 'tokens',
+        self::TOKEN      => 'tokens',
+        self::TRANSFER   => 'route',
+        self::PAYMENT_METHOD_TRANSFER   => 'route',
     ];
 
     protected static $externalRepoConfigKey = [
-        self::PAYMENT => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
-        self::CARD    => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
-        self::ORDER   => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
-        self::REFUND  => Models\Admin\ConfigKey::SCROOGE_0LOC_ENABLED,
-        self::OFFER   => Models\Admin\ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED,
-        self::TOKEN   => Models\Admin\ConfigKey::TOKENS_SERVICE_ENABLED,
+        self::PAYMENT  => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
+        self::CARD     => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
+        self::ORDER    => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
+        self::REFUND   => Models\Admin\ConfigKey::SCROOGE_0LOC_ENABLED,
+        self::OFFER    => Models\Admin\ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED,
+        self::TOKEN    => Models\Admin\ConfigKey::TOKENS_SERVICE_ENABLED,
+        self::TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
+        self::PAYMENT_METHOD_TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
     ];
 
     public static $archivalFallbackConfigKey = [

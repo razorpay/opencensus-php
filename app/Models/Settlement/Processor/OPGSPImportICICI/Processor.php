@@ -42,6 +42,7 @@ use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Order\OrderMeta;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation;
+use RZP\Models\Lambda\Service as LambdaService;
 
 
 class Processor extends Base\Core
@@ -65,6 +66,8 @@ class Processor extends Base\Core
     {
         try {
 
+            $this->trace->count(\RZP\Constants\Metric::OPGSP_FILE_SEND_STARTED);
+
             $merchantId = $input['merchant_id'];
             $sendFile = $input['send_file'];
             $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
@@ -81,6 +84,9 @@ class Processor extends Base\Core
                 ->getProcessedSettlementsForTimePeriodForMid($merchantId, $from, $to, null);
 
             if($settlements->isEmpty() === true) {
+                $this->trace->count(\RZP\Constants\Metric::OPGSP_IMPORT_NO_SETTLEMENTS_FOUND,[
+                    'reason'=>TraceCode::OPGSP_IMPORT_EMPTY_SETTLEMENTS,
+                ]);
                 $this->trace->info(TraceCode::OPGSP_IMPORT_EMPTY_SETTLEMENTS, [
                     'merchantId' => $merchantId,
                     'settlements' => $settlements,
@@ -516,6 +522,10 @@ class Processor extends Base\Core
             'ufhResponse'      => $response,
         ]);
 
+        $this->trace->count(\RZP\Constants\Metric::OPGSP_UFH_FILE_PUSH,[
+            'status' => $response['status'],
+        ]);
+
         if($sendFile and count($response) !== 0)
         {
             $this->sendfile($response);
@@ -806,6 +816,10 @@ class Processor extends Base\Core
             ];
 
             $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+            $this->trace->count(\RZP\Constants\Metric::OPGSP_BEAM_PUSH,[
+                'status' => Constants::SUCCESS,
+                'job_name'  => $jobName
+            ]);
         }
         catch (\Exception $e)
         {
@@ -815,6 +829,11 @@ class Processor extends Base\Core
                     'file_name' => $fileInfo,
                     'error'     => $e,
                 ]);
+
+            $this->trace->count(\RZP\Constants\Metric::OPGSP_BEAM_PUSH,[
+                'status' => Constants::FAILED,
+                'job_name'  => $jobName
+            ]);
         }
     }
 
@@ -873,6 +892,12 @@ class Processor extends Base\Core
                             'Missing_Payment_Document'    => $invoicesNotPresent,
                             'Total_Documents_Missing'     => count($invoicesNotPresent)
                         ]);
+
+                    //slack alert for Missing invoices
+                    if (count($invoicesNotPresent) > 0) {
+                        $this->sendMissingInvoiceSlackAlert(count($invoicesNotPresent), $merchantId, $settlement->getId());
+                    }
+
 
                     $fileIdBatches = array_chunk($fileIds, Constants::INVOICE_ZIP_BATCH_SIZE);
 
@@ -1018,4 +1043,27 @@ class Processor extends Base\Core
 
         return $config[$bucketType];
     }
+
+    public function sendMissingInvoiceSlackAlert($invoiceCount, $merchantId, $settlementId)
+    {
+        try {
+            $team = "<!subteam^S07S8BBKG7K> <!subteam^S07PY6XESNB> "; // @cross-border-import-product, @cross-border-import-oncall in order
+            $text = $team . " <$invoiceCount> Invoices not received";
+            $data = [
+                'merchant_id' => $merchantId,
+                'settlement_id' => $settlementId,
+            ];
+            $channel = $this->app->config->get('slack.channels.tech-cross-border-alerts');
+            $color = 'danger';
+
+            LambdaService::slackPost($text, $data, $channel, '', $color);
+        } catch (Exception $e) {
+            $this->trace->error(
+                TraceCode::SLACK_PUSH_MESSAGE_FAILURE,[
+                    "error" => $e->getMessage()
+                ]
+            );
+        }
+    }
+
 }

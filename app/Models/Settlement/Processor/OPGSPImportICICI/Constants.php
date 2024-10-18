@@ -24,4 +24,15 @@ class Constants
     const FIELDSTODECRYPT = ['name', 'line1', 'line2', 'city', 'state', 'country', 'zipcode'];
 
     const  SLACK_CHANNEL = 'tech-cross-border-alerts';
+    const SUCCESS = 'Success';
+    const FAILED = 'Failed';
+    const BAD_REQUEST_PAYMENT_NOTES_MISSING                                          = 'BAD_REQUEST_PAYMENT_NOTES_MISSING';
+    const BAD_REQUEST_PAYMENT_INVOICE_NUMBER_NOT_FOUND                              = 'BAD_REQUEST_PAYMENT_INVOICE_NUMBER_NOT_FOUND';
+    const  BAD_REQUEST_PAYMENT_INVOICE_LENGTH_NOT_VALID                              ='BAD_REQUEST_PAYMENT_INVOICE_LENGTH_NOT_VALID';
+    const BAD_REQUEST_PAYMENT_ALREADY_EXIST_WITH_SAME_INVOICE_NUMBER                = 'BAD_REQUEST_PAYMENT_ALREADY_EXIST_WITH_SAME_INVOICE_NUMBER';
+    const BAD_REQUEST_PAYMENT_CUSTOMER_ID_NOT_FOUND                                  = 'BAD_REQUEST_PAYMENT_CUSTOMER_ID_NOT_FOUND';
+    const BAD_REQUEST_PAYMENT_ORDER_CUSTOMER_SHIPPING_ADDRESS_NOT_FOUND              = 'BAD_REQUEST_PAYMENT_ORDER_CUSTOMER_SHIPPING_ADDRESS_NOT_FOUND';
+    const BAD_REQUEST_INVALID_PURPOSE_CODE                                          = 'BAD_REQUEST_INVALID_PURPOSE_CODE';
+    const BAD_REQUEST_INVALID_HS_CODE                                               = 'BAD_REQUEST_INVALID_HS_CODE';
+    const LRS_ORDER_WITHOUT_TPV                                                     = 'LRS_ORDER_WITHOUT_TPV';
 }

@@ -108,4 +108,6 @@ class Constants
     const QR_VPA_FONT = 'Mulish-SemiBold.ttf';
 
     const POS_ACTIVATION_STATUS = 'pos_activation_status';
+
+    const IDS       = 'ids';
 }

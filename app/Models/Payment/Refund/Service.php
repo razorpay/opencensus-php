@@ -23,10 +23,11 @@ use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\Dcs\Features\Type;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Services\Ledger as LedgerService;
 
 use RZP\Models\Reversal;
-
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Reversal\Constants as ReversalConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -71,6 +72,7 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\Transaction\Processor\Refund as RefundTransactionProcessor;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransferCore;
 
 const TRANSACTION_NOT_FOUND = 'TRANSACTION_NOT_FOUND';
 const REFUND_REVERSAL_MUTEX_KEY = 'refund_reversal_create_';
@@ -1018,7 +1020,8 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
                                 $negativeAllowedFlows = (new BalanceConfig\Core)->getNegativeFlowsForBalance($balance->getId());
@@ -2508,6 +2511,17 @@ class Service extends Base\Service
         return $refund;
     }
 
+    public function getRefundReversalTxnFetchSplitzResponse($merchantId)
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.refund_reversal_txn_experiment'),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     public function createRefundReversal(string $refundId, array $input)
     {
         try
@@ -2520,8 +2534,18 @@ class Service extends Base\Service
                     $refund = $this->repo->refund->findOrFailPublic($refundId);
 
                     $processor = $this->getNewProcessor($refund->merchant);
-                    $refund->setFee($refund->transaction->getFee());
-                    $refund->setTax($refund->transaction->getTax());
+
+                    if ($this->getRefundReversalTxnFetchSplitzResponse($refund->merchant->getId()) === 'enable')
+                    {
+                        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantPaymentFetchReplica($refundId);
+                        $refund->setFee($txn->getFee());
+                        $refund->setTax($txn->getTax());
+                    }
+                    else
+                    {
+                        $refund->setFee($refund->transaction->getFee());
+                        $refund->setTax($refund->transaction->getTax());
+                    }
 
                     switch ($input['event'])
                     {
@@ -4232,7 +4256,7 @@ class Service extends Base\Service
 
         $response = [];
 
-        $transaction = $this->repo->transaction->findByEntityIdWithoutMerchant($input[RefundConstants::REFUND_ID]);
+        $transaction = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($input[RefundConstants::REFUND_ID]);
 
         if (empty($transaction) == true) {
             $error_data = [];
@@ -4249,5 +4273,63 @@ class Service extends Base\Service
         $response['transaction_data'] = $transaction;
 
         return $response;
+    }
+
+    public function dispatchEzetapRefundWebhook($input)
+    {
+        $this->trace->info(TraceCode::REFUND_EVENT_PAYLOAD, [
+            'message' => 'REFUND_EVENT_PAYLOAD',
+            'featureParams' =>  $input,
+        ]);
+        $decodedPayload = base64_decode($input['data']['payload']);
+
+        if($decodedPayload === false)
+        {
+            $this->trace->info(TraceCode::REFUND_PAYLOAD_DECODING_FAILED, [
+                'message' => 'REFUND_PAYLOAD_DECODING_FAILED',
+                'payload' =>  $input['data']['payload'],
+            ]);
+
+            return;
+        }
+
+        $payload = json_decode($decodedPayload,true) ;
+
+        if($payload === null)
+        {
+            $this->trace->info(TraceCode::REFUND_PAYLOAD_JSON_DECODING_FAILED, [
+                'message' => 'REFUND_PAYLOAD_JSON_DECODING_FAILED',
+                'payload' =>  $input['data']['payload'],
+                'decoded_payload' => $decodedPayload
+            ]);
+
+            return;
+        }
+
+        $refundId = $payload['event']['data']['refund']['id'];
+        Entity::silentlyStripSign($refundId);
+        $refund = $this->repo->refund->find($refundId);
+        $this->publishInPersonRefundEvent($refund, $payload['event']['name']);
+    }
+
+    public function publishInPersonRefundEvent($entity, $event)
+    {
+        try
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $entity
+            ];
+
+            $event = 'api.in.person.' . $event;
+
+            $this->app['events']->dispatch($event, $eventPayload);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::EZETAP_NOTIFICATION_PUBLISH_FAILED, [
+                'entity' => $entity->toArrayPublic(),
+                'event'  => $event
+            ]);
+        }
     }
 }

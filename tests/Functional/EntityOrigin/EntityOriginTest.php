@@ -29,6 +29,25 @@ class EntityOriginTest extends TestCase
 
     }
 
+    public function testEntityOriginOriginRelation()
+    {
+
+        $md = $this->fixtures->create('merchant_detail', []);
+
+        $entity = $this->fixtures->create('entity_origin', [
+            'id' => 'LhW4gs8JfWurz0',
+            'entity_type' => 'transfer',
+            'entity_id' => 'LhV9fg1fXagWCN',
+            'origin_type' => 'merchant_detail',
+            'origin_id' => $md->getId(),
+        ]);
+
+        $dbEntity = $this->getDbEntityById('entity_origin', $entity->getId());
+
+        $this->assertNotNull($dbEntity->origin);
+        $this->assertTrue($dbEntity->relationLoaded('origin'));
+    }
+
     /**
      * Asserts that the origin entity is created for a payment initiated using the merchant key.
      */

@@ -217,15 +217,15 @@ class CoreTest extends TestCase
         ]);
     }
 
-    public function testObwIsEnabled()
+    public function testDuitNowPayIsEnabled()
     {
         $methods = [
             'merchant_id'   => '8vUslVi0uFOSoy',
             'disabled_banks'=> [],
             'banks'         => '[]',
             'addon_methods' => [
-                'obw' => [
-                    'obw' => true,
+                'duitnow_pay' => [
+                    'duitnow_pay' => true,
                 ]
             ]
         ];
@@ -235,7 +235,7 @@ class CoreTest extends TestCase
 
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
 
-        $this->assertTrue($data['obw']);
+        $this->assertTrue($data['duitnow_pay']);
     }
 
 

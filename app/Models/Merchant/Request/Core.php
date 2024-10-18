@@ -592,7 +592,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('update', $input);
 
-        $this->transaction(function() use($request, $input) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($request, $input) {
 
             // Check form submissions on update
             if (($request->isProductRequest() === true) and

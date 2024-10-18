@@ -271,7 +271,7 @@ class Validator extends Base\Validator
     protected static $getSupportDashboardTicketsRules = [
         Constants::PAGE                         => 'required|integer|min:1',
         'per_page'                              => 'sometimes|integer|max:100',
-        'status'                                => 'sometimes|integer|min:2|max:6|nullable',
+        'status'                                => 'sometimes|custom:status|nullable',
         Constants::CF_REQUESTOR_CATEGORY        => 'sometimes',
         Constants::CF_REQUESTOR_SUBCATEGORY     => 'sometimes',
         Constants::CF_REQUESTOR_ITEM            => 'sometimes',
@@ -595,6 +595,36 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Invalid Responder Id: ' . $value);
         }
     }
+
+    protected function validateStatus($attribute, $status)
+    {
+        // Define the valid range
+        $min = 2;
+        $max = 6;
+
+        // Normalize $status to an array for uniform processing
+        $status = is_array($status) ? $status : [$status];
+
+        // Check each element in the array
+        foreach ($status as $value) {
+            // Check if it's a valid integer
+            if (!ctype_digit((string)$value)) {
+                throw new BadRequestValidationFailureException("The $attribute must be an integer.");
+            }
+
+            // Convert to integer for range checks
+            $value = (int) $value;
+
+            // Check if it's within the valid range
+            if ($value < $min) {
+                throw new BadRequestValidationFailureException("The $attribute must be at least $min.");
+            }
+            if ($value > $max) {
+                throw new BadRequestValidationFailureException("The $attribute may not be greater than $max.");
+            }
+        }
+    }
+
 
     protected function validateTicketType($attribute, $value)
     {

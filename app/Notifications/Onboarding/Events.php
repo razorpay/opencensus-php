@@ -162,17 +162,17 @@ class Events
         self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'Sms.Partner.Submerchant.Pos.Needs_clarification',
         self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                   => 'Sms.Partner.Submerchant.Pos.Needs_clarification',
 
-        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'sms.onboarding.in_person_under_review_with_device',
-        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'sms.onboarding.in_person_under_review',
-        self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'sms.onboarding.in_person_activated',
-        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE      => 'sms.onboarding.in_person_kyc_qualified_with_device',
-        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE   => 'sms.onboarding.in_person_kyc_qualified',
-        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE           => 'sms.onboarding.in_person_rejected_with_device',
-        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE        => 'sms.onboarding.in_person_rejected',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'sms.pos.under_review.order_placed',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'sms.onboarding.in_person_under_review_without_device',
+        self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'sms.pos.activated.order_placed',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE      => 'sms.pos.kyc_qualified.order_placed',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE   => 'sms.pos.kyc_qualified.order_pending',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE           => 'sms.pos.rejected.order_placed',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE        => 'sms.pos.rejected.order_pending',
         self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE         => 'sms.onboarding.in_person_nc_with_device',
-        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => 'sms.onboarding.in_person_nc',
-        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'sms.onboarding.in_person_nc_with_device',
-        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'sms.onboarding.in_person_nc',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => 'sms.onboarding.in_person_nc_without_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'sms.onboarding.nc_reminder_in_person_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'sms.onboarding.nc_reminder_in_person_without_device',
     ];
 
     // this list contain only NC events

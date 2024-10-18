@@ -338,6 +338,40 @@ return [
         ],
     ],
 
+    'testWebhookCreationWithRequestHeaderMerchantFlag' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'payment.authorized'   => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testWebhookCreationWithoutRequestHeader' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'payment.authorized'   => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testInvoicePaidWebhookEventData' => [
         'mode' => 'test',
         'event' => [

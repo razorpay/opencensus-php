@@ -7,6 +7,7 @@ use RZP\Base\ConnectionType;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Status;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class LeadsReport extends Leads
 {
@@ -54,8 +55,14 @@ class LeadsReport extends Leads
                 BankingAccount\Fetch::SKIP => $skip,
             ]);
 
-            /** @var  PublicCollection $bankingAccounts */
-            $bankingAccounts = $this->repo->banking_account->fetch($input, null, ConnectionType::SLAVE);
+
+            if ((new AsvRouter())->shouldRouteBeMigratedToTiDB("leadsReportGetData")) {
+                /** @var  PublicCollection $bankingAccounts */
+                $bankingAccounts = $this->repo->banking_account->fetch($input, null, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            } else {
+                /** @var  PublicCollection $bankingAccounts */
+                $bankingAccounts = $this->repo->banking_account->fetch($input, null, ConnectionType::SLAVE);
+            }
 
             foreach ($bankingAccounts as $bankingAccount)
             {

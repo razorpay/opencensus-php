@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const PAYER_VPA             = 'payer_vpa';
     const PROVIDER_REFERENCE_ID = 'provider_reference_id';
+    const PAYER_NAME            = 'payer_name';
 
     // This is what we receive in callback, this may or may not translate to QR code id
     // if it doesn't translate to QR code id, payment is made on Fallback QR

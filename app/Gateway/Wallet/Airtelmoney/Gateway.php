@@ -386,7 +386,8 @@ class Gateway extends Base\Gateway
             VerifyFields::TRANSACTION_DATE         => $date,
             VerifyFields::REQUEST                  => Constants::INQUIRY,
             VerifyFields::MERCHANT_ID              => $this->getMerchantId2(),
-            VerifyFields::AMOUNT                   => (string) $this->getFormattedAmount($input[Entity::PAYMENT][Payment\Entity::AMOUNT])
+            VerifyFields::AMOUNT                   => (string) $this->getFormattedAmount($input[Entity::PAYMENT][Payment\Entity::AMOUNT]),
+            VerifyFields::LANG_ID                  => "001",
         ];
 
         $data[VerifyFields::HASH] = $this->getHashOfArray($data, 'request');
@@ -578,6 +579,8 @@ class Gateway extends Base\Gateway
             AuthFields::CURRENCY                 => Currency::INR,
             AuthFields::END_MERCHANT_ID          => $this->getEndMerchantId(),
             AuthFields::CUSTOMER_MOBILE          => $this->input[Entity::PAYMENT]['contact'],
+            AuthFields::MNAME                    => $input[Entity::MERCHANT]['name'],
+            AuthFields::SESSION_ID               => uniqid(),
         ];
 
         $data[AuthFields::HASH] = $this->getHashOfArray($data, 'request');

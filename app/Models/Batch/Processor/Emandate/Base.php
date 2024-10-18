@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor\Emandate;
 
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use ZipArchive;
 use Carbon\Carbon;
 use DirectoryIterator;
@@ -11,6 +12,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Feature;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\FileProcessor;
 
@@ -70,9 +72,20 @@ abstract class Base extends BaseProcessor
 
         $time = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $transaction->setReconciledAt($time);
+        $data = [
+            BaseReconciliate::RECONCILED_AT => $time,
+        ];
 
-        (new SubReconciliate())->sendPaymentReconNFCDataToCLS($time, "", $entity);
+        $merchant = $transaction->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            (new SubReconciliate())->sendPaymentReconNFCDataToCLS($entity, $data);
+
+            return;
+        }
+
+        $transaction->setReconciledAt($time);
 
         $this->repo->saveOrFail($transaction);
     }

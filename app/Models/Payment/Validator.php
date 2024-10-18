@@ -522,6 +522,7 @@ class Validator extends Base\Validator
         'netbanking.status_code'               => 'required',
         'netbanking'                           => 'required|array',
         'cardless_emi'                         => 'sometimes',
+        'paylater'                             => 'sometimes',
         'netbanking.gateway_transaction_id'    => 'sometimes',
         'netbanking.bank_transaction_id'       => 'sometimes',
         'netbanking.bank_account_number'       => 'sometimes',
@@ -537,6 +538,7 @@ class Validator extends Base\Validator
         'payment'                                => 'sometimes',
         'wallet'                                 => 'sometimes',
         'netbanking'                             => 'sometimes',
+        'paylater'                               => 'sometimes',
         'cardless_emi'                           => 'required|array',
         'cardless_emi.gateway_reference_number'  => 'required',
         'cardless_emi.status_code'               => 'sometimes',
@@ -546,6 +548,23 @@ class Validator extends Base\Validator
         'meta.force_auth_payment'                => 'required|boolean',
         'meta.art_request_id'                    => 'required',
         'meta.version'                           => 'required',
+    ];
+
+    protected static $authorizeFailedPaylaterPaymentRules = [
+        'payment'                              => 'required|array',
+        'payment.method'                       => 'required|string|in:paylater',
+        'payment.id'                           => 'required|string|size:14',
+        'payment.amount'                       => 'required|integer',
+//        'paylater.status_code'                 => 'required',
+        'netbanking'                           => 'sometimes',
+        'cardless_emi'                         => 'sometimes',
+        'wallet'                               => 'sometimes',
+        'paylater'                             => 'sometimes',
+//        'paylater.gateway'                     => 'required|string',
+        'meta'                                 => 'required|array',
+        'meta.force_auth_payment'              => 'required|boolean',
+        'meta.art_request_id'                  => 'required',
+        'meta.version'                         => 'required',
     ];
 
     protected static $authorizeFailedCardPaymentRules = [
@@ -576,6 +595,7 @@ class Validator extends Base\Validator
         'wallet.status_code'                   => 'required',
         'netbanking'                           => 'sometimes',
         'cardless_emi'                         => 'sometimes',
+        'paylater'                             => 'sometimes',
         'wallet'                               => 'required|array',
         'wallet.wallet_transaction_id'         => 'sometimes',
         'wallet.gateway'                       => 'required|string',

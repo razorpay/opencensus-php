@@ -7,6 +7,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Currency;
 use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -276,6 +277,7 @@ class Service extends Base\Service
             }
             else
             {
+
                 unset($supportedCurrencies[$currency]);
             }
         }
@@ -307,16 +309,27 @@ class Service extends Base\Service
     {
         $requestedCurrencyData = [];
         $isCurrencyRequestIdFromRearch = false;
-
         $ratesTimestamp = $this->redis->get($this->getCurrencyRequestDataRedisKey($currencyRequestId));
-
         if(empty($ratesTimestamp) === true)
         {
+            $this->trace->count(Metric::CACHE_MISS_COUNT, [
+                'cache_key_name' => Metric::CURRENCY_EXCHANGE_RATE_REQUEST_VS_TIME_KEY,
+                'rearch' => "false"
+            ]);
             $ratesTimestamp = $this->redis->get($this->getCurrencyRequestDataRedisKeyForRearch($currencyRequestId));
 
             if(empty($ratesTimestamp) === false)
             {
+                $this->trace->count(Metric::CACHE_HIT_COUNT, [
+                    'cache_key_name' => Metric::CURRENCY_EXCHANGE_RATE_REQUEST_VS_TIME_KEY,
+                    'rearch' => "true"
+                ]);
                 $isCurrencyRequestIdFromRearch = true;
+            } else {
+                $this->trace->count(Metric::CACHE_MISS_COUNT, [
+                    'cache_key_name' => Metric::CURRENCY_EXCHANGE_RATE_REQUEST_VS_TIME_KEY,
+                    'rearch' => "true"
+                ]);
             }
         }
 
@@ -334,6 +347,18 @@ class Service extends Base\Service
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency]) === true))
             {
+                if ($isCurrencyRequestIdFromRearch) {
+                    $this->trace->count(Metric::CACHE_HIT_COUNT, [
+                        'cache_key_name' => Metric::CURRENCY_EXCHANGE_RATE_CURRENCY_KEY,
+                        'rearch' => "true"
+                    ]);
+                } else  {
+                    $this->trace->count(Metric::CACHE_HIT_COUNT, [
+                        'cache_key_name' => Metric::CURRENCY_EXCHANGE_RATE_CURRENCY_KEY,
+                        'rearch' => "false"
+                    ]);
+                }
+
                 $forexRate = number_format($rates[$requestedCurrency], 6, '.','');
 
                 $markUpPercent = $this->getDCCMarkUpPercentage($requestedCurrency, $baseCurrency, $merchantMarkUpPercent, $currencyLevelMarkups, $method, $currencyLevelDCCMarkupMap);

@@ -29,4 +29,6 @@ class AuthFields
     const MERCHANT_ID               = 'MID';
     const TRANSACTION_REFERENCE_NO  = 'TXN_REF_NO';
     const HASH                      = 'HASH';
+    const MNAME                     = 'MNAME';
+    const SESSION_ID                = 'feSessionId';
 }

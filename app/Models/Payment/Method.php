@@ -24,7 +24,7 @@ class Method
     const UNSELECTED            = 'unselected';
     const INTL_BANK_TRANSFER    = 'intl_bank_transfer';
     const FPX                   = 'fpx';
-    const OBW                   = 'obw';
+    const DUITNOW_PAY           = 'duitnow_pay';
     const RAZORPAY_ACCOUNT      = 'razorpay_account';
 
     protected static $methods = [
@@ -46,13 +46,14 @@ class Method
         self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer',
         self::FPX                   => 'Financial Process Exchange',
         self::RAZORPAY_ACCOUNT      => 'Razorpay Account',
-        self::OBW                   => 'Online Banking/Wallet'
+        self::DUITNOW_PAY           => 'DuitNow Pay'
     ];
 
     protected static $nonEsAutomaticMethods = [
         self::EMANDATE      => 'E-Mandate',
         self::BANK_TRANSFER => 'Bank Transfer',
         self::OFFLINE       => 'Offline',
+        self::DUITNOW_PAY   => 'duitnow_pay',
     ];
 
     protected static $preAuthorizeGooglePayMethods = [
@@ -69,6 +70,7 @@ class Method
         self::EMANDATE,
         self::UPI,
         self::FPX,
+        self::DUITNOW_PAY,
     ];
 
     public static $cpsEnabledMethods = [
@@ -125,18 +127,17 @@ class Method
         self::NETBANKING,
         self::UPI,
         self::EMANDATE,
+        self::EMI,
+        self::CARDLESS_EMI,
     ];
 
     const JPMC_IMPORT_FLOW_SUPPORTED_METHODS = [
         self::CARD,
         self::NETBANKING,
         self::UPI,
-    ];
-
-    const JPMC_IMPORT_FLOW_SUPPORTED_RECURRING_METHODS = [
-        self::CARD,
+        self::EMI,
+        self::CARDLESS_EMI,
         self::EMANDATE,
-        self::UPI
     ];
 
     const LRS_SUPPORTED_METHODS = [

@@ -684,6 +684,8 @@ return [
         'test_end_merchant_id'   => env('AIRTELMONEY_WALLET_TEST_END_MERCHANT_ID'),
         'live_merchant_id'       => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
         'live_hash_secret'       => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
+        'airtel_wallet_username' => env('AIRTEL_WALLET_USERNAME'),
+        'airtel_wallet_password' => env('AIRTEL_WALLET_PASSWORD'),
     ],
 
     'wallet_amazonpay' => [

@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Base\SubReconciliator;
 use App;
 use Carbon\Carbon;
 
+use RZP\Base\ConnectionType;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -13,7 +14,9 @@ use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Trace\TraceCode;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
@@ -30,6 +33,8 @@ use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Models\Batch\Processor\Reconciliation;
+use RZP\Models\Ledger\ReverseShadow as LedgerReverseShadow;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\RequestProcessor\Base as ReqBase;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
@@ -350,7 +355,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     protected function processReconciliationRow($row, $rowDetails, $paymentId)
     {
         // Setting reconciled attribute before pre Reconciled check to check for duplicate row
-        $this->reconciled = $this->checkIfAlreadyReconciled($this->payment);
+        $this->reconciled = $this->checkIfPaymentAlreadyReconciled($this->payment);
 
         // Increment the total count for the summary
         $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
@@ -435,9 +440,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
         $this->persistGatewayData($rowDetails);
 
-        $this->persistGatewaySettledAt($this->payment, $rowDetails);
+        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
-        $this->persistGatewayAmount($this->payment, $rowDetails);
+            $this->persistGatewayAmount($this->payment, $rowDetails);
+        }
 
         if ($this->payment->isRoutedThroughCardPayments() === true or $this->payment->getCpsRoute() ===  Payment\Entity::REARCH_CARD_PAYMENT_SERVICE )
         {
@@ -969,15 +977,23 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function getPaymentTransaction()
     {
-        if (($this->payment->isExternal() === false) or
-            ($this->payment->hasTransaction() === true))
-        {
-            return $this->payment->transaction;
-        }
-
-        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->payment);
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchantForConnectionType($this->payment, ConnectionType::PAYMENT_FETCH_REPLICA);
 
         return $txn;
+    }
+
+    protected function checkIfPaymentAlreadyReconciled($entity)
+    {
+        $txn = $this->getPaymentTransaction();
+
+        if ($txn === null)
+        {
+            // If transaction is not present, it would mean that
+            // the reconciliation did not happen for this.
+            return false;
+        }
+
+        return $txn->isReconciled();
     }
 
 
@@ -1047,16 +1063,38 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->createGatewayCapturedEntityIfApplicable($row);
 
-        $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
+        $this->persistCardDetailsIfAbsent($rowDetails);
+
+        $this->persistGatewayData($rowDetails);
+
+        $data = [];
+
+        $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails, $data);
+
+        if ($recordSuccess === true && $this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $time = time();
+            $data[BaseReconciliate::RECONCILED_AT] = $time;
+            $data[BaseReconciliate::RECONCILED_TYPE] = ReconciledType::MIS;
+            $data[BaseReconciliate::GATEWAY_AMOUNT] = $rowDetails[BaseReconciliate::GATEWAY_AMOUNT];
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => "Sending Payment Recon NFC Data to CLS",
+                    'payment_id'    => $this->payment->getId(),
+                    'data'          => $data
+                ]);
+
+            $this->sendPaymentReconNFCDataToCLS($this->payment, $data);
+
+            return $recordSuccess;
+        }
 
         if ($recordSuccess === true)
         {
             $this->persistReconciledAt($this->payment);
         }
-
-        $this->persistCardDetailsIfAbsent($rowDetails);
-
-        $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
@@ -2090,7 +2128,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->payment->setGatewayCaptured(true);
     }
 
-    public function recordGatewayFeeAndServiceTax($rowDetails)
+    public function recordGatewayFeeAndServiceTax($rowDetails, array &$data = [])
     {
         $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
@@ -2125,6 +2163,18 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 return false;
             }
 
+            if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                $data[BaseReconciliate::GATEWAY_FEE] = $reconGatewayFee;
+                $data[BaseReconciliate::GATEWAY_SERVICE_TAX] = $reconGatewayServiceTax;
+
+                (new ReverseShadowPaymentsCore())->createLedgerEntryForCaptureGatewayCommissionReverseShadow($this->payment, $reconGatewayFee, $reconGatewayServiceTax);
+
+                $this->paymentTransaction = $this->getPaymentTransaction();
+
+                return true;
+            }
+
             // Refresh both payment and transaction to get latest changes.
             // Reload txn because relation are cached.
             if ($this->payment->isExternal() === true)
@@ -2136,7 +2186,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             {
                 $this->paymentTransaction = $this->payment->reload()->transaction->reload();
             }
+        }
 
+        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $data[BaseReconciliate::GATEWAY_FEE] = $reconGatewayFee;
+            $data[BaseReconciliate::GATEWAY_SERVICE_TAX] = $reconGatewayServiceTax;
+
+            (new ReverseShadowPaymentsCore())->createLedgerEntryForCaptureGatewayCommissionReverseShadow($this->payment, $reconGatewayFee, $reconGatewayServiceTax);
+
+            return true;
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
@@ -2152,11 +2211,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             if ($recordGatewayServiceTaxSuccess === true)
             {
                 $this->paymentTransaction->saveOrFail();
-
-                if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
-                {
-                    (new ReverseShadowPaymentsCore())->createLedgerEntryForCaptureGatewayCommissionReverseShadow($this->payment, $reconGatewayFee, $reconGatewayServiceTax);
-                }
 
                 // commenting this as currently there is issue with kafka flush resulting in increase in batch processing time.
                 // Also, this data is not being used for dual comparison right now.
@@ -2401,9 +2455,20 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         else
         {
-            list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+            if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
 
-            $this->repo->saveOrFail($txn);
+                (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+
+            }
+            else
+                {
+
+                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+                $this->repo->saveOrFail($txn);
+
+            };
         }
 
         // This is required to save the association of the transaction with the payment.

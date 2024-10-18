@@ -192,6 +192,23 @@ class DEventsKafkaConsumer extends Command
             $conf->set('auto.offset.reset', 'largest');
 
         }
+        elseif (count($topics) == 1 and
+          (str_contains($topics[0], KafkaMessageProcessor::PROD_LIVE_REFUND_EVENTS) or
+            str_contains($topics[0], KafkaMessageProcessor::PROD_TEST_REFUND_EVENTS) or
+            str_contains($topics[0], KafkaMessageProcessor::STAGE_LIVE_REFUND_EVENTS) or
+            str_contains($topics[0], KafkaMessageProcessor::STAGE_TEST_REFUND_EVENTS)))
+        {
+            $consumerGroup = env('REFUND_EVENT_API_WORKER_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('session.timeout.ms', env('REFUND_EVENT_API_WORKER_SESSION_TIMEOUT'));
+
+            $conf->set('auto.offset.reset', 'largest');
+
+        }
         elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_ACK_TOPIC'))
         {
             $consumerGroup = env('PG_LEDGER_ACK_WORKER_CONSUMER_GROUP');
@@ -274,6 +291,10 @@ class DEventsKafkaConsumer extends Command
                 str_contains($topic, KafkaMessageProcessor::PGOS_STAGE_CDC_EVENTS) or
                 str_contains($topic, KafkaMessageProcessor::MERCHANT_POS_ACTIVATION_STAGE) or
                 str_contains($topic, KafkaMessageProcessor::MERCHANT_POS_ACTIVATION_PROD) or
+                str_contains($topic, KafkaMessageProcessor::PROD_LIVE_REFUND_EVENTS) or
+                str_contains($topic, KafkaMessageProcessor::PROD_TEST_REFUND_EVENTS) or
+                str_contains($topic, KafkaMessageProcessor::STAGE_LIVE_REFUND_EVENTS) or
+                str_contains($topic, KafkaMessageProcessor::STAGE_TEST_REFUND_EVENTS) or
                 (str_contains($topic, 'api_outbox') && str_contains($topic, 'partnerships')))
             {
                 $appMode = env('APP_MODE', 'prod');

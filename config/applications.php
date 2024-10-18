@@ -150,6 +150,12 @@ return [
             ]
     ],
 
+    'ezetap-notification' => [
+        'mock'          => env('EZETAP_WEBHOOK_MOCK', false),
+        'url'           => env('EZETAP_WEBHOOK_URL'),
+        'secret'        => env('EZETAP_WEBHOOK_SECRET'),
+    ],
+
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
@@ -1481,6 +1487,10 @@ return [
         'override_terminal_entity_reads' => env('OVERRIDE_TERMINAL_ENTITY_READS'),
     ],
 
+    'payment_methods' => [
+        'secret'        => env('PAYMENT_METHODS_API_SECRET'),
+    ],
+
     'pos_app' => [
       'secret' => env('POS_APP_SECRET'),
     ],
@@ -1805,6 +1815,7 @@ return [
         "splitz_send_reload_to_asv" => env('ASV_SPLITZ_SEND_RELOAD_TO_ASV', ''),
         "splitz_enable_exclusion_flow" => env('ASV_SPLITZ_ENABLE_EXCLUSION_FLOW', ''),
         'splitz_handle_open_transaction' => env('ASV_SPLITZ_HANDLE_OPEN_TRANSACTION', ''),
+        'splitz_fallback_to_asv_db' => env('ASV_SPLITZ_FALLBACK_TO_ASV_DB', ''),
     ],
 
     'recon'         => [
@@ -2010,6 +2021,11 @@ return [
         'ie_needs_clarification'        => env('INTERNATIONAL_PAYMENT_IE_NEEDS_CLARIFICATION_URL'),
     ],
 
+    'b2b_export_schedule' => [
+        'live'    => env('PAYMENTS_CROSS_BORDER_LIVE_SCHEDULE_ID'),
+        'test'    => env('PAYMENTS_CROSS_BORDER_TEST_SCHEDULE_ID'),
+    ],
+
     'key_management_service' => [
         'mock'      => env('KEY_MANAGEMENT_SERVICE_MOCK', false),
         'username'  => env('KEY_MANAGEMENT_SERVICE_KEY', 'api_user'),
@@ -2089,6 +2105,13 @@ return [
     ],
 
     'route' => [
+        'mock'   => env('ROUTE_MOCK', false),
+        'url'    => env('ROUTE_URL'),
+
+        // Username, password used API to call Route microservice
+        'username'  => env('ROUTE_SERVICE_USERNAME'),
+        'password'  => env('ROUTE_SERVICE_PASSWORD'),
+
         // Secret used by Route microservice to call API
         'secret' => env('ROUTE_API_SECRET'),
     ],

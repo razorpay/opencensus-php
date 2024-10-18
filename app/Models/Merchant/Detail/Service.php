@@ -690,9 +690,12 @@ class Service extends Base\Service
 
         $this->saveMerchantEligibilityForCategoriesV3Revamp($merchantId, $input, $merchant);
 
-        $loggedInUserRole=$this->auth->getUserRole();
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
 
-        if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and  $loggedInUserRole != User\Role::RAZORPAY_SALES)
+        // Check if POS details have been submitted and merchant details are set.
+        // Additionally, skip the process if the merchant's signup campaign is 'assisted_onboarding'.
+        if ($this->isPosDetailsSubmitted($isPosDetailsSubmitted) === true and  isset($merchantDetails) === true and
+            !empty($userDeviceDetail) && $userDeviceDetail->isAssistedOnboardedMerchant() !== true)
         {
             $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
 
@@ -700,14 +703,10 @@ class Service extends Base\Service
                 'pos_activation_flow' => $posActivationFlow
             ]);
 
-            //if l3 submission is not done by sales user then we should treat it as self serve merchant and create pos case and create online case as well if it was not created at l2 submission(only possible if l2 is submitted by sales user)
+            //if l3 submission is not done by sales user then we should create pos case
             // TODO: Maintain 'pos_submission' and 'pos_submitted_at' timestamps.
             // TODO: Implement 'pos_form_locked' flag.
             // TODO: Add validation to prevent edits to POS fields based on 'pos_form_locked' statu
-            if($merchantDetails->getActivationStatus() === null){
-                $input[Entity::ACTIVATION_FORM_MILESTONE] = DEConstants::L2_SUBMISSION;
-                $this->saveMerchantDetails($input, $merchant);
-            }
 
             if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
 
@@ -5367,6 +5366,22 @@ class Service extends Base\Service
                         'overall_duration'            => (microtime(true) - $startTime) * 1000,
                     ]);
                 }
+
+                if(isset($input[DetailConstants::MODULAR_MERCHANT_ACTIVATION]) === true and $input[DetailConstants::MODULAR_MERCHANT_ACTIVATION] === true)
+                {
+                    $this->trace->info(TraceCode::VKYC_ACTIVATION_STATUS_UPDATE_FLOW, [
+                        'activation_status'    => $input[Entity::ACTIVATION_STATUS],
+                        'merchant_id'          => $merchantId
+                    ]);
+
+                    unset($input[DetailConstants::MODULAR_MERCHANT_ACTIVATION]);
+
+                    if (empty($this->app['basicauth']->getMerchant()) === true)
+                    {
+                        $this->app['basicauth']->setMerchant($merchant);
+                    }
+                }
+
                 return $this->core->updateActivationStatus($merchant, $input, $merchant);
             case 'UPDATE_MERCHANT_ENTITY':
                 $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST_PGOS, [

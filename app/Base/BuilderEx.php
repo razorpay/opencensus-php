@@ -2,10 +2,12 @@
 
 namespace RZP\Base;
 
+use Closure;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
@@ -111,6 +113,67 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
 
         return false;
     }
+
+    protected function eagerLoadRelation(array $models, $name, Closure $constraints)
+    {
+        // Define the valid relation names
+        $migratedEagerLoadRelations = ['merchant', 'merchantDetail', 'maker'];
+
+        // Call parent method for relations not in the valid list
+        if (!in_array($name, $migratedEagerLoadRelations, true)) {
+            return parent::eagerLoadRelation($models, $name, $constraints);
+        }
+
+        try {
+            if ((new AsvRouter())->shouldRouteFilterToAsv("baseEagerLoadRelation")) {
+                return $this->loadRelation($models, $name, $constraints);
+            }
+        } catch (\Exception $ex) {
+            app('trace')->traceException($ex, Trace::ERROR, TraceCode::ASV_EAGER_LOAD_EXCEPTION, []);
+        }
+
+        return parent::eagerLoadRelation($models, $name, $constraints);
+    }
+
+    protected function loadRelation(array $models, $name, $constraints)
+    {
+        $result = [];
+        foreach ($models as $model) {
+            $method = 'get' . ucfirst($name) . 'Attribute'; // Dynamically create the method name
+
+            if (method_exists($model, $method)) {
+                // Access the attribute (triggers the method via magic)
+                $loadedModel = $model->$name;
+                if ($loadedModel != null) {
+                    $nestedRelations = $this->relationsNestedUnder($name);
+                    foreach ($nestedRelations as $relationName => $relationConstraints) {
+                        // Relation nesting beyond 2 levels is not supported.
+                        if (!str_contains($relationName, '.')) {
+                            $this->eagerLoadRelation([$loadedModel], $relationName, $relationConstraints);
+                        } else {
+                            app('trace')->info(TraceCode::ASV_EAGER_LOAD_IMPLEMENTATION, [
+                                "name" => $name,
+                                "method" => $method,
+                                "reason" => "Relation nesting beyond 2 levels"
+                            ]);
+                            return parent::eagerLoadRelation($models, $name, $constraints);
+                        }
+                    }
+                }
+                $result[] = $model;
+            } else {
+                app('trace')->info(TraceCode::ASV_EAGER_LOAD_IMPLEMENTATION, [
+                    "name" => $name,
+                    "method" => $method,
+                    "reason" => "Method implementation missing"
+                ]);
+                // Fallback to the parent method if the method does not exist
+                return parent::eagerLoadRelation($models, $name, $constraints);
+            }
+        }
+        return $result;
+    }
+
 
     public function get($columns = ['*'])
     {

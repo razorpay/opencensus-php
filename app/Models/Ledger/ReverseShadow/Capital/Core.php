@@ -148,15 +148,11 @@ class Core extends Base\Core
     }
 
     protected function generateMoneyParams($amount, $fee, $tax): array {
-        $moneyParams = [];
-
-        $moneyParams[Constants::LEDGER_ONDEMAND_SETTLEMENT_AMOUNT] = strval($amount);
-
-        $moneyParams[Constants::LEDGER_ONDEMAND_SETTLEMENT_FEE] = strval($fee-$tax);
-
-        $moneyParams[Constants::LEDGER_ONDEMAND_SETTLEMENT_TAX] = strval($tax);
-
-        return $moneyParams;
+        return [
+            Constants::LEDGER_ONDEMAND_SETTLEMENT_AMOUNT => (string) ($amount ?? 0),
+            Constants::LEDGER_ONDEMAND_SETTLEMENT_FEE => (string) (($fee ?? 0) - ($tax ?? 0)),
+            Constants::LEDGER_ONDEMAND_SETTLEMENT_TAX => (string) ($tax ?? 0),
+        ];
     }
 
     private function getTransactionAmountForTransactionType($journalResponse, $transactorType)

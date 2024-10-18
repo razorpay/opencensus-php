@@ -9,6 +9,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
+use RZP\Http\Request\Requests;
 use RZP\Jobs\OneCCReviewCODOrder;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\RzpOrders;
@@ -39,6 +40,7 @@ class Service extends \RZP\Models\Base\Service
     protected $mutex;
 
     const MUTEX_PREFIX_1CC = "1cc_order_action:";
+    const UPDATE_ABANDONED_QUOTE_PATH = 'v1/abandoned/magento/quote';
 
     public function __construct()
     {
@@ -200,6 +202,17 @@ class Service extends \RZP\Models\Base\Service
                 }
             }
             $result = (new OneClickCheckoutCore)->update1CcOrder($orderId, $orderMetaInput);
+
+            try {
+                $this->app['magic_checkout_service_client']->sendRequest(self::UPDATE_ABANDONED_QUOTE_PATH, ['order_id'=>$orderId, 'merchant_id'=>$this->merchant->getId()], Requests::POST);
+            } catch (\Throwable $e) {
+                //just catching the exception so that UI gets success response as email would already been updated in RZP order
+                // even in cases where email is not updated in abandoned_quote of magento
+                $this->trace->error(TraceCode::UPDATE_EMAIL_ABANDONED_QUOTE_ERROR, [
+                    'error_message' => $e->getMessage(),
+                    'exception'=> $e->getTrace()
+                ]);
+            }
 
             $duration = millitime() - $startTime;
             $this->trace->histogram(Metric::UPDATE_CUSTOMERS_DETAILS_TIME_MILLIS, $duration, $dimensions);

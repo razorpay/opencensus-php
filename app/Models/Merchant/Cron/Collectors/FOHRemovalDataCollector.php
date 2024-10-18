@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Cron\Collectors;
 
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -356,7 +357,14 @@ class FOHRemovalDataCollector extends DbDataCollector
 
         foreach ($merchantIdList as $merchantId)
         {
-            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, Merchant\Balance\Type::PRIMARY) ?? null;
+            $connectionType = (new Merchant\Service)->isReadFromTiDBExpEnabled($merchantId) ?
+                ConnectionType::DATA_WAREHOUSE_MERCHANT : null;
+
+            $this->app['trace']->info(TraceCode::FILTER_NEGATIVE_PRIMARY_BALANCE_MERCHANTS_CONNECTION_TYPE, [
+                'connection_type' => $connectionType
+            ]);
+
+            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, Merchant\Balance\Type::PRIMARY, $connectionType) ?? null;
 
             if (empty($balance) === false)
             {

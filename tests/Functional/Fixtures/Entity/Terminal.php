@@ -222,6 +222,7 @@ class Terminal extends Base
             'gateway'                   => 'upi_icici',
             'gateway_merchant_id'       => 'abcd_bharat_qr',
             'gateway_terminal_id'       => 'abcde',
+            'gateway_merchant_id2'       => 'random@icici',
             'gateway_acquirer'          => 'ratn',
             'gateway_terminal_password' => 'abcdef',
             'upi'                       => true,
@@ -1313,6 +1314,28 @@ class Terminal extends Base
                     Type::PAY               => '1',
                     Type::NON_RECURRING     => '1',
                     Type::ONLINE            => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDedicatedUpiJkTerminal($attributes)
+    {
+        $defaultValues = [
+            'id'                        => '102JkbanDedTml',
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => 'upi_jkbank',
+            'gateway_merchant_id'       => '1357901',
+            'vpa'                       => 'rzp.qrTest@jkbank',
+            'upi'                       => true,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::COLLECT           => '1',
+                Type::OFFLINE            => '1',
             ],
         ];
 
@@ -4293,6 +4316,31 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDedicatedUpiRzpapbOnlineTerminal($attributes)
+    {
+        $termId = 'RzpApbOnlTrmnl';
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_rzpapb',
+            'gateway_merchant_id'       => '10000000000000',
+            'vpa'                       => 'testvpa@rxairtel',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::ONLINE            => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createUpiKotakTerminal()
     {
         $attributes = [];
@@ -4943,6 +4991,28 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createNetbankingOptimizerTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectOptiTn',
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'type'                      => [
+                Type::OPTIMIZER                        => '1',
                 Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
                 Type::NON_RECURRING                    => '1',
             ],

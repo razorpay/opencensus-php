@@ -252,7 +252,7 @@ class Provider
     {
         $paymentArray = (new Payment\Entity)->getDummyPaymentArray($method, $receiver, $network, $metadata);
 
-        $paymentProcessor = new PaymentProcessor($receiver->merchant);
+        $paymentProcessor = new PaymentProcessor($receiver->merchant, $paymentArray);
 
         return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }

@@ -8881,6 +8881,71 @@ class CoreTest extends TestCase
         $this->assertEquals('system', $statusChangedBy);
     }
 
+    public function testUpdateActivationStatusFromEDDPendingToActivated()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'edd_pending',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchantUser = $this->fixtures->connection('live')->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->connection('live')->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+                "workflow_details" => [
+                    "pg_onboarding_workflow_type" =>"MODULAR_ONBOARDING"
+                ]
+            ]
+        ]);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
     public function testUpdateActivationStatusFromKQUToActivatedByAdmin()
     {
         Mail::fake();
@@ -18967,6 +19032,68 @@ class CoreTest extends TestCase
         // Asserting form is Locked after Merchant Responded to Nc
         $this->assertTrue($merchantDetail->isLocked());
 
+    }
+
+    public function testSubmitMerchantInternalForPartner()
+    {
+        Queue::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+        $kafkaProducerMock = \Mockery::mock('overload:RZP\Services\KafkaProducer'); // 'overload' allows Mockery to mock the instantiation.
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->andReturn(true);
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_fetch_activation_status';
+            })->andReturn(["pos_activation_status"=>"needs_clarification"]);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->times(1)
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_update_activation_status';
+            })->andReturn(["pos_activation_status"=>'under_review']);
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "contact_mobile"=>"7355206348",
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'partner_assisted_onboarding'
+        ]);
+
+        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+            'submit'                  => 1,
+            'onboarding_type'         => "pos"
+        ]);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        // Asserting form is Locked after Merchant Responded to Nc
+        $this->assertTrue($merchantDetail->isLocked());
     }
 
 }

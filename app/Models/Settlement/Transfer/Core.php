@@ -11,6 +11,7 @@ use RZP\Models\Settlement\Status;
 use RZP\Models\Settlement\Destination;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransferCore;
 
 class Core extends Base\Core
 {
@@ -52,9 +53,9 @@ class Core extends Base\Core
                 'destination_merchant_id' => $destinationMerchantId,
             ]);
 
-        $destinationBalance = $this->repo
-                                   ->balance
-                                   ->getMerchantBalanceByType($destinationMerchantId, $balanceType);
+        $destinationMerchant = $this->repo->merchant->findOrFail($destinationMerchantId);
+
+        $destinationBalance= (new ReverseShadowTransferCore())->getBalanceByTypeFromHarvesterForMerchantWithoutFail($destinationMerchant, $balanceType);
 
         //
         // We should not transfer the money to the same balance ID

@@ -502,7 +502,7 @@ class OffersEngine extends Base\Core
         }
         else
         {
-            $benefits = $this->getThenForNonEmi($offer,$benefitType);
+            $benefits = $this->getThenForNonEmi($offer, $benefitType);
         }
 
         $discoverConditions[Constants::RULES][] = [
@@ -708,6 +708,11 @@ class OffersEngine extends Base\Core
                 Constants::APPLICABLE_ON => 'Order.total_amount',   // might not be needed for 'already_discounted'
             ];
         }
+
+        if ($benefitType === 'vouchers') {
+            unset($benefits[$benefitType][Constants::APPLICABLE_ON]);
+        }
+
         return $benefits;
     }
 
@@ -965,13 +970,17 @@ class OffersEngine extends Base\Core
                 $offer->setAttribute(Entity::FLAT_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::FLAT_DISCOUNT]);
                 $offer->setAttribute(Entity::PERCENT_RATE, null);
                 $offer->setAttribute(Entity::MAX_CASHBACK, null);
-            } else
+            }
+            else
             {
                 $offer->setAttribute(Entity::FLAT_CASHBACK, null);
                 $offer->setAttribute(Entity::PERCENT_RATE, $availCondition[Constants::THEN][0][$discountType][0][Constants::PERCENTAGE_DISCOUNT]);
-                if ($availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT] !== null) {
+                if ($availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT] !== null)
+                {
                     $offer->setAttribute(Entity::MAX_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT]);
-                } else {
+                }
+                else
+                {
                     // set max cashback to 0 if not present
                     // there are no active offers with max_cashback nil and creation os such offers is not allowed for percent discount.
                     $offer->setAttribute(Entity::MAX_CASHBACK, 0);
@@ -1234,9 +1243,11 @@ class OffersEngine extends Base\Core
 
         $this->isDummyPayment = $isDummyPayment;
 
+        $intentToSaveCard = $offer->isCardSaved();
+
         try
         {
-            $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin);
+            $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
 
             $response = $this->app['offers_engine']->validateOffer($merchantId, [
                 'offer_id' => $offer->getPublicId(),
@@ -1250,7 +1261,7 @@ class OffersEngine extends Base\Core
                     [Constants::VALIDATE_CARD_NUMBER_REQUIRED_ERROR,
                     Constants::VALIDATE_MISSING_FACT_ERROR], true) === true )
                 {
-                    $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin);
+                    $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
 
                     $response = $this->app['offers_engine']->validateOffer($merchantId, [
                         'offer_id' => $offer->getPublicId(),
@@ -1280,7 +1291,8 @@ class OffersEngine extends Base\Core
         }
     }
 
-    private function buildValidateFact(bool $validateWithCardPAR, string $cardIin): array
+    private function buildValidateFact(
+        bool $validateWithCardPAR, string $cardIin, bool $intentToSaveCard = false): array
     {
         $fact = array();
         $instrumentFact = array();
@@ -1303,12 +1315,15 @@ class OffersEngine extends Base\Core
             }
 
             $instrumentFact = [
-                Constants::CARD_TYPE => strtolower($this->payment->card->getType()),
-                Constants::CARD_NETWORK => $this->payment->card->getNetworkCode(),
-                Constants::IIN => $cardIin,
-                Constants::ISSUER => $this->payment->card->getIssuer(),
-                Constants::IS_CARD_INTERNATIONAL => $this->payment->card->isInternational(),
+                Constants::CARD_TYPE               => strtolower($this->payment->card->getType()),
+                Constants::CARD_NETWORK            => $this->payment->card->getNetworkCode(),
+                Constants::IIN                     => $cardIin,
+                Constants::ISSUER                  => $this->payment->card->getIssuer(),
+                Constants::IS_CARD_INTERNATIONAL   => $this->payment->card->isInternational(),
                 Constants::CARD_COBRANDING_PARTNER => $coBrandingPartner,
+                Constants::CARD                    => [
+                    Constants::IS_CARD_SAVED => $intentToSaveCard,
+                ],
             ];
         }
 

@@ -226,6 +226,7 @@ class Processor extends VirtualAccount\Processor
                     'unexpected_reason' => $bankTransfer->getUnexpectedReason(),
                     Entity::GATEWAY => $bankTransfer->getGateway(),
                     Entity::REQUEST_SOURCE => $bankTransfer->getRequestSource() ?? '',
+                    'isCollectxBankTransfer' => $isCollectXBankTransferPayment,
                 ]
             );
 
@@ -378,7 +379,6 @@ class Processor extends VirtualAccount\Processor
             }
         }
     }
-
     public function dispatchEventForLedgerTransactionCreated(Base\PublicEntity $bankTransfer, string $txnId, string $merchantId)
     {
         if ($bankTransfer->isBalanceTypeBanking() === true) {
@@ -398,6 +398,7 @@ class Processor extends VirtualAccount\Processor
         {
             assertTrue($this->virtualAccount->isBalanceTypePrimary(), 'Attempted processing VA payment incorrectly!');
         }
+
         assertTrue($this->repo->isTransactionActive(), 'Attempted processing VA payment without transaction!');
 
         $paymentInput = [];
@@ -438,6 +439,7 @@ class Processor extends VirtualAccount\Processor
             $this->virtualAccount->updateWithBankTransfer($bankTransfer);
 
             $this->repo->saveOrFail($this->virtualAccount);
+
         } catch (Exception $ex) {
             $this->app['diag']->trackBankTransferEvent(
                 EventCode::BANK_TRANSFER_UNEXPECTED_PAYMENT,
@@ -883,7 +885,8 @@ class Processor extends VirtualAccount\Processor
             [
                 'balance_type' => $balanceType,
                 'virtual_account_id' => $this->virtualAccount->getId(),
-                'validation_flow' => $isValidationFlow
+                'validation_flow' => $isValidationFlow,
+                'isCollectXBankTransferPayment' => $isCollectXBankTransferPayment,
             ]
         );
 

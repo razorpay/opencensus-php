@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Base\Utility;
 use RZP\Exception\LogicException;
+use RZP\Mail\Base\EmailHelper;
 
 class Otp extends Mailable
 {
@@ -194,5 +195,49 @@ class Otp extends Mailable
     {
         // E.g. 'Verify Contact', 'Create Payout' etc, used in blade file.
         return ucwords(str_replace('_', ' ', $this->input['action']));
+    }
+
+    public function shouldSendEmailViaStork(): bool
+    {
+        $flag = false;
+
+        switch ($this->input['action'])
+        {
+            case 'verify_email':
+                $flag =  (new EmailHelper)->isStorkSupportedCheckViaSplitz($this->user['id'], '', 'otp_email_verify') ?? false;
+                break;
+            default:
+                break;
+
+        }
+        return $flag;
+
+    }
+
+    public function getParamsForStork(): array
+    {
+
+        $storkParams = [];
+
+        // we can add other actions later
+        switch ($this->input['action'])
+        {
+            case 'verify_email':
+                $data = 
+                [
+                    'otp'        => $this->otp,
+                ];
+                $storkParams = 
+                [
+                    'template_name' => 'banking_mail_otp_email_verify',
+                    'template_namespace' => 'payments_banking',
+                    'params' => $data,
+                ];
+                break;
+            default:
+                break;
+
+        }
+        return $storkParams;
     }
 }

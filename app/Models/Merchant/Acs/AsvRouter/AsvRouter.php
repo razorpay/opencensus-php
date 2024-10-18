@@ -502,6 +502,15 @@ class AsvRouter
     }
 
     public function shouldRouteBeMigratedToTiDB(string $functionName) : bool {
+
+        if (in_array($functionName, AsvMaps\RepoAndFunctionToSplitzMap::SPLITZ_REMOVED_TIDB_FILTER) === true) {
+            $this->trace->count(Metric::TIDB_FILTER_ROUTING_RESULT, [
+                "functionName" => $functionName,
+                "shouldRouteBeMigratedToTiDB" => true,
+            ]);
+            return $this->shouldRouteToAsv();
+        }
+
         $result = $this->splitzHelper->checkSplitzVariantForAsvTiDBMigration($functionName);
 
         $this->trace->count(Metric::TIDB_FILTER_ROUTING_RESULT, [
@@ -525,6 +534,21 @@ class AsvRouter
         try
         {
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForHandlingOpenTransaction();
+
+            return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+        } catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
+
+            return false;
+        }
+    }
+
+    public function shouldFallbackToAsvDB(string $callingIdentifier) : bool
+    {
+        try
+        {
+            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFallbackToASVDB();
 
             return $this->splitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
         } catch (\Exception $e)

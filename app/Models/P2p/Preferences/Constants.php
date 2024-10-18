@@ -195,51 +195,19 @@ class Constants
     public static array $prefetchBankListInUAT = [
         [
             "priority"     => "0",
-            "iin"          => "508548",
-            "display_name" => "SBI",
-            "bank_logo"    => "https://cdn.razorpay.com/bank/SBIN.gif"
+            "iin"          => "607153",
+            "display_name" => "Axis",
         ],
         [
             "priority"     => "1",
-            "iin"          => "901345",
-            "display_name" => "HDFC",
-            "bank_logo"    => "https://cdn.razorpay.com/bank/HDFC.gif"
+            "iin"          => "504432",
+            "display_name" => "MyPSP",
         ],
         [
             "priority"     => "2",
-            "iin"          => "508534",
-            "display_name" => "ICICI",
-            "bank_logo"    => "https://cdn.razorpay.com/bank/ICIC.gif"
-        ],
-        [
-            "priority"     => "3",
-            "iin"          => "607420",
-            "display_name" => "Kotak",
-            "bank_logo"    => "https://cdn.razorpay.com/bank/KKBK.gif"
-        ],
-        [
-            "priority"     => "4",
-            "iin"          => "607153",
-            "display_name" => "Axis",
-            "bank_logo"    => "https://cdn.razorpay.com/bank/UTIB.gif"
-        ],
-        [
-            "priority"     => "5",
-            "iin"          => "508568",
-            "display_name" => "IDBI",
-            "bank_logo"    => "https://www.axisbank.com/bank_logos/idbi.png"
-        ],
-        [
-            "priority"     => "6",
-            "iin"          => "508568",
-            "display_name" => "PNB",
-            "bank_logo"    => "https://cdn.razorpay.com/bank/PUNB.gif"
-        ],
-        [
-            "priority"     => "7",
-            "iin"          => "607189",
-            "display_name" => "IndusInd",
-            "bank_logo"    => "https://cdn.razorpay.com/bank/INDB.gif"
+            "iin"          => "508548",
+            "display_name" => "SBI",
+            "bank_logo" => "https://cdn.razorpay.com/bank/SBIN.gif"
         ]
     ];
 

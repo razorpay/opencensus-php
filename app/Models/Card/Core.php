@@ -668,13 +668,11 @@ class Core extends Base\Core
         // set dummy cvv for tokenised Visa via cryptogram cvvless flow
         if ($card->isVisa() && boolval($input[Card\Entity::TOKENISED]) === true
             && empty($input[Card\Entity::CVV]) === true) {
-
-            $input['cvv'] = '123';
-
+            $input['cvv'] = '';
             $this->trace->info(
                 TraceCode::CVV_OPTIONAL,
                 [
-                    'message'       => 'Setting cvv to dummy value',
+                    'message'       => 'Setting cvv to empty value',
                 ]
             );
         }
@@ -744,7 +742,21 @@ class Core extends Base\Core
 
         $card->setVault($vault);
     }
+    public function getSplitzResponse()
+    {
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.alt_id-fallback_api'),
+            'request_data'  => json_encode(
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                ]),
+        ];
 
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
     public function fetchAltIdData(array $fetchAltIdRequest, array $input, array & $gatewayInput, array & $terminalGatewayInput, $payment)
     {
         $response = null;
@@ -761,20 +773,31 @@ class Core extends Base\Core
 
             $response = $cardVault->fetchAltIdData($fetchAltIdRequest);
 
-
-
-//            $this->trace->info(
-//                TraceCode::VAULT_ALT_ID_RESPONSE,
-//                [
-//                    'alt_id_response'        => $response,
-//                ]);
-
             if(isset($response['token']) && isset($response['alt_id']['value']))
             {
                 $customProperties['alt_id_status'] = true;
                 $customProperties['alt_id_value'] = $response['alt_id']['value'];
 
                 $this->app['diag']->trackPaymentEventV2(EventCode::GUEST_CHECKOUT_RESPONSE_RECEIVED, $payment, null, [], $customProperties);
+            }
+            else {
+                $splitzMerchantResult = $this->getSplitzResponse();
+
+                if (strtolower($splitzMerchantResult) === 'enable')
+                {
+                    $this->trace->error(
+                        TraceCode::ALT_ID_FETCH_ERROR,
+                        [
+                            'message_No_response'       => 'Failed to fetch alt id data'
+                        ]
+                    );
+                } else{
+                    if(app()->isEnvironmentQA() === false and app()->runningUnitTests() === false) {
+                        $exception = new Exception\GatewayErrorException(
+                            ErrorCode::GATEWAY_ERROR_ALT_ID_CREATE_ERROR, null);
+                        throw $exception;
+                    }
+                }
             }
 
         }
@@ -800,6 +823,8 @@ class Core extends Base\Core
             $customProperties['err']['network_error_description'] = $exceptionData['data']['error']['gateway_error_description'] ?? '';
 
             $this->app['diag']->trackPaymentEventV2(EventCode::GUEST_CHECKOUT_RESPONSE_RECEIVED, $payment, $e, [], $customProperties);
+
+            throw $e;
         }
 
         // need to update this as we use terminalGatewayInput during authentication
@@ -1200,7 +1225,7 @@ class Core extends Base\Core
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             CARD\Entity::IS_CVV_OPTIONAL        => false,
-            Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::CVV                    => $input['card']['cvv'] ?? "",
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
@@ -1235,13 +1260,11 @@ class Core extends Base\Core
         if (Card\Network::getFullName(Network::VISA) === $card->getNetwork()
             && boolval($input[Card\Entity::TOKENISED]) === true
             && empty($input[Card\Entity::CVV]) === true) {
-
-            $input[Card\Entity::CVV ] = "123";
-
+            $input['cvv'] = '';
             $this->trace->info(
                 TraceCode::CVV_OPTIONAL,
                 [
-                    'message'       => 'Setting cvv to dummy value',
+                    'message'       => 'Setting cvv to empty value',
                 ]
             );
         }
