@@ -133,6 +133,12 @@ class MccConfig
             self::MAX_COLLECT_AMOUNT    => 50000000,
             self::MAX_INTENT_AMOUNT     => 50000000,
 	    ],
+        "9311"=> [
+            self::IS_INTENT_ALLOWED     => true,
+            self::IS_COLLECT_ALLOWED    => true,
+            self::MAX_COLLECT_AMOUNT    => 50000000,
+            self::MAX_INTENT_AMOUNT     => 50000000,
+        ],
     ];
 
     /**
