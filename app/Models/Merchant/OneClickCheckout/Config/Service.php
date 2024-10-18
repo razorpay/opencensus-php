@@ -625,7 +625,7 @@ class Service extends Base\Service
             self::MUTEX_KEY . ':' . $this->merchant->getId() . ':' . Type::ONE_CC_PARTIAL_PAYMENTS_COD,
             function () use ($partialCod)
             {
-                (new Core())->associateMerchant1ccCODConfig(
+                (new Core())->associateMerchant1ccIntelligenceConfig(
                     Type::ONE_CC_PARTIAL_PAYMENTS_COD,
                     $partialCod[Constants::ENABLED],
                     $partialCod[Constants::CONFIGS] ?? []);
