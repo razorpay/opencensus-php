@@ -1143,48 +1143,68 @@ class Core extends Base\Core
 
         if (empty($balanceId) === true)
         {
-            $shouldDefaultToXBalance = $this->app->razorx->getTreatment($fundAccValidation->merchant->getId(),
-                RazorxTreatment::FAV_PG_LEDGER_CUTOFF,
+            $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                $fundAccValidation->merchant->getId(),
+                Balance\Type::BANKING,
+                Balance\AccountType::SHARED,
                 $this->mode);
 
-            if ($shouldDefaultToXBalance === RazorxTreatment::RAZORX_VARIANT_ON)
+            //if X shared account is present then use it else throw an error
+            if ($balance === null)
             {
-                $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-                    $fundAccValidation->merchant->getId(),
-                    Balance\Type::BANKING,
-                    Balance\AccountType::SHARED,
-                    $this->mode);
-
-                //if X shared account is present then use it else throw an error
-                if ($balance === null)
-                {
-                    $this->trace->info(TraceCode::FAV_PG_LEDGER_CUTTOFF_ACCOUNT_NOT_FOUND,
-                        [
-                            "variant"      => $shouldDefaultToXBalance,
-                            "merchant_id"  => $fundAccValidation->merchant->getId()
-                        ]);
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_RAZORPAYX_ACCOUNT_NUMBER_IS_INVALID,
-                        Balance\Entity::ACCOUNT_NUMBER,
-                        []);
-                }
-
-                $input[Entity::BALANCE_ID] = $balance->getId();
+                $balance = $this->handleExceptionalPGBalanceFAV($fundAccValidation);
             }
-            else
-            {
-                $balance = $fundAccValidation->merchant->primaryBalance;
-            }
+
+            $input[Entity::BALANCE_ID] = $balance->getId();
         }
         else
         {
+            /** @var Balance\Entity $balance */
             $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $fundAccValidation->merchant);
+
+            if ($balance->getType() == Balance\Type::PRIMARY)
+            {
+                $this->trace->info(TraceCode::FAV_PG_LEDGER_CUTTOFF_ACCOUNT_NOT_FOUND,
+                    [
+                        "merchant_id" => $fundAccValidation->merchant->getId()
+                    ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_RAZORPAYX_ACCOUNT_NUMBER_IS_INVALID,
+                    Balance\Entity::ACCOUNT_NUMBER,
+                    []);
+            }
         }
 
         $this->blockFAVIfApplicable($balance);
 
         $fundAccValidation->balance()->associate($balance);
+    }
+
+
+    protected function handleExceptionalPGBalanceFAV(Entity $fundAccValidation)
+    {
+        $shouldAllowPGBalance = $this->app->razorx->getTreatment($fundAccValidation->merchant->getId(),
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF,
+            $this->mode);
+
+        if ($shouldAllowPGBalance === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $balance = $fundAccValidation->merchant->primaryBalance;
+
+            return $balance;
+        }
+
+        $this->trace->info(TraceCode::FAV_PG_LEDGER_CUTTOFF_ACCOUNT_NOT_FOUND,
+            [
+                "variant" => $shouldAllowPGBalance,
+                "merchant_id" => $fundAccValidation->merchant->getId()
+            ]);
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_RAZORPAYX_ACCOUNT_NUMBER_IS_INVALID,
+            Balance\Entity::ACCOUNT_NUMBER,
+            []);
     }
 
     protected function blockFAVIfApplicable($balance)

@@ -8,6 +8,7 @@ use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Models\Admin\Admin;
 use RZP\Jobs\FavQueueForFTS;
+use RZP\Services\RazorXClient;
 use RZP\Models\FundAccount\Type;
 use RZP\Models\FundAccount\Validation\Core as FavCore;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
@@ -56,6 +57,24 @@ class FavFtaDeprecationTest extends TestCase
         $this->mockRazorxTreatment();
     }
 
+    public function enableRazorXTreatmentForPGLedgerCutoff()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === 'fav_pg_ledger_cutoff')
+                {
+                    return 'on';
+                }
+
+                return 'control';
+            });
+    }
+
     public function testCreateFav()
     {
         Queue::fake();
@@ -63,6 +82,10 @@ class FavFtaDeprecationTest extends TestCase
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] = $fundAccountResponse['id'];
+
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
+
+        $this->createFAVBankingPricingPlan();
 
         $this->startTest();
 
@@ -143,10 +166,15 @@ class FavFtaDeprecationTest extends TestCase
                     FundAccount::ID => $fundAccountResponse['id'],
                 ],
                 Validation::CURRENCY     => 'INR',
+                Validation::AMOUNT       => 100,
                 Validation::NOTES        => [],
                 Validation::RECEIPT      => '12345667',
             ],
         ];
+
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
+
+        $this->createFAVBankingPricingPlan();
 
         $this->makeRequestAndGetContent($request);
 

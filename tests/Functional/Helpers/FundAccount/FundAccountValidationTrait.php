@@ -15,7 +15,7 @@ trait FundAccountValidationTrait
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $response = $this->startTest();
 
@@ -180,7 +180,7 @@ trait FundAccountValidationTrait
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
 
         $response = $this->startTest();
 

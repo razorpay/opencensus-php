@@ -616,6 +616,23 @@ class BankingAccountTpvTest extends TestCase
         $this->assertNotNull($tpv);
     }
 
+    public function enableRazorXTreatmentForPGLedgerCutoff()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::FAV_PG_LEDGER_CUTOFF))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+    }
+
     public function testCreateTpvFromXDashboard()
     {
         $attribute =
@@ -634,6 +651,8 @@ class BankingAccountTpvTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000', $ownerRoleUser->getId());
 
         $this->ba->addXOriginHeader();
+
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 
@@ -705,6 +724,8 @@ class BankingAccountTpvTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000', $adminRoleUser->getId());
 
         $this->ba->addXOriginHeader();
+
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
 
         $this->startTest();
 
@@ -813,6 +834,8 @@ class BankingAccountTpvTest extends TestCase
         $this->ba->addXOriginHeader();
 
         $request = & $this->testData[__FUNCTION__]['request'];
+
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 
@@ -1021,6 +1044,8 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
+
         $response = $this->startTest();
 
         $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
@@ -1069,6 +1094,8 @@ class BankingAccountTpvTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
+
         $response = $this->startTest();
 
         $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
@@ -1116,6 +1143,8 @@ class BankingAccountTpvTest extends TestCase
         $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
 
         $this->ba->addXOriginHeader();
+
+        $this->enableRazorXTreatmentForPGLedgerCutoff();
 
         $response = $this->startTest();
 
