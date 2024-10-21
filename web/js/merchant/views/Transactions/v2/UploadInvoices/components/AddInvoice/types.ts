@@ -16,13 +16,11 @@ export type AddInvoiceType = {
 export type UploadInvoiceType = {
   onUpload: (file: File) => void;
   onRemove: () => void;
+  showNotification: AddInvoiceType['showNotification'];
   file: File | null;
 };
 
-export type FetchInvoiceType = UploadInvoiceType & {
-  onUpload: UploadInvoiceType['onUpload'];
-  showNotification: AddInvoiceType['showNotification'];
-};
+export type FetchInvoiceType = UploadInvoiceType;
 
 export type FetchOnboardingStatusResponse =
   | Array<{

@@ -27,6 +27,7 @@ export type FormikValues = {
 export type FormWrapperProps = {
   children: React.ReactChild;
   partner: Partner;
+  user: { gstin?: string };
 };
 
 export type LoginDetailsProps = {
@@ -39,13 +40,15 @@ export type OtpInputProps = {
   onResendOtp: () => Promise<unknown>;
 };
 
-export type PartnerLoginProps = {
+export type ModalConatinerProps = {
   partner: Partner;
   status: Status;
-};
-
-export type ModalConatinerProps = PartnerLoginProps & {
   showNotification: (data: { type: string; message: string }) => void;
 };
 
-export type SetupSuccessProps = PartnerLoginProps;
+export type PartnerLoginProps = ModalConatinerProps;
+
+export type SetupSuccessProps = {
+  partner: Partner;
+  status: Status;
+};

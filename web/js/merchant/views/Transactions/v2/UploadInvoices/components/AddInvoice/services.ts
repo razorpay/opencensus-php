@@ -3,21 +3,16 @@ import { merchantFetch } from 'merchant/utils/ajax';
 export const uploadInvoice = async (id: string, file: File): Promise<string> => {
   const data = new FormData();
   data.append('file', file);
-  data.append('purpose', 'b2b_export_invoice');
+  data.append('entity_id', id);
+  data.append('entity_type', 'payment');
 
   const response = await merchantFetch({
-    url: 'documents',
+    url: 'payments_cross_border_live/v1/merchant/document/upload',
     method: 'post',
     data,
   });
-  if (response.success && response.data?.id) {
-    return merchantFetch({
-      url: `payment/${id}/update_b2b_invoice_details`,
-      method: 'patch',
-      data: {
-        document_id: response.data?.id,
-      },
-    });
+  if (response.success && response.data?.document_id) {
+    return response.data?.document_id;
   }
   return Promise.reject(response);
 };

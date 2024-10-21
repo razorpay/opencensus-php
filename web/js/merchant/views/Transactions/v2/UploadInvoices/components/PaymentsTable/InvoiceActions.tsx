@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Link, Box, EyeIcon, TrashIcon, BillIcon } from '@razorpay/blade/components';
+import { PopupContext } from 'merchant/views/Transactions/v2/UploadInvoices/context/PopupContext';
+import { MODAL_TYPES } from 'merchant/views/Transactions/v2/UploadInvoices/constants';
 import { PaymentStatus } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateExportPayment } from 'merchant/reducers/collection';
@@ -14,11 +16,30 @@ const InvoiceActions = ({
   showNotification,
   updateExportPayment,
 }: InvoiceActionProps): JSX.Element => {
-  const { id, b2b_export_invoice: invoiceId, status } = item;
+  const { id, enitity_id: invoiceId, status } = item;
   const isPaymentAuthorized = status === PaymentStatus.AUTHORIZED;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const { openPopup, closePopup } = useContext(PopupContext);
+
+  const onInvoiceUploadSuccess = (exportInvoiceId: string) => {
+    updateExportPayment({ ...item, enitity_id: exportInvoiceId });
+  };
+
+  const onDismiss = () => {
+    closePopup();
+  };
+
+  const onAddInvoiceClick = () => {
+    openPopup(MODAL_TYPES.UPLOAD_INVOICE, {
+      id,
+      onDismiss,
+      showNotification,
+      onUploadSuccess: onInvoiceUploadSuccess,
+    });
+  };
 
   const onViewClick = async () => {
     if (isLoading || !invoiceId) return;
@@ -41,7 +62,7 @@ const InvoiceActions = ({
     try {
       setIsDeleting(true);
       await deleteInvoice(invoiceId);
-      updateExportPayment({ ...item, b2b_export_invoice: null });
+      updateExportPayment({ ...item, enitity_id: null });
       showNotification({
         type: 'success',
         message: 'File deleted successfully!',
@@ -54,19 +75,6 @@ const InvoiceActions = ({
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const onInvoiceUploadSuccess = (exportInvoiceId: string) => {
-    updateExportPayment({ ...item, b2b_export_invoice: exportInvoiceId });
-  };
-
-  const onDismiss = () => {
-    //close popup
-  };
-
-  const onAddInvoiceClick = () => {
-    //open Add Invoice Modal
-    console.log(id, onDismiss, showNotification, onInvoiceUploadSuccess);
   };
 
   return (

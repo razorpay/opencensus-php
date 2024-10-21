@@ -4,15 +4,32 @@ import { Box, FileUpload, Text, List, ListItem } from '@razorpay/blade/component
 import { FileInputWrapper } from './styled';
 import { UploadInvoiceType } from './types';
 import { MAX_FILE_SIZE } from './constants';
+import { previewFile } from './utils';
 
-const UploadInvoice = ({ onUpload, onRemove, file }: UploadInvoiceType): JSX.Element => {
+const UploadInvoice = ({
+  onUpload,
+  onRemove,
+  showNotification,
+  file,
+}: UploadInvoiceType): JSX.Element => {
+  const onPreviewFile = ({ file }: { file: File }) => {
+    try {
+      previewFile(file);
+    } catch {
+      showNotification({
+        type: 'error',
+        message: 'Something went wrong. Please try again!',
+      });
+    }
+  };
+
   return (
     <Box display="flex" flexDirection="column">
       <Text marginBottom="spacing.4" color="surface.text.gray.normal" weight="semibold">
         Upload invoice file
       </Text>
       <List size="small" variant="unordered" marginBottom="spacing.3">
-        <ListItem>Maximum file size {MAX_FILE_SIZE}MB</ListItem>
+        <ListItem>Maximum file size {MAX_FILE_SIZE.toString()}MB</ListItem>
         <ListItem>Only PDF, JPEG, or JPG formats accepted</ListItem>
       </List>
       <Box>
@@ -29,6 +46,7 @@ const UploadInvoice = ({ onUpload, onRemove, file }: UploadInvoiceType): JSX.Ele
             onDrop={({ fileList }) => {
               onUpload(fileList[0]);
             }}
+            onPreview={onPreviewFile}
             onRemove={onRemove}
           />
         </FileInputWrapper>

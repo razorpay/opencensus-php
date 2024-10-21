@@ -22,8 +22,8 @@ const StatsCard = ({
   count = '0',
   isLoading,
 }: StatsCardProps): JSX.Element => {
-  const navigate = useLocation();
-  const location = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const onCardClick = () => {
     onSearch({ location, replace: navigate })({ [type]: 1 });

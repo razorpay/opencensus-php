@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Text, Link, Amount, AmountProps, CopyIcon } from '@razorpay/blade/components';
+import { Box, Text, Link, CopyIcon } from '@razorpay/blade/components';
 
 // eslint-disable-next-line
 import CustomClipboard from 'common/ui/Clipboard/Custom';
+import Amount from 'common/ui/Amount';
 
 import SenderDetails from 'merchant/views/Transactions/v1/B2bPayments/components/SenderDetails';
 import { status } from 'merchant/views/Transactions/v2/Payments/components/PaymentsTable/columns';
@@ -33,7 +34,15 @@ export const paymentId = {
 export const amount = {
   title: <Title title="Amount" />,
   value: ({ currency, amount }: Item): JSX.Element => {
-    return <Amount currency={currency as AmountProps['currency']} value={amount} />;
+    return (
+      <Amount
+        isAffixSubtle={false}
+        currency={currency}
+        value={Number(amount)}
+        className={undefined}
+        parentQuerySelector={undefined}
+      />
+    );
   },
 };
 
@@ -48,8 +57,8 @@ export const method = {
 
 export const senderDetails = {
   title: <Title title="Sender details" />,
-  value: ({ sender_address }: Item): JSX.Element => {
-    return <SenderDetails name={sender_address?.name} country={sender_address?.country} />;
+  value: ({ sender_details }: Item): JSX.Element => {
+    return <SenderDetails name={sender_details?.name} country={sender_details?.country} />;
   },
 };
 
@@ -60,8 +69,8 @@ export const invoice = {
 
 export const buyerAddress = {
   title: <Title title="Buyer address" />,
-  value: ({ id, status, sender_address }: Item): JSX.Element => (
-    <BuyerAddressActions id={id} status={status} senderDetails={sender_address} />
+  value: ({ id, status, sender_details }: Item): JSX.Element => (
+    <BuyerAddressActions id={id} status={status} senderDetails={sender_details} />
   ),
 };
 

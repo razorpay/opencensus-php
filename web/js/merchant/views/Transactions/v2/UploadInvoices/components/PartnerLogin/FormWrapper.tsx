@@ -5,8 +5,9 @@ import { FORM_VALIDATION } from './constants';
 import { getInitialFormValues } from './utils';
 import { FormWrapperProps } from './types';
 
-const FormWrapper = ({ children, partner }: FormWrapperProps): JSX.Element => {
-  const initialValues = getInitialFormValues(partner);
+const FormWrapper = ({ children, partner, user }: FormWrapperProps): JSX.Element => {
+  const gstin = user?.gstin;
+  const initialValues = getInitialFormValues(partner, gstin);
 
   return (
     <Formik

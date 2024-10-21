@@ -47,6 +47,8 @@ const AddInvoice = ({
           message: 'Invoice uploaded successfully!',
         });
         onDismiss();
+      } else {
+        onDismiss();
       }
     } catch (error) {
       showNotification({
@@ -65,6 +67,7 @@ const AddInvoice = ({
         {(!selectedFile.file || selectedFile.type === FILE_TYPE.UPLOAD) && (
           <UploadInvoice
             file={selectedFile.file}
+            showNotification={showNotification}
             onUpload={onFileUpload(FILE_TYPE.UPLOAD)}
             onRemove={onFileRemove}
           />
@@ -105,7 +108,7 @@ const AddInvoice = ({
       <ModalFooter>
         <Box display="flex" justifyContent="flex-end">
           <Button isLoading={isUploading} onClick={onSaveAndClose} isDisabled={!selectedFile}>
-            Save and close
+            {selectedFile.file ? 'Save and close' : 'Close'}
           </Button>
         </Box>
       </ModalFooter>

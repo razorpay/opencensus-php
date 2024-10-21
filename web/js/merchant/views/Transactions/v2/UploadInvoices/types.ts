@@ -10,8 +10,8 @@ export type Status = typeof ONBOARDING_STATUS[keyof typeof ONBOARDING_STATUS];
 export type ModalType = typeof MODAL_TYPES[keyof typeof MODAL_TYPES];
 
 export interface Item extends PaymentItem {
-  b2b_export_invoice: null | string;
-  sender_address?: {
+  enitity_id: null | string;
+  sender_details?: {
     name: null | string;
     country: null | string;
   };
@@ -27,7 +27,7 @@ export type FetchStatsResponse =
 
 export type FetchOnboardingStatusResponse =
   | Array<{
-      name: 'einvoice' | 'gst_portal';
+      name: 'einvoice' | 'gstportal';
       status: 'onboarded' | 'expired';
     }>
   | undefined;

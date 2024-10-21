@@ -17,7 +17,6 @@ export const paymentDurationOptions = [
 
 export const searchByOptionsMap = {
   id: 'Payment ID',
-  invoice_id: 'Invoice ID',
 };
 export const searchBySectionOptions = generateOptions(searchByOptionsMap);
 export const searchBySectionName = 'Search by';

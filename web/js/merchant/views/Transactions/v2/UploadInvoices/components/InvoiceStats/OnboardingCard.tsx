@@ -10,6 +10,7 @@ import { RZP_LOGO_URL_DARK } from 'merchant/components/SidebarV2/constants/const
 import { OnboardingCardProps } from './types';
 import { getOnboardingCardDetails } from './utils';
 import StatsLoader from './StatsLoader';
+import { LEARN_MORE_URL } from './constant';
 
 const OnboardingCard = ({ onboardingDetails, isLoading }: OnboardingCardProps): JSX.Element => {
   const { bannerText, buttonText, partner, status } = getOnboardingCardDetails(onboardingDetails);
@@ -22,6 +23,10 @@ const OnboardingCard = ({ onboardingDetails, isLoading }: OnboardingCardProps): 
       return;
     }
     openPopup(MODAL_TYPES.LOGIN, { partner, status });
+  };
+
+  const onLearnMoreClick = () => {
+    window.open(LEARN_MORE_URL, '_blank');
   };
 
   if (isLoading) return <StatsLoader />;
@@ -55,7 +60,7 @@ const OnboardingCard = ({ onboardingDetails, isLoading }: OnboardingCardProps): 
         <Button icon={LinkIcon} iconPosition="left" onClick={onButtonClick}>
           {buttonText}
         </Button>
-        <Link icon={ExternalLinkIcon} iconPosition="right">
+        <Link icon={ExternalLinkIcon} iconPosition="right" onClick={onLearnMoreClick}>
           Learn More
         </Link>
       </Box>

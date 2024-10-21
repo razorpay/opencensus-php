@@ -776,22 +776,6 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
-        {
-          uniqueHashKey: 'export_payments_v2',
-          experimentId: {
-            beta: 'OvrPbmQy0feiR7',
-            production: 'OvrQDHgTb5q5mL',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
       ],
     },
     {
@@ -818,6 +802,22 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'MPFDhXp1ooZQom',
             production: 'MPFKF4K2JVFXa2',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'export_payments_v2',
+          experimentId: {
+            beta: 'OvrPbmQy0feiR7',
+            production: 'OvrQDHgTb5q5mL',
           },
           defaultVariant: {
             name: 'variables',

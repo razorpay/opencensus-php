@@ -36,3 +36,5 @@ export const ONBOARDING_STATUS = {
   ONBOARDED: 'onboarded',
   EXPIRED: 'expired',
 };
+
+export const LEARN_MORE_URL = 'http://razorpay.com/fetch-einvoice-learn-more';

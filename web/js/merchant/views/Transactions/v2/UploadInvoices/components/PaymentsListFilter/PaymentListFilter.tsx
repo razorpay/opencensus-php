@@ -1,13 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  Box,
-  Button,
-  SearchIcon,
-  TextInput,
-  Checkbox,
-  Text,
-  DatePicker,
-} from '@razorpay/blade/components';
+import { Box, Button, SearchIcon, TextInput, DatePicker } from '@razorpay/blade/components';
 import moment from 'moment';
 
 import Dropdown from 'common/components/Dropdown';
@@ -178,17 +170,6 @@ const PaymentsListFilter = ({
           ) : null}
         </Box>
       </Box>
-      <Checkbox
-        onChange={() => {}}
-        marginTop={{ base: 'spacing.2', m: 'spacing.0' }}
-        marginLeft={{ base: 'spacing.0', m: 'spacing.2' }}
-      >
-        <Box display="flex" flexDirection="row">
-          <Text color="surface.text.gray.subtle" marginRight="spacing.2">
-            Show only payment IDs with pending actions
-          </Text>
-        </Box>
-      </Checkbox>
     </Box>
   );
 };

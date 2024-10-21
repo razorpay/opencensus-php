@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Box,
   Text,
@@ -9,16 +9,25 @@ import {
   FileUpload,
 } from '@razorpay/blade/components';
 
+import { OnboardingDetailsContext } from 'merchant/views/Transactions/v2/UploadInvoices/context/OnboardingDetailsContext';
+import { PopupContext } from 'merchant/views/Transactions/v2/UploadInvoices/context/PopupContext';
+import { MODAL_TYPES } from 'merchant/views/Transactions/v2/UploadInvoices/constants';
+
 import { fetchInvoice } from './services';
-import { convertToFile, getOnboardingDetails, isMerchantFullyOnboarded } from './utils';
+import {
+  convertToFile,
+  getOnboardingDetails,
+  isMerchantFullyOnboarded,
+  previewFile,
+} from './utils';
 import { FetchInvoiceType } from './types';
 
 const FetchInvoice = ({ file, onUpload, showNotification, onRemove }: FetchInvoiceType) => {
-  /*
-   * Get partner status from context here and pass it in the below function
-   */
-  const isOnboardingComplete = isMerchantFullyOnboarded([]);
-  const { headerText, buttonText, partner, status } = getOnboardingDetails([]);
+  const { onboardingData } = useContext(OnboardingDetailsContext);
+  const { openPopup } = useContext(PopupContext);
+
+  const isOnboardingComplete = isMerchantFullyOnboarded(onboardingData);
+  const { headerText, buttonText, partner, status } = getOnboardingDetails(onboardingData);
 
   const isAutoFetchEnabled = false;
 
@@ -43,13 +52,23 @@ const FetchInvoice = ({ file, onUpload, showNotification, onRemove }: FetchInvoi
     }
   };
 
+  const onPreviewFile = ({ file }: { file: File }) => {
+    try {
+      previewFile(file);
+    } catch {
+      showNotification({
+        type: 'error',
+        message: 'Something went wrong. Please try again!',
+      });
+    }
+  };
+
   const handleIrnChange = (data) => {
     setIrn(data.value);
   };
 
   const onOnboardingButtonClicked = () => {
-    /* TODO :open model with the partner and current status */
-    console.log(partner, status);
+    openPopup(MODAL_TYPES.ONBOARDING, { partner, status });
   };
 
   return (
@@ -130,6 +149,7 @@ const FetchInvoice = ({ file, onUpload, showNotification, onRemove }: FetchInvoi
                 onDrop={({ fileList }) => {
                   onUpload(fileList[0]);
                 }}
+                onPreview={onPreviewFile}
                 onRemove={onRemove}
               />
               <Text marginTop="spacing.3" color="interactive.text.positive.normal">

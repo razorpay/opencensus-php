@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
+import React, { useState, useEffect, useContext } from 'react';
 import { useFormikContext } from 'formik';
 import {
   ArrowRightIcon,
@@ -12,7 +10,9 @@ import {
   ModalFooter,
 } from '@razorpay/blade/components';
 
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { OnboardingDetailsContext } from 'merchant/views/Transactions/v2/UploadInvoices/context/OnboardingDetailsContext';
+import { PopupContext } from 'merchant/views/Transactions/v2/UploadInvoices/context/PopupContext';
+import { MODAL_TYPES } from 'merchant/views/Transactions/v2/UploadInvoices/constants';
 
 import OtpInput from './OtpInput';
 import SetupSuccess from './SetupSuccess';
@@ -32,13 +32,15 @@ const ModalContainer = ({
   const [otp, setOtp] = useState('');
 
   const { validateForm, isValid, values } = useFormikContext<FormikValues>();
+  const { refetchOnboardingData } = useContext(OnboardingDetailsContext);
+  const { openPopup, closePopup } = useContext(PopupContext);
 
   const modalTitle = getModalTitle(partner);
   const isPrimaryButtonDisabled = isButtonDisabled(formStep, isValid, otp);
   const { primaryButton, secondaryButton } = getButtonText(partner, formStep, status);
 
-  const onOnbardingSuccess = () => {
-    /* TODO: Update status in context */
+  const onOnbardingSuccess = async () => {
+    await refetchOnboardingData();
     setFormStep(FORM_STEPS.SETUP_INFO);
   };
 
@@ -66,7 +68,7 @@ const ModalContainer = ({
     if (status === ONBOARDING_STATUS.EXPIRED) {
       setFormStep(FORM_STEPS.LOGIN_DETAILS);
     } else {
-      /* TODO: Close the form */
+      closePopup();
     }
   };
 
@@ -87,10 +89,10 @@ const ModalContainer = ({
 
   const onSecondaryButtonClick = () => {
     if (formStep === FORM_STEPS.LOGIN_DETAILS) {
-      /* TODO: Redirect to onboarding guide and pass partner */
+      openPopup(MODAL_TYPES.ONBOARDING, { partner, status });
     }
     if (formStep === FORM_STEPS.SETUP_INFO && status === ONBOARDING_STATUS.EXPIRED) {
-      /* TODO: Close the form */
+      closePopup();
     }
   };
 
@@ -116,7 +118,7 @@ const ModalContainer = ({
   }, []);
 
   return (
-    <Modal isOpen={true} onDismiss={() => {}} zIndex={10000}>
+    <Modal isOpen={true} onDismiss={closePopup}>
       <ModalHeader title={modalTitle} />
       <ModalBody padding="spacing.6">
         {formStep === FORM_STEPS.LOGIN_DETAILS && <LoginDetails partner={partner} />}
@@ -150,8 +152,4 @@ const ModalContainer = ({
   );
 };
 
-export default compose(
-  connect(null, {
-    showNotification,
-  }),
-)(ModalContainer);
+export default ModalContainer;

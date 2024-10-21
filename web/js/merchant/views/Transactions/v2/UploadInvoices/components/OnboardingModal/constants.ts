@@ -57,3 +57,5 @@ export const ONBOARDING_DATA = {
     },
   ],
 };
+
+export const TERMS_AND_CONDITIONS_URL = 'http://razorpay.com/fetch-einvoice-tnc';

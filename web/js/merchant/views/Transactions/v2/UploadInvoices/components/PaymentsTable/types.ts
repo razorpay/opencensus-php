@@ -30,7 +30,7 @@ export type InvoiceActionProps = {
 export type BuyerAddressActionProps = {
   id: Item['id'];
   status: Item['status'];
-  senderDetails: Item['sender_address'];
+  senderDetails: Item['sender_details'];
   openModal: (args: { component: JSX.Element; size: string }) => void;
   closeModal: () => void;
   showNotification: (args: { type: string; message: string }) => void;
