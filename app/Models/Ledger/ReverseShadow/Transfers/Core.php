@@ -344,7 +344,9 @@ class Core extends Base\Core
             return 0;
         }
 
-        $balance = $this->merchant->getBalanceByTypeOrFail($balanceType);
+        $merchant = $this->merchant;
+
+        $balance= $this->getBalanceByTypeFromHarvesterForMerchantWithFail($merchant, $balanceType);
 
         $negativeAllowedFlows = (new BalanceConfig\Core())->getNegativeFlowsForBalance($balance->getId());
 
