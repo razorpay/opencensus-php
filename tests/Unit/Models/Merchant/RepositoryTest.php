@@ -584,6 +584,85 @@ class RepositoryTest extends RepositoryTestHelper
         $this->assertEquals(new PublicCollection(), $results);
     }
 
+    public function testFetchFromAsvOperation()
+    {
+        Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
+        $id1 = PublicEntity::generateUniqueId();
+        $id2 = PublicEntity::generateUniqueId();
+        $id3 = PublicEntity::generateUniqueId();
+        $this->fixtures->create('merchant', ['id' => $id3, 'email' => 'test1@gmail.com', "account_code" => 123]);
+        $this->fixtures->create('merchant', ['id' => $id1, 'email' => 'test1@gmail.com', "parent_id" => $id1, "account_code" => "123"]);
+        $this->fixtures->create('merchant', ['id' => $id2, 'email' => 'test2@gmail.com', "parent_id" => $id1]);
+
+        // listLinkedAccounts usecase
+        $input1 = [
+            "count" => 10,
+            "skip" => 0,
+            "email" => "test1@gmail.com",
+            "parent_id" => $id1,
+            "id" => $id2,
+            "account_code" => "123",
+        ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input1);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input1);
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        // fetchMultiple usecase
+        $input2 = [
+            "count" => 10,
+            "skip" => 0,
+            "account_code" => "123",
+        ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input2, $id1);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input2, $id1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input2, $id1);
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+        // fetchLinkedAccountsForMerchant usecase
+        $input3 = [
+            "count" => 10,
+            "skip" => 0,
+            "parent_id" => $id1,
+        ];
+
+        $this->setSplitzWithOutput("false", 1);
+        $repository = new Account\Repository();;
+        $resultWithoutSplitz1 = $repository->fetchFromAsv($input3);
+        $repository->resetConnectionOnModels($resultWithoutSplitz1);
+
+
+        $this->setSplitzWithOutput("true", 1);
+        $repository = new Account\Repository();
+        $repository->repo->transactionOnLiveAndTestAndAsv(function () use ($resultWithoutSplitz1, $input3, $id1, $repository) {
+            $resultWithSplitz1 = $repository->fetchFromAsv($input3);
+            $this->assertEquals($resultWithoutSplitz1, $resultWithSplitz1, "response with and without splitz are not same");
+            $this->assertEquals(get_class($resultWithoutSplitz1), get_class($resultWithSplitz1));
+        });
+
+
+    }
+
     public function testFindManyOnReadReplicaOperation()
     {
         Config::set('applications.asv_v2.splitz_send_filter_to_asv', PublicEntity::generateUniqueId());
