@@ -127,7 +127,6 @@ class CoreTest extends TestCase
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
         $this->assertEquals($data['in_app'], 1);
     }
-
     public function testIntlBankTransferACHIsEnabled()
     {
         $intlBankTransferModes = [
@@ -237,6 +236,4 @@ class CoreTest extends TestCase
 
         $this->assertTrue($data['duitnow_pay']);
     }
-
-
 }

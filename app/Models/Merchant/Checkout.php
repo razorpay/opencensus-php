@@ -1936,7 +1936,7 @@ class Checkout
 
             $data['methods'][Payment\Method::EMI] = true;
 
-            $data['methods']['emi_plans']         = $emiService->all();
+            $data['methods']['emi_plans'] = $emiService->all();
         }
 
         switch ($offerMethodType)

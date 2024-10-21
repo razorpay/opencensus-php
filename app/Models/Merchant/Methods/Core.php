@@ -438,7 +438,7 @@ class Core extends Base\Core
         $netbankingEnabled           = $methods->isNetbankingEnabled();
         $data[Payment\Method::APP]   = $methods->getApps();
         $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledDebitEmiProviders();
-//        $data[Entity::CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledCreditEmiProviders();
+        //$data[Entity::CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledCreditEmiProviders();
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
@@ -487,6 +487,11 @@ class Core extends Base\Core
             $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
         }
 
+        // These variables are required for keeping the value returned from emi service
+        $debitEmiProviders = [];
+
+        $emiTypes = [];
+
         if ($methods->isEmiEnabled() === true)
         {
             $data[Payment\Method::EMI] = true;
@@ -498,6 +503,49 @@ class Core extends Base\Core
             $data['emi_plans'] = $emiPlansAndOptions['plans'];
 
             $data['emi_options'] = $emiPlansAndOptions['options'];
+
+            $debitEmiProviders = $emiPlansAndOptions['debit_emi_providers'];
+
+            $emiTypes = $emiPlansAndOptions['emi_types'];
+        }
+        else if($merchant->isFeatureEnabled(FeatureConstants::RAAS))
+        {
+            $emiService = (new Emi\Service);
+
+            if($emiService->shouldFetchEmiPlansFromProviders())
+            {
+                $data[Payment\Method::EMI] = true;
+
+                $data['emi_subvention'] = $merchant->getEmiSubvention();
+
+                $emiPlansAndOptions = $emiService->getEmiPlansFromProviders();
+
+                $data['emi_plans'] = $emiPlansAndOptions['plans'];
+
+                $data['emi_options'] = $emiPlansAndOptions['options'];
+
+                $debitEmiProviders = $emiPlansAndOptions['debit_emi_providers'];
+
+                $emiTypes = $emiPlansAndOptions['emi_types'];
+            }
+        }
+
+        // setting the value as 1 for all the providers which are returned from emi service
+        foreach ($debitEmiProviders as $provider)
+        {
+            $data[Entity::DEBIT_EMI_PROVIDERS][$provider] = 1;
+        }
+
+        // setting the value as true in case razorpay debit/credit is disabled but on provider it's enabled
+        foreach ($emiTypes as $type => $flag)
+        {
+            if(isset($data[Entity::EMI_TYPES])
+                && isset($data[Entity::EMI_TYPES][$type])
+                && $data[Entity::EMI_TYPES][$type] === false
+                && $flag === true)
+            {
+                $data[Entity::EMI_TYPES][$type] = true;
+            }
         }
 
         if ($methods->isCredEnabled() === true)

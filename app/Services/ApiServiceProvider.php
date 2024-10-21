@@ -103,6 +103,8 @@ use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Services\GenericAccountingIntegration\Service as AccountingIntegrationService;
 Use RZP\Models\Merchant\Acs\AsvClient\Constant as AsvConstant;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
+use RZP\Services\OptimizerCore\Service as OptimizerCoreService;
+use RZP\Services\OptimizerCore\Client as OptimizerCoreServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service as ShippingProviderService;
 use RZP\Models\Merchant\OneClickCheckout\FulfillmentOrder\Service as FulfillmentOrderService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Service as ShippingMethodProviderService;
@@ -911,6 +913,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerTokens();
 
         $this->registerRouteService();
+
+        $this->registerOptimizerCoreService();
+
+        $this->registerOptimizerCoreServiceClient();
     }
 
     protected function registerCacheManager()
@@ -2427,6 +2433,23 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return $client;
         });
     }
+
+    protected function registerOptimizerCoreService()
+    {
+        $this->app->singleton('optimizer_core_service', function($app)
+        {
+            return new OptimizerCoreService($app);
+        });
+    }
+
+    protected function registerOptimizerCoreServiceClient()
+    {
+        $this->app->singleton('optimizer_core_service_client', function($app)
+        {
+            return new OptimizerCoreServiceClient($app);
+        });
+    }
+
 
     /**
      * register ASV SDK Client

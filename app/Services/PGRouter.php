@@ -597,7 +597,9 @@ class PGRouter
 
             if (isset($response['body']['data']['payment']['emi_plan']) === true)
             {
-                $response['body']['data']['payment']['emi_plan']['id'] = $response['body']['data']['payment']['emi_plan_id'];
+                if (empty($response['body']['data']['payment']['emi_plan']['id']) === true) {
+                    $response['body']['data']['payment']['emi_plan']['id'] = $response['body']['data']['payment']['emi_plan_id'];
+                }
 
                 $emiPlan = (new Emi\Entity)->forceFill($response['body']['data']['payment']['emi_plan']);
 

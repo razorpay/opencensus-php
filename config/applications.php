@@ -1954,7 +1954,12 @@ return [
         'url'      => env('AUTHZ_XPLATFORM_ADMIN_BASE_URL')
     ],
 
-
+    'optimizer_core_service' => [
+        'url'           => env('APP_OPTIMIZER_CORE_SERVICE_URL', 'https://optimizer-core-live-emitest.dev.razorpay.in'),
+        'username'      => 'api',
+        'secret'        => env('APP_OPTIMIZER_CORE_SERVICE_SECRET', 'api'),
+        'timeout'       => env('APP_OPTIMIZER_CORE_SERVICE_TIMEOUT', 10),
+    ],
 
     'downtime_manager' => [
         'url' => env('DOWNTIME_MANAGER_URL'),

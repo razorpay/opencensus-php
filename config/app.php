@@ -1064,5 +1064,7 @@ return array(
 
     'transfer_read_experiment' => env('TRANSFER_READ_EXPERIMENT_ID'),
 
-    'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID')
+    'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
+
+    'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 );

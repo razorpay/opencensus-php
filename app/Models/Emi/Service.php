@@ -97,7 +97,7 @@ class Service extends Base\Service
                     }
                 }
 
-             if ($order->getAmount() >= max($minEmiAmount,$minOfferAmount))
+                if ($order->getAmount() >= max($minEmiAmount,$minOfferAmount))
                 {
                     $planOption = [
                         'duration'           => $duration,
@@ -170,10 +170,202 @@ class Service extends Base\Service
             }
         }
 
+        /*
+        * Checking if we can fetch data from providers i.e, payu, pinelabs, billdesk
+        * and use their data with Razorpay to show emi plans.
+        *
+        * */
+
+        $providerEmiPlans = $emiPlansFormatted;
+
+        $providerEmiOptions = $emiOptions;
+
+        $debitEmiProviders = [];
+
+        $emiTypes = [];
+
+        if($this->shouldFetchEmiPlansFromProviders())
+        {
+            $providerResponse = $this->getEmiPlansFromProviders();
+
+            $res = $this->mergeProviderData($emiOptions, $providerResponse);
+
+            $providerEmiPlans = $res['plans'];
+
+            $providerEmiOptions = $res['options'];
+
+            $debitEmiProviders = $providerResponse["debit_emi_providers"];
+
+            $emiTypes = $providerResponse["emi_types"];
+        }
+
         return [
-            'plans'     => $emiPlansFormatted,
-            'options'   => $emiOptions
+            'plans'     => $providerEmiPlans,
+            'options'   => $providerEmiOptions,
+            'debit_emi_providers' => $debitEmiProviders,
+            'emi_types' => $emiTypes,
         ];
+    }
+
+    public function getEmiPlansFromProviders(): array
+    {
+        $merchantID = $this->merchant->getId();
+
+        $result = $this->app['optimizer_core_service']->fetchMerchantGatewayData($merchantID);
+
+        return [
+            'plans'     => $result['emi_plans'],
+            'options'   => $result['emi_options'],
+            'debit_emi_providers' => $result['debit_emi_providers'],
+            'emi_types' => $result['emi_types'],
+        ];
+    }
+
+    protected function returnCompressedEmiOptionsData($emiOptions): array
+    {
+        $providerEmiBankAndOptionsMap = [];
+
+        foreach ($emiOptions as $ifsc => $plans)
+        {
+            foreach ($plans as $plan) {
+
+                $planHashStr = $ifsc."#".$plan["duration"];
+
+                $providerEmiBankAndOptionsMap[$planHashStr] = $plan;
+            }
+        }
+
+        return $providerEmiBankAndOptionsMap;
+    }
+
+    protected function mergeProviderData($currentEmiOptions, $providerResponse): array
+    {
+
+        $finalProviderEmiOptions = [];
+
+        $finalProviderEmiPlans = [];
+
+        try
+        {
+            $providerEmiOptions = $providerResponse["options"];
+
+            $providerEmiBankAndOptionsMap = $this->returnCompressedEmiOptionsData($providerEmiOptions);
+
+            $currentEmiBankAndOptionsMap = $this->returnCompressedEmiOptionsData($currentEmiOptions);
+
+            foreach ($currentEmiBankAndOptionsMap as $lookupID => $value)
+            {
+                $this->populateDataInFinalEmiPlans($lookupID, $value, $finalProviderEmiOptions, $finalProviderEmiPlans);
+            }
+
+            foreach ($providerEmiBankAndOptionsMap as $lookupID => $value)
+            {
+
+                if(array_key_exists($lookupID, $currentEmiBankAndOptionsMap)) {
+                    continue;
+                }
+
+                $this->populateDataInFinalEmiPlans($lookupID, $value, $finalProviderEmiOptions, $finalProviderEmiPlans);
+            }
+
+            $this->app['trace']->info(TraceCode::OPTIMIZER_PROVIDER_GATEWAY_INTEGRATION, [
+                "line"=> "inside mergeProviderData",
+                'providerEmiBankAndOptionsMap'     => array_keys($providerEmiBankAndOptionsMap),
+                'currentEmiBankAndOptionsMap' => array_keys($currentEmiBankAndOptionsMap),
+            ]);
+
+        } catch (\Throwable $e)
+        {
+            $this->app['trace']->error(TraceCode::OPTIMIZER_PROVIDER_EMI_DATA_MERGE_ERROR,
+                [
+                    'type'    => get_class($e),
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getCode(),
+                    'trace'   => $e->getTraceAsString(),
+                ]
+            );
+        }
+
+        return [
+            'plans'     => $finalProviderEmiPlans,
+            'options'   => $finalProviderEmiOptions,
+        ];
+    }
+
+    private function populateDataInFinalEmiPlans($lookupID, $value, &$finalProviderEmiOptions, &$finalProviderEmiPlans)
+    {
+
+        $ifscCode = explode("#", $lookupID)[0];
+
+        if(isset($finalProviderEmiOptions[$ifscCode]) === false)
+        {
+            $finalProviderEmiOptions[$ifscCode] = [];
+        }
+
+        $finalProviderEmiOptions[$ifscCode][] = $value;
+
+        if(isset($finalProviderEmiPlans[$ifscCode]) === false)
+        {
+            $finalProviderEmiPlans[$ifscCode] = [
+                "plans" => [],
+            ];
+        }
+
+        if($finalProviderEmiPlans[$ifscCode][Entity::MIN_AMOUNT] === null && $value['min_amount'] !== null){
+            $finalProviderEmiPlans[$ifscCode][Entity::MIN_AMOUNT] = $value['min_amount'];
+        }
+
+        if($value['min_amount'] !== null)
+        {
+            if($finalProviderEmiPlans[$ifscCode][Entity::MIN_AMOUNT] === null)
+            {
+                $finalProviderEmiPlans[$ifscCode][Entity::MIN_AMOUNT] = $value['min_amount'];
+            }else
+            {
+                $finalProviderEmiPlans[$ifscCode][Entity::MIN_AMOUNT] = min(
+                    $value["min_amount"], $finalProviderEmiPlans[$ifscCode][Entity::MIN_AMOUNT]);
+            }
+        }
+
+        $finalProviderEmiPlans[$ifscCode]["plans"][$value[Entity::DURATION]] = $value["interest"];
+    }
+
+    /*
+     * We've to add a feature flag to allow fetching provider emi plans
+     * */
+    public function shouldFetchEmiPlansFromProviders(): bool
+    {
+        $mode = 'enable';
+        $merchantID = $this->merchant->getId();
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.merchant_checkout_optimizer_affordability_emi_enabled_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::OPTIMIZER_MERCHANT_AFFORDABILITY_SPLITZ_EXPERIMENT, [
+                'splitz_output' => $variant,
+                'response' => $response,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::OPTIMIZER_MERCHANT_AFFORDABILITY_SPLITZ_EXPERIMENT_ERROR, [
+                'merchant_id'   => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.merchant_checkout_optimizer_affordability_emi_enabled_exp_id') ?? null,
+            ]);
+
+            return false;
+        }
     }
 
     protected function shouldShowNotOfferEmiOption($offers, $order, $plan): bool
