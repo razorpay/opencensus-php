@@ -482,7 +482,12 @@ class Processor extends Base\Processor
         $defaultPrefetchConfigs  = Constants::getDefaultPrefetchConfigs();
         $merchantId              = $this->context()->getMerchant()->getId();
 
-        $dynamicPrefetchConfigs  = ConfigKey::get(ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT, []);
+        $fetchTestRedisKey = ((app()->isEnvironmentQA() === true) or (app()->isEnvironmentBeta() === true));
+
+        $dynamicPrefetchConfigs  = $fetchTestRedisKey
+            ? ConfigKey::get(ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT_TEST, []) :
+            ConfigKey::get(ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT, []);
+
         $merchantPrefetchBankListConfig = $dynamicPrefetchConfigs[$merchantId][Constants::BANKS] ?? null;
 
         // First we try to check if there's a merchant level config defined in Redis and use the same.

@@ -419,6 +419,7 @@ class ConfigKey
 
     const UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE    = self::PREFIX . 'upi_turbo_payment_look_up_created_at_range';
     const UPI_TURBO_PRE_FETCH_BANK_ACCOUNT              = self::PREFIX . 'upi_turbo_pre_fetch_bank_account';
+    const UPI_TURBO_PRE_FETCH_BANK_ACCOUNT_TEST         = self::PREFIX . 'upi_turbo_pre_fetch_bank_account_test';
 
     const RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA = self::PREFIX . 'rx_block_non_2fa_non_baas_for_ca';
 
