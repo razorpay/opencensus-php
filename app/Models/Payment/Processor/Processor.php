@@ -9225,6 +9225,7 @@ class Processor
                 $input[UpiEntity::NPCI_REFERENCE_ID]  = $input['data']['upi'][UpiEntity::NPCI_REFERENCE_ID] ?? '';
                 $input[UpiEntity::MERCHANT_REFERENCE] = $input['data']['upi'][UpiEntity::MERCHANT_REFERENCE] ?? '';
                 $input[UpiEntity::VPA]                = $input['data']['upi'][UpiEntity::VPA] ?? '';
+                $input[UpiEntity::GATEWAY_PAYMENT_ID] = $input['data']['upi'][UpiEntity::GATEWAY_PAYMENT_ID] ?? '';
                 $input[UpiEntity::TYPE]               = \RZP\Gateway\Upi\Base\Type::PAY;
 
                 return (new QrPayment\Service())->createUpiEntityForQrPayment($input, \RZP\Gateway\Mozart\Action::AUTHORIZE);
