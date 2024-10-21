@@ -367,8 +367,7 @@ class DisputeController extends Controller
 
         // Return as a response and force download
         return response($content)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="download.csv"');
+            ->header('Content-Type', 'application/json');
      }
 
     public function postBatchChargebackAutomation($gateway)
