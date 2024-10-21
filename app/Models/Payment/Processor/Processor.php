@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Arr;
 use Request;
 
@@ -11148,17 +11149,18 @@ class Processor
 
         $captureValue = $lateAuthConfig['capture'];
 
-        $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
+        // get time difference in seconds between authorize and created
+        $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment, "seconds");
 
         $this->setPaymentRefundAtForConfig($payment,$manualTimeoutDuration);
 
         if ($captureValue === 'automatic')
         {
-            if ($difference < $autoTimeoutDuration)
+            if ($difference <= $autoTimeoutDuration * CarbonInterface::SECONDS_PER_MINUTE)
             {
                 return [true, $lateAuthConfig];
             }
-            elseif ($difference > $manualTimeoutDuration)
+            elseif ($difference > $manualTimeoutDuration * CarbonInterface::SECONDS_PER_MINUTE)
             {
                 return [false, $lateAuthConfig];
             }
@@ -11268,13 +11270,19 @@ class Processor
 
     }
 
-    public function getTimeDifferenceInAuthorizeAndCreated($payment)
+    public function getTimeDifferenceInAuthorizeAndCreated($payment, $timeDiffUnit = "minutes")
     {
         $authorizedTime = Carbon::createFromTimestamp($payment->getAuthorizeTimestamp(), Timezone::IST);
 
         $createdTime = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST);
 
-        return $authorizedTime->diffInMinutes($createdTime);
+        switch ($timeDiffUnit)
+        {
+            case "seconds":
+                return $authorizedTime->diffInSeconds($createdTime);
+            default:
+                return $authorizedTime->diffInMinutes($createdTime);
+        }
     }
 
     public function getLateAuthPaymentConfig(Payment\Entity $payment)
