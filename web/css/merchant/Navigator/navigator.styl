@@ -1,3 +1,6 @@
+// stylelint-disable color-function-notation
+// stylelint-disable no-descending-specificity
+// stylelint-disable stylus/no-eol-whitespace
 $darkGray = #162F568A
 $blackGray = #162F56BD
 $gray = #162F563D
@@ -570,10 +573,12 @@ $spacer = 8px
     .panel-body.pt0
       margin-bottom: 10px
       border-bottom: 0
+
       .content-wrapper
-        padding-top: 0px
-        padding-left: 0px
-        padding-right: 0px
+        padding-top: 0
+        padding-left: 0
+        padding-right: 0
+
       p
         margin-top: -13px
 
@@ -1037,7 +1042,7 @@ tr.is_current
   left: 0
   top: 0
   bottom: 0
-  z-index: 9999
+  z-index: $z-index-modal-overlay
   background: $zircon
   overflow: scroll
 
