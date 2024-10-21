@@ -101,20 +101,41 @@ class Core extends Base\Core
 
         $viewTemplate = CyberHelpdeskConstants::CYBER_HELPDESK_WHATSAPP_TEMPLATE;
 
-        $html = View::make($viewTemplate, $fraudEntity)->with('paymentsDataTable', $this->createPaymentsDataTable($fraudEntity))->render();
+        $table = $this->createPaymentsDataTable($fraudEntity);
 
-        (new CyberHelpDeskService())->createdPDFAndSendWhatsApp($options, $html, $merchant, $contact);
+        $this->app['trace']->info(
+            TraceCode::DEBUG_LOGGING,
+            [
+                'table'         => $table,
+                'count'         => count($table)
+            ]);
+        if (count($table)>0){
+            $html = View::make($viewTemplate, $fraudEntity)->with('paymentsDataTable', $table)->render();
+
+            (new CyberHelpDeskService())->createdPDFAndSendWhatsApp($options, $html, $merchant, $contact);
+        }
+        else{
+            $this->app['trace']->info(
+                TraceCode::WHATSAPP_FRAUD_MESSAGE_NOT_REAL_TIME_FOR_MERCHANT,
+                [
+                    MerchantConstants::MERCHANT_ID          => $merchant,
+                ]);
+        }
     }
 
     public function createPaymentsDataTable($fraudEntity){
         $tableData = [];
 
         foreach ($fraudEntity as $payment){
-            $createdDate = date('Y-m-d H:i:s', $payment[CyberHelpdeskConstants::CREATED_DATE]);
+
+            $transactionDate = $payment[CyberHelpdeskConstants::TRANSACTION_DATE];
+            $timestamp = \DateTime::createFromFormat('d/m/Y', $transactionDate)->getTimestamp();
+
+            $createdDate = date('Y-m-d H:i:s', $timestamp);
             $createdTimestamp = strtotime($createdDate);
             $currentTimestamp = time();
 
-            if (($currentTimestamp - $createdTimestamp) < 86400) {
+            if (($currentTimestamp - $createdTimestamp) <= 86400) {
                 $tableRow = array();
                 $tableRow[CyberHelpdeskConstants::PAYMENT_ID] = $payment[CyberHelpdeskConstants::PAYMENT_ID];
                 $tableRow[CyberHelpdeskConstants::AMOUNT] = $payment[CyberHelpdeskConstants::AMOUNT];
