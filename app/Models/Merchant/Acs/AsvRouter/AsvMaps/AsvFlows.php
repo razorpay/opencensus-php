@@ -83,6 +83,7 @@ final class AsvFlows
         'payout_service_idempotency_key_feature_remove' => true,
         'product_config_update_v2' => true,
         'register_merchant_verify_otp' => true,
+        'register_merchant_sales' => true,
         'salesforce_converge_get_merchant_details' => true,
         'stakeholder_create_v2' => true,
         'stakeholder_update_v2' => true,

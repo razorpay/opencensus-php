@@ -14276,6 +14276,101 @@ class UserTest extends TestCase
 
     }
 
+    public function testMerchantEmailRegisterByEzetapPartnerAgent()
+    {
+        Config::set('applications.test_case.execution', false);
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+         $this->fixtures->create('merchant', [
+             'id' => $ezetapMerchantId,
+         ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $ezetapMerchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->ba->proxyAuth('rzp_test_' . $ezetapMerchantId, $merchantUser['id']);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $response['id']]);;
+
+        $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $response['id'])->get();
+
+        $this->assertEquals(count($merchantUserMapping), 2);
+
+        $this->assertEquals($merchantUserMapping[0]->role, 'razorpay_sales');
+
+        $this->assertEquals($merchantUserMapping[1]->role, 'owner');
+
+        $this->assertEquals("pgos", $userDeviceDetails["metadata"]["service"]);
+
+        $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
+    }
+
+    public function testMerchantEmailRegisterByNonEzetapPartnerAgent()
+    {
+        Config::set('applications.test_case.execution', false);
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $nonEzetapmerchantId = '1X4hRFHFx4Uikl';
+        $this->fixtures->create('merchant', [
+            'id' => $nonEzetapmerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $nonEzetapmerchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($nonEzetapmerchantId,['contact_mobile' =>'9891817372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->ba->proxyAuth('rzp_test_' . $nonEzetapmerchantId, $merchantUser['id']);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $merchantUserMapping = DB::table('merchant_users')->where('merchant_id', '=', $response['id'])->get();
+
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $response['id']]);;
+
+        $this->assertEquals(count($merchantUserMapping), 1);
+
+        $this->assertEquals($merchantUserMapping[0]->role, 'owner');
+
+        $this->assertEquals($userDeviceDetails['signup_campaign'], 'assisted_onboarding');
+
+        $this->assertEquals("pgos", $userDeviceDetails["metadata"]["service"]);
+    }
     public function testWorkFlowCreationFailedForAssistedMerchants()
     {
         Config::set('applications.test_case.execution', false);
@@ -14307,8 +14402,6 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
-
-
 
     public function testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff()
     {

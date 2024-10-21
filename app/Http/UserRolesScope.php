@@ -32,6 +32,7 @@ class UserRolesScope
     public function setRouteUserRoleMap()
     {
         $this->routeUserRoleMap = [
+            'register_merchant_sales'                              => [Role::PARTNER_AGENT],
             'register_merchant_verify_otp'                         => [Role::PARTNER_AGENT],
             'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],
             'merchant_activation_details_sales'                    => [Role::PARTNER_AGENT,Role::POS_SALES_ADMIN],

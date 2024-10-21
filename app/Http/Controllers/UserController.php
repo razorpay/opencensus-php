@@ -63,7 +63,6 @@ class UserController extends Controller
         /** @var Service $userService */
         $userService = $this->service();
         $data = $userService->verifySignupOtp($input);
-
         return ApiResponse::json($data);
     }
 

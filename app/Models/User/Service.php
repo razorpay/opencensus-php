@@ -285,8 +285,7 @@ class Service extends Base\Service
 
             $easyOnboardingExperiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
 
-            if ((empty($signupCampaign) === false) and
-                ($easyOnboardingExperiment === true or $signupCampaign === DeviceDetail\Constants::UNBOUNCE))
+            if (empty($signupCampaign) === false)
             {
                 $ddInput = [
                     DeviceDetail\Entity::MERCHANT_ID        => $merchantId,
@@ -295,6 +294,18 @@ class Service extends Base\Service
                 ];
 
                 (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+            }
+            // Decomposition Plan: Once the merchant and user creation processes are decoupled,
+            // the creation of a sales user associated with a newly created merchant will be handled as part of the merchant creation flow.
+            if ($this->shouldUpdateUserMerchantMapping($signupCampaign))
+            {
+                $userMerchantMappingInputData = [
+                    'action' => 'attach',
+                    'role' => Role::RAZORPAY_SALES,
+                    'merchant_id' => $merchantId,
+                ];
+                $loggedInUser = $this->app['basicauth']->getUser();
+                $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
             }
 
             try {
@@ -883,6 +894,8 @@ class Service extends Base\Service
                         (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
                     }
 
+                    // Decomposition Plan: Once the merchant and user creation processes are decoupled,
+                    // the creation of a sales user associated with a newly created merchant will be handled as part of the merchant creation flow.
                     if ($this->shouldUpdateUserMerchantMapping($signupCampaign))
                     {
                         $userMerchantMappingInputData = [

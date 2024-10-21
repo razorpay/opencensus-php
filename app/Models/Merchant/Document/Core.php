@@ -232,7 +232,7 @@ class Core extends Base\Core
         $merchantId = $merchant->getMerchantId();
 
         $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
-            'request_body'       => $input,
+            'request_body'    => $input,
             "upload_only_set" => isset($input["upload_only"])
         ]);
         if (isset($input["upload_only"]) === true and $input["upload_only"])
@@ -240,7 +240,8 @@ class Core extends Base\Core
             return $fileAttributes;
         }
         // route request to PGOS
-        try {
+        try
+        {
 
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
@@ -251,7 +252,7 @@ class Core extends Base\Core
                     "file_store_id"      => $fileAttributes[$documentType]['file_id'],
                     "merchant_id"        => $merchantId,
                     "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
-                    "size"               => $size ? (int)($size): 0,
+                    "size"               => $size ? (int) ($size) : 0,
                 ];
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
@@ -259,7 +260,7 @@ class Core extends Base\Core
                 ]);
 
                 $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_document_upload',
-                    $payload, $merchant, true);
+                                                                                $payload, $merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_RESPONSE, [
                     'merchant_id' => $merchantId,
@@ -274,10 +275,11 @@ class Core extends Base\Core
             }
 
         }
-        catch (\Throwable $exception) {
+        catch (\Throwable $exception)
+        {
             // this should not introduce error counts as it is running in shadow mode
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                'merchant_id' => $merchantId,
+                'merchant_id'   => $merchantId,
                 'error_message' => $exception->getMessage()
             ]);
 
@@ -285,7 +287,6 @@ class Core extends Base\Core
                 'error description' => 'submitted data could not be processed'
             ]);
         }
-
 
         $entity = $entity ?? $merchant;
 

@@ -87,6 +87,7 @@ class Service extends Base\Service
 
     public function uploadActivationFileForMerchant(array $input, $merchant)
     {
+
         // In case of assisted onboarded merchants:
         // 1. Merchant id from auth will be of Ezetap's account
         // 2. So, set merchant id from input in basic auth for correct document-mid mapping

@@ -249,7 +249,6 @@ return [
             ]
         ]
     ],
-
     'testDocumentUploadForPartnerKyc' => [
         'request'  => [
             'url'     => '/merchant/documents/upload',

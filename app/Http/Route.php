@@ -40,6 +40,7 @@ class Route
         //adding internal route for PGOS to fetch users of a merchant
         'internal_fetch_merchant_users'                     => ['get',      'internal/merchants-users',                             'MerchantController@getUsers',                                      ],
         'register_merchant_verify_otp'                      => ['post',     'register/merchant/otp/verify',                         'UserController@verifySignupOtpAndRegisterUser'                     ],
+        'register_merchant_sales'                           => ['post',     'sales/register/merchant',                              'UserController@registerUser'                     ],
         'merchant_activation_details_sales'                 => ['get',      'pg/onboarding/merchant_activation_details_sales',      'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'payments_rearch_backfill'                          => ['post',     'payments/backfill',                                    'PaymentController@callCpsForBackfilling'                           ],
         'merchant_nc_revamp_eligibility_admin'              => ['get',      'merchant/activation/{id}/clarifications/eligibility',  'MerchantController@getMerchantNcRevampEligibility'                 ],
@@ -7000,6 +7001,7 @@ class Route
         'merchant_activation_details_sales',
         'onboarding_get_sales',
         'onboarding_save_sales',
+        'register_merchant_sales',
         'register_merchant_verify_otp',
         'merchant_fetch_customer_eligibility',
         'payouts_merchant_smart_routing_summary',
@@ -9701,9 +9703,10 @@ class Route
 
     // if we add permission in the current route for admin dashboard access, will it affect the merchant dashboard access as well?
     public static $routePermission = [
-        'merchant_activation_details_sales'               =>Permission::VIEW_MERCHANT,
-        'onboarding_get_sales'                            =>Permission::VIEW_MERCHANT,
-        'onboarding_save_sales'                           =>Permission::EDIT_MERCHANT,
+        'merchant_activation_details_sales'               => Permission::VIEW_MERCHANT,
+        'onboarding_get_sales'                            => Permission::VIEW_MERCHANT,
+        'onboarding_save_sales'                           => Permission::EDIT_MERCHANT,
+        'register_merchant_sales'                         => Permission::EDIT_MERCHANT,
         'register_merchant_verify_otp'                    => Permission::EDIT_MERCHANT,
         'barricade_set_config' => Permission::BARRICADE_DCS_CONFIG_SET,
         'barricade_get_config' => Permission::BARRICADE_DCS_CONFIG_GET,
@@ -12454,6 +12457,7 @@ class Route
             'merchant_activation_details_sales',
             'onboarding_get_sales',
             'onboarding_save_sales',
+            'register_merchant_sales',
             'register_merchant_verify_otp',
             'merchant_fetch_customer_eligibility',
             'fetch_payment_notes_keys_columns',
