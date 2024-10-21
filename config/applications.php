@@ -1955,7 +1955,7 @@ return [
     ],
 
     'optimizer_core_service' => [
-        'url'           => env('APP_OPTIMIZER_CORE_SERVICE_URL', 'https://optimizer-core-live-emitest.dev.razorpay.in'),
+        'url'           => env('APP_OPTIMIZER_CORE_SERVICE_URL'),
         'username'      => 'api',
         'secret'        => env('APP_OPTIMIZER_CORE_SERVICE_SECRET', 'api'),
         'timeout'       => env('APP_OPTIMIZER_CORE_SERVICE_TIMEOUT', 10),

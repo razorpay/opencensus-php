@@ -8,7 +8,9 @@ use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
 use ApiResponse;
+use Request;
 
 
 class Client
@@ -144,11 +146,18 @@ class Client
 
     protected function getHeaders()
     {
-        return [
+
+        $headers =  [
             self::CONTENT_TYPE  => 'application/json',
             self::AUTHORIZATION => $this->getAuthorizationHeader(),
             self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
         ];
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
+
+        return $headers;
     }
 
     protected function getAuthorizationHeader()
