@@ -561,6 +561,11 @@ class Notify
      */
     protected function templateData()
     {
+
+        $this->trace->info(TraceCode::TEMPLATE_DATA, [
+            'payment' => $this->payment
+        ]);
+
         $data  = [
             'customer'  => [
                 'email' => $this->payment->getEmail(),
@@ -797,6 +802,10 @@ class Notify
                 $data['qr_customer'] = $qrCustomer;
             }
         }
+
+        $this->trace->info(TraceCode::TEMPLATE_DATA, [
+            'data' => $data
+        ]);
 
         return $data;
     }

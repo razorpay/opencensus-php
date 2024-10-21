@@ -8898,6 +8898,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REWARD_COUPON_DISTRIBUTED_EVENT                                = 'REWARD_COUPON_DISTRIBUTED_EVENT';
     const REWARD_COUPON_DISTRIBUTED_EVENT_ERROR                          = 'REWARD_COUPON_DISTRIBUTED_EVENT_ERROR';
     const NULL_COUPON_CODE                                               = 'NULL_COUPON_CODE';
+    const AUTHORIZE_MAIL                                                 = 'AUTHORIZE_MAIL';
+    const TEMPLATE_DATA                                                  = 'TEMPLATE_DATA';
     const REWARD_SUBJECT_SPLITZ_REQUEST_ERROR                            = 'REWARD_SUBJECT_SPLITZ_REQUEST_ERROR';
     const PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX                         = 'PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX';
     const INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO                          = 'INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO';
