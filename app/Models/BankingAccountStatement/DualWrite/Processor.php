@@ -15,6 +15,8 @@ class Processor
 {
     const MUTEX_LOCK_TIMEOUT_PS_DUAL_WRITE = 30;
 
+    const MUTEX_LOCK_TIMEOUT_ACCOUNT_STATEMENT_DUAL_WRITE = 30;
+
     /**
      * The application instance.
      *
@@ -77,6 +79,30 @@ class Processor
                 });
             },
             self::MUTEX_LOCK_TIMEOUT_PS_DUAL_WRITE,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        if ($bas->transaction != null)
+        {
+            $this->app->events->dispatch('api.transaction.created', $bas->transaction);
+        }
+    }
+
+    public function dualWriteAccountStatementServiceData($input)
+    {
+        $basId = $input['id'];
+        /** @var Entity $bas */
+        $bas = $this->mutex->acquireAndRelease(
+            'account_statement_dual_write_' . $basId,
+            function() use ($input) {
+                return $this->repo->transaction(function() use ($input)
+                {
+                    $bas = (new BankingAccountStatement)->dualWriteAccountStatementBas($input);
+
+                    return $bas;
+                });
+            },
+            self::MUTEX_LOCK_TIMEOUT_ACCOUNT_STATEMENT_DUAL_WRITE,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
 

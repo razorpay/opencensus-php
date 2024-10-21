@@ -71,6 +71,9 @@ class PayoutServiceDualWrite extends Job
                     case 'bas':
                         (new BankingAccountStatement\Core)->processDualWrite($this->params);
                         break;
+                    case 'account_statement_bas':
+                        (new BankingAccountStatement\Core)->processAccountStatementDualWrite($this->params);
+                        break;
                 }
             }
 

@@ -1304,4 +1304,42 @@ return [
             ]
         ]
     ],
+
+    'testDualWriteForAccountStatementServiceBas' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'entity_type' => 'account_statement_bas',
+                'input' => [
+                    'id'                 => "randomid111111",
+                    'merchant_id'         => "10000000000000",
+                    //'entity_id'           => ,
+                    //'entity_type'         => 'payout',
+                    'channel'             => 'rbl',
+                    'account_number'      => '2224440041626905',
+                    'bank_transaction_id' => 'M7878',
+                    'type'                => 'debit',
+                    'utr'                 => '11223344',
+                    'amount'              => 200,
+                    'currency'            => 'INR',
+                    'balance_currency'    => 'INR',
+                    'description'         => 'abcd',
+                    'category'            => 'bank_initiated',
+                    'bank_serial_number'  => '2',
+                    'balance'             => 1233,
+                    'transaction_date'    => 10101010,
+                    'posted_date'         => 20202020,
+                    'gateway_ref_number'  => 'SDGryr',
+                    'updated_at'          => 1000000002,
+                    'created_at'          => 1000000000,
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
 ];

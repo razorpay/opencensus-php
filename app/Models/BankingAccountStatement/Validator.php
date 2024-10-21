@@ -25,6 +25,8 @@ class Validator extends Base\Validator
 
     const BAS_DUAL_WRITE_INPUT = 'bas_dual_write_input';
 
+    const ACCOUNT_STATEMENT_DUAL_WRITE_INPUT = 'account_statement_dual_write_input';
+
     protected static $createRules = [
         Entity::CHANNEL             => 'required|string|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
@@ -112,6 +114,33 @@ class Validator extends Base\Validator
         Entity::ENTITY_ID   => 'required|string|size:14',
         Entity::ENTITY_TYPE => 'required',
         'timestamp'         => 'required|epoch',
+    ];
+
+    protected static $accountStatementDualWriteInputRules = [
+        Entity::ENTITY_TYPE                         => 'required',
+        'input'                                     => 'required|array',
+        'input.' . Entity::CHANNEL             => 'required|string',
+        'input' . '.' . Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
+        'input' . '.' . Entity::BANK_TRANSACTION_ID => 'required|string',
+        'input' . '.' . Entity::AMOUNT              => 'required|integer',
+        'input' . '.' . Entity::CURRENCY            => 'required|size:3',
+        'input' . '.' . Entity::TYPE                => 'required|string',
+        'input' . '.' . Entity::DESCRIPTION         => 'required|string',
+        'input' . '.' . Entity::CATEGORY            => 'sometimes|nullable|string',
+        'input' . '.' . Entity::BANK_SERIAL_NUMBER  => 'required|string',
+        'input' . '.' . Entity::BANK_INSTRUMENT_ID  => 'sometimes|nullable|string',
+        'input' . '.' . Entity::BALANCE             => 'required|integer',
+        'input' . '.' . Entity::BALANCE_CURRENCY    => 'required|size:3',
+        'input' . '.' . Entity::POSTED_DATE         => 'required|integer',
+        'input' . '.' . Entity::TRANSACTION_DATE    => 'required|integer',
+        'input' . '.' . Entity::ENTITY_ID           => 'sometimes|nullable|string|size:14',
+        'input' . '.' . Entity::ENTITY_TYPE         => 'sometimes|nullable|string',
+        'input' . '.' . Entity::GATEWAY_REF_NUMBER  => 'sometimes|string',
+        'input' . '.' . Entity::ID                  => 'required',
+        'input' . '.' . Entity::MERCHANT_ID         => 'required',
+        'input' . '.' . Entity::UTR                 => 'sometimes|nullable|string',
+        'input.created_at'                          => 'required|epoch',
+        'input.updated_at'                          => 'required|epoch',
     ];
 
     public function validateCreditBas($current_status, array $input)

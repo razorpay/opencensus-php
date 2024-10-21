@@ -17341,4 +17341,975 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertNotNull($newBAS->getTransactionId());
         $this->assertTrue($isValidInput);
     }
+
+    public function testDualWriteForAccountStatementServiceBas()
+    {
+        $expectedBas = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => null,
+            BasEntity::ENTITY_TYPE         => null,
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => 1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $expectedBas[BasEntity::ID];
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+    }
+
+    public function testReversingPayoutWhenPayoutIsLinkedAndCreditBasIsUnlinkedForAccountStatementServiceBas()
+    {
+        // Set up a direct account payout.
+        $this->setupForRblPayout('rbl');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            'utr' => '11223344'
+        ]);
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+
+        $basDataInput = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => $payout->getMerchantId(),
+            BasEntity::ENTITY_ID           => $payout->getId(),
+            BasEntity::ENTITY_TYPE         => 'payout',
+            BasEntity::CHANNEL             => $payout->getChannel(),
+            BasEntity::ACCOUNT_NUMBER      => $payout->balance->getAccountNumber(),
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => $payout->getUtr(),
+            BasEntity::AMOUNT              => $payout->getAmount(),
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => $payout->getCreatedAt(),
+            BasEntity::POSTED_DATE         => $payout->getCreatedAt(),
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => $payout->getCreatedAt(),
+            BasEntity::CREATED_AT          => $payout->getCreatedAt(),
+        ];
+
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basDataInput;
+
+        $this->ba->payoutInternalAppAuth();
+
+        $request = [
+            'url'     => '/banking_account_statement/payout_update',
+            'method'  => 'POST',
+            'content' => [
+                'bas_id'           => 'randomid111111',
+                'entity_id'        => $payout->getId(),
+                'entity_type'      => 'payout',
+                'merchant_id'      => $payout->getMerchantId(),
+                'transaction_date' => 10101010
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basDataInput;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basDataInput[BasEntity::ID];
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertNotNull($payout->getTransactionId());
+        $this->assertEquals($payout->getTransactionId(), $bas->getId());
+
+        $basDataInput = [
+            BasEntity::ID                  => "randomid111112",
+            BasEntity::MERCHANT_ID         => $payout->getMerchantId(),
+            BasEntity::ENTITY_ID           => null,
+            BasEntity::ENTITY_TYPE         => null,
+            BasEntity::CHANNEL             => $payout->getChannel(),
+            BasEntity::ACCOUNT_NUMBER      => $payout->balance->getAccountNumber(),
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'credit',
+            BasEntity::UTR                 => $payout->getUtr(),
+            BasEntity::AMOUNT              => $payout->getAmount(),
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '3',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => $payout->getCreatedAt(),
+            BasEntity::POSTED_DATE         => $payout->getCreatedAt(),
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => $payout->getCreatedAt(),
+            BasEntity::CREATED_AT          => $payout->getCreatedAt(),
+        ];
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basDataInput;
+
+        $this->startTest();
+
+        /** @var BasEntity $bas2 */
+        $bas2 = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basDataInput;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basDataInput[BasEntity::ID];
+
+        $this->assertEquals($expectedBas, $bas2->toArray());
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status'              => 'reversed',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'NODAL',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        // Assert that payout status was updated.
+        $this->assertEquals('reversed', $payout->getStatus());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIPayout()
+    {
+        // Set up a direct account payout.
+        $this->setupForRblPayout('rbl');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $basDataInput = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => $payout->getId(),
+            BasEntity::ENTITY_TYPE         => 'payout',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basDataInput;
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basDataInput;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basDataInput[BasEntity::ID];
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertNull($payout->getTransactionId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToPsPayout()
+    {
+        $payoutId = 'randomid000000';
+
+        $payoutData = [
+            'id'                          => $payoutId,
+            'merchant_id'                 => "10000000000000",
+            'fund_account_id'             => "100000000000fa",
+            'method'                      => "fund_transfer",
+            'reference_id'                => null,
+            'balance_id'                  => "KHTaUGgTXc0dhH",
+            'user_id'                     => "random_user123",
+            'batch_id'                    => null,
+            'idempotency_key'             => "random_key",
+            'purpose'                     => "refund",
+            'narration'                   => "Batman",
+            'purpose_type'                => "refund",
+            'amount'                      => 2000000,
+            'currency'                    => "INR",
+            'notes'                       => "{}",
+            'fees'                        => 10,
+            'tax'                         => 33,
+            'status'                      => "processed",
+            'fts_transfer_id'             => 60,
+            'channel'                     => "yesbank",
+            'utr'                         => "933815383814",
+            'failure_reason'              => null,
+            'remarks'                     => "Check the status by calling getStatus API.",
+            'pricing_rule_id'             => "Bbg7cl6t6I3XA9",
+            'scheduled_at'                => null,
+            'queued_at'                   => null,
+            'mode'                        => "IMPS",
+            'fee_type'                    => "free_payout",
+            'workflow_feature'            => null,
+            'origin'                      => 1,
+            'status_code'                 => null,
+            'cancellation_user_id'        => null,
+            'registered_name'             => "SUSANTA BHUYAN",
+            'queued_reason'               => "beneficiary_bank_down",
+            'on_hold_at'                  => 1663092113,
+            'created_at'                  => 1000000000,
+            'updated_at'                  => 1000000002,
+        ];
+
+        \DB::connection('live')->table('ps_payouts')->insert($payoutData);
+
+        $basData = [
+            BasEntity::ID                  => 'randomid111111',
+            BasEntity::MERCHANT_ID         => '10000000000000',
+            BasEntity::ENTITY_ID           => $payoutId,
+            BasEntity::ENTITY_TYPE         => 'payout',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basData;
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basData;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basData[BasEntity::ID];
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIPayoutTwoTimes()
+    {
+        $this->testDualWriteForAccountStatementServiceBasLinkToAPIPayout();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+        $basData = $bas->toArray();
+
+        $data = [
+            'entity_type' => 'account_statement_bas',
+            'input'       => $basData
+        ];
+
+        (new PayoutServiceDualWrite('test', $data))->handle();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basData;
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIReversal()
+    {
+        // Set up a direct account payout.
+        $this->setupForRblPayout('rbl');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            Payout\Entity::STATUS => Status::FAILED
+        ]);
+
+        $payout->saveOrFail();
+
+        $this->ba->payoutInternalAppAuth();
+
+        $request = [
+            'url'     => '/banking_account_statement/payout_update',
+            'method'  => 'POST',
+            'content' => [
+                'bas_id'           => 'randomid111111',
+                'entity_id'        => $payout->getId(),
+                'entity_type'      => 'payout_reversal',
+                'merchant_id'      => $payout->getMerchantId(),
+                'transaction_date' => 12345
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var \RZP\Models\Reversal\Entity $reversal */
+        $reversal = $payout->reversal;
+
+        $this->assertNull($payout->getTransactionId());
+        $this->assertEquals('randomid111111', $reversal->getTransactionId());
+        $this->assertEquals(Status::REVERSED, $payout->getStatus());
+
+        $basData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => $payout->getId(),
+            BasEntity::ENTITY_TYPE         => 'payout_reversal',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'credit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basData;
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basData;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basData[BasEntity::ID];
+        $expectedBas[BasEntity::ENTITY_TYPE] = 'reversal';
+        $expectedBas[BasEntity::ENTITY_ID] = $reversal->getId();
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasReverseAndLinkToAPIReversal()
+    {
+        // Set up a direct account payout.
+        $this->setupForRblPayout('rbl');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            Payout\Entity::STATUS => Status::FAILED
+        ]);
+
+        $payout->saveOrFail();
+
+        $basData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => $payout->getId(),
+            BasEntity::ENTITY_TYPE         => 'payout_reversal',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        Queue::fake(EsSync::class);
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basData;
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        /** @var \RZP\Models\Reversal\Entity $reversal */
+        $reversal = $payout->reversal;
+
+        $this->assertNull($payout->getTransactionId());
+        $this->assertEquals('randomid111111', $reversal->getTransactionId());
+        $this->assertEquals(Status::REVERSED, $payout->getStatus());
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basData;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basData[BasEntity::ID];
+        $expectedBas[BasEntity::ENTITY_TYPE] = 'reversal';
+        $expectedBas[BasEntity::ENTITY_ID] = $reversal->getId();
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToPsReversal()
+    {
+        $payoutId = 'randomid000000';
+
+        $reversalData = [
+            'id'             => 'randomid111115',
+            'payout_id'      => $payoutId,
+            'merchant_id'    => "10000000000000",
+            'balance_id'     => "KHTaUGgTXc0dhH",
+            'amount'         => 2000000,
+            'currency'       => "INR",
+            'notes'          => "{}",
+            'fees'           => 10,
+            'tax'            => 33,
+            'channel'        => 'mychannel',
+            'transaction_id' => 'randomid111116',
+            'utr'            => "933815383815",
+            'created_at'     => 1663092114,
+            'updated_at'     => 1663092116,
+        ];
+
+        \DB::connection('live')->table('ps_reversals')->insert($reversalData);
+
+        $basData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => $payoutId,
+            BasEntity::ENTITY_TYPE         => 'payout_reversal',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basData;
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basData;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basData[BasEntity::ID];
+        $expectedBas[BasEntity::ENTITY_TYPE] = 'reversal';
+        $expectedBas[BasEntity::ENTITY_ID] = 'randomid111115';
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIReversalTwoTimes()
+    {
+        $this->testDualWriteForAccountStatementServiceBasLinkToAPIReversal();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+        $basData = $bas->toArray();
+        $expectedBas = $basData;
+
+        $basData['entity_type'] = 'payout';
+
+        $data = [
+            'entity_type' => 'account_statement_bas',
+            'input' => $basData
+        ];
+
+        (new PayoutServiceDualWrite('test', $data))->handle();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIExternal()
+    {
+        $basData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => null,
+            BasEntity::ENTITY_TYPE         => 'external',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basData;
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $expectedBas = $basData;
+        unset($expectedBas[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($expectedBas[BasEntity::BAS_DETAILS_ID]);
+        $expectedBas[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $expectedBas[BasEntity::TRANSACTION_ID] = $basData[BasEntity::ID];
+        $expectedBas[BasEntity::ENTITY_TYPE] = Constants\Entity::EXTERNAL;
+        $expectedBas[BasEntity::ENTITY_ID] = $bas->getId();
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIExternalThenToPayout()
+    {
+        $this->testDualWriteForAccountStatementServiceBasLinkToAPIExternal();
+
+        // Set up a direct account payout.
+        $this->setupForRblPayout('rbl');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $basData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => $payout->getId(),
+            BasEntity::ENTITY_TYPE         => 'payout',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basData;
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertNull($payout->getTransactionId());
+
+        $this->assertEquals($payout->getId(), $bas->getEntityId());
+        $this->assertEquals(Constants\Entity::PAYOUT, $bas->getEntityType());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIExternalThenToAPIReversal()
+    {
+        $this->testDualWriteForPayoutServiceBasLinkToAPIExternal();
+
+        // Set up a direct account payout.
+        $this->setupForRblPayout('rbl');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $basData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => $payout->getId(),
+            BasEntity::ENTITY_TYPE         => 'payout_reversal',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => -1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            Payout\Entity::STATUS => Status::FAILED
+        ]);
+
+        $payout->saveOrFail();
+
+        $this->ba->payoutInternalAppAuth();
+
+        $request = [
+            'url'     => '/banking_account_statement/payout_update',
+            'method'  => 'POST',
+            'content' => [
+                'bas_id'           => 'randomid111111',
+                'entity_id'        => $payout->getId(),
+                'entity_type'      => 'payout_reversal',
+                'merchant_id'      => $payout->getMerchantId(),
+                'transaction_date' => 12345
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+        $payoutId = $payout->getId();
+
+        /** @var \RZP\Models\Reversal\Entity $reversal */
+        $reversal = $payout->reversal;
+
+        $this->assertNull($payout->getTransactionId());
+        $this->assertEquals('randomid111111', $reversal->getTransactionId());
+        $this->assertEquals(Status::REVERSED, $payout->getStatus());
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $basData;
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+
+        $this->assertEquals($reversal->getId(), $bas->getEntityId());
+        $this->assertEquals(Constants\Entity::REVERSAL, $bas->getEntityType());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasLinkToAPIExternalTwoTimes()
+    {
+        $this->testDualWriteForPayoutServiceBasLinkToAPIExternal();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+        $basData = $bas->toArray();
+        $expectedBas = $basData;
+
+        $data = [
+            'entity_type' => 'account_statement_bas',
+            'input'       => $basData
+        ];
+
+        (new PayoutServiceDualWrite('test', $data))->handle();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+
+        $this->assertEquals($expectedBas, $bas->toArray());
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertEquals($bas->getId(), $txn->getId());
+        $this->assertEquals($bas->getEntityType(), $txn->getType());
+        $this->assertEquals($bas->getEntityId(), $txn->getEntityId());
+    }
+
+    public function testDualWriteForAccountStatementServiceBasWithOldUpdateAtTimestamp()
+    {
+        // Set up a direct account payout.
+        $this->setupForRblPayout('rbl');
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $nonEnrichedData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => null,
+            BasEntity::ENTITY_TYPE         => null,
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => 1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000001,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $enrichedData = [
+            BasEntity::ID                  => "randomid111111",
+            BasEntity::MERCHANT_ID         => "10000000000000",
+            BasEntity::ENTITY_ID           => $payout->getId(),
+            BasEntity::ENTITY_TYPE         => 'payout',
+            BasEntity::CHANNEL             => 'rbl',
+            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID => 'M7878',
+            BasEntity::TYPE                => 'debit',
+            BasEntity::UTR                 => '11223344',
+            BasEntity::AMOUNT              => 200,
+            BasEntity::CURRENCY            => 'INR',
+            BasEntity::DESCRIPTION         => 'abcd',
+            BasEntity::CATEGORY            => 'bank_initiated',
+            BasEntity::BANK_SERIAL_NUMBER  => '2',
+            BasEntity::BALANCE             => 1233,
+            BasEntity::BALANCE_CURRENCY    => 'INR',
+            BasEntity::TRANSACTION_DATE    => 10101010,
+            BasEntity::POSTED_DATE         => 20202020,
+            BasEntity::GATEWAY_REF_NUMBER  => 'SDGryr',
+            BasEntity::BAS_DETAILS_ID      => 'randomid111122',
+            BasEntity::UPDATED_AT          => 1000000002,
+            BasEntity::CREATED_AT          => 1000000000,
+        ];
+
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceBas'];
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $enrichedData;
+
+        $this->startTest();
+
+        /** @var BasEntity $bas */
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        unset($enrichedData[BasEntity::GATEWAY_REF_NUMBER]);
+        unset($enrichedData[BasEntity::BAS_DETAILS_ID]);
+        $enrichedData[BasEntity::BANK_INSTRUMENT_ID] = null;
+        $enrichedData[BasEntity::TRANSACTION_ID] = $enrichedData[BasEntity::ID];
+        $enrichedData[BasEntity::ENTITY_TYPE] = 'payout';
+        $enrichedData[BasEntity::ENTITY_ID] = $payout->getId();
+
+        $this->assertEquals($enrichedData, $bas->toArray());
+
+        $this->testData[__FUNCTION__]['request']['content']['input'] = $nonEnrichedData;
+
+        $this->startTest();
+
+        $bas = $this->getDbLastEntity('banking_account_statement', 'test');
+
+        $this->assertEquals($enrichedData, $bas->toArray());
+    }
 }
