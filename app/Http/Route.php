@@ -19197,6 +19197,7 @@ class Route
     // Banking specific routes for which sensitive data will be scrubbed from logs.
     //
     const BANKING_SPECIFIC_ROUTES = [
+        'cac_add_privilege_and_data',
         'mob_ca_lms_routes',
         'merchant_activation_needs_clarification',
         'payout_create',

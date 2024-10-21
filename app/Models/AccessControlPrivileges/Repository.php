@@ -9,7 +9,6 @@ use \RZP\Models\AccessPolicyAuthzRolesMap;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = Constants\Table::ACCESS_CONTROL_PRIVILEGES;
 
@@ -26,7 +25,7 @@ class Repository extends Base\Repository
         $this->setBaseQueryIfApplicable($useMasterConnection);
 
         return $this->baseQuery
-            ->where(Entity::ID, '=', $id);
+            ->where(Entity::ID, '=', $id)->firstOrFail();
     }
 
     public function fetchPrivileges($input)

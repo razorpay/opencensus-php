@@ -8,7 +8,6 @@ use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = Table::ROLE_ACCESS_POLICY_MAP;
 

@@ -16,11 +16,15 @@ class Entity extends PublicEntity
     const ACTION_TYPE_VIEW = 'view';
     const ACTION_TYPE_VIEW_ALL = 'view_all';
     const ACTION_TYPE_CREATE = 'create';
+    const ACTION_TYPE_APPROVE = 'approve';
+    const ACTION_TYPE_UPDATE = 'update';
 
     const ACTION_TYPES = [
         self::ACTION_TYPE_VIEW,
         self::ACTION_TYPE_CREATE,
-        self::ACTION_TYPE_VIEW_ALL
+        self::ACTION_TYPE_VIEW_ALL,
+        self::ACTION_TYPE_APPROVE,
+        self::ACTION_TYPE_UPDATE
     ];
 
     protected $entity = Constants\Table::ACCESS_POLICY_AUTHZ_ROLES_MAP;
@@ -79,6 +83,11 @@ class Entity extends PublicEntity
         $this->setAttribute(self::AUTHZ_ROLES, $authzRoles);
     }
 
+    public function setMetaData(array $metaData)
+    {
+        $this->setAttribute(self::META_DATA, $metaData);
+    }
+
     public function getPrivilegeId()
     {
         return $this->getAttribute(self::PRIVILEGE_ID);
@@ -93,5 +102,10 @@ class Entity extends PublicEntity
     public function getAuthzRoles()
     {
         return $this->getAttribute(self::AUTHZ_ROLES);
+    }
+
+    public function getMetaData()
+    {
+        return $this->getAttribute(self::META_DATA);
     }
 }
