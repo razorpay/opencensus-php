@@ -405,6 +405,10 @@ class Service extends Base\Service
     public function addEmiPlan(array $input)
     {
         $emiPlan = (new Core)->addEmiPlan($input);
+        if (isset($input[Entity::SOURCE_CHANNEL]) && $input[Entity::SOURCE_CHANNEL] === Entity::SOURCE_CHANNEL_IN_PERSON)
+        {
+            return $emiPlan;
+        }
 
         return $emiPlan->toArrayAdmin();
     }

@@ -656,9 +656,19 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['debit_emi_providers' => $providers]);
     }
 
+    public function disableOfflineDebitEmiProviders($providers ,$id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['addon_methods' => ['offline_disabled_debit_emi' => $providers]]);
+    }
+
     public function enableCreditEmiProviders($providers ,$id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['addon_methods' => ['credit_emi' => $providers]]);
+    }
+
+    public function disableOfflineCreditEmiProviders($providers ,$id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['addon_methods' => ['offline_disabled_credit_emi' => $providers]]);
     }
 
     public function enablePaylaterProviders($providers, $id = '10000000000000')
@@ -681,9 +691,29 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::CREDIT => '1']]);
     }
 
+    public function enableOfflineEmiCredit($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::OFFLINE_CREDIT => '1']]);
+    }
+
+    public function disableOfflineEmiCredit($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::OFFLINE_CREDIT => '0']]);
+    }
+
     public function enableEmiDebit($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::DEBIT => '1']]);
+    }
+
+    public function enableOfflineEmiDebit($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::OFFLINE_DEBIT => '1']]);
+    }
+
+    public function disableOfflineEmiDebit($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::OFFLINE_DEBIT => '0']]);
     }
 
     public function disableEmi($id = '10000000000000')

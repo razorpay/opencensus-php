@@ -913,6 +913,62 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertFalse($response['methods']['emi_types']['debit']);
     }
 
+    public function testGetCheckoutPreferencesForOfflineCreditEmiProvidersEnabled()
+    {
+        $this->fixtures->merchant->enableOfflineEmiCredit();
+
+        $this->fixtures->merchant->disableOfflineCreditEmiProviders(['HDFC']);
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['methods']['emi_types']['offline_credit']);
+
+        $this->assertEquals(0, $response['methods']['offline_credit_emi_providers']['HDFC']);
+
+        $this->assertEquals(1, $response['methods']['offline_credit_emi_providers']['SBIN']);
+    }
+
+    public function testGetCheckoutPreferencesForOfflineCreditEmiProvidersDisabled()
+    {
+        $this->fixtures->merchant->disableOfflineEmiCredit();
+
+        $response = $this->getPreferences();
+
+        $this->assertFalse($response['methods']['emi_types']['offline_credit']);
+
+        $this->assertEquals(0, $response['methods']['offline_credit_emi_providers']['HDFC']);
+
+        $this->assertEquals(0, $response['methods']['offline_credit_emi_providers']['SBIN']);
+    }
+
+    public function testGetCheckoutPreferencesForOfflineDebitEmiProvidersEnabled()
+    {
+        $this->fixtures->merchant->enableOfflineEmiDebit();
+
+        $this->fixtures->merchant->disableOfflineDebitEmiProviders(['HDFC']);
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['methods']['emi_types']['offline_debit']);
+
+        $this->assertEquals(0, $response['methods']['offline_debit_emi_providers']['HDFC']);
+
+        $this->assertEquals(1, $response['methods']['offline_debit_emi_providers']['KKBK']);
+    }
+
+    public function testGetCheckoutPreferencesForOfflineDebitEmiProvidersDisabled()
+    {
+        $this->fixtures->merchant->disableOfflineEmiDebit();
+
+        $response = $this->getPreferences();
+
+        $this->assertFalse($response['methods']['emi_types']['offline_debit']);
+
+        $this->assertEquals(0, $response['methods']['offline_debit_emi_providers']['HDFC']);
+
+        $this->assertEquals(0, $response['methods']['offline_debit_emi_providers']['KKBK']);
+    }
+
     public function testGetCheckoutPreferencesForPaylaterProviders()
     {
         $this->fixtures->merchant->enablePayLater();

@@ -438,6 +438,8 @@ class Core extends Base\Core
         $netbankingEnabled           = $methods->isNetbankingEnabled();
         $data[Payment\Method::APP]   = $methods->getApps();
         $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledDebitEmiProviders();
+        $data[Entity::OFFLINE_DEBIT_EMI_PROVIDERS] = $methods->getConsolidatedOfflineDebitEmiProviders();
+        $data[Entity::OFFLINE_CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedOfflineCreditEmiProviders();
         //$data[Entity::CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledCreditEmiProviders();
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
         $data[Entity::COD] = $methods->isCodEnabled();
