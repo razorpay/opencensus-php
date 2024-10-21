@@ -1066,5 +1066,9 @@ return array(
 
     'reversal_read_experiment' => env('REVERSAL_READ_EXPERIMENT_ID'),
 
+    'fulcrum_recurring_initial_experiment' => env('FULCRUM_RECURRING_INITIAL_PAYMENT_EXP_ID'),
+
+    'fulcrum_recurring_subsequent_experiment' => env('FULCRUM_RECURRING_SUBSEQUENT_PAYMENT_EXP_ID'),
+  
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 );

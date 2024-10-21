@@ -434,14 +434,33 @@ trait Authorize
 
                 if ($paymentEvent->getMethod() === Method::CARD and $paymentEvent->isRecurring() === true and
                     $paymentEvent->getRecurringType() === RecurringType::INITIAL) {
-                    $variant = $this->app['splitzService']->getTreatment($paymentEvent->getMerchantId(),
-                        RazorxTreatment::ALLOW_FULCRUM_RECURRING_INITIAL,
-                        Mode::LIVE);
+                    $properties = [
+                        'id'            => $paymentEvent->getMerchantId(),
+                        'experiment_id' => $this->app['config']->get('app.fulcrum_recurring_initial_experiment'),
+                    ];
 
-                    if ($variant === 'on') {
-                        foreach ($this->selectedTerminals as $terminal) {
+                    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                    $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                        'properties' => $properties,
+                        'response' => $response,
+                    ]);
+
+                    $variant = $response['response']['variant']['name'] ?? '';
+
+                    if ($variant === 'enable') {
+                        foreach ($this->selectedTerminals as $index => $terminal) {
                             if ($terminal->getGateway() == Constants2::FULCRUM) {
+                                $this->trace->info(
+                                    tracecode::MISC_TRACE_CODE,
+                                    [
+                                        "FOUND_FULCRUM_TERMINAL" => $terminal
+                                    ]
+                                );
                                 $currentTerminal = $terminal;
+                                array_splice($this->selectedTerminals, $index, 1);
+                                array_unshift($this->selectedTerminals, $terminal);
+                                break;
                             }
                         }
 
