@@ -14,7 +14,7 @@ test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=p
     storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
   });
 
-  test.skip('should show payments list in Upload Invoices', async ({ page }) => {
+  test('should show payments list in Upload Invoices', async ({ page }) => {
     await navigateToTransactions(page);
     await page.getByRole('link', { name: 'Upload Invoices' }).click();
 
@@ -34,6 +34,10 @@ test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=p
     const allDetails = uploadInvoices.paymentId.allDetails;
     await assertSearch({ page, id: allDetails });
 
+    const response = await page.waitForResponse(`**/merchant/api/live/payments/${allDetails}?**`);
+    const res = await response.json();
+    const hasB2bExportInvoice = res?.data?.b2b_export_invoice;
+
     // Assert Payment details row
     const rowDetails = [
       uploadInvoices.paymentId.allDetails,
@@ -41,7 +45,7 @@ test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=p
       /09 Jan 2024/,
       'Bank Transfer',
       'Authorized',
-      /Upload/,
+      hasB2bExportInvoice ? /View/ : /Upload/,
     ];
     await assertPaymentDetails({ page, details: rowDetails });
 
