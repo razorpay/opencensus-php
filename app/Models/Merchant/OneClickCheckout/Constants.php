@@ -172,6 +172,7 @@ class Constants
 
     const ONE_CC_SHOPIFY_DRAFT_ORDER = 'one_cc_draft_order';
     const ONE_CC_SHOPIFY_ACC_CREATE = 'one_cc_shopify_acc_create';
+    const COUPON_TYPE_AUTOMATIC = "automatic";
 
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,

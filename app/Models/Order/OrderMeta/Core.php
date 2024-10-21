@@ -428,6 +428,12 @@ class Core extends Base\Core
                         $shippingDiscount = $shippingFee;
                         continue;
                   }
+                    // FCOUPON_TYPE_AUTOMATIC discount amount is already considered in line_items_total for shopify orders
+                    // and this promotion should be ignored for calculating order amount
+                    if ((isset($couponApplied[Order1cc\Fields::PROMOTIONS_SOURCE]) === true && $couponApplied[Order1cc\Fields::PROMOTIONS_SOURCE] === Order1cc\Constants::COUPON_SOURCE_SHOPIFY) &&
+                    (isset($couponApplied[Order1cc\Fields::PROMOTIONS_TYPE]) === true && $couponApplied[Order1cc\Fields::PROMOTIONS_TYPE] === Order1cc\Constants::COUPON_TYPE_AUTOMATIC)) {
+                        continue;
+                    }
                   $discount = $discount + $couponApplied[Order1cc\Fields::PROMOTIONS_VALUE] ?? 0;
                 }
             }
