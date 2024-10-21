@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\Action\Differ\Service as ActionDifferService;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasonDetail;
+use RZP\Models\RiskWorkflowAction\Constants as RiskWorkflowActionConstants;
 
 class Service extends Base\Service
 {
@@ -37,6 +38,38 @@ class Service extends Base\Service
         {
             //checking for comment validations only if Activation Form Status is Rejected and action is approve
            $this->validateCommentsOnRejection($actionIdInput);
+        }
+
+        // Add risk attributes to tags with appropriate prefixes
+        $tags = [];
+
+        $riskAttributes = $input[RiskWorkflowActionConstants::RISK_ATTRIBUTES] ?? [];
+
+        if (isset($riskAttributes[RiskWorkflowActionConstants::RISK_REASON]) === true)
+        {
+            $tags[] = RiskWorkflowActionConstants::RISK_REASON_PREFIX . $riskAttributes[RiskWorkflowActionConstants::RISK_REASON];
+        }
+
+        if (isset($riskAttributes[RiskWorkflowActionConstants::RISK_SUB_REASON]) === true)
+        {
+            $tags[] = RiskWorkflowActionConstants::RISK_SUB_REASON_PREFIX . $riskAttributes[RiskWorkflowActionConstants::RISK_SUB_REASON];
+        }
+
+        // Handle workflowTags if provided
+        $workflowTags = $input['workflow_tags'] ?? [];
+
+        foreach ($workflowTags as $tagName => $tagValue)
+        {
+            $tags[] = $tagName . ':' . $tagValue;
+        }
+
+        // Add the tags to the workflow action
+        if (!empty($tags)) {
+            $this->trace->info(TraceCode::WORKFLOW_TAGS_TRACE_INFO,
+                [
+                    'tags'   => $tags
+                ]);
+            $workflowAction->tag($tags);
         }
 
         $input[Entity::ACTION_ID] = $actionId;
