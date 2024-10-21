@@ -2727,7 +2727,8 @@ class Route
 
         // Fetch user via OAuth (Private Auth)
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
-        'user_create_merchant'                     => ['post',     'users/merchants',                           'UserController@createMerchant'                                     ],
+        'user_create_merchant'                     => ['post',     'users/merchants',                                'UserController@createMerchant'                                     ],
+        'user_create_merchant_internal'            => ['post',     'users/merchants/internal',                       'UserController@createMerchantInternal'                             ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
         // this route is a replica of the above 2 routes except that auth is done via app auth on edge
         'fetch_users_internal'                     => ['get',      'users/internal/{id}',                            'UserController@getUser'                                            ],
@@ -6863,6 +6864,7 @@ class Route
         'qr_code_merchant_create',
 
         'settlement_ondemand_create_internal',
+        'user_create_merchant_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -18141,7 +18143,10 @@ class Route
             'fetch_users_internal',
             'internal_fd_create_ticket_graphql',
             'internal_fd_add_note_graphql',
-            'internal_fetch_merchant_ids'
+            'internal_fetch_merchant_ids',
+            'user_fetch_by_verified_contact_internal',
+            'user_create_merchant_internal',
+            'user_create_internal'
         ],
 
         'disputes' => [

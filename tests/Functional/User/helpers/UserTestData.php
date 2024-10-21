@@ -603,7 +603,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The password field is required.',
+                    'description' => 'The password field is required when email is present.',
                 ],
             ],
             'status_code' => 400,
@@ -677,6 +677,96 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'country_code'  =>  'IN',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
+    'testCreateUserInternal' => [
+        'request' => [
+            'url'       => '/users/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'contact_mobile_verified'  =>  1,
+                'signup_via_email' => '0',
+                'captcha_disable' => 'true',
+                'name' => 'AP',
+                'contact_mobile' => '7598249212',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [],
+        ]
+    ],
+
+    'testCreateMerchantInternalWithoutUserID' => [
+        'request' => [
+            'url'       => '/users/merchants/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                "error" => [
+                    "code"=> "BAD_REQUEST_ERROR",
+                    "description" => "The user id field is required.",
+                    "source" => "business",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "user_id",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateMerchantInternalWithoutOrgID' => [
+        'request' => [
+            'url'       => '/users/merchants/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'user_id' => '12345678901234',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                "error" => [
+                    "code"=> "BAD_REQUEST_ERROR",
+                    "description" => "The org id field is required.",
+                    "source" => "business",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "org_id",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateMerchantInternal' => [
+        'request' => [
+            'url'       => '/users/merchants/internal',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'org_id' => 'org_100000razorpay',
+                'name' => 'APN',
             ],
         ],
         'response'  =>  [
@@ -5479,7 +5569,7 @@ return [
             ],
         ],
     ],
-  
+
     'testVerifyOtpAndUpdateContactMobileAlreadyExistingForActivatedMerchantUsers' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',
@@ -5502,7 +5592,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS,
         ],
     ],
-    
+
     'testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan' => [
         'request' => [
             'url'     => '/users/verify/update/new/mobile',

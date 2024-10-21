@@ -622,15 +622,23 @@ class Service extends Base\Service
         $this->core->subscribeToMailingList($user);
     }
 
-    protected function createMerchant(array $user, string $referrer, string $businessName, String $countryCode, bool $partnerIntent, array $input, $heimdallTokenData, bool $sendConfirmation): array
+    protected function createMerchant(array $user, string $referrer, string $businessName, String $countryCode, bool $partnerIntent, array $input, $heimdallTokenData, bool $sendConfirmation, $isInternal=false): array
     {
+        // set orgID from auth if it is not internal request
+        // set orgID from payload if it is internal request
+        $orgID = $this->auth->getOrgId();
+        if ($isInternal)
+        {
+            $orgID = $input[Merchant\Entity::ORG_ID];
+        }
+
         $merchantInputData = [
             Merchant\Entity::NAME          => $businessName,
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
                                               $this->auth->getRequestOriginProduct(),
             Merchant\Entity::COUNTRY_CODE  => $countryCode ?? 'IN',
             //Set by default OrgId to the OrgId from whether request is originated, Ex: Razorpay/Curlec,
-            Merchant\Entity::ORG_ID        => $this->auth->getOrgId(),
+            Merchant\Entity::ORG_ID        => $orgID,
         ];
 
         $merchantDetailInputData = [];
@@ -906,7 +914,7 @@ class Service extends Base\Service
                         $loggedInUser = $this->app['basicauth']->getUser();
 
                         $this->updateUserMerchantMapping($loggedInUser['id'], $userMerchantMappingInputData);
-                        
+
                         if ($signupCampaign === DeviceDetailConstants::PARTNER_ASSISTED_ONBOARDING)
                         {
                             $loggedInMerchant=  $this->app['basicauth']->getMerchant();
@@ -2321,14 +2329,22 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      */
-    function createMerchantWithPrefillData(array $user, array $input)
+    function createMerchantWithPrefillData(array $user, array $input, bool $isInternal=false)
     {
+        // set orgID from auth if it is not internal request
+        // set orgID from payload if it is internal request
+        $orgID = $this->auth->getOrgId();
+        if ($isInternal)
+        {
+            $orgID = $input[Merchant\Entity::ORG_ID];
+        }
+
         $merchantInputData = [
             Merchant\Entity::NAME          => $input[Merchant\Entity::NAME] ?? '',
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
                 $this->auth->getRequestOriginProduct(),
             Merchant\Entity::COUNTRY_CODE  => $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN',
-            Merchant\Entity::ORG_ID        => $this->auth->getOrgId(),
+            Merchant\Entity::ORG_ID        => $orgID,
         ];
 
         $merchantDetailInputData = [];
@@ -2371,10 +2387,18 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function createMerchantForUser(array $input): array
+    public function createMerchantForUser(array $input, bool $isInternal=false): array
     {
-        $this->validator->validateInput('createMerchant', $input);
-
+        if ($isInternal)
+        {
+            $this->validator->validateInput('createMerchantInternal', $input);
+            $userId = $input[Constants::USER_ID];
+            $this->ba->setUserById($userId);
+        }
+        else
+        {
+            $this->validator->validateInput('createMerchant', $input);
+        }
         $countryCode = $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN';
         $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
         $businessName = $input[Merchant\Entity::NAME] ?? '';
@@ -2386,14 +2410,14 @@ class Service extends Base\Service
 
         if ($merchants->count() > 0) {
             // User already has a merchant so we need to prefill any data the user has
-            $data = $this->createMerchantWithPrefillData($user->toArray(), $input);
+            $data = $this->createMerchantWithPrefillData($user->toArray(), $input, $isInternal);
         } else {
             // User doesn't have a merchant and is signing up so we do the usual signup
             $merchantInputData = [
                 Merchant\Entity::SIGNUP_SOURCE  => $signupSource,
             ];
 
-            $data = $this->createMerchant($user->toArray(), '', $businessName, $countryCode, false, $merchantInputData, null, false);
+            $data = $this->createMerchant($user->toArray(), '', $businessName, $countryCode, false, $merchantInputData, null, false, $isInternal);
         }
 
         $this->trace->info(TraceCode::USER_CREATED_MERCHANT,

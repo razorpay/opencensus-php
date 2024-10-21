@@ -552,6 +552,72 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantInternalWithoutUserID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantInternalWithoutOrgID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantInternal()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919000000002', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['user_id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+        $this->assertEquals($user['contact_mobile'], $merchant->contact_mobile);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+        $this->assertEquals($response['name'], $testData['request']['content']['name']);
+    }
+
+    public function testCreateUserInternal() {
+        DB::table('users')->where('contact_mobile', '=', '7598249212')->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $user = DB::table('users')->where('contact_mobile', '=', $testData['request']['content']['contact_mobile'])->first();
+        $this->assertEquals($user->id, $response['id']);
+        $this->assertEquals($user->name, $response['name']);
+        $this->assertEquals($user->contact_mobile, $response['contact_mobile']);
+        $this->assertEquals(false, $response['email_verified']);
+        $this->assertEquals(false, $response['second_factor_auth_enforced']);
+        $this->assertEquals("0", $response['signup_via_email']);
+    }
+
     public function testSignupSourceShowingUpInMerchantAfterRegistration()
     {
         //Given
@@ -9337,11 +9403,11 @@ class UserTest extends TestCase
     public function testVerifyOtpAndUpdateContactMobileAlreadyExistingForActivatedMerchantUsers()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
-    
+
         $userDb1 = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
-    
+
         $primaryMids = $userDb1->getPrimaryMerchantIds();
-    
+
         for ($i = 0; $i < sizeof($primaryMids); $i++)
         {
             $this->fixtures->merchant_detail->createAssociateMerchant([
@@ -9350,32 +9416,32 @@ class UserTest extends TestCase
                 'contact_email' => 'user'. $i. '@email.com',
             ]);
         }
-    
+
         $this->ba->proxyAuth('rzp_test_10000000000000', UserFixture::MERCHANT_USER_ID);
-    
+
         $user2Attributes = [
             'contact_mobile'            => '9123456789',
             'contact_mobile_verified'   => true,
         ];
-    
+
         $user2 = $this->fixtures->create('user', $user2Attributes);
-    
+
         $merchant2 = $this->fixtures->create('merchant', [
             'activated'  => 1
         ]);
-        
+
         $merchantId2 = $merchant2->getId();
-    
+
         $mappingData2 = [
             'user_id'     => $user2->getId(),
             'merchant_id' => $merchantId2,
             'role'        => 'owner',
         ];
         $this->fixtures->create('user:user_merchant_mapping', $mappingData2);
-    
+
         $this->startTest();
     }
-    
+
     public function testVerifyOtpAndUpdateContactMobileAlreadyExistingOrphan()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
@@ -14699,9 +14765,9 @@ class UserTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockAllSplitzTreatment($splitzOutput);
-        
+
         $user1Attributes = [
             'contact_mobile'            => '1234567890',
             'contact_mobile_verified'   => true,

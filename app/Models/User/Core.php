@@ -812,7 +812,16 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
-            $this->repo->saveOrFail($user);
+            $isInternalAndContactVerified = (
+                ($this->app['basicauth']->isAppAuth() === true) &&
+                (isset($input[Entity::CONTACT_MOBILE_VERIFIED])) &&
+                ($input[Entity::CONTACT_MOBILE_VERIFIED] === 1)
+            );
+            $this->repo->saveOrFail(
+                $user,
+                ['is_internal_and_contact_verified' => $isInternalAndContactVerified]
+            );
+
         });
 
         return $user;
@@ -3196,24 +3205,24 @@ class Core extends Base\Core
 
         return $response;
     }
-    
+
     public function setContactNumberAsNullForUserIds(array $UserIds) {
         // Set contact number as null for Orphan user ids
         $this->repo->transactionOnLiveAndTest(function () use ($UserIds) {
             foreach ($UserIds as $userId){
-            
+
                 $user = $this->repo->user->findOrFail($userId);
-            
+
                 $user->contact_mobile = null;
-            
+
                 $this->repo->user->saveOrFail($user);
             }
         });
     }
-    
+
     public function getUserIdsToMakeFieldsNull(array $orphanUserIds, array $userIdsWithNoActivatedMerchant, array $existingUserIds): array{
         $userIdsToNullify = array();
-        
+
         if (count($orphanUserIds) === count($existingUserIds)) {
             $userIdsToNullify = $orphanUserIds;
         } elseif (count($userIdsWithNoActivatedMerchant) === count($existingUserIds)) {
@@ -3221,13 +3230,13 @@ class Core extends Base\Core
         }
         return $userIdsToNullify;
     }
-    
+
     public function getOrphanOrNonActivatedMerchantUserIds(array $existingUserIds): array{
         $orphanUserIds = array();
         $userIdsWithNoActivatedMerchant = array();
-        
+
         foreach ($existingUserIds as $userId) {
-        
+
             $mids = $this->repo->merchant_user->returnMerchantIdsForUserId($userId);
             if(count(value: $mids) === 0)
             {
@@ -3235,26 +3244,26 @@ class Core extends Base\Core
                 $userIdsWithNoActivatedMerchant[] = $userId;
                 continue;
             }
-        
+
             $activatedMids = $this->repo->merchant->fetchActivatedMids($mids);
-        
+
             $this->trace->info(TraceCode::EDIT_MOBILE_REQUEST_USER_NON_ORPHAN_USERS, [
                 "user_id"                 => $userId,
                 "count_activated_mids"    => count($activatedMids),
                 "total_mids"              => count($mids),
             ]);
-        
+
             if (count($activatedMids) === 0) {
                 // user_id is associated with merchant who is not activated.
                 $userIdsWithNoActivatedMerchant[] = $userId;
             }
         }
-    
+
         return $this->getUserIdsToMakeFieldsNull($orphanUserIds, $userIdsWithNoActivatedMerchant, $existingUserIds);
     }
-    
+
     //verify otp on the new added number
-    
+
     /**
      * @throws Throwable
      * @throws NumberParseException
@@ -3278,16 +3287,16 @@ class Core extends Base\Core
         $expResult = $this->splitzExperimentEvaluatorMobileUpdate($user->getId());
 
         if($expResult === true){
-            
+
             if ((empty($existingUserIds) === false) and
                 (count($existingUserIds) > 0))
             {
                 $userIdsToNullify = $this->getOrphanOrNonActivatedMerchantUserIds($existingUserIds);
-                
+
                 if (count($userIdsToNullify) === 0) {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_ASSOCIATED_WITH_NON_ORPHAN_USERS);
                 }
-                
+
                 $this->setContactNumberAsNullForUserIds($userIdsToNullify);
             }
         }
