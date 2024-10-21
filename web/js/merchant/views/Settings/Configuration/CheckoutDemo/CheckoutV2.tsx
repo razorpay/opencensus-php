@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
 import { Environments } from 'common/typings';
+import { fetchKeys } from 'merchant/reducers/keys';
 import { toBase64 } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils';
 import { CheckoutFrame } from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
@@ -11,10 +12,9 @@ import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/Checkou
 import { CHECKOUT_IFRAME_URL } from './constants';
 import { useCheckoutPreview } from './context/createContext';
 import { initCheckout } from './liveCheckout';
-import { fetchKeys } from 'merchant/reducers/keys';
 
 type CheckoutV2Props = {
-  shouldScaleToFit: boolean;
+  zoomTitleStyle?: boolean;
   fetchKeys: typeof fetchKeys;
   apiKey: string;
   mode: Environments;
@@ -22,7 +22,7 @@ type CheckoutV2Props = {
 };
 
 const CheckoutV2 = ({
-  shouldScaleToFit,
+  zoomTitleStyle,
   fetchKeys,
   apiKey,
   mode,
@@ -59,6 +59,14 @@ const CheckoutV2 = ({
             logo: base64,
           });
         });
+      }
+      if (values.wordmarkRaw) {
+        toBase64(values.wordmarkRaw).then((base64) => {
+          updateValues(updateCheckout.current, {
+            ...values,
+            wordmark: base64,
+          });
+        });
       } else {
         updateValues(updateCheckout.current, values);
       }
@@ -77,7 +85,7 @@ const CheckoutV2 = ({
       src={`${CHECKOUT_IFRAME_URL}&key=${apiKey}`}
       ref={init}
       isDesktopPreview={forceLoadDesktopView || isDesktopPreview}
-      shouldScaleToFit={shouldScaleToFit}
+      zoomTitleStyle={zoomTitleStyle}
     />
   );
 };

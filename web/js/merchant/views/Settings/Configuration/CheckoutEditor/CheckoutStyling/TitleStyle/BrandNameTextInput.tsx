@@ -4,7 +4,11 @@ import { Box, Text, TextInput } from '@razorpay/blade/components';
 
 import { BrandNameTextInputProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 
-const BrandNameTextInput: React.FC<BrandNameTextInputProps> = ({ brandName, setBrandName }) => {
+const BrandNameTextInput: React.FC<BrandNameTextInputProps> = ({
+  brandName,
+  setBrandName,
+  isDisabled,
+}) => {
   const handleChange = ({ value = '' }: { value?: string }) => {
     setBrandName(value);
   };
@@ -20,6 +24,7 @@ const BrandNameTextInput: React.FC<BrandNameTextInputProps> = ({ brandName, setB
         Brand name
       </Text>
       <TextInput
+        isDisabled={isDisabled}
         label=""
         name="brand_name"
         onChange={handleChange}

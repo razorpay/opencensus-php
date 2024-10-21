@@ -14,7 +14,7 @@ import {
   ModalFooter,
   AlertCircleIcon,
   Badge,
-  CheckCircle2Icon,
+  Switch,
 } from '@razorpay/blade/components';
 import TrustedBadge from 'merchant/views/Account/TrustedBadge';
 
@@ -24,9 +24,15 @@ import BadgeIcon from 'assets/checkout-editor/trusted-badge/rtb-icon.svg';
 import { updateRTBMerchantStatus } from 'merchant/reducers/trustedBadge';
 import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import { TRUSTED_BADGE_DEFAULT_VALUE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/constants/DefaultValue';
+import {
+  CHECKOUT_EDITOR_FIELDS,
+  useCheckoutEditor,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
 const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateStatus }) => {
   const badgeStatus = trustedBadge?.status?.badgeStatus;
+
+  const { values, handleRtbEnable } = useCheckoutEditor();
 
   const [isShowTrutedBadgeModal, setShowTrustedBadgeModal] = useState(false);
   const rightChildren =
@@ -35,9 +41,11 @@ const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateSta
         Not Active
       </Badge>
     ) : (
-      <Badge color="positive" size="medium" emphasis="subtle" icon={CheckCircle2Icon}>
-        Active
-      </Badge>
+      <Switch
+        accessibilityLabel="razorpay-trusted-badge"
+        isChecked={values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]}
+        onChange={({ isChecked }) => handleRtbEnable(isChecked)}
+      />
     );
 
   return (
@@ -81,28 +89,27 @@ const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateSta
           <ModalBody>
             <TrustedBadge />
           </ModalBody>
-
-          <ModalFooter>
-            <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-              <Button
-                isDisabled={
-                  badgeStatus === 'NOT_ELIGIBLE_DELISTED_YES_WAITLISTED' ||
-                  badgeStatus === 'YES_ELIGIBLE_LIVE' ||
-                  badgeStatus === 'NOT_ELIGIBLE_YES_WAITLISTED_DELISTED'
-                }
-                onClick={() => {
-                  updateStatus(
-                    badgeStatus === STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED ? 'waitlist' : 'optin',
-                  );
-                }}
-              >
-                {badgeStatus === STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED ||
-                badgeStatus === STATUS.NOT_ELIGIBLE_DELISTED_YES_WAITLISTED
-                  ? 'Join the waitlist'
-                  : 'Activate your badge'}
-              </Button>
-            </Box>
-          </ModalFooter>
+          {badgeStatus === 'NOT_ELIGIBLE_DELISTED_YES_WAITLISTED' ||
+          badgeStatus === 'YES_ELIGIBLE_LIVE' ||
+          badgeStatus === 'NOT_ELIGIBLE_YES_WAITLISTED_DELISTED' ? null : (
+            <ModalFooter>
+              <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
+                <Button
+                  onClick={() => {
+                    updateStatus(
+                      badgeStatus === STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED
+                        ? 'waitlist'
+                        : 'optin',
+                    );
+                  }}
+                >
+                  {badgeStatus === STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED
+                    ? 'Join the waitlist'
+                    : 'Activate your badge'}
+                </Button>
+              </Box>
+            </ModalFooter>
+          )}
         </Modal>
       )}
     </>

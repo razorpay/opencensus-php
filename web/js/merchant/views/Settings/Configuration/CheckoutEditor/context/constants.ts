@@ -19,6 +19,7 @@ export const ACTIONS = {
   SET_LAST_SAVED: 'SET_LAST_SAVED',
   SET_VALUE_MODIFIED: 'SET_VALUE_MODIFIED',
   SET_EMAIL_REQUIRED_MODAL_OPEN: 'SET_EMAIL_REQUIRED_MODAL_OPEN',
+  SET_IS_SAVING_TITLE_MODAL_CHANGE: 'SET_IS_SAVING_TITLE_MODAL_CHANGE',
 } as const;
 
 export const CHECKOUT_EDITOR_FIELDS = {
@@ -35,12 +36,15 @@ export const CHECKOUT_EDITOR_FIELDS = {
   LOGO_RAW: 'logoRaw',
   LOGO_RECT: 'logoRect',
   LOGO_RECT_RAW: 'logoRectRaw',
+  WORDMARK: 'wordmark',
+  WORDMARK_RAW: 'wordmarkRaw',
   COLOR: 'color',
   BRAND_NAME: 'brandName',
   BORDER_STYLE: 'borderRadius',
   FONT_FAMILY: 'fontFamily',
   SIDEBAR_GRAPHIC: 'sidebarGraphic',
   TITLE_STYLE: 'titleStyle',
+  RTB_ENABLED: 'rtb_enabled',
 } as const;
 
 export const CUSTOM_MESSAGE_BANNER_SCREENS = {
@@ -69,6 +73,7 @@ const CUSTOM_MESSAGE_INITIAL_CONFIG = [
 ];
 
 export const EMPTY_LOGO = 'EMPTY_LOGO';
+export const EMPTY_WORDMARK = 'EMPTY_WORDMARK';
 
 export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
@@ -96,6 +101,8 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.SHOW_FINAL_PRICE]: boolean;
   [CHECKOUT_EDITOR_FIELDS.LOGO]: string;
   [CHECKOUT_EDITOR_FIELDS.LOGO_RAW]: null | File;
+  [CHECKOUT_EDITOR_FIELDS.WORDMARK]: string;
+  [CHECKOUT_EDITOR_FIELDS.WORDMARK_RAW]: null | File;
   [CHECKOUT_EDITOR_FIELDS.LOGO_RECT]: string;
   [CHECKOUT_EDITOR_FIELDS.LOGO_RECT_RAW]: null | File;
   [CHECKOUT_EDITOR_FIELDS.COLOR]: string;
@@ -110,6 +117,7 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
     svg: string;
   };
   [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: string;
+  [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: boolean;
 } = {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
     id: '',
@@ -129,6 +137,8 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.SHOW_FINAL_PRICE]: false,
   [CHECKOUT_EDITOR_FIELDS.LOGO]: EMPTY_LOGO,
   [CHECKOUT_EDITOR_FIELDS.LOGO_RAW]: null,
+  [CHECKOUT_EDITOR_FIELDS.WORDMARK]: EMPTY_WORDMARK,
+  [CHECKOUT_EDITOR_FIELDS.WORDMARK_RAW]: null,
   [CHECKOUT_EDITOR_FIELDS.LOGO_RECT]: '',
   [CHECKOUT_EDITOR_FIELDS.LOGO_RECT_RAW]: null,
   [CHECKOUT_EDITOR_FIELDS.COLOR]: '#2950DA',
@@ -142,6 +152,7 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
     svg: AVAILABLE_GRAPHICS.NONE,
   },
   [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: AVAILABLE_TITLE_STYLE.LOGO_TEXT,
+  [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: true,
 };
 
 const CONFIG_INITIAL_STATE: { accountConfig: AccountConfig; locale: AccountLocale } = {
@@ -155,6 +166,7 @@ export const INITIAL_STATE = {
   isValueModified: false,
   isSaving: false,
   isLoading: false,
+  isSavingTitleModalChange: false,
 };
 
 export const CONTEXT_INITIAL_STATE = {
@@ -162,6 +174,7 @@ export const CONTEXT_INITIAL_STATE = {
   isValueModified: INITIAL_STATE.isValueModified,
   isSaving: INITIAL_STATE.isSaving,
   isLoading: INITIAL_STATE.isLoading,
+  isSavingTitleModalChange: INITIAL_STATE.isSavingTitleModalChange,
 };
 
 export const CUSTOM_MESSAGE_FEATURE_FLAG = 'message_banner_disabled';

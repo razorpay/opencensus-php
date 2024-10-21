@@ -1699,7 +1699,7 @@ export const splitzConfig: SplitzInitConfig = {
         {
           uniqueHashKey: 'checkout_editor_v2_preview',
           experimentId: {
-            beta: 'OXHA0BO5xgo9Xu',
+            beta: 'P9gNAICjz7D3Qm',
             production: 'OpUCnfumosxEOC',
           },
           defaultVariant: {

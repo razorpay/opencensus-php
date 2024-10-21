@@ -13,6 +13,7 @@ const LOCALE_SAVE = 'CONFIG_LOCALE_SAVE';
 const FEATURES_FETCH = 'FEATURES_FETCH';
 const FETCH_TICKET_RAISED_BY_AGENTS = 'FETCH_TICKET_RAISED_BY_AGENTS';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
+const MERCHANT_WORDMARK_UPLOADED = 'MERCHANT_WORDMARK_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
 const CONFIG_SAVE_EMAIL = 'CONFIG_SAVE_EMAIL';
 const FEATURES_SAVE = 'FEATURES_SAVE';
@@ -37,6 +38,9 @@ const CREATE_MERCHANT_CHECKOUT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG = 'CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG';
 const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG';
+const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR';
+const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS =
+  'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 const ADD_REPLY_URL_CARE_SERVICE =
@@ -428,6 +432,19 @@ export const removeLogo = (payload) => {
     }),
   };
 };
+export const uploadWordmark = (file, fieldName) => {
+  const formData = new FormData();
+  formData.append(fieldName, file);
+  return {
+    type: MERCHANT_WORDMARK_UPLOADED,
+    payload: merchantFetch({
+      url: 'wordmark/save',
+      method: 'post',
+      file,
+      data: formData,
+    }),
+  };
+};
 /* normalize config in proper format*/
 const normalizeConfig = (config) => {
   let logoUrl = config.logo_url;
@@ -630,13 +647,32 @@ export const createMerchantCheckoutStylingConfig = ({ type, ...data }) => {
 };
 
 export const createMerchantCheckoutBrandConfig = ({ type, ...data }) => {
-  return {
-    type: CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG,
-    payload: merchantFetch({
-      url: 'checkout_config_brand',
-      method: type,
-      data,
-    }),
+  return async (dispatch) => {
+    try {
+      const response = await merchantFetch({
+        url: 'checkout_config_brand',
+        method: type,
+        data,
+      });
+      if (response.status_code === 200) {
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        } else {
+          dispatch({
+            type: CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS,
+            payload: response,
+          });
+        }
+      } else {
+        throw new Error('Error in saving checkout configuration. Please try again.');
+      }
+    } catch (error) {
+      dispatch({
+        type: CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR,
+        payload: { errors: error.message },
+      });
+      throw error;
+    }
   };
 };
 
@@ -840,6 +876,27 @@ const configReducer = (state = initialState, action) => {
     case `${CONFIG_SAVE_EMAIL}::SUCCESS`:
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
+    case `${MERCHANT_WORDMARK_UPLOADED}::PENDING`:
+      return merge(state, {
+        checkoutStylingConfig: {
+          ...state.checkoutStylingConfig,
+          loading: true,
+        },
+      });
+    case `${MERCHANT_WORDMARK_UPLOADED}::SUCCESS`:
+      return merge(state, {
+        checkoutStylingConfig: {
+          ...state.checkoutStylingConfig,
+          loading: false,
+          wordmark_url: action.payload.data.wordmark_url,
+        },
+      });
+    case `${MERCHANT_WORDMARK_UPLOADED}::ERROR`:
+      return merge(state, 'checkoutStylingConfig', {
+        loading: false,
+        data: state,
+        error: action.payload?.errors,
+      });
     case `${REMOVE_LOGO}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
     case `${LOCALE_FETCH}::SUCCESS`: {
@@ -1060,6 +1117,20 @@ const configReducer = (state = initialState, action) => {
         error: action.payload.errors,
       });
     }
+
+    case CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR:
+      return set(state, 'checkoutStylingConfig', {
+        loading: false,
+        data: null,
+        error: action.payload?.errors,
+      });
+
+    case CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS:
+      return set(state, 'checkoutStylingConfig', {
+        loading: false,
+        data: action.payload.data?.checkout_configuration?.checkout_style_config,
+        error: null,
+      });
 
     default:
       return state;

@@ -2,6 +2,7 @@ export type CheckoutEditorContext<Values> = {
   values: Values;
   isValueModified: boolean;
   isSaving: boolean;
+  isSavingTitleModalChange: boolean;
   isLoading: boolean;
   handleSave: () => void;
   handleLocaleChange: (value: string) => void;
@@ -16,7 +17,8 @@ export type CheckoutEditorContext<Values> = {
   handleEmailToggle: (isEnabled: boolean) => void;
   handleMandatorySummaryPageToggle: (isEnabled: boolean) => void;
   handleShowFinalPriceToggle: (isEnabled: boolean) => void;
-  handleLogoChange: (file: File | null) => void;
+  handleLogoChange: (file: File | null, fileName: string) => void;
+  handleWordmarkChange: (file: File | null, fileName: string) => void;
   handleRectLogoChange: (file: File | null) => void;
   handleBrandColorChange: (evt?: React.ChangeEvent, defaultValue?: string) => void;
   handleButtonStyleChange: (value: string) => void;
@@ -24,9 +26,9 @@ export type CheckoutEditorContext<Values> = {
   handleSidebarGraphicToggle: (value: boolean) => void;
   handleSidebarGraphicValueChange: (value: string) => void;
   handleTitleStyleChange: (value: string) => void;
+  handleRtbEnable: (value: boolean) => void;
   handleBrandNameChange: (value: string) => void;
-  handleEditLogoModalDiscard: (logValue: string, logoRawVal: File | null) => void;
-  handleSaveTitleModal: () => void;
+  handleSaveTitleModal: (setShowEditModal: React.Dispatch<React.SetStateAction<boolean>>) => void;
 };
 
 export type AccountLocale = {
@@ -128,6 +130,10 @@ export type CheckoutEditorPayload = {
     file: File;
     fileName: string;
   };
+  uploadWordmark?: {
+    file: File;
+    fileName: string;
+  };
   removeLogo?: {
     logo_url: string | null;
   };
@@ -183,6 +189,7 @@ export type CheckoutEditorPayload = {
         text?: {
           font: string;
         };
+        wordmark_url?: string;
       };
     };
   };
@@ -217,6 +224,7 @@ export type MerchantCheckoutStyledConfig = {
   text?: {
     font: string;
   };
+  wordmark_url?: string;
 };
 
 export type MerchantCheckoutBrandConfig = {

@@ -1,15 +1,21 @@
 import React from 'react';
-import { AccountConfig, MerchantCheckoutStyledConfig } from './types';
+import {
+  MerchantCheckoutStyledConfig,
+  AccountConfig,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 
 export type BrandNameTextInputProps = {
   brandName: string;
   setBrandName: (value: string) => void;
+  isDisabled: boolean;
 };
 
 export type ChooseTitleTypeProps = {
   setShowTitleTypeModal: React.Dispatch<React.SetStateAction<boolean>>;
   setShowEditModal: React.Dispatch<React.SetStateAction<boolean>>;
   user: any;
+  selectedTitleStyle: string;
+  setSelectedTitleStyle: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export type SingleContentProps = {
@@ -21,10 +27,13 @@ export type SingleContentProps = {
 };
 
 export type EditLogoTitleProps = {
+  setShowTitleTypeModal: React.Dispatch<React.SetStateAction<boolean>>;
   setShowEditModal: React.Dispatch<React.SetStateAction<boolean>>;
   user: any;
   accountConfig: AccountConfig;
   merchantCheckoutStyledConfig: MerchantCheckoutStyledConfig;
+  selectedTitleStyle: string;
+  setSelectedTitleStyle: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export type BrandColorProps = {
@@ -37,10 +46,9 @@ export type ImagePreviewProps = {
 };
 
 export type UploadLogoProps = {
-  logo: string;
-  logoRaw: null | File;
-  fileName: string;
-  setFileName: React.Dispatch<React.SetStateAction<string>>;
+  type: 'logo' | 'wordmark';
+  image: string;
+  imageRaw: null | File;
 };
 
 export type ChangeColorInputProps = {

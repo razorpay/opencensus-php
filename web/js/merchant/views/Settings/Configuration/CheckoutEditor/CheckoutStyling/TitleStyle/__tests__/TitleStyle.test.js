@@ -77,7 +77,10 @@ describe('Title Style', () => {
 
   it('should select the rendered title style', async () => {
     useCheckoutEditor.mockReturnValue({
-      values: { [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: AVAILABLE_TITLE_STYLE.SHARP },
+      values: {
+        [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: AVAILABLE_TITLE_STYLE.SHARP,
+        [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: AVAILABLE_TITLE_STYLE.WORDMARK,
+      },
       handleTitleStyleChange,
     });
 

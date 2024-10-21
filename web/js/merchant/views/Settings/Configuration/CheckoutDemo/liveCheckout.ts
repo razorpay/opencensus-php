@@ -1,3 +1,5 @@
+import { AVAILABLE_TITLE_STYLE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
+
 function getOptionsFromState(state) {
   const options: {
     key: string;
@@ -29,6 +31,8 @@ function getOptionsFromState(state) {
       hide_message_banner?: boolean;
     };
     locale?: string;
+    hide_rtb?: boolean;
+    wordmark?: string;
   } = {
     key: 'rzp_live_ILgsfZCZoFIKMb',
     amount: 5000_00,
@@ -61,6 +65,9 @@ function getOptionsFromState(state) {
 
   if (state.titleStyle) {
     options['theme.title_style'] = state.titleStyle;
+    if (state.titleStyle === AVAILABLE_TITLE_STYLE.WORDMARK) {
+      options.wordmark = state.wordmark;
+    }
   }
 
   if (state.fontFamily) {
@@ -86,6 +93,7 @@ function getOptionsFromState(state) {
       hide_message_banner: !state.customMessage.isEnabled,
     };
   }
+  options.hide_rtb = !state.rtb_enabled;
   return {
     options,
   };

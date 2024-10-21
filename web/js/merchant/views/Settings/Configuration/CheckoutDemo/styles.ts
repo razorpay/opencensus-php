@@ -5,26 +5,24 @@ type StyledProps = { theme: Theme };
 
 export const Wrapper = styled.div`
   flex: 3;
+  align-items: center;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }: StyledProps) => theme.spacing[3]}px;
   overflow: hidden;
   border-radius: ${({ theme }: StyledProps) => theme.border.radius['2xlarge']}px;
   background-color: ${({ theme }: StyledProps) => theme.colors.surface.background.gray.subtle};
-  padding: ${({ theme }: StyledProps) => theme.spacing[11]}px;
   box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.05) inset;
   max-width: 615px;
-  height: 100%;
-  gap: 20px;
+  height: 550px;
   position: relative;
 `;
 
 export const FrameContainer = styled.div<{ isDesktopPreview: boolean }>`
   display: flex;
-  height: 530px;
   justify-content: center;
   align-items: center;
-  margin-top: 45px;
+  height: 410px;
+  margin-top: ${(props) => (props.isDesktopPreview ? '20px' : '42px')};
   width: ${(props) => (props.isDesktopPreview ? '1000px' : '500px')};
 `;
 
@@ -32,19 +30,22 @@ export const CheckoutFrame = styled.iframe<{
   bgColor?: string;
   isDesktopPreview: boolean;
   shouldScaleToFit: boolean;
+  zoomTitleStyle: boolean;
 }>`
   width: ${(props) => (props.isDesktopPreview ? '1000px' : '370px')};
-  height: 760px;
+  height: ${(props) => (props.isDesktopPreview ? '800px' : '760px')};
   pointer-events: none;
   border: 0;
   transform: ${(props) =>
-    props.isDesktopPreview && props.shouldScaleToFit
-      ? 'translate(-25%, -20%) scale(0.5)'
-      : 'scale(0.7)'};
+    props.isDesktopPreview
+      ? props.zoomTitleStyle
+        ? 'translate(-25%, -22.5%) scale(0.5)'
+        : 'scale(0.5)'
+      : 'translateY(9%) scale(0.7)'};
   background: ${(props) => props.bgColor || 'none'};
 `;
 
-export const PreviewSizeWrapper = styled.div(
+export const SwitchPreviewWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   background-color: ${theme.colors.popup.background.subtle};
   border-radius: ${theme.border.radius.max}px;
@@ -53,7 +54,12 @@ export const PreviewSizeWrapper = styled.div(
   justify-content: center;
   align-items: center;
   width: 112px;
+  align-self: flex-start;
+  margin-top: auto;
+  margin-left: 5%;
+  margin-bottom: 5%;
   gap: ${theme.spacing[3]}px;
+
 `,
 );
 
@@ -82,10 +88,46 @@ export const MobileBackground = styled.div(
   display: flex;
   width: 280px;
   height: 580px;
-  top: 108px;
-  left: 165px;
+  left: 49.3%;
+  transform: translateX(-50%);
   align-items: center;
   background-size: cover;
-  background-image: url(${backgroundImg})
+  background-image: url(${backgroundImg});
+  margin-top: 20px;
   `,
 );
+
+export const MobileToolbar = styled.div(
+  ({ backgroundColor }: { backgroundColor: string }) => `
+    margin-top: 20px;
+    position: absolute;
+    height: 23px;
+    width: 251px;
+    border-top-left-radius: 10%;
+    border-top-right-radius: 10%;
+    top: 2%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: ${backgroundColor}
+  `,
+);
+
+export const PreviewBadge = styled.div(
+  ({ theme }: { theme: Theme }) => `
+    position: sticky;
+    top: 0px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    padding: 4px 24px;
+    background-color: ${theme.colors.feedback.background.notice.intense};
+    color: ${theme.colors.surface.text.staticWhite.normal};
+    font-size: ${theme.typography.fonts.size[75]}px;
+    font-weight: ${theme.typography.fonts.weight.regular};
+  `,
+);
+
+export const ScrollablePreview = styled.div`
+  position: relative;
+  overflow: scroll;
+  height: 500px;
+`;

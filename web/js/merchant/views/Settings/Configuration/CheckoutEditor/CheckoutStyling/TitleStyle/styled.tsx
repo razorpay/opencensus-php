@@ -18,6 +18,17 @@ export const HeadingWrapper = styled.div`
   marging-bottom: ${({ theme }: { theme: Theme }) => theme.spacing[6]}px;
 `;
 
+export const EditModalHeadingWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  padding: ${({ theme }: { theme: Theme }) => theme.spacing[6]}px;
+  padding-bottom: 0px;
+  align-items: center;
+  gap: ${({ theme }: { theme: Theme }) => theme.spacing[3]}px;
+  align-self: stretch;
+  marging-bottom: ${({ theme }: { theme: Theme }) => theme.spacing[6]}px;
+`;
+
 export const ContentWrapper = styled.div`
   display: flex;
   padding: ${({ theme }: { theme: Theme }) => theme.spacing[6]}px;

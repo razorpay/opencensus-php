@@ -26,6 +26,12 @@ export const checkoutFeatureReducer = (
         ...state,
         isSaving: action.payload,
       };
+
+    case ACTIONS.SET_IS_SAVING_TITLE_MODAL_CHANGE:
+      return {
+        ...state,
+        isSavingTitleModalChange: action.payload,
+      };
     case ACTIONS.SET_IS_LOADING:
       return {
         ...state,

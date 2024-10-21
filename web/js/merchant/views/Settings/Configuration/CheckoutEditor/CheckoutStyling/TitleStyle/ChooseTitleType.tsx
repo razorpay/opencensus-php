@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
@@ -21,26 +21,19 @@ import {
   SingleContentProps,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 
-import {
-  AVAILABLE_TITLE_STYLE,
-  DEFAULT_TITLE_TYPE,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
-import {
-  INDIVIDUAL,
-  NOT_REGISTERED,
-} from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { DEFAULT_TITLE_TYPE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
 
 const ChooseTitleType: React.FC<ChooseTitleTypeProps> = ({
   setShowTitleTypeModal,
   setShowEditModal,
-  user,
+  setSelectedTitleStyle,
+  selectedTitleStyle,
 }) => {
   const { values, handleTitleStyleChange } = useCheckoutEditor();
-  const shouldShowBrandNameOption: boolean =
-    user.activation_status == 'activated' &&
-    user.business_type != INDIVIDUAL &&
-    user.business_type != NOT_REGISTERED &&
-    user.isAdminOrOwner;
+
+  useEffect(() => {
+    setSelectedTitleStyle(values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]);
+  }, []);
 
   const SingleContent: React.FC<SingleContentProps> = ({ title, description, src, alt, value }) => {
     return (
@@ -48,8 +41,9 @@ const ChooseTitleType: React.FC<ChooseTitleTypeProps> = ({
         key={value}
         onClick={() => {
           handleTitleStyleChange(value);
+          setSelectedTitleStyle(value);
         }}
-        isSelected={value === values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]}
+        isSelected={value === selectedTitleStyle}
         testID={`title-style-${value}`}
       >
         <Text color="surface.text.gray.normal" weight="semibold" size="large" variant="body">
@@ -74,26 +68,9 @@ const ChooseTitleType: React.FC<ChooseTitleTypeProps> = ({
         </Text>
       </HeadingWrapper>
       <ContentWrapper>
-        {DEFAULT_TITLE_TYPE.map((item) => {
-          if (shouldShowBrandNameOption) {
-            if (
-              item.value === AVAILABLE_TITLE_STYLE.TEXT_ONLY ||
-              item.value === AVAILABLE_TITLE_STYLE.LOGO_TEXT ||
-              item.value === AVAILABLE_TITLE_STYLE.WORDMARK
-            ) {
-              return <SingleContent key={item.value} {...item} />;
-            }
-            return null;
-          } else {
-            if (
-              item.value === AVAILABLE_TITLE_STYLE.LOGO_ONLY ||
-              item.value === AVAILABLE_TITLE_STYLE.WORDMARK
-            ) {
-              return <SingleContent key={item.value} {...item} />;
-            }
-            return null;
-          }
-        })}
+        {DEFAULT_TITLE_TYPE.map((item) => (
+          <SingleContent key={item.value} {...item} />
+        ))}
       </ContentWrapper>
       <FooterWrapper>
         <Button
@@ -107,6 +84,7 @@ const ChooseTitleType: React.FC<ChooseTitleTypeProps> = ({
             setShowEditModal(true);
             setShowTitleTypeModal(false);
           }}
+          isDisabled={!values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]}
         >
           Continue to upload
         </Button>

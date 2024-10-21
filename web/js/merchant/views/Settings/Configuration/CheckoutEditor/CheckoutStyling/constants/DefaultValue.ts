@@ -71,20 +71,12 @@ export const getFontNameByCode = (code: string) => {
 };
 
 export const AVAILABLE_TITLE_STYLE = {
-  LOGO_TEXT: 'LogoText',
-  WORDMARK: 'Wordmark',
-  TEXT_ONLY: 'TextOnly',
-  LOGO_ONLY: 'LogoOnly',
+  LOGO_TEXT: 'logo_and_text',
+  WORDMARK: 'wordmark',
+  TEXT_ONLY: 'text',
 };
 
 export const DEFAULT_TITLE_TYPE = [
-  {
-    title: 'Logo only',
-    description: 'Best for square logos',
-    src: typeOne,
-    alt: 'Razorpay',
-    value: AVAILABLE_TITLE_STYLE.LOGO_ONLY,
-  },
   {
     title: 'Logo & Text',
     description: 'Best for square logos',
@@ -95,14 +87,14 @@ export const DEFAULT_TITLE_TYPE = [
   {
     title: 'Wordmark',
     description: 'Best for long word based logos',
-    src: typeTwo,
+    src: typeThree,
     alt: 'Razorpay',
     value: AVAILABLE_TITLE_STYLE.WORDMARK,
   },
   {
     title: 'Text only',
     description: 'Just text? We got you.',
-    src: typeThree,
+    src: typeTwo,
     alt: 'Razorpay',
     value: AVAILABLE_TITLE_STYLE.TEXT_ONLY,
   },
@@ -111,10 +103,6 @@ export const DEFAULT_TITLE_TYPE = [
 export const EDIT_LOGO_TITLE_HEADER_VALUE = {
   [AVAILABLE_TITLE_STYLE.LOGO_TEXT]: {
     title: 'Add brand name and upload logo',
-    subTitle: 'Choose an image from your device to upload',
-  },
-  [AVAILABLE_TITLE_STYLE.LOGO_ONLY]: {
-    title: 'Upload a brand logo',
     subTitle: 'Choose an image from your device to upload',
   },
   [AVAILABLE_TITLE_STYLE.WORDMARK]: {

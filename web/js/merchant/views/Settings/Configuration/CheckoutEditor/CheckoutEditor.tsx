@@ -21,13 +21,13 @@ import {
   updateFeatures,
   fetchMerchantCheckoutStylingConfig,
   uploadLogo,
+  uploadWordmark,
   removeLogo,
   createMerchantCheckoutStylingConfig,
   createMerchantCheckoutBrandConfig,
   updateConfig,
   updateEmailConfig,
 } from 'merchant/reducers/config';
-import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import {
   isFlashCheckoutAllowed,
   isSkipMandatorySummaryPageAllowed,
@@ -38,10 +38,6 @@ import EmailSettings from 'merchant/views/Settings/Configuration/CheckoutEditor/
 import FlashCheckout from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/FlashCheckout';
 import LanguageSettings from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/LanguageSettings/LanguageSettings';
 import MandatorySummaryPage from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/MandatorySummaryPage';
-import BrandColor from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/BrandColor';
-import ButtonStyle from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/ButttonStyle';
-import FontStyle from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/FontStyle/FontStyle';
-import SidebarGraphic from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/SidebarGraphic/SidebarGraphic';
 import ConfigControls from 'merchant/views/Settings/Configuration/CheckoutEditor/ConfigControls';
 import ConfigFooter from 'merchant/views/Settings/Configuration/CheckoutEditor/ConfigFooter';
 import {
@@ -52,8 +48,7 @@ import {
 import { mapCheckoutEmailConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import TitleStyle from './CheckoutStyling/TitleStyle/TitleStyle';
-import RazorpayTrustesBadge from './CheckoutStyling/TrustedBadge/RazorpayTrustesBadge';
+import CheckoutStyles from './CheckoutStyles';
 
 type CheckoutConfigProps = {
   accountConfig?: AccountConfig;
@@ -79,6 +74,7 @@ const CheckoutFeatures = ({
   fetchLocale,
   saveLocale,
   uploadLogo,
+  uploadWordmark,
   removeLogo,
   updateConfig,
   updateFeatures,
@@ -142,21 +138,6 @@ const CheckoutFeatures = ({
     );
   };
 
-  const Styles = () => {
-    const badgeStatus = trustedBadge?.status?.badgeStatus;
-    return (
-      <>
-        <BrandColor />
-        {badgeStatus !== STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED && <RazorpayTrustesBadge />}
-        <TitleStyle />
-        <ButtonStyle />
-        <FontStyle />
-        <SidebarGraphic />
-        {badgeStatus === STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED && <RazorpayTrustesBadge />}
-      </>
-    );
-  };
-
   return (
     <CheckoutEditorProvider
       accountConfig={accountConfig}
@@ -164,6 +145,7 @@ const CheckoutFeatures = ({
       merchantCheckoutConfig={merchantCheckoutConfig}
       saveLocale={saveLocale}
       uploadLogo={uploadLogo}
+      uploadWordmark={uploadWordmark}
       removeLogo={removeLogo}
       updateConfig={updateConfig}
       createMerchantCheckoutConfig={createMerchantCheckoutConfig}
@@ -199,7 +181,7 @@ const CheckoutFeatures = ({
               extraConfig={extraConfig}
             />
           )}
-          {showStyling && <Styles />}
+          {showStyling && <CheckoutStyles trustedBadge={trustedBadge} />}
           <ConfigControls />
           <ConfigFooter />
         </Box>
@@ -215,6 +197,7 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
     {
       fetchLocale,
       uploadLogo,
+      uploadWordmark,
       removeLogo,
       saveLocale,
       updateFeatures,

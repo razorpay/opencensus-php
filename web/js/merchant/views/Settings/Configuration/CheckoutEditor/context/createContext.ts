@@ -23,6 +23,7 @@ export const checkoutEditorContext = createContext<
   handleMandatorySummaryPageToggle: noop,
   handleShowFinalPriceToggle: noop,
   handleLogoChange: noop,
+  handleWordmarkChange: noop,
   handleRectLogoChange: noop,
   handleBrandColorChange: noop,
   handleButtonStyleChange: noop,
@@ -31,8 +32,8 @@ export const checkoutEditorContext = createContext<
   handleSidebarGraphicValueChange: noop,
   handleTitleStyleChange: noop,
   handleBrandNameChange: noop,
-  handleEditLogoModalDiscard: noop,
   handleSaveTitleModal: noop,
+  handleRtbEnable: noop,
 });
 
 export const useCheckoutEditor = () => {

@@ -26,13 +26,19 @@ import {
   CHECKOUT_EDITOR_FIELDS,
   CUSTOM_MESSAGE_BANNER_SCREEN_LABELS,
   EMPTY_LOGO,
+  EMPTY_WORDMARK,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import { checkoutEditorContext } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/createContext';
 import {
   createPayloadToSaveConfig,
   hasValuesChanged,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
-import { createTitleModalPayloadToSaveConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers/brandConfigHelper';
+
+import {
+  checkForTitleStyleDefaultValue,
+  createTitleModalPayloadToSaveConfig,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers/brandConfigHelper';
+
 import { checkoutFeatureReducer } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/reducer';
 import {
   flashCheckoutProps,
@@ -46,6 +52,7 @@ export type CheckoutEditorProviderProps = {
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
   merchantCheckoutConfig?: MerchantCheckoutConfig;
   uploadLogo: (file: File, fileName: string) => Promise<unknown>;
+  uploadWordmark: (file: File, fileName: string) => Promise<unknown>;
   removeLogo: (payload: Record<string, string | null>) => Promise<unknown>;
   saveLocale: (payload: unknown) => Promise<unknown>;
   updateFeatures: (payload: unknown, current?: unknown) => Promise<unknown>;
@@ -61,6 +68,7 @@ const CheckoutEditorProvider = ({
   children,
   accountConfig,
   uploadLogo,
+  uploadWordmark,
   removeLogo,
   updateConfig,
   accountLocale,
@@ -90,6 +98,10 @@ const CheckoutEditorProvider = ({
 
   const setIsSaving = (isSaving: boolean) => {
     dispatch({ type: ACTIONS.SET_IS_SAVING, payload: isSaving });
+  };
+
+  const setIsSavingTitleModal = (isSaving: boolean) => {
+    dispatch({ type: ACTIONS.SET_IS_SAVING_TITLE_MODAL_CHANGE, payload: isSaving });
   };
 
   const handleLocaleChange = (value: string) => {
@@ -123,16 +135,18 @@ const CheckoutEditorProvider = ({
     setValue(CHECKOUT_EDITOR_FIELDS.TITLE_STYLE, value);
   };
 
-  const handleLogoChange = (value: File | null) => {
-    setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RAW, value);
-    if (value === null) {
-      setValue(CHECKOUT_EDITOR_FIELDS.LOGO, EMPTY_LOGO);
-    }
+  const handleRtbEnable = (value: boolean) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.RTB_ENABLED, value);
   };
 
-  const handleEditLogoModalDiscard = (logoValue: string, logoRawVal: File | null) => {
-    setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RAW, logoRawVal);
-    setValue(CHECKOUT_EDITOR_FIELDS.LOGO, logoValue);
+  const handleLogoChange = (value: File | null, fileName: string) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.LOGO_RAW, value);
+    setValue(CHECKOUT_EDITOR_FIELDS.LOGO, fileName ?? EMPTY_LOGO);
+  };
+
+  const handleWordmarkChange = (value: File | null, fileName: string) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.WORDMARK_RAW, value);
+    setValue(CHECKOUT_EDITOR_FIELDS.WORDMARK, fileName ?? EMPTY_WORDMARK);
   };
 
   const handleSidebarGraphicToggle = (value: boolean) => {
@@ -255,8 +269,13 @@ const CheckoutEditorProvider = ({
           [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: merchantCheckoutStyledConfig.button?.shape || '',
           [CHECKOUT_EDITOR_FIELDS.FONT_FAMILY]: merchantCheckoutStyledConfig?.text?.font,
           [CHECKOUT_EDITOR_FIELDS.SIDEBAR_GRAPHIC]: merchantCheckoutStyledConfig?.sidebar_graphic,
-          [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: merchantCheckoutStyledConfig?.title_style,
+          [CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]: checkForTitleStyleDefaultValue(
+            merchantCheckoutStyledConfig?.title_style,
+          ),
           [CHECKOUT_EDITOR_FIELDS.BRAND_NAME]: merchantCheckoutStyledConfig?.brand_name,
+          [CHECKOUT_EDITOR_FIELDS.WORDMARK]:
+            merchantCheckoutStyledConfig?.wordmark_url ?? EMPTY_WORDMARK,
+          [CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]: merchantCheckoutStyledConfig?.rtb_enabled,
         },
       });
 
@@ -342,6 +361,7 @@ const CheckoutEditorProvider = ({
   const handleDiscardAllChanges = () => {
     setAccountConfigToState();
     setAccountLocaleToState();
+    setMerchantCheckoutStyledConfigToState();
     setMerchantConfigToState(state.values);
   };
 
@@ -439,40 +459,88 @@ const CheckoutEditorProvider = ({
     }
   };
 
-  const handleSaveTitleModal = async () => {
-    setIsSaving(true);
+  const handleSaveTitleModal = async (setShowEditModal) => {
+    setIsSavingTitleModal(true);
     const payload = createTitleModalPayloadToSaveConfig(state.values, state.config);
     try {
       if (payload.uploadLogo) {
-        await uploadLogo(payload.uploadLogo.file, payload.uploadLogo.fileName);
-        selfServeTrackSuccess({
-          selfServeAction: 'Brand Logo Uploaded',
-          page: 'Config',
-          screen: 'Settings',
-        });
-      } else if (payload.removeLogo) {
-        await removeLogo(payload.removeLogo);
-        selfServeTrackSuccess({
-          selfServeAction: 'Brand Logo Removed',
-          page: 'Config',
-          screen: 'Settings',
-        });
+        try {
+          await uploadLogo(payload.uploadLogo.file, payload.uploadLogo.fileName);
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Logo Uploaded',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { errors } = error as { errors: string[] };
+          throw new Error(errors?.[0]);
+        }
       }
 
-      if (payload.merchantCheckoutBrandConfig) {
-        await createMerchantCheckoutBrandConfig(payload.merchantCheckoutBrandConfig);
+      if (payload.removeLogo) {
+        try {
+          await removeLogo(payload.removeLogo);
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Logo Removed',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { errors } = error as { errors: string[] };
+          throw new Error(errors?.[0]);
+        }
+      }
+
+      if (payload.uploadWordmark) {
+        try {
+          await uploadWordmark(payload.uploadWordmark.file, payload.uploadWordmark.fileName);
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Wordmark Uploaded',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { errors } = error as { errors: string[] };
+          throw new Error(errors?.[0]);
+        }
+      }
+
+      if (payload.merchantCheckoutStyledConfig) {
+        await createMerchantCheckoutStylingConfig(payload.merchantCheckoutStyledConfig);
         selfServeTrackSuccess({
           selfServeAction: 'Merchant Checkout Style Changes',
           page: 'Config',
           screen: 'Settings',
         });
       }
+
+      if (payload.merchantCheckoutBrandConfig) {
+        try {
+          if (
+            payload.merchantCheckoutBrandConfig?.checkout_configuration?.checkout_style_config
+              ?.brand_name
+          ) {
+            await createMerchantCheckoutBrandConfig(payload.merchantCheckoutBrandConfig);
+          } else {
+            await createMerchantCheckoutStylingConfig(payload.merchantCheckoutBrandConfig);
+          }
+          selfServeTrackSuccess({
+            selfServeAction: 'Merchant Checkout Style Changes',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { message } = error as { errors: string[]; message: string };
+          throw new Error(message);
+        }
+      }
       showNotification({ type: 'success', message: 'Settings saved successfully' });
+      setShowEditModal(false);
     } catch (error) {
       const { errors, message } = error as { errors: string[]; message: string };
       showNotification({ type: 'error', message: errors?.[0] ?? message });
     } finally {
-      setIsSaving(false);
+      setIsSavingTitleModal(false);
     }
   };
 
@@ -518,6 +586,7 @@ const CheckoutEditorProvider = ({
         isValueModified,
         isSaving: state.isSaving,
         isLoading: state.isLoading,
+        isSavingTitleModalChange: state.isSavingTitleModalChange,
         handleSave,
         handleLocaleChange,
         handleDiscardAllChanges,
@@ -532,6 +601,7 @@ const CheckoutEditorProvider = ({
         handleMandatorySummaryPageToggle,
         handleShowFinalPriceToggle,
         handleLogoChange,
+        handleWordmarkChange,
         handleRectLogoChange,
         handleBrandColorChange,
         handleButtonStyleChange,
@@ -540,8 +610,8 @@ const CheckoutEditorProvider = ({
         handleSidebarGraphicValueChange,
         handleTitleStyleChange,
         handleBrandNameChange,
-        handleEditLogoModalDiscard,
         handleSaveTitleModal,
+        handleRtbEnable,
       }}
     >
       {children}

@@ -1,83 +1,75 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { Button, Text, ArrowLeftIcon, Box, IconButton } from '@razorpay/blade/components';
+import { EditLogoTitleProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 import { connect } from 'react-redux';
 
 import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
-import { Button, Text } from '@razorpay/blade/components';
-
-import BrandNameTextInput from './BrandNameTextInput';
-import UploadLogo from './UploadLogo';
 import CheckoutV2 from 'merchant/views/Settings/Configuration/CheckoutDemo/CheckoutV2';
-
-import {
-  ContentWrapper,
-  FooterWrapper,
-  HeadingWrapper,
-  IframeWrapper,
-  LeftContentWrapper,
-  RightContentWrapper,
-} from './styled';
-
-import {
-  CHECKOUT_EDITOR_FIELDS,
-  useCheckoutEditor,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
-import { EditLogoTitleProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
-
 import {
   AVAILABLE_TITLE_STYLE,
   EDIT_LOGO_TITLE_HEADER_VALUE,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
 import {
-  INDIVIDUAL,
-  NOT_REGISTERED,
-} from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+  CHECKOUT_EDITOR_FIELDS,
+  useCheckoutEditor,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import {
+  EMPTY_LOGO,
+  EMPTY_WORDMARK,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
+
+import BrandNameTextInput from './BrandNameTextInput';
+import UploadLogo from './UploadLogo';
+import {
+  ContentWrapper,
+  EditModalHeadingWrapper,
+  FooterWrapper,
+  IframeWrapper,
+  LeftContentWrapper,
+  RightContentWrapper,
+} from './styled';
 
 const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
+  setShowTitleTypeModal,
   setShowEditModal,
   accountConfig,
   user,
   merchantCheckoutStyledConfig,
+  selectedTitleStyle,
 }) => {
   const {
     values,
-    handleEditLogoModalDiscard,
     handleBrandNameChange,
     handleTitleStyleChange,
     handleSaveTitleModal,
+    handleWordmarkChange,
+    handleLogoChange,
+    isSavingTitleModalChange,
   } = useCheckoutEditor();
   const brandName = values[CHECKOUT_EDITOR_FIELDS.BRAND_NAME];
-  const [fileName, setFileName] = useState<string>('');
   const logo = values[CHECKOUT_EDITOR_FIELDS.LOGO];
   const logoRaw = values[CHECKOUT_EDITOR_FIELDS.LOGO_RAW];
+  const wordmark = values[CHECKOUT_EDITOR_FIELDS.WORDMARK];
+  const wordmarkRaw = values[CHECKOUT_EDITOR_FIELDS.WORDMARK_RAW];
 
   const shouldShowBrandNameTextInput =
-    values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] === AVAILABLE_TITLE_STYLE.TEXT_ONLY ||
-    values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] === AVAILABLE_TITLE_STYLE.LOGO_TEXT;
+    selectedTitleStyle === AVAILABLE_TITLE_STYLE.TEXT_ONLY ||
+    selectedTitleStyle === AVAILABLE_TITLE_STYLE.LOGO_TEXT;
 
-  const shouldShowBrandNameOption: boolean =
-    shouldShowBrandNameTextInput &&
-    user.activation_status == 'activated' &&
-    user.business_type != INDIVIDUAL &&
-    user.business_type != NOT_REGISTERED &&
-    user.isAdminOrOwner;
+  const shouldShowUploadLogoInput = selectedTitleStyle === AVAILABLE_TITLE_STYLE.LOGO_TEXT;
 
-  const shouldShowUploadLogoInput =
-    values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] === AVAILABLE_TITLE_STYLE.WORDMARK ||
-    values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] === AVAILABLE_TITLE_STYLE.LOGO_TEXT ||
-    values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] === AVAILABLE_TITLE_STYLE.LOGO_ONLY;
+  const shouldShowUploadWordmarkInput = selectedTitleStyle === AVAILABLE_TITLE_STYLE.WORDMARK;
 
   const onSaveBrandNameAndLogo = () => {
-    setShowEditModal(false);
-    handleSaveTitleModal();
+    handleSaveTitleModal(setShowEditModal);
   };
 
   const onDiscard = () => {
-    if (values.logoRaw || (!values.logoRaw && values.logo === '')) {
-      if (accountConfig?.logo_url) {
-        handleEditLogoModalDiscard(accountConfig.logo_url, null);
-      } else {
-        handleEditLogoModalDiscard('', null);
-      }
+    if (values.logoRaw || (values.logo === EMPTY_LOGO && accountConfig.logo_url)) {
+      handleLogoChange(null, accountConfig.logo_url ?? EMPTY_LOGO);
+    }
+    if (wordmarkRaw || (wordmark === EMPTY_WORDMARK && merchantCheckoutStyledConfig.wordmark_url)) {
+      handleWordmarkChange(null, merchantCheckoutStyledConfig.wordmark_url ?? EMPTY_WORDMARK);
     }
     if (merchantCheckoutStyledConfig?.brand_name)
       handleBrandNameChange(merchantCheckoutStyledConfig?.brand_name);
@@ -87,56 +79,65 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
   };
 
   const hasValuesChanged = (): boolean => {
-    if (values.logoRaw || (!values.logoRaw && values.logo === '')) {
+    if (values.logoRaw || (values.logo === EMPTY_LOGO && accountConfig.logo_url)) {
       return true;
     } else if (brandName !== merchantCheckoutStyledConfig?.brand_name) {
       return true;
     } else if (
-      values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] !== merchantCheckoutStyledConfig?.title_style
+      values.wordmarkRaw ||
+      (values.wordmark === EMPTY_WORDMARK && merchantCheckoutStyledConfig.wordmark_url)
+    ) {
+      return true;
+    } else if (
+      values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] !== merchantCheckoutStyledConfig.title_style
     ) {
       return true;
     }
     return false;
   };
 
-  useEffect(() => {
-    const url = values[CHECKOUT_EDITOR_FIELDS.LOGO];
-    const rawLogo = values[CHECKOUT_EDITOR_FIELDS.LOGO_RAW]; //upload=>save=>open modal again
-    if (url && url.length) {
-      const fileName = url.split('/').pop();
-      setFileName(fileName ?? '');
-    } else if (rawLogo) {
-      setFileName(rawLogo.name);
-    }
-  }, []);
-
+  const onBackButtonClick = () => {
+    onDiscard();
+    setShowTitleTypeModal(true);
+  };
   const content: any = (
     <>
-      <HeadingWrapper>
-        <Text color="surface.text.gray.normal" weight="semibold" size="large" variant="body">
-          {EDIT_LOGO_TITLE_HEADER_VALUE[values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]].title}
-        </Text>
-        <Text color="surface.text.gray.muted" weight="regular" size="small" variant="body">
-          {EDIT_LOGO_TITLE_HEADER_VALUE[values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]].subTitle}
-        </Text>
-      </HeadingWrapper>
+      <EditModalHeadingWrapper>
+        <IconButton
+          icon={ArrowLeftIcon}
+          accessibilityLabel="go-back-edit-modal"
+          emphasis="intense"
+          size="large"
+          onClick={onBackButtonClick}
+        />
+        <Box display="flex" flexDirection="column">
+          <Text color="surface.text.gray.normal" weight="semibold" size="large" variant="body">
+            {EDIT_LOGO_TITLE_HEADER_VALUE[selectedTitleStyle]?.title}
+          </Text>
+          <Text color="surface.text.gray.muted" weight="regular" size="small" variant="body">
+            {EDIT_LOGO_TITLE_HEADER_VALUE[selectedTitleStyle]?.subTitle}
+          </Text>
+        </Box>
+      </EditModalHeadingWrapper>
       <ContentWrapper>
         <LeftContentWrapper>
-          {shouldShowBrandNameOption ? (
-            <BrandNameTextInput brandName={brandName} setBrandName={handleBrandNameChange} />
+          {shouldShowBrandNameTextInput ? (
+            <BrandNameTextInput
+              brandName={brandName}
+              setBrandName={handleBrandNameChange}
+              isDisabled={!user.isAdminOrOwner}
+            />
           ) : null}
           {shouldShowUploadLogoInput ? (
-            <UploadLogo
-              logo={logo}
-              logoRaw={logoRaw}
-              fileName={fileName}
-              setFileName={setFileName}
-            />
+            <UploadLogo type="logo" image={logo} imageRaw={logoRaw} />
+          ) : null}
+          {shouldShowUploadWordmarkInput ? (
+            <UploadLogo type="wordmark" image={wordmark} imageRaw={wordmarkRaw} />
           ) : null}
         </LeftContentWrapper>
         <RightContentWrapper>
           <IframeWrapper>
-            <CheckoutV2 shouldScaleToFit={true} forceLoadDesktopView={true} />
+            <CheckoutV2 zoomTitleStyle={true} forceLoadDesktopView={true} />
           </IframeWrapper>
         </RightContentWrapper>
       </ContentWrapper>
@@ -150,6 +151,7 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
           size="medium"
           onClick={onSaveBrandNameAndLogo}
           isDisabled={!hasValuesChanged()}
+          isLoading={isSavingTitleModalChange}
         >
           Save and continue
         </Button>

@@ -6,7 +6,7 @@ export const CUSTOM_MESSAGE_DEFAULT_VALUE = {
 
 export const LANGUAGE_SETTINGS_DEFAULT_VALUE = {
   title: 'Default Language',
-  subTitle: 'Feature description (optional)',
+  subTitle: 'Select a default language for your customers',
 };
 
 export const LANGUAGE_OPTIONS = [
@@ -17,7 +17,6 @@ export const LANGUAGE_OPTIONS = [
   { name: 'Gujarati', code: 'guj' },
   { name: 'Tamil', code: 'tam' },
   { name: 'Telugu', code: 'tel' },
-  { name: 'Kannada', code: 'kan' },
 ];
 
 export const EMAIL_SETTINGS_DEFAULT_VALUE = {

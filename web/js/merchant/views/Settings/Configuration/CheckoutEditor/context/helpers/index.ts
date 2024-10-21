@@ -208,7 +208,7 @@ export const hasValuesChanged = (
     return true;
   }
 
-  if (values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE] !== merchantCheckoutStyledConfig?.title_style) {
+  if (values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED] !== merchantCheckoutStyledConfig.rtb_enabled) {
     return true;
   }
 
@@ -310,6 +310,14 @@ export const createMerchantCheckoutStyledPayloadToSaveConfig = (
     payload.text = {
       font: values[CHECKOUT_EDITOR_FIELDS.FONT_FAMILY],
     };
+  }
+
+  if (values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED] !== merchantCheckoutStyledConfig?.rtb_enabled) {
+    payload.rtb_enabled = values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED];
+  }
+
+  if (values[CHECKOUT_EDITOR_FIELDS.WORDMARK] !== merchantCheckoutStyledConfig?.wordmark_url) {
+    payload.wordmark_url = values[CHECKOUT_EDITOR_FIELDS.WORDMARK];
   }
 
   if (payload && !isEmpty(payload)) {
