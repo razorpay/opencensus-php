@@ -105,7 +105,7 @@ class Axis extends Base
 
             $rateofinterest = $emiPayment->emiPlan[EmiPlanEntity::RATE] / 100;
 
-            $txn = $emiPayment->transaction;
+            $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($emiPayment->getId());
 
             $formattedData[] = [
                 'Card Number'                  => str_repeat("X", 12) . $emiPayment->card->getLast4(),

@@ -56,8 +56,6 @@ class Bob extends Base
 
             $merchant = $emiPayment->merchant;
 
-            $txn = $emiPayment->transaction;
-
             $emiRate = $emiPayment->emiPlan['rate'];
 
             $emiPercent = $emiRate/100;

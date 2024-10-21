@@ -27,7 +27,7 @@ class Scbl extends Base
 
             $merchant = $emiPayment->merchant;
 
-            $txn = $emiPayment->transaction;
+            $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($emiPayment->getId());
 
             $emiRate = $emiPayment->emiPlan['rate'];
 
