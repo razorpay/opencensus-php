@@ -42,6 +42,7 @@ import { magicOrderAnalyticsHandler } from 'merchant/views/MagicCheckout/OrderAn
 import { partnerActivationHandler } from 'merchant/views/PartnerDashboard/Activation/__tests__/mocks/handlers';
 import { magicShopifyOrderEditingHandler } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/__test__/mocks/handlers';
 import { magicCouponEngineHandler } from 'merchant/views/MagicCheckout/CouponEngine/__test__/mocks/handlers';
+import { magicXCODHandler } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/__tests__/mocks/handlers';
 import { magicShippingEngineHandlers } from 'merchant/views/MagicCheckout/ShippingSettings/__tests__/mocks/handlers';
 import gcmsBrandAccountHandler from 'merchant/views/GCMS/Funds/BrandAccount/__tests__/mocks';
 import gcmsResellerAccountsHandler from 'merchant/views/GCMS/Funds/ResellerAccounts/__tests__/mocks';
@@ -883,6 +884,7 @@ export const handlers = [
   ...partnerActivationHandler,
   ...magicShopifyOrderEditingHandler,
   ...magicCouponEngineHandler,
+  ...magicXCODHandler,
   ...magicShippingEngineHandlers,
   ...gcmsResellerAccountsHandler,
   ...gcmsBrandAccountHandler,

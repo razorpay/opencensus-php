@@ -15,6 +15,7 @@ export interface Zone {
   name: string;
   shipping_methods: ShippingMethod[];
   location_count?: number;
+  created_at: number;
 }
 
 export interface ShippingMethod {

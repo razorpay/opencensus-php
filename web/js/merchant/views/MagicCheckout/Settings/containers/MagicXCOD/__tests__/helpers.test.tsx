@@ -2,12 +2,14 @@ import {
   convertFormDataToPayload,
   convertServerDataToTableData,
   convertTableDataToForm,
+  getLastSyncedWithShopifyInMs,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/helpers';
 import {
   mockServerData,
   mockTableData,
   mockFormData,
   mockPayload,
+  mockShippingProfiles,
 } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/__tests__/mocks/fixtures';
 
 describe('convertServerDataToTableData', () => {
@@ -70,5 +72,12 @@ describe('convertFormDataToPayload', () => {
     const result = convertFormDataToPayload(formDataWithNoFeeRules);
 
     expect(result.cod_fee_rules).toBeNull();
+  });
+});
+
+describe('Last synced with shopify', () => {
+  it('should return correct last synced value', () => {
+    const result = getLastSyncedWithShopifyInMs(mockShippingProfiles);
+    expect(result).toBe(1729449836998);
   });
 });

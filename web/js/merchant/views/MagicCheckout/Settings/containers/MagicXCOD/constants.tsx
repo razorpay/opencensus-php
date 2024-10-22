@@ -140,3 +140,9 @@ export const CONFIRMATION_MODAL_OBJECT = {
   primaryCtaLabel: '',
   secondaryCtaLabel: '',
 };
+
+export const SYNC_STATES = {
+  IDLE: 'idle',
+  LOADING: 'loading',
+  SUCCESS: 'success',
+} as const;

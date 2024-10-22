@@ -40,7 +40,14 @@ export const shipping_profiles = {
     shipping_profiles: {
       profile1: {
         name: 'Profile1',
-        zones: [{ id: 'zone1', name: 'Zone1', shipping_methods: [{ name: 'Method 1' }] }],
+        zones: [
+          {
+            id: 'zone1',
+            name: 'Zone1',
+            created_at: 1729449836998,
+            shipping_methods: [{ name: 'Method 1' }],
+          },
+        ],
       },
     },
     isLoading: { summary: false },

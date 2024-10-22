@@ -1,4 +1,5 @@
 import { ShippingMethod } from 'merchant/reducers/magicCheckout/shippingEngine/types';
+import { SYNC_STATES } from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD/constants';
 
 export type FormErrors = {
   paymentMethod?: string;
@@ -56,3 +57,5 @@ export type ShippingMethodPayload = Omit<ShippingMethod, RedundantAttribute> & {
 };
 
 export type Column = { title: string; tooltip: string; value: (item) => JSX.Element };
+
+export type SyncStates = (typeof SYNC_STATES)[keyof typeof SYNC_STATES];

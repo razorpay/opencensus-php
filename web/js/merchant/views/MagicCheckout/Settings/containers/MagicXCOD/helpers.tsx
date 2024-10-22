@@ -79,3 +79,17 @@ export const convertFormDataToPayload = (formData: ShippingMethod): ShippingMeth
   payload.app_type = 'sopc';
   return payload;
 };
+
+export const getLastSyncedWithShopifyInMs = (shipping_profiles: {
+  [key: string]: ShippingProfile;
+}): number => {
+  const shippingZonesCreatedAtList: number[] = [];
+
+  Object.keys(shipping_profiles).forEach((profile) => {
+    shipping_profiles[profile]?.zones?.forEach((zone) => {
+      shippingZonesCreatedAtList.push(zone?.created_at);
+    });
+  });
+  shippingZonesCreatedAtList?.sort();
+  return shippingZonesCreatedAtList[shippingZonesCreatedAtList?.length - 1];
+};

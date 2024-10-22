@@ -79,7 +79,7 @@ export const buildFormDataFromMethod = (values: ShippingMethod): Record<Inputs, 
     }
     payload[entry[0]] = {
       ...entry[1],
-      value: values[entry[0]] ? values[entry[0]] : payload[entry[0]].value,
+      value: values[entry[0]] ?? payload[entry[0]].value,
     };
   });
   return payload;

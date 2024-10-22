@@ -30,6 +30,7 @@ export const mockServerData = {
             updated_at: '2022-01-02',
           },
         ],
+        created_at: 1729449836998,
       },
     ],
   },
@@ -107,4 +108,43 @@ export const mockPayload = {
   },
   zone_id: 'OqFHIdQJsPNaJc',
   app_type: 'sopc',
+};
+
+export const mockShippingProfiles = {
+  'Free Shipping 1': mockServerData['Free shipping'],
+  'Free Shipping 2': {
+    id: 'OqFGprTbo4rtoZ',
+    name: 'Free shipping 2',
+    is_default: false,
+    item_count: 1,
+    zones: [
+      {
+        id: 'OqFHIdQJsPNaJD',
+        name: 'Pan india 2',
+        shipping_methods: [
+          {
+            id: 'OqFHjIJ8sV2nnV',
+            name: 'Pan india',
+            description: 'Free shipping',
+            fee_rules: {
+              amount: {
+                lt: 100000,
+                gte: 0,
+              },
+            },
+            allow_cod: true,
+            cod_fee_rules: {
+              amount: {
+                lt: 100000,
+                gte: 0,
+              },
+            },
+            created_at: '2022-01-01',
+            updated_at: '2022-01-02',
+          },
+        ],
+        created_at: 1729449836988,
+      },
+    ],
+  },
 };

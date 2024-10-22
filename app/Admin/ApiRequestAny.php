@@ -125,6 +125,7 @@ class ApiRequestAny
         'admin_checkout_config',
         'xperience-edge',
         'abacus',
+        'magic/shipping/shopify/sync',
     ];
 
     /**
