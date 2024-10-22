@@ -682,17 +682,38 @@ class Core extends Base\Core
 
         $allEligibleUniqueMerchantIds = array_unique($allEligibleMerchantIds);
 
-        foreach($allEligibleUniqueMerchantIds as $index => $merchantId){
-            if(is_string($merchantId)) {
-                MerchantInvoiceJob::dispatch(
-                    $merchantId,
-                    $month,
-                    $year,
-                    $mode)
-                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                    ->delay($index % 901);
+        foreach ($allEligibleUniqueMerchantIds as $index => $merchantId) {
+            if (is_string($merchantId)) {
+                $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_DISPATCH,
+                    [
+                        'merchant_id' => $merchantId,
+                        'month' => $month,
+                        'year' => $year,
+                    ]);
+
+                try {
+                    MerchantInvoiceJob::dispatch(
+                        $merchantId,
+                        $month,
+                        $year,
+                        $mode)
+                        // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                        ->delay($index % 901);
+                } catch (\Throwable $e) {
+                    // Log the error and continue with the next merchant ID
+                    $this->trace->traceException(
+                        $e,
+                        TraceCode::MERCHANT_INVOICE_DISPATCH_FAILED,
+                        [
+                            'merchant_id' => $merchantId,
+                            'month' => $month,
+                            'year' => $year,
+                        ]);
+                }
             }
         }
+
     }
 
     /**
