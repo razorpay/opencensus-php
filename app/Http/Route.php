@@ -18178,7 +18178,8 @@ class Route
             'bas_banking_accounts_notifications',
             'merchant_fetch_internal',
             'internal_merchant_fetch',
-            'merchant_fetch_internal_users'
+            'merchant_fetch_internal_users',
+            'create_merchant_da_payout_mode_config'
         ],
 
         'myoperator' => [
