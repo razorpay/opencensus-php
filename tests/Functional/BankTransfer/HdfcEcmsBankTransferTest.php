@@ -4,11 +4,13 @@ namespace Functional\BankTransfer;
 
 use DB;
 use Mail;
+use Mockery;
 use Cache;
 use RZP\Models\Order;
 use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\BankTransfer\Mode;
@@ -62,6 +64,8 @@ class HdfcEcmsBankTransferTest extends TestCase
         $this->bankAccount = $this->createVirtualAccount();
 
         $this->enableRazorXTreatmentForBanKTransferDisableGateway();
+
+        $this->evaluateHdfcEcmsFundTransExperiment();
     }
 
     protected function createTerminals()
@@ -103,8 +107,7 @@ class HdfcEcmsBankTransferTest extends TestCase
         $razorx->shouldReceive('getTreatment')
             ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
             {
-                if ($featureFlag === (RazorxTreatment::BANK_TRANSFER_DISABLE_GATEWAY) or $featureFlag === (RazorxTreatment::HDFC_ECMS_FUND_TRANS))
-                {
+                if ($featureFlag === (RazorxTreatment::BANK_TRANSFER_DISABLE_GATEWAY))                {
                     return 'on';
                 }
                 return 'control';
@@ -612,5 +615,24 @@ class HdfcEcmsBankTransferTest extends TestCase
         $bankAccount = $this->createVirtualAccountForOrder($order)['receivers'][0];
 
         return $bankAccount['account_number'];
+    }
+
+    protected function evaluateHdfcEcmsFundTransExperiment()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 }

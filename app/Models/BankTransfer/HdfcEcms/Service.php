@@ -9,6 +9,8 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\BankTransferRequest;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestValidationFailureException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 
 class Service extends BankTransfer\Service
 {
@@ -49,14 +51,15 @@ class Service extends BankTransfer\Service
 
                 if ($bankAccount !== null)
                 {
-                    $merchantId = $bankAccount->getMerchantId();
+                    $orgId = (new Merchant\Repository)->getMerchantOrg($bankAccount->getMerchantId());
 
-                    $israzorxExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,
-                        RazorxTreatment::HDFC_ECMS_FUND_TRANS);
+                    $experimentName = BankTransferConstants::HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID;
+
+                    $splitzResult = $this->evaluateHdfcEcmsFundTransExperiment($orgId, $experimentName);
 
                     $mode = strtolower($requestPayload[Entity::TYPE]);
 
-                    if ($mode === BankTransfer\Mode::FUND_TRANS and $israzorxExperimentEnabled === true)
+                    if ($mode === BankTransfer\Mode::FUND_TRANS and (isset($splitzResult) === true) and (strtolower($splitzResult) === 'enable'))
                     {
                         $entityInput[BankTransfer\Entity::MODE] = BankTransfer\Mode::FT;
                         $requestPayload[Entity::TYPE] = BankTransfer\Mode::FT;
@@ -119,6 +122,21 @@ class Service extends BankTransfer\Service
             Entity::RESPONSE_REASON => $response,
             Entity::TRANSACTION_ID  => $bankTransferRequest->getUtr() ?? '',
         ];
+    }
+    public function evaluateHdfcEcmsFundTransExperiment(string $orgId, string $experimentName)
+    {
+        $experimentId = $this->app['config']->get('app.'.$experimentName);
+
+        $response = $this->app['splitzService']->evaluateRequest([
+            'id'            => $orgId,
+            'experiment_id' => $experimentId,
+        ]);
+
+        if (!empty($response['response']['variant']) && isset($response['response']['variant']['name'])) {
+            return $response['response']['variant']['name'];
+        }
+
+        return '';
     }
 
 }
