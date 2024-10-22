@@ -9,6 +9,7 @@ import { ExtraItemsWrapper } from './styled';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
 
 import { TAB_INDEX } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/constants/DefaultValue';
+import track from './track';
 
 const ExtraItems = () => {
   const { values, handleCustomMessageTextChange, handleCustomMessageBackgroundColorChange } =
@@ -19,12 +20,13 @@ const ExtraItems = () => {
 
   const handleTextChange = ({ value }: { value?: string | undefined }) => {
     handleCustomMessageTextChange(TAB_INDEX, value ?? '');
+    track.handleMessageBannerTextInput(value);
   };
 
   const handleBackgroundColorChange = (evt: React.ChangeEvent) => {
     const { value } = evt.target as HTMLInputElement;
-
     handleCustomMessageBackgroundColorChange(TAB_INDEX, value);
+    track.handleMessageBannerThemeEdit();
   };
 
   return (

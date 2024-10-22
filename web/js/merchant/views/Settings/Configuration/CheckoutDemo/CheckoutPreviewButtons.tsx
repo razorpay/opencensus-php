@@ -6,12 +6,14 @@ import { MobileIcon } from 'merchant/views/Settings/Configuration/CheckoutDemo/i
 import { PREFERRED_PREVIEW_SESSION_STORAGE_KEY } from './constants';
 import { useCheckoutPreview } from './context/createContext';
 import { PreviewButton, SwitchPreviewWrapper } from './styles';
+import track from './track';
 
 export const CheckoutPreviewButtons = (): JSX.Element => {
   const { isDesktopPreview, setIsDesktopPreivew } = useCheckoutPreview();
   function switchPreview(shouldSwitchToDesktop: boolean) {
     setIsDesktopPreivew(shouldSwitchToDesktop);
     sessionStorage.setItem(PREFERRED_PREVIEW_SESSION_STORAGE_KEY, shouldSwitchToDesktop.toString());
+    track.togglePreview(shouldSwitchToDesktop ? 'dweb' : 'mweb');
   }
   return (
     <SwitchPreviewWrapper>

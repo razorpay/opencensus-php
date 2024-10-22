@@ -242,8 +242,6 @@ export type ColorTextInputProps = {
 
 export type RightChildrenProps = {
   buttons: ButtonStyle[];
-  selectedButton: string;
-  handleButtonStyleChange: (value: string) => void;
 };
 
 export type ButtonStyleItem = {

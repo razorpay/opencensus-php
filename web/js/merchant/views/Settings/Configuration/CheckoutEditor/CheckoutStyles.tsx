@@ -2,8 +2,8 @@ import React, { memo, useMemo } from 'react';
 
 import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 
-import BrandColor from './CheckoutStyling/BrandColor';
-import ButtonStyle from './CheckoutStyling/ButtonStyle/ButttonStyle';
+import BrandColor from './CheckoutStyling/BrandColor/BrandColor';
+import ButtonStyle from './CheckoutStyling/ButtonStyle/ButtonStyle';
 import FontStyle from './CheckoutStyling/FontStyle/FontStyle';
 import SidebarGraphic from './CheckoutStyling/SidebarGraphic/SidebarGraphic';
 import TitleStyle from './CheckoutStyling/TitleStyle/TitleStyle';

@@ -12,7 +12,6 @@ export const Wrapper = styled.div`
   border-radius: ${({ theme }: StyledProps) => theme.border.radius['2xlarge']}px;
   background-color: ${({ theme }: StyledProps) => theme.colors.surface.background.gray.subtle};
   box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.05) inset;
-  max-width: 615px;
   height: 550px;
   position: relative;
 `;
@@ -23,7 +22,7 @@ export const FrameContainer = styled.div<{ isDesktopPreview: boolean }>`
   align-items: center;
   height: 410px;
   margin-top: ${(props) => (props.isDesktopPreview ? '20px' : '42px')};
-  width: ${(props) => (props.isDesktopPreview ? '1000px' : '500px')};
+  width: ${(props) => (props.isDesktopPreview ? '1000px' : 'auto')};
 `;
 
 export const CheckoutFrame = styled.iframe<{

@@ -1,19 +1,18 @@
 import React, { useRef } from 'react';
+import { Text, Link } from '@razorpay/blade/components';
+import { BrandColorProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 import { connect } from 'react-redux';
 
-import { Text, Link } from '@razorpay/blade/components';
-
 import { ColorInputBox } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ColorTextInput/styles';
-import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
-import { RightChildrenWrapper } from 'merchant/views/Settings/Configuration/components/Configuration/styled';
-
+import { BRAND_COLOR_DEFAULT_VALUE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
 import {
   CHECKOUT_EDITOR_FIELDS,
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
-import { BrandColorProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
+import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
+import { RightChildrenWrapper } from 'merchant/views/Settings/Configuration/components/Configuration/styled';
 
-import { BRAND_COLOR_DEFAULT_VALUE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
+import track from './track';
 
 const RightChildren = ({ color, onChange, showReset, handleResetBrandColor }) => {
   const colorInputRef = useRef<HTMLInputElement>(null);
@@ -53,11 +52,20 @@ const RightChildren = ({ color, onChange, showReset, handleResetBrandColor }) =>
 };
 
 const BrandColor: React.FC<BrandColorProps> = ({ accountConfig }) => {
-  const { values, handleBrandColorChange } = useCheckoutEditor();
+  const { values, handleBrandColorChange: updateBrandColor } = useCheckoutEditor();
 
   const handleResetBrandColor = () => {
     handleBrandColorChange(undefined, accountConfig?.brand_color);
   };
+
+  function handleBrandColorChange(
+    evt?: React.ChangeEvent<Element> | undefined,
+    defaultValue?: string | undefined,
+  ) {
+    updateBrandColor(evt, defaultValue);
+    track.backgroundColorChange();
+  }
+
   return (
     <LineItems
       title={BRAND_COLOR_DEFAULT_VALUE.title}

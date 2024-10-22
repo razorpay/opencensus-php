@@ -1,8 +1,4 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import PropTypes from 'prop-types';
-
 import {
   Box,
   Link,
@@ -16,12 +12,13 @@ import {
   Badge,
   Switch,
 } from '@razorpay/blade/components';
-import TrustedBadge from 'merchant/views/Account/TrustedBadge';
-
-import { LeftWrapper, TopWrapper, Wrapper, TrustedIconWrapper } from './styled';
 import BadgeIcon from 'assets/checkout-editor/trusted-badge/rtb-icon.svg';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import { updateRTBMerchantStatus } from 'merchant/reducers/trustedBadge';
+import TrustedBadge from 'merchant/views/Account/TrustedBadge';
 import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import { TRUSTED_BADGE_DEFAULT_VALUE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/constants/DefaultValue';
 import {
@@ -29,10 +26,18 @@ import {
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
+import { LeftWrapper, TopWrapper, Wrapper, TrustedIconWrapper } from './styled';
+import track from './track';
+
 const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateStatus }) => {
   const badgeStatus = trustedBadge?.status?.badgeStatus;
 
   const { values, handleRtbEnable } = useCheckoutEditor();
+
+  function handleRTBToggle(isChecked: boolean) {
+    handleRtbEnable(isChecked);
+    track.toggleRTBVisibility(isChecked ? 'visible' : 'hidden');
+  }
 
   const [isShowTrutedBadgeModal, setShowTrustedBadgeModal] = useState(false);
   const rightChildren =
@@ -44,7 +49,7 @@ const RazorpayTrustedBadge = ({ trustedBadge, updateRTBMerchantStatus: updateSta
       <Switch
         accessibilityLabel="razorpay-trusted-badge"
         isChecked={values[CHECKOUT_EDITOR_FIELDS.RTB_ENABLED]}
-        onChange={({ isChecked }) => handleRtbEnable(isChecked)}
+        onChange={({ isChecked }) => handleRTBToggle(isChecked)}
       />
     );
 

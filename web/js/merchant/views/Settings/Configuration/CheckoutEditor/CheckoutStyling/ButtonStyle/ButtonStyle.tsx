@@ -1,5 +1,9 @@
 import React from 'react';
 import { Text } from '@razorpay/blade/components';
+import {
+  ButtonStyleItem,
+  RightChildrenProps,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 
 import { RoundedIcon } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/icons/RoundedIcon';
 import { SharpIcon } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/icons/SharpIcon';
@@ -8,15 +12,11 @@ import {
   SingleChildren,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/styled';
 import { AVAILABLE_BORDER_STYLE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
+import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import { CHECKOUT_EDITOR_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
 
-import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
-
-import { CHECKOUT_EDITOR_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
-import {
-  ButtonStyleItem,
-  RightChildrenProps,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
+import track from './track';
 
 const BORDER_TITLE = 'Border style';
 
@@ -31,11 +31,14 @@ const BORDER_STYLE_ITEMS: ButtonStyleItem[] = [
   },
 ];
 
-const RightChildren: React.FC<RightChildrenProps> = ({
-  buttons,
-  selectedButton,
-  handleButtonStyleChange,
-}) => {
+const RightChildren: React.FC<RightChildrenProps> = ({ buttons }) => {
+  const { values, handleButtonStyleChange } = useCheckoutEditor();
+
+  const selectedButton = values[CHECKOUT_EDITOR_FIELDS.BORDER_STYLE];
+  function handleButtonStyleClick(name: string) {
+    handleButtonStyleChange(name);
+    track.borderStyleClicked(name);
+  }
   return (
     <RightChildrenWrapper>
       {buttons.map((button) => {
@@ -45,7 +48,7 @@ const RightChildren: React.FC<RightChildrenProps> = ({
           <SingleChildren
             key={button.name}
             isSelected={isSelected}
-            onClick={() => handleButtonStyleChange(button.name)}
+            onClick={() => handleButtonStyleClick(button.name)}
           >
             {React.cloneElement(button.icon, { selectedButton })}
             <Text>{button.name}</Text>
@@ -57,18 +60,10 @@ const RightChildren: React.FC<RightChildrenProps> = ({
 };
 
 const ButtonStyle = () => {
-  const { values, handleButtonStyleChange } = useCheckoutEditor();
-
   return (
     <LineItems
       title={BORDER_TITLE}
-      rightChildren={
-        <RightChildren
-          buttons={BORDER_STYLE_ITEMS}
-          selectedButton={values[CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]}
-          handleButtonStyleChange={handleButtonStyleChange}
-        />
-      }
+      rightChildren={<RightChildren buttons={BORDER_STYLE_ITEMS} />}
     />
   );
 };

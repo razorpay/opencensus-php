@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import debounce from 'lodash/debounce';
 
 import { toBase64 } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils';
+import { useCheckoutConfig } from 'merchant/views/Settings/Configuration/CheckoutConfig/context/index';
 import { CheckoutFrame } from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
 
 import { CHECKOUT_IFRAME_URL } from './constants';
 import { useCheckoutPreview } from './context/createContext';
 import { initCheckout } from './liveCheckout';
-import { useCheckoutConfig } from 'merchant/views/Settings/Configuration/CheckoutConfig/context/index';
 
 const CheckoutV2 = ({ shouldScaleToFit }: { shouldScaleToFit: boolean }) => {
   const { isDesktopPreview } = useCheckoutPreview();

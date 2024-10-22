@@ -151,8 +151,8 @@ export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {
 };
 
 export const Checkout_V2_SettingTitles: Record<Checkout_V2_SettingsFields, string> = {
-  [Checkout_V2_SettingsFields.CHECKOUT_STYLING]: 'Checkout styling',
-  [Checkout_V2_SettingsFields.FEATURES]: 'Features',
+  [Checkout_V2_SettingsFields.CHECKOUT_STYLING]: 'Checkout Styling',
+  [Checkout_V2_SettingsFields.FEATURES]: 'Checkout Features',
 };
 
 export const PricingTitles: Record<PricingFields, string> = {

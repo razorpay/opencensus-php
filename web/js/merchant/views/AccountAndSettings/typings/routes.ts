@@ -2,7 +2,7 @@ export enum ROUTES_INFO {
   ACCOUNT_AND_SETTINGS = '/account-settings',
   PAYMENT_METHODS = '/payment-methods',
   BRANDING = '/checkout-settings/branding',
-  CHECKOUT_FEATURES = '/checkout-settings/features',
+  CHECKOUT_FEATURES = '/checkout-settings/checkout-features',
   CHECKOUT_STYLING = '/checkout-settings/checkout-styling',
   FLASH_CHECKOUT = '/checkout-settings/flash-checkout',
   SKIP_MANDATORY_SUMMARY_PAGE = '/checkout-settings/skip-mandatory-summary-page',

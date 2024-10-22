@@ -28,6 +28,7 @@ import {
   LeftContentWrapper,
   RightContentWrapper,
 } from './styled';
+import track from './track';
 
 const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
   setShowTitleTypeModal,
@@ -51,6 +52,7 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
   const logoRaw = values[CHECKOUT_EDITOR_FIELDS.LOGO_RAW];
   const wordmark = values[CHECKOUT_EDITOR_FIELDS.WORDMARK];
   const wordmarkRaw = values[CHECKOUT_EDITOR_FIELDS.WORDMARK_RAW];
+  const titleStyle = values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE];
 
   const shouldShowBrandNameTextInput =
     selectedTitleStyle === AVAILABLE_TITLE_STYLE.TEXT_ONLY ||
@@ -62,6 +64,16 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
 
   const onSaveBrandNameAndLogo = () => {
     handleSaveTitleModal(setShowEditModal);
+    track.saveTitleStyle({
+      titleStyle: values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE],
+      brandName:
+        titleStyle === AVAILABLE_TITLE_STYLE.LOGO_TEXT ||
+        titleStyle === AVAILABLE_TITLE_STYLE.TEXT_ONLY
+          ? brandName
+          : null,
+      logo: titleStyle === AVAILABLE_TITLE_STYLE.LOGO_TEXT && logoRaw ? 'uploaded' : null,
+      wordmark: titleStyle === AVAILABLE_TITLE_STYLE.WORDMARK && wordmarkRaw ? 'uploaded' : null,
+    });
   };
 
   const onDiscard = () => {
@@ -76,6 +88,7 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
     if (merchantCheckoutStyledConfig?.title_style)
       handleTitleStyleChange(merchantCheckoutStyledConfig?.title_style);
     setShowEditModal(false);
+    track.discardTitleStyle(values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]);
   };
 
   const hasValuesChanged = (): boolean => {

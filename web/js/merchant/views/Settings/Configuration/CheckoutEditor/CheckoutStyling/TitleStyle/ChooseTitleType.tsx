@@ -1,8 +1,17 @@
 import React, { useEffect } from 'react';
+import { Button, Text, ArrowRightIcon } from '@razorpay/blade/components';
+import {
+  ChooseTitleTypeProps,
+  SingleContentProps,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 import { connect } from 'react-redux';
 
 import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
-import { Button, Text, ArrowRightIcon } from '@razorpay/blade/components';
+import { DEFAULT_TITLE_TYPE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
+import {
+  CHECKOUT_EDITOR_FIELDS,
+  useCheckoutEditor,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
 import {
   ContentWrapper,
@@ -11,17 +20,7 @@ import {
   ImageWrapper,
   SingleContentWrapper,
 } from './styled';
-
-import {
-  CHECKOUT_EDITOR_FIELDS,
-  useCheckoutEditor,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
-import {
-  ChooseTitleTypeProps,
-  SingleContentProps,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
-
-import { DEFAULT_TITLE_TYPE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
+import track from './track';
 
 const ChooseTitleType: React.FC<ChooseTitleTypeProps> = ({
   setShowTitleTypeModal,
@@ -30,6 +29,13 @@ const ChooseTitleType: React.FC<ChooseTitleTypeProps> = ({
   selectedTitleStyle,
 }) => {
   const { values, handleTitleStyleChange } = useCheckoutEditor();
+
+  function handleTitleStyleSelected() {
+    const selectedTitleStyle = values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE];
+    setShowEditModal(true);
+    setShowTitleTypeModal(false);
+    track.selectTitleStyle(selectedTitleStyle);
+  }
 
   useEffect(() => {
     setSelectedTitleStyle(values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]);
@@ -80,10 +86,7 @@ const ChooseTitleType: React.FC<ChooseTitleTypeProps> = ({
           isFullWidth={false}
           icon={ArrowRightIcon}
           iconPosition="right"
-          onClick={() => {
-            setShowEditModal(true);
-            setShowTitleTypeModal(false);
-          }}
+          onClick={handleTitleStyleSelected}
           isDisabled={!values[CHECKOUT_EDITOR_FIELDS.TITLE_STYLE]}
         >
           Continue to upload

@@ -8,20 +8,24 @@ import {
   ChevronDownIcon,
 } from '@razorpay/blade/components';
 
-import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
-
 import {
   FONT_OPTIONS,
   getFontNameByCode,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
+import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { CHECKOUT_EDITOR_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
+
+import track from './track';
 
 const RightChildren = () => {
   const { values, handleFontStyleChange } = useCheckoutEditor();
 
-  const handleSelectChange = (code: string) => {
-    handleFontStyleChange(code);
-  };
+  function handleFontChange(fontFamilyCode: string) {
+    handleFontStyleChange(fontFamilyCode);
+    track.fontChange({
+      heading: fontFamilyCode,
+    });
+  }
 
   return (
     <Dropdown>
@@ -41,7 +45,7 @@ const RightChildren = () => {
               title={config.name}
               value={config.code}
               onClick={({ name }) => {
-                handleSelectChange(name);
+                handleFontChange(name);
               }}
               testID={`font-style-checkout-${config.name}`}
             />

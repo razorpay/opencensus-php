@@ -79,8 +79,8 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
               isConfigurationViewAllowed(user) && isCheckoutV2SettingsAllowed(extraConfig)
             }
           >
-            <NavLink to={ROUTES_INFO.CHECKOUT_STYLING}>Checkout styling</NavLink>
-            <NavLink to={ROUTES_INFO.CHECKOUT_FEATURES}>Checkout features</NavLink>
+            <NavLink to={ROUTES_INFO.CHECKOUT_STYLING}>Checkout Styling</NavLink>
+            <NavLink to={ROUTES_INFO.CHECKOUT_FEATURES}>Checkout Features</NavLink>
           </ShowWhen>
           <ShowWhen
             additionalCondition={(user) =>
