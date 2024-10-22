@@ -176,7 +176,7 @@ export const isWhatsAppAccountSetupEnabled = (
     return false;
   }
   if (roleCheckEnable) {
-    return isExperimentEnabled(abExperiments.whatsAppPLEnabled) && user.isOrgRZP && user.isOwner;
+    return isExperimentEnabled(abExperiments.whatsAppPLEnabled) && user.isOwner;
   }
-  return isExperimentEnabled(abExperiments.whatsAppPLEnabled) && user.isOrgRZP;
+  return isExperimentEnabled(abExperiments.whatsAppPLEnabled);
 };
