@@ -12087,17 +12087,20 @@ class Core extends Base\Core
         {
             $origin = $this->app['request.ctx']->getRoute();
 
-        }elseif (isset($this->app['worker.ctx']) && $this->app['worker.ctx']->getJobName())
+        } elseif (isset($this->app['worker.ctx']) && $this->app['worker.ctx']->getJobName())
         {
             $origin = $this->app['worker.ctx']->getJobName();
         }
 
+        $beneHash = $this->getBeneficiaryHash($payout);
+
         $eventAttributes = [
-            'merchant_id' => $merchantId,
-            'origin' => $origin,
-            'user_id'     => $userId,
-            'user_role'   => $role,
-            'app_name'    => $internalApp
+            'merchant_id'       => $merchantId,
+            'origin'            => $origin,
+            'user_id'           => $userId,
+            'user_role'         => $role,
+            'app_name'          => $internalApp,
+            'beneficiary_hash'  => $beneHash,
         ];
 
         $this->app['diag']->trackPayoutPropertiesEvent(
@@ -12110,5 +12113,69 @@ class Core extends Base\Core
             "payout_id" => $payoutId,
             "event_attributes" => $eventAttributes
         ]);
+    }
+
+    public function getBeneficiaryHash($payout)
+    {
+        try {
+
+            $mode = $payout->getMode();
+            $merchantId = $payout->getMerchantId();
+            $input = $merchantId . $mode;
+            $sourceAccount = $payout->balance->getAccountNumber();
+
+            // Depending on the mode of the payout, generate the appropriate hash input
+            switch ($mode) {
+                case Mode::UPI:
+                    $upiUsername = $payout->fundAccount->account->getUsername();
+                    $upiHandle = $payout->fundAccount->account->getHandle();
+                    $input = $upiUsername . $upiHandle . $input;
+                    break;
+
+                case Mode::IFT:
+                case Mode::NEFT:
+                case Mode::IMPS:
+                case Mode::RTGS:
+                case Mode::DUITNOW:
+                    $accountNumber = $payout->fundAccount->account->getAccountNumber();
+                    $ifsc = $payout->fundAccount->account->getIfscCode();
+                    $input = $accountNumber . $ifsc . $input;
+                    break;
+
+                case Mode::CARD:
+                    $cardDetails = $payout->fundAccount->account->getCardDetailsAsKey();
+                    $cardNetworkCode = $payout->fundAccount->account->getNetworkCode();
+                    $input = $cardDetails . $cardNetworkCode . $input;
+                    break;
+
+                case Mode::AMAZONPAY:
+                    $mobileNumber = $payout->fundAccount->account->getAttribute('phone');
+                    $input = $mobileNumber . $input;
+                    break;
+
+                default:
+                    $this->trace->info(TraceCode::INVALID_MODE_FOR_BENEFICIARY_HASH_GENERATION,[
+                        'payout_id' => $payoutId,
+                        'mode' => $mode
+                    ]);
+                    break;
+            }
+
+            // Generate the hash using SHA-256
+            $hashWithoutSource = hash('sha256', $input);
+            $hashWithSource = hash('sha256', $input . $sourceAccount);
+
+        } catch (\Exception $e)
+        {
+            $hash = 'DEFAULT_'.$input;
+            $this->trace->info(TraceCode::BENEFICIARY_HASH_GENERATION_FAILURE,[
+                'payout_id' => $payoutId,
+                'error' => $e->getMessage()
+            ]);
+        }
+        return [
+            'hash_without_source' => $hashWithoutSource,
+            'hash_with_source' => $hashWithSource
+        ];
     }
 }
