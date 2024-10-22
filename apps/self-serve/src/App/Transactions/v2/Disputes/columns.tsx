@@ -80,7 +80,7 @@ export const raisedOn = {
 export const flag = {
   title: '',
   value: (item) =>
-    item.international ? (
+    item?.international ? (
       <GlobeIcon />
     ) : (
       <img src={getFlagOfCountry('IN')?.['4X3']} alt="national" />

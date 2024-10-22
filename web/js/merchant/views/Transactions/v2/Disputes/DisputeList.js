@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Button, DownloadIcon, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -8,6 +7,7 @@ import { withSplitzService } from 'common/splitz';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import DisputeListFilter from 'merchant/views/Transactions/v2/Disputes/components/DisputeListFilter';
+import DisputeListHeader from 'merchant/views/Transactions/v2/Disputes/components/DisputeListHeader/DisputeListHeader';
 import DisputeOverview from 'merchant/views/Transactions/v2/Disputes/components/DisputeOverview';
 import DisputesTable from 'merchant/views/Transactions/v2/Disputes/components/DisputesTable.tsx';
 import { handleDetailsClick } from 'merchant/views/Transactions/v2/common/components/Details/Details';
@@ -15,20 +15,9 @@ import {
   TransactionsEntityRoute,
   TransactionsPagesMap,
 } from 'merchant/views/Transactions/v2/common/constants';
-import { track } from 'merchant/views/Transactions/v2/common/tracking';
-import { onSearch } from 'merchant/views/Transactions/v2/common/utils';
-
-import { getErrorMessage } from './utils';
+import { onSearch, onPaginate } from 'merchant/views/Transactions/v2/common/utils';
 
 class DisputeList extends ListContainer {
-  onExport = () => {
-    getErrorMessage();
-    track({
-      objectName: 'Download Disputes report',
-      properties: { section: TransactionsPagesMap[this.props.history.location.pathname] },
-    });
-  };
-
   render() {
     const {
       history,
@@ -41,27 +30,17 @@ class DisputeList extends ListContainer {
       <>
         <DisputeOverview />
         <div className="content-wrapper" data-testid="disputes-list">
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            marginBottom="spacing.6"
-          >
-            <Heading>Disputes</Heading>
-            <Button
-              variant="tertiary"
-              onClick={this.onExport}
-              icon={DownloadIcon}
-              isDisabled={loading}
-            />
-          </Box>
+          <DisputeListHeader
+            pathname={this.props.history.location.pathname}
+            mid={this.props.user.merchant.id}
+          />
           <DisputeListFilter onSubmit={onSearch(history)} loading={loading} />
           <DisputesTable
             title="Disputes"
             loading={loading}
             count={this.state.count}
             skip={this.state.skip}
-            paginate={this.paginate}
+            paginate={onPaginate(this.paginate)}
             onRowClick={({ id, rowData }) =>
               handleDetailsClick({
                 navigate,
