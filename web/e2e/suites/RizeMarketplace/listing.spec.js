@@ -61,7 +61,8 @@ test.describe.parallel(
       await expect(cofounderPage).toHaveURL(/rize(.*?)\/profile\//);
     });
 
-    test('should open Rize Marketplace Product Page on clicking a similar product card', async ({
+    // https://razorpay.slack.com/archives/C061HJGS1CY/p1729088007855769
+    test.skip('should open Rize Marketplace Product Page on clicking a similar product card', async ({
       page,
     }) => {
       await gotoURL(page, LINK_PRODUCT_ROUTE);
