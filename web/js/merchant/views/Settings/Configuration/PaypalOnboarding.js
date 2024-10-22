@@ -135,8 +135,7 @@ class PaypalOnboardingButton extends Component {
       status,
     );
     const isLinkButtonNotHidden =
-      (!user.isInstrumentRequestHidden && showLinkButtonOnly) || user.isLinkAccountEnabled;
-
+      (!user.isInstrumentRequestHidden || user.isLinkAccountEnabled) && showLinkButtonOnly;
     const changeAccountModalClick = () =>
       openModal({
         size: 'small',
