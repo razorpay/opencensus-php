@@ -642,6 +642,14 @@ class Core extends Base\Core
 
         if ($merchant->isFeatureEnabled(Feature\Constants::BLOCK_ES_ON_DEMAND) === true)
         {
+            $today = Carbon::today(Timezone::IST);
+            $this->odsDowntimeEvent([
+                "merchant_id" => $ondemandXMerchantId,
+                "downtime_type" => "feature_config",
+                "breached_type" => "hard",
+                "is_holiday" => Holidays::isWorkingDay($today),
+                "effected_merchants" => ["*"],
+            ]);
             return true;
         }
 
@@ -652,6 +660,8 @@ class Core extends Base\Core
     public function isODSCappingBreached($merchantId)
     {
         $odsCappingCheckRequired = (bool) ConfigKey::get(ConfigKey::ODS_CAPPING_CHECK_REQUIRED, false);
+        $today = Carbon::today(Timezone::IST);
+        $isHoliday = Holidays::isWorkingDay($today);
 
         if($odsCappingCheckRequired === false)
             return [false, null, null];
@@ -678,6 +688,16 @@ class Core extends Base\Core
                 'odsGlobalLimit'        => $odsGlobalLimit,
             ]);
 
+            $this->odsDowntimeEvent([
+                "merchant_id" => $merchantId,
+                "downtime_type" => "global",
+                "breached_type" => "hard",
+                "global_ods_settled" => $totalOdsSettled,
+                "global_ods_limit" => $odsGlobalLimit,
+                "is_holiday" => $isHoliday,
+                "effected_merchants" => ["*"],
+            ]);
+
             $this->trace->count(
                 Metric::SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED, []);
 
@@ -702,6 +722,17 @@ class Core extends Base\Core
         if($totalOdsSettled >= ($odsCappingScaleFactor / 100) * $odsGlobalLimit)
         {
             $merchantIdList = ConfigKey::get(ConfigKey::ODS_CAPPED_MID_LIST, []);
+
+            $this->odsDowntimeEvent([
+                "merchant_id" => $merchantId,
+                "downtime_type" => "global",
+                "breached_type" => "soft",
+                "global_ods_settled" => $totalOdsSettled,
+                "global_ods_limit" => $odsGlobalLimit,
+                "is_holiday" => $isHoliday,
+                "effected_merchants" => $merchantIdList,
+                "ods_capping_scale_factor" => $odsCappingScaleFactor,
+            ]);
 
             if($merchantIdList !== null && in_array($merchantId, $merchantIdList))
             {
@@ -773,6 +804,18 @@ class Core extends Base\Core
                 'merchantLimitPerWorkingDay'    => $featureConfig->getMaxLimitPerWorkingDay(),
             ]);
 
+            $this->odsDowntimeEvent([
+                "merchant_id" => $merchantId,
+                "downtime_type" => "merchant",
+                "breached_type" => "soft",
+                "global_ods_settled" => $totalOdsSettled,
+                "global_ods_limit" => $odsGlobalLimit,
+                "merchant_limit" => $featureConfig->getMaxLimitPerWorkingDay(),
+                "is_holiday" => $isHoliday,
+                "merchant_ods_settled" => $amountSettledForMerchant,
+                "effected_merchants" => [$merchantId]
+            ]);
+
             $this->trace->count(
                 Metric::SETTLEMENT_ONDEMAND_MERCHANT_LIMIT_BREACHED, []);
 
@@ -785,6 +828,70 @@ class Core extends Base\Core
     protected function getTransactionMutexresource(Base\Entity $baseEntity)
     {
         return $baseEntity->getId()."_transaction";
+    }
+
+    public function odsDowntimeEvent(array $data){
+        $properties = [
+            "merchant" => [
+                'id' => $data["merchant_id"]
+            ],
+
+            "data" => [
+                "downtime_type" => $data["downtime_type"],
+                "breached_type" => $data["breached_type"],
+                "is_holiday" => $data["is_holiday"],
+                "effected_merchants" => $data["effected_merchants"],
+            ]
+        ];
+
+        if (isset($data["global_ods_settled"])) {
+            $properties["data"]["global_ods_settled"] = $data["global_ods_settled"];
+        }
+
+        if (isset($data["global_ods_limit"])) {
+            $properties["data"]["global_ods_limit"] = $data["global_ods_limit"];
+        }
+
+        if (isset($data["merchant_limit"])) {
+            $properties["data"]["merchant_limit"] = $data["merchant_limit"];
+        }
+
+        if (isset($data["ods_capping_scale_factor"])) {
+            $properties["data"]["ods_capping_scale_factor"] = $data["ods_capping_scale_factor"];
+        }
+
+        if (isset($data["merchant_ods_settled"])) {
+            $properties["data"]["merchant_ods_settled"] = $data["merchant_ods_settled"];
+        }
+
+        $metaDetails = [
+            'trackId' => $this->app['req.context']->getTrackId(),
+        ];
+
+        $event = [
+            "event_name" => "ondemand_settlements.downtime",
+            "event_type" => "ods-downtime-event",
+            "event_group" => "ondemand_settlement",
+            "version" => "v2",
+            "event_timestamp" => Carbon::now()->getTimestamp(),
+            "producer_timestamp" => Carbon::now()->getTimestamp(),
+            "source" => "api",
+            "mode" => 'live',
+            "properties" => $properties,
+            "metadata" => $metaDetails,
+            "read_key" => array("merchant.id"),
+            "write_key" => "merchant.id"
+        ];
+
+        try
+        {
+            app('kafkaProducerClient')->produce("events.ods-downtime-event.v2.live", stringify($event));
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception, null, TraceCode::ODS_DOWNTIME_EVENT_PUBLISH_FAILURE,
+                ['event'  => $event]);
+        }
     }
 
     /**

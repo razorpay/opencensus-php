@@ -40,6 +40,7 @@ use RZP\Jobs\SettlementOndemand\PartialScheduledSettlementJob;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
+use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 
 class SettlementOndemandTest extends TestCase
 {
@@ -4953,6 +4954,10 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandBlocked()
     {
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
         $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
 
         $this->fixtures->create('merchant', [
@@ -4988,6 +4993,10 @@ class SettlementOndemandTest extends TestCase
 
     public function testCreateOndemandBlockedError()
     {
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
