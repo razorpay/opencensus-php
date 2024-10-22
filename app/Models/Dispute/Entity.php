@@ -128,6 +128,8 @@ class Entity extends Base\PublicEntity
     const LIFECYCLE_NEW = 'new';
     const LIFECYCLE_OLD = 'old';
 
+    const INTERNATIONAL = 'international';
+
     private $backfill = false;
 
     protected $unRecoveredAmount = 0;
@@ -207,6 +209,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::RESOLVED_AT,
+        self::INTERNATIONAL,
     ];
 
     protected $public = [
@@ -227,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::LIFECYCLE,
         self::CREATED_AT,
         self::REASON,
+        self::INTERNATIONAL,
     ];
 
     protected $expanded = [
@@ -254,6 +258,7 @@ class Entity extends Base\PublicEntity
         self::DEDUCT_AT_ONSET       => 'bool',
         self::LIFECYCLE             => 'json',
         self::DEDUCTION_REVERSAL_AT => 'int',
+        self::INTERNATIONAL         => 'boolean',
     ];
 
     protected $guarded = [self::ID];

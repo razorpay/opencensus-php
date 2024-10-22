@@ -22,6 +22,10 @@ class Fetch
     const SKIP                 = 'skip';
     const DELETED              = 'deleted';
     const SOURCE_TYPE_EXCLUDE  = 'source_type_exclude';
+    const PAYMENTID = 'payment_id';
+    const PHASE = 'phase';
+    const STATUS ='status';
+    const INTERNATIONAL = 'international';
 
     //
     // Different constants used in AdminFetch response to dashboard
@@ -131,6 +135,10 @@ class Fetch
             self::SKIP          => 'filled|integer|min:0',
             self::EXPAND        => 'sometimes|array|max:5',
             self::EXPAND_EACH   => 'filled|string|in:',
+            self::PAYMENTID     => 'sometimes|string',
+            self::PHASE         => 'sometimes|string',
+            self::STATUS        => 'sometimes|string',
+            self::INTERNATIONAL => 'sometimes|integer'
         ],
 
         BasicAuth\Type::PRIVATE_AUTH  => [],

@@ -10,9 +10,11 @@ use ReflectionClass;
 use RZP\Constants\Entity;
 use RZP\Constants\Es;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Services\WDAService;
 use RZP\Trace\TraceCode;
 use Database\Connection;
@@ -28,6 +30,7 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Card\Repository;
 
 use Rzp\Wda_php\SortOrder;
 use Rzp\Wda_php\Symbol;
@@ -192,6 +195,7 @@ trait RepositoryFetch
             $baseQueryPresent = true;
         }
 
+
         $connection = null;
 
         $endTimeMs = round(microtime(true) * 1000);
@@ -213,12 +217,12 @@ trait RepositoryFetch
 
             $query = $this->newQueryWithConnection($connection);
         }
-
         $query = $query->with($expands);
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
         $this->setEsRepoIfExist();
+
 
         $endTimeMs = round(microtime(true) * 1000);
 
@@ -256,7 +260,6 @@ trait RepositoryFetch
 
             return $esSearchResult;
         }
-
         $startTimeMs = round(microtime(true) * 1000);
 
         // If above doesn't happen we build query for mysql fetch and return the
@@ -290,7 +293,6 @@ trait RepositoryFetch
             ]);
         }
 
-        //
         // For now, we want to expose this only for proxy auth.
         // We would want to expose this to private auth as well
         // in the future, but need a little bit though around
@@ -957,19 +959,50 @@ trait RepositoryFetch
 
     protected function buildQueryWithParams($query, $params)
     {
-        foreach ($params as $key => $value)
-        {
-            $func = 'addQueryParam' . studly_case($key);
 
-            if (method_exists($this, $func))
-            {
+        if (!empty($params['phase'])) {
+            $phases = explode(',', $params['phase']);
+            $query = $query->whereIn('phase', $phases);
+        }
+
+            if($this->entity == 'dispute') {
+                $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
+                $disputeEvidenceDisputeIdColumn = $this->repo->dispute_evidence_document->dbColumn('dispute_id');
+                $paymentIdColumn = $this->repo->payment->dbColumn(Payment::ID);
+                $paymentInternationalColumn = $this->repo->payment->dbColumn(Payment::INTERNATIONAL);
+                $query = $query->from('disputes')
+                    ->addSelect('disputes.*')
+                    ->addSelect($paymentInternationalColumn . ' as international')  // Add international field from payments
+                    ->leftJoin(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn);
+                if (isset($params['international'])) {
+                    $query = $query->where($paymentInternationalColumn, '=', $params['international']);
+                }
+            }
+            else if ($this->entity == 'dispute_evidence_document')  {
+                $query = $query->addSelect('dispute_evidence_document.*');
+            }
+
+        foreach ($params as $key => $value) {
+            if (in_array($key, ['phase'])) {
+                continue;
+            }
+            if (in_array($key, ['international'])) {
+                $func = 'addqueryparam'.studly_case('international');
                 $this->$func($query, $params);
             }
-            else
-            {
+            // Dynamically call specific addQueryParam methods if they exist
+            $func = 'addQueryParam' . studly_case($key);
+
+            if (method_exists($this, $func)) {
+
+                $this->$func($query, $params);
+            }
+            else {
+                // Default handling of query params
                 $this->addQueryParamDefault($query, $params, $key);
             }
         }
+
     }
 
     protected function buildWDAQueryWithParams($wdaQueryBuilder, $params)
@@ -1726,6 +1759,7 @@ trait RepositoryFetch
      * @param BuilderEx $query
      * @param string    $merchantId
      */
+
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
         // For admins, merchant ID may not be required.
@@ -1820,6 +1854,12 @@ trait RepositoryFetch
     {
         $createdAt = $this->dbColumn(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
+    }
+    protected function addQueryParamInternational($query, $params)
+    {
+        $international = $this->dbColumnDispute(\RZP\Models\Card\Entity::INTERNATIONAL);
+
+        $query->where($international, '=', $params[Payment::INTERNATIONAL]);
     }
 
     protected function addWDAQueryParamTo($wdaQueryBuilder, $params)

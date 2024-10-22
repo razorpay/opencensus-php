@@ -1217,6 +1217,13 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->getTableName() . '.' . $col;
     }
 
+    protected function dbColumnDispute($col)
+    {
+        if ($col === 'international') {
+            return 'payments.' . $col;
+        }
+        return $this->getTableName() . '.' . $col;
+    }
     protected function validateInstanceIsOfCurrentEntity(Models\Base\Entity $entity)
     {
         if ($entity->getEntityName() !== $this->entity)

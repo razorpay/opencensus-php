@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Base;
 
+use App;
+use Razorpay\Trace\Logger as trace;
+use RZP\Trace\TraceCode;
+
 class PublicCollection extends Collection
 {
     const COUNT = 'count';
@@ -11,6 +15,7 @@ class PublicCollection extends Collection
 
     protected $hasMore = null;
     protected $entity = 'collection';
+
 
     /**
      * Get the collection of items as a plain array.
