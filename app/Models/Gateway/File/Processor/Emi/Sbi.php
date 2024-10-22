@@ -652,7 +652,7 @@ class Sbi extends Base
 
         $count = $this->repo->gateway_file->fetchFileSentCountFromStart(Type::EMI, GatewayFileConstants::SBI, $start);
 
-        return static::FILE_NAME . (string)(1) . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
+        return static::FILE_NAME . (string)($count + 1) . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
     }
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
