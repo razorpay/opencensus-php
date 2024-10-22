@@ -18483,6 +18483,7 @@ class Route
         ],
 
         'route' => [
+            'pricing_fetch_plan',
             'payment_transfer',
             'transfer_transaction_create',
         ]
