@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Order\Transfers;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Order;
 use RZP\Models\EntityOrigin\Core;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\MocksSplitz;
@@ -72,6 +73,31 @@ class OrderTransferTest extends TestCase
         $order = $this->startTest();
 
         return $order;
+    }
+
+    public function testCreateOrderTransfersWhenOrderTransfersExist()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $transfer = $this->getLastEntity('transfer');
+
+        $this->ba->pgRouterAuth();
+
+        $testData = $this->testData['testCreateOrderTransfersWhenOrderTransfersExist'];
+
+        $testData['request']['content']['id'] = Order\Entity::stripSignWithoutValidation($order['id']);
+
+        $testData['response']['content']['transfers'][0]['id'] = $transfer['id'];
+
+        $this->mockAllSplitzTreatment( [
+            "response" => [
+                "variant" => [
+                    "name" => 'enabled',
+                ]
+            ]
+        ]);
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testCreateOrderTransferWithPartnerAuthForMarketplace()

@@ -3,7 +3,9 @@
 namespace RZP\Models\Transfer;
 
 use App;
+use Illuminate\Support\Str;
 use RZP\Error\ErrorCode;
+
 
 class Utility
 {
@@ -11,6 +13,11 @@ class Utility
 
     protected $errorMessageToRetryDelayInSecsMap = [
         'Something very wrong is happening! Balance is going negative',
+        'Unexpected response code received from Ledger service.',
+        'cURL error 28: Operation timed out',
+        'invalid username/password for authentication',
+        'SQLSTATE[HY000]: General error: 2002',
+
     ];
 
     protected $errorCodeToRetryDelayInSecsMap = [
@@ -32,8 +39,18 @@ class Utility
             return false;
         }
 
-        return (in_array($ex->getMessage(), $this->errorMessageToRetryDelayInSecsMap, true) or
-                in_array($ex->getCode(), $this->errorCodeToRetryDelayInSecsMap, true));
+        if (in_array($ex->getCode(), $this->errorCodeToRetryDelayInSecsMap, true))
+        {
+            return true;
+        }
+
+
+        if (Str::contains($ex->getMessage(), $this->errorMessageToRetryDelayInSecsMap, true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function getDelay($ex)

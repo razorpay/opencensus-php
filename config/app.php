@@ -1036,6 +1036,8 @@ return array(
 
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
+    'order_transfer_idempotency_exp_id' => env('ORDER_TRANSFER_IDEMPOTENCY_EXP_ID'),
+
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),
 
     'visa_cvv_less_experiment' => env('VISA_CVV_LESS_EXPERIMENT'),

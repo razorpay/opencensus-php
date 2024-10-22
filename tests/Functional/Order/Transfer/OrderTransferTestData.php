@@ -48,6 +48,48 @@ return [
         ],
     ],
 
+    'testCreateOrderTransfersWhenOrderTransfersExist' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/internal/create/order/relations',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => '50000',
+                'currency'    => 'INR',
+                'transfers'   => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '50000',
+                        'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 50000,
+                        'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateOrderTransferToSuspendedLinkedAccount' => [
         'request'  => [
             'method'  => 'POST',
