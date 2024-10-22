@@ -51,6 +51,8 @@ class Metric extends Base\Core
 
     const  LABEL_OFFER                          = 'payment_offer';
 
+    const LABEL_IS_COLLECTX_PAYMENT             = 'is_collectx_payment';
+
     const IS_VERIFY_NEW_FLOW                    = 'is_verify_new_flow';
     const IS_TIMEOUT_NEW_FLOW                   = 'is_timeout_new_flow';
     const LABEL_OPTIMIZER                       = 'optimizer';
@@ -140,7 +142,7 @@ class Metric extends Base\Core
     const IMPORT_PAYMENT_VALIDATION_FAILURE                = 'import_payment_validation_failure';
 
 
-    const CROSS_BORDER_UPDATE_AND_REDIRECT_COUNT = 'cross_border_update_and_redirect_count';
+    const CROSS_BORDER_UPDATE_AND_REDIRECT_COUNT           = 'cross_border_update_and_redirect_count';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -390,6 +392,8 @@ class Metric extends Base\Core
 
     protected function getDefaultDimentions(Entity $payment)
     {
+        $isCollectXPayment = $payment[Entity::REFERENCE14] === Constant::COLLECTX;
+
         $dimensions = [
             self::LABEL_PAYMENT_GATEWAY          => $payment->getGateway(),
             self::LABEL_PAYMENT_METHOD           => $payment->getMethod(),
@@ -399,7 +403,8 @@ class Metric extends Base\Core
             self::LABEL_PAYMENT_TRANSACTION_TYPE => $payment->getTransactionType(),
             self::LABEL_PAYMENT_IS_TPV           => $payment->merchant->isTPVRequired(),
             self::LABEL_ORG                      => $payment->merchant->getOrgId(),
-            self::LABEL_MERCHANT_COUNTRY_CODE       => $payment->merchant->getCountry(),
+            self::LABEL_MERCHANT_COUNTRY_CODE    => $payment->merchant->getCountry(),
+            self::LABEL_IS_COLLECTX_PAYMENT      => $isCollectXPayment
         ];
 
         $offer = $payment->getOffer();
@@ -599,6 +604,8 @@ class Metric extends Base\Core
 
     protected function getPaymentAuthDimensions(Entity $payment)
     {
+        $isCollectXPayment = $payment[Entity::REFERENCE14] === Constant::COLLECTX;
+
         $protocolVersion = null;
         $enrolled = null;
 
@@ -631,6 +638,7 @@ class Metric extends Base\Core
 
         $dimensions = [
             self::LABEL_PAYMENT_LATE_AUTHORIZED => $payment->isLateAuthorized(),
+            self::LABEL_IS_COLLECTX_PAYMENT     => $isCollectXPayment
         ];
         return $dimensions;
     }

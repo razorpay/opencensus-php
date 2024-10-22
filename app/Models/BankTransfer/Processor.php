@@ -440,6 +440,13 @@ class Processor extends VirtualAccount\Processor
 
             $this->repo->saveOrFail($this->virtualAccount);
 
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_AMOUNT_FIELDS_UPDATED, [
+                    'amount'             => $bankTransfer->getAmount(),
+                    'virtual_account_id' => $this->virtualAccount->getId(),
+                ]
+            );
+
         } catch (Exception $ex) {
             $this->app['diag']->trackBankTransferEvent(
                 EventCode::BANK_TRANSFER_UNEXPECTED_PAYMENT,

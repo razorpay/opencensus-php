@@ -267,6 +267,8 @@ class Metric
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_NOT_FOUND = 'settlement_ondemand_feature_config_max_limit_not_found';
 
+    const BANK_TRANSFER_CREATE_PROCESS_JOB_INIT_COUNT            = 'bank_transfer_create_process_job_init_count';
+    
     const OPGSP_UFH_FILE_PUSH                                   = 'opgsp_ufh_file_push';
     const OPGSP_BEAM_PUSH                                       = 'opgsp_beam_push';
     const OPGSP_FILE_SEND_STARTED                               = 'opgsp_file_send_started';

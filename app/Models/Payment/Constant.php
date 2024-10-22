@@ -54,4 +54,6 @@ class Constant
     ];
 
     const SETTLEMENT_ONHOLD = 'settlement_onhold';
+
+    const COLLECTX  = 'collectx';
 }

@@ -23,6 +23,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\Ledger\SettlementJournalEvents;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Transaction\Metric as TxnMetric;
 use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
@@ -2102,6 +2103,20 @@ class Core extends Base\Core
         (new Notifier($txn))->notify();
 
         $this->app->events->dispatch('api.transaction.created', $txn);
+
+        $txnCreatedTime = $txn->getCreatedAt();
+
+        $timeTaken = get_diff_in_millisecond($txnCreatedTime);
+
+        $dimensions = [
+            'channel' =>  $txn->getChannel(),
+            'type'   =>  $txn->getType()
+        ];
+
+        $this->trace->histogram(
+            TxnMetric::TRANSACTION_CREATED_EVENT_DISPATCH_TIME,
+            $timeTaken,
+            $dimensions);
     }
 
     /**

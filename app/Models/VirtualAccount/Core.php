@@ -765,6 +765,23 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->dispatch('api.virtual_account.credited', $eventPayload);
+
+        $paymentCreationTime = $payment->getCreatedAt();
+
+        $timeTaken = get_diff_in_millisecond($paymentCreationTime);
+
+        $isCollectxPayment = $payment[Payment::REFERENCE14] === 'collectx';
+
+        $dimensions = [
+            'gateway'           =>  $payment->getGateway(),
+            'method'            =>  $payment->getMethod(),
+            'isCollectxPayment' =>  $isCollectxPayment,
+        ];
+
+        $this->trace->histogram(
+            Metric::VIRTUAL_ACCOUNT_CREDITED_EVENT_DISPATCH_TIME,
+            $timeTaken,
+            $dimensions);
     }
 
     public function eventVirtualAccountCreated(Entity $virtualAccount)
@@ -774,6 +791,20 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->dispatch('api.virtual_account.created', $eventPayload);
+
+        $virtualAccountCreationTime = $virtualAccount->getCreatedAt();
+
+        $timeTaken = get_diff_in_millisecond($virtualAccountCreationTime);
+
+        $dimensions = [
+            Metric::LABEL_HAS_BANK_ACCOUNT => $virtualAccount->hasBankAccount(),
+            Metric::LABEL_HAS_VPA => $virtualAccount->hasVpa()
+        ];
+
+        $this->trace->histogram(
+            Metric::VIRTUAL_ACCOUNT_CREATED_EVENT_DISPATCH_TIME,
+            $timeTaken,
+            $dimensions);
     }
 
     /**

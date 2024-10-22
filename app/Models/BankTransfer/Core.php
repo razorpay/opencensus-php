@@ -249,12 +249,15 @@ class Core extends Base\Core
         $paymentSuccess = false;
         $bankTransfer = null;
         $errorMessage = null;
+        $isCollectXBankTransfer = false;
 
         try
         {
             if ($bankTransferRequest->isCollectXBankTransfer())
             {
                 $bankTransferInput[Entity::IS_COLLECTX_BANK_TRANSFER] = true;
+
+                $isCollectXBankTransfer = true;
 
                 // Removing the attribute from bank transfer request entity as we don't need it anymore
                 $bankTransferRequest->removeCollectXAttributes();
@@ -286,7 +289,7 @@ class Core extends Base\Core
         finally
         {
             // Todo: below function pushes $paymentSuccess = true, check if in case of ledger async retries (txn will be eventually done from jobs) its ok to do so
-            $this->postProcessBankTransferUpdation($bankTransfer, $bankTransferInput, $bankTransferRequest, $errorMessage, $paymentSuccess);
+            $this->postProcessBankTransferUpdation($bankTransfer, $bankTransferInput, $bankTransferRequest, $errorMessage, $paymentSuccess, $isCollectXBankTransfer);
         }
 
         return true;
@@ -336,7 +339,8 @@ class Core extends Base\Core
         $bankTransferInput,
         $bankTransferRequest,
         $errorMessage = null,
-        $paymentSuccess = false
+        $paymentSuccess = false,
+        $isCollectXBankTransfer = false
     )
     {
         $provider = $bankTransferRequest->getGateway();
@@ -359,7 +363,7 @@ class Core extends Base\Core
             ->updateBankTransferRequest($bankTransferInput[Entity::REQ_UTR], $paymentSuccess, $errorMessage, $bankTransferRequest);
 
         $this->virtualAccountMetrics
-            ->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider, $errorMessage);
+            ->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess, $provider, $errorMessage, isCollectXBankTransfer: $isCollectXBankTransfer);
     }
 
     public function getAccountForRefund(Entity $bankTransfer)

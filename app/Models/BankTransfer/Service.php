@@ -56,6 +56,7 @@ use RZP\Models\Merchant\InternationalIntegration;
 use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+use RZP\Models\BankTransfer\Metric as BankTransferMetrics;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\VirtualAccount\Entity as VirtualAccountEntity;
@@ -190,7 +191,7 @@ class Service extends Base\Service
 
         if ($provider !== null && $this->isCollectXCallback($input, $provider) === true)
         {
-            $this->trace->info(TraceCode::COLLECTX_BANK_TRANSFER_REQUEST, [
+            $this->trace->info(TraceCode::COLLECTX_PAYMENT_TRANSFER_REQUEST, [
                 "input"     => $input,
                 "provider"  => $provider
             ]);
@@ -346,7 +347,7 @@ class Service extends Base\Service
             ->bank_account
             ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $ifsc, true);
 
-        if ($bankAccount === null) {
+        if ($bankAccount === null or $bankAccount->source === null) {
 
             $this->trace->info(
                 TraceCode::COLLECTX_BANK_ACCOUNT_NOT_FOUND, [
@@ -408,6 +409,12 @@ class Service extends Base\Service
         ]);
 
         $transferMethod = strtoupper($formattedInput[Entity::MODE]);
+
+        $this->trace->count(BankTransferMetrics::COLLECTX_BANK_CALLBACK_COUNT, [
+            'provider'          => $provider,
+            'transfer_method'   => $transferMethod === self::TRANSFER_TYPE_UPI ? Constants\Entity::UPI_TRANSFER : Constants\Entity::BANK_TRANSFER,
+            'request_type'      => $formattedInput[Entity::REQUEST_TYPE],
+        ]);
 
         switch ($transferMethod){
 
@@ -1163,7 +1170,11 @@ class Service extends Base\Service
 
         }
 
-        (new Metric())->pushSqsPushMetrics(Constants\Entity::BANK_TRANSFER, $bankTransferRequest->getGateway(), $isPushedToSqs);
+        (new Metric())->pushSqsPushMetrics(
+            Constants\Entity::BANK_TRANSFER,
+            $bankTransferRequest->getGateway(),
+            $isPushedToSqs,
+            $isCollectXBankTransfer);
 
         return [
             'valid' => true,
