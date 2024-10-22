@@ -2970,6 +2970,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const API_PRICING_LEGACY_ERROR                              = 'API_PRICING_LEGACY_ERROR';
     const CC_ROUTING_TRANSFORMED_REQUEST                        = 'CC_ROUTING_TRANSFORMED_REQUEST';
     const CC_ROUTING_TRANSFORMATION_EXCEPTION                   = 'CC_ROUTING_TRANSFORMATION_EXCEPTION';
+    const CC_COMPARE_EXCEPTION                                  = 'CC_COMPARE_EXCEPTION';
 
     const CC_ROUTER_ROUTE_ERROR                                 = 'CC_ROUTER_ROUTE_ERROR';
     const CC_ROUTER_EXCEPTION                                   = 'CC_ROUTER_EXCEPTION';
@@ -3980,6 +3981,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHARGE_COLLECTIONS_RESPONSE                           = 'CHARGE_COLLECTIONS_RESPONSE';
     const CHARGE_COLLECTIONS_REQUEST_FAILURE                    = 'CHARGE_COLLECTIONS_REQUEST_FAILURE';
     const CHARGE_COLLECTIONS_PAYOUT_UPDATER_ERROR               = 'CHARGE_COLLECTIONS_PAYOUT_UPDATER_ERROR';
+    const CC_ROUTER_RESPONSE_MISMATCH                           = 'CC_ROUTER_RESPONSE_MISMATCH';
 
     // Offers On Subscription
     const OFFER_ON_SUBSCRIPTION                                 = 'OFFER_ON_SUBSCRIPTION';
