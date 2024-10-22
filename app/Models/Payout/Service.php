@@ -6736,4 +6736,184 @@ class Service extends Base\Service
 
         return array($psInput, $apiInput);
     }
+
+    /**
+     * @throws Throwable
+     * @throws BadRequestException
+     */
+    public function payoutManualActions($input): array
+    {
+        (new Validator)->validatePayoutsManualActionRequest($input);
+
+        $action = $input['action'];
+        $bulk_input = $input['bulk_input'];
+        $reason = $input['reason'];
+
+        // Log the incoming request
+        $this->trace->info(TraceCode::PAYOUT_MANUAL_ACTION_REQUEST, [
+            'action' => $action,
+            'bulk_input' => $bulk_input,
+            'reason' => $reason,
+        ]);
+
+        $successCount = 0;
+        $failureCount = 0;
+        $exceptions = [];
+
+        try {
+
+            // Define the action handling logic
+            $processFunction = function($callback, $dataArray) use (&$successCount, &$failureCount, &$exceptions) {
+
+                foreach ($dataArray as $data) {
+
+                    try {
+                        $callback($data);
+
+                        $successCount++;
+
+                    } catch (\Throwable $ex) {
+
+                        $failureCount++;
+
+                        $exceptions[] = [
+                            'input' => $data,
+                            'exception' => $ex->getMessage()
+                        ];
+                    }
+                }
+            };
+
+            switch ($action) {
+
+                case 'dual_write':
+
+                    $payoutIds = $bulk_input['payout_ids'];
+
+                    $processFunction(function($payoutId) {
+                        $this->core->processDualWrite([
+                            'payout_id' => $payoutId,
+                            'timestamp' => Carbon::now()->getTimestamp()
+                        ]);
+
+                    }, $payoutIds);
+
+                    break;
+
+                case 'processed_to_processing':
+
+                    $processFunction(function($payoutData) {
+                        $this->core->manualProcessedToProcessing($payoutData);
+                    }, $bulk_input);
+
+                    break;
+
+                case 'approve_workflow_payouts':
+
+                    $payoutIds = $bulk_input['payout_ids'];
+
+                    $processFunction(function($payoutIds) {
+                        $this->approveRejectWorkflowPayouts($payoutIds, 'approve');
+                    }, $payoutIds);
+
+                    break;
+
+                case 'reject_workflow_payouts':
+
+                    $payoutIds = $bulk_input['payout_ids'];
+
+                    $processFunction(function($payoutIds) {
+                        $this->approveRejectWorkflowPayouts($payoutIds,'reject');
+                    },$payoutIds);
+
+                    break;
+
+                default:
+                    return ['status' => 'error', 'message' => 'Invalid action provided'];
+
+            }
+
+            // Determine the status based on success and failure counts
+            $status = 'partially';
+            if ($successCount === 0) {
+
+                $status = 'failed';
+
+            } elseif ($failureCount === 0) {
+
+                $status = 'success';
+
+            }
+
+            $response = [
+                'status' => $status,
+                'success_count' => $successCount,
+                'failure_count' => $failureCount,
+                'exceptions' => $exceptions
+            ];
+
+            $this->trace->info(TraceCode::PAYOUT_MANUAL_ACTION_SUCCESS, [
+                'response' => $response,
+            ]);
+
+            return $response;
+
+        } catch (\Throwable $ex) {
+
+            $this->trace->error(TraceCode::PAYOUT_MANUAL_ACTION_FAILURE, [
+                'exception' => $ex->getMessage(),
+                'action' => $action,
+                'input' => $bulk_input
+            ]);
+            throw $ex;
+        }
+    }
+
+    public function approveRejectWorkflowPayouts($payoutIds, $action)
+    {
+        foreach ($payoutIds as $payoutId) {
+
+            $attributes = [];
+
+            $payoutDetails = $this->repo->payouts_details->find($payoutId);
+
+            $queueIfBalanceLow = $payoutDetails->getQueueIfLowBalanceFlag();
+
+            if (!empty($queueIfBalanceLow)) {
+
+                $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
+            }
+
+            if ($action === 'approve') {
+
+                $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
+
+            } elseif ($action === 'reject') {
+
+                $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
+
+            } else {
+
+                $this->trace->warning(
+                    TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
+                    [
+                        'payout_id' => $payoutId,
+                        'action' => $action,
+                        'message' => 'Invalid action provided'
+                    ]
+                );
+
+                return;
+            }
+
+            $this->trace->info(
+                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+                [
+                    'payoutId' => $payoutId,
+                    'action' => $action
+                ]
+            );
+
+        }
+    }
 }

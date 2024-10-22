@@ -1225,6 +1225,8 @@ class Name
     // Permission to validate merchant brand dealer details
     const POS_VALIDATE_BRAND_DETAILS = 'pos_validate_brand_details';
 
+    const PAYOUT_MANUAL_ACTION = 'payout_manual_action';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

@@ -11,6 +11,7 @@ use Config;
 use Mockery;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\EsSync;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\FeeRecovery;
 use RZP\Services\Mock\DataLakePresto;
 use RZP\Services\Mock\Stork;
@@ -43935,6 +43936,162 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotEquals(0, $payout->getAttribute('tax'));
     }
 
+    public function testPayoutManualActionDualWriteSuccess()
+    {
+        $this->ba->adminAuth('live');
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $currentTestData = $this->testData[__FUNCTION__];
+        $requestContent = $currentTestData['request_content'];
+        $responseContent = $currentTestData['response_content'];
+        $testPayoutManualAction = $this->testData['testPayoutManualAction'];
+
+        $testPayoutManualAction['request']['content'] = $requestContent;
+        $testPayoutManualAction['response']['content'] = $responseContent;
+
+        $this->testData[__FUNCTION__] =  $testPayoutManualAction;
+        $payoutIds = $requestContent['bulk_input']['payout_ids'];
+
+        foreach ($payoutIds as $payoutId) {
+            $this->createDualWriteDetails($payoutId);
+        }
+        $this->startTest();
+    }
+
+    public function testPayoutManualActionDualWriteFailure() {
+        $this->ba->adminAuth('live');
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $currentTestData = $this->testData[__FUNCTION__];
+        $requestContent = $currentTestData['request_content'];
+        $responseContent = $currentTestData['response_content'];
+        $testPayoutManualAction = $this->testData['testPayoutManualAction'];
+
+        $testPayoutManualAction['request']['content'] = $requestContent;
+        $testPayoutManualAction['response']['content'] = $responseContent;
+
+        $this->testData[__FUNCTION__] =  $testPayoutManualAction;
+        $payoutIds = $requestContent['bulk_input']['payout_ids'];
+
+        $this->createDualWriteDetails($payoutIds[0]);
+
+        $this->startTest();
+
+    }
+
+    public function testPayoutManualActionApproveWorkflowPayoutsFailure() {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->ba->adminAuth('live');
+        $this->addPermissionToBaAdmin('gateway_pvt');
+
+        $currentTestData = $this->testData[__FUNCTION__];
+        $requestContent = $currentTestData['request_content'];
+        $requestContent['bulk_input']['payout_ids'] = [$payout['id']];
+
+        $responseContent = $currentTestData['response_content'];
+        $testPayoutManualAction = $this->testData['testPayoutManualAction'];
+
+        $testPayoutManualAction['request']['content'] = $requestContent;
+        $testPayoutManualAction['response']['content'] = $responseContent;
+
+        $this->testData[__FUNCTION__] =  $testPayoutManualAction;
+
+//        $this->startTest();
+    }
+
+
+    public function testManualActionDashboardProcessedToProcessingSuccess()
+    {
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'processed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        /** @var PayoutsStatusDetailsEntity $payoutStatusDetails */
+        $payoutStatusDetails = $this->getDbEntities(Constants\Table::PAYOUTS_STATUS_DETAILS, [
+            PayoutsStatusDetailsEntity::PAYOUT_ID => $payout->getId()
+        ])[0];
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => 'processed']);
+
+        $this->fixtures->edit('payouts_status_details', $payoutStatusDetails->getId(), ['status' => 'processed']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['bulk_input'][0]['payout_id'] = $payout['id'];
+
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $this->startTest($testData);
+
+        $updatedPayoutStatus = $this->getDbEntityById('payout', $payout->getId())->toArray()['status'];
+
+        $this->assertEquals($updatedPayoutStatus, 'initiated');
+
+        $updatedFtaStatus = $this->getDbEntityById('fund_transfer_attempt', $fta->getId())->toArray()['status'];
+
+        $this->assertEquals($updatedFtaStatus, 'initiated');
+
+        try {
+            $this->getDbEntityById('payouts_status_details', $payoutStatusDetails->getId());
+        }
+        catch (\Throwable $e)
+        {
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+        }
+    }
+
+    public function testManualActionDashboardProcessedToProcessingInvalidState()
+    {
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        //Payout Moves to Initited after Recon, Already Initiated cant move to initiated.
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'initiated',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        /** @var PayoutsStatusDetailsEntity $payoutStatusDetails */
+        $payoutStatusDetails = $this->getDbEntities(Constants\Table::PAYOUTS_STATUS_DETAILS, [
+            PayoutsStatusDetailsEntity::PAYOUT_ID => $payout->getId()
+        ])[0];
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => 'created']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['bulk_input'][0]['payout_id'] = $payout['id'];
+
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $this->startTest($testData);
+    }
+
     /*
  * -------------------HELPER FUNCTIONS-------------------
  */
@@ -43962,5 +44119,215 @@ class PayoutTest extends OAuthTestCase
             'account_ifsc'          => 'RATN0000156',
         ]);
     }
+
+    private function createDualWriteDetails($id) {
+        $randomPayoutId = $id;
+        $randomMerchantId = "100000000";
+        $randomBalanceId = $this->generateRandomString();
+        $randomTransactionId = $this->generateRandomString();
+
+        // Payout data
+        $payoutData = [
+            'id'                   => $randomPayoutId,
+            'merchant_id'          => $randomMerchantId,
+            'fund_account_id'      => $this->generateRandomString(),
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => $randomBalanceId,
+            'user_id'              => $this->generateRandomString(),
+            'batch_id'             => null,
+            'idempotency_key'      => $this->generateRandomString(),
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "processed",
+            'fts_transfer_id'      => $this->generateRandomInt(5),
+            'transaction_id'       => $randomTransactionId,
+            'channel'              => "yesbank",
+            'utr'                  => $this->generateRandomString(12),
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => $this->generateRandomString(),
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => time(),
+            'created_at'           => time(),
+            'updated_at'           => time(),
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        // Payout logs
+        $payoutLogs = [
+            [
+                'id'           => $this->generateRandomString(),
+                'payout_id'    => $randomPayoutId,
+                'event'        => 'abc',
+                'from'         => 'pending',
+                'to'           => 'create_request_submitted',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => time(),
+                'updated_at'   => time()
+            ],
+            [
+                'id'           => $this->generateRandomString(),
+                'payout_id'    => $randomPayoutId,
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'created',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => time(),
+                'updated_at'   => time()
+            ],
+            // Add more logs as needed
+        ];
+
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogs);
+
+        // Reversal data
+        $reversalData = [
+            'id'             => $this->generateRandomString(),
+            'payout_id'      => $randomPayoutId,
+            'merchant_id'    => $randomMerchantId,
+            'balance_id'     => $randomBalanceId,
+            'amount'         => 2000000,
+            'currency'       => "INR",
+            'notes'          => "{}",
+            'fees'           => 10,
+            'tax'            => 33,
+            'channel'        => 'mychannel',
+            'transaction_id' => $this->generateRandomString(),
+            'utr'            => $this->generateRandomString(),
+            'created_at'     => time(),
+            'updated_at'     => time(),
+        ];
+
+        \DB::connection('test')->table('ps_reversals')->insert($reversalData);
+
+        // Payout status details
+        $payoutStatusDetailsData = [
+            [
+                'id'           => $this->generateRandomString(),
+                'payout_id'    => $randomPayoutId,
+                'status'       => 'initiated',
+                'reason'       => 'timepass',
+                'description'  => 'bye',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => time(),
+                'updated_at'   => time()
+            ],
+            [
+                'id'           => $this->generateRandomString(),
+                'payout_id'    => $randomPayoutId,
+                'status'       => 'reversed',
+                'reason'       => 'timepass failed',
+                'description'  => 'bye',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => time(),
+                'updated_at'   => time()
+            ]
+        ];
+
+        \DB::connection('test')->table('ps_payout_status_details')->insert($payoutStatusDetailsData);
+
+        // Payout details
+        $expectedAdditionalInfo = [
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
+        ];
+
+        $payoutDetailsData = [
+            'id'                        => $this->generateRandomString(),
+            'payout_id'                 => $randomPayoutId,
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => $this->generateRandomString(),
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => time(),
+            'updated_at'                => time()
+        ];
+
+        \DB::connection('test')->table('ps_payout_details')->insert($payoutDetailsData);
+
+        // Payout sources
+        $payoutSourcesData = [
+            [
+                'id'          => $this->generateRandomString(),
+                'payout_id'   => $randomPayoutId,
+                'source_id'   => $this->generateRandomString(),
+                'source_type' => $this->generateRandomString(),
+                'priority'    => 1,
+                'created_at'  => time(),
+                'updated_at'  => time()
+            ],
+            [
+                'id'          => $this->generateRandomString(),
+                'payout_id'   => $randomPayoutId,
+                'source_id'   => $this->generateRandomString(),
+                'source_type' => $this->generateRandomString(),
+                'priority'    => 2,
+                'created_at'  => time(),
+                'updated_at'  => time()
+            ]
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        // Workflow entity map
+        $workflowEntityMapData = [
+            'id'          => $this->generateRandomString(),
+            'workflow_id' => $this->generateRandomString(),
+            'entity_id'   => $randomPayoutId,
+            'config_id'   => $this->generateRandomString(),
+            'entity_type' => 'payout',
+            'merchant_id' => $randomMerchantId,
+            'org_id'      => $this->generateRandomString(),
+            'created_at'  => time(),
+            'updated_at'  => time()
+        ];
+
+        \DB::connection('test')->table('ps_workflow_entity_map')->insert($workflowEntityMapData);
+
+        // Idempotency keys
+        $idempotencyKeyData = [
+            'id'              => $this->generateRandomString(),
+            'source_id'       => $randomPayoutId,
+            'source_type'     => 'payout',
+            'idempotency_key' => $this->generateRandomString(),
+            'merchant_id'     => $randomMerchantId,
+            'created_at'      => time(),
+            'updated_at'      => time()
+        ];
+
+        \DB::connection('test')->table('ps_idempotency_keys')->insert($idempotencyKeyData);
+    }
+
+    private function generateRandomInt($min = 1, $max = 100): int
+    {
+        return rand($min, $max);
+    }
+
+    private function generateRandomString($length = 14): string
+    {
+        return substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, $length);
+    }
+
 }
 

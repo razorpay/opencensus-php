@@ -1357,7 +1357,7 @@ class Core extends Base\Core
                 {
                     if (empty($ftaData[Entity::RETURN_UTR]) === false)
                     {
-                        $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
+                        $returnUtr = $ftaData[Entity::RETURN_UTR];
 
                         $payout->setReturnUtr($returnUtr);
                     }
@@ -11943,5 +11943,99 @@ class Core extends Base\Core
         ]);
 
         return $modeWiseChannelPriorities;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws InvalidArgumentException
+     * @throws BadRequestException
+     */
+    public function manualProcessedToProcessing($input) : array
+    {
+        $payoutId = $input['payout_id'];
+        $isPsEntity = $input['is_payout_service'];
+        (new Validator)->validatePayoutId($payoutId);
+
+        if($isPsEntity){
+            // TODO call PS service call.
+            return [];
+        }
+
+        $payout = $this->repo->payout->findByPublicId('pout_'.$payoutId);
+        $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payout->getId(), Entity::PAYOUT);
+
+        if(empty($fta)){
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Fta entity not found for payoutId"
+            );
+        }
+
+        $ftaId = $fta->getId();
+
+        $payoutsStatusDetails = $this->repo->payouts_status_details->fetchPayoutStatusDetailsLatest($payoutId);
+
+        if(empty($payoutsStatusDetails)){
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Payout Status Details entity not found for payoutId for status: processed"
+            );
+        }
+
+        if ($payout->getStatus() != Status::PROCESSED || $fta->getStatus() != Status::PROCESSED || $payoutsStatusDetails->getStatus() != Status::PROCESSED) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Payout, fta, payoutStatusDetails entities are not in processed state"
+            );
+        }
+
+        // Initialize the state machine for the payout using ManualStateTransitionMachine
+        $payoutStateMachine = new ManualStateTransitionMachine($payout->getStatus());
+
+        $ftaStateMachine = new ManualStateTransitionMachine($fta->getStatus());
+
+        $payoutStatusDetailsMachine = new ManualStateTransitionMachine($payoutsStatusDetails->getStatus());
+
+        \DB::beginTransaction();
+
+        try {
+            // Execute state transition
+            $payoutStateMachine->transition($payout,Status::INITIATED, function () use ($fta, $ftaStateMachine, $payoutsStatusDetails, $payoutStateMachine) {
+                // Transition the FTA by callback only if payout transition was successful
+                $ftaStateMachine->transition($fta, Status::INITIATED, function () use ($payoutsStatusDetails, $payoutStateMachine) {
+                    // Transition the payout status details only if payout transition was successful
+                    $payoutStateMachine->transition($payoutsStatusDetails, 'deleted');
+                });
+            });
+
+            // Commit the transaction
+            \DB::commit();
+
+        } catch (\Exception $e) {
+
+            \DB::rollback();
+
+            throw $e;
+        }
+
+        $response = [
+            'payoutId' => $payoutId,
+            'ftaId' => $ftaId,
+            'payoutStatusDetailsId' => $payoutsStatusDetails->getId()
+        ];
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_PROCESSED_TO_PROCESSING_SUCCESS, [
+                "response" => $response,
+                "description" => "Payout, fta, payoutStatusDetails entities updated "
+            ]
+        );
+        return $response;
     }
 }

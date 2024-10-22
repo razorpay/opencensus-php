@@ -166,7 +166,22 @@ class Validator extends Base\Validator
 
     const UPDATE_BALANCE_MANAGEMENT_CONFIG = 'update_balance_management_config';
 
+    const PAYOUTS_MANUAL_ACTION = 'payouts_manual_action';
+
+    const PAYOUTS_MANUAL_ACTIONS = [
+        'dual_write',
+        'processed_to_processing',
+        'approve_workflow_payouts',
+        'reject_workflow_payouts',
+    ];
+
+    const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
+
+    const PROCESSED_TO_PROCESSING_PAYOUT_ACTION = 'processed_to_processing_payout_action';
+
     const PAYOUT_ATTACHMENT = 'payout_attachment';
+
+    const MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION = 50;
 
     const ALLOWED_PAYOUT_ATTACHMENT_FILE_EXTENSIONS = [
         'jpg',
@@ -692,6 +707,22 @@ class Validator extends Base\Validator
 
     protected static $updateBalanceManagementConfigValidators = [
         'source_and_destination',
+    ];
+
+    protected static $payoutsManualActionRules = [
+        'action' => 'required|filled|string',
+        'bulk_input'  => 'required|array|max:' . self::MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION,
+        'reason'=> 'required|filled|string'
+    ];
+
+    protected static $payoutsManualActionDefaultInputRules = [
+        Entity::PAYOUT_IDS        => 'required|array|max:' . self::MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION,
+        Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
+    ];
+
+    protected static $processedToProcessingPayoutActionRules = [
+        'payout_id' => 'required|alpha_num|size:14',
+        'is_payout_service'=> 'required|filled|boolean',
     ];
 
     protected function validateSourceAndDestination($input)
@@ -2253,5 +2284,34 @@ class Validator extends Base\Validator
                 }
             }
         }
+    }
+
+    public function validatePayoutsManualActionRequest($payload)
+    {
+        $this->setStrictFalse()->validateInput(self::PAYOUTS_MANUAL_ACTION,$payload);
+
+        $action = $payload['action'];
+        $bulkInput  = $payload['bulk_input'];
+
+        if (!in_array(strtolower($action), self::PAYOUTS_MANUAL_ACTIONS)) {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid action received.",
+                null,
+                [
+                    'action' => $action
+                ]
+            );
+        }
+
+        switch ($action) {
+            case 'processed_to_processing':
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::PROCESSED_TO_PROCESSING_PAYOUT_ACTION,$input);
+                }
+                break;
+            default:
+                $this->setStrictFalse()->validateInput(self::PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT,$bulkInput);
+        }
+
     }
 }

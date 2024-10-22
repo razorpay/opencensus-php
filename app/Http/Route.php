@@ -2196,6 +2196,9 @@ class Route
         'payout_get_attachment_signed_url'         => ['get',      'payouts/{payout_id}/attachment/{attachment_id}',                    'PayoutController@getAttachmentSignedUrl'                                    ],
         'payout_reject_admin_bulk'                 => ['post',     'admin/payouts/cancel',                           'PayoutController@bulkRejectFundAccountPayouts'                     ],
 
+        //Payouts Admin Action Routes
+        'payouts_dashboard_manual_actions'         => ['post',     'payouts/manual_action',                           'PayoutController@payoutManualActions'],
+
          //Merchant Smart Routing Rules
         'payouts_merchant_smart_routing_rules_fetch'   => ['get',      'payout/smart_routing_rules',          'PayoutController@fetchSmartRoutingRulesForMerchant'                 ],
         'payouts_merchant_smart_routing_rules_modify'  => ['post',     'payout/smart_routing_rules',          'PayoutController@modifySmartRoutingRulesForMerchant'                ],
@@ -9695,6 +9698,8 @@ class Route
         'fetch_brand_dealer_details',
         'update_brand_dealer_details',
         'close_qr_codes_bulk',
+
+        'payouts_dashboard_manual_actions',
     ];
 
     protected static $splitPaymentRoutes = [
@@ -10859,6 +10864,8 @@ class Route
         'fts_dashboard_merchant_configurations_patch'       => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_key_value_store_patch'               => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_key_value_store_post'               => Permission::FTS_ROUTING_RULES_UPDATE,
+
+        'payouts_dashboard_manual_actions'                  => Permission::PAYOUT_MANUAL_ACTION,
 
         //relay permissions
         'relay_get_apps'                                    => Permission::RELAY_READ_PERMISSION,
@@ -16772,7 +16779,8 @@ class Route
             'pos_fetch_latest_order',
             'get_non_3ds_details',
             'user_update_name',
-            'close_qr_codes_bulk'
+            'close_qr_codes_bulk',
+            'payouts_dashboard_manual_actions',
         ],
 
         //

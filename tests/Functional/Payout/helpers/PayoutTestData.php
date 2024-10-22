@@ -25170,4 +25170,144 @@ return [
             ],
         ],
     ],
+
+    'testPayoutManualAction' => [
+        'request' => [
+            'method' => 'POST',
+            'url'=> '/payouts/manual_action',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success',
+                'failure_count' => 0,
+                'success_count' => 2,
+                'exceptions' => []
+            ]
+        ]
+    ],
+
+    'testPayoutManualActionDualWriteSuccess' =>  [
+        'request_content' => [
+            'action' => 'dual_write',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' => ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'success',
+            'failure_count' => 0,
+            'success_count' => 2
+        ]
+    ],
+
+    'testPayoutManualActionDualWriteFailure' =>  [
+        'request_content' => [
+            'action' => 'dual_write',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' =>  ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'partially',
+            'failure_count' => 1,
+            'success_count' => 1,
+            'exceptions' => [
+                [
+                    "input" => 'randomid111112',
+                    'exception' => 'PAYOUT is not a valid class'
+                ]
+            ]
+        ]
+    ],
+
+    'testPayoutManualActionApproveWorkflowPayoutsSuccess' => [
+        'request_content' => [
+            'action' => 'approve_workflow_payouts',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' =>  ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'success',
+            'failure_count' => 0,
+            'success_count' => 2
+        ]
+    ],
+
+    'testPayoutManualActionRejectWorkflowPayoutsSuccess' => [
+        'request_content' => [
+            'action' => 'reject_workflow_payouts',
+            'reason' => 'some reason',
+            'bulk_input' => [
+                'payout_ids' =>  ['randomid111111','randomid111112']
+            ]
+        ],
+        'response_content' =>  [
+            'status' => 'success',
+            'failure_count' => 0,
+            'success_count' => 2
+        ]
+    ],
+
+    'testManualActionDashboardProcessedToProcessingSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/manual_action',
+            'content' => [
+                'reason'  => 'Processed no Debits',
+                'action'     => 'processed_to_processing',
+                'bulk_input' => [
+                    [
+                        'payout_id' => 'dummy_value',
+                        'is_payout_service'=> false
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'status' => 'success',
+                    'success_count' => 1,
+                    'failure_count' => 0,
+                    'exceptions' => []
+            ]
+        ],
+    ],
+    'testManualActionDashboardProcessedToProcessingInvalidState' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/manual_action',
+            'content' => [
+                'reason'  => 'Processed no Debits',
+                'action'     => 'processed_to_processing',
+                'bulk_input' => [
+                    [
+                        'payout_id' => 'dummy_value',
+                        'is_payout_service'=> false
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            'status' => 'failed',
+            'success_count' => 0,
+            'failure_count' => 1,
+            'exceptions' =>
+                [
+                        [
+                            'input' =>
+                                [
+                                    'is_payout_service' => false,
+                                ],
+                            'exception' => 'Payout Status Details entity not found for payoutId for status: processed',
+                        ],
+                ],
+            ],
+        ],
+    ],
 ];

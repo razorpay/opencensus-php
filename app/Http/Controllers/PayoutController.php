@@ -1272,4 +1272,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function payoutManualActions()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutManualActions($input);
+
+        return ApiResponse::json($data);
+    }
 }
