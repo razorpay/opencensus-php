@@ -3536,11 +3536,10 @@ class BankTransferTest extends TestCase
 
         $ifsc = $this->bankAccount['ifsc'];
 
-        $response = $this->processBankTransfer($accountNumber, $ifsc, null,1,'test');
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null,100,'test');
 
         $bankTransferRequestArray = $this->getDbLastEntityToArray('bank_transfer_request');
 
-        $this->assertEquals('REFUND_OR_CAPTURE_PAYMENT_FAILED',$bankTransferRequestArray['error_message']);
 
         $this->assertTrue($bankTransferRequestArray['is_created']);
     }

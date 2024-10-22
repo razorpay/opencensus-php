@@ -11998,15 +11998,17 @@ trait Authorize
             {
                 $payment->setGatewayCaptured(true);
 
-                [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
-
-                $this->repo->saveOrFail($txn);
-
                 $merchant = $this->repo->merchant->findOrFailPublic($payment->getMerchantId());
 
                 if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                 {
-                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment, $txn->getId());
+                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment);
+
+                } else {
+
+                    [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                    $this->repo->saveOrFail($txn);
                 }
 
                 // Also sets the transaction association with the payment.
