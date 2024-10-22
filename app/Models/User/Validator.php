@@ -55,7 +55,7 @@ class Validator extends Base\Validator
         Entity::EMAIL                           => 'required_without:contact_mobile|email',
         Entity::PASSWORD                        => 'required_with:email|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION           => 'required_with:email|between:8,50',
-        Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
+        Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::CONTACT_MOBILE_VERIFIED         => 'sometimes|in:0,1', //this will get reflected in db only for internal auth
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
