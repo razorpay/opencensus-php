@@ -83,14 +83,12 @@ describe('MagicX Settings Form Component', () => {
     };
     const { container } = render(<App state={customState} />);
 
-    const appEnabledToggle = container.querySelector(`button[name="appEnabled"]`);
-    const emailFieldDropdown = container.querySelector(`select[name="emailField"]`);
-    const isLoginMandatoryToggle = container.querySelector(`button[name="isLoginMandatory"]`);
+    const emailFieldDropdown = screen.getByRole('combobox');
     const themeColor = container.querySelector(`input[name="themeColor"]`);
 
-    expect(appEnabledToggle).toHaveValue('true');
-    expect(emailFieldDropdown).toHaveValue('optional');
-    expect(isLoginMandatoryToggle).toHaveValue('true');
+    expect(screen.getByRole('switch', { name: 'Disable Checkout360' })).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Make OTP optional' })).toBeChecked();
+    expect(emailFieldDropdown.textContent).toBe('Optional');
     expect(themeColor).toHaveValue('#ffffff');
   });
 });

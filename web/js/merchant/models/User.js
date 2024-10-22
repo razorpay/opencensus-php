@@ -445,8 +445,30 @@ export default class User {
     return this.getExpStatus('free_credit_recovery_banner');
   }
 
+  get isC360OnboardingStarted() {
+    return (
+      this.isOrgRZP &&
+      !this.isFeatureEnabled('one_click_checkout') &&
+      this.isFeatureEnabled('one_cc_merchant_dashboard') &&
+      !this.isFeatureEnabled('pg_v3_onboarding_complete')
+    );
+  }
+
+  get isC360OnboardingToBeResumed() {
+    return (
+      this.isOrgRZP &&
+      this.isFeatureEnabled('one_cc_merchant_dashboard') &&
+      this.isFeatureEnabled('pg_v3_onboarding_inprogress') &&
+      !this.isFeatureEnabled('pg_v3_onboarding_complete')
+    );
+  }
+
   get isC360OnboardingCompleted() {
-    return this.isFeatureEnabled('pg_v3_onboarding_complete') && this.isOrgRZP;
+    return (
+      this.isOrgRZP &&
+      this.isFeatureEnabled('one_cc_merchant_dashboard') &&
+      this.isFeatureEnabled('pg_v3_onboarding_complete')
+    );
   }
 
   get isMagicCheckoutEnabled() {

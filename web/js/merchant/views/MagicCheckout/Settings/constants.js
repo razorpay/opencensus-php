@@ -13,6 +13,7 @@ import PlatformSettingsV2 from 'merchant/views/MagicCheckout/Settings/containers
 import CODComponentV2 from 'merchant/views/MagicCheckout/Settings/containers/CODV2';
 import RTOReductionSetupV2 from 'merchant/views/MagicCheckout/Settings/containers/RTOReductionSetupV2';
 
+import MagicXControlCenter from 'merchant/views/MagicCheckout/Settings/containers/MagicXControlCenter';
 import MagicXCOD from 'merchant/views/MagicCheckout/Settings/containers/MagicXCOD';
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
 import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingWrapper';
@@ -66,6 +67,17 @@ export const ACCESS_ROLES = ['owner', 'admin'];
 
 export const TABS = {
   [PLATFORMS.SHOPIFY]: [
+    {
+      className: 'control-center-settings',
+      label: 'Control Center',
+      path: '/magic/settings/control-center',
+      Component: MagicXControlCenter,
+      condition: (_user, abExperiments) =>
+        ACCESS_ROLES.includes(_user.role) &&
+        (_user.isC360OnboardingCompleted || _user.isC360OnboardingToBeResumed) &&
+        abExperiments?.magicx_publicapp_cod?.variables?.result === 'on',
+      onRCODOnly: true,
+    },
     {
       className: 'magic-checkout-settings',
       path: '/magic/settings',
@@ -405,6 +417,17 @@ export const ROUTES = {
     },
   ],
   [PLATFORMS?.SHOPIFY]: [
+    {
+      className: 'control-center-settings',
+      label: 'Control Center',
+      path: '/magic/setup-settings/control-center',
+      Component: MagicXControlCenter,
+      condition: (_user, abExperiments) =>
+        ACCESS_ROLES.includes(_user.role) &&
+        (_user.isC360OnboardingCompleted || _user.isC360OnboardingToBeResumed) &&
+        abExperiments?.magicx_publicapp_cod?.variables?.result === 'on',
+      onRCODOnly: true,
+    },
     {
       className: 'platform-settings-container',
       label: 'Platform Setup',

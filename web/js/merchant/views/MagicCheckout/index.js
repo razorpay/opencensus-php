@@ -12,11 +12,14 @@ import { fetchMagicSettings } from 'merchant/reducers/magicCheckout/magicSetting
 import { FEATURES_DATA } from 'merchant/views/MagicCheckout/data';
 import MagicCheckoutLanding from 'merchant/views/MagicCheckout/components/Landing';
 import MagicCheckoutFeatures from 'merchant/views/MagicCheckout/components/Features';
+import MagicXControlCenter from 'merchant/views/MagicCheckout/Settings/containers/MagicXControlCenter';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 import { AsyncBtn } from 'common/new-ui/Button';
 import TabsContainer from 'merchant/views/MagicCheckout/components/TabsContainer';
 import JoinWaitlistButton from 'merchant/views/MagicCheckout/components/JoinWaitlistButton';
 import { isMagicCheckoutTabsEnabled } from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import 'merchant/views/MagicCheckout/css/magic_checkout.styl';
+import { MAGICX_PUBLICAPP_COD_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 const MagicCheckout = ({
   active,
@@ -27,6 +30,8 @@ const MagicCheckout = ({
   resetIntelligenceConfig,
   fetchMagicSettings,
 }) => {
+  const isMagicXPublicappCodEnabled = useMagicExperiment(MAGICX_PUBLICAPP_COD_EXPERIMENT);
+
   useEffect(() => {
     fetchStatus();
     fetchMagicSettings();
@@ -82,20 +87,24 @@ const MagicCheckout = ({
 
   return (
     <OnBoardingWrapper class="MagicCheckout">
-      <Slider active={active} afterSlide={getOnBoardingSliderDots()}>
-        {(sliderProps) => <MagicCheckoutLanding callout={calloutElement()} {...sliderProps} />}
+      {isMagicXPublicappCodEnabled && user.isC360OnboardingToBeResumed ? (
+        <MagicXControlCenter />
+      ) : (
+        <Slider active={active} afterSlide={getOnBoardingSliderDots()}>
+          {(sliderProps) => <MagicCheckoutLanding callout={calloutElement()} {...sliderProps} />}
 
-        {(sliderProps) => (
-          <MagicCheckoutFeatures
-            {...sliderProps}
-            title="What makes Magic Checkout great?"
-            nextBtn={getNextBtnProp(sliderProps)}
-            feature={RZPFeatures.MagicCheckout}
-            featureLinks={[]}
-            features={FEATURES_DATA}
-          />
-        )}
-      </Slider>
+          {(sliderProps) => (
+            <MagicCheckoutFeatures
+              {...sliderProps}
+              title="What makes Magic Checkout great?"
+              nextBtn={getNextBtnProp(sliderProps)}
+              feature={RZPFeatures.MagicCheckout}
+              featureLinks={[]}
+              features={FEATURES_DATA}
+            />
+          )}
+        </Slider>
+      )}
     </OnBoardingWrapper>
   );
 };

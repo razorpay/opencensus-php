@@ -4,6 +4,17 @@ import { render, screen, waitFor, userEvent } from 'test-utils';
 import NavLinkItem from 'merchant/components/SidebarV2/components/NavLinkItem';
 import * as analytics from 'common/utils/analytics';
 
+const variantOn = { variables: { result: 'on' } };
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {
+      magicx_publicapp_cod: variantOn,
+    },
+  }),
+  withSplitzService: jest.fn(),
+}));
+
 const paymentLinksInfo = {
   title: 'Payment Links',
   product_id: 'payment_links',
@@ -197,6 +208,7 @@ describe('NavLinkItem', () => {
         title: 'Magic Checkout',
         product_id: 'magic_checkout',
         user: {
+          isC360OnboardingToBeResumed: false,
           isC360OnboardingCompleted: false,
         },
       },

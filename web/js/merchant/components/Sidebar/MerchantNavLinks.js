@@ -40,6 +40,8 @@ function MerchantNavLinks(props) {
 
   const { abExperiments } = useSplitzService();
   const showMagicKonnectTab = abExperiments?.magic_konnect?.variables?.result === 'on';
+  const isMagicXPublicappCodEnabled =
+    abExperiments?.magicx_publicapp_cod?.variables?.result === 'on';
 
   useEffect(() => {
     //set recommend product to localstorage.
@@ -322,7 +324,11 @@ function MerchantNavLinks(props) {
       <MagicCheckoutNavLink>
         {(onClick) => (
           <MainNavLink
-            label="Magic Checkout"
+            label={
+              props.user.isC360OnboardingToBeResumed && isMagicXPublicappCodEnabled
+                ? 'Checkout360'
+                : 'Magic Checkout'
+            }
             icon="i i-magic-checkout"
             type="product"
             to={routes.magicCheckout}

@@ -65,6 +65,7 @@ const ShippingSettingsTab = ({
   const [isIntlShippingLoading, setIntlShippingLoading] = useState(false);
   const { shipping_profiles, isLoading } = shippingEngine as ShippingEngineStore;
   const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
+  const isMagicXPublicappCodEnabled = useMagicExperiment('magicx_publicapp_cod');
 
   useEffect(() => {
     fetchSummary();
@@ -195,22 +196,26 @@ const ShippingSettingsTab = ({
               />
             </ShippingToggle>
           ))}
-        <Text size="medium" marginTop="spacing.4" color="surface.text.gray.muted">
-          {!isRCOD ? SHIPPING_SETTINGS_INFO : RCOD_SHIPPING_SETTINGS_INFO}
-        </Text>
-        {!isRCOD ? (
-          <ShippingToggle>
-            <SettingsToggle
-              setting={{ label: 'Magic Shipping ', value: shippingSettings }}
-              onToggle={handleToggleClick}
-            />
-          </ShippingToggle>
-        ) : null}
-        <Box marginTop="spacing.2">
-          <Text size="small" color="surface.text.gray.muted">
-            {!isRCOD ? MAGIC_SHIPPING_DESCRIPTION : RCOD_SHIPPING_DESCRIPTION}
-          </Text>
-        </Box>
+        {!(isRCOD && isMagicXPublicappCodEnabled) && (
+          <>
+            <Text size="medium" marginTop="spacing.4" color="surface.text.gray.muted">
+              {!isRCOD ? SHIPPING_SETTINGS_INFO : RCOD_SHIPPING_SETTINGS_INFO}
+            </Text>
+            {!isRCOD ? (
+              <ShippingToggle>
+                <SettingsToggle
+                  setting={{ label: 'Magic Shipping ', value: shippingSettings }}
+                  onToggle={handleToggleClick}
+                />
+              </ShippingToggle>
+            ) : null}
+            <Box marginTop="spacing.2">
+              <Text size="small" color="surface.text.gray.muted">
+                {!isRCOD ? MAGIC_SHIPPING_DESCRIPTION : RCOD_SHIPPING_DESCRIPTION}
+              </Text>
+            </Box>
+          </>
+        )}
         {isRCOD ? (
           <Box padding="spacing.6" paddingLeft="spacing.0" paddingRight="spacing.0">
             <StyledRCODShippingNoteWrapper>{RCOD_SHIPPING_NOTE}</StyledRCODShippingNoteWrapper>

@@ -1,10 +1,20 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { Box, Divider, Button, Text } from '@razorpay/blade/components';
+import {
+  Box,
+  Divider,
+  Button,
+  Switch,
+  Text,
+  Dropdown,
+  DropdownOverlay,
+  SelectInput,
+  ActionList,
+  ActionListItem,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import Input from 'common/new-ui/Input';
-import SwitchField from 'common/ui/Forms/SwitchField';
 import { updateSopcMetafields } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import magicXReducer, { INITIAL_STATE } from 'merchant/reducers/magicCheckout/magicXStoreSettings';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -34,6 +44,15 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         },
       });
     }
+  };
+
+  const setFieldValue = (name: string, value: string) => {
+    dispatch({
+      type: 'UPDATE_FIELD',
+      payload: {
+        [name]: value,
+      },
+    });
   };
 
   const handleSwitchChange = (name: keyof typeof INITIAL_STATE) => {
@@ -90,11 +109,11 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         <Box width="100%" display="flex" paddingY="spacing.4">
           <Box width="50%">Enable Checkout360</Box>
           <Box>
-            <SwitchField
+            <Switch
               onChange={() => handleSwitchChange('status')}
-              checked={formState.status}
-              type="prime"
+              isChecked={formState.status}
               name="appEnabled"
+              accessibilityLabel={`${formState.status ? 'Disable' : 'Enable'} Checkout360`}
             />
           </Box>
         </Box>
@@ -137,25 +156,23 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         <Box width="100%" display="flex" alignItems="center">
           <Box width="50%">Email Field</Box>
           <Box width="50%">
-            <Input.Select
-              name="emailField"
-              value={formState.emailField}
-              options={[
-                {
-                  label: 'Hidden',
-                  name: 'hidden',
-                },
-                {
-                  label: 'Mandatory',
-                  name: 'mandatory',
-                },
-                {
-                  label: 'Optional',
-                  name: 'optional',
-                },
-              ]}
-              onChange={handleInputChange}
-            />
+            <Dropdown selectionType="single">
+              <SelectInput
+                label=""
+                name="emailField"
+                value={formState.emailField}
+                onChange={({ name, values }) => {
+                  setFieldValue(name as string, values[0]);
+                }}
+              />
+              <DropdownOverlay>
+                <ActionList>
+                  <ActionListItem title="Hidden" value="hidden" />
+                  <ActionListItem title="Mandatory" value="mandatory" />
+                  <ActionListItem title="Optional" value="optional" />
+                </ActionList>
+              </DropdownOverlay>
+            </Dropdown>
           </Box>
         </Box>
         <Box width="100%" display="flex" alignItems="center">
@@ -184,11 +201,13 @@ const Form = ({ settings, showNotification, updateSopcMetafields }) => {
         <Box width="100%" display="flex" paddingY="spacing.4">
           <Box width="50%">Mandatory OTP</Box>
           <Box>
-            <SwitchField
+            <Switch
               onChange={() => handleSwitchChange('isLoginMandatory')}
-              checked={formState.isLoginMandatory}
-              type="prime"
+              isChecked={formState.isLoginMandatory}
               name="isLoginMandatory"
+              accessibilityLabel={`Make OTP ${
+                formState.isLoginMandatory ? 'optional' : 'mandatory'
+              }`}
             />
           </Box>
         </Box>

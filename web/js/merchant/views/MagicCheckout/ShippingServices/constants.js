@@ -134,6 +134,18 @@ export const BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE = [
   },
 ];
 
+export const BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE_RCOD = [
+  {
+    startingText: 'Automatic delivery status updates',
+    subText: 'Share order data from your logistic partner account directly.',
+  },
+  {
+    startingText: 'RTO Protection on COD orders',
+    subText: 'Improved RTO Protection from high risk users.',
+    image: true,
+  },
+];
+
 export const DELHIVERY_STEPS = [
   {
     instructions: {

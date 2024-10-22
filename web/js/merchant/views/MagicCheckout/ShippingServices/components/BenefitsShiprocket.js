@@ -3,11 +3,15 @@ import ListBullet from 'merchant/views/MagicCheckout/ShippingServices/assets/lis
 import {
   BENEFITS_SHIPROCKET_HIGHLIGHTS,
   BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE,
+  BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE_RCOD,
 } from 'merchant/views/MagicCheckout/ShippingServices/constants';
 
-const BenefitsShiprocket = ({ showIntelligenceHighlights }) => {
+const BenefitsShiprocket = ({ showIntelligenceHighlights, showRCODIntelligence }) => {
+  const intelligenceHighlights = showRCODIntelligence
+    ? BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE_RCOD
+    : BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE;
   const highlights = showIntelligenceHighlights
-    ? BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE
+    ? intelligenceHighlights
     : BENEFITS_SHIPROCKET_HIGHLIGHTS;
   return (
     <div className="benefits-shiprocket-container">

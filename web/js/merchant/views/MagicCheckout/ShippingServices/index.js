@@ -11,6 +11,9 @@ import BenefitsShiprocket from 'merchant/views/MagicCheckout/ShippingServices/co
 import Spinner from 'common/ui/Spinner';
 import Listing from 'merchant/views/MagicCheckout/ShippingServices/Listing';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
+import { MAGICX_PUBLICAPP_COD_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 import { SHIPPING_PARTNERS } from 'merchant/views/MagicCheckout/ShippingServices/constants';
 
 const ShippingAccount = ({
@@ -22,9 +25,10 @@ const ShippingAccount = ({
   isServiceabilitySettingsEnabled,
   magicIntelligence,
   providers,
+  user,
 }) => {
+  const isMagicXPublicappCodEnabled = useMagicExperiment(MAGICX_PUBLICAPP_COD_EXPERIMENT);
   const { shouldCloseModal, shippingProviders, loading } = shippingService;
-
   const { shiprocket } = shippingProviders;
 
   useEffect(() => {
@@ -75,7 +79,10 @@ const ShippingAccount = ({
             ))}
           </div>
           <div className="benefit-shiprocket-container display-inline">
-            <BenefitsShiprocket showIntelligenceHighlights={!isServiceabilitySettingsEnabled} />
+            <BenefitsShiprocket
+              showIntelligenceHighlights={!isServiceabilitySettingsEnabled}
+              showRCODIntelligence={user.rcod && isMagicXPublicappCodEnabled}
+            />
           </div>
         </div>
       </div>
@@ -85,6 +92,7 @@ const ShippingAccount = ({
 
 const mapStateToProps = (state) => ({
   shippingService: state.shippingService,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

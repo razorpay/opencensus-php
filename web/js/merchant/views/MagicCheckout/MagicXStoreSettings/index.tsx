@@ -7,7 +7,7 @@ import { Header, Wrapper } from 'merchant/views/MagicCheckout/MagicXStoreSetting
 const MagicXStoreSettings: React.FC = () => {
   return (
     <Wrapper>
-      <Header>Store settings</Header>
+      <Header>Checkout Settings</Header>
       {/**
        * This banner was added for public app approval. We do not need it for Checkout360.
        * Commenting out incase we need to show this banner in future

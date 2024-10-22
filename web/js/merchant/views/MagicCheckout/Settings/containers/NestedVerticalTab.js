@@ -9,6 +9,7 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 import { useSplitzService } from 'common/splitz';
 import { StyledTabsWrapper } from 'merchant/views/MagicCheckout/Settings/containers/styledComponents';
 
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 import { checkMagicConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 
 export const TabItem = ({
@@ -36,6 +37,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
   const { platform, showTabHeading } = settings;
   const { cod_order_control: isCODOrderControlEnabled, rcod: isRCOD } = magicCheckout;
 
+  const isMagicXPublicappCodEnabled = useMagicExperiment('magicx_publicapp_cod');
   const { abExperiments } = useSplitzService();
   let redirectPath;
   return (
@@ -44,6 +46,29 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
         <div className="magic-settings-tabs display-flex">
           <div className="tabs-container display-flex flex--column">
             {(isMagicConfigurationFlow ? CONFIG_TABS : TABS)?.[platform].map((item, index) => {
+              /**
+               * Checkout360 Experience
+               * Splitz experiment in use: `magicx_publicapp_cod`
+               * When the experiment in ON:
+               * -> if user has not completed C360 onboarding, we change the route label and
+               *    hide all other routes
+               * -> if user has completed C360 onboarding, we do nothing
+               */
+              if (
+                platform === 'shopify' &&
+                isMagicXPublicappCodEnabled &&
+                isRCOD &&
+                (user.isC360OnboardingCompleted || user.isC360OnboardingToBeResumed)
+              ) {
+                if (!user.isC360OnboardingCompleted) {
+                  // We need to check both label values for stability across component re-renders
+                  if (item.label === 'Control Center' || item.label === 'Checkout360') {
+                    item.label = 'Checkout360';
+                  } else {
+                    return null;
+                  }
+                }
+              }
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (
                 item.label === 'COD Review Workflow' &&

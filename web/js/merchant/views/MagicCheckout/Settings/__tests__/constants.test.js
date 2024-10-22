@@ -7,6 +7,8 @@ describe('testing constants', () => {
       isMagicPrepayCODEnabled: true,
       isMagicCODEngineEnabled: true,
       isMagicCouponEngineEnabled: true,
+      isC360OnboardingToBeResumed: true,
+      isC360OnboardingCompleted: true,
       role: 'owner',
     };
 
@@ -15,6 +17,7 @@ describe('testing constants', () => {
       magic_shopify_shipping_engine: { variables: { result: 'on' } },
       magic_hide_cod_when_disabled: { variables: { result: 'on' } },
       magic_x_store_settings: { variables: { result: 'on' } },
+      magicx_publicapp_cod: { variables: { result: 'on' } },
     };
 
     Object.keys(TABS).forEach((platform) => {

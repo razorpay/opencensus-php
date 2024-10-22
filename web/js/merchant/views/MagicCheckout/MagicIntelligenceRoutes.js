@@ -16,7 +16,7 @@ const routes = [
     id: 'blocklist',
     component: <BlockList />,
     className: 'list-container',
-    onRCOD: true,
+    onRCODOnly: true,
   },
   {
     title: 'Allowlist',

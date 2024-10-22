@@ -35,6 +35,7 @@ const MagicIntelligenceTab = ({
   const { cod_intelligence, platform, shop_id, manualControlCodOrder, rcodEnabled } = settings;
   const [codIntelligence, setCodIntelligence] = useState(cod_intelligence || false);
   const [codOrderControl, setCodOrderControl] = useState(manualControlCodOrder || false);
+  const isMagicXPublicappCodEnabled = useMagicExperiment('magicx_publicapp_cod');
 
   const ReviewModal = MANUAL_REVIEW_MODAL[platform]?.component;
 
@@ -211,9 +212,13 @@ const MagicIntelligenceTab = ({
   return (
     <div className="magic-intelligence">
       <div className="header-wrapper">
-        <div className="font-20 font-bold heading">Reduce RTO orders with Magic Checkout</div>
+        <div className="font-20 font-bold heading">
+          Reduce RTO orders with {isMagicXPublicappCodEnabled ? 'Checkout360' : 'Magic Checkout'}
+        </div>
         <div className="font-14 subtext">
-          Disable COD option or retrieve RTO risk details for high risk customers
+          {isMagicXPublicappCodEnabled
+            ? 'Disable COD option for high RTO risk customers'
+            : 'Disable COD option or retrieve RTO risk details for high risk customers'}
         </div>
         <div className="magic-intelligence-toggle">
           <CodIntelligenceToggle

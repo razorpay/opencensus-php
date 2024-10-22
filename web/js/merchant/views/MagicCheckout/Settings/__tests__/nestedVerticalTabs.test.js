@@ -20,6 +20,9 @@ const initState = {
       isMagicCODOrderAutomationEnabled: true,
       isMagicCODEngineEnabled: true,
       isMagicCouponEngineEnabled: true,
+      isC360OnboardingStarted: true,
+      isC360OnboardingToBeResumed: false,
+      isC360OnboardingCompleted: false,
       role: 'owner',
     },
   },
@@ -50,9 +53,11 @@ describe('Nested vertical tabs component', () => {
     render(<NestedVerticalTabs />);
 
     await waitFor(() => {
-      TABS[initState.magic_settings.platform].forEach((item) => {
-        expect(screen.getByText(item.label)).toBeInTheDocument();
-      });
+      TABS[initState.magic_settings.platform]
+        .filter((item) => item.label !== 'Control Center')
+        .forEach((item) => {
+          expect(screen.getByText(item.label)).toBeInTheDocument();
+        });
     });
   });
 
