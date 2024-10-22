@@ -678,6 +678,8 @@ class Service extends Base\Service
             }
         }
 
+        $this->core->trackPayoutPropertiesEvent($payout);
+
         $responseTime = microtime(true);
 
         $this->trace->info(
@@ -818,6 +820,7 @@ class Service extends Base\Service
         {
             $payout = $this->postCreationProcessingForCompositePayout($payout);
         }
+        $this->core->trackPayoutPropertiesEvent($payout);
 
         $responseTime = microtime(true);
 
@@ -1673,6 +1676,8 @@ class Service extends Base\Service
 
             $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
+            $this->core->trackPayoutPropertiesEvent($payout);
+
             if ($payout->getIsPayoutService() === true)
             {
                 return $payout->payoutServiceResponse;
@@ -1707,6 +1712,8 @@ class Service extends Base\Service
         }
 
         $payout = $this->core->createPayoutAndTriggerIciciOtp($input, $this->merchant, $balance);
+
+        $this->core->trackPayoutPropertiesEvent($payout);
 
         return $payout->toArrayPublic();
     }
@@ -2973,6 +2980,8 @@ class Service extends Base\Service
         (new BulkIdempotencyKeyCore())->upsertBulkIdempotencyKeyIntoPayoutServiceDB($idempotencyKey, $this->merchant->getId(), $payout->getId(), Entity::PAYOUT);
 
         $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+        $this->core->trackPayoutPropertiesEvent($payout);
 
         $payoutBatch->push($payoutArr);
     }
@@ -4889,6 +4898,8 @@ class Service extends Base\Service
         {
             $payout = $this->handleExceptionAndFindEntity($exception, 'payout', $payoutMetadata);
         }
+
+        $this->core->trackPayoutPropertiesEvent($payout);
 
         $this->trace->info(TraceCode::PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN, [
             'step'              => 'composite_payout_creation',

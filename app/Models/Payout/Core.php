@@ -5292,6 +5292,11 @@ class Core extends Base\Core
         {
             $response = $this->app['splitzService']->evaluateRequest($properties);
 
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'splitz_output' => $response,
+            ]);
+
             $variant = $response['response']['variant']['name'] ?? null;
 
             if ($variant === $checkVariant)
@@ -12037,5 +12042,73 @@ class Core extends Base\Core
             ]
         );
         return $response;
+    }
+
+    public function trackPayoutPropertiesEvent($payout)
+    {
+        $payoutId = $payout->getId() ?? $payout['id'];
+        $auth = $this->app['basicauth'];
+        $merchant = $this->merchant;
+
+        if (empty($merchant) || empty($auth)) {
+            $this->trace->warning(TraceCode::PAYOUT_PROPERTIES_EVENT_FAILED,[
+                'payout_id' => $payoutId
+            ]);
+            return;
+        }
+
+        $merchantId = $merchant->getId();
+        $experimentName = 'payout_properties_event_experiment_id';
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.'.$experimentName),
+            'request_data' => json_encode(['merchant_id' => $merchantId])
+        ];
+
+        if($this->isSplitzExperimentEnable($properties,'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR) === false){
+            return;
+        }
+
+        $origin = '';
+        $internalApp = $auth->getInternalApp() ?? 'external';
+
+        $user = $auth->getUser();
+        $userId = $user ? $user->getId() : '';
+
+        $role = $auth->getUserRole() ?? '';
+
+        // In case of worker/job the route name is null
+        if (isset($this->app['api.route']) && $this->app['api.route']->getCurrentRouteName())
+        {
+            $origin = $this->app['api.route']->getCurrentRouteName();
+
+        } elseif (isset($this->app['request.ctx']) && $this->app['request.ctx']->getRoute())
+        {
+            $origin = $this->app['request.ctx']->getRoute();
+
+        }elseif (isset($this->app['worker.ctx']) && $this->app['worker.ctx']->getJobName())
+        {
+            $origin = $this->app['worker.ctx']->getJobName();
+        }
+
+        $eventAttributes = [
+            'merchant_id' => $merchantId,
+            'origin' => $origin,
+            'user_id'     => $userId,
+            'user_role'   => $role,
+            'app_name'    => $internalApp
+        ];
+
+        $this->app['diag']->trackPayoutPropertiesEvent(
+            EventCode::PAYOUT_PROPERTIES,
+            $payout,
+            $eventAttributes
+        );
+
+        $this->trace->info(TraceCode::PAYOUT_PROPERTIES_EVENT_SUCCESS,[
+            "payout_id" => $payoutId,
+            "event_attributes" => $eventAttributes
+        ]);
     }
 }
