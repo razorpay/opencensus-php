@@ -20,6 +20,7 @@ import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/S
 import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import { getSelfServeSuccessData } from 'merchant/views/Transactions/v1/utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 
 const ORG_BANK_LABEL_NAME = {
   rzp: 'UTR',
@@ -153,7 +154,12 @@ const SettlementInfo = (props) => {
       </ShowWhen>
       <EntityDetailRow
         label="Created At"
-        value={() => <Time value={settlement?.created_at} format="DD MMM YYYY, hh:mm:ss a" />}
+        value={() => (
+          <Time
+            value={settlement?.created_at}
+            format={getSettlementTimeFormat('DD MMM YYYY, hh:mm:ss a')}
+          />
+        )}
       />
 
       {user?.isSingleReconEnabled && user?.isOptimizerEnabled && settlement?.optimizer_provider && (

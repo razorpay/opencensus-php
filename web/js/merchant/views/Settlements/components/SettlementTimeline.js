@@ -9,7 +9,7 @@ import {
 } from 'merchant_common/reducers/modals';
 import { fetchHolidayList as fnFetchHolidayList } from 'merchant/reducers/settlements/details';
 import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
-import { TIMELINE_EVENTS } from './utils';
+import { TIMELINE_EVENTS, getSettlementTimeFormat } from './utils';
 import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -191,7 +191,10 @@ const SettlementTimeline = ({
               </div>
             </div>
             <div className="settled-at-details timeline-sub-text">
-              <Time value={parseInt(settled_at, 10)} format="DD MMM YYYY, hh:mm a" />
+              <Time
+                value={parseInt(settled_at, 10)}
+                format={getSettlementTimeFormat('DD MMM YYYY, hh:mm a')}
+              />
               <ShowWhen
                 additionalCondition={() =>
                   settlement?.utr && (!showCustomSettlDetails || adminAsMerchant)
@@ -235,7 +238,10 @@ const SettlementTimeline = ({
               <div>Settlement Date</div>
             </div>
             <div className="eligible-at-details timeline-sub-text">
-              <Time value={parseInt(eligible_at, 10)} format="DD MMM YYYY, hh:mm a" />
+              <Time
+                value={parseInt(eligible_at, 10)}
+                format={getSettlementTimeFormat('DD MMM YYYY, hh:mm a')}
+              />
             </div>
           </React.Fragment>
         );

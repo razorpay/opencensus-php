@@ -1,5 +1,11 @@
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { isOrgFeatureExist } from 'merchant/models/User';
 import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
+
+export const getSettlementTimeFormat = (defaultFormat = 'DD MMM YYYY, hh:mm:ss a') => {
+  const orgFeatureEnabled = isOrgFeatureExist('hide_settlement_time');
+  return orgFeatureEnabled ? 'DD MMM YYYY' : defaultFormat;
+};
 
 export const restrictedFeatures = [
   'disable_ondemand_for_loc',

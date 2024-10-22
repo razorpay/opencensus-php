@@ -9,6 +9,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { getSettlementTimeFormat } from 'merchant/views/Settlements/components/utils';
 
 const SettlementsListItem = ({
   settlement,
@@ -74,7 +75,10 @@ const SettlementsListItem = ({
         <Amount value={settlement.tax} currency={currency} />
       </td>
       <td>
-        <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
+        <Time
+          value={settlement.created_at}
+          format={getSettlementTimeFormat('DD MMM YYYY, hh:mm:ss a')}
+        />
       </td>
       <td>
         <SettlementStatusLabel status={settlement.status} />
