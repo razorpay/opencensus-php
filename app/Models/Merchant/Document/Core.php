@@ -204,13 +204,19 @@ class Core extends Base\Core
         $size = $input[Constants::SIZE];
         unset($input[Constants::SIZE]);
 
-        (new Validator())->validateDocumentTypeAndFileType($rule, $input);
-
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
 
         $merchantDetailCore = new Detail\Core();
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
+
+        if( $this->pgosProxyController->isModularMerchant($merchant)){
+            $input['merchant_id'] = $merchant->getId();
+            $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DOCUMENT_UPLOAD_V2, $this->pgosProxyController->getPayloadForFileUpload($input), $merchant);
+            return $merchantDetailCore->createResponse($merchantDetails);
+        }
+
+        (new Validator())->validateDocumentTypeAndFileType($rule, $input);
 
         $validateLock = $this->shouldValidateLock($input, $validateLock);
 

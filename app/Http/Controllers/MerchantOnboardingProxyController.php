@@ -68,6 +68,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_CATEGORIES_ADMIN_V3              = 'fetch_merchant_categories_admin';
     const ACTIVATION_DOCUMENT_TYPES                 = 'activation_document_types';
     const UPLOAD_MERCHANT_DOCUMENT_BY_AGENT         = 'upload_merchant_document_by_agent';
+    const MERCHANT_DOCUMENT_DELETE_V2               = 'merchant_document_delete_v2';
+    const MERCHANT_DOCUMENT_UPLOAD_V2              = 'merchant_document_upload_v2';
     const MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE   = 'merchant_categories_v3_eligibility_save';
 
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
@@ -281,6 +283,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
         self::ACTIVATION_DOCUMENT_TYPES                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchAllDocumentsTypesList',
         self::UPLOAD_MERCHANT_DOCUMENT_BY_AGENT            => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/UploadMerchantDocumentByAgent',
+        self::MERCHANT_DOCUMENT_UPLOAD_V2                  => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentUploadV2',
+        self::MERCHANT_DOCUMENT_DELETE_V2                  => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentDeleteV2',
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantCategoriesV3EligibilitySave',
         self::SEND_SMS_OTP                                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
         self::VERIFY_OTP                                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',

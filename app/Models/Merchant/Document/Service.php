@@ -257,6 +257,15 @@ class Service extends Base\Service
                     '$payload' => $payload,
                 ]);
 
+                if( $this->merchant != null and $this->pgosProxyController->isModularMerchant($this->merchant)){
+                    $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_REQUEST_V2, [
+                        '$payload' => $payload,
+                    ]);
+                    $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DOCUMENT_DELETE_V2, $payload, $this->merchant);
+                    $merchantDetailCore = new Detail\Core();
+                    return $merchantDetailCore->createResponse($this->merchant->merchantDetail);
+                }
+
                 $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests('merchant_document_delete',
                                                                                     $payload, $this->merchant, true);
 
