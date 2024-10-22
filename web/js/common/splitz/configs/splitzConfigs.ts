@@ -102,6 +102,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'pos_brand_emi',
+        experimentId: {
+          beta: 'PARe3cKjrK4TIW',
+          production: 'PARQn2CWO4Dlp0',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'pos_onboarding',
         experimentId: {
           beta: 'MVPjQVuTnq6nHb',
