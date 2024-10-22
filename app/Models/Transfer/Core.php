@@ -2717,6 +2717,18 @@ class Core extends Base\Core
         return $transfersProcessed;
     }
 
+    public function createTransactionsForFromLedgerJournal($transfer)
+    {
+        [$creditJournal, ] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getToId());
+
+        [, $debitJournal] = $this->fetchJournalsFromLedgerForTransfer($transfer, $transfer->getMerchantId());
+
+        $reverseShadowTransfersCore = new ReverseShadowTransfersCore();
+
+        $reverseShadowTransfersCore->createTransferTxnAndTransferPaymentTxnAndPushForSettlement($transfer, $debitJournal, $creditJournal);
+    }
+
+
     public function createTransferReversalTransactions(array $input)
     {
         $isRearchRefund = $input["is_rearch_refund"];
