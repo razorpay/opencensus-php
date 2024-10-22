@@ -9,7 +9,7 @@ import {
 import { tooltipContent } from './constants';
 import { TooltipWrapper } from './styled';
 
-type TooltipContentKeys = keyof typeof tooltipContent;
+export type TooltipContentKeys = keyof typeof tooltipContent;
 
 interface IProps {
   type?: TooltipContentKeys;

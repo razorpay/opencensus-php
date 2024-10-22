@@ -108,7 +108,7 @@ const PaymentRefundContent = ({
                   weight="regular"
                   color="surface.text.gray.subtle"
                 >
-                  Refund ID <Tooltip size="small" />
+                  Refund ID <Tooltip size="small" type="refundId" />
                 </Text>
                 <CopyWrapper
                   onClick={onCopy('Refund ID', { transactionIDActual, refundId: refund.id }).bind(
@@ -134,7 +134,7 @@ const PaymentRefundContent = ({
                   weight="regular"
                   color="surface.text.gray.subtle"
                 >
-                  ARN/RRN <Tooltip size="small" />
+                  ARN/RRN <Tooltip size="small" type="rrnARN" />
                 </Text>
                 {bankCode ? (
                   <CopyWrapper

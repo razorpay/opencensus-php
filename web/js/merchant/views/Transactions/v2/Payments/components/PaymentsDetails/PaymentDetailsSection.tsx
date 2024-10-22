@@ -36,7 +36,7 @@ import PaymentMethod from './PaymentMethod';
 import PaymentPageDetails from './PaymentPageDetails';
 import PaymentSplitItems from './PaymentSplitItems';
 import PaymentTransfers from './PaymentTransfers';
-import Tooltip from './Tooltip';
+import Tooltip, { TooltipContentKeys } from './Tooltip';
 import {
   CardWrapper,
   CollapsibleContainer,
@@ -69,7 +69,7 @@ interface IPaymentDetailsSectionProps extends RouteComponentProps<{ id: string }
 interface DetailRowProps {
   label: string;
   value: React.ReactNode;
-  tooltip?: boolean;
+  tooltipType?: TooltipContentKeys;
   copyable?: boolean;
   onCopyAction?: () => void;
 }
@@ -77,13 +77,13 @@ interface DetailRowProps {
 export const DetailRow: React.FC<DetailRowProps> = ({
   label,
   value,
-  tooltip = false,
+  tooltipType = null,
   copyable = false,
   onCopyAction,
 }) => (
   <RowWrapper>
     <Text variant="body" size="medium" weight="regular" color="surface.text.gray.subtle">
-      {label} {tooltip && <Tooltip size="small" />}
+      {label} {tooltipType && <Tooltip size="small" type={tooltipType} />}
     </Text>
     {copyable && value !== '--' ? (
       <CopyWrapper onClick={onCopyAction || noop}>
@@ -254,7 +254,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 <DetailRow
                   label="Payment ID"
                   value={id}
-                  tooltip
+                  tooltipType="paymentId"
                   copyable
                   onCopyAction={onCopy('Payment ID', { transactionIDActual, paymentId: id }).bind(
                     null,
@@ -263,12 +263,16 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 />
                 {isTxnV2ParityFeaturesEnabled ? <PaymentPageDetails id={order_id} /> : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <DetailRow label="Bank RRN" value={acquirer_data.rrn || '--'} tooltip />
+                <DetailRow
+                  label="Bank RRN"
+                  value={acquirer_data.rrn || '--'}
+                  tooltipType="bankRRN"
+                />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Order ID"
                   value={order_id || '--'}
-                  tooltip
+                  tooltipType="orderId"
                   copyable
                   onCopyAction={onCopy('Order ID', { transactionIDActual, orderId: order_id }).bind(
                     null,
@@ -504,6 +508,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                         ))}
                       </Box>
                     }
+                    tooltipType="disputeId"
                   />
                 </>
               )}
