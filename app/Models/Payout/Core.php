@@ -4072,6 +4072,8 @@ class Core extends Base\Core
                 );
             }
         }
+
+        $this->pushAccountStatementsSourceEvent($payout);
     }
 
     /**
@@ -5083,6 +5085,7 @@ class Core extends Base\Core
             $this->processLedgerPayout($clonedPayout, $reversal);
         }
 
+        $this->pushAccountStatementsSourceEvent($payout);
         return $reversal;
     }
 
@@ -5239,6 +5242,73 @@ class Core extends Base\Core
 
             $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
+
+        $this->pushAccountStatementsSourceEvent($payout);
+    }
+
+    private function pushAccountStatementsSourceEvent(Entity $payout): void {
+        try {
+            $properties = [
+                'id'            => $payout->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.account_statements_source_event_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $payout->getMerchantId()])
+            ];
+
+            $isPushToQueueForAccStSourceExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'variables', TraceCode::ACCOUNT_STATEMENTS_SOURCE_EVENT_SPLITZ_ERROR);
+            $isCAPayout = $payout->balance->isAccountTypeDirect();
+
+            if ($isPushToQueueForAccStSourceExperimentEnabled && $isCAPayout) {
+                $this->pushToAccountServiceQueue($payout);
+            }
+        } catch (\Exception $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::QUEUE_PUSH_TO_ACCOUNT_STATEMENTS_SOURCE_EVENT_ERROR
+            );
+        }
+    }
+
+    private function pushToAccountServiceQueue(Entity $payout): void {
+        $pushData = [
+            PayoutConstants::ENTITY_ID      => $payout->getId(),
+            PayoutConstants::ENTITY_TYPE    => PayoutConstants::PAYOUTS_ENTITY_TYPE,
+            PayoutConstants::UTR            => $payout->getUtr(),
+            PayoutConstants::EVENT_CREATED_TIMESTAMP => Carbon::now()->getTimestamp(),
+            PayoutConstants::EVENT_ID => UniqueIdEntity::generateUniqueId(),
+            PayoutConstants::GATEWAY_REF_NO => "",
+            PayoutConstants::CMS_REF_NO => "",
+            PayoutConstants::STATUS => $payout->getStatus(),
+        ];
+
+        $queueName = $this->app['config']->get('queue.account_statements_source_event.' . $this->mode);
+
+        $this->app['queue']->connection('sqs')->pushRaw(json_encode($pushData), $queueName);
+    }
+
+    public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+
+        return false;
     }
 
     protected function verifyPayoutFailedTransaction(Entity $payout, string $ftaFailureReason = null)

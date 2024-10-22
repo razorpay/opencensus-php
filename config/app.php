@@ -753,6 +753,8 @@ return array(
 
     'double_fta_fix_experiment_id' => env('DOUBLE_FTA_FIX_EXPERIMENT_ID'),
 
+    'account_statements_source_event_experiment_id' => env('ACCOUNT_STATEMENTS_SOURCE_EVENT_EXPERIMENT_ID'),
+
     '1cc_shipping_info_migration_splitz_experiment_id' => env('MAGIC_CHECKOUT_SHIPPING_INFO_MIGRATION_EXP_ID'),
 
     'magic_show_coupon_callout_experiment_id'  => env('MAGIC_SHOW_COUPON_CALLOUT_EXP_ID'),
