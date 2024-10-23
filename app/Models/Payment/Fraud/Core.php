@@ -129,9 +129,9 @@ class Core extends Base\Core
         foreach ($fraudEntity as $payment){
 
             $transactionDate = $payment[CyberHelpdeskConstants::TRANSACTION_DATE];
-            $timestamp = \DateTime::createFromFormat('d/m/Y', $transactionDate)->getTimestamp();
+            $timestamp = \DateTime::createFromFormat('d/m/y', $transactionDate)->getTimestamp();
 
-            $createdDate = date('Y-m-d H:i:s', $timestamp);
+            $createdDate = date('d-m-y H:i:s', $timestamp);
             $createdTimestamp = strtotime($createdDate);
             $currentTimestamp = time();
 
@@ -144,6 +144,13 @@ class Core extends Base\Core
                 $tableRow[CyberHelpdeskConstants::RESPOND_BY] = $payment[CyberHelpdeskConstants::RESPOND_BY];
                 $tableData[] = $tableRow;
             }
+            $this->app['trace']->info(
+                TraceCode::WHATSAPP_FRAUD_MESSAGE_FOR_SINGLE_MERCHANT_TIMESTAMP,
+                [
+                    'created_timestamp' => $createdTimestamp,
+                    'current_timestamp' => $currentTimestamp,
+                    'timestamp_diff'    => $currentTimestamp - $createdTimestamp
+                ]);
         }
         return $tableData;
     }
