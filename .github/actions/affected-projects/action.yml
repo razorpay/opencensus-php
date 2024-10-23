@@ -19,24 +19,10 @@ runs:
       run: |
         git fetch origin master
 
-    - name: Setup pnpm and yarn
-      shell: bash
-      run: |
-        npm install -g pnpm@~9.0
-        npm install -g yarn
-
-    - name: Install dependencies
-      run: |
-        pnpm config set unsafe-perm true
-        HUSKY=0 pnpm i --ignore-scripts
-      shell: bash
-      env:
-        GITHUB_ACCESS_TOKEN: ${{ inputs.GITHUB_ACCESS_TOKEN }}
-    # - name: Install dependencies with caching
-    #   uses: ./.github/actions/package-installer
-    #   with:
-    #     npm_razorpay_token: ${{ inputs.NPM_RAZORPAY_TOKEN }}
-    #     github_access_token: ${{ inputs.GITHUB_ACCESS_TOKEN }}
+    - name: Install dependencies with caching
+      uses: ./.github/actions/package-installer
+      with:
+        github_access_token: ${{ inputs.GITHUB_ACCESS_TOKEN }}
 
     - name: Extract current branch name
       shell: bash

@@ -1,5 +1,5 @@
 name: Report Rate Limit
-on: push
+on: workflow_dispatch
 
 # Get rate limit for CI_BOT_TOKEN
 
@@ -12,5 +12,24 @@ jobs:
         run: |
           curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.CI_BOT_TOKEN }}' https://api.github.com/rate_limit > rate_limit.json
           cat rate_limit.json
+          cat rate_limit.json | jq '
+            if .resources.core.used >= .resources.core.limit
+            then "Monthly limit exceeded" 
+            elif .rate.used >= .rate.limit
+            then "Hourly limit exceeded" 
+            else "Token is within limits" 
+            end
+          '
+
+          format_date() {
+            local json_path=$1
+            echo "$(jq -r "$json_path" rate_limit.json | xargs -I {} sh -c 'TZ="Asia/Kolkata" date -d @{}')"
+          }
+
+          echo "Monthly limit resets on $(format_date '.rate.reset')"
+          echo "Hourly limit resets on $(format_date '.resources.core.reset')"
+
           report=$(cat rate_limit.json | jq '.rate.used/.rate.limit*100')
+
+          echo "Usage is $report%"
           echo "::set-output name=report::$(printf '%.2f' $report)"

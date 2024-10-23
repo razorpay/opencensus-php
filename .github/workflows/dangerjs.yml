@@ -13,7 +13,7 @@ env:
 
 jobs:
   validate:
-    runs-on: [self-hosted]
+    runs-on: [non-api, linux-amd64]
     continue-on-error: false
     name: Format Checker
     steps:
@@ -22,29 +22,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node v18.12.1
-        uses: actions/setup-node@v1
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
         with:
-          node-version: 18.12.1
-
-      - name: Setup pnpm and yarn
-        run: |
-          npm install -g pnpm@~9.0
-          npm install -g yarn
-
-      - name: Install dependencies
-        run: |
-          pnpm config set unsafe-perm true
-          HUSKY=0 pnpm i --ignore-scripts
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-      # - name: Install dependencies with caching
-      #   uses: ./.github/actions/package-installer
-      #   with:
-      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: DangerJS
-        uses: danger/danger-js@11.3.0
+        uses: danger/danger-js@11.2.2
         with:
           args: "--id formatchecker_dangerjs"
         env:

@@ -26,30 +26,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node v18.12.1
-        uses: actions/setup-node@v1
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
         with:
-          node-version: 18.12.1
-
-      - name: Install libraries for webp conversion
-        run: |
-          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
-
-      - name: Setup pnpm and yarn
-        run: |
-          npm install -g pnpm@~9.0
-          npm install -g yarn
-
-      - name: Install dependencies
-        run: |
-          pnpm config set unsafe-perm true
-          HUSKY=0 pnpm i --ignore-scripts
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-      # - name: Install dependencies with caching
-      #   uses: ./.github/actions/package-installer
-      #   with:
-      #     github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
         run: pnpm nx run web:test:build:merchant

@@ -19,22 +19,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node v18.12.1
-        uses: actions/setup-node@v1
+      - name: Install dependencies with caching
+        uses: ./.github/actions/package-installer
         with:
-          node-version: 18.12.1
-
-      - name: Setup pnpm and yarn
-        run: |
-          npm install -g pnpm@~9.0
-          npm install -g yarn
-
-      - name: Install dependencies
-        run: |
-          pnpm config set unsafe-perm true
-          HUSKY=0 pnpm i --ignore-scripts
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Get changed Stylus files
         id: changed-stylus-files
@@ -44,6 +32,10 @@ jobs:
             **/*.styl
           path: web
           diff_relative: true
+
+      - name: Log changed files
+        run: |
+          echo "Changed Stylus files: ${{ steps.changed-stylus-files.outputs.all_changed_files }}"
 
       - name: Stylelint PR Check
         id: stylelint-check

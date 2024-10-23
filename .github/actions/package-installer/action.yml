@@ -12,17 +12,41 @@ runs:
       with:
         node-version: 18.12.1
 
+    - name: Setup yarn & pnpm globally
+      run: |
+        npm install -g pnpm@~9.0
+        npm install -g yarn
+      shell: bash
+
+    - name: Log existing store path & it's size
+      shell: bash
+      run: |
+        STORE_PATH=$(pnpm store path)
+        echo "Existing PNPM store path is: $STORE_PATH"
+
+        # Check if the directory exists before accessing it
+        if [ -d "$STORE_PATH" ]; then
+          du -sh "$STORE_PATH"
+        else
+          echo "PNPM store path is empty: $STORE_PATH"
+        fi
+
+    - name: Configure Pnpm Store Path
+      shell: bash
+      run: |
+        pnpm config set store-dir .pnpm-store
+
     - name: Package installer cache setup
       uses: actions/cache@v3
       id: cache
       with:
         path: |
-          ./node_modules
-          ./web/node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
+          .pnpm-store
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
 
     - name: Install Dependencies
-      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         pnpm config set unsafe-perm true
         HUSKY=0 pnpm i --ignore-scripts --frozen-lockfile # Automatically installs modules in all packages too
