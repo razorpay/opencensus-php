@@ -90,23 +90,18 @@ export const isSrEnabledForUser = ({
   );
 };
 
-export const LandingPageAnalyticsToolTip = {
-  Collected:
-    'This is the amount collected in your Razorpay balance and will be deposited in your bank account after deductions and adjustments as per your settlement cycle',
-  [PaymentTypes.Refunds]:
-    "This is the amount reversed to customer's bank account. To create and cancel refunds in bulk, go to Batch refunds",
-  [PaymentTypes.Disputes]:
-    'This is the amount adjusted for customer raised issues such as unauthorised charges or failure to deliver the promised merchandise',
-  [PaymentTypes.Failed]:
-    'These are payments that were unsuccessful due to technical, network, bank, business, or customer related issues (they will need to be retried by the customer) ',
-};
+export const getLandingPageAnalyticsToolTip = (organizationName = 'Razorpay') => ({
+  Collected: `This is the amount collected in your ${organizationName} balance and will be deposited in your bank account after deductions and adjustments as per your settlement cycle`,
+  [PaymentTypes.Refunds]: `This is the amount reversed to customer's bank account. To create and cancel refunds in bulk, go to Batch refunds`,
+  [PaymentTypes.Disputes]: `This is the amount adjusted for customer raised issues such as unauthorised charges or failure to deliver the promised merchandise`,
+  [PaymentTypes.Failed]: `These are payments that were unsuccessful due to technical, network, bank, business, or customer related issues (they will need to be retried by the customer) `,
+});
 
-export const EntityPageAnalyticsToolTip = {
+export const getEntityPageAnalyticsToolTip = (organizationName = 'Razorpay') => ({
   Refunds: {
-    refunded:
-      'Razorpay has completed the refund. After this, bank can take 5-7 working days to credit the amount to customer(s) account',
-    processing: 'Razorpay is attempting to complete the refund. It can take upto 3-5 working days',
-    failed: 'Due to customer(s) account error or bank-related issues',
+    refunded: `${organizationName} has completed the refund. After this, bank can take 5-7 working days to credit the amount to customer(s) account`,
+    processing: `${organizationName} is attempting to complete the refund. It can take upto 3-5 working days`,
+    failed: `Due to customer(s) account error or bank-related issues`,
   },
   Failed: {
     failed:
@@ -118,10 +113,11 @@ export const EntityPageAnalyticsToolTip = {
     businessFailures:
       'These failures may happen due to technical issues from your end such as non-activation of a paymentmethod or international payments',
   },
-};
+});
 
 export const getAnalyticsPropsForRefunds = (
   refundsData: RefundResponse,
+  organizationName = 'Razorpay',
 ): AnalyticsBoilerPlateData => {
   const { failed, processing, refunded } = refundsData;
   return {
@@ -130,7 +126,7 @@ export const getAnalyticsPropsForRefunds = (
       value: refunded.amount,
       isAmount: true,
       subtitle: `from ${refunded.count} processed refunds`,
-      toolTipText: EntityPageAnalyticsToolTip.Refunds.refunded,
+      toolTipText: getEntityPageAnalyticsToolTip(organizationName).Refunds.refunded,
     },
     trail: [
       {
@@ -138,14 +134,14 @@ export const getAnalyticsPropsForRefunds = (
         value: processing.amount,
         isAmount: true,
         subtitle: `from ${processing.count} refunds`,
-        toolTipText: EntityPageAnalyticsToolTip.Refunds.processing,
+        toolTipText: getEntityPageAnalyticsToolTip(organizationName).Refunds.processing,
       },
       {
         title: 'Failed',
         value: failed.amount,
         isAmount: true,
         subtitle: `from ${failed.count} refunds`,
-        toolTipText: EntityPageAnalyticsToolTip.Refunds.failed,
+        toolTipText: getEntityPageAnalyticsToolTip(organizationName).Refunds.failed,
       },
     ],
   };
@@ -154,32 +150,33 @@ export const getAnalyticsPropsForRefunds = (
 export const getAnalyticsPropsForFailedPyaments = (
   failedPaymentsData: number,
   failureInfo: FailedOverviewResult,
+  organizationName = 'Razorpay',
 ): AnalyticsBoilerPlateData => {
   return {
     lead: {
       title: 'Failed',
       value: failedPaymentsData,
       subtitle: 'payments',
-      toolTipText: EntityPageAnalyticsToolTip.Failed.failed,
+      toolTipText: getEntityPageAnalyticsToolTip(organizationName).Failed.failed,
     },
     trail: [
       {
         title: 'Bank-Related',
         subtitle: 'payments',
         value: failureInfo.bank.value,
-        toolTipText: EntityPageAnalyticsToolTip.Failed.bankingFailures,
+        toolTipText: getEntityPageAnalyticsToolTip(organizationName).Failed.bankingFailures,
       },
       {
         title: 'Customer drop-offs',
         value: failureInfo.customer.value,
         subtitle: 'payments',
-        toolTipText: EntityPageAnalyticsToolTip.Failed.customerDroppOff,
+        toolTipText: getEntityPageAnalyticsToolTip(organizationName).Failed.customerDroppOff,
       },
       {
         title: 'Business failures or others',
         value: failureInfo.others.value + failureInfo.business.value,
         subtitle: 'payments',
-        toolTipText: EntityPageAnalyticsToolTip.Failed.businessFailures,
+        toolTipText: getEntityPageAnalyticsToolTip(organizationName).Failed.businessFailures,
       },
     ],
   };

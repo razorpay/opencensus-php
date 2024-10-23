@@ -16,7 +16,7 @@ import { bindActionCreators } from 'redux';
 import SettlementCycle from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import { BoxWithWordBreak, StyledAmount } from 'merchant/views/Transactions/v2/Analytics/styled';
 import { CapturedPaymentCardProps } from 'merchant/views/Transactions/v2/Analytics/types';
-import { LandingPageAnalyticsToolTip } from 'merchant/views/Transactions/v2/Analytics/utils';
+import { getLandingPageAnalyticsToolTip } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
 import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
@@ -29,6 +29,7 @@ const CapturedPaymentCard = ({
   paymentCapturedCount,
   isMobile,
   durationOption,
+  orgName,
 }: CapturedPaymentCardProps): JSX.Element => {
   const viewSettlementCycle = () => {
     openModal({
@@ -69,7 +70,10 @@ const CapturedPaymentCard = ({
                 Collected Amount
               </Text>
               <TooltipWrapper>
-                <Tooltip content={LandingPageAnalyticsToolTip.Collected} placement="top">
+                <Tooltip
+                  content={getLandingPageAnalyticsToolTip(orgName).Collected}
+                  placement="top"
+                >
                   <TooltipInteractiveWrapper>
                     <InfoIcon color="feedback.icon.neutral.intense" size="small" />
                   </TooltipInteractiveWrapper>
@@ -110,6 +114,12 @@ const CapturedPaymentCard = ({
   );
 };
 
+const mapStateToProps = (state) => {
+  return {
+    orgName: state.session.org?.business_name,
+  };
+};
+
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     {
@@ -119,4 +129,4 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(null, mapDispatchToProps)(CapturedPaymentCard);
+export default connect(mapStateToProps, mapDispatchToProps)(CapturedPaymentCard);

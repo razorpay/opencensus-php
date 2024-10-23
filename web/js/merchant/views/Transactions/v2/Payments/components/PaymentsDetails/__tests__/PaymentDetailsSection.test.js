@@ -63,7 +63,9 @@ describe('Payment Details Section component', () => {
     });
 
     test('should render Fee bearer', () => {
-      render(<App props={happyFlowProps} />);
+      render(<App props={happyFlowProps} />, {
+        initialState: { session: { user: {}, org: { business_name: 'Razorpay' } } },
+      });
 
       expect(screen.getByText('Order ID')).toBeInTheDocument();
       expect(screen.getByText(`You pay the Razorpay platform fee`)).toBeInTheDocument();

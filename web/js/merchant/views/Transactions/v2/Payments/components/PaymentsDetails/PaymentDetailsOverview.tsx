@@ -87,6 +87,7 @@ interface IPaymentDetailsOverview extends RouteComponentProps {
   fetchSettlementConfig: () => Promise<Record<string, string>>;
   openModal: (args) => void;
   user: Record<string, any>;
+  orgName: string;
 }
 
 const BadgeStatusIcon = ({ type, ...props }): JSX.Element => {
@@ -171,6 +172,7 @@ function PaymentDetailsOverview({
   fetchSettlementConfig,
   openModal,
   history,
+  orgName,
   user,
 }: IPaymentDetailsOverview) {
   const [isDeductionBreakdownOpen, setIsDeductionBreakdownOpen] = useState(false);
@@ -399,7 +401,7 @@ function PaymentDetailsOverview({
                           paddingLeft="spacing.3"
                         >
                           <Text>
-                            Razorpay platform fees{' '}
+                            {orgName} platform fees{' '}
                             <Tooltip
                               type={
                                 applicationDetails?.name ? 'partnerApplicationFees' : 'platformFees'
@@ -519,6 +521,7 @@ const mapStateToProps = (state) => {
     settlementConfig: state.settlement.config,
     schedule: state.settlement.schedule,
     holidayList: state.settlement.holidayList,
+    orgName: state.session.org?.business_name,
   };
 };
 

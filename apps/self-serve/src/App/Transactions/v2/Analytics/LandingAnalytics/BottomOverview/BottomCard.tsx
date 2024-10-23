@@ -24,7 +24,7 @@ import {
 } from 'apps/self-serve/src/App/Transactions/v2/Analytics/styled';
 import { BottomOverviewCardProps } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import {
-  LandingPageAnalyticsToolTip,
+  getLandingPageAnalyticsToolTip,
   cardLink,
 } from 'apps/self-serve/src/App/Transactions/v2/Analytics/utils';
 import { TooltipWrapper } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/styled';
@@ -41,6 +41,7 @@ const BottomOverviewCard = ({
   const [isHover, setIsHover] = useState(false);
   const navigate = useNavigate();
   const { name, loading: isLoading, value, isAmount, failed: isFailed } = data;
+  const orgName = window.rzp_org?.business_name;
   const goToEntityPage = () => {
     track({
       objectName: `${name} Tab`,
@@ -84,7 +85,10 @@ const BottomOverviewCard = ({
                         e.stopPropagation();
                       }}
                     >
-                      <Tooltip content={LandingPageAnalyticsToolTip[name]} placement="top">
+                      <Tooltip
+                        content={getLandingPageAnalyticsToolTip(orgName)[name]}
+                        placement="top"
+                      >
                         <TooltipInteractiveWrapper>
                           <InfoIcon color="feedback.icon.neutral.intense" size="small" />
                         </TooltipInteractiveWrapper>

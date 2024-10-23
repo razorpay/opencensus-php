@@ -21,7 +21,7 @@ import {
 import { PaymentsEditColumnsModal } from 'merchant/views/Transactions/v1/Payments/components/PaymentsEditColumnsModal';
 import PaymentsListFilter from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter';
 import PaymentsTable from 'merchant/views/Transactions/v2/Payments/components/PaymentsTable';
-import { paymentStatusVariantMap } from 'merchant/views/Transactions/v2/Payments/components/PaymentsTable/constants';
+import { getPaymentStatusVariantMap } from 'merchant/views/Transactions/v2/Payments/components/PaymentsTable/constants';
 import { handleDetailsClick } from 'merchant/views/Transactions/v2/common/components/Details/Details';
 import {
   TransactionsEntityRoute,
@@ -111,6 +111,7 @@ class PaymentsList extends ListContainer {
         isSingleReconEnabled,
         isOptimizerEnabled,
       },
+      orgName,
     } = this.props;
 
     const shouldDisplayOptimizerColumn =
@@ -150,7 +151,7 @@ class PaymentsList extends ListContainer {
           count={count}
           skip={skip}
           paginate={onPaginate(this.paginate)}
-          isDisabled={({ status }) => !paymentStatusVariantMap[status]}
+          isDisabled={({ status }) => !getPaymentStatusVariantMap(orgName)[status]}
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
           shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
@@ -188,6 +189,7 @@ export default withSplitzService(
       (state) => ({
         ...state.payments,
         user: state.session.user,
+        orgName: state.session.org?.business_name,
       }),
       mapDispatchToProps,
     )(PaymentsList),

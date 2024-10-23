@@ -108,7 +108,11 @@ const FailedPaymentsOverview = ({ mode, user }: any): JSX.Element => {
         <AnalyticsBoilerPlate
           isLoading={isLoading}
           isMobile={isMobile}
-          data={getAnalyticsPropsForFailedPyaments(failedPaymentsData, failureInfo)}
+          data={getAnalyticsPropsForFailedPyaments(
+            failedPaymentsData,
+            failureInfo,
+            window.rzp_org?.business_name,
+          )}
         />
       )}
       {shouldShowSR ? (

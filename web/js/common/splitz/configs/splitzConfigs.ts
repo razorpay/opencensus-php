@@ -830,6 +830,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'enable_trxn_v2_for_curlec',
+          experimentId: {
+            beta: 'PCABcrELtFteXb',
+            production: 'PBynXkl8hWQ3iW',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'export_payments_v2',
           experimentId: {
             beta: 'OvrPbmQy0feiR7',

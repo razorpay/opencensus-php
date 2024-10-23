@@ -237,7 +237,8 @@ const PaymentRefundContent = ({
       {showFooter ? (
         <SectionFooter>
           <Text variant="body" size="small" weight="regular" color="surface.text.gray.subtle">
-            *Refund amount is deducted from your Razorpay current balance after getting processed
+            *Refund amount is deducted from your {window.rzp_org?.business_name} current balance
+            after getting processed
           </Text>
         </SectionFooter>
       ) : null}

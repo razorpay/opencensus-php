@@ -97,7 +97,7 @@ const RefundsOverview = ({ mode, user }: RefundsOverviewProps): JSX.Element => {
         <AnalyticsBoilerPlate
           isLoading={isLoading}
           isMobile={isMobile}
-          data={getAnalyticsPropsForRefunds(refundsData)}
+          data={getAnalyticsPropsForRefunds(refundsData, window.rzp_org?.business_name)}
         />
       )}
     </OverviewContainer>

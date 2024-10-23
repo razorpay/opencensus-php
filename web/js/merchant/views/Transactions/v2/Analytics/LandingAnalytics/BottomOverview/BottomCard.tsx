@@ -14,6 +14,7 @@ import {
 } from '@razorpay/blade/components';
 import { formatNumber } from '@razorpay/i18nify-js/currency';
 import noop from 'lodash/noop';
+import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { CardShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
@@ -23,7 +24,7 @@ import {
 } from 'merchant/views/Transactions/v2/Analytics/styled';
 import { BottomOverviewCardProps } from 'merchant/views/Transactions/v2/Analytics/types';
 import {
-  LandingPageAnalyticsToolTip,
+  getLandingPageAnalyticsToolTip,
   cardLink,
 } from 'merchant/views/Transactions/v2/Analytics/utils';
 import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
@@ -38,6 +39,7 @@ const BottomOverviewCard = ({
   data,
   footerValues,
   durationOption,
+  orgName,
 }: BottomOverviewCardProps): JSX.Element | null => {
   const [isHover, setIsHover] = useState(false);
   const navigate = useNavigate();
@@ -87,7 +89,10 @@ const BottomOverviewCard = ({
                         e.stopPropagation();
                       }}
                     >
-                      <Tooltip content={LandingPageAnalyticsToolTip[name]} placement="top">
+                      <Tooltip
+                        content={getLandingPageAnalyticsToolTip(orgName)[name]}
+                        placement="top"
+                      >
                         <TooltipInteractiveWrapper>
                           <InfoIcon color="feedback.icon.neutral.intense" size="small" />
                         </TooltipInteractiveWrapper>
@@ -137,4 +142,10 @@ const BottomOverviewCard = ({
   );
 };
 
-export default BottomOverviewCard;
+const mapStateToProps = (state) => {
+  return {
+    orgName: state.session.org?.business_name,
+  };
+};
+
+export default connect(mapStateToProps)(BottomOverviewCard);

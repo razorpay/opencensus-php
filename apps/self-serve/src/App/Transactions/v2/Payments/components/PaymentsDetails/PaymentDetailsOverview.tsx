@@ -299,7 +299,7 @@ function PaymentDetailsOverview({
                         paddingLeft="spacing.3"
                       >
                         <Text>
-                          Razorpay platform fees{' '}
+                          {window.rzp_org?.business_name} platform fees{' '}
                           <Tooltip
                             type={
                               applicationDetails?.name ? 'partnerApplicationFees' : 'platformFees'

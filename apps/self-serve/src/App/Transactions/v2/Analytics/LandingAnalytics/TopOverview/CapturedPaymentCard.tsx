@@ -13,7 +13,7 @@ import React from 'react';
 import SettlementCycle from 'shell/SettlementCycle';
 import { paiseToRupees } from '@dashboard/shared-utils/rzp-utils';
 import { useStore } from 'shell/commonStore';
-import { LandingPageAnalyticsToolTip } from 'apps/self-serve/src/App/Transactions/v2/Analytics/utils';
+import { getLandingPageAnalyticsToolTip } from 'apps/self-serve/src/App/Transactions/v2/Analytics/utils';
 import { CapturedPaymentCardProps } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import {
   BoxWithWordBreak,
@@ -44,6 +44,8 @@ const CapturedPaymentCard = ({
       },
     });
   };
+  const orgName = window.rzp_org?.business_name;
+
   return (
     <Card
       padding="spacing.3"
@@ -69,7 +71,10 @@ const CapturedPaymentCard = ({
                 Collected Amount
               </Text>
               <TooltipWrapper>
-                <Tooltip content={LandingPageAnalyticsToolTip.Collected} placement="top">
+                <Tooltip
+                  content={getLandingPageAnalyticsToolTip(orgName).Collected}
+                  placement="top"
+                >
                   <TooltipInteractiveWrapper>
                     <InfoIcon color="feedback.icon.neutral.intense" size="small" />
                   </TooltipInteractiveWrapper>

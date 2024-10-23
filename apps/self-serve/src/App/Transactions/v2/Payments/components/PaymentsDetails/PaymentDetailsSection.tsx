@@ -339,7 +339,7 @@ function PaymentDetailsSection({
                   label="Fee bearer"
                   value={
                     fee_bearer === 'platform'
-                      ? 'You pay the Razorpay platform fee'
+                      ? `You pay the ${window.rzp_org?.business_name} platform fee`
                       : 'The customer has paid the fees for this payment'
                   }
                 />

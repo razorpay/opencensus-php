@@ -64,6 +64,7 @@ interface IPaymentDetailsSectionProps extends RouteComponentProps<{ id: string }
   user: User;
   splitz: SpiltzContextState;
   showNotification: (payload: { type: 'error' | 'success'; message: string }) => void;
+  orgName: string;
 }
 
 interface DetailRowProps {
@@ -110,6 +111,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   user,
   splitz,
   showNotification,
+  orgName,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const isStorefront = location.hash === '#storefront';
@@ -374,7 +376,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                   label="Fee bearer"
                   value={
                     fee_bearer === 'platform'
-                      ? 'You pay the Razorpay platform fee'
+                      ? `You pay the ${orgName} platform fee`
                       : 'The customer has paid the fees for this payment'
                   }
                 />
@@ -522,6 +524,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  orgName: state.session.org?.business_name,
 });
 
 function mapDispatchToProps(dispatch) {

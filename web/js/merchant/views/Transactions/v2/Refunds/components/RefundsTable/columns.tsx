@@ -16,7 +16,7 @@ import {
 } from 'merchant/views/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'merchant/views/Transactions/v2/common/utils';
 
-import { refundsStatusVariantMap, sourceChannelMap } from './constants';
+import { getRefundsStatusVariantMap, sourceChannelMap } from './constants';
 
 const { REFUNDS } = TransactionsEntityRoute;
 
@@ -100,7 +100,7 @@ const status = {
     </Text>
   ),
   value: ({ status }: Item): JSX.Element => {
-    const { variant, content } = refundsStatusVariantMap[status];
+    const { variant, content } = getRefundsStatusVariantMap(window.rzp_org?.business_name)[status];
     return <Status variant={variant} content={content} status={status} />;
   },
 };

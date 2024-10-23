@@ -19,7 +19,7 @@ import {
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
 import { createCustomColumnView } from '../PaymentsList/utils';
 import { getPaymentMethod, getSourceChannelType } from './utils';
-import { paymentStatusVariantMap } from './constants';
+import { getPaymentStatusVariantMap } from './constants';
 
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
@@ -155,10 +155,10 @@ export const status = {
     </Text>
   ),
   value: ({ status }: Item): JSX.Element => {
-    if (!paymentStatusVariantMap[status]) {
+    if (!getPaymentStatusVariantMap(window.rzp_org?.business_name)[status]) {
       return <Text>--</Text>;
     }
-    const { variant, content } = paymentStatusVariantMap[status];
+    const { variant, content } = getPaymentStatusVariantMap(window.rzp_org?.business_name)[status];
     return <Status variant={variant} content={content} status={status} />;
   },
 };
@@ -185,7 +185,7 @@ export const actions = {
     const initiatePage = TransactionsPagesMap[currentPath];
     return (
       <Details
-        isDisabled={!paymentStatusVariantMap[status]}
+        isDisabled={!getPaymentStatusVariantMap(window.rzp_org?.business_name)[status]}
         itemId={id}
         baseUrl={PAYMENTS}
         initiatePage={initiatePage}

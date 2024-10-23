@@ -146,6 +146,7 @@ export interface CapturedPaymentCardProps {
   isMobile: boolean;
   currency: CurrencyCodeType;
   durationOption: Option;
+  orgName: string;
 }
 
 export interface PaymentMethodSplitProps {
@@ -227,6 +228,7 @@ export interface BottomOverviewCardProps extends RouteComponentProps {
   data: BottomOverviewCardData;
   footerValues: BottomOverviewCardFooterProps;
   durationOption: Option;
+  orgName: string;
 }
 
 export const enum RefetchDataTypes {
@@ -353,6 +355,7 @@ export interface AnalyticsBoilerPlateProps {
 export interface RefundsOverviewProps {
   mode: Store['session']['mode'];
   user: Store['session']['user'];
+  orgName: string;
 }
 
 export interface LoadFailedProps {

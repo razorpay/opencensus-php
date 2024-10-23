@@ -25,7 +25,7 @@ import {
   TransactionsPagesMap,
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { onPaginate, onSearch } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
-import { paymentStatusVariantMap } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable/constants';
+import { getPaymentStatusVariantMap } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable/constants';
 
 class PaymentsList extends ListContainer {
   state = {
@@ -161,7 +161,9 @@ class PaymentsList extends ListContainer {
           count={count}
           skip={skip}
           paginate={onPaginate(this.paginate)}
-          isDisabled={({ status }) => !paymentStatusVariantMap[status]}
+          isDisabled={({ status }) =>
+            !getPaymentStatusVariantMap(window.rzp_org?.business_name)[status]
+          }
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
           shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}

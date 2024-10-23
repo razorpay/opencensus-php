@@ -63,6 +63,7 @@ interface IPaymentRefundDetails {
   fetchRefundFee: () => Promise<Record<string, string>>;
   reFetchPageDetails: (id: string) => void;
   match: RouteComponentProps<{ id: string }>['match'];
+  orgName: string;
 }
 interface PaymentRefundContentType {
   enableBorderTopRadius?: boolean;
@@ -71,6 +72,7 @@ interface PaymentRefundContentType {
   refund: IPaymentIdRefundDetail;
   currency: CurrencyCodeType;
   transactionIDActual: string;
+  orgName: string;
 }
 
 function PaymentRefundDetails({
@@ -84,6 +86,7 @@ function PaymentRefundDetails({
   match: {
     params: { id: transactionIDActual },
   },
+  orgName,
 }: IPaymentRefundDetails): React.ReactElement {
   const { currency, refund_status } = paymentDetails!;
   const hasFooter = refund_status !== null;
@@ -170,6 +173,7 @@ function PaymentRefundDetails({
               refund={paymentIdRefundDetails[0]}
               currency={currency}
               transactionIDActual={transactionIDActual}
+              orgName={orgName}
             />
           ) : (
             <CardWrapper enableBorderBottomRadius>
@@ -201,6 +205,7 @@ function PaymentRefundDetails({
                 refund={subRefund}
                 currency={currency}
                 transactionIDActual={transactionIDActual}
+                orgName={orgName}
               />
             </BoxContainer>
           ))}
@@ -222,6 +227,7 @@ function PaymentRefundContent({
   refund,
   currency,
   transactionIDActual,
+  orgName,
 }: PaymentRefundContentType): JSX.Element {
   const bankCode = refund.acquirer_data?.rrn || refund.acquirer_data?.arn;
 
@@ -379,7 +385,7 @@ function PaymentRefundContent({
       {showFooter && (
         <SectionFooter>
           <Text variant="body" size="small" weight="regular" color="surface.text.gray.subtle">
-            *Refund amount is deducted from your Razorpay current balance after getting processed
+            *Refund amount is deducted from your {orgName} current balance after getting processed
           </Text>
         </SectionFooter>
       )}
@@ -390,6 +396,7 @@ function PaymentRefundContent({
 const mapStateToProps = (state) => {
   return {
     user: state.session.user,
+    orgName: state.session.org?.business_name,
   };
 };
 

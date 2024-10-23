@@ -213,11 +213,17 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
 
   const isInternalTesting = isInternalTestingEnabled(abExperiments);
+  const isV2ForCurlecEnabled = isExperimentEnabled(abExperiments?.enable_trxn_v2_for_curlec);
+
   if (isInternalTesting) return true;
 
   if (!abExperiments?.Transactions_Revamp) return false;
 
+  // for curlec merchants, if experiment is enabled, then show trxn v2
   if (user.isOrgCurlec) {
+    if (isV2ForCurlecEnabled) {
+      return true;
+    }
     return false;
   }
 

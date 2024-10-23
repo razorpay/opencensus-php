@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text } from '@razorpay/blade/components';
+import { Text, Tooltip, TooltipInteractiveWrapper } from '@razorpay/blade/components';
+import moment from 'moment';
 
 import { useMobile } from '@dashboard/shared-ui/hooks';
 import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
@@ -22,7 +23,13 @@ const CreatedOn = ({ created_at }: CreatedOnProps): JSX.Element => {
       </>
     );
   }
-  return <Text>{createdAt}</Text>;
+  return (
+    <Tooltip content={`${moment.unix(created_at).local().toDate()}`}>
+      <TooltipInteractiveWrapper>
+        <Text>{createdAt}</Text>
+      </TooltipInteractiveWrapper>
+    </Tooltip>
+  );
 };
 
 export default CreatedOn;
