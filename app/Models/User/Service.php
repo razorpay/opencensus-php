@@ -331,6 +331,13 @@ class Service extends Base\Service
 
         $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput);
 
+        $referralCode = $input[Constants::PARTNER_REFERRAL_CODE];
+
+        if ($referralCode !== null)
+        {
+            $this->processReferralCode($data['id'], $referralCode);
+
+        }
         return $data;
     }
 

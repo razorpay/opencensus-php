@@ -8702,4 +8702,58 @@ return [
             ]
         ]
     ],
+    'testRegisterWithValidReferralCode'  => [   
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'partner_referral_code'         => 'teslacomikejzc',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@c.com',
+            ],
+        ],
+    ],
+    'testRegisterWithNullReferralCode'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'partner_referral_code' => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@c.com',
+            ],
+        ],
+    ],
+    'testRegisterWithEmptyReferralCode'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'partner_referral_code' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@c.com',
+            ],
+        ],
+    ],
 ];

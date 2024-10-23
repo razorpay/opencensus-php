@@ -16008,4 +16008,70 @@ class UserTest extends TestCase
         $this->assertNotNull($merchantAccessMap);
 
     }
+
+    public function testRegisterWithValidReferralCode()
+    {
+        $partnerMerchant = $this->createPartner('reseller');
+
+        $referralLink = $this->getDbEntity('referrals', ['product' => 'primary']);
+        $referralCode = $referralLink['ref_code'];
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['partner_referral_code']    = $referralCode;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest($testData);
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+            ['entity_owner_id' => $partnerMerchant['id'],
+                'merchant_id' => $createdSubM['id']
+            ]);
+        $this->assertNotNull($accessMap);
+        $this->assertContains('Ref-' . $partnerMerchant->getId(), $createdSubM->tagNames());
+    }
+
+    public function testRegisterWithNullReferralCode()
+    {
+        $partnerMerchant = $this->createPartner('reseller');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+        $accessMap = $this->getDbEntity('merchant_access_map',
+            ['entity_owner_id' => $partnerMerchant['id'],
+                'merchant_id' => $createdSubM['id']
+            ]);
+
+
+        $this->assertNull($accessMap);
+    }
+    public function testRegisterWithEmptyReferralCode()
+    {
+        $partnerMerchant = $this->createPartner('reseller');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+        
+        $this->startTest();
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+            ['entity_owner_id' => $partnerMerchant['id'],
+                'merchant_id' => $createdSubM['id']
+            ]);
+
+
+        $this->assertNull($accessMap);
+    }
 }
