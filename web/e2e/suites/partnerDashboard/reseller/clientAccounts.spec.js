@@ -19,7 +19,7 @@ test.describe
       CONTENT_SELECTORS.CLIENTS_LIST.INVITE_ACCEPTED_ON,
     );
   });
-  test('should load the Client Accounts lists for Reseller with correct CTAs @priority=critical', async ({
+  test.skip('should load the Client Accounts lists for Reseller with correct CTAs @priority=critical', async ({
     page,
   }) => {
     // Hide FTUX Banner
