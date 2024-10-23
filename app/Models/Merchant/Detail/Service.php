@@ -239,8 +239,8 @@ class Service extends Base\Service
             case DetailConstants::ONBOARDING_META:
                 $activationStatus = $this->merchant->merchantDetail->getActivationStatus();
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
-                $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
-                $workflowDetails = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS);
+                $workflowType = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE) : null;
+                $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS) : null;
                 $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
                 $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($this->merchant);
                 $dedupe = [
