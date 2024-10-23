@@ -158,6 +158,10 @@ class PublicController extends Controller
 
         $meta['custom_checkout_logo_enabled'] = $merchant->org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_CHECKOUT_LOGO);
 
+        if($merchant->isFeatureEnabled(Feature\Constants::RMV_CC_TXT_FRM_LOGO) === true) {
+            $meta['rmv_cc_text_from_logo'] = true;
+        }
+
         $app = \App::getFacadeRoot();
 
         if(((isset($meta['type']) === true) and
@@ -239,6 +243,9 @@ class PublicController extends Controller
                 $meta['custom_code'] = $merchant->org->getCustomCode();
                 $meta['checkout_logo_url'] = $merchant->org->getCheckoutLogo();
                 $meta['custom_checkout_logo_enabled'] = $merchant->org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_CHECKOUT_LOGO);
+                if($merchant->isFeatureEnabled(Feature\Constants::RMV_CC_TXT_FRM_LOGO)) {
+                    $meta['rmv_cc_text_from_logo'] = true;
+                }
             }
         } catch (\Exception $e)
         {

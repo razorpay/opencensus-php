@@ -2318,6 +2318,12 @@ class Constants
      */
     const MESSAGE_BANNER_DISABLED = 'message_banner_disabled';
 
+    /**
+     * For some HDFC bank merchants Credit Card payment option is not enabled.
+     * If enabled this feature flag hide credit card text from the logo on checkout page
+     */
+    const RMV_CC_TXT_FRM_LOGO = 'rmv_cc_text_from_logo';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3222,6 +3228,7 @@ class Constants
         self::VAS_NB_CORP_ORG                        => true,
         self::VAS_NB_CORP_MER                        => true,
         self::MESSAGE_BANNER_DISABLED                => true,
+        self::RMV_CC_TXT_FRM_LOGO          => true,
     ];
 
     // Entity type constants
