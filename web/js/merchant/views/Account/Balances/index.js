@@ -30,6 +30,8 @@ import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
 import { TicketSystemEmitter } from 'merchant/care/init';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { Flex } from '../Credits/components/style';
+import { BellIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -239,29 +241,48 @@ class AddFundsContainer extends Component {
 
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
-        <div className="documentation-section-link">
-          <DocsLink
-            url="https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/"
-            onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
-          />
-        </div>
-        <div class="balances-note-row">
-          <span>Note: Standard TDR charges applies on adding funds</span>
-          {user.isAllowedEdit('credits') && (
-            <span style={{ color: '#528ff0' }} onClick={this.handleManageAlert}>
-              Manage Alerts <i className="i i-bell-outline" />
-            </span>
-          )}
-        </div>
+        <Box display="flex" flexDirection="column" gap="spacing.8">
+          <Flex isResponsive justifyBetween alignItems="center">
+            <Heading size="small" weight="semibold">
+              Your Funds
+            </Heading>
+            <Box display="flex" gap="spacing.7" alignItems="center">
+              {user.isAllowedEdit('credits') ? (
+                <Link
+                  variant="button"
+                  icon={BellIcon}
+                  iconPosition="right"
+                  onClick={this.handleManageAlert}
+                >
+                  Manage Alerts
+                </Link>
+              ) : null}
+              <DocsLink
+                shouldUseBladeLink={true}
+                url="https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/"
+                onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
+              />
+            </Box>
+          </Flex>
+          <Box gap="spacing.7" display="flex" flexDirection="column">
+            <Box gap="spacing.5" display="flex" flexDirection="column">
+              <CurrentBalance
+                handleContactUs={this.handleContactUs}
+                handlAddFunds={this.handlAddFunds}
+              />
 
-        <CurrentBalance handleContactUs={this.handleContactUs} handlAddFunds={this.handlAddFunds} />
-
-        <ReserveBalance
-          handleContactUs={this.handleContactUs}
-          handlAddFunds={this.handlAddFunds}
-          handleActivate={this.handleActivate}
-          ticketGenerated={ticketGenerated}
-        />
+              <ReserveBalance
+                handleContactUs={this.handleContactUs}
+                handlAddFunds={this.handlAddFunds}
+                handleActivate={this.handleActivate}
+                ticketGenerated={ticketGenerated}
+              />
+            </Box>
+            <Text size="small" weight="regular" color="surface.text.gray.normal">
+              Note: Standard TDR charges applies on adding funds
+            </Text>
+          </Box>
+        </Box>
       </div>
     );
   }

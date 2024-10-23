@@ -1,9 +1,20 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import {
+  Amount,
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardHeaderLeading,
+} from '@razorpay/blade/components';
+import { Flex } from '../Credits/components/style';
+import { TICKET_STATUS } from '../constants';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 const getReserveBalanceAmount = (items, reserveBalanceError) => {
   if (!items) return 0;
@@ -38,42 +49,48 @@ function ReserveBalance({
   }
 
   return (
-    <>
-      <div class="balances-container">
-        <div class="bal-cont-header">
-          <div class="balances-lhs-container">
-            <div class="balance-type-container">
-              <p>Reserve Balance</p>
-            </div>
-            <div class="balance-amount-container">
-              <Amount value={Math.abs(balance)} currency="INR" />
-            </div>
-          </div>
+    <Card>
+      <CardHeader>
+        <CardHeaderLeading
+          title="Reserve Balance"
+          subtitle="Add funds to your reserve balance to increase the negative balance limit."
+        />
+      </CardHeader>
+      <CardBody>
+        <Flex isResponsive spacing={8} justifyBetween direction="row">
+          <Amount
+            size="large"
+            weight="semibold"
+            type="heading"
+            currency={user.merchant.currency}
+            value={i18nifyConvertToMajorUnit(balance, user.merchant.currency)}
+          />
           {!user.isOrgAxis && !user.isReserveBalanceSelfServeEnabled && (
-            <div class="balances-add-funds">
-              {ticketGenerated || ticketStatusData.ticket_status === 'Processing' ? (
+            <>
+              {ticketGenerated || ticketStatusData.ticket_status === TICKET_STATUS.processing ? (
                 <button class="btn btn-primary">Processing...</button>
-              ) : ticketStatusData.ticket_status === 'Resolved' ||
-                ticketStatusData.ticket_status === 'Closed' ||
+              ) : ticketStatusData.ticket_status === TICKET_STATUS.resolved ||
+                ticketStatusData.ticket_status === TICKET_STATUS.closed ||
                 balance > 0 ? null : (
-                <button class="btn btn-outline" onClick={handleActivate}>
+                <Button variant="secondary" onClick={handleActivate}>
                   Activate
-                </button>
+                </Button>
               )}
-            </div>
+            </>
           )}
+
           {!user.isOrgAxis &&
             user.isReserveBalanceSelfServeEnabled &&
             [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
-              <div class="balances-add-funds">
+              <Box display="flex" gap="spacing.3" alignItems="center">
                 <div>
-                  <button
-                    class="btn btn-outline"
-                    disabled={mode !== 'live'}
+                  <Button
+                    variant="secondary"
+                    isDisabled={mode !== 'live'}
                     onClick={() => handlAddFunds('reserve')}
                   >
                     Add Funds
-                  </button>
+                  </Button>
                   {mode !== 'live' ? (
                     <Popover align="bottom" theme="dark">
                       <PopoverBody>
@@ -82,25 +99,11 @@ function ReserveBalance({
                     </Popover>
                   ) : null}
                 </div>
-              </div>
+              </Box>
             )}
-        </div>
-        <div class="bal-cont-footer">
-          <p>
-            Add funds to your reserve balance to increase the negative balance limit. Thinking of
-            withdrawing your reserve balance? <a onClick={handleContactUs}>Contact Us</a>
-          </p>
-        </div>
-      </div>
-
-      {ticketGenerated ||
-      (ticketStatusData.ticket_status === 'Processing' &&
-        !user.isReserveBalanceSelfServeEnabled) ? (
-        <div class="processing-note">
-          <p>Your request is being processed. Please check your registered email for an update.</p>
-        </div>
-      ) : null}
-    </>
+        </Flex>
+      </CardBody>
+    </Card>
   );
 }
 

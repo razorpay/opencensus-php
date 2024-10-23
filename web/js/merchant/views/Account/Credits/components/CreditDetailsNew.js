@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import moment from 'moment';
-import Amount from 'common/ui/Amount';
-
 import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ApplyCouponCodeModal from 'merchant/views/Account/Credits/components/ApplyCouponCodeModal';
@@ -15,6 +13,21 @@ import {
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import {
+  Amount,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardHeaderLeading,
+  CardHeaderLink,
+  CardHeaderTrailing,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from '@razorpay/blade/components';
+import { Flex } from './style';
+import { ACTIVATION_STATUS } from '../../constants';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 function CreditDetails(props) {
   const [showCollapsible, setshowCollapsible] = useState(false);
@@ -99,59 +112,62 @@ function CreditDetails(props) {
 
   const { title, description, toggleText, user, mode } = props;
   const creditItems = pruneAmountCredits(props.creditItems);
+  const currency = user.merchant.currency;
 
   return (
-    <div class="balances-container">
-      <div class="bal-cont-header">
-        <div class="balances-lhs-container">
-          <div class="balance-type-container">
-            <p>{title}</p>
-          </div>
-          <div class="balance-amount-container">
-            <Amount value={Math.abs(props.totalCredits)} currency="INR" />
-          </div>
-        </div>
-        {['instantly_activated', 'activated', 'activated_mcc_pending'].includes(
-          user.activation_status,
-        ) && [rolesList.OWNER, rolesList.ADMIN].includes(user.role) ? (
-          <div class="balances-add-funds">
-            <span>
-              <button
-                className="btn btn-outline"
-                disabled={mode !== 'live'}
-                onClick={openApplyCouponCodeModal}
-              >
-                Apply Coupon Code
-              </button>
-              {mode !== 'live' ? (
-                <Popover align="bottom" theme="dark">
-                  <PopoverBody>
-                    You cannot apply coupon codes in test mode. Switch to live mode to apply the
-                    coupon code.
-                  </PopoverBody>
-                </Popover>
-              ) : null}
-            </span>
-          </div>
-        ) : null}
-      </div>
-
-      <div class="bal-cont-footer">
-        <p>{description}</p>
-      </div>
-
-      <div class="coupon-details">
-        <div>
-          <button
-            class="btn-link toggle-history"
-            style={!showCollapsible ? { marginBottom: '9px' } : {}}
-            onClick={toggleCollapsible}
-          >
-            <i class={`m-r i-chevron-${!!showCollapsible ? 'up' : 'down'}`} />
-            {`${toggleText} (${creditItems.length})`}
-          </button>
-
-          {showCollapsible && (
+    <Card>
+      <CardHeader>
+        <CardHeaderLeading title={title} subtitle={description} />
+        <CardHeaderTrailing
+          visual={
+            <CardHeaderLink
+              onClick={toggleCollapsible}
+              variant="button"
+              icon={showCollapsible ? ChevronUpIcon : ChevronDownIcon}
+              iconPosition="right"
+            >
+              Past Coupons
+            </CardHeaderLink>
+          }
+        />
+      </CardHeader>
+      <CardBody>
+        <Flex direction="column" spacing={12}>
+          <Flex isResponsive spacing={8} justifyBetween direction="row">
+            <Amount
+              size="large"
+              type="heading"
+              weight="semibold"
+              value={i18nifyConvertToMajorUnit(props.totalCredits, currency)}
+              currency={currency}
+            />
+            {[
+              ACTIVATION_STATUS.instantly_activated,
+              ACTIVATION_STATUS.activated,
+              ACTIVATION_STATUS.activated_mcc_pending,
+            ].includes(user.activation_status) &&
+            [rolesList.OWNER, rolesList.ADMIN].includes(user.role) ? (
+              <span className="btn-fixed">
+                <Button
+                  isFullWidth
+                  variant="secondary"
+                  isDisabled={mode !== 'live'}
+                  onClick={openApplyCouponCodeModal}
+                >
+                  Apply Coupon Code
+                </Button>
+                {mode !== 'live' ? (
+                  <Popover align="bottom" theme="dark">
+                    <PopoverBody>
+                      You cannot apply coupon codes in test mode. Switch to live mode to apply the
+                      coupon code.
+                    </PopoverBody>
+                  </Popover>
+                ) : null}
+              </span>
+            ) : null}
+          </Flex>
+          {showCollapsible ? (
             <div class="collapsible">
               <div class="history">
                 {creditItems.map((cItem) => {
@@ -163,17 +179,30 @@ function CreditDetails(props) {
                         <div class="row">
                           {cItem.used === cItem.value ? (
                             <>
-                              <strong>
-                                <Amount value={cItem.value} currency="INR" />
-                              </strong>{' '}
+                              <Amount
+                                isAffixSubtle={false}
+                                value={i18nifyConvertToMajorUnit(cItem.value, currency)}
+                                currency={currency}
+                              />{' '}
                               All credits used
                             </>
                           ) : (
                             <>
-                              <strong>
-                                <Amount value={cItem.value - cItem.used} currency="INR" />
-                              </strong>{' '}
-                              of <Amount value={cItem.value} currency="INR" /> is still unused
+                              <Amount
+                                isAffixSubtle={false}
+                                value={i18nifyConvertToMajorUnit(
+                                  cItem.value - cItem.used,
+                                  currency,
+                                )}
+                                currency={currency}
+                              />{' '}
+                              of{' '}
+                              <Amount
+                                isAffixSubtle={false}
+                                value={i18nifyConvertToMajorUnit(cItem.value, currency)}
+                                currency={currency}
+                              />{' '}
+                              is still unused
                             </>
                           )}
                         </div>
@@ -214,10 +243,10 @@ function CreditDetails(props) {
                 })}
               </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
+          ) : null}
+        </Flex>
+      </CardBody>
+    </Card>
   );
 }
 

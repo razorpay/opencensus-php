@@ -3,8 +3,15 @@ import React from 'react';
 import ShowWhen from './ShowWhen';
 import { getUser } from 'merchant/store';
 import { useI18Service } from 'common/i18';
+import { ExternalLinkIcon, Link } from '@razorpay/blade/components';
 
-export default function DocsLink({ url, title = 'Documentation', style = {}, onClick }) {
+export default function DocsLink({
+  url,
+  title = 'Documentation',
+  style = {},
+  onClick,
+  shouldUseBladeLink = false,
+}) {
   const { isConfigTagEnabled } = useI18Service();
   if (typeof title === 'string') {
     title = `${title}`;
@@ -18,17 +25,29 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
         !isConfigTagEnabled('documentation.documentation')
       }
     >
-      <a
-        className="btn btn-link"
-        href={modifiedURL}
-        target="_blank"
-        style={style}
-        onClick={onClick}
-        rel="noreferrer noopener"
-      >
-        {title} &nbsp;
-        <i className="i i-external-link" />
-      </a>
+      {!shouldUseBladeLink ? (
+        <a
+          className="btn btn-link"
+          href={modifiedURL}
+          target="_blank"
+          style={style}
+          onClick={onClick}
+          rel="noreferrer noopener"
+        >
+          {title} &nbsp;
+          <i className="i i-external-link" />
+        </a>
+      ) : (
+        <Link
+          icon={ExternalLinkIcon}
+          onClick={onClick}
+          target="_blank"
+          iconPosition="right"
+          href={modifiedURL}
+        >
+          {title}
+        </Link>
+      )}
     </ShowWhen>
   );
 }

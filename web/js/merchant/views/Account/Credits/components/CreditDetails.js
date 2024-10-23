@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
-import Amount from 'common/ui/Amount';
 import { openModal as openModalReducer } from 'merchant_common/reducers/modals';
 import {
   clickHistoryCreditsGA,
@@ -21,6 +20,20 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import Loader from 'common/ui/Loader';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { Flex, Slot } from './style';
+import {
+  Amount,
+  ArrowRightIcon,
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardHeaderLeading,
+  CardHeaderLink,
+  CardHeaderTrailing,
+} from '@razorpay/blade/components';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
 const ViewCreditHistoryTable = lazy(() =>
   import(
@@ -120,64 +133,70 @@ function CreditDetails({
     }
   };
 
-  return (
-    <div class="balances-container">
-      <div class="bal-cont-header">
-        <div class="balances-lhs-container">
-          <div class="balance-type-container">
-            <p>{title}</p>
-          </div>
-          <div class="balance-amount-container">
-            <Amount value={Math.abs(totalCredits)} currency="INR" />
-          </div>
-        </div>
-        <div class="balances-add-funds">
-          {isSelfServeEnabled(type) && [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
-            <div>
-              <button
-                class="btn btn-outline"
-                disabled={mode !== 'live'}
-                onClick={() => addCreditsHandler(type)}
-              >
-                Add {title}
-              </button>
-              {mode !== 'live' ? (
-                <Popover align="bottom" theme="dark">
-                  <PopoverBody>
-                    You cannot add {type} credits in test mode. Switch to live mode to add credits.
-                  </PopoverBody>
-                </Popover>
-              ) : null}
-            </div>
-          )}
-        </div>
-      </div>
+  const handleViewHistory = () => {
+    selfServeTrackInitiate(getAnalyticsData('view', type));
+    openModal({
+      size: 'large',
+      component: (
+        <Suspense fallback={<Loader />}>
+          <ViewCreditHistoryTable creditItems={creditItems} title={title} type={type} />
+        </Suspense>
+      ),
+    });
+    analyticsTrack(clickHistoryCreditsGA(title));
+  };
 
-      <div class="bal-cont-footer">
-        <p>{description}</p>
-      </div>
-      <div class="coupon-details">
-        <div class="view-history">
-          <button
-            class="btn-link toggle-history"
-            onClick={() => {
-              selfServeTrackInitiate(getAnalyticsData('view', type));
-              openModal({
-                size: 'large',
-                component: (
-                  <Suspense fallback={<Loader />}>
-                    <ViewCreditHistoryTable creditItems={creditItems} title={title} type={type} />
-                  </Suspense>
-                ),
-              });
-              analyticsTrack(clickHistoryCreditsGA(title));
-            }}
-          >
-            View History
-          </button>
-        </div>
-      </div>
-    </div>
+  return (
+    <Card>
+      <CardHeader>
+        <CardHeaderLeading title={title} subtitle={description} />
+        <CardHeaderTrailing
+          visual={
+            <CardHeaderLink
+              variant="button"
+              onClick={handleViewHistory}
+              icon={ArrowRightIcon}
+              iconPosition="right"
+            >
+              View History
+            </CardHeaderLink>
+          }
+        />
+      </CardHeader>
+      <CardBody>
+        <Flex isResponsive spacing={8} justifyBetween direction="row">
+          <Amount
+            size="large"
+            type="heading"
+            weight="semibold"
+            value={i18nifyConvertToMajorUnit(totalCredits, user.merchant.currency)}
+            currency={user.merchant.currency}
+          />
+          {isSelfServeEnabled(type) && [rolesList.OWNER, rolesList.ADMIN].includes(user.role) ? (
+            <Box display="flex" flexWrap="wrap" gap="spacing.3">
+              <div className="btn-fixed">
+                <Button
+                  isFullWidth
+                  variant="secondary"
+                  isDisabled={mode !== 'live'}
+                  onClick={() => addCreditsHandler(type)}
+                >
+                  Add {title}
+                </Button>
+                {mode !== 'live' ? (
+                  <Popover align="bottom" theme="dark">
+                    <PopoverBody>
+                      You cannot add {type} credits in test mode. Switch to live mode to add
+                      credits.
+                    </PopoverBody>
+                  </Popover>
+                ) : null}
+              </div>
+            </Box>
+          ) : null}
+        </Flex>
+      </CardBody>
+    </Card>
   );
 }
 

@@ -56,4 +56,16 @@ export const ATTR_DETAILS = {
   },
 };
 
+export const TICKET_STATUS = {
+  processing: 'Processing',
+  resolved: 'Resolved',
+  closed: 'Closed',
+};
+
+export const ACTIVATION_STATUS = {
+  instantly_activated: 'instantly_activated',
+  activated: 'activated',
+  activated_mcc_pending: 'activated_mcc_pending',
+};
+
 export const MAX_FILE_SIZE_LIMIT = 52428800; // 50 MB = 100 * 1024 * 1024

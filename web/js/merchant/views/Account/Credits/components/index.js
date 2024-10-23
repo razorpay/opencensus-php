@@ -10,6 +10,8 @@ import { CLICK_ON_MANAGE_ALERTS, OPEN_DOCUMENTATION } from 'merchant/views/Accou
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { connect } from 'react-redux';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { Flex } from './style';
+import { BellIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
 
 function CreditsList(props) {
   const { creditsData, balanceData, loading, showDocumentation = true, user } = props;
@@ -46,68 +48,74 @@ function CreditsList(props) {
   };
 
   return (
-    <div className="credits content-wrapper content-sm">
-      {showDocumentation && (
-        <div className="documentation-section-link">
-          <DocsLink
-            url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/"
-            onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
-          />
-        </div>
-      )}
+    <div className="credits content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
       {loading ? (
         <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div className="list-group details-row-container">
-          {props.user.isAllowedEdit('credits') && (
-            <div className="manage-alerts-row">
-              <span>Note: Standard TDR charges applies on adding funds</span>
-              <span style={{ color: '#528ff0' }} onClick={handleManageAlert}>
-                Manage Alerts
-                {}
-                <i className="i i-bell-outline" />
-              </span>
-            </div>
-          )}
-
-          {(user.business_type === '11' || user.business_type === '2') && (
-            <div className="note">
-              These credits can not be applied for credit cards transactions.
-            </div>
-          )}
-
-          <CreditDetailsNew
-            totalCredits={balanceData.credits}
-            title="Amount Credits"
-            description="Transactions worth amount credits will be free of any transaction fee."
-            creditItems={creditItems.amount}
-            toggleText="Past Coupons"
-            trackToggleHistory={props.trackToggleHistory}
-          />
-
-          <CreditDetails
-            totalCredits={balanceData.fee_credits}
-            title="Fee Credits"
-            description="Get your transactions settled in full. Transaction charges will be deducted from fee credits."
-            creditItems={creditItems.fee || []}
-            onManageAlert={props.onManageAlert}
-            trackToggleHistory={props.trackToggleHistory}
-            type="fee"
-            setStatus={setStatus}
-          />
-
-          <CreditDetails
-            totalCredits={balanceData.refund_credits}
-            title="Refund Credits"
-            description="Do not want to refund from your settled amounts? Use refund credits."
-            creditItems={creditItems.refund || []}
-            trackToggleHistory={props.trackToggleHistory}
-            type="refund"
-            setStatus={setStatus}
-          />
-        </div>
+        <Box display="flex" flexDirection="column" gap="spacing.8">
+          <Flex isResponsive justifyBetween alignItems="center">
+            <Heading size="small" weight="semibold">
+              Your Credits
+            </Heading>
+            <Box display="flex" gap="spacing.7" alignItems="center">
+              {props.user.isAllowedEdit('credits') && (
+                <Link
+                  variant="button"
+                  icon={BellIcon}
+                  iconPosition="right"
+                  onClick={handleManageAlert}
+                >
+                  Manage Alerts
+                </Link>
+              )}
+              {showDocumentation && (
+                <DocsLink
+                  shouldUseBladeLink={true}
+                  url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/"
+                  onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
+                />
+              )}
+            </Box>
+          </Flex>
+          <Box display="flex" flexDirection="column" gap="spacing.7">
+            <Box display="flex" flexDirection="column" gap="spacing.5">
+              <CreditDetailsNew
+                totalCredits={balanceData.credits}
+                title="Amount Credits"
+                description="Transactions worth amount credits will be free of any transaction fee."
+                creditItems={creditItems.amount}
+                toggleText="Past Coupons"
+                trackToggleHistory={props.trackToggleHistory}
+              />
+              <CreditDetails
+                totalCredits={balanceData.fee_credits}
+                title="Fee Credits"
+                description="Get your transactions settled in full. Transaction charges will be deducted from fee credits."
+                creditItems={creditItems.fee || []}
+                onManageAlert={props.onManageAlert}
+                trackToggleHistory={props.trackToggleHistory}
+                type="fee"
+                setStatus={setStatus}
+              />
+              <CreditDetails
+                totalCredits={balanceData.refund_credits}
+                title="Refund Credits"
+                description="Do not want to refund from your settled amounts? Use refund credits."
+                creditItems={creditItems.refund || []}
+                trackToggleHistory={props.trackToggleHistory}
+                type="refund"
+                setStatus={setStatus}
+              />
+            </Box>
+            <Text size="small" weight="regular" color="surface.text.gray.normal">
+              Note: Standard TDR charges applies on adding funds.
+              {(user.business_type === '11' || user.business_type === '2') &&
+                'These credits can not be applied for credit cards transactions.'}
+            </Text>
+          </Box>
+        </Box>
       )}
     </div>
   );

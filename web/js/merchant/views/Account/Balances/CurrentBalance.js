@@ -1,28 +1,37 @@
 import React from 'react';
-import Amount from 'common/ui/Amount';
 import { connect } from 'react-redux';
+import {
+  Amount,
+  Box,
+  Card,
+  CardBody,
+  CardHeader,
+  CardHeaderLeading,
+} from '@razorpay/blade/components';
+import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 
-function CurrentBalance({ currentBalance }) {
+function CurrentBalance({ currentBalance, user }) {
   const balance = currentBalance.data?.balance || 0;
 
   return (
-    <div class="balances-container">
-      <div class="bal-cont-header">
-        <div class="balances-lhs-container">
-          <div class="balance-type-container">
-            <p>Current Balance</p>
-          </div>
-          <div class="balance-amount-container">
-            {balance < 0 && <p class="negative-marker">-</p>}
-            <Amount
-              value={Math.abs(balance)}
-              currency="INR"
-              className={balance < 0 ? 'negative-balance' : ''}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardHeaderLeading title="Current Balance" />
+      </CardHeader>
+      <CardBody>
+        <Box display="flex" alignItems="center">
+          {balance < 0 && <p class="negative-marker">-</p>}
+          <Amount
+            size="large"
+            weight="semibold"
+            type="heading"
+            value={i18nifyConvertToMajorUnit(balance, user.merchant.currency)}
+            currency={user.merchant.currency}
+            color={balance < 0 ? 'feedback.text.negative.intense' : ''}
+          />
+        </Box>
+      </CardBody>
+    </Card>
   );
 }
 
