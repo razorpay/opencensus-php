@@ -1403,7 +1403,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function slackPost($headline, $postData, $channel, $pretext = '', $color = 'good')
+    protected function slackPost($headline, $postData, $channel, $pretext = '', $color = 'good')
     {
         if ($this->app->config->get('slack.is_slack_enabled') === true)
         {

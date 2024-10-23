@@ -42,7 +42,6 @@ use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Order\OrderMeta;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation;
-use RZP\Models\Lambda\Service as LambdaService;
 
 
 class Processor extends Base\Core
@@ -893,12 +892,6 @@ class Processor extends Base\Core
                             'Total_Documents_Missing'     => count($invoicesNotPresent)
                         ]);
 
-                    //slack alert for Missing invoices
-                    if (count($invoicesNotPresent) > 0) {
-                        $this->sendMissingInvoiceSlackAlert(count($invoicesNotPresent), $merchantId, $settlement->getId());
-                    }
-
-
                     $fileIdBatches = array_chunk($fileIds, Constants::INVOICE_ZIP_BATCH_SIZE);
 
                     foreach ($fileIdBatches as $fileIdBatch) {
@@ -1043,27 +1036,4 @@ class Processor extends Base\Core
 
         return $config[$bucketType];
     }
-
-    public function sendMissingInvoiceSlackAlert($invoiceCount, $merchantId, $settlementId)
-    {
-        try {
-            $team = "<!subteam^S07S8BBKG7K> <!subteam^S07PY6XESNB> "; // @cross-border-import-product, @cross-border-import-oncall in order
-            $text = $team . " <$invoiceCount> Invoices not received";
-            $data = [
-                'merchant_id' => $merchantId,
-                'settlement_id' => $settlementId,
-            ];
-            $channel = $this->app->config->get('slack.channels.tech-cross-border-alerts');
-            $color = 'danger';
-
-            LambdaService::slackPost($text, $data, $channel, '', $color);
-        } catch (Exception $e) {
-            $this->trace->error(
-                TraceCode::SLACK_PUSH_MESSAGE_FAILURE,[
-                    "error" => $e->getMessage()
-                ]
-            );
-        }
-    }
-
 }
