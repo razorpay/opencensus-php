@@ -3,10 +3,12 @@
 
 namespace RZP\Jobs\Kafka;
 
+use App;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Metric;
 use Razorpay\Trace\Logger;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Service;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
@@ -30,6 +32,8 @@ class PgosCdcEventsJob extends Job
 
         parent::handle();
 
+        $app = App::getFacadeRoot();
+
         $tracePayload = [
             'job_attempts' => $this->attempts(),
             'mode'         => $this->mode,
@@ -39,6 +43,15 @@ class PgosCdcEventsJob extends Job
         ];
 
         $this->trace->info(TraceCode::PGOS_DUAL_WRITE_CONSUMER_PAYLOAD, $tracePayload);
+
+        $merchantId = $this->payload['data']['merchant_id'] ?? $this->payload['data']['id'];
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $app['config']->get('app.emit_pgos_consumer_metric_experiment'),
+        ];
+
+        $isMetricExperimentEnabled =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
 
         try
         {
@@ -53,14 +66,15 @@ class PgosCdcEventsJob extends Job
                 'payload'   => $this->payload
             ]);
 
-            //Commenting this for now due to a statsd issue but we wish to add this back for alerting
-            //$this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-            //    'level'           => self::WARNING,
-            //    'code'            => $e->getCode(),
-            //    'description'     => $e->getMessage(),
-            //    'attempt'         => $this->attempts(),
-            //    'retry'           => false
-            //]);
+            if ($isMetricExperimentEnabled) {
+                $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                    'level'           => self::WARNING,
+                    'code'            => $e->getCode(),
+                    'description'     => $this->replaceSpaceWithUnderscore($e->getMessage()),
+                    'attempt'         => $this->attempts(),
+                    'retry'           => false
+                ]);
+            }
 
         }
         catch (DbQueryException $e)
@@ -73,14 +87,15 @@ class PgosCdcEventsJob extends Job
                 'attempt'   => $this->attempts()
             ]);
 
-            //Commenting this for now due to a statsd issue but we wish to add this back for alerting
-            //$this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-            //    'level'           => self::ERROR,
-            //    'code'            => $e->getCode(),
-            //    'description'     => $e->getMessage(),
-            //    'attempt'         => $this->attempts(),
-            //    'retry'           => true
-            //]);
+            if ($isMetricExperimentEnabled) {
+                $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                    'level'           => self::ERROR,
+                    'code'            => $e->getCode(),
+                    'description'     => $this->replaceSpaceWithUnderscore($e->getMessage()),
+                    'attempt'         => $this->attempts(),
+                    'retry'           => true
+                ]);
+            }
         }
         catch (\Throwable $e)
         {
@@ -96,15 +111,20 @@ class PgosCdcEventsJob extends Job
                 TraceCode::PGOS_DUAL_WRITE_CONSUMER_ERROR,
                 $payload);
 
-            //Commenting this for now due to a statsd issue but we wish to add this back for alerting
-            //$this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
-            //    'level'           => self::ERROR,
-            //    'code'            => $e->getCode(),
-            //    'description'     => $e->getMessage(),
-            //    'attempt'         => $this->attempts(),
-            //    'retry'           => false
-            //]);
+            if ($isMetricExperimentEnabled) {
+                $this->trace->count(Metric::PGOS_DUAL_WRITE_CONSUMER_ERROR, [
+                    'level'           => self::ERROR,
+                    'code'            => $e->getCode(),
+                    'description'     => $this->replaceSpaceWithUnderscore($e->getMessage()),
+                    'attempt'         => $this->attempts(),
+                    'retry'           => false
+                ]);
+            }
         }
 
+    }
+
+    private function replaceSpaceWithUnderscore($inputString) {
+        return str_replace(' ', '__', $inputString);
     }
 }
