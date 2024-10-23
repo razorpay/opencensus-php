@@ -1,15 +1,13 @@
 import React from 'react';
-import { fireEvent, render, screen, delay, waitFor } from 'test-utils';
+import { fireEvent, render, screen, delay, waitFor, server } from 'test-utils';
 
 import TestModal from 'common/services/test/TestModal';
+import { pricingBreakupHandler } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/odsApiHandlers';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import { POST_ENABLE_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 
 jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils', () => ({
   __esModule: true,
-  getInstantPricingPercentage: () => {
-    return Promise.resolve({ data: null });
-  },
   enableAutomaticSettlements: () => {
     return Promise.resolve({ data: null });
   },
@@ -21,12 +19,6 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledMod
   },
   getAutomaticSettlementTime: () => {
     return '9 AM';
-  },
-  getDiscountPercentage: () => {
-    return -50;
-  },
-  isPricingRateValid: () => {
-    return true;
   },
 }));
 
@@ -41,7 +33,11 @@ function App({ enabled, postModalType }: AppProps) {
   );
 }
 
-test('test pre enablement', async () => {
+beforeEach(() => {
+  server.use(pricingBreakupHandler);
+});
+
+test('test pre enablement - pricing splitz off', async () => {
   render(<App />, { showModal: true });
 
   await delay();
@@ -58,27 +54,12 @@ test('test pre enablement', async () => {
     screen.queryByText(/Consistent cash flow with no delays between sales and cash in hand/i),
   ).toBeInTheDocument();
   expect(screen.queryByText(/Opt-out anytime/i)).toBeInTheDocument();
-
-  const leftIndicator = screen.getByTestId('left-indicator');
-  const rightIndicator = screen.getByTestId('right-indicator');
-
-  expect(leftIndicator).toBeInTheDocument();
-  expect(rightIndicator).toBeInTheDocument();
-
-  fireEvent.mouseOver(leftIndicator);
-  expect(leftIndicator).toHaveStyle(`cursor: pointer;`);
-  fireEvent.mouseOver(rightIndicator);
-  expect(rightIndicator).toHaveStyle(`cursor: pointer;`);
-
-  fireEvent.click(rightIndicator);
-  await delay();
-  expect(screen.queryByText(/discount on Instant Settlements fees, forever!/i)).toBeInTheDocument();
-  expect(
-    screen.queryByText(
-      /The discounted pricing for Instant Settlements will be effective once you enable Same-day Settlements/i,
-    ),
-  ).toBeInTheDocument();
-
+  // pricing section
+  expect(screen.queryByText(/Minimal fee of/i)).not.toBeInTheDocument();
+  const leftIndicator = screen.queryByTestId('left-indicator');
+  const rightIndicator = screen.queryByTestId('right-indicator');
+  expect(leftIndicator).not.toBeInTheDocument();
+  expect(rightIndicator).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Enable Same-day Settlements' })).not.toBeDisabled();
 });
 
@@ -138,7 +119,7 @@ test('test post enablement - partial success', async () => {
   ).not.toBeInTheDocument();
 });
 
-test('test post enablement - full success', async () => {
+test('test post enablement - full success & pricing splitz exp off', async () => {
   render(<App enabled postModalType={POST_ENABLE_TYPES.SAMEDAY_FULL_SUCCESS} />, {
     showModal: true,
   });
@@ -152,12 +133,14 @@ test('test post enablement - full success', async () => {
   expect(screen.queryByText('Enjoy all your benefits!')).toBeInTheDocument();
   expect(screen.queryByText('Instant and Same-day Settlements, forever!')).toBeInTheDocument();
   expect(screen.queryByText('100%')).toBeInTheDocument();
-  expect(screen.queryByText('Discount on your Instant Settlements')).toBeInTheDocument();
+  expect(screen.getByText('Additional annual maintenance fees')).toBeInTheDocument();
+  // pricing section
+  expect(screen.queryByText('Discount on your Instant Settlements')).not.toBeInTheDocument();
 
   expect(screen.getByRole('button', { name: 'Understood' })).not.toBeDisabled();
 });
 
-test('test post enablement - full shift success', async () => {
+test('test post enablement - full shift success & pricing splitz exp off', async () => {
   render(<App enabled postModalType={POST_ENABLE_TYPES.SAMEDAY_FULL_SUCCESS_SHIFT} />, {
     showModal: true,
   });
@@ -172,7 +155,9 @@ test('test post enablement - full shift success', async () => {
   expect(screen.queryByText('Enjoy all your benefits!')).toBeInTheDocument();
   expect(screen.queryByText('Instant and Same-day Settlements, forever!')).toBeInTheDocument();
   expect(screen.queryByText('100%')).toBeInTheDocument();
-  expect(screen.queryByText('Discount on your Instant Settlements')).toBeInTheDocument();
+  expect(screen.getByText('Additional annual maintenance fees')).toBeInTheDocument();
+  // pricing section
+  expect(screen.queryByText('Discount on your Instant Settlements')).not.toBeInTheDocument();
 
   expect(screen.getByRole('button', { name: 'Understood' })).not.toBeDisabled();
 });

@@ -1,32 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { Box, Spinner } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import styled, { css, keyframes } from 'styled-components';
 
 import User from 'merchant/models/User';
 import { updateSession as fnUpdateSession } from 'merchant/reducers/session';
-import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 
-import TopSection from './components/TopSection';
+import {
+  trackEnableModalCloseClick,
+  trackEnableModalRendered,
+  trackEnableNowClicked,
+} from './analytics';
 import BottomSection from './components/BottomSection';
 import Button from './components/Button';
+import TopSection from './components/TopSection';
 import {
   SAMEDAY_TIMELINE_ICONS,
   PRE_ENABLE_VIEWS,
   getSamedayTimeline,
   SAMEDAY_MODAL_LOCATIONS,
 } from './constants';
-import {
-  enableAutomaticSettlements,
-  setEnableEsPartialAutomaticDate,
-  getDiscountPercentage,
-  isPricingRateValid,
-} from './utils';
-import {
-  trackEnableModalCloseClick,
-  trackEnableModalRendered,
-  trackEnableNowClicked,
-} from './analytics';
+import { enableAutomaticSettlements, setEnableEsPartialAutomaticDate } from './utils';
 
 const IndicatorWrapper = styled.div`
   width: 100%;
@@ -327,13 +324,19 @@ const getScreenForTrackEvent = (from) => {
 function PreEnable({
   user,
   setAutoEnabled,
-  pricingRate,
   updateSession,
   showNotification,
   closeModal,
   trackSameDaySettlement = () => {},
   from,
 }) {
+  const {
+    discountPercent,
+    currentPrice,
+    newPrice,
+    isLoading: isPricingLoading,
+    canViewDiscount,
+  } = useODSAutomaticPricingDiscount(user.merchant.currency || 'INR');
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isFullOndemandSettlementEnabled =
@@ -344,7 +347,7 @@ function PreEnable({
   const [isLoading, setLoading] = useState(false);
   const [view, setView] = useState(PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS);
   const [hovered, setHovered] = useState(false);
-  const isPricingValid = isPricingRateValid(pricingRate);
+  const isPricingValid = canViewDiscount;
   const screen = getScreenForTrackEvent(from);
 
   useEffect(() => {
@@ -510,35 +513,34 @@ function PreEnable({
                 </SamedayDetailContainer>
               </SamedayWorksContainer>
             </div>
-            <FeeInfo>
-              Minimal fee of <span>0.15%</span> per settlement
-            </FeeInfo>
+            {isPricingValid ? (
+              <FeeInfo>
+                Minimal fee of <span>{newPrice}%</span> per settlement
+              </FeeInfo>
+            ) : null}
           </>
         );
       }
 
       case PRE_ENABLE_VIEWS.INSTANT_SETTLEMENTS: {
         if (!isPricingValid) return null;
-        const discount = getDiscountPercentage(pricingRate);
         return (
           <>
             {getIndicators()}
             <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
               <InstantSettlementsBenefits>
-                <BigDiscount>{discount}%</BigDiscount>
+                <BigDiscount>-{discountPercent}%</BigDiscount>
                 <InstantSettlementsTitle>
                   discount on Instant Settlements fees, forever!
                 </InstantSettlementsTitle>
 
                 <InstantSettlementsFeeContainer>
                   <InstantSettlementsCurrentFeeContainer>
-                    <InstantSettlementsCurrentFee>
-                      {(pricingRate / 100).toFixed(2)}
-                    </InstantSettlementsCurrentFee>
+                    <InstantSettlementsCurrentFee>{currentPrice}%</InstantSettlementsCurrentFee>
                     <StrikeThrough />
                   </InstantSettlementsCurrentFeeContainer>
                   <i className="i i-arrow-forward" />
-                  <InstantSettlementsOfferFee>0.15%</InstantSettlementsOfferFee>
+                  <InstantSettlementsOfferFee>{newPrice}%</InstantSettlementsOfferFee>
                   <InstantSettlementsOfferFeeLabel>/ settlement</InstantSettlementsOfferFeeLabel>
                 </InstantSettlementsFeeContainer>
 
@@ -549,7 +551,7 @@ function PreEnable({
               </InstantSettlementsBenefits>
             </div>
             <FeeInfo>
-              Same reduced fee of <span>0.15%</span> per settlement
+              Same reduced fee of <span>{newPrice}%</span> per settlement
             </FeeInfo>
           </>
         );
@@ -569,10 +571,18 @@ function PreEnable({
         showTimings
       />
 
-      <BottomSection heading={getBottomHeading()}>
-        {getBottomMainContent()}
-
-        <Button pendingState="Enabling..." onClick={handleOnEnableClick} disabled={isLoading}>
+      <BottomSection heading={!isPricingLoading ? getBottomHeading() : null}>
+        {isPricingLoading ? (
+          <Box marginY="spacing.11" display="flex" justifyContent="center">
+            <Spinner size="large" />
+          </Box>
+        ) : null}
+        {!isPricingLoading ? getBottomMainContent() : null}
+        <Button
+          pendingState="Enabling..."
+          onClick={handleOnEnableClick}
+          disabled={isLoading || isPricingLoading}
+        >
           Enable Same-day Settlements
         </Button>
         <OptOutAnytime>Opt-out anytime</OptOutAnytime>

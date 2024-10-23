@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { Button } from '@razorpay/blade/components';
+import INSTANT_LOGO from 'assets/settlements/instant.svg';
+import { connect } from 'react-redux';
 import styled from 'styled-components';
 
+import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import {
-  getDiscountPercentage,
-  getInstantPricingPercentage,
-  isPricingRateValid,
-} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
-import {
-  DEFAULT_PRICING_RATE,
-  SAMEDAY_MODAL_LOCATIONS,
-} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+  trackEnableSamedayBannerRendered,
+  trackExploreNowClicked,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
+import { SAMEDAY_MODAL_LOCATIONS } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 
 import Base, {
   Container,
@@ -22,12 +22,6 @@ import Base, {
   Rupee,
   Title,
 } from './Base';
-import {
-  trackEnableSamedayBannerRendered,
-  trackExploreNowClicked,
-} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
-
-import INSTANT_LOGO from 'assets/settlements/instant.svg';
 
 const Wrapper = styled.div`
   background: rgba(21, 102, 241, 0.09);
@@ -41,28 +35,12 @@ const Wrapper = styled.div`
   margin-right: 8px;
 `;
 
-const Cta = styled.button`
-  outline: none;
-  border: 1px solid #2a86f3;
-  background: #f8f9fb;
-  border-radius: 2px;
-  padding: 8px 16px;
-  margin-left: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 16px;
-  color: #2a86f3;
-`;
-
-export default function EnableAutomatic({ openModal }) {
-  const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
-  const isPricingValid = isPricingRateValid(pricingRate);
+function EnableAutomatic({ user, openModal }) {
+  const { isLoading, discountPercent, canViewDiscount } = useODSAutomaticPricingDiscount(
+    user.merchant.currency || 'INR',
+  );
 
   useEffect(() => {
-    getInstantPricingPercentage().then(({ data }) => {
-      const pricingPercentage = data?.items?.[0]?.pricing_rule?.percent_rate;
-      if (pricingPercentage) setPricingRate(pricingPercentage);
-    });
     trackEnableSamedayBannerRendered();
   }, []);
 
@@ -82,9 +60,9 @@ export default function EnableAutomatic({ openModal }) {
         sideBorder={<LeftSideBorder />}
         title={<Title>Settle your funds the same day, automatically!</Title>}
       >
-        {isPricingValid && (
+        {canViewDiscount && (
           <Wrapper>
-            <Percentage>{getDiscountPercentage(pricingRate)}%</Percentage>
+            <Percentage>-{discountPercent}%</Percentage>
             <Label>Discount on your Instant Settlements fees</Label>
           </Wrapper>
         )}
@@ -95,8 +73,16 @@ export default function EnableAutomatic({ openModal }) {
           </AmountContainer>
           <Label>Annual Maintenance & Set up Fee </Label>
         </Wrapper>
-        <Cta onClick={handleClick}>Explore now</Cta>
+        <Button variant="secondary" isDisabled={isLoading} onClick={handleClick}>
+          Explore now
+        </Button>
       </Base>
     </Container>
   );
 }
+
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps)(EnableAutomatic);

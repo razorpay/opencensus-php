@@ -148,7 +148,7 @@ describe('Capital/OnDemandV2', () => {
         }),
       ).not.toBeDisabled();
     });
-    expect(screen.getByText('0.1% fees')).toBeInTheDocument();
+    expect(screen.getByText('0.32% fees')).toBeInTheDocument();
     await user.click(
       screen.getByRole('button', {
         name: /show breakup/i,

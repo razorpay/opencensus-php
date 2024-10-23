@@ -83,7 +83,7 @@ export const getPricingBreakupHandler = (
         name: 'settlement_ondemand',
         amount: 10,
         pricing_rule: {
-          percent_rate: 10,
+          percent_rate: 32,
         },
       },
       {

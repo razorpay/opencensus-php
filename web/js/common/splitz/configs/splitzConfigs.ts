@@ -1775,6 +1775,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'capital_is_auto_offer',
+          experimentId: {
+            beta: 'PA3WdOQkqGuvgp',
+            production: 'PA3WdOQkqGuvgp',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

@@ -63,7 +63,7 @@ export const Percentage = styled.span`
 `;
 
 export const Label = styled.div`
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
   color: ${({ color }) => color ?? `#2a86f3`};
 `;

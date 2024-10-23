@@ -47,6 +47,7 @@ import {
   getIsRouteOndemandSettlementEnabled,
 } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 import { ODSRestrictedBanner } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/ODSRestrictedBanner';
+import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
 import {
   MODAL_PADDING,
   MODAL_HEADER_BG,
@@ -332,6 +333,8 @@ const WithdrawalScreen = ({
     currency,
     enabled: !errorMessage && !isLinkedAccountTabActive,
   });
+  /** Prefetching data - useODSAutomaticPricingDiscount */
+  useODSAutomaticPricingDiscount(currency);
   const isPricingLoading = pricingBreakupQuery.isInitialLoading;
   const pricingPercent = (pricingBreakupQuery.data?.items[0].pricing_rule.percent_rate || 0) / 100;
   const pricingFee = pricingBreakupQuery.data?.items[0].amount || 0;

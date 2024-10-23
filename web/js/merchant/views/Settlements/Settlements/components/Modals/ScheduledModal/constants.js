@@ -1,8 +1,6 @@
 import moment from 'moment';
-import { getDiscountPercentage, isPricingRateValid } from './utils';
 
 export const FULL_SHIFT_DAYS = 30;
-export const DEFAULT_PRICING_RATE = 30;
 export const NUDGE_TYPES = {
   FULL_SUCCESS: 'FULL_SUCCESS',
 };
@@ -64,15 +62,15 @@ export const ONDEMAND_FEE_BENEFITS = [
   },
 ];
 
-export const getSamedayBenefits = (pricingRate) => {
-  if (isPricingRateValid(pricingRate)) {
+export const getSamedayBenefits = (discountPercent, isValidDiscount) => {
+  if (isValidDiscount) {
     return [
       {
         percentage: '100%',
         label: 'Instant and Same-day Settlements, forever!',
       },
       {
-        percentage: `${getDiscountPercentage(pricingRate)}%`,
+        percentage: `-${discountPercent}%`,
         label: 'Discount on your Instant Settlements',
       },
     ];

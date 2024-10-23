@@ -1,16 +1,14 @@
 import React from 'react';
+import { fireEvent, render, screen, waitFor, server } from 'test-utils';
+
+import { pricingBreakupHandler } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/__test__/mocks/odsApiHandlers';
 import ScheduledBanner from 'merchant/views/Settlements/Settlements/components/ScheduledBanner';
-import { fireEvent, render, screen, waitFor } from 'test-utils';
 
 let shouldRestrictUser = false;
 let isAutomaticSettlementEnabledToggle = false;
 
 jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils', () => ({
   __esModule: true,
-  // eslint-disable-next-line func-name-matching
-  getInstantPricingPercentage: () => {
-    return Promise.resolve({ data: null });
-  },
   enableAutomaticSettlements: () => {
     return Promise.resolve({ data: null });
   },
@@ -22,9 +20,6 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledMod
   },
   getAutomaticSettlementTime: () => {
     return '9 AM';
-  },
-  isPricingRateValid: () => {
-    return true;
   },
 }));
 
@@ -56,6 +51,10 @@ jest.mock('merchant/reducers/session.js', () => {
     __esModule: true,
     default: () => ({ user: mockUserReducer }),
   };
+});
+
+beforeEach(() => {
+  server.use(pricingBreakupHandler);
 });
 
 test('should render default texts', () => {

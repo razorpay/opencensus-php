@@ -6,21 +6,16 @@ import styled from 'styled-components';
 
 import User from 'merchant/models/User';
 import { updateSession as fnUpdateSession } from 'merchant/reducers/session';
+import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import {
   trackCrossSellBannerRendered,
   trackKnowMoreClicked,
   trackEnableNowClicked,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
-import {
-  DEFAULT_PRICING_RATE,
-  SAMEDAY_MODAL_LOCATIONS,
-} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+import { SAMEDAY_MODAL_LOCATIONS } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import {
   enableAutomaticSettlements,
-  getDiscountPercentage,
-  getInstantPricingPercentage,
-  isPricingRateValid,
   setEnableEsPartialAutomaticDate,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 import {
@@ -86,17 +81,14 @@ function Upselling({
   from,
 }) {
   const [isLoading, setLoading] = useState(false);
-  const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
-  const isPricingValid = showDiscount && isPricingRateValid(pricingRate);
   const screen = getScreenForTrackEvent(from);
+  /** We expect the currentPrice to be already prefetched to avoid CLS in OnDemandV2   */
+  const { discountPercent, currentPrice, newPrice, canViewDiscount } =
+    useODSAutomaticPricingDiscount(user.merchant.currency || 'INR');
+  const isPricingValid = showDiscount && canViewDiscount;
 
   useEffect(() => {
     trackCrossSellBannerRendered({ screen });
-
-    getInstantPricingPercentage().then(({ data }) => {
-      const pricingPercentage = data?.items?.[0]?.pricing_rule?.percent_rate;
-      if (pricingPercentage) setPricingRate(pricingPercentage);
-    });
   }, []);
 
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
@@ -208,7 +200,7 @@ function Upselling({
         <Container>
           <Box textAlign="center" paddingY="spacing.6" paddingX="spacing.6">
             <Heading size="2xlarge" color="surface.text.staticWhite.normal">
-              {getDiscountPercentage(pricingRate)}%
+              -{discountPercent}%
             </Heading>
             <Text
               display="block"
@@ -226,11 +218,11 @@ function Upselling({
                 marginY="spacing.3"
                 textDecorationLine="line-through"
               >
-                {(pricingRate / 100).toFixed(2)}%
+                {currentPrice}%
               </Text>
               <ArrowRightIcon marginX="spacing.5" />
               <Text weight="semibold" as="span" textDecorationLine="none">
-                0.15% / settlement
+                {newPrice}% / settlement
               </Text>
             </ContainerDiscount>
           </Box>

@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import INSTANT_LOGO from 'assets/settlements/instant.svg';
+import { connect } from 'react-redux';
 import styled from 'styled-components';
-import {
-  getDiscountPercentage,
-  getInstantPricingPercentage,
-  isPricingRateValid,
-} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
-import { DEFAULT_PRICING_RATE } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+
+import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
+
 import Base, {
   Container,
   LeftSideBorder,
@@ -19,8 +18,6 @@ import Base, {
   Title,
 } from './Base';
 import { NEW_BANNERS } from './constants';
-import { resolvePath } from 'common/utils/rzp-utils';
-import INSTANT_LOGO from 'assets/settlements/instant.svg';
 
 const color = '#008659';
 
@@ -41,20 +38,10 @@ const RupeeWrapper = styled(Rupee)`
   color: rgba(0, 156, 92, 0.32);
 `;
 
-export default function FullShiftSuccess({ onDismiss }) {
-  const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
-  const isPricingValid = isPricingRateValid(pricingRate);
-
-  useEffect(() => {
-    getInstantPricingPercentage().then(({ data }) => {
-      const pricingPercentage = resolvePath(
-        data,
-        'items[0].pricing_rule.percent_rate',
-        DEFAULT_PRICING_RATE,
-      );
-      if (pricingPercentage) setPricingRate(pricingPercentage);
-    });
-  }, []);
+function FullShiftSuccess({ user, onDismiss }) {
+  const { discountPercent, canViewDiscount } = useODSAutomaticPricingDiscount(
+    user.merchant.currency || 'INR',
+  );
 
   return (
     <StyledContainer>
@@ -72,9 +59,9 @@ export default function FullShiftSuccess({ onDismiss }) {
           <Percentage color={color}>100%</Percentage>
           <Label color={color}>Balance can now be settled the same day</Label>
         </Discount>
-        {isPricingValid && (
+        {canViewDiscount && (
           <Discount>
-            <Percentage color={color}>{getDiscountPercentage(pricingRate)}%</Percentage>
+            <Percentage color={color}>-{discountPercent}%</Percentage>
             <Label color={color}>Discount on your Instant Settlements fees</Label>
           </Discount>
         )}
@@ -89,3 +76,9 @@ export default function FullShiftSuccess({ onDismiss }) {
     </StyledContainer>
   );
 }
+
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps)(FullShiftSuccess);

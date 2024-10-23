@@ -34,7 +34,7 @@ describe('OndemandModal.js', () => {
   const fetchOndemandRestrictionsSpy = jest.spyOn(settlementActions, 'fetchOndemandRestrictions');
 
   beforeEach(() => {
-    server.use(apiHandlers.odsConfigNoBreachHandler);
+    server.use(apiHandlers.odsConfigNoBreachHandler, apiHandlers.pricingBreakupHandler);
     closeModalsSpy.mockClear();
     fetchCurrentBalanceSpy.mockClear();
     fetchOndemandRestrictionsSpy.mockClear();

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 
+import { useODSAutomaticPricingDiscount } from 'merchant/views/Settlements/InstantSettlements/hooks/useODSAutomaticPricingDiscount';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 
 import BottomSection from './components/BottomSection';
@@ -73,7 +74,10 @@ const CURRENCY_PARTIAL_LIMIT = {
   INR: '₹15,000',
 };
 
-function PostEnable({ user, pricingRate, postModalType, closeModal }) {
+function PostEnable({ user, postModalType, closeModal }) {
+  const { discountPercent, canViewDiscount } = useODSAutomaticPricingDiscount(
+    user.merchant.currency || 'INR',
+  );
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isPartialOndemandSettlementEnabled =
@@ -146,7 +150,7 @@ function PostEnable({ user, pricingRate, postModalType, closeModal }) {
             />
             <BottomSection heading="Enjoy all your benefits!">
               <ItemsContainer>
-                {getSamedayBenefits(pricingRate).map((item, idx) => (
+                {getSamedayBenefits(discountPercent, canViewDiscount).map((item, idx) => (
                   <Item key={idx}>
                     <GradientText>{item.percentage}</GradientText>
                     <ItemLabel>{item.label}</ItemLabel>
@@ -169,7 +173,7 @@ function PostEnable({ user, pricingRate, postModalType, closeModal }) {
             />
             <BottomSection heading="Enjoy all your benefits!">
               <ItemsContainer>
-                {getSamedayBenefits(pricingRate).map((item, idx) => (
+                {getSamedayBenefits(discountPercent, canViewDiscount).map((item, idx) => (
                   <Item key={idx}>
                     <GradientText>{item.percentage}</GradientText>
                     <ItemLabel>{item.label}</ItemLabel>
@@ -304,7 +308,6 @@ function PostEnable({ user, pricingRate, postModalType, closeModal }) {
 
 PostEnable.propTypes = {
   user: PropTypes.any,
-  pricingRate: PropTypes.number,
   postModalType: PropTypes.string,
   closeModal: PropTypes.func,
 };

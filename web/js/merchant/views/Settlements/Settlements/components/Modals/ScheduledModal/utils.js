@@ -1,24 +1,14 @@
-import ajax from 'merchant/utils/ajax';
 import moment from 'moment';
-import store from 'merchant/store';
+
 import { getItem, setItem } from 'common/utils/localStorage';
+import store from 'merchant/store';
+import ajax from 'merchant/utils/ajax';
 
 export const getAutomaticSettlementTime = () => {
   const currentHour = Number(moment().format('HH'));
 
   if (currentHour < 17 && currentHour > 9) return '5 PM';
   return '9 AM';
-};
-
-export const getDiscountPercentage = (pricingRate) => {
-  if (pricingRate <= 15) {
-    return 0;
-  }
-  return (((15 - pricingRate) / pricingRate) * 100).toFixed();
-};
-
-export const isPricingRateValid = (pricingRate) => {
-  return Number(pricingRate) > 15;
 };
 
 export const enableAutomaticSettlements = () =>
@@ -30,23 +20,6 @@ export const enableAutomaticSettlements = () =>
     {},
     '/merchant/api',
   );
-
-export const getInstantPricingPercentage = () => {
-  const payload = {
-    amount: 10000,
-    currency: 'INR',
-  };
-
-  return ajax(
-    {
-      url: '/settlement/ondemand/fees/dashboard',
-      method: 'GET',
-      data: payload,
-    },
-    {},
-    '/merchant/api',
-  );
-};
 
 export const getEsPartialAutomaticDateKey = () => {
   const {
