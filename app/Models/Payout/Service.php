@@ -78,6 +78,7 @@ use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\BankTransfer\Core as BankTransferCore;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
@@ -6836,6 +6837,14 @@ class Service extends Base\Service
                     $processFunction(function($payoutIds) {
                         $this->approveRejectWorkflowPayouts($payoutIds,'reject');
                     },$payoutIds);
+
+                    break;
+
+                case 'process_bank_transfer':
+
+                    $processFunction(function($input){
+                        (new BankTransferCore())->manualProcessBankTransferEntity($input);
+                    },$bulk_input);
 
                     break;
 

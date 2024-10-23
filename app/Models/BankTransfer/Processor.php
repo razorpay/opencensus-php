@@ -40,7 +40,6 @@ use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\FundLoadingDowntime\Notifications;
 use RZP\Models\Payment\Processor\TerminalProcessor;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed as FundLoadingFailedMail;
 use RZP\Models\Transaction\Processor\Ledger\FundLoading as LedgerFundLoading;
 
@@ -97,6 +96,14 @@ class Processor extends VirtualAccount\Processor
      */
     protected function isDuplicate(Base\PublicEntity $bankTransfer): bool
     {
+
+        if($bankTransfer->isSkipDuplicateEnabled() === true)
+        {
+
+            $bankTransfer->removeSkipDuplicateCheckAttribute();
+
+            return false;
+        }
 
         $utr = $bankTransfer->getUtr();
 

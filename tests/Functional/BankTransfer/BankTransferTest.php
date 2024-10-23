@@ -30,6 +30,7 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\VirtualAccount\UnexpectedPaymentReason;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
@@ -45,6 +46,7 @@ class BankTransferTest extends TestCase
     use VirtualAccountTrait;
     use AttemptReconcileTrait;
     use ReconTrait;
+    use WorkflowTrait;
 
     protected $virtualAccountId;
 
@@ -3809,6 +3811,134 @@ class BankTransferTest extends TestCase
         // assert payment refund_at is set
         $payment->reload();
         $this->assertNotNull($payment['refund_at']);
+    }
+    public function  testManualProcessBankTransfer()
+    {
+        $this->ba->adminAuth('test');
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $b = $this->getDbLastEntity('balance');
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $ba = $this->getDbLastEntity('bank_account');
+
+        $this->fixtures->on('test')->edit('balance', $b['id'], ['type'=>'banking']);
+
+        $this->fixtures->on('test')->edit('virtual_account', $va['id'], [
+            'bank_account_id' => $ba['id'],
+            'merchant_id' => $merchant['id'],
+            'status' => 'active',
+            'balance_id' => $b['id']
+        ]);
+
+        $this->fixtures->on('test')->edit('bank_account', $ba['id'], [
+            'entity_id' => $va['id'],
+            'type' => 'virtual_account',
+            'ifsc_code' => 'ICIC0001111',
+            'merchant_id' => $merchant['id'],
+        ]);
+
+        $this->fixtures->on('test')->create('bank_transfer', [
+            'id' => 'PC5AcrMOP9IFNF',
+            'merchant_id' => $merchant['id'],
+            'virtual_account_id' => $va['id'],
+            'payee_account' => $ba['account_number'],
+            'gateway' => 'icici',
+            'amount' => 809,
+            'utr' => 'none',
+            'status' => 'created',
+        ]);
+
+        $this->fixtures->on('test')->edit('bank_transfer', 'PC5AcrMOP9IFNF', [
+            'status' => 'created'
+        ]);
+        $request = [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'action' => 'process_bank_transfer',
+                'bulk_input' => [
+                    [
+                        "bank_transfer_id" => 'PC5AcrMOP9IFNF',
+                    ]
+                ],
+                'reason' => "Processing failed BankTransfer",
+            ],
+        ];
+
+        $resp = $this->makeRequestAndGetContent($request);
+
+        $transaction = $this->getDbLastEntity('transaction');
+        $bt = $this->getDbLastEntity('bank_transfer');
+        $this->assertEquals($transaction['id'], $bt['transaction_id']);
+        $this->assertEquals($transaction['amount'], $bt['amount']);
+        $this->assertEquals($bt['status'], 'processed');
+        $this->assertEquals( 1,$resp['success_count']);
+    }
+    public function  testManualProcessBankTransferFailure()
+    {
+        $this->ba->adminAuth('test');
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $b = $this->getDbLastEntity('balance');
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $ba = $this->getDbLastEntity('bank_account');
+
+        $this->fixtures->on('test')->edit('balance', $b['id'], ['type'=>'banking']);
+
+        $this->fixtures->on('test')->edit('virtual_account', $va['id'], [
+            'bank_account_id' => $ba['id'],
+            'merchant_id' => $merchant['id'],
+            'status' => 'active',
+            'balance_id' => $b['id']
+        ]);
+
+        $this->fixtures->on('test')->edit('bank_account', $ba['id'], [
+            'entity_id' => $va['id'],
+            'type' => 'virtual_account',
+            'ifsc_code' => 'ICIC0001111',
+            'merchant_id' => $merchant['id'],
+        ]);
+
+        $this->fixtures->on('test')->create('bank_transfer', [
+            'id' => 'PC5AcrMOP9IFNF',
+            'merchant_id' => $merchant['id'],
+            'virtual_account_id' => $va['id'],
+            'payee_account' => $ba['account_number'],
+            'gateway' => 'icici',
+            'amount' => 809,
+            'utr' => 'none',
+            'status' => 'processed',
+        ]);
+
+        $this->fixtures->on('test')->edit('bank_transfer', 'PC5AcrMOP9IFNF', [
+            'status' => 'processed'
+        ]);
+        $request = [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'action' => 'process_bank_transfer',
+                'bulk_input' => [
+                    [
+                        "bank_transfer_id" => 'PC5AcrMOP9IFNF',
+                    ]
+                ],
+                'reason' => "Processing failed BankTransfer",
+            ],
+        ];
+
+        $resp = $this->makeRequestAndGetContent($request);
+        $this->assertEquals($resp['status'], 'failed');
+        $this->assertEquals($resp['failure_count'],1);
+
     }
 
 }

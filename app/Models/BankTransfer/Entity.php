@@ -114,6 +114,7 @@ class Entity extends Base\PublicEntity
     const STATUS                        = 'status';
     const IS_COLLECTX_BANK_TRANSFER     = 'is_collectx_bank_transfer';
     const REQUEST_TYPE                  = 'request_type';
+    const SKIP_DUPLICATE_CHECK       = 'skip_duplicate_check';
 
     protected $requestSource;
 
@@ -131,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::STATUS,
         self::IS_COLLECTX_BANK_TRANSFER,
+        self::SKIP_DUPLICATE_CHECK
     ];
 
     protected $public = [
@@ -176,6 +178,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::STATUS,
         self::IS_COLLECTX_BANK_TRANSFER,
+        self::SKIP_DUPLICATE_CHECK
     ];
 
     protected $casts = [
@@ -579,6 +582,15 @@ class Entity extends Base\PublicEntity
     public function getTransactionIdViaAttribute()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+    public function removeSkipDuplicateCheckAttribute()
+    {
+        $this->removeAttributes([self::SKIP_DUPLICATE_CHECK]);
+    }
+
+    public function isSkipDuplicateEnabled():bool
+    {
+        return $this->getAttribute(self::SKIP_DUPLICATE_CHECK) == true;
     }
 
     public function isCollectXBankTransfer(): bool

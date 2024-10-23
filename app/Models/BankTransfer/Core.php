@@ -52,6 +52,7 @@ class Core extends Base\Core
     ];
 
     const IS_DUPLICATE = "is_duplicate";
+    const BANK_TRANSFER_ID ='bank_transfer_id';
 
     const MAX_INTL_BANK_TRANSFER_AMOUNT_BY_CURRENCIES = [
         Currency\Currency::USD => 29000,
@@ -293,6 +294,55 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+    public function manualProcessBankTransferEntity($input)
+    {
+
+        $id = $input[self::BANK_TRANSFER_ID];
+
+        $bankTransfer = $this->repo->bank_transfer->findOrFail($id);
+
+        if ($bankTransfer == null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BANK_TRANSFER_NOT_FOUND,null,[
+                "bank_transfer_id" => $id,
+            ]);
+        }
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_PROCESS_BANK_TRANSFER_REQUEST, [
+            "id" => $bankTransfer->getId()
+        ]);
+
+        if ($bankTransfer['status'] !== Status::CREATED)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,[
+                "bank_transfer_id" => $id,
+            ]);
+        }
+
+        $processor = new Processor();
+
+        $bankTransfer->setAttribute(Entity::SKIP_DUPLICATE_CHECK,true);
+
+       $resp = $processor->process($bankTransfer);
+
+        if($resp=== null || $resp['status']!== Status::PROCESSED){
+
+            $this->trace->error(
+                TraceCode::MANUAL_ACTION_PROCESS_BANK_TRANSFER_FAILURE, [
+                "id" => $bankTransfer->getId()
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BANK_TRANSFER_PROCESSING_FAILED,null,[
+                "bank_transfer_id" => $id,
+            ]);
+        }
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_PROCESS_BANK_TRANSFER_SUCCESS, [
+            "id" => $bankTransfer->getId()
+        ]);
     }
 
     public function processBankTransferRequest(

@@ -3174,6 +3174,8 @@ class ErrorCode
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER';
 
     const ALT_ID_FETCH_ERROR                                    = 'ALT_ID_FETCH_ERROR';
+    const BANK_TRANSFER_NOT_FOUND                                      = 'BANK_TRANSFER_NOT_FOUND';
+    const BANK_TRANSFER_PROCESSING_FAILED                              = 'BANK_TRANSFER_PROCESSING_FAILED';
 
     static function getConstants()
     {

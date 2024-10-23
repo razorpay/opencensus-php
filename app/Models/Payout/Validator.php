@@ -173,6 +173,7 @@ class Validator extends Base\Validator
         'processed_to_processing',
         'approve_workflow_payouts',
         'reject_workflow_payouts',
+        'process_bank_transfer'
     ];
 
     const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
@@ -180,6 +181,8 @@ class Validator extends Base\Validator
     const PROCESSED_TO_PROCESSING_PAYOUT_ACTION = 'processed_to_processing_payout_action';
 
     const PAYOUT_ATTACHMENT = 'payout_attachment';
+
+    const MANUAL_BANK_TRANSFER = 'manual_bank_transfer';
 
     const MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION = 50;
 
@@ -723,6 +726,9 @@ class Validator extends Base\Validator
     protected static $processedToProcessingPayoutActionRules = [
         'payout_id' => 'required|alpha_num|size:14',
         'is_payout_service'=> 'required|filled|boolean',
+    ];
+    protected static  $manualBankTransferRules =[
+        'bank_transfer_id' => 'required|string'
     ];
 
     protected function validateSourceAndDestination($input)
@@ -2309,6 +2315,15 @@ class Validator extends Base\Validator
                     $this->setStrictFalse()->validateInput(self::PROCESSED_TO_PROCESSING_PAYOUT_ACTION,$input);
                 }
                 break;
+
+            case 'process_bank_transfer':
+
+                foreach ($bulkInput as $input) {
+
+                    $this->setStrictFalse()->validateInput(self::MANUAL_BANK_TRANSFER,$input);
+                }
+                break;
+
             default:
                 $this->setStrictFalse()->validateInput(self::PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT,$bulkInput);
         }
