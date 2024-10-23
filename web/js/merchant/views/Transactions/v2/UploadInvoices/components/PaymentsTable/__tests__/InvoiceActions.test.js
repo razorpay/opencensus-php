@@ -6,8 +6,6 @@ import InvoiceActions from 'merchant/views/Transactions/v2/UploadInvoices/compon
 import { PaymentStatus } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
 import { PopupContext } from 'merchant/views/Transactions/v2/UploadInvoices/context/PopupContext';
 import { MODAL_TYPES } from 'merchant/views/Transactions/v2/UploadInvoices/constants';
-import * as reduxActions from 'merchant/reducers/collection';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as services from 'merchant/views/Transactions/v2/UploadInvoices/components/PaymentsTable/services';
 
 // Mocked functions for props
@@ -34,11 +32,10 @@ describe('InvoiceActions', () => {
     jest.clearAllMocks();
   });
 
-  test('renders the view and delete buttons when invoiceId is present', () => {
+  test('renders the view button when invoiceId is present', () => {
     renderComponent();
 
     expect(screen.getByText('View')).toBeInTheDocument();
-    expect(screen.getByText('Delete')).toBeInTheDocument();
   });
 
   test('renders the Add Invoice button when invoiceId is not present and status is AUTHORIZED', () => {
@@ -74,44 +71,5 @@ describe('InvoiceActions', () => {
 
     await waitFor(() => expect(viewInvoiceSpy).toHaveBeenCalledWith(item.enitity_id));
     expect(window.open).toHaveBeenCalledWith('http://example.com/invoice.pdf', '_blank');
-  });
-
-  test('shows notification when delete fails', async () => {
-    const deleteInvoiceSpy = jest
-      .spyOn(services, 'deleteInvoice')
-      .mockRejectedValue(new Error('Delete failed'));
-    const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
-
-    renderComponent();
-    await userEvent.click(screen.getByText('Delete'));
-
-    await waitFor(() => expect(deleteInvoiceSpy).toHaveBeenCalledWith(item.enitity_id));
-    await waitFor(() =>
-      expect(showNotificationSpy).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'Failed to delete file. Please try again!',
-      }),
-    );
-  });
-
-  test('updates the export payment and shows success notification when delete is successful', async () => {
-    const deleteInvoiceSpy = jest
-      .spyOn(services, 'deleteInvoice')
-      .mockReturnValue(Promise.resolve(true));
-    const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
-    const updateExportPaymentSpy = jest.spyOn(reduxActions, 'updateExportPayment');
-
-    renderComponent();
-    await userEvent.click(screen.getByText('Delete'));
-
-    await waitFor(() => expect(deleteInvoiceSpy).toHaveBeenCalledWith(item.enitity_id));
-    expect(updateExportPaymentSpy).toHaveBeenCalledWith({
-      ...item,
-      enitity_id: null,
-    });
-    expect(showNotificationSpy).toHaveBeenCalledWith({
-      type: 'success',
-      message: 'File deleted successfully!',
-    });
   });
 });

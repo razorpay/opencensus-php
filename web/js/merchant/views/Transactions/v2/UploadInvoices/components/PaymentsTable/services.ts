@@ -14,14 +14,3 @@ export const viewInvoice = async (documentId: string): Promise<string> => {
   }
   return Promise.reject(response);
 };
-
-export const deleteInvoice = async (documentId: string): Promise<boolean> => {
-  const response = await merchantFetch({
-    url: `payments_cross_border_live/v1/document/${documentId}`,
-    method: 'DELETE',
-  });
-  if (response.success) {
-    return true;
-  }
-  return Promise.reject(response);
-};
