@@ -218,9 +218,9 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Merchant\Service)->registerSubMerchant($input);
+        list($error, $data, $httpCode) = (new Merchant\Service)->registerSubMerchant($input);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     public function postSignup()

@@ -98,8 +98,8 @@ class Service extends Base\Service
             'client_type' => 'merchant',
         ]);
 
-        list($error, $data) = $request->processInput($data)->send('submerchants', 'POST');
-
+        list($error, $data, $httpCode) = $request->processInput($data)->send('submerchants', 'POST');
+        
         if (($isLinkedAccount === false) and (empty($error) === true))
         {
             list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
@@ -110,7 +110,7 @@ class Service extends Base\Service
             }
         }
 
-        return [$error, $data];
+        return [$error, $data, $httpCode];
     }
 
     public function resendConfirmation()

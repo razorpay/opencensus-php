@@ -14,6 +14,7 @@ import { withI18Service } from 'common/i18';
 // eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
@@ -42,9 +43,11 @@ class ManageTeamContainer extends React.Component {
     confirm: PropTypes.func,
   };
 
+  static contextType = TwoFactorVerificationContext;
+
   isInviteTeamMember2faEnabled = () => {
     const {
-      abExperiments: { inviteTeamMember2fa },
+      abExperiments: { enable_2fa_for_protected_flows },
     } = this.props.splitz;
 
     // Disbaling 2fa for linked accoount since otp verification is not allowed for these two roles, handled in BE as well.
@@ -57,7 +60,7 @@ class ManageTeamContainer extends React.Component {
     const isPartnerDashboard = window.location.pathname.includes('/partners');
 
     return (
-      inviteTeamMember2fa.variables.result === 'on' &&
+      enable_2fa_for_protected_flows?.variables?.result === 'on' &&
       !isLinkedAcoount &&
       !isCurlec &&
       !isPartnerDashboard
@@ -163,8 +166,17 @@ class ManageTeamContainer extends React.Component {
 
     return (
       <Button
-        onClick={this.inviteNewMember}
-        isDisabled={!is2faEnabledAndMobileVerified && !isCurlec && !isPartnerDashboard}
+        onClick={() => {
+          if (this.isInviteTeamMember2faEnabled()) {
+            this.context.criticalFlow({
+              enforceVerifyOtp: true,
+              modes: ['live', 'test'],
+              onUserTwoFaVerified: this.inviteNewMember,
+            });
+          } else {
+            this.inviteNewMember();
+          }
+        }}
       >
         Invite New Member
       </Button>

@@ -25,7 +25,7 @@ jest.mock('common/splitz', () => ({
         {...props}
         splitz={{
           abExperiments: {
-            inviteTeamMember2fa: {
+            enable_2fa_for_protected_flows: {
               variables: {
                 result: 'off',
               },

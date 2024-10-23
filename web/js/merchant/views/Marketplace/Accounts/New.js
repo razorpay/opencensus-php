@@ -25,7 +25,6 @@ import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorV
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { withSplitzService } from 'common/splitz';
-import { is2faRouteExperimentEnabled } from 'common/utils/rzp-utils';
 
 // Decorate with connect to read form values
 const selector = formValueSelector('newAccount');
@@ -291,10 +290,6 @@ class AddAccount extends Component {
       noLAEmail = !this.state.email || user.merchants[user.current].email === this.state.email;
     }
 
-    const { abExperiments } = this.props.splitz;
-
-    const is2faExperimentActive = is2faRouteExperimentEnabled(abExperiments);
-
     return (
       <div class="accounts-edit-new">
         <ModalHeader
@@ -405,11 +400,7 @@ class AddAccount extends Component {
                 class="btn btn-primary btn-block"
                 text={!!accountData ? 'Update' : 'Add'}
                 pendingText="Adding..."
-                onClick={
-                  is2faExperimentActive
-                    ? handleSubmit(this.sendVerificationOtp())
-                    : handleSubmit(this.save)
-                }
+                onClick={handleSubmit(this.save)}
               />
             </div>
           </form>

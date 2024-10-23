@@ -1950,3 +1950,6 @@ export const getCountryCodes = async () => {
     return COUNTRY_CODES;
   }
 };
+
+export const is2FaExperimentEnabled = (experimenets) =>
+  experimenets?.enable_2fa_for_protected_flows?.variables.result === 'on';

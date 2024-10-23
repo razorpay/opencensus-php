@@ -1694,13 +1694,20 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: ['/account-settings', '/website-app-settings/api-keys', '/api-keys', '/keys'],
+      routesToMatch: [
+        '/account-settings',
+        '/website-app-settings/api-keys',
+        '/api-keys',
+        '/keys',
+        '/route/accounts',
+        '/business-settings/team',
+      ],
       abExperiments: [
         {
-          uniqueHashKey: 'enable_2fa_password_api_keys',
+          uniqueHashKey: 'enable_2fa_for_protected_flows',
           experimentId: {
-            beta: 'OpWCQSp0amLTc1',
-            production: 'OpWL54cgvub5RU',
+            beta: 'OvqHENDSx92RDN',
+            production: 'OwEKutd9QhLehI',
           },
           defaultVariant: {
             name: 'variables',

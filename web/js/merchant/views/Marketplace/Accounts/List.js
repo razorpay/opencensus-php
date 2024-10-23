@@ -3,9 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
 import Alert from 'common/ui/Forms/Alert';
 import Pager from 'common/ui/Pager';
 import ProductWrapper from 'common/ui/ProductWrapper';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { is2FaExperimentEnabled } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
 import DocsLink from 'merchant/components/DocsLink';
@@ -48,6 +51,8 @@ class AccountsListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
   };
+
+  static contextType = TwoFactorVerificationContext;
 
   componentDidMount() {
     linkedAccountTabOpenedAnalytics(this.props.user.id);
@@ -265,11 +270,14 @@ class AccountsListContainer extends ListContainer {
       showNotification,
       isPlatformFeeTabEnabled,
       isPartnerPlatformFeeEnabled,
+      splitz,
     } = this.props;
     const status = this.state.status;
     const feeBearer = user.merchant.fee_bearer;
     const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled || isCustomerFeeBearer;
+    const is2FaExperimentActive = is2FaExperimentEnabled(splitz.abExperiments);
+
     return (
       <ProductWrapper
         tabsData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
@@ -296,7 +304,17 @@ class AccountsListContainer extends ListContainer {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={this.showAddAccountModal}
+                  onClick={() => {
+                    if (is2FaExperimentActive) {
+                      this.context.criticalFlow({
+                        enforceVerifyOtp: true,
+                        modes: ['live', 'test'],
+                        onUserTwoFaVerified: this.showAddAccountModal,
+                      });
+                    } else {
+                      this.showAddAccountModal();
+                    }
+                  }}
                   disabled={isCreationDisabled}
                   title={
                     isCreationDisabled &&
@@ -433,4 +451,4 @@ export function validateAllowRefundsMessages(account, checked) {
   };
 }
 
-export default withRouter(AccountsListContainer);
+export default withSplitzService(withRouter(AccountsListContainer));

@@ -358,12 +358,8 @@ class NewInvitation extends Component {
               class="btn btn-primary btn-block"
               text={props.ctaText}
               type="submit"
-              pendingText={isInviteTeamMember2faEnabled ? 'Sending OTP...' : 'Processing...'}
-              onClick={
-                isInviteTeamMember2faEnabled
-                  ? handleSubmit(this.sendVerificationOtp())
-                  : handleSubmit(this.save)
-              }
+              pendingText="Processing..."
+              onClick={handleSubmit(this.save)}
             />
           </div>
         </div>

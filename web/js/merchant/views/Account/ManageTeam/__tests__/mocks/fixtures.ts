@@ -1,0 +1,26 @@
+export const defaultUserExtra = {
+  id: 'testUserId',
+  role: 'owner',
+  isOrgAllowedFunctionality: () => true,
+  findTag: () => true,
+  isAllowedEdit: () => true,
+  isAllowedView: () => true,
+  isAccountAndSettingsRevampEnabled: true,
+  org_enforced_second_factor_auth: false,
+  isRegistrationLinkRoleEnabled: false,
+  isRBLRoleEnabled: false,
+  isMerchantRestricted: false,
+  isEmailSelfServeEnabled: false,
+  isCriticalRouteExperimentEnabled: true,
+  isTwoFactorSetupDone: true,
+  merchant: {
+    country_code: 'IN',
+  },
+  user: {
+    contact_mobile_verified: true,
+    contact_mobile: '9111111111',
+    email: 'qa+reseller@razorpay.com',
+    second_factor_auth: true,
+  },
+  modeOfApp: ['live', 'test'],
+};

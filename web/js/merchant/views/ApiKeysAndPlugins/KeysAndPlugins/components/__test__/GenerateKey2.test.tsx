@@ -43,8 +43,8 @@ describe('API Keys & Plugins - GenerateKey', () => {
     // @ts-ignore
     useSplitzService.mockReturnValue({
       abExperiments: {
-        enable_2fa_password_api_keys: {
-          experimentId: 'enable_2fa_password_api_keys',
+        enable_2fa_for_protected_flows: {
+          experimentId: 'enable_2fa_for_protected_flows',
           variables: { result: 'on' },
         },
       },
