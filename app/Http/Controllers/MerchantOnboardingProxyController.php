@@ -325,7 +325,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => 15,
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => 15,
         self::MERCHANT_ACTIVATION_SAVE                  => 15,
-        self::ONBOARDING_SAVE                           => 15,
+        // todo: this is a temporary solution to increase the API timeout.
+        // context: OnboardingSave is being used in Master KYC onboarding flows and PGOS
+        // will throw context canceled error in case of timeout. This has to be reverted
+        // once the latencies of the API is optimised.
+        self::ONBOARDING_SAVE                           => 50,
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
