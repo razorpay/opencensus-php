@@ -325,7 +325,8 @@ function MerchantNavLinks(props) {
         {(onClick) => (
           <MainNavLink
             label={
-              props.user.isC360OnboardingToBeResumed && isMagicXPublicappCodEnabled
+              (props.user.isC360OnboardingToBeResumed || props.user.isC360OnboardingCompleted) &&
+              isMagicXPublicappCodEnabled
                 ? 'Checkout360'
                 : 'Magic Checkout'
             }

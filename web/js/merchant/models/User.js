@@ -458,7 +458,7 @@ export default class User {
     return (
       this.isOrgRZP &&
       this.isFeatureEnabled('one_cc_merchant_dashboard') &&
-      this.isFeatureEnabled('pg_v3_onboarding_inprogress') &&
+      this.isFeatureEnabled('pg_v3_onboarding_progress') &&
       !this.isFeatureEnabled('pg_v3_onboarding_complete')
     );
   }

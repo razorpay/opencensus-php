@@ -25,7 +25,7 @@ const ShippingAccount = ({
   isServiceabilitySettingsEnabled,
   magicIntelligence,
   providers,
-  user,
+  isRCOD,
 }) => {
   const isMagicXPublicappCodEnabled = useMagicExperiment(MAGICX_PUBLICAPP_COD_EXPERIMENT);
   const { shouldCloseModal, shippingProviders, loading } = shippingService;
@@ -81,7 +81,7 @@ const ShippingAccount = ({
           <div className="benefit-shiprocket-container display-inline">
             <BenefitsShiprocket
               showIntelligenceHighlights={!isServiceabilitySettingsEnabled}
-              showRCODIntelligence={user.rcod && isMagicXPublicappCodEnabled}
+              showRCODIntelligence={isRCOD && isMagicXPublicappCodEnabled}
             />
           </div>
         </div>
@@ -92,7 +92,7 @@ const ShippingAccount = ({
 
 const mapStateToProps = (state) => ({
   shippingService: state.shippingService,
-  user: state.session.user,
+  isRCOD: state.magic_settings.rcodEnabled,
 });
 
 const mapDispatchToProps = (dispatch) =>

@@ -217,7 +217,11 @@ const BasicCOD = ({
               {tableData?.length ? (
                 <LastSyncedBadge data-testid="last-synced-badge">
                   <Text size="small">Last synced: </Text>
-                  {lastUpdatedAt ? <Time value={lastUpdatedAt} relative /> : 'N/A'}
+                  {lastUpdatedAt ? (
+                    <Time key={`timer-${lastUpdatedAt}`} value={lastUpdatedAt} relative />
+                  ) : (
+                    'N/A'
+                  )}
                 </LastSyncedBadge>
               ) : null}
               <Button

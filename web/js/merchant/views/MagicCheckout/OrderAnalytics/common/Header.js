@@ -29,10 +29,7 @@ const Header = (props) => {
   const isReportsTab = activeTab.label === TABS.REPORTS.label;
   const orgName = org?.business_name || ORG_NAME.RZP;
 
-  const presetList = useMemo(
-    () => (isConversionTab ? DATE_RANGE_PRESETS.slice(1) : DATE_RANGE_PRESETS),
-    [isConversionTab],
-  );
+  const presetList = DATE_RANGE_PRESETS;
 
   const defaultPreset = useMemo(() => {
     const timeDiff = DAY_BEFORE.unix() - moment().subtract(2, 'days').unix();
