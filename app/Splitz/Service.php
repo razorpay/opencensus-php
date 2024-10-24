@@ -380,7 +380,7 @@ class Service extends Base\Service
         $requestData = ['mid' => $merchantId];
 
         if (empty($userId) === false) {
-            $requestData['id'] = $userId;
+            $requestData['user_id'] = $userId;
         }
 
         $input = [
