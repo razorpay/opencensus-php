@@ -1,5 +1,10 @@
 export const RZP_LOGO_URL = 'https://cdn.razorpay.com/logo_invert.svg';
 export const RZP_LOGO_URL_DARK = 'https://cdn.razorpay.com/logo.svg';
+export const RZP_LOGO_URL_DARK_DIWALI =
+  'https://cdn.razorpay.com/static/assets/logo/rzp-diwali-dark.gif';
+export const RZP_LOGO_URL_LIGHT_DIWALI =
+  'https://cdn.razorpay.com/static/assets/logo/rzp-diwali-light.gif';
+
 export const DASHBOARD_LANDING_URL = '/dashboard';
 export const ONBOARDING_STEPS_URL = '/onboarding/steps';
 export const KYC_URL = '/kyc';

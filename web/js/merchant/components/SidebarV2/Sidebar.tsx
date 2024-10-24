@@ -5,11 +5,17 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
-import { toggleMobileMenu } from 'merchant/reducers/app';
 import { withRouter } from 'common/deprecated/withRouter';
+import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { User } from 'common/typings';
+import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 import { analyticsTrack } from 'common/utils/analytics';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { toggleMobileMenu } from 'merchant/reducers/app';
 import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
 import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
 import ActivationProgress from 'merchant/components/SidebarV2/components/ActivationProgress';
@@ -35,6 +41,8 @@ import {
   KYC_URL,
   ACTIVATION_URL,
   RZP_LOGO_URL_DARK,
+  RZP_LOGO_URL_DARK_DIWALI,
+  RZP_LOGO_URL_LIGHT_DIWALI,
 } from './constants/constants';
 import {
   SidebarContainer,
@@ -49,11 +57,7 @@ import { NavLinkData, Routes, SidebarPropsInterface } from './typings';
 import { COMMON_PRODUCTS, PRODUCTS_DATA, CUSTOMERS_PRODUCTS } from './utils/Products';
 import { getLeftNavItemsCache, setLeftNavItemsCache } from './utils/Sidebar';
 import { getActiveTab, initializeRoutes } from './utils/href';
-import { isMobileDevice } from 'merchant/components/Home/data';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
-import { useI18Service } from 'common/i18';
-import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
-import { User } from 'common/typings';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -73,6 +77,12 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
 
   const { isConfigTagEnabled } = useI18Service();
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
+
+  const {
+    abExperiments: { diwali_themed_logo },
+  } = useSplitzService();
+  const isDiwaliThemedLogoEnabled = isExperimentEnabled(diwali_themed_logo);
+
   const { location, history } = props;
 
   const [routesInfo, setRoutesInfo] = useState<Routes>({});
@@ -161,6 +171,13 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const isSidebarVisible = !isMobile || (isMobile && shouldShowMobileMenu);
   // Enabled for sidebarV2 in blade and check redux value only on mobile
   const shouldShowMobileOverlay = isRTUXHomepage && isMobileDevice() && shouldShowMobileMenu;
+
+  const rzpLogoSource = isRTUXHomepage
+    ? isDiwaliThemedLogoEnabled
+      ? RZP_LOGO_URL_DARK_DIWALI
+      : RZP_LOGO_URL_DARK
+    : logoURL || (isDiwaliThemedLogoEnabled ? RZP_LOGO_URL_LIGHT_DIWALI : RZP_LOGO_URL);
+
   return (
     <BladeProvider themeTokens={bladeTheme} colorScheme={isRTUXHomepage ? 'light' : 'dark'}>
       <SidebarContainer
@@ -170,12 +187,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
       >
         <SidebarSection isRTUXHomepage={isRTUXHomepage} isMobile={isMobile}>
           <Link to="/dashboard" aria-label="brand-logo home page link">
-            <Logo
-              src={isRTUXHomepage ? RZP_LOGO_URL_DARK : logoURL || RZP_LOGO_URL}
-              role="img"
-              aria-label="brand-logo"
-              alt="brand-logo"
-            />
+            <Logo src={rzpLogoSource} role="img" aria-label="brand-logo" alt="brand-logo" />
           </Link>
         </SidebarSection>
         <ShowWhen

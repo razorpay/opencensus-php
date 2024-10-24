@@ -552,6 +552,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'diwali_themed_logo',
+        experimentId: {
+          beta: 'PCnGzgfkRdKHzS',
+          production: 'PCnG8rM10Mz7bQ',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],
