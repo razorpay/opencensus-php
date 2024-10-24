@@ -1,18 +1,13 @@
 const fs = require('fs');
 const path = require('path');
+
+const { parseYaml } = require('../../utils/parseYaml');
 // const yaml = require('js-yaml');
 
 const rootPath = process.cwd();
 
-const packageJsonPathsToUpdate = [
-  '',
-  'web',
-  'apps/self-serve',
-  'apps/pos',
-  'apps/digital-bills',
-  'libs/shared-ui',
-  'libs/shared-utils',
-];
+// The package.json file in the root directory is the default package.json file
+const packageJsonPathsToUpdate = [''];
 // add root package json by default
 // const packageJsonPathsToUpdate = [''];
 // try {
@@ -23,6 +18,20 @@ const packageJsonPathsToUpdate = [
 //   console.log('Error parsing pnpm-workspace.yaml', e);
 //   process.exit(1);
 // }
+
+try {
+  const workspacePath = path.join(rootPath, 'pnpm-workspace.yaml');
+  const yamlContent = fs.readFileSync(workspacePath, 'utf8');
+  const parsedData = parseYaml(yamlContent);
+  if (!('packages' in parsedData)) {
+    console.error('No packages found in the pnpm-workspace.yaml');
+    process.exit(1);
+  }
+  packageJsonPathsToUpdate.push(...parsedData.packages);
+  console.log('package.json paths to update:', packageJsonPathsToUpdate);
+} catch (error) {
+  console.error('Error reading or parsing YAML:', error);
+}
 
 const WhiteListedPackages = [
   'moment',

@@ -31,11 +31,7 @@ RUN rm -f ~/.GITHUB_ACCESS_TOKEN
 # Remove browsers that are not needed for docker size reduction (we use chrome only for now). Check playwright/utils/config.js
 RUN cd /ms-playwright && rm -rf firefox-* webkit-*
 
-RUN rm -f .npmrc && \
-  rm -f ./web/.npmrc && \
-  rm -f ./apps/self-serve/.npmrc && \ 
-  rm -f ./apps/pos/.npmrc && \
-  rm -f ./apps/digital-bills/.npmrc
+RUN pnpm removeNpmrc
 
 CMD pnpm test:e2e:auth && \
   INCLUDE_GROUPS=$INCLUDE_GROUPS \

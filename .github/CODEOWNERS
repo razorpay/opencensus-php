@@ -49,6 +49,8 @@ environment/.env.vault.j2                         @razorpay-sanjib @shubham25kr0
 .github/workflows/e2e.yml                         @razorpay/deploy-leads-dashboard
 playwright/config/devstack.json                   @razorpay/deploy-leads-dashboard
 playwright/utils/infraE2EUtils.js                 @razorpay/deploy-leads-dashboard
+playwright/utils/copyDependecy.js                 @razorpay/deploy-leads-dashboard
+playwright/utils/removeNpmrc.js                   @razorpay/deploy-leads-dashboard
 
 # Disabled E2Es - Requires PR approval from dashboard deploy leads
 web/e2e/suites/RizeMarketplace/app-store-banner.spec.js                  @razorpay/deploy-leads-dashboard

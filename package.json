@@ -49,7 +49,8 @@
     "generate-changeset": "bash ./scripts/nx-releases/release.sh",
     "changeset-version": "changeset version",
     "version-update": "run-s changeset-version",
-    "updateE2EDependencies": "node ./playwright/utils/copyDependecy.js"
+    "updateE2EDependencies": "node ./playwright/utils/copyDependecy.js",
+    "removeNpmrc": "node ./playwright/utils/removeNpmrc.js"
   },
   "dependencies": {
     "@changesets/changelog-github": "^0.5.0",
