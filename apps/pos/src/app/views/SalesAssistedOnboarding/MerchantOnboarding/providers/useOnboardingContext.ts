@@ -16,6 +16,7 @@ import {
   OnboardingStep,
 } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/MerchantOnboardingConfig';
 import {
+  AvailableComponents,
   AvailableSteps,
   OnboardingComponentType,
   OnboardingStepType,
@@ -34,6 +35,9 @@ interface OnboardingProgress {
   totalCompletedSteps: number;
 }
 
+type StringBooleanObject = Partial<{
+  [key in AvailableComponents]: boolean;
+}>;
 export interface OnboardingValuesType {
   merchantId: string;
   isNewOnboarding: boolean;
@@ -55,7 +59,7 @@ export interface OnboardingStatesType {
 
 export interface OnboardingHandlers {
   handleStepClick: ({ step }: { step: OnboardingStep }) => void;
-  handleProceedToNextComponent: () => void;
+  handleProceedToNextComponent: (obj?: StringBooleanObject) => void;
   getStepConfigStepSlug: (step?: OnboardingStepType) => OnboardingStep | undefined;
   getFirstComponentOfStep: (step?: OnboardingStep) => OnboardingComponentType | undefined;
   getOnboardingProgress: () => OnboardingProgress;
@@ -162,7 +166,24 @@ const useOnboardingContext = ({
     return componentConfig;
   };
 
-  const handleProceedToNextComponent = () => {
+  const handleCustomRouting = (conditionalRouter: StringBooleanObject) => {
+    const allComponentsInStep = getStepConfigStepSlug()?.components;
+    if (!allComponentsInStep) return navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}`);
+    let nextLandableComponent: string = '';
+    for (const component of allComponentsInStep) {
+      if (component?.checkIfLandingPossible?.(conditionalRouter[component.slug])) {
+        nextLandableComponent = component.slug;
+        break;
+      }
+    }
+    if (nextLandableComponent) {
+      navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${nextLandableComponent}`);
+    } else {
+      navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}`);
+    }
+  };
+
+  const proceedToNextComponent = () => {
     const componentConfig = getComponentConfigFromStep();
     const nextComponent = componentConfig?.getNextComponent?.();
 
@@ -170,8 +191,20 @@ const useOnboardingContext = ({
       navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}`);
       return;
     }
-
     navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}/${step}/${nextComponent}`);
+  };
+
+  const handleProceedToNextComponent = (conditionalRouter?: StringBooleanObject) => {
+    if (!conditionalRouter) {
+      proceedToNextComponent();
+      return;
+    }
+    const componentConfig = getComponentConfigFromStep();
+    if (!componentConfig) {
+      navigate(`/${BASE_ROUTE}/${ONBOARDING_ROUTE}/${id}`);
+      return;
+    }
+    return handleCustomRouting(conditionalRouter);
   };
 
   const getOnboardingProgress = (): OnboardingProgress => {

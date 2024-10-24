@@ -4,9 +4,15 @@ import {
   PaymentMethodsFieldKeyNames,
 } from 'apps/pos/src/app/types/PaymentsAndService';
 
+export const CustomPricingUploadKeys: (keyof DirectModelForm)[] = [
+  PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD,
+];
+
 export const DirectModelFormKeys: (keyof DirectModelForm)[] = [
   PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD,
   PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD,
+  PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD,
+  PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD,
 ];
 
 export const AggregatorModelFormKeys: (keyof AggregatorModelForm)[] = [
@@ -18,9 +24,11 @@ export const AggregatorModelFormKeys: (keyof AggregatorModelForm)[] = [
   PaymentMethodsFieldKeyNames.UPI_MDR_RATE_FIELD,
 ];
 
-export const OPTIONAL_FIELDS = [
+export const CheckboxEnabledFormKeys = [
   PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD,
   PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD,
+  PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD,
+  PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD,
 ];
 
 export const CHARGES_REGEX = /^\d{1,2}(\.\d+)?$/;

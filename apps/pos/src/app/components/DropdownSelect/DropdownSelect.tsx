@@ -27,6 +27,7 @@ interface DropdownSelectProps {
   necessityIndicator: 'required' | 'none' | 'optional' | undefined;
   isDisabled: boolean;
   onBottomSheetDismissCallback?: () => void;
+  testID?: string;
 }
 const DropdownSelect = ({
   label,
@@ -41,6 +42,7 @@ const DropdownSelect = ({
   onChange,
   isDisabled,
   onBottomSheetDismissCallback,
+  testID,
 }: DropdownSelectProps) => {
   const { isMobile } = useScreen();
   const renderBody = (selectOptions) => {
@@ -59,7 +61,7 @@ const DropdownSelect = ({
   };
 
   return (
-    <Dropdown selectionType="single">
+    <Dropdown testID={testID} selectionType="single">
       <SelectInput
         isDisabled={isDisabled}
         necessityIndicator={necessityIndicator}

@@ -50,6 +50,8 @@ export enum AvailableComponents {
   DEVICE_MAPPING_MANUAL = 'deviceMappingManual',
   PAYMENT_METHODS = 'vasForm',
   NACH_FORM = 'nachForm',
+  BRAND_EMI_FORM = 'brandEmiForm',
+  ADDED_BRAND_INFO = 'addedBrandInfo',
   DEVICE_MAPPING_SUCCESS = 'deviceMappingSuccess',
 }
 
@@ -81,6 +83,8 @@ export type OnboardingComponentType =
   | AvailableComponents.DEVICE_MAPPING_MANUAL
   | AvailableComponents.DEVICE_MAPPING_SUCCESS
   | AvailableComponents.PAYMENT_METHODS
+  | AvailableComponents.BRAND_EMI_FORM
+  | AvailableComponents.ADDED_BRAND_INFO
   | AvailableComponents.NACH_FORM;
 
 export type RouteConfig = {

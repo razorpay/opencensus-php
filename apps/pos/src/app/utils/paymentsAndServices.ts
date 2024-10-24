@@ -1,10 +1,16 @@
-import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
-import { getComponentFromStep } from 'apps/pos/src/app/utils/modularConfig';
+import {
+  BrandItem,
+  MerchantModularOnboardingDetailsSuccessResponse,
+  ModularOnboardingField,
+  ModularOnboardingOption,
+} from 'apps/pos/src/app/types/modular';
+import { getComponentFromStep, getFieldFromComponent } from 'apps/pos/src/app/utils/modularConfig';
 import {
   PaymentMethodFormType,
   PaymentMethodsFieldKeyNames,
   PaymentMethodFormStringValue,
   PricingStepComponents,
+  MODULAR_PRICING_FIELDS,
 } from 'apps/pos/src/app/types/PaymentsAndService';
 import {
   AggregatorModelFormKeys,
@@ -20,6 +26,7 @@ import {
   L2_FUNNEL_STAGE,
   PAGE_TYPES,
 } from 'apps/pos/src/services/analytics/types';
+import { isBrandItem, isStringValue } from './modularTypeResolvers';
 
 interface GetStandardPosPricingRatesProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
@@ -308,4 +315,92 @@ export const replaceEmptyValues = (
     }
   }
   return inputObj;
+};
+
+interface GetStoreTypes {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
+}
+
+export const getStoreTypes = ({ modularConfig }: GetStoreTypes): ModularOnboardingOption[] => {
+  if (!modularConfig) return [];
+  const brandEmiField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.BRAND_EMI_COMPONENT,
+    fieldName: MODULAR_PRICING_FIELDS.STORE_TYPE_FIELD,
+  });
+  if (!brandEmiField) return [];
+  return brandEmiField.meta?.options ?? [];
+};
+
+interface GetBrandNameFields {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
+}
+export const getAllBrandEmiFields = ({
+  modularConfig,
+}: GetBrandNameFields): ModularOnboardingField[] => {
+  if (!modularConfig) return [];
+  const brandEmiComponent = getComponentFromStep({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.BRAND_EMI_COMPONENT,
+  });
+  if (!brandEmiComponent) return [];
+  return brandEmiComponent.fields;
+};
+
+interface GetBrandEmiField {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
+  fieldName: string;
+}
+
+export const getBrandEmiField = ({ modularConfig, fieldName }: GetBrandEmiField) => {
+  if (!modularConfig) return null;
+  return getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.BRAND_EMI_COMPONENT,
+    fieldName,
+  });
+};
+
+interface GetAllAddedBrandsParams {
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null;
+}
+export interface Brand extends BrandItem {
+  label: string;
+}
+export const getAllAddedBrands = ({ modularConfig }: GetAllAddedBrandsParams): Brand[] => {
+  const brandDetailsSummaryField = getBrandEmiField({
+    modularConfig,
+    fieldName: MODULAR_PRICING_FIELDS.BRAND_DETAILS_SUMMARY,
+  });
+  const brandNameField = getBrandEmiField({
+    modularConfig,
+    fieldName: MODULAR_PRICING_FIELDS.BRAND_NAME_FIELD,
+  });
+  const brandEmiComponent = getComponentFromStep({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.BRAND_EMI_COMPONENT,
+  });
+  const merchantGst = brandEmiComponent?.meta.merchantGstField;
+  const allBrands = brandNameField?.meta?.options;
+  if (!brandDetailsSummaryField || !allBrands) return [];
+  const updatedList = isBrandItem(brandDetailsSummaryField)
+    ? brandDetailsSummaryField.addedBrands.map((item) => {
+        const option = allBrands.find((option) => option.value === item.name);
+        if (option)
+          return { ...item, label: option.label, merchantGst: merchantGst ?? item.merchantGst };
+        return { ...item, label: item.name, merchantGst: merchantGst ?? item.merchantGst };
+      })
+    : [];
+  return updatedList;
+};
+
+export const getSelectedStoreName = (storeTypeField?: ModularOnboardingField): string => {
+  if (!storeTypeField) return '';
+  const options = storeTypeField.meta?.options;
+  const storeType = isStringValue(storeTypeField) ? storeTypeField.stringValue : '';
+  return options?.find((option) => option.value === storeType)?.label ?? '';
 };

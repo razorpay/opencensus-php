@@ -152,6 +152,19 @@ export const MODULAR_CONFIG = gql`
                       }
                     }
 
+                    ... on ModularOnboardingFieldForBrands {
+                      ...ModularOnboardingFieldFragment
+                      addedBrands: value {
+                        name
+                        dealerCode
+                        distributorCode
+                        stateCode
+                        verificationDetailsId
+                        verificationStatus
+                        merchantGst: gstin
+                      }
+                    }
+
                     ... on ModularOnboardingFieldWithBooleanValue {
                       ...ModularOnboardingFieldFragment
                       booleanValue: value
@@ -170,6 +183,8 @@ export const MODULAR_CONFIG = gql`
                     title
                     validations
                     defaultValues
+                    brandDataFields
+                    merchantGstField
                     deviceConfig {
                       title
                       icon
@@ -370,6 +385,19 @@ export const UPDATE_MODULAR_CONFIG = gql`
                       }
                     }
 
+                    ... on ModularOnboardingFieldForBrands {
+                      ...ModularOnboardingFieldFragment
+                      addedBrands: value {
+                        name
+                        dealerCode
+                        distributorCode
+                        stateCode
+                        verificationDetailsId
+                        verificationStatus
+                        merchantGst: gstin
+                      }
+                    }
+
                     ... on ModularOnboardingFieldWithBooleanValue {
                       ...ModularOnboardingFieldFragment
                       booleanValue: value
@@ -388,6 +416,8 @@ export const UPDATE_MODULAR_CONFIG = gql`
                     title
                     validations
                     defaultValues
+                    brandDataFields
+                    merchantGstField
                     deviceConfig {
                       title
                       icon

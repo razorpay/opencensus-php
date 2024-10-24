@@ -1,5 +1,6 @@
 import {
   isArrayOfDocumentsUpload,
+  isBrandItem,
   isDeviceCharges,
   isDocumentUpload,
   isOrderSummaryItem,
@@ -240,5 +241,40 @@ describe('isDocumentUpload', () => {
   test('should return false if field is null', () => {
     const field = null;
     expect(isDocumentUpload(field)).toBe(false);
+  });
+});
+
+describe('isBrandItem', () => {
+  it('should return false when field is null', () => {
+    const result = isBrandItem(null);
+    expect(result).toBe(false);
+  });
+
+  it('should return false when field does not have addedBrands array', () => {
+    const mockField = { someOtherProperty: 'test' }; // Not a valid ModularOnboardingFieldForBrands
+    const result = isBrandItem(mockField as any);
+    expect(result).toBe(false);
+  });
+
+  it('should return false when addedBrands array is empty', () => {
+    const mockField = { addedBrands: [] }; // Valid field but no brands inside
+    const result = isBrandItem(mockField as any);
+    expect(result).toBe(undefined);
+  });
+
+  it('should return false when first brand does not have verificationDetailsId', () => {
+    const mockField = {
+      addedBrands: [{ name: 'Brand1' }], // No verificationDetailsId in the brand
+    };
+    const result = isBrandItem(mockField as any);
+    expect(result).toBe(false);
+  });
+
+  it('should return true for a valid ModularOnboardingFieldForBrands with verificationDetailsId', () => {
+    const mockField = {
+      addedBrands: [{ verificationDetailsId: '12345', name: 'Brand1' }],
+    };
+    const result = isBrandItem(mockField as any);
+    expect(result).toBe(true);
   });
 });

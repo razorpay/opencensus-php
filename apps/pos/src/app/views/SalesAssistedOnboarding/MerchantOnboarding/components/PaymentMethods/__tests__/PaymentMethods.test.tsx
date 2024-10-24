@@ -16,7 +16,12 @@ const queryClient = new QueryClient();
 const renderApp = () => {
   render(
     <QueryClientProvider client={queryClient}>
-      <PaymentMethodContextProvider nach component={PaymentMethodFormComponent} />
+      <PaymentMethodContextProvider
+        brandEmi
+        addedBrands
+        nach
+        component={PaymentMethodFormComponent}
+      />
     </QueryClientProvider>,
   );
 };
@@ -144,6 +149,8 @@ describe('<PaymentMethodForm/>', () => {
         onFormSubmitClick={props.onFormSubmitClick}
         onFileUploadChange={props.onFileUploadChange}
         isFormDisabled={false}
+        handleViewBrandEMIForm={jest.fn()}
+        hasAddedBrandEMIData={false}
       />,
     );
     expect(screen.getByRole('heading', { name: /^mdr rates$/i, exact: true })).toBeInTheDocument();
@@ -173,6 +180,8 @@ describe('<PaymentMethodForm/>', () => {
         onFormSubmitClick={props.onFormSubmitClick}
         onFileUploadChange={props.onFileUploadChange}
         isFormDisabled={false}
+        hasAddedBrandEMIData={false}
+        handleViewBrandEMIForm={jest.fn()}
       />,
     );
     expect(screen.queryByText(/mdr rates/i)).not.toBeInTheDocument();

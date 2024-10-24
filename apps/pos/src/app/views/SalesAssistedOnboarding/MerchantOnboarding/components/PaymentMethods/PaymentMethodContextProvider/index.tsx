@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@razorpay/blade/components';
 import { NachFormKeyNames, NachFormObject, NachFormProps } from '../NACHForm/NACHForm';
@@ -19,12 +20,14 @@ import {
   isStringArrayValue,
   isNullValue,
   isStringValue,
+  isBrandItem,
 } from 'apps/pos/src/app/utils/modularTypeResolvers';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
 import { processFilesForModularSave } from 'apps/pos/src/app/components/SalesFileUpload/helper';
 import OnboardingModel from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/OnboardingModel/OnboardingModel';
 import {
   getComponentFromStep,
+  getFieldFromComponent,
   processFormDataForModularSubmit,
 } from 'apps/pos/src/app/utils/modularConfig';
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
@@ -32,6 +35,7 @@ import PageError from 'apps/pos/src/app/components/PageError';
 import {
   AggregatorModelForm,
   DirectModelForm,
+  MODULAR_PRICING_FIELDS,
   PaymentMethodFormStringValue,
   PaymentMethodFormType,
   PaymentMethodsFieldKeyNames,
@@ -53,6 +57,15 @@ import {
   validatePricingRates,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
 import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
+import {
+  AggregatorModelFormKeys,
+  CheckboxEnabledFormKeys,
+  CustomPricingUploadKeys,
+  DirectModelFormKeys,
+} from 'apps/pos/src/app/constants/PaymentsAndService';
+import { BrandEmiFormData } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/BrandEMIFormContainer';
+import { AvailableComponents } from 'apps/pos/src/app/types/common';
+import { SpiltzContext } from 'shell/SpiltzServiceContext';
 
 const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   const defaultFormValue: PaymentMethodFormStringValue = {
@@ -69,6 +82,8 @@ const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {
   let tempForm: DirectModelForm | AggregatorModelForm = {
     [PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_FIELD]: { ...defaultFormValue },
     [PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_FIELD]: { ...defaultFormValue },
+    [PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD]: { ...defaultFormValue },
+    [PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD]: { ...defaultFormValue },
     [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD]: {
       checked: true,
       value: [],
@@ -180,7 +195,7 @@ const populateFormWithModularConfigData = (
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
 ) => {
   const newForm: PaymentMethodForm = createDefaultForm(form.type);
-
+  const formCopy = { ...newForm, form: { ...newForm.form } };
   const component = getComponentFromStep({
     modularConfig,
     step: 'pricing_step',
@@ -193,10 +208,26 @@ const populateFormWithModularConfigData = (
   const defaultValues = component?.meta.defaultValues;
 
   if (component) {
-    const fields = component?.fields;
+    const formKeys = [
+      ...AggregatorModelFormKeys,
+      ...DirectModelFormKeys,
+      ...CustomPricingUploadKeys,
+      ...CheckboxEnabledFormKeys,
+    ];
+    const fields = component?.fields.filter((field) =>
+      formKeys.includes(field.name as PaymentMethodsFieldKeyNames),
+    );
+    for (const key in formCopy.form) {
+      if (formCopy.form.hasOwnProperty(key)) {
+        const isKeyPresentInModularConfig = fields.find((item) => item.name === key);
+        if (!isKeyPresentInModularConfig) {
+          delete formCopy.form[key];
+        }
+      }
+    }
     fields?.forEach((f) => {
       if (f && f.name && f.meta) {
-        newForm.form[f.name] = {
+        formCopy.form[f.name] = {
           checked: getFieldCheckedStatus({ field: f, defaultValues, fields }),
           value: getFieldValue({ field: f, defaultValues, fields }),
           defaultValue: defaultValues?.[f.name] || null,
@@ -207,13 +238,19 @@ const populateFormWithModularConfigData = (
           title: f.meta.title,
         };
       }
-      if (newForm.form[f.name].value === 'false') newForm.form[f.name].value = false;
-      if (newForm.form[f.name].value === 'true') newForm.form[f.name].value = true;
+      if (formCopy.form[f.name].value === 'false') formCopy.form[f.name].value = false;
+      if (formCopy.form[f.name].value === 'true') formCopy.form[f.name].value = true;
     });
   }
-  return newForm;
+  return formCopy;
 };
 
+const createDefaultBrandEmiForm = (): BrandEmiFormData => {
+  return {
+    [MODULAR_PRICING_FIELDS.STORE_TYPE_FIELD]: '',
+    [MODULAR_PRICING_FIELDS.BRAND_DETAILS_FIELD]: [],
+  };
+};
 const createDefaultNACHForm = (): NachFormObject => {
   return {
     [NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]: '',
@@ -251,6 +288,29 @@ const populateNACHFormWithModularConfigData = (
   return newForm;
 };
 
+const populateBrandEmiFormWithModularConfigData = (
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
+) => {
+  const defaultForm = createDefaultBrandEmiForm();
+  const storeTypeField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.BRAND_EMI_COMPONENT,
+    fieldName: MODULAR_PRICING_FIELDS.STORE_TYPE_FIELD,
+  });
+  const brandDetailsSummaryField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.BRAND_EMI_COMPONENT,
+    fieldName: MODULAR_PRICING_FIELDS.BRAND_DETAILS_SUMMARY,
+  });
+  defaultForm.brand_details_field = isBrandItem(brandDetailsSummaryField)
+    ? brandDetailsSummaryField.addedBrands
+    : [];
+  defaultForm.store_type_field = isStringValue(storeTypeField) ? storeTypeField.stringValue : '';
+  return defaultForm;
+};
+
 const deriveMethodTypeFromModularConfig = (
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse,
 ) => {
@@ -266,9 +326,11 @@ const deriveMethodTypeFromModularConfig = (
   return PaymentMethodFormType.AGGREGATOR;
 };
 
-const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
+const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }): JSX.Element => {
   const toast = useToast();
   const navigate = useNavigate();
+  const splitz = useContext(SpiltzContext);
+  const isBrandEmiEnabled = splitz.abExperiments?.pos_brand_emi?.variables?.result === 'on';
   const { states, handlers } = useOnboardingContext();
   const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig, merchantDetails } =
     states;
@@ -281,6 +343,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     createDefaultForm(paymentMethodType),
   );
   const [nachForm, setNachForm] = useState<NachFormObject>(createDefaultNACHForm());
+  const [brandEmiForm, setBrandEmiForm] = useState<BrandEmiFormData>(createDefaultBrandEmiForm());
   const [modelIsOpen, setModelIsOpen] = useState<boolean>(!nach && !isFormDisabled);
   const standardRates = useMemo(() => {
     if (modularConfig) {
@@ -305,12 +368,33 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     });
 
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
-    const redirectToNachPage = (data) => {
+
+    const redirectToNextPage = (data) => {
       const newNACH = populateNACHFormWithModularConfigData(data);
       setNachForm(newNACH);
-      handleProceedToNextComponent();
+      if (!methodForm.form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked) {
+        handleProceedToNextComponent({ [AvailableComponents.NACH_FORM]: true });
+        return;
+      }
+      if (
+        methodForm.form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked &&
+        !brandEmiForm.brand_details_field.length
+      ) {
+        handleProceedToNextComponent({
+          [AvailableComponents.BRAND_EMI_FORM]: true,
+        });
+      } else if (
+        methodForm.form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked &&
+        brandEmiForm.brand_details_field.length
+      ) {
+        handleProceedToNextComponent({
+          [AvailableComponents.NACH_FORM]: true,
+        });
+      }
     };
-    payload.modular_callback = redirectToNachPage;
+
+    payload.modular_callback = redirectToNextPage;
+    payload[MODULAR_PRICING_FIELDS.RESET_BRAND_DETAILS_FIELD] = moment().unix();
 
     const pricingRates = extractPricingRates(payload);
     const { errFieldName } = validatePricingRates(pricingRates);
@@ -369,6 +453,7 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
   const setPaymentMethodTypeHandler = (type: PaymentMethodFormType) => {
     handlers.updateModularConfig({
       acquisition_model_field: type,
+      [MODULAR_PRICING_FIELDS.RESET_BRAND_DETAILS_FIELD]: moment().unix(),
       modular_callback: (data: MerchantModularOnboardingDetailsSuccessResponse) => {
         setPaymentMethodType(type);
         const newForm = populateFormWithModularConfigData(createDefaultForm(type), data);
@@ -426,6 +511,12 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       return;
     }
     setMethodFormValue('form', newForm);
+  };
+
+  const onBrandEmiFieldInputChange = (key: string, value: any) => {
+    if (key === MODULAR_PRICING_FIELDS.STORE_TYPE_FIELD) {
+      setBrandEmiForm((prev) => ({ ...prev, store_type_field: value }));
+    }
   };
 
   const updateFormValues = () => {
@@ -487,8 +578,18 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     return true;
   };
 
+  const handleViewBrandEMIForm = () => {
+    const { handleProceedToNextComponent, updateModularConfig } = handlers;
+    updateModularConfig({
+      [MODULAR_PRICING_FIELDS.RESET_BRAND_DETAILS_FIELD]: moment().unix(),
+      [MODULAR_PRICING_FIELDS.MODULAR_CALLBACK]: handleProceedToNextComponent({
+        [AvailableComponents.ADDED_BRAND_INFO]: true,
+      }),
+    });
+  };
   const contextValue = {
     // props for form
+    isBrandEmiEnabled,
     isModularLoading,
     methodForm,
     onFileUploadChange,
@@ -496,6 +597,8 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     onFieldInputChange,
     onFormSubmitClick,
     isFormDisabled,
+    handleViewBrandEMIForm,
+    hasAddedBrandEMIData: !!brandEmiForm.brand_details_field.length,
 
     // props for NACH
     onNachTextAreaChange,
@@ -503,6 +606,10 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
     onNachSubmitClick,
     onNachSkipClick,
     nachForm,
+
+    //props for brand emi
+    brandEmiForm,
+    onBrandEmiFieldInputChange,
   };
 
   useEffect(() => {
@@ -530,6 +637,9 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
           return;
         }
       }
+      if (brandEmi || addedBrands) {
+        setModelIsOpen(false);
+      }
       const newForm = populateFormWithModularConfigData(contextValue.methodForm, modularConfig);
 
       const initialMethodType = deriveMethodTypeFromModularConfig(
@@ -542,11 +652,18 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       setNachForm(newNach);
       setMethodFormValue('form', newForm.form);
       setMethodFormValue('type', initialMethodType);
+      const newBrandEmiForm = populateBrandEmiFormWithModularConfigData(modularConfig);
+      setBrandEmiForm(newBrandEmiForm);
     }
-  }, [isModularLoading, isUpdateModularLoading, isRefetching, modularConfig, nach]);
+  }, [isModularLoading, isUpdateModularLoading, isRefetching, modularConfig, nach, brandEmi]);
 
   useEffect(() => {
     handlers.refetchModularConfig();
+  }, []);
+
+  useEffect(() => {
+    const data = createDefaultBrandEmiForm();
+    setMethodForm((prev) => ({ ...prev, ...data }));
   }, []);
 
   const RenderComponent: React.FC<PaymentMethodFormProps | NachFormProps> = component;

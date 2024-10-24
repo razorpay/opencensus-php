@@ -6,7 +6,8 @@ import { SelectDropdownOptions } from 'apps/pos/src/app/types/common';
 import { FieldRules } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 
 type FormFieldProps = {
-  key: string;
+  testID?: string;
+  key?: string;
   type: string;
   label: string;
   necessityIndicator: 'required' | 'none' | 'optional' | undefined;
@@ -38,6 +39,7 @@ const FormField = ({
   onTextInputClick,
   onRadioBtnChangeCallback,
   onDropdownChangeCallback,
+  testID,
 }: FormFieldProps) => {
   const {
     field,
@@ -66,6 +68,8 @@ const FormField = ({
     if (type === 'string') {
       return (
         <TextInput
+          testID={testID}
+          ref={field.ref}
           necessityIndicator={necessityIndicator}
           isDisabled={isDisabled}
           label={label}
@@ -74,6 +78,7 @@ const FormField = ({
           value={field.value}
           validationState={errors[name] ? 'error' : 'none'}
           errorText={errorText}
+          isRequired={rules?.required}
           name={field.name}
           onFocus={onTextInputFocus}
         />
@@ -96,6 +101,7 @@ const FormField = ({
           necessityIndicator={necessityIndicator}
           isDisabled={isDisabled}
           onBottomSheetDismissCallback={onBottomSheetDismissCallback}
+          testID={testID}
         />
       );
     }
@@ -111,9 +117,10 @@ const FormField = ({
               onRadioBtnChange(value);
             }}
             defaultValue={defaultValue}
+            isRequired={rules?.required}
           >
             {selectOptions?.map((option) => (
-              <Radio key={option.value} value={option.value}>
+              <Radio ref={field.ref} key={option.value} value={option.value}>
                 {option.label}
               </Radio>
             ))}

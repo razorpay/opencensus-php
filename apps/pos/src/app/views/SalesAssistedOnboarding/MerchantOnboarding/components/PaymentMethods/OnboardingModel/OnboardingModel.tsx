@@ -89,7 +89,7 @@ const OnboardingModel = ({
   }, [acquisitionModelField]);
 
   return (
-    <BottomSheet isOpen={isOpen} onDismiss={onDismissClick}>
+    <BottomSheet zIndex={99999} isOpen={isOpen} onDismiss={onDismissClick}>
       <BottomSheetHeader title="Select Onboarding Model" />
       <BottomSheetBody>
         <Box padding="spacing.4">

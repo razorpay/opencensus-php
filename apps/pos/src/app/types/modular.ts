@@ -18,6 +18,7 @@ export type ModularOnboardingField =
   | ModularOnboardingFieldForDocumentUpload
   | ModularOnboardingFieldForDeviceCharges
   | ModularOnboardingFieldForOrderSummaryItem
+  | ModularOnboardingFieldForBrands
   | ModularOnboardingFieldForArrayOfDocumentsUpload
   | ModularOnboardingFieldForJsonValues;
 
@@ -123,6 +124,8 @@ export interface ModularComponentMeta {
   metaUi?: ModularComponentMetaUi;
   isHidden?: boolean;
   deviceConfig?: DeviceConfig[];
+  brandDataFields?: string[];
+  merchantGstField?: string;
   isLast?: boolean;
   type?: string;
   apiActions?: APIAction;
@@ -416,3 +419,24 @@ export interface ArrayOfDocumentFieldsUpload {
 }
 
 export type ModularPayload = Partial<Record<MODULAR_DEVICE_FIELDS, unknown>>;
+
+// Modular Onboarding Field for Order Summary Item
+
+export enum BRAND_EMI_VERIFICATION_STATUS_ENUM {
+  VERIFIED = 'verified',
+  FAILED = 'failed',
+  PENDING = 'pending',
+}
+// Brand emi summary item
+export interface BrandItem {
+  name: string;
+  dealerCode?: string;
+  distributorCode?: string;
+  stateCode?: string;
+  merchantGst?: string;
+  verificationDetailsId: string;
+  verificationStatus: BRAND_EMI_VERIFICATION_STATUS_ENUM;
+}
+export interface ModularOnboardingFieldForBrands extends ModularOnboardingFieldParent {
+  addedBrands: BrandItem[];
+}

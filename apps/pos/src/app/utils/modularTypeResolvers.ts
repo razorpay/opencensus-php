@@ -9,6 +9,7 @@ import {
   ModularOnboardingStepWithModularComponents,
   ModularOnboardingStep,
   ModularOnboardingFieldWithStringArrayValue,
+  ModularOnboardingFieldForBrands,
 } from 'apps/pos/src/app/types/modular';
 
 export function isStringValue(
@@ -80,4 +81,15 @@ export function isStepModularComponents(
   const modularComponents = (field as ModularOnboardingStepWithModularComponents)
     ?.modularComponents;
   return modularComponents && modularComponents.length > 0;
+}
+
+export function isBrandItem(
+  field: ModularOnboardingField | null,
+): field is ModularOnboardingFieldForBrands {
+  return (
+    Array.isArray((field as ModularOnboardingFieldForBrands)?.addedBrands) &&
+    (field as ModularOnboardingFieldForBrands)?.addedBrands?.[0]?.hasOwnProperty(
+      'verificationDetailsId',
+    )
+  );
 }

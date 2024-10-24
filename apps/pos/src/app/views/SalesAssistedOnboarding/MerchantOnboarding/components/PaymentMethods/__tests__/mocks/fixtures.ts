@@ -1,8 +1,396 @@
 import {
+  BRAND_EMI_VERIFICATION_STATUS_ENUM,
+  ModularOnboardingField,
+} from 'apps/pos/src/app/types/modular';
+import {
   PaymentMethodFormType,
   PaymentMethodsFieldKeyNames,
 } from 'apps/pos/src/app/types/PaymentsAndService';
 
+export const MOCK_BRAND_RELATED_FIELDS = [
+  {
+    name: 'dealer_code_field',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: 'Dealer Code',
+      description: '',
+      defaultValue: '',
+      size: '',
+      accessibilityLabel: '',
+      hideOnReviewScreen: false,
+      dataType: 'string',
+      selectionType: '',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: '',
+  },
+  {
+    name: 'merchant_gst_field',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: 'Merchant GST',
+      description: '',
+      defaultValue: '',
+      size: '',
+      accessibilityLabel: '',
+      hideOnReviewScreen: false,
+      dataType: 'string',
+      selectionType: '',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: '',
+  },
+];
+
+export const getMockBrandEmiFields = ({
+  storeType = '',
+  brandName = '',
+  dealerCode = '',
+  stateCode = '',
+  distributorCode = '',
+  verificationStatus = BRAND_EMI_VERIFICATION_STATUS_ENUM.PENDING,
+}): ModularOnboardingField[] => [
+  {
+    name: 'store_type_field',
+    isDisabled: false,
+    isRequired: true,
+    isHidden: false,
+    meta: {
+      title: 'Type of Store',
+      description: 'null',
+      defaultValue: 'null',
+      size: 'null',
+      accessibilityLabel: 'null',
+      dataType: 'select',
+      selectionType: 'null',
+      options: [
+        {
+          label: 'Multi Brand Outlet',
+          value: 'multi_brand_outlet',
+        },
+        {
+          label: 'Exclusive Brand Outlet',
+          value: 'exclusive_brand_outlet',
+        },
+        {
+          label: 'Large Format Retail',
+          value: 'large_format_retail',
+        },
+      ],
+      validations: [
+        {
+          condition: 'true',
+          errorMessage: 'Store type is required',
+          type: 'isRequired',
+        },
+      ],
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: storeType ?? '',
+  },
+  {
+    name: 'brand_name_field',
+    isDisabled: false,
+    isRequired: true,
+    isHidden: false,
+    meta: {
+      title: 'Brand Name',
+      description: 'null',
+      defaultValue: 'null',
+      size: 'null',
+      accessibilityLabel: 'null',
+
+      dataType: 'select',
+      selectionType: 'null',
+      options: [
+        {
+          label: 'Akai',
+          value: 'akai',
+        },
+        {
+          label: 'BenQ',
+          value: 'benq',
+        },
+        {
+          label: 'Bluestar',
+          value: 'bluestar',
+        },
+        {
+          label: 'Bosch',
+          value: 'bosch',
+        },
+        {
+          label: 'Daewoo',
+          value: 'daewoo',
+        },
+        {
+          label: 'Diasun',
+          value: 'diasun',
+        },
+        {
+          label: 'ElanPro',
+          value: 'elanpro',
+        },
+        {
+          label: 'Elista',
+          value: 'elista',
+        },
+        {
+          label: 'Evra Energy',
+          value: 'evra energy',
+        },
+        {
+          label: 'Havells',
+          value: 'havells',
+        },
+        {
+          label: 'Itel',
+          value: 'itel',
+        },
+        {
+          label: 'Jajot',
+          value: 'jajot',
+        },
+        {
+          label: 'Lebu Electric',
+          value: 'lebu electric',
+        },
+        {
+          label: 'Leela Eye Institute',
+          value: 'leela eye institute',
+        },
+        {
+          label: 'Lloyd',
+          value: 'lloyd',
+        },
+        {
+          label: 'Lords Automotive',
+          value: 'lords automotive',
+        },
+        {
+          label: 'Nexzu Mobility',
+          value: 'nexzu mobility',
+        },
+        {
+          label: 'Nokia',
+          value: 'nokia',
+        },
+        {
+          label: 'Oneiric',
+          value: 'oneiric',
+        },
+        {
+          label: 'Oppo',
+          value: 'oppo',
+        },
+        {
+          label: 'Realme',
+          value: 'realme',
+        },
+        {
+          label: 'Samsung',
+          value: 'samsung',
+        },
+        {
+          label: 'Sharp',
+          value: 'sharp',
+        },
+        {
+          label: 'Siemens',
+          value: 'siemens',
+        },
+        {
+          label: 'Slim Nutrifit',
+          value: 'slim nutrifit',
+        },
+        {
+          label: 'Tecno',
+          value: 'tecno',
+        },
+        {
+          label: 'Tejas',
+          value: 'tejas',
+        },
+        {
+          label: 'Vivo',
+          value: 'vivo',
+        },
+        {
+          label: 'Voltas',
+          value: 'voltas',
+        },
+        {
+          label: 'Voltas BeKo',
+          value: 'voltas beko',
+        },
+        {
+          label: 'Vsun',
+          value: 'vsun',
+        },
+        {
+          label: 'Xiaomi',
+          value: 'xiaomi',
+        },
+      ],
+      validations: [
+        {
+          condition: 'true',
+          errorMessage: 'Brand name is required',
+          type: 'isRequired',
+        },
+      ],
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: brandName ?? '',
+  },
+  {
+    name: 'fetch_brand_data_fields',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: '',
+      description: '',
+      defaultValue: '',
+      size: '',
+      accessibilityLabel: '',
+
+      dataType: 'string',
+      selectionType: '',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: 'vivo',
+  },
+  {
+    name: 'dealer_code_field',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: 'Dealer Code',
+      description: '',
+      defaultValue: '',
+      size: '',
+      accessibilityLabel: '',
+
+      dataType: 'string',
+      selectionType: '',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: dealerCode,
+  },
+  {
+    name: 'distributor_code_field',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: 'Distributor Code',
+      description: '',
+      defaultValue: '',
+      size: '',
+      accessibilityLabel: '',
+
+      dataType: 'string',
+      selectionType: '',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: distributorCode,
+  },
+  {
+    name: 'state_code_field',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: 'State Code',
+      description: '',
+      defaultValue: '',
+      size: '',
+      accessibilityLabel: '',
+
+      dataType: 'string',
+      selectionType: '',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: stateCode,
+  },
+  {
+    name: 'merchant_gst_field',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: 'Merchant GST',
+      description: '',
+      defaultValue: '',
+      size: '',
+      accessibilityLabel: '',
+      dataType: 'string',
+      selectionType: '',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    stringValue: '',
+  },
+  {
+    name: 'brand_details_summary',
+    isDisabled: false,
+    isRequired: true,
+    isHidden: false,
+    meta: {
+      title: 'Brand Details Summary',
+      description: 'null',
+      defaultValue: 'null',
+      size: 'null',
+      accessibilityLabel: 'null',
+      dataType: 'BrandDetailsSummary',
+      selectionType: 'null',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    addedBrands: [
+      {
+        name: 'xiaomi',
+        dealerCode: 'KOPLQ6789',
+        distributorCode: '',
+        stateCode: '',
+        verificationDetailsId: 'P7H84Je9JRow7Q',
+        verificationStatus: verificationStatus,
+      },
+    ],
+  },
+  {
+    name: 'remove_brand_details_field',
+    isDisabled: false,
+    isRequired: false,
+    isHidden: false,
+    meta: {
+      title: 'null',
+      description: 'null',
+      defaultValue: 'null',
+      size: 'null',
+      accessibilityLabel: 'null',
+      dataType: 'bool',
+      selectionType: 'null',
+    },
+    failureReason: '',
+    failureReasonType: '',
+    booleanValue: false,
+  },
+];
 interface Documents {
   name: string;
   size: number;
@@ -20,8 +408,14 @@ export interface GetMockModularResponseProps {
   vas_dc_emi_rate_field?: string;
   upi_mdr_rate_field?: string;
   addNachComponent?: boolean;
-
   acquisition_model_field?: 'aggregator' | 'direct';
+  storeType?: 'multi_brand_outlet';
+  brandName?: 'vivo';
+  brandDataFields?: string[];
+  dealerCode?: string;
+  stateCode?: string;
+  distributorCode?: string;
+  verificationStatus?: BRAND_EMI_VERIFICATION_STATUS_ENUM;
 }
 export const getMockModularResponse = ({
   acquisition_model_field = 'aggregator',
@@ -36,6 +430,13 @@ export const getMockModularResponse = ({
   vas_dc_emi_rate_field = '0',
   upi_mdr_rate_field = '0',
   addNachComponent = true,
+  storeType = 'multi_brand_outlet',
+  brandName = 'vivo',
+  brandDataFields,
+  dealerCode,
+  stateCode,
+  distributorCode,
+  verificationStatus,
 }: GetMockModularResponseProps) => ({
   id: 'Oe0O6xyCfmHWdv',
   progress: 5,
@@ -436,6 +837,32 @@ export const getMockModularResponse = ({
             {
               name: addNachComponent ? 'nach_form_component' : '',
             },
+            {
+              fields: getMockBrandEmiFields({
+                dealerCode,
+                stateCode,
+                distributorCode,
+                verificationStatus,
+                brandName,
+                storeType,
+              }),
+              meta: {
+                description: 'Choose Brand EMI',
+                errorCode: null,
+                isHidden: null,
+                template: 'linear',
+                title: '3. Payment Method & Service Selection',
+                validations: null,
+                defaultValues: null,
+                brandDataFields: brandDataFields,
+                merchantGstField: null,
+                deviceConfig: null,
+                metaUi: null,
+              },
+              progress: 0,
+              status: 'pending',
+              name: 'brand_emi_component',
+            },
           ],
           meta: {
             description: "Provide merchant's business information to start the POS journey",
@@ -559,6 +986,26 @@ export const mockProps = {
         description: '1',
         title: '1',
       },
+      [PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD]: {
+        checked: false,
+        value: '1',
+        defaultValue: '1',
+        isRequired: false,
+        isDisabled: false,
+        isHidden: false,
+        description: '1',
+        title: '1',
+      },
+      [PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD]: {
+        checked: false,
+        value: '1',
+        defaultValue: '1',
+        isRequired: false,
+        isDisabled: false,
+        isHidden: false,
+        description: '1',
+        title: '1',
+      },
     },
   },
   directMethodForm: {
@@ -597,6 +1044,26 @@ export const mockProps = {
       [PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD]: {
         checked: false,
         value: 1,
+        defaultValue: '1',
+        isRequired: false,
+        isDisabled: false,
+        isHidden: false,
+        description: '1',
+        title: '1',
+      },
+      [PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_FIELD]: {
+        checked: false,
+        value: '1',
+        defaultValue: '1',
+        isRequired: false,
+        isDisabled: false,
+        isHidden: false,
+        description: '1',
+        title: '1',
+      },
+      [PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_FIELD]: {
+        checked: false,
+        value: '1',
         defaultValue: '1',
         isRequired: false,
         isDisabled: false,

@@ -50,7 +50,7 @@ export interface Component {
   title?: string;
   description?: string;
   view: JSX.Element;
-  checkIfLandingPossible?: () => boolean;
+  checkIfLandingPossible?: (flag?: boolean) => boolean;
   getNextComponent?: () => OnboardingComponentType | null;
   isFullScreenLayout?: boolean;
 }
@@ -212,15 +212,31 @@ const PAYMENTS_METHOD_STEP = {
     {
       slug: AvailableComponents.PAYMENT_METHODS,
       modularKey: 'pricing_step',
-      checkIfLandingPossible: () => true,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
       view: <PaymentMethods />,
+      title: '',
+      getNextComponent: () => AvailableComponents.BRAND_EMI_FORM,
+    },
+    {
+      slug: AvailableComponents.BRAND_EMI_FORM,
+      modularKey: 'brand_emi_form',
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
+      view: <PaymentMethods brandEmi />,
+      title: '',
+      getNextComponent: () => AvailableComponents.ADDED_BRAND_INFO,
+    },
+    {
+      slug: AvailableComponents.ADDED_BRAND_INFO,
+      modularKey: 'added_brand_info',
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
+      view: <PaymentMethods addedBrands />,
       title: '',
       getNextComponent: () => AvailableComponents.NACH_FORM,
     },
     {
       slug: AvailableComponents.NACH_FORM,
       modularKey: 'pricing_step',
-      checkIfLandingPossible: () => true,
+      checkIfLandingPossible: (flag?: boolean) => !!flag,
       view: <PaymentMethods nach />,
       title: '',
     },
@@ -231,7 +247,7 @@ const ADDITIONAL_DETAILS_STEP = {
   slug: AvailableSteps.ADDITIONAL_DETAILS,
   modularKey: MODULAR_ADDITIONAL_DETAILS_FIELDS.ADDITIONAL_DETAILS_STEP,
   title: 'Additional Details',
-  description: 'Merchant’s preference for Taxation and Regulatory compliance',
+  description: 'Add miscellaneous information to complete your merchant profile',
   getStatus: ({ states }) => {
     return getProgressFromModularStep({
       modularConfig: states.modularConfig,

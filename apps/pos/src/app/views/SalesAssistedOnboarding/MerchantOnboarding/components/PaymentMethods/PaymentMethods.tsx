@@ -8,8 +8,16 @@ import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import errorService from '@razorpay/universe-cli/errorService';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
+import BrandEMIFormContainer from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/BrandEMIFormContainer';
+import AddedBrandInfoContainer from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/AddedBrandInfoContainer';
 
-const PaymentMethods = ({ nach = false }) => {
+const PaymentMethods = ({ nach = false, brandEmi = false, addedBrands = false }) => {
+  const getComponent = () => {
+    if (brandEmi) return BrandEMIFormContainer;
+    if (addedBrands) return AddedBrandInfoContainer;
+    if (nach) return NACHForm;
+    return PaymentMethodForm;
+  };
   return (
     <ErrorBoundary
       sentryHub={sentryHub?.sentryHub}
@@ -24,7 +32,12 @@ const PaymentMethods = ({ nach = false }) => {
         </Box>
       }
     >
-      <PaymentMethodContextProvider component={nach ? NACHForm : PaymentMethodForm} nach={nach} />
+      <PaymentMethodContextProvider
+        component={getComponent()}
+        nach={nach}
+        brandEmi={brandEmi}
+        addedBrands={addedBrands}
+      />
     </ErrorBoundary>
   );
 };
