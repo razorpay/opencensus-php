@@ -469,7 +469,11 @@ const PaymentMethodContextProvider = ({ component, nach }): JSX.Element => {
       nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD],
     )[0];
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
-    payload.modular_callback = handleProceedToNextComponent;
+    payload.modular_callback = () => {
+      setTimeout(() => {
+        handleProceedToNextComponent();
+      }, 500);
+    };
     updateModularConfig(payload);
   };
 
