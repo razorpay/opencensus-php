@@ -74,6 +74,10 @@ const DeliveryInfo = ({ productTitle }: { productTitle: string }): JSX.Element =
         (data && availableCities.includes(data?.city)) ||
         checkIfPanIndiaLive({ abExperiments })
       ) {
+        trackResponseReceived({
+          status: 'Success',
+          errorMessage: '',
+        });
         return setMessage({
           type: 'success',
           text: DELIVERY_AVAILABLE_TEXT,

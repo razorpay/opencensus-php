@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useEffect } from 'react';
 import { Alert, Amount, Box, Button, Text } from '@razorpay/blade/components';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -42,6 +42,20 @@ const CartFooter = ({ isMaxReached }: CartFooterProps): JSX.Element => {
       type: ACTIONS.CLOSE_CART,
     });
   };
+
+  useEffect(() => {
+    if (isMaxReached) {
+      analytics.track_EXPERIMENTAL(SignUpEvents.formPageResponseReceived, {
+        formName: 'Cart',
+        fieldName: 'Cart',
+        fieldType: 'Text Box',
+        l1FunnelStage: 'Purchase Intention',
+        l2FunnelStage: 'Error Check',
+        status: 'Failure',
+        errorMessage: 'This order can accommodate a maximum of 9 items',
+      });
+    }
+  }, [isMaxReached]);
 
   return (
     <Box

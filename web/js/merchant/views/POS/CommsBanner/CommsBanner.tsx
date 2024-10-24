@@ -1,17 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Box } from '@razorpay/blade/components';
-import { useLocation, useParams } from 'react-router-dom';
-import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-
 import CommsBannerImage from 'assets/pos/comms-banner-img.webp';
 import { STATUS_ASSETS_MAPPING } from 'merchant/views/POS/constants';
 import { useBladeBreakpoints, useLatestOrder } from 'merchant/views/POS/hooks';
-
 import CommsBannerItem from './CommsBannerItem';
 import { getMerchantComms } from './getMerchantComms';
 import { StyledImage } from './styles';
 import { User } from 'common/typings';
-import { getCommsAnalytics } from 'merchant/views/POS/helpers';
 
 type CommsBanner = {
   user: User;
@@ -23,17 +18,6 @@ const CommsBanner = ({ mode, user }: CommsBanner): JSX.Element | null => {
 
   const { isMobile, matchedBreakpoint } = useBladeBreakpoints();
   const isMobileOrTablet = isMobile || matchedBreakpoint === 'm';
-
-  const { pathname } = useLocation();
-  const { productName = '' } = useParams();
-
-  useEffect(() => {
-    const { pageType } = getCommsAnalytics({ pathname, productName });
-    analytics.track_EXPERIMENTAL(SignUpEvents.pageViewed, {
-      pageType,
-      orderId: '',
-    });
-  }, []);
 
   if (!user || latestOrderFetchError || isLatestOrderLoading) return null;
 

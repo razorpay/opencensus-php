@@ -38,10 +38,10 @@ const ProductPriceCards = ({
 
   const handleOnPricingCardSelect = (type) => {
     analytics.track_EXPERIMENTAL(SignUpEvents.websiteCtaClicked, {
-      label: type,
+      label: type === 'monthly' ? 'Monthly Subscription' : 'Lifetime Plan',
       section: 'Device',
       whatsAppUpdates: 'No',
-      subSection: 'Android Smart POS/Android Smart Mini POS/ Mobile POS (m-POS)',
+      subSection: product?.productTitle,
       l1FunnelStage: 'Device Consideration',
       l2FunnelStage: 'POS Product Description',
     });
@@ -53,6 +53,7 @@ const ProductPriceCards = ({
 
   const { pricing, offer, rentalDiscountPeriod } = product;
   const isPartnerPricing = product?.isPartnerPricing;
+
   return (
     <Box>
       {product?.offer?.pdpOfferText ? (

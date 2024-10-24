@@ -119,8 +119,10 @@ const CartPanel = ({ toggleHelpWidget, isHidden = false }: CartPanelProps): JSX.
   const handleCartOpen = () => {
     analytics.track_EXPERIMENTAL(SignUpEvents.iconClicked, {
       type: 'Cart Icon',
-      l1FunnelStage: 'Device Consideration',
-      l2FunnelStage: 'POS Product Description',
+      l1FunnelStage: 'Device Exploration',
+      l2FunnelStage: 'POS Catalog',
+      section: 'POS Catalog',
+      subSection: 'POS Catalog',
     });
     dispatch({
       type: ACTIONS.OPEN_CART,
@@ -147,8 +149,6 @@ const CartPanel = ({ toggleHelpWidget, isHidden = false }: CartPanelProps): JSX.
     handleCartClose();
     navigate('/pos/catalog');
   };
-
-  useOnClickOutside([cartOverlayRef], handleCartClose);
 
   useEffect(() => {
     toggleHelpWidget({ showWidget: !isCartOpen });

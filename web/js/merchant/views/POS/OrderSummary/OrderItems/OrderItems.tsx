@@ -15,13 +15,13 @@ import {
 } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-
 import Cart from 'merchant/views/POS/Cart/CartPanel/Cart';
 import OrderCollapsible from 'merchant/views/POS/OrderSummary/OrderCollapsible';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
-
 import OrderItem from './OrderItem';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const EmptyCartState = (): JSX.Element => {
   const navigate = useNavigate();
@@ -61,8 +61,16 @@ const OrderItems = ({ defaultIsExpanded }: OrderItemsProps): JSX.Element => {
   const [isEditCartMode, setIsEditCartMode] = useState(false);
 
   useEffect(() => {
-    // call entity update with debounce.
-  }, [cartItems]);
+    analyticsTrack({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'POS - Pre-checkout',
+      properties: {
+        PageType: 'Pre-checkout',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }, []);
 
   const handleOnCartToggle = (e?: SyntheticEvent) => {
     e?.stopPropagation?.();

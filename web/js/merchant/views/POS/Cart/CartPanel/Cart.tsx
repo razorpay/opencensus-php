@@ -35,6 +35,11 @@ const Cart = ({ onCartUpdate, isCartModal, isOrderDetails }: CartProps): JSX.Ele
       subSection: productTitle,
       l1FunnelStage: 'Purchase Intention',
       l2FunnelStage: isCartModal ? 'Cart' : 'Pre-checkout - Edit Order',
+      previousSelection: isCartModal
+        ? selectedPlan === 'lifetime'
+          ? 'Monthly Subscription'
+          : 'Lifetime plan'
+        : undefined,
     });
     const productDescription = getProductFromProductDescriptions({
       code: product.productCode,

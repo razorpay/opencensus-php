@@ -113,13 +113,4 @@ describe('<CommsBanner/>', () => {
     expect(screen.getByText('Third Stage')).toBeVisible();
     expect(screen.getByText('Third Stage Description')).toBeVisible();
   });
-
-  test('should call track_EXPERIMENTAL with the correct parameters on mount', () => {
-    renderApp({});
-
-    expect(analytics.track_EXPERIMENTAL).toHaveBeenCalledWith(SignUpEvents.pageViewed, {
-      pageType: 'Merchant Activation Status Bar - POS Catalog',
-      orderId: '',
-    });
-  });
 });

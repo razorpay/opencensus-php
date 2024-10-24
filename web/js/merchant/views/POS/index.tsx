@@ -63,6 +63,50 @@ const POS = ({ user, mode }: POS): JSX.Element => {
   const isOrderConfirmation = !!useMatch({ path: '/pos/order-status', end: false });
   const isOrderSummary = location.pathname.endsWith('/order-summary');
 
+  const onDeviceShopTabClick = () => {
+    if (isOrderSummary) {
+      analytics.track_EXPERIMENTAL(SignUpEvents.linkClicked, {
+        label: 'Device Shop',
+        section: 'Pre-checkout',
+        whatsAppUpdates: 'No',
+        subSection: 'Pre-checkout',
+        l1FunnelStage: 'Device Exploration',
+        l2FunnelStage: 'Pre-checkout',
+      });
+    } else {
+      analytics.track_EXPERIMENTAL(SignUpEvents.linkClicked, {
+        label: 'Device Shop',
+        section: 'POS Catalog',
+        whatsAppUpdates: 'No',
+        subSection: 'POS Catalog',
+        l1FunnelStage: 'Device Exploration',
+        l2FunnelStage: 'POS Catalog',
+      });
+    }
+  };
+
+  const onOrdersTabClick = () => {
+    if (isOrderSummary) {
+      analytics.track_EXPERIMENTAL(SignUpEvents.linkClicked, {
+        label: 'Orders',
+        section: 'Pre-checkout',
+        subSection: 'Pre-checkout',
+        whatsAppUpdates: 'No',
+        l1FunnelStage: 'Device Exploration',
+        l2FunnelStage: 'Pre-checkout',
+      });
+    } else {
+      analytics.track_EXPERIMENTAL(SignUpEvents.linkClicked, {
+        label: 'Orders',
+        section: 'POS Catalog',
+        subSection: 'POS Catalog',
+        whatsAppUpdates: 'No',
+        l1FunnelStage: 'Device Exploration',
+        l2FunnelStage: 'POS Catalog',
+      });
+    }
+  };
+
   return (
     <ErrorBoundary resetOnProps team={Teams.OMNI_CHANNEL} rank={Ranks.P0}>
       <ScrollObserverProvider>
@@ -77,31 +121,13 @@ const POS = ({ user, mode }: POS): JSX.Element => {
                       title: 'Device Shop',
                       url: '/pos/catalog',
                       isMatchStartsWith: true,
-                      onTabClick: () => {
-                        analytics.track_EXPERIMENTAL(SignUpEvents.linkClicked, {
-                          label: 'Device Shop',
-                          section: 'POS Product Description',
-                          whatsAppUpdates: 'No',
-                          subSection: 'POS Product Description',
-                          l1FunnelStage: 'Device Exploration',
-                          l2FunnelStage: 'POS Product Description',
-                        });
-                      },
+                      onTabClick: onDeviceShopTabClick,
                     },
                     {
                       title: 'Orders',
                       url: '/pos/orders',
                       isMatchStartsWith: true,
-                      onTabClick: () => {
-                        analytics.track_EXPERIMENTAL(SignUpEvents.linkClicked, {
-                          label: 'Orders',
-                          section: 'POS Product Description',
-                          subSection: 'POS Product Description',
-                          whatsAppUpdates: 'No',
-                          l1FunnelStage: 'Device Exploration',
-                          l2FunnelStage: 'POS Product Description',
-                        });
-                      },
+                      onTabClick: onOrdersTabClick,
                     },
                   ]}
                   extra={<CartPanel isHidden={isOrderSummary} />}

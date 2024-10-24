@@ -43,12 +43,12 @@ describe('<POS/>', () => {
     await userEvent.click(ordersTab);
     await waitFor(() => {
       expect(analytics.track_EXPERIMENTAL).toHaveBeenCalledWith(SignUpEvents.linkClicked, {
-        label: 'Orders',
-        section: 'POS Product Description',
-        subSection: 'POS Product Description',
         whatsAppUpdates: 'No',
         l1FunnelStage: 'Device Exploration',
-        l2FunnelStage: 'POS Product Description',
+        l2FunnelStage: 'POS Catalog',
+        label: 'Orders',
+        section: 'POS Catalog',
+        subSection: 'POS Catalog',
       });
     });
 
@@ -57,11 +57,11 @@ describe('<POS/>', () => {
     await waitFor(() => {
       expect(analytics.track_EXPERIMENTAL).toHaveBeenCalledWith(SignUpEvents.linkClicked, {
         label: 'Device Shop',
-        section: 'POS Product Description',
         whatsAppUpdates: 'No',
-        subSection: 'POS Product Description',
         l1FunnelStage: 'Device Exploration',
-        l2FunnelStage: 'POS Product Description',
+        l2FunnelStage: 'POS Catalog',
+        section: 'POS Catalog',
+        subSection: 'POS Catalog',
       });
     });
   });

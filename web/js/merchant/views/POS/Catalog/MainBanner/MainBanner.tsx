@@ -4,14 +4,14 @@ import { bladeTheme } from '@razorpay/blade/tokens';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import MainBannerBackdropImage from 'assets/pos/main-banner/mainbannerbackground.webp';
 import { useNavigate } from 'react-router-dom';
-
+import { analyticsTrack } from 'common/utils/analytics';
 import OfferStrip from 'merchant/views/POS/Catalog/OfferStrip';
 import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
-
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import MainBannerProductImage from './MainBannerProductImage';
 import MainBannerTextContent from './MainBannerTextContent';
 import MainBannerTilesGroup from './MainBannerTilesGroup';
@@ -104,13 +104,19 @@ const MainBanner = (): JSX.Element | null => {
                 nextMonthlyFee={offer?.nextMonthly}
                 setupFee={setupFee}
                 onLearnMoreClick={() => {
-                  analytics.track_EXPERIMENTAL(SignUpEvents.websiteCtaClicked, {
-                    label: 'Learn More',
-                    whatsAppUpdates: 'No',
-                    l1FunnelStage: 'Device Exploration',
-                    l2FunnelStage: 'POS Catalog',
-                    section: 'Devices',
-                    subSection: 'Android Smart POS',
+                  analyticsTrack({
+                    objectName: 'Icon',
+                    actionName: 'Clicked',
+                    screen: 'POS Landing Page',
+                    toCleverTap: true,
+                    properties: {
+                      label: 'Learn More',
+                      l1FunnelStage: 'Device Exploration',
+                      l2FunnelStage: 'POS Catalog',
+                      section: 'Devices',
+                      subSection: 'Android Smart POS',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
                   });
 
                   handleNavigateToProduct();

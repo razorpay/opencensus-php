@@ -100,6 +100,27 @@ const NavLinkItem = ({
       },
     });
     toggleMobileMenu?.();
+
+    if (product_id === 'pos') {
+      analyticsTrack({
+        objectName: 'Link',
+        actionName: 'Clicked',
+        screen: titleCase(getActiveTab(location)) || 'home page',
+        toCleverTap: true,
+        properties: {
+          clickedElement: title,
+          section: 'Side Navbar',
+          subSection: 'Side Navbar',
+          location: 'sidebar',
+          label: 'POS',
+          l1FunnelStage: 'Merchant Dashboard',
+          l2FunnelStage: 'Sidebar Clicked',
+          sidebar: 'v2',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+
     if (noCodeMonetizationApps.includes(title)) {
       analyticsTrack({
         objectName: 'NC App Widget',

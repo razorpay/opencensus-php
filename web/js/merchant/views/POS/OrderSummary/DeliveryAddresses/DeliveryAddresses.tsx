@@ -105,9 +105,7 @@ const DeliveryAddresses = ({ defaultIsExpanded }: { defaultIsExpanded: boolean }
         label: 'Save Address',
         whatsAppUpdates: 'No',
         l1FunnelStage: 'Purchase Intention',
-        l2FunnelStage: isNewDeliveryAddress
-          ? 'Pre-checkout - Add New Address'
-          : 'Pre-checkout - Edit Address',
+        l2FunnelStage: isNewDeliveryAddress ? 'Pre-checkout' : 'Pre-checkout - Edit Address',
         section: 'Pre-checkout',
         subSection: 'Delivery Address',
       });

@@ -109,6 +109,7 @@ describe('Cart as a modal', () => {
       label: 'Monthly Subscription',
       whatsAppUpdates: 'No',
       section: 'Cart',
+      previousSelection: 'Lifetime plan',
       subSection: 'Mock Product New',
       l1FunnelStage: 'Purchase Intention',
       l2FunnelStage: 'Cart',
