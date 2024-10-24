@@ -86,7 +86,7 @@ const TncUpdateModal = () => {
   };
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} size="small" snapPoints={[0.65, 0.75, 0.9]}>
+    <Modal isOpen={isOpen} size="small" snapPoints={[0.65, 0.75, 0.9]}>
       <ModalBody>
         <Box display="flex" flexDirection="column" gap={isMobile ? 'spacing.5' : 'spacing.3'}>
           <Box width="88px" height="80px">

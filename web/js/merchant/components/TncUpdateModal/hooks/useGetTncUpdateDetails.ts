@@ -6,6 +6,8 @@ import { TncUpdateApiData } from 'merchant/components/TncUpdateModal/types';
 
 import { TNC_UPDATE_API_BASE_URL } from 'merchant/components/TncUpdateModal/constants';
 
+let hasTncUpdateDataFetched = false;
+
 const getTncUpdate = async (): Promise<TncUpdateApiData> => {
   try {
     return await fetch<TncUpdateApiData>({
@@ -19,7 +21,12 @@ const getTncUpdate = async (): Promise<TncUpdateApiData> => {
 
 export const useGetTncUpdate = () =>
   useQuery<TncUpdateApiData>(['tncUpdate'], () => getTncUpdate(), {
+    enabled: !hasTncUpdateDataFetched,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     retry: 0,
+    cacheTime: 0,
+    onSuccess: () => {
+      hasTncUpdateDataFetched = true;
+    },
   });
